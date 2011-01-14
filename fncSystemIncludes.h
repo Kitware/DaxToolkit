@@ -32,4 +32,5 @@ using std::ofstream;
 using std::ifstream;
 using std::fstream;
 
+#include <string>
 #endif

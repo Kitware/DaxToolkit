@@ -10,7 +10,9 @@
 #define __fncObject_h
 
 #include "fncSystemIncludes.h"
+#include "fncMacros.h"
 #include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 /// fncObject is the base class for all fncFramework classes.
 class fncObject
@@ -18,8 +20,11 @@ class fncObject
 public:
   fncObject();
   virtual ~fncObject();
+private:
+  fncDisableCopyMacro(fncObject)
 };
 
-typedef boost::shared_ptr<fncObject> fncObjectPtr;
+/// declares fncObjectPtr
+fncDefinePtrMacro(fncObject)
 
 #endif

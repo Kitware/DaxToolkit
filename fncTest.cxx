@@ -6,10 +6,11 @@
 
 =========================================================================*/
 
-#include "fncObject.h"
+#include "fncExecutive.h"
+#include "fncModule.h"
 
 int main(int, char**)
 {
-  cout << "Hello World" << endl;
+  fncExecutivePtr executive(new fncExecutive());
   return 0;
 }
