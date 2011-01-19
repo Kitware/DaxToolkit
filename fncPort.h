@@ -28,9 +28,22 @@ public:
   int GetType();
   void SetType(int);
 
+  /// Get/Set the number of components.
+  int GetNumberOfComponents();
+  void SetNumberOfComponents(int);
+
+  enum Types
+    {
+    invalid=0,
+    point_array,
+    cell_array,
+    any_array,
+    float_,
+    };
 protected:
   std::string Name;
   int Type;
+  int NumberOfComponents;
 
 private:
   fncDisableCopyMacro(fncPort);

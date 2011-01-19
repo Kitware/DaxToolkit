@@ -6,7 +6,7 @@ project (Functors)
 find_package(Boost REQUIRED)
 
 # fncFramework is the core library
-add_library(fncFramework
+add_library(fncFramework SHARED
   fncExecutive.cxx
   fncExecutive.h
   fncModule.cxx

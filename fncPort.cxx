@@ -10,7 +10,8 @@
 //-----------------------------------------------------------------------------
 fncPort::fncPort()
 {
-  this->Type = 0;
+  this->Type = invalid;
+  this->NumberOfComponents = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -40,4 +41,16 @@ int fncPort::GetType()
 void fncPort::SetType(int type)
 {
   this->Type = type;
+}
+
+//-----------------------------------------------------------------------------
+int fncPort::GetNumberOfComponents()
+{
+  return this->NumberOfComponents;
+}
+
+//-----------------------------------------------------------------------------
+void fncPort::SetNumberOfComponents(int num)
+{
+  this->NumberOfComponents = num;
 }
