@@ -3,12 +3,49 @@ project (Functors)
 
 # List of Boost features used:
 # * Smart Ptr
+# * xpressive
+# * program options
 find_package(Boost REQUIRED
   COMPONENTS program_options # program_options is only needed for the testing
                              # executables
   )
 
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_BINARY_DIR}
+
+  )
+
+add_executable(fncGenerateHeaderFromFile
+  fncGenerateHeaderFromFile.cxx)
+target_link_libraries(fncGenerateHeaderFromFile
+  ${Boost_LIBRARIES})
+
+function (encode_to_headers out_variable)
+  set (all_headers)
+  foreach(file ${ARGN})
+    SET(src ${CMAKE_CURRENT_SOURCE_DIR}/${file})
+    GET_FILENAME_COMPONENT(filename ${file} NAME)
+    SET(res ${CMAKE_CURRENT_BINARY_DIR}/${filename}.h)
+    list(APPEND all_headers ${res})
+    ADD_CUSTOM_COMMAND(
+      OUTPUT ${res}
+      DEPENDS ${src} fncGenerateHeaderFromFile
+      COMMAND fncGenerateHeaderFromFile
+      ARGS  --input-file ${src} --output-file ${res}
+      )
+  endforeach()
+  set (${out_variable} ${all_headers} PARENT_SCOPE)
+endfunction()
+
+set (functor_modules
+  Functors/PassThrough.cl
+)
+
+set (generated_headers)
+encode_to_headers(generated_headers
+  ${functor_modules}
+  )
+message ("Headers: ${generated_headers}")
 
 # fncFramework is the core library
 add_library(fncFramework SHARED
@@ -29,12 +66,14 @@ target_link_libraries(fncFramework
 
 # Add executables, mostly testing samples
 add_executable(fncTest
-  fncTest.cxx)
+  fncTest.cxx
+  ${generated_headers}
+  )
+foreach (file ${generated_headers})
+  set_source_files_properties(fncTest.cxx
+    PROPERTIES OBJECT_DEPENDS ${file})
+endforeach()
+
 target_link_libraries(fncTest
   fncFramework
   )
-
-add_executable(fncGenerateHeaderFromFile
-  fncGenerateHeaderFromFile.cxx)
-target_link_libraries(fncGenerateHeaderFromFile
-  ${Boost_LIBRARIES})
