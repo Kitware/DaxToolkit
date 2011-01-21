@@ -19,22 +19,26 @@
 class fncExecutive::fncInternals
 {
 public:
-  struct Vertex
+  struct VertexProperty
     {
     fncModulePtr Module;
     };
 
-  struct Edge
+  struct EdgeProperty
     {
     fncPortPtr ProducerPort;
     fncPortPtr ConsumerPort;
     };
 
-  typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS,
+  typedef boost::adjacency_list<boost::vecS,
+          /* don't use setS for OutEdgeList since we can have parallel edges
+           * when multiple ports are presents */
+          boost::vecS,
+          boost::bidirectionalS,
           /* Vertex Property*/
-          Vertex,
+          VertexProperty,
           /* Edge Property*/
-          Edge > Graph;
+          EdgeProperty > Graph;
 
   typedef boost::graph_traits<Graph>::vertex_iterator VertexIterator;
   typedef boost::graph_traits<Graph>::edge_iterator EdgeIterator;
@@ -132,6 +136,12 @@ bool fncExecutive::Connect(
     this->Internals->Connectivity[edge].ConsumerPort = sinkPort;
     }
   return true;
+}
+
+//-----------------------------------------------------------------------------
+void fncExecutive::Reset()
+{
+  this->Internals->Connectivity = fncInternals::Graph();
 }
 
 //-----------------------------------------------------------------------------

@@ -36,6 +36,10 @@ public:
     fncModulePtr sourceModule, const std::string& sourcename,
     fncModulePtr sinkModule, const std::string& sinkname);
 
+  /// Resets the executive. This is the only way to break connections until we
+  /// start supporting de-connecting.
+  void Reset();
+
 private:
   fncDisableCopyMacro(fncExecutive);
 
