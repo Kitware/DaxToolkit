@@ -32,6 +32,10 @@ public:
   int GetNumberOfComponents();
   void SetNumberOfComponents(int);
 
+  /// Returns true if this fncPort can be connected as a sink to the \c
+  /// sourcePort.
+  bool CanSourceFrom(fncPort* sourcePort);
+
   enum Types
     {
     invalid=0,

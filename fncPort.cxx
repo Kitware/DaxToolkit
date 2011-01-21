@@ -54,3 +54,33 @@ void fncPort::SetNumberOfComponents(int num)
 {
   this->NumberOfComponents = num;
 }
+
+//-----------------------------------------------------------------------------
+bool fncPort::CanSourceFrom(fncPort* sourcePort)
+{
+  if (sourcePort->GetNumberOfComponents() != this->GetNumberOfComponents())
+    {
+    return false;
+    }
+  if (sourcePort->GetType() == this->GetType())
+    {
+    return true;
+    }
+  if (sourcePort->GetType() == any_array)
+    {
+    if (this->GetType() == float_)
+      {
+      return false;
+      }
+    return true;
+    }
+  if (this->GetType() == any_array)
+    {
+    if (sourcePort->GetType() == float_)
+      {
+      return false;
+      }
+    return true;
+    }
+  return false;
+}

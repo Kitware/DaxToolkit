@@ -28,16 +28,19 @@ public:
   /// Executes the pipelines. Return false if there's some error.
   bool Execute();
 
-  /// Register a connection.
-  void Connect(
+  /// Register a connection. Returns true if the connection was setup correctly.
+  bool Connect(
     fncModulePtr sourceModule, fncPortPtr sourcePort,
     fncModulePtr sinkModule, fncPortPtr sinkPort);
-  void Connect(
+  bool Connect(
     fncModulePtr sourceModule, const std::string& sourcename,
     fncModulePtr sinkModule, const std::string& sinkname);
 
 private:
   fncDisableCopyMacro(fncExecutive);
+
+  class fncInternals;
+  fncInternals* Internals;
 };
 
 fncDefinePtrMacro(fncExecutive);
