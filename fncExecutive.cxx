@@ -9,15 +9,22 @@
 
 #include "fncPort.h"
 #include "fncModule.h"
+#include "CoreKernel.cl.h"
+#include "CoreMapField.cl.h"
+#include "CorePointIterator.cl.h"
 
-#include <assert.h>
 #include <algorithm>
-#include <boost/config.hpp>
+#include <assert.h>
+#include <boost/algorithm/string.hpp>
 #include <boost/bind.hpp>
+#include <boost/config.hpp>
+#include <boost/format.hpp>
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/depth_first_search.hpp>
 #include <boost/graph/graph_traits.hpp>
-#include <boost/graph/reverse_graph.hpp>
 #include <boost/graph/graph_utility.hpp>
+#include <boost/graph/reverse_graph.hpp>
+
 #include <utility>                   // for std::pair
 
 class fncExecutive::fncInternals
@@ -178,27 +185,202 @@ bool fncExecutive::Execute()
   boost::print_graph(this->Internals->Connectivity);
   cout << "--------------------------" << endl;
 
-  typedef boost::reverse_graph<fncInternals::Graph> dependencyGraphType;
-  dependencyGraphType dependencyGraph(this->Internals->Connectivity);
-  cout << endl << "Dependency Graph: " << endl;
-  boost::print_graph(dependencyGraph);
-  cout << "--------------------------" << endl << endl;
-
   // Every sink becomes a separate kernel.
 
   // Locate sinks. Sinks are nodes in the dependency graph with in-degree of 0.
   std::vector<fncInternals::Graph::vertex_descriptor> sinks;
-  fnc::get_heads(sinks, dependencyGraph);
+  fnc::get_heads(sinks, this->Internals->Connectivity);
 
   // Now we process each sub-graph rooted at each sink separately, create
   // separate kernels and executing them individually.
 
   // Maybe using for_each isn't the best thing here since I want to break on
-  // error :).
+  // error. I am just letting myself get a little carried away with boost::bind
+  // and std::for_each temporarily :).
   std::for_each(sinks.begin(), sinks.end(),
-    boost::bind(&fncExecutive::Execute<dependencyGraphType>,
-      this, _1, dependencyGraph));
+    boost::bind(&fncExecutive::Execute<fncInternals::Graph>,
+      this, _1, this->Internals->Connectivity));
   return false;
+}
+
+template <class Graph, class Stack>
+class DFSVisitor : public boost::default_dfs_visitor
+{
+  typedef typename boost::graph_traits<Graph>::edge_descriptor edge_descriptor;
+  typedef typename boost::graph_traits<Graph>::vertex_descriptor
+    vertex_descriptor;
+  typedef typename Stack::value_type StackItem;
+  Stack &CommandStack;
+  void operator=(const DFSVisitor&); // not implemented.
+public:
+  DFSVisitor(Stack& stack): CommandStack(stack) { }
+  void tree_edge(edge_descriptor edge, const Graph& graph)
+    {
+    this->handle_vertex(boost::target(edge, graph), graph);
+    }
+
+  void start_vertex(vertex_descriptor vertex, const Graph& graph)
+    {
+    this->handle_vertex(vertex, graph);
+    }
+
+  void finish_vertex(vertex_descriptor vertex, const Graph& graph)
+    {
+    (void)vertex;
+    (void)graph;
+    }
+private:
+  void handle_vertex(vertex_descriptor vertex, const Graph& graph)
+    {
+    cout << "Handle: " << vertex << endl;
+    assert(this->CommandStack.rbegin() != this->CommandStack.rend());
+    // * Determine the type of the module.
+    fncModulePtr module = graph[vertex].Module;
+    fncModule::Types module_type = module->GetType();
+
+    switch (module_type)
+      {
+    case fncModule::map_field:
+        {
+        // this operates on the same field as passed on in the input.
+        StackItem top = this->CommandStack.back();
+        assert(top.IsOperator());
+        this->CommandStack.pop_back();
+        this->CommandStack.push_back(StackItem(vertex));
+        this->CommandStack.push_back(top);
+        }
+      break;
+
+    case fncModule::map_topology_down:
+      cout << "TODO" << endl;
+      abort();
+      break;
+
+    case fncModule::map_topology_up:
+      cout << "TODO" << endl;
+      abort();
+      break;
+
+    default:
+      abort();
+      }
+    }
+};
+
+template <class Graph>
+class CommandStackEntity
+{
+public:
+  enum Types
+    {
+    OPERAND,
+    OPERATOR
+    };
+  CommandStackEntity(typename Graph::vertex_descriptor vertex)
+    {
+    this->Type = OPERAND;
+    this->Operand = vertex;
+    }
+  CommandStackEntity(fncPort::Types operator_)
+    {
+    this->Type = OPERATOR;
+    this->Operator = operator_;
+    }
+  bool IsOperator() const { return this->Type == OPERATOR; }
+  bool IsOperand() const { return this->Type == OPERAND; }
+
+  Types Type;
+  union
+    {
+    typename Graph::vertex_descriptor Operand;
+    fncPort::Types Operator;
+    };
+};
+
+namespace fnc
+{
+  std::string fncSubstituteKeywords(
+    const char* source, const std::map<std::string, std::string>& keywords)
+    {
+    std::string result = source;
+    for (std::map<std::string, std::string>::const_iterator
+      iter = keywords.begin(); iter != keywords.end(); ++iter)
+      {
+      boost::replace_all(result, "$" + iter->first + "$", iter->second);
+      }
+    return result;
+    }
+
+  //-----------------------------------------------------------------------------
+  template <class Graph>
+    std::string GenerateKernel(
+      typename Graph::vertex_descriptor head, const Graph& graph)
+      {
+      // The algorithm we use is as follows:
+      // We treat the problem like solving a mathematical expression using operand
+      // and operator stacks. Operators are iterators. And all operators are
+      // unary. Operands are modules(functors). Consecutive operators of the same
+      // type can be combined into a single iteration.
+
+      typedef std::vector<CommandStackEntity<Graph> > CommandStack;
+      CommandStack command_stack;
+
+      // Now based on our data-input, we push the first operator on the stack.
+      // We are assuming image-data with point scalars to begin with.
+      command_stack.push_back(CommandStackEntity<Graph>(fncPort::point_array));
+
+      DFSVisitor<Graph, CommandStack> visitor(command_stack);
+      // Do a DFS-visit starting at the head. We are assuming no fan-ins or
+      // fan-outs.
+      boost::depth_first_search(graph, boost::visitor(visitor).root_vertex(head));
+
+      std::string opencl_kernel;
+      std::map<std::string, std::string> keywords;
+      size_t operator_index = 0;
+      for (typename CommandStack::iterator iter = command_stack.begin();
+        iter != command_stack.end(); ++iter)
+        {
+        const typename CommandStack::value_type &item = *iter;
+        if (item.IsOperator())
+          {
+          keywords["index"] = (boost::format("%1%") % operator_index).str();
+          keywords["body"] = opencl_kernel;
+          switch (item.Operator)
+            {
+          case fncPort::point_array:
+              {
+              opencl_kernel = fncSubstituteKeywords(
+                fncHeaderString_CorePointIterator, keywords);
+              }
+            break;
+
+          default:
+            cout << __LINE__ << " : TODO" << endl;
+            }
+          operator_index++;
+          }
+        else // if (item.IsOperand())
+          {
+          fncModule::Types module_type = graph[item.Operand].Module->GetType();
+          switch (module_type)
+            {
+          case fncModule::map_field:
+            keywords["module_name"] = graph[item.Operand].Module->GetModuleName();
+            keywords["vertexid"] = (boost::format("%1%") % item.Operand).str();
+            opencl_kernel = fncSubstituteKeywords(
+              fncHeaderString_CoreMapField, keywords) + opencl_kernel;
+            }
+          }
+        }
+      keywords["topology_opaque_pointer"] = "opaque_data_pointer";
+      keywords["input_data_handle"] = "input_point_array";
+      keywords["output_data_handle"] = "output_point_array";
+      keywords["body"] = opencl_kernel;
+      opencl_kernel = fncSubstituteKeywords(fncHeaderString_CoreKernel, keywords);
+      cout << "================================================" <<endl;
+      cout << opencl_kernel.c_str() << endl;
+      return opencl_kernel;
+      }
 }
 
 //-----------------------------------------------------------------------------
@@ -206,5 +388,15 @@ template <class Graph>
 bool fncExecutive::Execute(
   typename Graph::vertex_descriptor head, const Graph& graph)
 {
+  // FIXME: now sure how to dfs over a subgraph starting with head, so for now
+  // we assume there's only 1 connected graph in "graph".
+  cout << "Execute sub-graph: " << head << endl;
+
+  // First generate the kernel code.
+  std::string kernel = fnc::GenerateKernel(head, graph);
+
+  // Now we should invoke the kernel using opencl setting up data arrays etc
+  // etc.
+
   return false;
 }

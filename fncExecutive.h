@@ -18,6 +18,11 @@ fncDefinePtrMacro(fncPort);
 /// fncExecutive is the executive. One typically creates a single executive and
 /// then registers module connections with that execute. To trigger an
 /// execution, one finally calls fncExecutive::Execute().
+///
+/// In the first pass, we are only going to work with uniform-rectilinear grids.
+/// So we provide explicit API to set the grid to work on. In future that will
+/// change. We need to spend more time on the data-model, but we'll do that
+/// later.
 class fncExecutive : public fncObject
 {
 public:

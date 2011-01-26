@@ -41,9 +41,16 @@ set (functor_modules
   Functors/PassThrough.cl
 )
 
+set (core_kernels
+  Resources/CoreKernel.cl
+  Resources/CoreMapField.cl
+  Resources/CorePointIterator.cl
+)
+
 set (generated_headers)
 encode_to_headers(generated_headers
   ${functor_modules}
+  ${core_kernels}
   )
 message ("Headers: ${generated_headers}")
 
