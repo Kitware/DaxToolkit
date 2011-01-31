@@ -10,8 +10,10 @@
 
 #include "fncObject.h"
 
+class fncImageData;
 class fncModule;
 class fncPort;
+fncDefinePtrMacro(fncImageData);
 fncDefinePtrMacro(fncModule);
 fncDefinePtrMacro(fncPort);
 
@@ -31,7 +33,8 @@ public:
   fncTypeMacro(fncExecutive, fncObject);
 
   /// Executes the pipelines. Return false if there's some error.
-  bool Execute();
+  /// Initially, we'll assume 1 input and 1 output with only 1 pipeline defined.
+  bool Execute(const fncImageData* input, fncImageData* output);
 
   /// Register a connection. Returns true if the connection was setup correctly.
   bool Connect(
@@ -49,9 +52,10 @@ protected:
   /// Executes every subtree in the graph separately. We currently invoke every
   /// subtree as a separate kernel. We can merge the kernels or something of
   /// that sort in future.
-  template <class Graph>
-    bool Execute(
-      typename Graph::vertex_descriptor head, const Graph& graph);
+  template <class Graph, class InputDataType, class OutputDataType>
+    bool ExecuteOnce(
+      typename Graph::vertex_descriptor head, const Graph& graph,
+      const InputDataType* input, OutputDataType* output);
 
 private:
   fncDisableCopyMacro(fncExecutive);

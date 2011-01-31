@@ -7,12 +7,16 @@
 =========================================================================*/
 #include "fncExecutive.h"
 
-#include "fncPort.h"
-#include "fncModule.h"
+// Generated headers.
 #include "CoreKernel.cl.h"
 #include "CoreMapField.cl.h"
 #include "CorePointIterator.cl.h"
 
+// fnc headers
+#include "fncModule.h"
+#include "fncPort.h"
+
+// external headers
 #include <algorithm>
 #include <assert.h>
 #include <boost/algorithm/string.hpp>
@@ -24,7 +28,6 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/graph_utility.hpp>
 #include <boost/graph/reverse_graph.hpp>
-
 #include <utility>                   // for std::pair
 
 class fncExecutive::fncInternals
@@ -178,7 +181,7 @@ void fncExecutive::Reset()
 }
 
 //-----------------------------------------------------------------------------
-bool fncExecutive::Execute()
+bool fncExecutive::Execute(const fncImageData* input, fncImageData* output)
 {
   cout << endl << "--------------------------" << endl;
   cout << "Connectivity Graph: " << endl;
@@ -198,8 +201,9 @@ bool fncExecutive::Execute()
   // error. I am just letting myself get a little carried away with boost::bind
   // and std::for_each temporarily :).
   std::for_each(sinks.begin(), sinks.end(),
-    boost::bind(&fncExecutive::Execute<fncInternals::Graph>,
-      this, _1, this->Internals->Connectivity));
+    boost::bind(&fncExecutive::ExecuteOnce<fncInternals::Graph, fncImageData,
+      fncImageData>,
+      this, _1, this->Internals->Connectivity, input, output));
   return false;
 }
 
@@ -384,9 +388,10 @@ namespace fnc
 }
 
 //-----------------------------------------------------------------------------
-template <class Graph>
-bool fncExecutive::Execute(
-  typename Graph::vertex_descriptor head, const Graph& graph)
+template <class Graph, class InputDataType, class OutputDataType>
+bool fncExecutive::ExecuteOnce(
+  typename Graph::vertex_descriptor head, const Graph& graph,
+  const InputDataType* input, OutputDataType* output)
 {
   // FIXME: now sure how to dfs over a subgraph starting with head, so for now
   // we assume there's only 1 connected graph in "graph".
@@ -397,6 +402,5 @@ bool fncExecutive::Execute(
 
   // Now we should invoke the kernel using opencl setting up data arrays etc
   // etc.
-
   return false;
 }
