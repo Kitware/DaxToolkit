@@ -41,6 +41,11 @@ public:
   int GetNumberOfComponents() const
     {return this->NumberOfComponents; }
 
+  /// OpaqueDataPointer encapsulates all information about this mesh/grid that
+  /// needs to be sent to the device.
+  void* GetOpaqueDataPointer() const;
+  size_t GetOpaqueDataSize() const;
+
 protected:
   int NumberOfComponents;
   int Dimensions[3];
@@ -48,6 +53,8 @@ protected:
 
 private:
   fncDisableCopyMacro(fncImageData);
+  struct OpaqueDataType;
+  OpaqueDataType* OpaqueDataPointer;
 };
 
 /// declares fncImageDataPtr.
@@ -83,5 +90,12 @@ struct fncOpenCLTraits<fncImageData>
   /// functions.
   static std::string GetCode()
     { return fncImageDataInternals::GetOpenCLCode(); }
+
+  /// These are used to obtain the host data-structure for \c opaque_data_type
+  /// instance that's passed to the OpenCL kernel.
+  static void* GetOpaqueDataPointer(const fncImageData* data)
+    { return data->GetOpaqueDataPointer(); }
+  static size_t GetOpaqueDataSize(const fncImageData* data)
+    { return data->GetOpaqueDataSize(); }
 };
 #endif

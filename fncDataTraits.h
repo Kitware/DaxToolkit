@@ -44,4 +44,10 @@ struct fncOpenCLTraits
     {
     return std::string();
     }
+
+  /// These are used to obtain the host data-structure for \c opaque_data_type
+  /// instance that's passed to the OpenCL kernel.
+  static void* GetOpaqueDataPointer(const T*) { return NULL;}
+  static size_t GetOpaqueDataSize(const T*) { return 0; }
+
 };

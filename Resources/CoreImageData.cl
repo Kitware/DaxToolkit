@@ -3,7 +3,7 @@
 
 // opaque_data_type is a data-structure that contains enough information about
 // the mesh to enable location/iterating over cells/points as applicable.
-typedef struct
+typedef struct __attribute__( (packed endian(host) ) )
 {
   int Dimensions[3];
 } opaque_data_type;

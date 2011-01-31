@@ -488,8 +488,9 @@ bool fncExecutive::ExecuteOnce(
       sources.push_back(std::make_pair(functor_codes[cc].c_str(),
           functor_codes[cc].size()));
       }
-
     sources.push_back(std::make_pair(kernel.c_str(), kernel.size()));
+
+    // Build the code.
     cl::Program program (context, sources);
     err_code = program.build(devices);
     if (err_code != CL_SUCCESS)
@@ -500,6 +501,11 @@ bool fncExecutive::ExecuteOnce(
       cout << info.c_str() << endl;
       }
     RETURN_ON_ERROR(err_code, "compile the kernel.");
+
+    // * determine the shape of the kernel invocation.
+    // * pass arguments to the kernel
+    // * invoke the kernel
+    // * read back the result
     }
 #ifdef __CL_ENABLE_EXCEPTIONS
   catch (cl::Error error)

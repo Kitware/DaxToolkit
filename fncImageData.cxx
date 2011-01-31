@@ -10,11 +10,18 @@
 #include "CoreImageData.cl.h"
 
 //-----------------------------------------------------------------------------
+struct fncImageData::OpaqueDataType
+{
+  int Dimensions[3];
+} __attribute__( (__packed__) );
+
+//-----------------------------------------------------------------------------
 fncImageData::fncImageData()
 {
   this->NumberOfComponents = 1;
   this->Dimensions[0] = this->Dimensions[1] = this->Dimensions[2] = 0;
   this->Data = NULL;
+  this->OpaqueDataPointer = new OpaqueDataType();
 }
 
 //-----------------------------------------------------------------------------
@@ -22,6 +29,23 @@ fncImageData::~fncImageData()
 {
   delete [] this->Data;
   this->Data = NULL;
+  delete this->OpaqueDataPointer;
+  this->OpaqueDataPointer = NULL;
+}
+
+//-----------------------------------------------------------------------------
+void* fncImageData::GetOpaqueDataPointer() const
+{
+  this->OpaqueDataPointer->Dimensions[0] = this->Dimensions[0];
+  this->OpaqueDataPointer->Dimensions[1] = this->Dimensions[1];
+  this->OpaqueDataPointer->Dimensions[1] = this->Dimensions[1];
+  return this->OpaqueDataPointer;
+}
+
+//-----------------------------------------------------------------------------
+size_t fncImageData::GetOpaqueDataSize() const
+{
+  return sizeof(fncImageData::OpaqueDataType);
 }
 
 //-----------------------------------------------------------------------------
