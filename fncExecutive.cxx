@@ -13,8 +13,16 @@
 #include "CorePointIterator.cl.h"
 
 // fnc headers
+#include "fncImageData.h"
 #include "fncModule.h"
+#include "fncOptions.h"
 #include "fncPort.h"
+
+// OpenCL headers
+#ifdef FNC_ENABLE_OPENCL
+//# define __CL_ENABLE_EXCEPTIONS
+# include <CL/cl.hpp>
+#endif
 
 // external headers
 #include <algorithm>
@@ -318,8 +326,10 @@ namespace fnc
   //-----------------------------------------------------------------------------
   template <class Graph>
     std::string GenerateKernel(
-      typename Graph::vertex_descriptor head, const Graph& graph)
+      typename Graph::vertex_descriptor head, const Graph& graph,
+      std::vector<std::string>& kernels)
       {
+      std::map<std::string, std::string> kernel_map;
       // The algorithm we use is as follows:
       // We treat the problem like solving a mathematical expression using operand
       // and operator stacks. Operators are iterators. And all operators are
@@ -366,26 +376,45 @@ namespace fnc
         else // if (item.IsOperand())
           {
           fncModule::Types module_type = graph[item.Operand].Module->GetType();
+          std::string module_name = graph[item.Operand].Module->GetModuleName();
+          kernel_map[module_name] = graph[item.Operand].Module->GetFunctorCode();
           switch (module_type)
             {
           case fncModule::map_field:
-            keywords["module_name"] = graph[item.Operand].Module->GetModuleName();
+            keywords["module_name"] = module_name;
             keywords["vertexid"] = (boost::format("%1%") % item.Operand).str();
             opencl_kernel = fncSubstituteKeywords(
               fncHeaderString_CoreMapField, keywords) + opencl_kernel;
+          default:
+            cout << __LINE__ << ": TODO" << endl;
             }
           }
         }
       keywords["topology_opaque_pointer"] = "opaque_data_pointer";
-      keywords["input_data_handle"] = "input_point_array";
-      keywords["output_data_handle"] = "output_point_array";
+      keywords["input_data_handle"] = "inputHandle";
+      keywords["output_data_handle"] = "outputHandle";
       keywords["body"] = opencl_kernel;
       opencl_kernel = fncSubstituteKeywords(fncHeaderString_CoreKernel, keywords);
       cout << "================================================" <<endl;
       cout << opencl_kernel.c_str() << endl;
+
+      for (std::map<std::string, std::string>::iterator
+        iter = kernel_map.begin(); iter != kernel_map.end(); ++iter)
+        {
+        kernels.push_back(iter->second);
+        }
       return opencl_kernel;
       }
 }
+
+#define RETURN_ON_ERROR(err, msg) \
+  {\
+  if (err != CL_SUCCESS)\
+    {\
+    cerr << __FILE__<<":"<<__LINE__ << endl<< "ERROR:  Failed to " << msg << endl;\
+    return false;\
+    }\
+  }
 
 //-----------------------------------------------------------------------------
 template <class Graph, class InputDataType, class OutputDataType>
@@ -397,10 +426,95 @@ bool fncExecutive::ExecuteOnce(
   // we assume there's only 1 connected graph in "graph".
   cout << "Execute sub-graph: " << head << endl;
 
+  std::vector<std::string> functor_codes;
+
   // First generate the kernel code.
-  std::string kernel = fnc::GenerateKernel(head, graph);
+  std::string kernel = fnc::GenerateKernel(head, graph, functor_codes);
+
+#ifndef FNC_ENABLE_OPENCL
+
+  cerr <<
+    "You compiled without OpenCL support. So can't really execute "
+    "anything. Here's the generated kernel. Have fun!" << endl;
+  cerr << kernel.c_str() << endl;
+  return false;
+
+#else
 
   // Now we should invoke the kernel using opencl setting up data arrays etc
   // etc.
+  std::vector<cl::Platform> platforms;
+  cl::Platform::get(&platforms);
+  if (platforms.size() == 0)
+    {
+    cout << "No OpenCL capable platforms located." << endl;
+    return false;
+    }
+
+  cl_int err_code;
+  try
+    {
+    cl::Context context(CL_DEVICE_TYPE_GPU, NULL, NULL, NULL, &err_code);
+    RETURN_ON_ERROR(err_code, "create GPU Context");
+
+    // Query devices.
+    std::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
+    if (devices.size()==0)
+      {
+      cout << "No OpenGL device located." << endl;
+      return -1;
+      }
+
+    // Allocate input and output buffers.
+    cl::Buffer inputBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
+      fncReadableDataTraits<InputDataType>::GetDataSize("mm..not, sure", input),
+      const_cast<void*>(
+        fncReadableDataTraits<InputDataType>::GetDataPointer("mm..not, sure",
+          input)),
+      /* for data sources that have multiple arrays, we need some mechanism of
+       * letting the invoker pick what arrays we are operating on */
+      &err_code);
+    RETURN_ON_ERROR(err_code, "upload input data");
+
+    std::string input_data_code = fncOpenCLTraits<InputDataType>::GetCode();
+    // Now compile the code.
+    cl::Program::Sources sources;
+    sources.push_back(std::make_pair(input_data_code.c_str(),
+        input_data_code.size()));
+
+    // push functor codes.
+    for (size_t cc=0; cc < functor_codes.size(); cc++)
+      {
+      sources.push_back(std::make_pair(functor_codes[cc].c_str(),
+          functor_codes[cc].size()));
+      }
+
+    sources.push_back(std::make_pair(kernel.c_str(), kernel.size()));
+    cl::Program program (context, sources);
+    err_code = program.build(devices);
+    if (err_code != CL_SUCCESS)
+      {
+      std::string info;
+      program.getBuildInfo(devices[0],
+        CL_PROGRAM_BUILD_LOG, &info);
+      cout << info.c_str() << endl;
+      }
+    RETURN_ON_ERROR(err_code, "compile the kernel.");
+    }
+#ifdef __CL_ENABLE_EXCEPTIONS
+  catch (cl::Error error)
+    {
+    cout << error.what() << "(" << error.err() << ")" << endl;
+    }
+#else
+  catch (...)
+    {
+    cerr << "EXCEPTION"<< endl;
+    return false;
+    }
+#endif
+
+  cout << "So far so good" << endl;
   return false;
+#endif
 }

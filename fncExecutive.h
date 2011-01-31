@@ -66,4 +66,13 @@ private:
 
 fncDefinePtrMacro(fncExecutive);
 
+#include <string>
+#include <map>
+
+namespace fnc
+{
+  std::string fncSubstituteKeywords(
+    const char* source, const std::map<std::string, std::string>& keywords);
+}
+
 #endif

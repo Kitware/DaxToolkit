@@ -1,6 +1,20 @@
 cmake_minimum_required(VERSION 2.8)
 project (Functors)
 
+# Find and import OpenCL.
+option(FNC_ENABLE_OPENCL
+  "Enable/disable OpenCL (required for any real execution)."
+  OFF)
+
+if (FNC_ENABLE_OPENCL)
+  set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/FindOpenCL")
+  find_package(OpenCL REQUIRED)
+  include_directories(${OPENCL_INCLUDE_DIRS})
+  if (NOT OPENCL_HAS_CPP_BINDINGS)
+    include_directories("${CMAKE_SOURCE_DIR}/OpenCLCpp")
+  endif()
+endif()
+
 # List of Boost features used:
 # * Smart Ptr
 # * xpressive
@@ -20,14 +34,18 @@ add_executable(fncGenerateHeaderFromFile
 target_link_libraries(fncGenerateHeaderFromFile
   ${Boost_LIBRARIES})
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fncOptions.h.in
+  ${CMAKE_CURRENT_BINARY_DIR}/fncOptions.h
+  @ONLY)
+
 function (encode_to_headers out_variable)
   set (all_headers)
   foreach(file ${ARGN})
-    SET(src ${CMAKE_CURRENT_SOURCE_DIR}/${file})
-    GET_FILENAME_COMPONENT(filename ${file} NAME)
-    SET(res ${CMAKE_CURRENT_BINARY_DIR}/${filename}.h)
+    set(src ${CMAKE_CURRENT_SOURCE_DIR}/${file})
+    get_filename_component(filename ${file} NAME)
+    set(res ${CMAKE_CURRENT_BINARY_DIR}/${filename}.h)
     list(APPEND all_headers ${res})
-    ADD_CUSTOM_COMMAND(
+    add_custom_command(
       OUTPUT ${res}
       DEPENDS ${src} fncGenerateHeaderFromFile
       COMMAND fncGenerateHeaderFromFile
@@ -45,12 +63,16 @@ set (core_kernels
   Resources/CoreKernel.cl
   Resources/CoreMapField.cl
   Resources/CorePointIterator.cl
+  Resources/CoreImageData.cl
 )
 
+set (generated_headers_core)
+encode_to_headers(generated_headers_core
+  ${core_kernels}
+  )
 set (generated_headers)
 encode_to_headers(generated_headers
   ${functor_modules}
-  ${core_kernels}
   )
 #message ("Headers: ${generated_headers}")
 
@@ -69,16 +91,28 @@ add_library(fncFramework SHARED
   fncObject.h
   fncPort.cxx
   fncPort.h
+  ${generated_headers_core}
 )
 
 target_link_libraries(fncFramework
-  ${Boost_LIBRARIES})
+  ${Boost_LIBRARIES}
+  )
+
+if(FNC_ENABLE_OPENCL)
+  target_link_libraries(fncFramework ${OPENCL_LIBRARIES})
+endif()
+
+foreach (file ${generated_headers_core})
+  set_source_files_properties(fncObject.h
+    PROPERTIES OBJECT_DEPENDS ${file})
+endforeach()
 
 # Add executables, mostly testing samples
 add_executable(fncTest
   fncTest.cxx
   ${generated_headers}
   )
+
 foreach (file ${generated_headers})
   set_source_files_properties(fncTest.cxx
     PROPERTIES OBJECT_DEPENDS ${file})

@@ -7,6 +7,7 @@
 =========================================================================*/
 #include "fncImageData.h"
 
+#include "CoreImageData.cl.h"
 
 //-----------------------------------------------------------------------------
 fncImageData::fncImageData()
@@ -61,4 +62,13 @@ float* fncImageData::GetDataPointer(int x, int y, int z)
 const int* fncImageData::GetDimensions() const
 {
   return this->Dimensions;
+}
+
+
+namespace fncImageDataInternals
+{
+  std::string GetOpenCLCode()
+    {
+    return fncHeaderString_CoreImageData;
+    }
 }

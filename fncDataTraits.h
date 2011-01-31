@@ -12,14 +12,36 @@ template <typename T>
 struct fncReadableDataTraits
 {
   /// Returns the raw data-pointer.
-  static const void* GetDataPointer(const char* data_array_name, T* data) { return NULL;}
+  static const void* GetDataPointer(const char* data_array_name, const T* data)
+    {
+    (void)data_array_name;
+    (void)data;
+    return NULL;
+    }
 
   /// Returns the buffer size in bytes.
-  static size_t GetDataSize(const char* data_array_name, const T* data) { return 0; }
+  static size_t GetDataSize(const char* data_array_name, const T* data)
+    {
+    (void)data_array_name;
+    (void)data;
+    return 0;
+    }
 };
 
 
 template <typename T>
 struct fncWriteableDataTraits
 {
+};
+
+
+template <typename T>
+struct fncOpenCLTraits
+{
+  /// Returns the OpenCL code defining different datatypes and iterator
+  /// functions.
+  static std::string GetCode()
+    {
+    return std::string();
+    }
 };

@@ -23,6 +23,8 @@ public:
   /// named arrays.
   float* GetData()
     { return this->Data; }
+  const float* GetData() const
+    { return this->Data; }
 
   float* GetDataPointer(int x, int y, int z);
 
@@ -58,7 +60,7 @@ template <>
 struct fncReadableDataTraits<fncImageData>
 {
   /// Returns the raw data-pointer.
-  static const void* GetDataPointer(const char*, fncImageData* data)
+  static const void* GetDataPointer(const char*, const fncImageData* data)
     { return data->GetData(); }
 
   /// Returns the buffer size in bytes.
@@ -69,4 +71,17 @@ struct fncReadableDataTraits<fncImageData>
     }
 };
 
+namespace fncImageDataInternals
+{
+  std::string GetOpenCLCode();
+};
+
+template <>
+struct fncOpenCLTraits<fncImageData>
+{
+  /// Returns the OpenCL code defining different datatypes and iterator
+  /// functions.
+  static std::string GetCode()
+    { return fncImageDataInternals::GetOpenCLCode(); }
+};
 #endif
