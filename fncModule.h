@@ -10,8 +10,10 @@
 
 #include "fncObject.h"
 
+#ifndef SKIP_DOXYGEN
 class fncPort;
 fncDefinePtrMacro(fncPort)
+#endif
 
 /// fncModule defines a module. Modules are required to define functors and
 /// connect them in pipelines. Typically modules are auto-generated using
