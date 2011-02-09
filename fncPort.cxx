@@ -20,7 +20,7 @@ fncPort::~fncPort()
 }
 
 //-----------------------------------------------------------------------------
-std::string fncPort::GetName()
+std::string fncPort::GetName() const
 {
   return this->Name;
 }
@@ -32,7 +32,7 @@ void fncPort::SetName(const std::string &name)
 }
 
 //-----------------------------------------------------------------------------
-int fncPort::GetType()
+int fncPort::GetType() const
 {
   return this->Type;
 }
@@ -44,7 +44,7 @@ void fncPort::SetType(int type)
 }
 
 //-----------------------------------------------------------------------------
-int fncPort::GetNumberOfComponents()
+int fncPort::GetNumberOfComponents() const
 {
   return this->NumberOfComponents;
 }
@@ -56,7 +56,7 @@ void fncPort::SetNumberOfComponents(int num)
 }
 
 //-----------------------------------------------------------------------------
-bool fncPort::CanSourceFrom(fncPort* sourcePort)
+bool fncPort::CanSourceFrom(const fncPort* sourcePort) const
 {
   if (sourcePort->GetNumberOfComponents() != this->GetNumberOfComponents())
     {

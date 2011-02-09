@@ -67,13 +67,13 @@ void fncModule::SetOutputPort(size_t index, fncPortPtr port)
 }
 
 //-----------------------------------------------------------------------------
-size_t fncModule::GetNumberOfInputs()
+size_t fncModule::GetNumberOfInputs() const
 {
   return this->Internals->InputPorts.size();
 }
 
 //-----------------------------------------------------------------------------
-std::string fncModule::GetInputPortName(size_t index)
+std::string fncModule::GetInputPortName(size_t index) const
 {
   if (this->Internals->OutputPorts.size() <= index)
     {
@@ -84,7 +84,7 @@ std::string fncModule::GetInputPortName(size_t index)
 }
 
 //-----------------------------------------------------------------------------
-fncPortPtr fncModule::GetInputPort(size_t index)
+fncPortPtr fncModule::GetInputPort(size_t index) const
 {
   if (this->Internals->OutputPorts.size() <= index)
     {
@@ -95,7 +95,7 @@ fncPortPtr fncModule::GetInputPort(size_t index)
 }
 
 //-----------------------------------------------------------------------------
-fncPortPtr fncModule::GetInputPort(const std::string& portname)
+fncPortPtr fncModule::GetInputPort(const std::string& portname) const
 {
   fncInternals::PortsCollectionType::iterator iter;
   for (iter = this->Internals->InputPorts.begin();
@@ -111,13 +111,13 @@ fncPortPtr fncModule::GetInputPort(const std::string& portname)
 }
 
 //-----------------------------------------------------------------------------
-size_t fncModule::GetNumberOfOutputs()
+size_t fncModule::GetNumberOfOutputs() const
 {
   return this->Internals->OutputPorts.size();
 }
 
 //-----------------------------------------------------------------------------
-std::string fncModule::GetOutputPortName(size_t index)
+std::string fncModule::GetOutputPortName(size_t index) const
 {
   if (this->Internals->OutputPorts.size() <= index)
     {
@@ -128,7 +128,7 @@ std::string fncModule::GetOutputPortName(size_t index)
 }
 
 //-----------------------------------------------------------------------------
-fncPortPtr fncModule::GetOutputPort(size_t index)
+fncPortPtr fncModule::GetOutputPort(size_t index) const
 {
   if (this->Internals->OutputPorts.size() <= index)
     {
@@ -139,7 +139,7 @@ fncPortPtr fncModule::GetOutputPort(size_t index)
 }
 
 //-----------------------------------------------------------------------------
-fncPortPtr fncModule::GetOutputPort(const std::string& portname)
+fncPortPtr fncModule::GetOutputPort(const std::string& portname) const
 {
   fncInternals::PortsCollectionType::iterator iter;
   for (iter = this->Internals->OutputPorts.begin();

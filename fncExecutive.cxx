@@ -104,8 +104,8 @@ fncExecutive::~fncExecutive()
 
 //-----------------------------------------------------------------------------
 bool fncExecutive::Connect(
-  fncModulePtr sourceModule, const std::string& sourcename,
-  fncModulePtr sinkModule, const std::string& sinkname)
+  const fncModulePtr sourceModule, const std::string& sourcename,
+  const fncModulePtr sinkModule, const std::string& sinkname)
 {
   return this->Connect(sourceModule, sourceModule->GetOutputPort(sourcename),
     sinkModule, sinkModule->GetInputPort(sinkname));
@@ -113,8 +113,8 @@ bool fncExecutive::Connect(
 
 //-----------------------------------------------------------------------------
 bool fncExecutive::Connect(
-  fncModulePtr sourceModule, fncPortPtr sourcePort,
-  fncModulePtr sinkModule, fncPortPtr sinkPort)
+  const fncModulePtr sourceModule, const fncPortPtr sourcePort,
+  const fncModulePtr sinkModule, const fncPortPtr sinkPort)
 {
   assert(sourceModule && sourcePort && sinkModule && sinkPort);
   assert(sourceModule != sinkModule);

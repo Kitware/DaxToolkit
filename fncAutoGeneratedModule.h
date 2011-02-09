@@ -39,13 +39,13 @@ public:
   bool Initialize(const std::string& definition);
 
   /// Returns the name for this module.
-  virtual const std::string& GetModuleName();
+  virtual const std::string& GetModuleName() const;
 
   /// Returns the functor code.
-  virtual const std::string& GetFunctorCode();
+  virtual const std::string& GetFunctorCode() const;
 
   /// Returns the type for the module.
-  virtual Types GetType()
+  virtual Types GetType() const
     { return this->Type; }
 
 protected:

@@ -26,36 +26,36 @@ public:
   fncTypeMacro(fncModule, fncObject);
 
   /// Returns the name for this module.
-  virtual const std::string& GetModuleName() = 0;
+  virtual const std::string& GetModuleName() const = 0;
 
   /// Returns the functor code.
-  virtual const std::string& GetFunctorCode() = 0;
+  virtual const std::string& GetFunctorCode() const = 0;
 
   /// Returns the number of inputs needed by this module.
-  virtual size_t GetNumberOfInputs();
+  virtual size_t GetNumberOfInputs() const;
 
   /// Returns the name of the input port at the given index.
-  virtual std::string GetInputPortName(size_t index);
+  virtual std::string GetInputPortName(size_t index) const;
 
   /// Returns the input information information object for the particular input.
   /// Returns NULL if the index is out-of-range.
-  virtual fncPortPtr GetInputPort(size_t index);
+  virtual fncPortPtr GetInputPort(size_t index) const;
 
   /// Returns the input port information given the name of the port.
-  virtual fncPortPtr GetInputPort(const std::string& portname);
+  virtual fncPortPtr GetInputPort(const std::string& portname) const;
 
   /// Returns the number of outputs needed by this module.
-  virtual size_t GetNumberOfOutputs();
+  virtual size_t GetNumberOfOutputs() const;
 
   /// Returns the name of the output port at the given index.
-  virtual std::string GetOutputPortName(size_t index);
+  virtual std::string GetOutputPortName(size_t index) const;
 
   /// Returns the output information information object for the particular output.
   /// Returns NULL if the index is out-of-range.
-  virtual fncPortPtr GetOutputPort(size_t index);
+  virtual fncPortPtr GetOutputPort(size_t index) const;
 
   /// Returns the output port information given the name of the port.
-  virtual fncPortPtr GetOutputPort(const std::string& portname);
+  virtual fncPortPtr GetOutputPort(const std::string& portname) const;
 
   enum Types
     {
@@ -66,7 +66,7 @@ public:
     };
 
   /// Returns the type for the module.
-  virtual Types GetType()=0;
+  virtual Types GetType() const = 0;
 
 protected:
 

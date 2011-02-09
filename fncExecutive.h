@@ -38,11 +38,11 @@ public:
 
   /// Register a connection. Returns true if the connection was setup correctly.
   bool Connect(
-    fncModulePtr sourceModule, fncPortPtr sourcePort,
-    fncModulePtr sinkModule, fncPortPtr sinkPort);
+    const fncModulePtr sourceModule, const fncPortPtr sourcePort,
+    const fncModulePtr sinkModule, const fncPortPtr sinkPort);
   bool Connect(
-    fncModulePtr sourceModule, const std::string& sourcename,
-    fncModulePtr sinkModule, const std::string& sinkname);
+    const fncModulePtr sourceModule, const std::string& sourcename,
+    const fncModulePtr sinkModule, const std::string& sinkname);
 
   /// Resets the executive. This is the only way to break connections until we
   /// start supporting de-connecting.

@@ -21,20 +21,20 @@ public:
   fncTypeMacro(fncPort, fncObject);
 
   /// Get/Set the port name.
-  std::string GetName();
+  std::string GetName() const;
   void SetName(const std::string &name);
 
   /// Get/Set the port type.
-  int GetType();
+  int GetType() const;
   void SetType(int);
 
   /// Get/Set the number of components.
-  int GetNumberOfComponents();
+  int GetNumberOfComponents() const;
   void SetNumberOfComponents(int);
 
   /// Returns true if this fncPort can be connected as a sink to the \c
   /// sourcePort.
-  bool CanSourceFrom(fncPort* sourcePort);
+  bool CanSourceFrom(const fncPort* sourcePort) const;
 
   enum Types
     {
