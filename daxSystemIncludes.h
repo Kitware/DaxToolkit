@@ -6,8 +6,8 @@
 
 =========================================================================*/
 
-#ifndef __fncSystemIncludes_h
-#define __fncSystemIncludes_h
+#ifndef __daxSystemIncludes_h
+#define __daxSystemIncludes_h
 
 # include <iostream>  // Include real ansi istream and ostream.
 # include <fstream>   // Include real ansi ifstream and ofstream.

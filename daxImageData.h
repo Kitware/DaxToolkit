@@ -5,19 +5,19 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __fncImageData_h
-#define __fncImageData_h
+#ifndef __daxImageData_h
+#define __daxImageData_h
 
-#include "fncObject.h"
+#include "daxObject.h"
 
-/// fncImageData represents a uniform-rectilinear grid with data-values at each
+/// daxImageData represents a uniform-rectilinear grid with data-values at each
 /// grid point.
-class fncImageData : public fncObject
+class daxImageData : public daxObject
 {
 public:
-  fncImageData();
-  virtual ~fncImageData();
-  fncTypeMacro(fncImageData, fncObject);
+  daxImageData();
+  virtual ~daxImageData();
+  daxTypeMacro(daxImageData, daxObject);
 
   /// Get the data-values at each grid point. For now we do not support
   /// named arrays.
@@ -52,50 +52,50 @@ protected:
   float* Data;
 
 private:
-  fncDisableCopyMacro(fncImageData);
+  daxDisableCopyMacro(daxImageData);
   struct OpaqueDataType;
   OpaqueDataType* OpaqueDataPointer;
 };
 
-/// declares fncImageDataPtr.
-fncDefinePtrMacro(fncImageData);
+/// declares daxImageDataPtr.
+daxDefinePtrMacro(daxImageData);
 
 /// Implement data-traits.
-#include "fncDataTraits.h"
+#include "daxDataTraits.h"
 
 template <>
-struct fncReadableDataTraits<fncImageData>
+struct daxReadableDataTraits<daxImageData>
 {
   /// Returns the raw data-pointer.
-  static const void* GetDataPointer(const char*, const fncImageData* data)
+  static const void* GetDataPointer(const char*, const daxImageData* data)
     { return data->GetData(); }
 
   /// Returns the buffer size in bytes.
-  static size_t GetDataSize(const char*, const fncImageData* data)
+  static size_t GetDataSize(const char*, const daxImageData* data)
     {
     return data->GetDimensions()[0] * data->GetDimensions()[1] *
       data->GetDimensions()[2] * data->GetNumberOfComponents() * sizeof(float);
     }
 };
 
-namespace fncImageDataInternals
+namespace daxImageDataInternals
 {
   std::string GetOpenCLCode();
 };
 
 template <>
-struct fncOpenCLTraits<fncImageData>
+struct daxOpenCLTraits<daxImageData>
 {
   /// Returns the OpenCL code defining different datatypes and iterator
   /// functions.
   static std::string GetCode()
-    { return fncImageDataInternals::GetOpenCLCode(); }
+    { return daxImageDataInternals::GetOpenCLCode(); }
 
   /// These are used to obtain the host data-structure for \c opaque_data_type
   /// instance that's passed to the OpenCL kernel.
-  static void* GetOpaqueDataPointer(const fncImageData* data)
+  static void* GetOpaqueDataPointer(const daxImageData* data)
     { return data->GetOpaqueDataPointer(); }
-  static size_t GetOpaqueDataSize(const fncImageData* data)
+  static size_t GetOpaqueDataSize(const daxImageData* data)
     { return data->GetOpaqueDataSize(); }
 };
 #endif

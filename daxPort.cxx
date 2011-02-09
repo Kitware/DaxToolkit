@@ -5,58 +5,58 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "fncPort.h"
+#include "daxPort.h"
 
 //-----------------------------------------------------------------------------
-fncPort::fncPort()
+daxPort::daxPort()
 {
   this->Type = invalid;
   this->NumberOfComponents = 0;
 }
 
 //-----------------------------------------------------------------------------
-fncPort::~fncPort()
+daxPort::~daxPort()
 {
 }
 
 //-----------------------------------------------------------------------------
-std::string fncPort::GetName() const
+std::string daxPort::GetName() const
 {
   return this->Name;
 }
 
 //-----------------------------------------------------------------------------
-void fncPort::SetName(const std::string &name)
+void daxPort::SetName(const std::string &name)
 {
   this->Name = name;
 }
 
 //-----------------------------------------------------------------------------
-int fncPort::GetType() const
+int daxPort::GetType() const
 {
   return this->Type;
 }
 
 //-----------------------------------------------------------------------------
-void fncPort::SetType(int type)
+void daxPort::SetType(int type)
 {
   this->Type = type;
 }
 
 //-----------------------------------------------------------------------------
-int fncPort::GetNumberOfComponents() const
+int daxPort::GetNumberOfComponents() const
 {
   return this->NumberOfComponents;
 }
 
 //-----------------------------------------------------------------------------
-void fncPort::SetNumberOfComponents(int num)
+void daxPort::SetNumberOfComponents(int num)
 {
   this->NumberOfComponents = num;
 }
 
 //-----------------------------------------------------------------------------
-bool fncPort::CanSourceFrom(const fncPort* sourcePort) const
+bool daxPort::CanSourceFrom(const daxPort* sourcePort) const
 {
   if (sourcePort->GetNumberOfComponents() != this->GetNumberOfComponents())
     {

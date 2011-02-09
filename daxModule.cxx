@@ -5,41 +5,41 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "fncModule.h"
+#include "daxModule.h"
 
-#include "fncPort.h"
+#include "daxPort.h"
 
 #include <vector>
 
-class fncModule::fncInternals
+class daxModule::daxInternals
 {
 public:
-  typedef std::vector<fncPortPtr> PortsCollectionType;
+  typedef std::vector<daxPortPtr> PortsCollectionType;
   PortsCollectionType InputPorts;
   PortsCollectionType OutputPorts;
 };
 
 //-----------------------------------------------------------------------------
-fncModule::fncModule()
+daxModule::daxModule()
 {
-  this->Internals = new fncInternals();
+  this->Internals = new daxInternals();
 }
 
 //-----------------------------------------------------------------------------
-fncModule::~fncModule()
+daxModule::~daxModule()
 {
   delete this->Internals;
   this->Internals = NULL;
 }
 
 //-----------------------------------------------------------------------------
-void fncModule::SetNumberOfInputs(size_t count)
+void daxModule::SetNumberOfInputs(size_t count)
 {
   this->Internals->InputPorts.resize(count);
 }
 
 //-----------------------------------------------------------------------------
-void fncModule::SetInputPort(size_t index, fncPortPtr port)
+void daxModule::SetInputPort(size_t index, daxPortPtr port)
 {
   if (this->Internals->InputPorts.size() <= index)
     {
@@ -50,13 +50,13 @@ void fncModule::SetInputPort(size_t index, fncPortPtr port)
 }
 
 //-----------------------------------------------------------------------------
-void fncModule::SetNumberOfOutputs(size_t count)
+void daxModule::SetNumberOfOutputs(size_t count)
 {
   this->Internals->OutputPorts.resize(count);
 }
 
 //-----------------------------------------------------------------------------
-void fncModule::SetOutputPort(size_t index, fncPortPtr port)
+void daxModule::SetOutputPort(size_t index, daxPortPtr port)
 {
   if (this->Internals->OutputPorts.size() <= index)
     {
@@ -67,13 +67,13 @@ void fncModule::SetOutputPort(size_t index, fncPortPtr port)
 }
 
 //-----------------------------------------------------------------------------
-size_t fncModule::GetNumberOfInputs() const
+size_t daxModule::GetNumberOfInputs() const
 {
   return this->Internals->InputPorts.size();
 }
 
 //-----------------------------------------------------------------------------
-std::string fncModule::GetInputPortName(size_t index) const
+std::string daxModule::GetInputPortName(size_t index) const
 {
   if (this->Internals->OutputPorts.size() <= index)
     {
@@ -84,20 +84,20 @@ std::string fncModule::GetInputPortName(size_t index) const
 }
 
 //-----------------------------------------------------------------------------
-fncPortPtr fncModule::GetInputPort(size_t index) const
+daxPortPtr daxModule::GetInputPort(size_t index) const
 {
   if (this->Internals->OutputPorts.size() <= index)
     {
-    return fncPortPtr();
+    return daxPortPtr();
     }
 
   return this->Internals->InputPorts[index];
 }
 
 //-----------------------------------------------------------------------------
-fncPortPtr fncModule::GetInputPort(const std::string& portname) const
+daxPortPtr daxModule::GetInputPort(const std::string& portname) const
 {
-  fncInternals::PortsCollectionType::iterator iter;
+  daxInternals::PortsCollectionType::iterator iter;
   for (iter = this->Internals->InputPorts.begin();
     iter != this->Internals->InputPorts.end();
     iter++)
@@ -107,17 +107,17 @@ fncPortPtr fncModule::GetInputPort(const std::string& portname) const
       return *iter;
       }
     }
-  return fncPortPtr();
+  return daxPortPtr();
 }
 
 //-----------------------------------------------------------------------------
-size_t fncModule::GetNumberOfOutputs() const
+size_t daxModule::GetNumberOfOutputs() const
 {
   return this->Internals->OutputPorts.size();
 }
 
 //-----------------------------------------------------------------------------
-std::string fncModule::GetOutputPortName(size_t index) const
+std::string daxModule::GetOutputPortName(size_t index) const
 {
   if (this->Internals->OutputPorts.size() <= index)
     {
@@ -128,20 +128,20 @@ std::string fncModule::GetOutputPortName(size_t index) const
 }
 
 //-----------------------------------------------------------------------------
-fncPortPtr fncModule::GetOutputPort(size_t index) const
+daxPortPtr daxModule::GetOutputPort(size_t index) const
 {
   if (this->Internals->OutputPorts.size() <= index)
     {
-    return fncPortPtr();
+    return daxPortPtr();
     }
 
   return this->Internals->OutputPorts[index];
 }
 
 //-----------------------------------------------------------------------------
-fncPortPtr fncModule::GetOutputPort(const std::string& portname) const
+daxPortPtr daxModule::GetOutputPort(const std::string& portname) const
 {
-  fncInternals::PortsCollectionType::iterator iter;
+  daxInternals::PortsCollectionType::iterator iter;
   for (iter = this->Internals->OutputPorts.begin();
     iter != this->Internals->OutputPorts.end();
     iter++)
@@ -151,5 +151,5 @@ fncPortPtr fncModule::GetOutputPort(const std::string& portname) const
       return *iter;
       }
     }
-  return fncPortPtr();
+  return daxPortPtr();
 }

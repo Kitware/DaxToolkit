@@ -5,44 +5,44 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __fncExecutive_h
-#define __fncExecutive_h
+#ifndef __daxExecutive_h
+#define __daxExecutive_h
 
-#include "fncObject.h"
+#include "daxObject.h"
 
-class fncImageData;
-class fncModule;
-class fncPort;
-fncDefinePtrMacro(fncImageData);
-fncDefinePtrMacro(fncModule);
-fncDefinePtrMacro(fncPort);
+class daxImageData;
+class daxModule;
+class daxPort;
+daxDefinePtrMacro(daxImageData);
+daxDefinePtrMacro(daxModule);
+daxDefinePtrMacro(daxPort);
 
-/// fncExecutive is the executive. One typically creates a single executive and
+/// daxExecutive is the executive. One typically creates a single executive and
 /// then registers module connections with that execute. To trigger an
-/// execution, one finally calls fncExecutive::Execute().
+/// execution, one finally calls daxExecutive::Execute().
 ///
 /// In the first pass, we are only going to work with uniform-rectilinear grids.
 /// So we provide explicit API to set the grid to work on. In future that will
 /// change. We need to spend more time on the data-model, but we'll do that
 /// later.
-class fncExecutive : public fncObject
+class daxExecutive : public daxObject
 {
 public:
-  fncExecutive();
-  virtual ~fncExecutive();
-  fncTypeMacro(fncExecutive, fncObject);
+  daxExecutive();
+  virtual ~daxExecutive();
+  daxTypeMacro(daxExecutive, daxObject);
 
   /// Executes the pipelines. Return false if there's some error.
   /// Initially, we'll assume 1 input and 1 output with only 1 pipeline defined.
-  bool Execute(const fncImageData* input, fncImageData* output);
+  bool Execute(const daxImageData* input, daxImageData* output);
 
   /// Register a connection. Returns true if the connection was setup correctly.
   bool Connect(
-    const fncModulePtr sourceModule, const fncPortPtr sourcePort,
-    const fncModulePtr sinkModule, const fncPortPtr sinkPort);
+    const daxModulePtr sourceModule, const daxPortPtr sourcePort,
+    const daxModulePtr sinkModule, const daxPortPtr sinkPort);
   bool Connect(
-    const fncModulePtr sourceModule, const std::string& sourcename,
-    const fncModulePtr sinkModule, const std::string& sinkname);
+    const daxModulePtr sourceModule, const std::string& sourcename,
+    const daxModulePtr sinkModule, const std::string& sinkname);
 
   /// Resets the executive. This is the only way to break connections until we
   /// start supporting de-connecting.
@@ -58,20 +58,20 @@ protected:
       const InputDataType* input, OutputDataType* output);
 
 private:
-  fncDisableCopyMacro(fncExecutive);
+  daxDisableCopyMacro(daxExecutive);
 
-  class fncInternals;
-  fncInternals* Internals;
+  class daxInternals;
+  daxInternals* Internals;
 };
 
-fncDefinePtrMacro(fncExecutive);
+daxDefinePtrMacro(daxExecutive);
 
 #include <string>
 #include <map>
 
-namespace fnc
+namespace dax
 {
-  std::string fncSubstituteKeywords(
+  std::string daxSubstituteKeywords(
     const char* source, const std::map<std::string, std::string>& keywords);
 }
 

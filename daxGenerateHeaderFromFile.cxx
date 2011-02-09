@@ -6,7 +6,7 @@
 
 =========================================================================*/
 // Simple program to generate a C++ header file from a file.
-#include "fncSystemIncludes.h"
+#include "daxSystemIncludes.h"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
@@ -125,7 +125,7 @@ int main(int argc, char**argv)
         "=========================================================================*/\n"
         "// **** Generated from :\n// " << input_files[cc].c_str() << "\n"
         "\n"
-        "static const char* fncHeaderString_" << name.c_str() << " =\n\"";
+        "static const char* daxHeaderString_" << name.c_str() << " =\n\"";
       while (infile.good())
         {
         char ch;

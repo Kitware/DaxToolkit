@@ -5,18 +5,18 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "fncExecutive.h"
+#include "daxExecutive.h"
 
 // Generated headers.
 #include "CoreKernel.cl.h"
 #include "CoreMapField.cl.h"
 #include "CorePointIterator.cl.h"
 
-// fnc headers
-#include "fncImageData.h"
-#include "fncModule.h"
-#include "fncOptions.h"
-#include "fncPort.h"
+// dax headers
+#include "daxImageData.h"
+#include "daxModule.h"
+#include "daxOptions.h"
+#include "daxPort.h"
 
 // OpenCL headers
 #ifdef FNC_ENABLE_OPENCL
@@ -38,20 +38,20 @@
 #include <boost/graph/reverse_graph.hpp>
 #include <utility>                   // for std::pair
 
-class fncExecutive::fncInternals
+class daxExecutive::daxInternals
 {
 public:
   /// Meta-data stored with each vertex in the graph.
   struct VertexProperty
     {
-    fncModulePtr Module;
+    daxModulePtr Module;
     };
 
   /// Meta-data stored with each edge in the graph.
   struct EdgeProperty
     {
-    fncPortPtr ProducerPort;
-    fncPortPtr ConsumerPort;
+    daxPortPtr ProducerPort;
+    daxPortPtr ConsumerPort;
     };
 
   typedef boost::adjacency_list<boost::vecS,
@@ -69,7 +69,7 @@ public:
   Graph Connectivity;
 };
 
-namespace fnc
+namespace dax
 {
   /// Fills up \c heads with the vertex ids for vertices with in-degree==0.
   template <class GraphType>
@@ -90,31 +90,31 @@ namespace fnc
 }
 
 //-----------------------------------------------------------------------------
-fncExecutive::fncExecutive()
+daxExecutive::daxExecutive()
 {
-  this->Internals = new fncInternals();
+  this->Internals = new daxInternals();
 }
 
 //-----------------------------------------------------------------------------
-fncExecutive::~fncExecutive()
+daxExecutive::~daxExecutive()
 {
   delete this->Internals;
   this->Internals = NULL;
 }
 
 //-----------------------------------------------------------------------------
-bool fncExecutive::Connect(
-  const fncModulePtr sourceModule, const std::string& sourcename,
-  const fncModulePtr sinkModule, const std::string& sinkname)
+bool daxExecutive::Connect(
+  const daxModulePtr sourceModule, const std::string& sourcename,
+  const daxModulePtr sinkModule, const std::string& sinkname)
 {
   return this->Connect(sourceModule, sourceModule->GetOutputPort(sourcename),
     sinkModule, sinkModule->GetInputPort(sinkname));
 }
 
 //-----------------------------------------------------------------------------
-bool fncExecutive::Connect(
-  const fncModulePtr sourceModule, const fncPortPtr sourcePort,
-  const fncModulePtr sinkModule, const fncPortPtr sinkPort)
+bool daxExecutive::Connect(
+  const daxModulePtr sourceModule, const daxPortPtr sourcePort,
+  const daxModulePtr sinkModule, const daxPortPtr sinkPort)
 {
   assert(sourceModule && sourcePort && sinkModule && sinkPort);
   assert(sourceModule != sinkModule);
@@ -122,15 +122,15 @@ bool fncExecutive::Connect(
   // * Validate that their types match up.
   if (sinkPort->CanSourceFrom(sourcePort.get()) == false)
     {
-    fncErrorMacro("Incompatible port types");
+    daxErrorMacro("Incompatible port types");
     return false;
     }
 
-  fncInternals::Graph::vertex_descriptor sourceVertex, sinkVertex;
+  daxInternals::Graph::vertex_descriptor sourceVertex, sinkVertex;
 
   // Need to find the vertex for sourceModule and add a new one only if none was
   // found.
-  std::pair<fncInternals::VertexIterator, fncInternals::VertexIterator> viter =
+  std::pair<daxInternals::VertexIterator, daxInternals::VertexIterator> viter =
       boost::vertices(this->Internals->Connectivity);
   sourceVertex = sinkVertex = *viter.second;
   for (; viter.first != viter.second &&
@@ -159,10 +159,10 @@ bool fncExecutive::Connect(
     }
 
   // Now add the egde, unless it already exists.
-  fncInternals::EdgeIterator start, end;
+  daxInternals::EdgeIterator start, end;
   // using boost::tie instead of std::pair to achieve the same effect.
   boost::tie(start, end) = boost::edges(this->Internals->Connectivity);
-  fncInternals::Graph::edge_descriptor edge = *end;
+  daxInternals::Graph::edge_descriptor edge = *end;
   for (; start != end && edge == *end; start++)
     {
     if (this->Internals->Connectivity[*start].ProducerPort == sourcePort &&
@@ -183,13 +183,13 @@ bool fncExecutive::Connect(
 }
 
 //-----------------------------------------------------------------------------
-void fncExecutive::Reset()
+void daxExecutive::Reset()
 {
-  this->Internals->Connectivity = fncInternals::Graph();
+  this->Internals->Connectivity = daxInternals::Graph();
 }
 
 //-----------------------------------------------------------------------------
-bool fncExecutive::Execute(const fncImageData* input, fncImageData* output)
+bool daxExecutive::Execute(const daxImageData* input, daxImageData* output)
 {
   cout << endl << "--------------------------" << endl;
   cout << "Connectivity Graph: " << endl;
@@ -199,8 +199,8 @@ bool fncExecutive::Execute(const fncImageData* input, fncImageData* output)
   // Every sink becomes a separate kernel.
 
   // Locate sinks. Sinks are nodes in the dependency graph with in-degree of 0.
-  std::vector<fncInternals::Graph::vertex_descriptor> sinks;
-  fnc::get_heads(sinks, this->Internals->Connectivity);
+  std::vector<daxInternals::Graph::vertex_descriptor> sinks;
+  dax::get_heads(sinks, this->Internals->Connectivity);
 
   // Now we process each sub-graph rooted at each sink separately, create
   // separate kernels and executing them individually.
@@ -209,8 +209,8 @@ bool fncExecutive::Execute(const fncImageData* input, fncImageData* output)
   // error. I am just letting myself get a little carried away with boost::bind
   // and std::for_each temporarily :).
   std::for_each(sinks.begin(), sinks.end(),
-    boost::bind(&fncExecutive::ExecuteOnce<fncInternals::Graph, fncImageData,
-      fncImageData>,
+    boost::bind(&daxExecutive::ExecuteOnce<daxInternals::Graph, daxImageData,
+      daxImageData>,
       this, _1, this->Internals->Connectivity, input, output));
   return false;
 }
@@ -247,12 +247,12 @@ private:
     cout << "Handle: " << vertex << endl;
     assert(this->CommandStack.rbegin() != this->CommandStack.rend());
     // * Determine the type of the module.
-    fncModulePtr module = graph[vertex].Module;
-    fncModule::Types module_type = module->GetType();
+    daxModulePtr module = graph[vertex].Module;
+    daxModule::Types module_type = module->GetType();
 
     switch (module_type)
       {
-    case fncModule::map_field:
+    case daxModule::map_field:
         {
         // this operates on the same field as passed on in the input.
         StackItem top = this->CommandStack.back();
@@ -263,12 +263,12 @@ private:
         }
       break;
 
-    case fncModule::map_topology_down:
+    case daxModule::map_topology_down:
       cout << "TODO" << endl;
       abort();
       break;
 
-    case fncModule::map_topology_up:
+    case daxModule::map_topology_up:
       cout << "TODO" << endl;
       abort();
       break;
@@ -293,7 +293,7 @@ public:
     this->Type = OPERAND;
     this->Operand = vertex;
     }
-  CommandStackEntity(fncPort::Types operator_)
+  CommandStackEntity(daxPort::Types operator_)
     {
     this->Type = OPERATOR;
     this->Operator = operator_;
@@ -305,13 +305,13 @@ public:
   union
     {
     typename Graph::vertex_descriptor Operand;
-    fncPort::Types Operator;
+    daxPort::Types Operator;
     };
 };
 
-namespace fnc
+namespace dax
 {
-  std::string fncSubstituteKeywords(
+  std::string daxSubstituteKeywords(
     const char* source, const std::map<std::string, std::string>& keywords)
     {
     std::string result = source;
@@ -341,7 +341,7 @@ namespace fnc
 
       // Now based on our data-input, we push the first operator on the stack.
       // We are assuming image-data with point scalars to begin with.
-      command_stack.push_back(CommandStackEntity<Graph>(fncPort::point_array));
+      command_stack.push_back(CommandStackEntity<Graph>(daxPort::point_array));
 
       DFSVisitor<Graph, CommandStack> visitor(command_stack);
       // Do a DFS-visit starting at the head. We are assuming no fan-ins or
@@ -361,10 +361,10 @@ namespace fnc
           keywords["body"] = opencl_kernel;
           switch (item.Operator)
             {
-          case fncPort::point_array:
+          case daxPort::point_array:
               {
-              opencl_kernel = fncSubstituteKeywords(
-                fncHeaderString_CorePointIterator, keywords);
+              opencl_kernel = daxSubstituteKeywords(
+                daxHeaderString_CorePointIterator, keywords);
               }
             break;
 
@@ -375,16 +375,16 @@ namespace fnc
           }
         else // if (item.IsOperand())
           {
-          fncModule::Types module_type = graph[item.Operand].Module->GetType();
+          daxModule::Types module_type = graph[item.Operand].Module->GetType();
           std::string module_name = graph[item.Operand].Module->GetModuleName();
           kernel_map[module_name] = graph[item.Operand].Module->GetFunctorCode();
           switch (module_type)
             {
-          case fncModule::map_field:
+          case daxModule::map_field:
             keywords["module_name"] = module_name;
             keywords["vertexid"] = (boost::format("%1%") % item.Operand).str();
-            opencl_kernel = fncSubstituteKeywords(
-              fncHeaderString_CoreMapField, keywords) + opencl_kernel;
+            opencl_kernel = daxSubstituteKeywords(
+              daxHeaderString_CoreMapField, keywords) + opencl_kernel;
           default:
             cout << __LINE__ << ": TODO" << endl;
             }
@@ -394,7 +394,7 @@ namespace fnc
       keywords["input_data_handle"] = "inputHandle";
       keywords["output_data_handle"] = "outputHandle";
       keywords["body"] = opencl_kernel;
-      opencl_kernel = fncSubstituteKeywords(fncHeaderString_CoreKernel, keywords);
+      opencl_kernel = daxSubstituteKeywords(daxHeaderString_CoreKernel, keywords);
       cout << "================================================" <<endl;
       cout << opencl_kernel.c_str() << endl;
 
@@ -418,7 +418,7 @@ namespace fnc
 
 //-----------------------------------------------------------------------------
 template <class Graph, class InputDataType, class OutputDataType>
-bool fncExecutive::ExecuteOnce(
+bool daxExecutive::ExecuteOnce(
   typename Graph::vertex_descriptor head, const Graph& graph,
   const InputDataType* input, OutputDataType* output)
 {
@@ -429,7 +429,7 @@ bool fncExecutive::ExecuteOnce(
   std::vector<std::string> functor_codes;
 
   // First generate the kernel code.
-  std::string kernel = fnc::GenerateKernel(head, graph, functor_codes);
+  std::string kernel = dax::GenerateKernel(head, graph, functor_codes);
 
 #ifndef FNC_ENABLE_OPENCL
 
@@ -467,16 +467,16 @@ bool fncExecutive::ExecuteOnce(
 
     // Allocate input and output buffers.
     cl::Buffer inputBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      fncReadableDataTraits<InputDataType>::GetDataSize("mm..not, sure", input),
+      daxReadableDataTraits<InputDataType>::GetDataSize("mm..not, sure", input),
       const_cast<void*>(
-        fncReadableDataTraits<InputDataType>::GetDataPointer("mm..not, sure",
+        daxReadableDataTraits<InputDataType>::GetDataPointer("mm..not, sure",
           input)),
       /* for data sources that have multiple arrays, we need some mechanism of
        * letting the invoker pick what arrays we are operating on */
       &err_code);
     RETURN_ON_ERROR(err_code, "upload input data");
 
-    std::string input_data_code = fncOpenCLTraits<InputDataType>::GetCode();
+    std::string input_data_code = daxOpenCLTraits<InputDataType>::GetCode();
     // Now compile the code.
     cl::Program::Sources sources;
     sources.push_back(std::make_pair(input_data_code.c_str(),

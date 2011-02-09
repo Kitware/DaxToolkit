@@ -6,25 +6,25 @@
 
 =========================================================================*/
 
-#ifndef __fncObject_h
-#define __fncObject_h
+#ifndef __daxObject_h
+#define __daxObject_h
 
-#include "fncSystemIncludes.h"
-#include "fncMacros.h"
+#include "daxSystemIncludes.h"
+#include "daxMacros.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
-/// fncObject is the base class for all fncFramework classes.
-class fncObject
+/// daxObject is the base class for all daxFramework classes.
+class daxObject
 {
 public:
-  fncObject();
-  virtual ~fncObject();
+  daxObject();
+  virtual ~daxObject();
 private:
-  fncDisableCopyMacro(fncObject)
+  daxDisableCopyMacro(daxObject)
 };
 
-/// declares fncObjectPtr
-fncDefinePtrMacro(fncObject)
+/// declares daxObjectPtr
+daxDefinePtrMacro(daxObject)
 
 #endif

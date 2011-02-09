@@ -5,20 +5,20 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __fncPort_h
-#define __fncPort_h
+#ifndef __daxPort_h
+#define __daxPort_h
 
-#include "fncObject.h"
+#include "daxObject.h"
 
-/// fncPort represents an input or an output port for a module. It contains all
+/// daxPort represents an input or an output port for a module. It contains all
 /// necessary information to determine the kind of input expected on the port,
 /// the name of the port etc.
-class fncPort : public fncObject
+class daxPort : public daxObject
 {
 public:
-  fncPort();
-  virtual ~fncPort();
-  fncTypeMacro(fncPort, fncObject);
+  daxPort();
+  virtual ~daxPort();
+  daxTypeMacro(daxPort, daxObject);
 
   /// Get/Set the port name.
   std::string GetName() const;
@@ -32,9 +32,9 @@ public:
   int GetNumberOfComponents() const;
   void SetNumberOfComponents(int);
 
-  /// Returns true if this fncPort can be connected as a sink to the \c
+  /// Returns true if this daxPort can be connected as a sink to the \c
   /// sourcePort.
-  bool CanSourceFrom(const fncPort* sourcePort) const;
+  bool CanSourceFrom(const daxPort* sourcePort) const;
 
   enum Types
     {
@@ -50,9 +50,9 @@ protected:
   int NumberOfComponents;
 
 private:
-  fncDisableCopyMacro(fncPort);
+  daxDisableCopyMacro(daxPort);
 };
 
-/// declares fncPortPtr
-fncDefinePtrMacro(fncPort)
+/// declares daxPortPtr
+daxDefinePtrMacro(daxPort)
 #endif

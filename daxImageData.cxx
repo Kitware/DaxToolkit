@@ -5,18 +5,18 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "fncImageData.h"
+#include "daxImageData.h"
 
 #include "CoreImageData.cl.h"
 
 //-----------------------------------------------------------------------------
-struct fncImageData::OpaqueDataType
+struct daxImageData::OpaqueDataType
 {
   int Dimensions[3];
 } __attribute__( (__packed__) );
 
 //-----------------------------------------------------------------------------
-fncImageData::fncImageData()
+daxImageData::daxImageData()
 {
   this->NumberOfComponents = 1;
   this->Dimensions[0] = this->Dimensions[1] = this->Dimensions[2] = 0;
@@ -25,7 +25,7 @@ fncImageData::fncImageData()
 }
 
 //-----------------------------------------------------------------------------
-fncImageData::~fncImageData()
+daxImageData::~daxImageData()
 {
   delete [] this->Data;
   this->Data = NULL;
@@ -34,7 +34,7 @@ fncImageData::~fncImageData()
 }
 
 //-----------------------------------------------------------------------------
-void* fncImageData::GetOpaqueDataPointer() const
+void* daxImageData::GetOpaqueDataPointer() const
 {
   this->OpaqueDataPointer->Dimensions[0] = this->Dimensions[0];
   this->OpaqueDataPointer->Dimensions[1] = this->Dimensions[1];
@@ -43,13 +43,13 @@ void* fncImageData::GetOpaqueDataPointer() const
 }
 
 //-----------------------------------------------------------------------------
-size_t fncImageData::GetOpaqueDataSize() const
+size_t daxImageData::GetOpaqueDataSize() const
 {
-  return sizeof(fncImageData::OpaqueDataType);
+  return sizeof(daxImageData::OpaqueDataType);
 }
 
 //-----------------------------------------------------------------------------
-void fncImageData::SetDimensions(int x, int y, int z)
+void daxImageData::SetDimensions(int x, int y, int z)
 {
   if (this->Dimensions[0] != x || this->Dimensions[1] != y ||
     this->Dimensions[2] != z)
@@ -63,7 +63,7 @@ void fncImageData::SetDimensions(int x, int y, int z)
 }
 
 //-----------------------------------------------------------------------------
-void fncImageData::SetNumberOfComponents(int num)
+void daxImageData::SetNumberOfComponents(int num)
 {
   if (this->NumberOfComponents != num)
     {
@@ -75,7 +75,7 @@ void fncImageData::SetNumberOfComponents(int num)
 }
 
 //-----------------------------------------------------------------------------
-float* fncImageData::GetDataPointer(int x, int y, int z)
+float* daxImageData::GetDataPointer(int x, int y, int z)
 {
   int ijk[3] = { x, y, z};
   int dim[3] = { this->Dimensions[0], this->Dimensions[1], this->Dimensions[2]};
@@ -83,16 +83,16 @@ float* fncImageData::GetDataPointer(int x, int y, int z)
 }
 
 //-----------------------------------------------------------------------------
-const int* fncImageData::GetDimensions() const
+const int* daxImageData::GetDimensions() const
 {
   return this->Dimensions;
 }
 
 
-namespace fncImageDataInternals
+namespace daxImageDataInternals
 {
   std::string GetOpenCLCode()
     {
-    return fncHeaderString_CoreImageData;
+    return daxHeaderString_CoreImageData;
     }
 }

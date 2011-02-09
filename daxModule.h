@@ -5,27 +5,27 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __fncModule_h
-#define __fncModule_h
+#ifndef __daxModule_h
+#define __daxModule_h
 
-#include "fncObject.h"
+#include "daxObject.h"
 
 #ifndef SKIP_DOXYGEN
-class fncPort;
-fncDefinePtrMacro(fncPort)
+class daxPort;
+daxDefinePtrMacro(daxPort)
 #endif
 
-/// fncModule defines a module. Modules are required to define functors and
+/// daxModule defines a module. Modules are required to define functors and
 /// connect them in pipelines. Typically modules are auto-generated using
 /// functor source code prefixed with a module description header (MDF).
 /// Alternatively, developers can explicitly subclass this class to define
 /// modules of their own.
-class fncModule : public fncObject
+class daxModule : public daxObject
 {
 public:
-  fncModule();
-  virtual ~fncModule();
-  fncTypeMacro(fncModule, fncObject);
+  daxModule();
+  virtual ~daxModule();
+  daxTypeMacro(daxModule, daxObject);
 
   /// Returns the name for this module.
   virtual const std::string& GetModuleName() const = 0;
@@ -41,10 +41,10 @@ public:
 
   /// Returns the input information information object for the particular input.
   /// Returns NULL if the index is out-of-range.
-  virtual fncPortPtr GetInputPort(size_t index) const;
+  virtual daxPortPtr GetInputPort(size_t index) const;
 
   /// Returns the input port information given the name of the port.
-  virtual fncPortPtr GetInputPort(const std::string& portname) const;
+  virtual daxPortPtr GetInputPort(const std::string& portname) const;
 
   /// Returns the number of outputs needed by this module.
   virtual size_t GetNumberOfOutputs() const;
@@ -54,10 +54,10 @@ public:
 
   /// Returns the output information information object for the particular output.
   /// Returns NULL if the index is out-of-range.
-  virtual fncPortPtr GetOutputPort(size_t index) const;
+  virtual daxPortPtr GetOutputPort(size_t index) const;
 
   /// Returns the output port information given the name of the port.
-  virtual fncPortPtr GetOutputPort(const std::string& portname) const;
+  virtual daxPortPtr GetOutputPort(const std::string& portname) const;
 
   enum Types
     {
@@ -76,22 +76,22 @@ protected:
   void SetNumberOfInputs(size_t count);
 
   /// Add an input port information.
-  void SetInputPort(size_t index, fncPortPtr port);
+  void SetInputPort(size_t index, daxPortPtr port);
 
   /// Set the number of outputs.
   void SetNumberOfOutputs(size_t count);
 
   /// Add an output port information.
-  void SetOutputPort(size_t index, fncPortPtr port);
+  void SetOutputPort(size_t index, daxPortPtr port);
 
 private:
-  fncDisableCopyMacro(fncModule);
+  daxDisableCopyMacro(daxModule);
 
-  class fncInternals;
-  fncInternals* Internals;
+  class daxInternals;
+  daxInternals* Internals;
 };
 
-/// declares fncModulePtr
-fncDefinePtrMacro(fncModule)
+/// declares daxModulePtr
+daxDefinePtrMacro(daxModule)
 
 #endif

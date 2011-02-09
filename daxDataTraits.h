@@ -9,7 +9,7 @@
 // data types.
 
 template <typename T>
-struct fncReadableDataTraits
+struct daxReadableDataTraits
 {
   /// Returns the raw data-pointer.
   static const void* GetDataPointer(const char* data_array_name, const T* data)
@@ -30,13 +30,13 @@ struct fncReadableDataTraits
 
 
 template <typename T>
-struct fncWriteableDataTraits
+struct daxWriteableDataTraits
 {
 };
 
 
 template <typename T>
-struct fncOpenCLTraits
+struct daxOpenCLTraits
 {
   /// Returns the OpenCL code defining different datatypes and iterator
   /// functions.
