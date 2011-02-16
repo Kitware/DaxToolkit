@@ -189,7 +189,8 @@ void daxExecutive::Reset()
 }
 
 //-----------------------------------------------------------------------------
-bool daxExecutive::Execute(const daxImageData* input, daxImageData* output)
+bool daxExecutive::Execute(
+  const daxImageData* input, daxImageData* output) const
 {
   cout << endl << "--------------------------" << endl;
   cout << "Connectivity Graph: " << endl;
@@ -420,7 +421,7 @@ namespace dax
 template <class Graph, class InputDataType, class OutputDataType>
 bool daxExecutive::ExecuteOnce(
   typename Graph::vertex_descriptor head, const Graph& graph,
-  const InputDataType* input, OutputDataType* output)
+  const InputDataType* input, OutputDataType* output) const
 {
   // FIXME: now sure how to dfs over a subgraph starting with head, so for now
   // we assume there's only 1 connected graph in "graph".

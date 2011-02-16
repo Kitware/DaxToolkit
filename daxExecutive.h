@@ -34,7 +34,7 @@ public:
 
   /// Executes the pipelines. Return false if there's some error.
   /// Initially, we'll assume 1 input and 1 output with only 1 pipeline defined.
-  bool Execute(const daxImageData* input, daxImageData* output);
+  bool Execute(const daxImageData* input, daxImageData* output) const;
 
   /// Register a connection. Returns true if the connection was setup correctly.
   bool Connect(
@@ -55,7 +55,7 @@ protected:
   template <class Graph, class InputDataType, class OutputDataType>
     bool ExecuteOnce(
       typename Graph::vertex_descriptor head, const Graph& graph,
-      const InputDataType* input, OutputDataType* output);
+      const InputDataType* input, OutputDataType* output) const;
 
 private:
   daxDisableCopyMacro(daxExecutive);
