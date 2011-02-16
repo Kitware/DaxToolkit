@@ -10,13 +10,10 @@ point_iterator(&iterator_$index$, $topology_opaque_pointer$);
 for (begin_point(&iterator_$index$); !is_done_point(&iterator_$index$);
   next_point(&iterator_$index$))
 {
-  float input_temp;
+  float input_temp = get_value_point(&iterator_$index$, &$input_data_handle$);
   float output_temp;
-  input_temp = *get_data_reference_point(&iterator_$index$,
-    &$input_data_handle$);
 
   $body$
 
-  *get_data_reference_point(&iterator_$index$,
-    &$output_data_handle$) = output_temp;
+  set_value_point(&iterator_$index$, &$output_data_handle$, output_temp);
 }

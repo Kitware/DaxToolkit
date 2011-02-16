@@ -100,8 +100,7 @@ uint __flat_index(uint4 dims, uint4 ijk)
   return (ijk.z*dims.y*dims.x + ijk.y * dims.x + ijk.x);
 }
 
-__global float * get_data_reference_point(PointIterator* iter,
-  opaque_data_handle* data_handle)
+float get_value_point(PointIterator* iter, opaque_data_handle* data_handle)
 {
   if (iter->type == __GLOBAL_DATA_ITERATOR)
     {
@@ -114,12 +113,26 @@ __global float * get_data_reference_point(PointIterator* iter,
     ijk.y = iter->start_index[1] + iter->current_offset[1];
     ijk.z = iter->start_index[2] + iter->current_offset[2];
     uint flat_offset = __flat_index(dims, ijk);
-    return data_handle->global_data_pointer + flat_offset;
+    return data_handle->global_data_pointer[flat_offset];
     }
+}
 
-  // something to the following effect.
- //return &data_handle->global_data_pointer[iter->current_offset];
- return &data_handle->global_data_pointer[0];
+void set_value_point(
+  PointIterator* iter, opaque_data_handle* data_handle, float value)
+{
+  if (iter->type == __GLOBAL_DATA_ITERATOR)
+    {
+    uint4 dims;
+    dims.x = iter->data_ptr->Extents[1] - iter->data_ptr->Extents[0] + 1;
+    dims.y = iter->data_ptr->Extents[3] - iter->data_ptr->Extents[2] + 1;
+    dims.z = iter->data_ptr->Extents[5] - iter->data_ptr->Extents[4] + 1;
+    uint4 ijk;
+    ijk.x = iter->start_index[0] + iter->current_offset[0];
+    ijk.y = iter->start_index[1] + iter->current_offset[1];
+    ijk.z = iter->start_index[2] + iter->current_offset[2];
+    uint flat_offset = __flat_index(dims, ijk);
+    data_handle->global_data_pointer[flat_offset] = value;
+    }
 }
 
 void global_data_handle(opaque_data_handle* handle , __global float * buffer)
