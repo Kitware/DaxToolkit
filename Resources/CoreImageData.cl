@@ -21,9 +21,9 @@ typedef struct
 typedef struct
 {
   const opaque_data_type* data_ptr;
-  uint start_index[3];
-  uint current_offset[3];
-  uint end_offset[3];
+  uint start_index;
+  uint current_offset;
+  uint end_offset;
   int type;
 } PointIterator;
 
@@ -32,21 +32,16 @@ void point_iterator(PointIterator* iterator, const opaque_data_type data_handle)
 {
   iterator->data_ptr = &data_handle;
   iterator->type = __GLOBAL_DATA_ITERATOR;
-  iterator->start_index[0] = get_global_id(0);
-  iterator->start_index[1] = get_global_id(1);
-  iterator->start_index[2] = get_global_id(2);
-  iterator->end_offset[0] = 1;
-  iterator->end_offset[1] = 1;
-  iterator->end_offset[2] = 1;
+  iterator->start_index = get_global_id(0);
+  iterator->end_offset = 1;
+  iterator->current_offset = 0;
 }
 
 void begin_point(PointIterator *iter)
 {
   if (iter->type == __GLOBAL_DATA_ITERATOR)
     {
-    iter->current_offset[0] = 0;
-    iter->current_offset[1] = 0;
-    iter->current_offset[2] = 0;
+    iter->current_offset = 0;
     }
 }
 
@@ -54,10 +49,7 @@ bool is_done_point(PointIterator* iter)
 {
   if (iter->type == __GLOBAL_DATA_ITERATOR)
     {
-    return (
-      (iter->current_offset[0] >= iter->end_offset[0]) ||
-      (iter->current_offset[1] >= iter->end_offset[1]) ||
-      (iter->current_offset[2] >= iter->end_offset[2]));
+    return (iter->current_offset >= iter->end_offset);
     }
 
   return true;
@@ -65,54 +57,17 @@ bool is_done_point(PointIterator* iter)
 
 void next_point(PointIterator* iter)
 {
-  int4 offsets = (int4)(
-    iter->current_offset[0],
-    iter->current_offset[1],
-    iter->current_offset[2], 0);
-  int4 endoffsets = (int4)(
-    iter->end_offset[0],
-    iter->end_offset[1],
-    iter->end_offset[2], 0);
-
-  if (offsets[0] < endoffsets[0])
+  if (iter->type == __GLOBAL_DATA_ITERATOR)
     {
-    offsets[0] += 1;
-    if (offsets[0] < endoffsets[0])
-      {
-      return;
-      }
-    offsets[0] = 0;
+    iter->current_offset++;
     }
-  if (offsets[1] < endoffsets[1])
-    {
-    offsets[1] += 1;
-    if (offsets[1] < endoffsets[1])
-      {
-      return;
-      }
-    offsets[1] = 0;
-    }
-  offsets[2] += 1;
-}
-
-uint __flat_index(uint4 dims, uint4 ijk)
-{
-  return (ijk.z*dims.y*dims.x + ijk.y * dims.x + ijk.x);
 }
 
 float get_value_point(PointIterator* iter, opaque_data_handle* data_handle)
 {
   if (iter->type == __GLOBAL_DATA_ITERATOR)
     {
-    uint4 dims;
-    dims.x = iter->data_ptr->Extents[1] - iter->data_ptr->Extents[0] + 1;
-    dims.y = iter->data_ptr->Extents[3] - iter->data_ptr->Extents[2] + 1;
-    dims.z = iter->data_ptr->Extents[5] - iter->data_ptr->Extents[4] + 1;
-    uint4 ijk;
-    ijk.x = iter->start_index[0] + iter->current_offset[0];
-    ijk.y = iter->start_index[1] + iter->current_offset[1];
-    ijk.z = iter->start_index[2] + iter->current_offset[2];
-    uint flat_offset = __flat_index(dims, ijk);
+    uint flat_offset = iter->start_index + iter->current_offset;
     return data_handle->global_data_pointer[flat_offset];
     }
 }
@@ -122,15 +77,7 @@ void set_value_point(
 {
   if (iter->type == __GLOBAL_DATA_ITERATOR)
     {
-    uint4 dims;
-    dims.x = iter->data_ptr->Extents[1] - iter->data_ptr->Extents[0] + 1;
-    dims.y = iter->data_ptr->Extents[3] - iter->data_ptr->Extents[2] + 1;
-    dims.z = iter->data_ptr->Extents[5] - iter->data_ptr->Extents[4] + 1;
-    uint4 ijk;
-    ijk.x = iter->start_index[0] + iter->current_offset[0];
-    ijk.y = iter->start_index[1] + iter->current_offset[1];
-    ijk.z = iter->start_index[2] + iter->current_offset[2];
-    uint flat_offset = __flat_index(dims, ijk);
+    uint flat_offset = iter->start_index + iter->current_offset;
     data_handle->global_data_pointer[flat_offset] = value;
     }
 }
