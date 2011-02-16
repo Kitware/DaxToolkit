@@ -8,8 +8,11 @@ __kernel void main(
   __global float * input_array,
   __global float * output_array)
 {
-  opaque_data_handle inputHandle = global_data_handle(input_array);
-  opaque_data_handle outputHandle = global_data_handle(output_array);
+  opaque_data_handle inputHandle;
+  global_data_handle(&inputHandle, input_array);
+
+  opaque_data_handle outputHandle;
+  global_data_handle(&outputHandle, output_array);
 
 
 $body$
