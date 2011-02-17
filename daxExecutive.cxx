@@ -468,14 +468,22 @@ bool daxExecutive::ExecuteOnce(
 
     // Allocate input and output buffers.
     cl::Buffer inputBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      daxReadableDataTraits<InputDataType>::GetDataSize("mm..not, sure", input),
+      daxReadableDataTraits<InputDataType>::GetDataSize("mm..not sure", input),
       const_cast<void*>(
-        daxReadableDataTraits<InputDataType>::GetDataPointer("mm..not, sure",
+        daxReadableDataTraits<InputDataType>::GetDataPointer("mm..not sure",
           input)),
       /* for data sources that have multiple arrays, we need some mechanism of
        * letting the invoker pick what arrays we are operating on */
       &err_code);
     RETURN_ON_ERROR(err_code, "upload input data");
+
+    cl::Buffer outputBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR,
+      daxReadableDataTraits<OutputDataType>::GetDataSize("mm..not sure", output),
+      const_cast<void*>(
+        daxReadableDataTraits<OutputDataType>::GetDataPointer(
+          "mm..not sure", output)),
+      &err_code);
+    RETURN_ON_ERROR(err_code, "create output_buffer");
 
     std::string input_data_code = daxOpenCLTraits<InputDataType>::GetCode();
     // Now compile the code.
@@ -504,6 +512,11 @@ bool daxExecutive::ExecuteOnce(
     RETURN_ON_ERROR(err_code, "compile the kernel.");
 
     // * determine the shape of the kernel invocation.
+
+    // Kernel-shape will be decided by the output data type and the "head"
+    // functor module.
+    // For now, we simply invoke the kernel per item.
+
     // * pass arguments to the kernel
     // * invoke the kernel
     // * read back the result
