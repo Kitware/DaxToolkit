@@ -11,9 +11,12 @@ for (begin_point(&iterator_$index$); !is_done_point(&iterator_$index$);
   next_point(&iterator_$index$))
 {
   float input_temp = get_value_point(&iterator_$index$, &$input_data_handle$);
+  float real_input = input_temp;
   float output_temp;
 
   $body$
 
   set_value_point(&iterator_$index$, &$output_data_handle$, output_temp);
+  if (get_global_id(1) != 0)
+  printf ("%f ==> %f\n", real_input, output_temp);
 }

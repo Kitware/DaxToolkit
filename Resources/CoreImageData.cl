@@ -20,7 +20,7 @@ typedef struct
 
 typedef struct
 {
-  const opaque_data_type* data_ptr;
+  __global const opaque_data_type* data_ptr;
   uint start_index;
   uint current_offset;
   uint end_offset;
@@ -28,9 +28,9 @@ typedef struct
 } PointIterator;
 
 // Initializes "iterator" argument as a point iterator to iterate over global memory.
-void point_iterator(PointIterator* iterator, const opaque_data_type data_handle)
+void point_iterator(PointIterator* iterator, __global const opaque_data_type* data_handle)
 {
-  iterator->data_ptr = &data_handle;
+  iterator->data_ptr = data_handle;
   iterator->type = __GLOBAL_DATA_ITERATOR;
   iterator->start_index = get_global_id(0);
   iterator->end_offset = 1;

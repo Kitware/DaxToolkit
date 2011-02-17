@@ -12,7 +12,8 @@
 //-----------------------------------------------------------------------------
 struct daxImageData::OpaqueDataType
 {
-  int Dimensions[3];
+  int Extents[6];
+  float Spacing[3];
 } __attribute__( (__packed__) );
 
 //-----------------------------------------------------------------------------
@@ -36,9 +37,14 @@ daxImageData::~daxImageData()
 //-----------------------------------------------------------------------------
 void* daxImageData::GetOpaqueDataPointer() const
 {
-  this->OpaqueDataPointer->Dimensions[0] = this->Dimensions[0];
-  this->OpaqueDataPointer->Dimensions[1] = this->Dimensions[1];
-  this->OpaqueDataPointer->Dimensions[1] = this->Dimensions[1];
+  this->OpaqueDataPointer->Extents[0] = 0;
+  this->OpaqueDataPointer->Extents[1] = this->Dimensions[0] - 1;
+  this->OpaqueDataPointer->Extents[2] = 0;
+  this->OpaqueDataPointer->Extents[3] = this->Dimensions[1] - 1;
+  this->OpaqueDataPointer->Extents[4] = 0;
+  this->OpaqueDataPointer->Extents[5] = this->Dimensions[2] - 1;
+  this->OpaqueDataPointer->Spacing[0] = this->OpaqueDataPointer->Spacing[1] =
+    this->OpaqueDataPointer->Spacing[2] = 1.0;
   return this->OpaqueDataPointer;
 }
 

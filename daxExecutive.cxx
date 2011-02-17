@@ -22,6 +22,7 @@
 #ifdef FNC_ENABLE_OPENCL
 //# define __CL_ENABLE_EXCEPTIONS
 # include <CL/cl.hpp>
+# include "opecl_util.h"
 #endif
 
 // external headers
@@ -412,7 +413,8 @@ namespace dax
   {\
   if (err != CL_SUCCESS)\
     {\
-    cerr << __FILE__<<":"<<__LINE__ << endl<< "ERROR:  Failed to " << msg << endl;\
+    cerr << __FILE__<<":"<<__LINE__ << endl<< "ERROR("<<err<<"):  Failed to " << msg << endl;\
+    cerr << "Error Code: " << oclErrorString(err) << endl;\
     return false;\
     }\
   }
@@ -455,7 +457,13 @@ bool daxExecutive::ExecuteOnce(
   cl_int err_code;
   try
     {
+#ifdef __APPLE__
+    cout << "Using CPU device" << endl;
+    cl::Context context(CL_DEVICE_TYPE_CPU, NULL, NULL, NULL, &err_code);
+#else
+    cout << "Using GPU device" << endl;
     cl::Context context(CL_DEVICE_TYPE_GPU, NULL, NULL, NULL, &err_code);
+#endif
     RETURN_ON_ERROR(err_code, "create GPU Context");
 
     // Query devices.
@@ -465,6 +473,14 @@ bool daxExecutive::ExecuteOnce(
       cout << "No OpenGL device located." << endl;
       return -1;
       }
+
+    // Allocate opaque data pointer.
+    cl::Buffer inputDataHandle(context,
+      CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
+      daxOpenCLTraits<InputDataType>::GetOpaqueDataSize(input),
+      daxOpenCLTraits<InputDataType>::GetOpaqueDataPointer(input),
+      &err_code);
+    RETURN_ON_ERROR(err_code, "upload opaque data ptr");
 
     // Allocate input and output buffers.
     cl::Buffer inputBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
@@ -510,6 +526,9 @@ bool daxExecutive::ExecuteOnce(
       cout << info.c_str() << endl;
       }
     RETURN_ON_ERROR(err_code, "compile the kernel.");
+    
+    cl::Kernel kernel(program, "main", &err_code);
+    RETURN_ON_ERROR(err_code, "locate entry-point 'main'.");
 
     // * determine the shape of the kernel invocation.
 
@@ -518,6 +537,36 @@ bool daxExecutive::ExecuteOnce(
     // For now, we simply invoke the kernel per item.
 
     // * pass arguments to the kernel
+
+    err_code = kernel.setArg(0, inputDataHandle);
+    err_code = kernel.setArg(1, inputBuffer);
+    RETURN_ON_ERROR(err_code, "pass input buffer.");
+    err_code = kernel.setArg(2, outputBuffer);
+    RETURN_ON_ERROR(err_code, "pass output buffer.");
+
+    int num_items = 
+      daxReadableDataTraits<InputDataType>::GetDataSize("mm..not sure", input) /
+      sizeof(float);
+    cout << num_items << endl;
+    cl::Event event;
+    cl::CommandQueue queue(context, devices[0]);
+    err_code = queue.enqueueNDRangeKernel(kernel,
+      cl::NullRange,
+      cl::NDRange(num_items),
+      cl::NDRange(1), NULL, &event);
+    RETURN_ON_ERROR(err_code, "enqueue.");
+
+    // for for the kernel execution to complete.
+    event.wait();
+
+    // now request read back.
+    err_code = queue.enqueueReadBuffer(outputBuffer,
+      CL_TRUE, 0,
+      daxReadableDataTraits<OutputDataType>::GetDataSize(
+        "mm..not sure", output),
+     const_cast<void*>(daxReadableDataTraits<OutputDataType>::GetDataPointer(
+        "mm..not sure", output)));
+    RETURN_ON_ERROR(err_code, "read output back");
     // * invoke the kernel
     // * read back the result
     }

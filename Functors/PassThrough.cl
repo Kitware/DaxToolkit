@@ -7,5 +7,5 @@
 // OUTPUT outarray;any_array;
 void PassThrough(const float *inarray, float *outarray)
 {
-  *(outarray) = *(inarray);
+  (*outarray) = (*inarray);
 }

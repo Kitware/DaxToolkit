@@ -53,5 +53,18 @@ int main(int, char**)
     daxReadableDataTraits<daxImageData>::GetDataSize(NULL, outputData.get()));
 
   executive->Execute(inputData.get(), outputData.get());
+
+  for (int x=0; x <inputData->GetDimensions()[0]; x++)
+    {
+    for (int y=0; y < inputData->GetDimensions()[1]; y++)
+      {
+      for (int z=0; z < inputData->GetDimensions()[2]; z++)
+        {
+        assert(inputData->GetDataPointer(x, y, z)[0] ==
+          outputData->GetDataPointer(x, y, z)[0]);
+        }
+      }
+    }
+
   return 0;
 }
