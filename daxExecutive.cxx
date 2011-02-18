@@ -211,8 +211,7 @@ bool daxExecutive::Execute(
   // error. I am just letting myself get a little carried away with boost::bind
   // and std::for_each temporarily :).
   std::for_each(sinks.begin(), sinks.end(),
-    boost::bind(&daxExecutive::ExecuteOnce<daxInternals::Graph, daxImageData,
-      daxImageData>,
+    boost::bind(&daxExecutive::ExecuteOnce<daxInternals::Graph>,
       this, _1, this->Internals->Connectivity, input, output));
   return false;
 }
@@ -420,10 +419,10 @@ namespace dax
   }
 
 //-----------------------------------------------------------------------------
-template <class Graph, class InputDataType, class OutputDataType>
+template <class Graph>
 bool daxExecutive::ExecuteOnce(
   typename Graph::vertex_descriptor head, const Graph& graph,
-  const InputDataType* input, OutputDataType* output) const
+  const daxDataObject* input, daxDataObject* output) const
 {
   // FIXME: now sure how to dfs over a subgraph starting with head, so for now
   // we assume there's only 1 connected graph in "graph".
@@ -477,31 +476,27 @@ bool daxExecutive::ExecuteOnce(
     // Allocate opaque data pointer.
     cl::Buffer inputDataHandle(context,
       CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      daxOpenCLTraits<InputDataType>::GetOpaqueDataSize(input),
-      daxOpenCLTraits<InputDataType>::GetOpaqueDataPointer(input),
+      input->GetOpaqueDataSize(),
+      const_cast<void*>(input->GetOpaqueDataPointer()),
       &err_code);
     RETURN_ON_ERROR(err_code, "upload opaque data ptr");
 
     // Allocate input and output buffers.
     cl::Buffer inputBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      daxReadableDataTraits<InputDataType>::GetDataSize("mm..not sure", input),
-      const_cast<void*>(
-        daxReadableDataTraits<InputDataType>::GetDataPointer("mm..not sure",
-          input)),
+      input->GetDataSize("mm..not sure"),
+      const_cast<void*>(input->GetDataPointer("mm..not sure")),
       /* for data sources that have multiple arrays, we need some mechanism of
        * letting the invoker pick what arrays we are operating on */
       &err_code);
     RETURN_ON_ERROR(err_code, "upload input data");
 
     cl::Buffer outputBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR,
-      daxReadableDataTraits<OutputDataType>::GetDataSize("mm..not sure", output),
-      const_cast<void*>(
-        daxReadableDataTraits<OutputDataType>::GetDataPointer(
-          "mm..not sure", output)),
+      output->GetDataSize("mm..not sure"),
+      output->GetWriteDataPointer( "mm..not sure"),
       &err_code);
     RETURN_ON_ERROR(err_code, "create output_buffer");
 
-    std::string input_data_code = daxOpenCLTraits<InputDataType>::GetCode();
+    std::string input_data_code = input->GetCode();
     // Now compile the code.
     cl::Program::Sources sources;
     sources.push_back(std::make_pair(input_data_code.c_str(),
@@ -544,9 +539,7 @@ bool daxExecutive::ExecuteOnce(
     err_code = kernel.setArg(2, outputBuffer);
     RETURN_ON_ERROR(err_code, "pass output buffer.");
 
-    int num_items = 
-      daxReadableDataTraits<InputDataType>::GetDataSize("mm..not sure", input) /
-      sizeof(float);
+    int num_items = input->GetDataSize("mm..not sure") / sizeof(float);
     cout << num_items << endl;
     cl::Event event;
     cl::CommandQueue queue(context, devices[0]);
@@ -562,10 +555,8 @@ bool daxExecutive::ExecuteOnce(
     // now request read back.
     err_code = queue.enqueueReadBuffer(outputBuffer,
       CL_TRUE, 0,
-      daxReadableDataTraits<OutputDataType>::GetDataSize(
-        "mm..not sure", output),
-     const_cast<void*>(daxReadableDataTraits<OutputDataType>::GetDataPointer(
-        "mm..not sure", output)));
+      output->GetDataSize("mm..not sure"),
+      output->GetWriteDataPointer("mm..not sure"));
     RETURN_ON_ERROR(err_code, "read output back");
     // * invoke the kernel
     // * read back the result

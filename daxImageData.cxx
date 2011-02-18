@@ -35,7 +35,7 @@ daxImageData::~daxImageData()
 }
 
 //-----------------------------------------------------------------------------
-void* daxImageData::GetOpaqueDataPointer() const
+const void* daxImageData::GetOpaqueDataPointer() const
 {
   this->OpaqueDataPointer->Extents[0] = 0;
   this->OpaqueDataPointer->Extents[1] = this->Dimensions[0] - 1;
@@ -94,11 +94,27 @@ const int* daxImageData::GetDimensions() const
   return this->Dimensions;
 }
 
-
-namespace daxImageDataInternals
+//-----------------------------------------------------------------------------
+const void* daxImageData::GetDataPointer(const char* data_array_name) const
 {
-  std::string GetOpenCLCode()
-    {
-    return daxHeaderString_CoreImageData;
-    }
+  return this->GetData();
+}
+
+//-----------------------------------------------------------------------------
+size_t daxImageData::GetDataSize(const char* data_array_name) const
+{
+  return this->GetDimensions()[0] * this->GetDimensions()[1] *
+    this->GetDimensions()[2] * this->GetNumberOfComponents() * sizeof(float);
+}
+
+//-----------------------------------------------------------------------------
+void* daxImageData::GetWriteDataPointer(const char* data_array_name)
+{
+  return this->GetData();
+}
+
+//-----------------------------------------------------------------------------
+const char* daxImageData::GetCode() const
+{
+  return daxHeaderString_CoreImageData;
 }

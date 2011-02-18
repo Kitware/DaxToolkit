@@ -13,6 +13,7 @@
 class daxImageData;
 class daxModule;
 class daxPort;
+class daxDataObject;
 daxDefinePtrMacro(daxImageData);
 daxDefinePtrMacro(daxModule);
 daxDefinePtrMacro(daxPort);
@@ -52,10 +53,10 @@ protected:
   /// Executes every subtree in the graph separately. We currently invoke every
   /// subtree as a separate kernel. We can merge the kernels or something of
   /// that sort in future.
-  template <class Graph, class InputDataType, class OutputDataType>
+  template <class Graph>
     bool ExecuteOnce(
       typename Graph::vertex_descriptor head, const Graph& graph,
-      const InputDataType* input, OutputDataType* output) const;
+      const daxDataObject* input, daxDataObject* output) const;
 
 private:
   daxDisableCopyMacro(daxExecutive);

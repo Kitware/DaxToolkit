@@ -8,16 +8,44 @@
 #ifndef __daxImageData_h
 #define __daxImageData_h
 
-#include "daxObject.h"
+#include "daxDataObject.h"
 
 /// daxImageData represents a uniform-rectilinear grid with data-values at each
 /// grid point.
-class daxImageData : public daxObject
+class daxImageData : public daxDataObject
 {
 public:
   daxImageData();
   virtual ~daxImageData();
-  daxTypeMacro(daxImageData, daxObject);
+  daxTypeMacro(daxImageData, daxDataObject);
+
+  /// -------------------------------------------------------------------------
+  /// Superclass API
+  /// -------------------------------------------------------------------------
+
+  /// API to get the raw data pointer and its size for reading or writing.
+  virtual const void* GetDataPointer(const char* data_array_name) const;
+
+  /// API to get the raw data pointer and its size for reading or writing.
+  virtual size_t GetDataSize(const char* data_array_name) const;
+
+  /// API to get the raw data pointer and its size for reading or writing.
+  virtual void* GetWriteDataPointer(const char* data_array_name);
+
+  /// OpenCL specific API to get the data-implementation code for the device.
+  virtual const char* GetCode() const;
+
+  /// These are used to obtain the host data-structure for \c opaque_data_type
+  /// instance that's passed to the OpenCL kernel.
+  virtual const void* GetOpaqueDataPointer() const;
+
+  /// These are used to obtain the host data-structure for \c opaque_data_type
+  /// instance that's passed to the OpenCL kernel.
+  virtual size_t GetOpaqueDataSize() const;
+
+  /// -------------------------------------------------------------------------
+  /// daxImageData API
+  /// -------------------------------------------------------------------------
 
   /// Get the data-values at each grid point. For now we do not support
   /// named arrays.
@@ -41,11 +69,6 @@ public:
   int GetNumberOfComponents() const
     {return this->NumberOfComponents; }
 
-  /// OpaqueDataPointer encapsulates all information about this mesh/grid that
-  /// needs to be sent to the device.
-  void* GetOpaqueDataPointer() const;
-  size_t GetOpaqueDataSize() const;
-
 protected:
   int NumberOfComponents;
   int Dimensions[3];
@@ -59,43 +82,4 @@ private:
 
 /// declares daxImageDataPtr.
 daxDefinePtrMacro(daxImageData);
-
-/// Implement data-traits.
-#include "daxDataTraits.h"
-
-template <>
-struct daxReadableDataTraits<daxImageData>
-{
-  /// Returns the raw data-pointer.
-  static const void* GetDataPointer(const char*, const daxImageData* data)
-    { return data->GetData(); }
-
-  /// Returns the buffer size in bytes.
-  static size_t GetDataSize(const char*, const daxImageData* data)
-    {
-    return data->GetDimensions()[0] * data->GetDimensions()[1] *
-      data->GetDimensions()[2] * data->GetNumberOfComponents() * sizeof(float);
-    }
-};
-
-namespace daxImageDataInternals
-{
-  std::string GetOpenCLCode();
-};
-
-template <>
-struct daxOpenCLTraits<daxImageData>
-{
-  /// Returns the OpenCL code defining different datatypes and iterator
-  /// functions.
-  static std::string GetCode()
-    { return daxImageDataInternals::GetOpenCLCode(); }
-
-  /// These are used to obtain the host data-structure for \c opaque_data_type
-  /// instance that's passed to the OpenCL kernel.
-  static void* GetOpaqueDataPointer(const daxImageData* data)
-    { return data->GetOpaqueDataPointer(); }
-  static size_t GetOpaqueDataSize(const daxImageData* data)
-    { return data->GetOpaqueDataSize(); }
-};
 #endif

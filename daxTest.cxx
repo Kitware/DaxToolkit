@@ -49,8 +49,7 @@ int main(int, char**)
 
   daxImageDataPtr outputData(new daxImageData());
   outputData->SetDimensions(100, 100, 100);
-  memset(outputData->GetData(), 0,
-    daxReadableDataTraits<daxImageData>::GetDataSize(NULL, outputData.get()));
+  memset(outputData->GetData(), 0, outputData->GetDataSize(NULL));
 
   executive->Execute(inputData.get(), outputData.get());
 
