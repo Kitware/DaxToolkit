@@ -38,6 +38,8 @@ public:
   /// These are used to obtain the host data-structure for \c opaque_data_type
   /// instance that's passed to the OpenCL kernel.
   virtual size_t GetOpaqueDataSize() const=0;
+private:
+  daxDisableCopyMacro(daxDataObject);
 };
 
 daxDefinePtrMacro(daxDataObject);

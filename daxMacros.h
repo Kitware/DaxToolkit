@@ -8,19 +8,20 @@
 #ifndef __daxMacros_h
 #define __daxMacros_h
 
-// Macro to be used to define the class hierarchy.
+/// Macro to be used to define the class hierarchy.
 #define daxTypeMacro(classname, superclassname) \
   public: \
   typedef superclassname Superclass;\
   virtual const char* GetClassName() const { return #classname; }
 
-
+/// Macro used to to disable copy constructor and assignment operator.
 #define daxDisableCopyMacro(classname) \
   private:\
   classname(const classname&); \
   void operator=(const classname&);
 
-
+/// Macro used to define a class named classnamePtr and classnameWeakPtr of
+//types shared_ptr and weak_ptr respectively.
 #define daxDefinePtrMacro(classname)\
   typedef boost::shared_ptr<classname> classname##Ptr; \
   typedef boost::weak_ptr<classname> classname##WeakPtr;
