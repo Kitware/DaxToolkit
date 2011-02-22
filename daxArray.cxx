@@ -7,11 +7,21 @@
 =========================================================================*/
 #include "daxArray.h"
 
+#include <map>
+class daxArray::daxInternals
+{
+public:
+  typedef std::map<const daxAttributeKeyBase*, daxObjectPtr> AttributeMapType;
+  AttributeMapType AttributeMap;
+};
+
+daxDefineKey(daxArray, ELEMENT_TYPE, int, daxArray);
 //-----------------------------------------------------------------------------
 daxArray::daxArray()
 {
   this->Rank = 0;
   this->Shape = NULL;
+  this->Internals = new daxInternals();
 }
 
 //-----------------------------------------------------------------------------
@@ -19,6 +29,7 @@ daxArray::~daxArray()
 {
   delete [] this->Shape;
   this->Shape = NULL;
+  delete this->Internals;
 }
 
 //-----------------------------------------------------------------------------
@@ -34,4 +45,30 @@ void daxArray::SetShape(int* shape)
       this->Shape[cc] = shape[cc];
       }
     }
+}
+
+//-----------------------------------------------------------------------------
+void daxArray::SetAttribute(const daxAttributeKeyBase* key, daxObjectPtr value)
+{
+  this->Internals->AttributeMap[key] = value;
+}
+
+//-----------------------------------------------------------------------------
+bool daxArray::HasAttribute(const daxAttributeKeyBase* key)
+{
+  return (this->Internals->AttributeMap.find(key) !=
+    this->Internals->AttributeMap.end());
+}
+
+//-----------------------------------------------------------------------------
+daxObjectPtr daxArray::GetAttribute(const daxAttributeKeyBase* key) const
+{
+  daxInternals::AttributeMapType::iterator iter =
+    this->Internals->AttributeMap.find(key);
+  if (iter != this->Internals->AttributeMap.end())
+    {
+    return iter->second;
+    }
+
+  return daxObjectPtr();
 }
