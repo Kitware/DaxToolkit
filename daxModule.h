@@ -59,17 +59,6 @@ public:
   /// Returns the output port information given the name of the port.
   virtual daxPortPtr GetOutputPort(const std::string& portname) const;
 
-  enum Types
-    {
-    invalid,
-    map_field,
-    map_topology_up,
-    map_topology_down
-    };
-
-  /// Returns the type for the module.
-  virtual Types GetType() const = 0;
-
 protected:
 
   /// Set the number of inputs.

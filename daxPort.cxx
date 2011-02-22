@@ -10,8 +10,6 @@
 //-----------------------------------------------------------------------------
 daxPort::daxPort()
 {
-  this->Type = invalid;
-  this->NumberOfComponents = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -32,55 +30,11 @@ void daxPort::SetName(const std::string &name)
 }
 
 //-----------------------------------------------------------------------------
-int daxPort::GetType() const
-{
-  return this->Type;
-}
-
-//-----------------------------------------------------------------------------
-void daxPort::SetType(int type)
-{
-  this->Type = type;
-}
-
-//-----------------------------------------------------------------------------
-int daxPort::GetNumberOfComponents() const
-{
-  return this->NumberOfComponents;
-}
-
-//-----------------------------------------------------------------------------
-void daxPort::SetNumberOfComponents(int num)
-{
-  this->NumberOfComponents = num;
-}
-
-//-----------------------------------------------------------------------------
 bool daxPort::CanSourceFrom(const daxPort* sourcePort) const
 {
-  if (sourcePort->GetNumberOfComponents() != this->GetNumberOfComponents())
+  if (sourcePort == this)
     {
     return false;
     }
-  if (sourcePort->GetType() == this->GetType())
-    {
-    return true;
-    }
-  if (sourcePort->GetType() == any_array)
-    {
-    if (this->GetType() == float_)
-      {
-      return false;
-      }
-    return true;
-    }
-  if (this->GetType() == any_array)
-    {
-    if (sourcePort->GetType() == float_)
-      {
-      return false;
-      }
-    return true;
-    }
-  return false;
+  return true;
 }

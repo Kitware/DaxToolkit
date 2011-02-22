@@ -24,30 +24,12 @@ public:
   std::string GetName() const;
   void SetName(const std::string &name);
 
-  /// Get/Set the port type.
-  int GetType() const;
-  void SetType(int);
-
-  /// Get/Set the number of components.
-  int GetNumberOfComponents() const;
-  void SetNumberOfComponents(int);
-
   /// Returns true if this daxPort can be connected as a sink to the \c
   /// sourcePort.
   bool CanSourceFrom(const daxPort* sourcePort) const;
 
-  enum Types
-    {
-    invalid=0,
-    point_array,
-    cell_array,
-    any_array,
-    float_,
-    };
 protected:
   std::string Name;
-  int Type;
-  int NumberOfComponents;
 
 private:
   daxDisableCopyMacro(daxPort);
