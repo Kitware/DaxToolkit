@@ -11,6 +11,18 @@
 #include "daxObject.h"
 #include "daxAttributeKey.h"
 
+/// daxArray holds the actual data, positions, connections etc. that represent
+/// the data being analyzed. daxArray supports named attributes.
+
+class daxArray;
+daxDefinePtrMacro(daxArray);
+
+#define daxArrayDefineSetGets(x)\
+  void Set(const daxAttributeKey<x, daxArray>* key, x value)\
+    { key->Set(this, value); }\
+  x Get(const daxAttributeKey<x, daxArray>* key) const \
+    { return key->Get(this); }
+
 class daxArray : public daxObject
 {
 public:
@@ -38,14 +50,20 @@ public:
   void SetAttribute(const daxAttributeKeyBase* key, daxObjectPtr value);
   daxObjectPtr GetAttribute(const daxAttributeKeyBase* key) const;
 
+  bool Has(const daxAttributeKeyBase* key)
+    { return this->HasAttribute(key); }
   /// convenience methods to set attributes with right type.
-  void Set(const daxAttributeKey<int, daxArray>* key, int value)
-    { key->Set(this, value); }
-  int Get(const daxAttributeKey<int, daxArray>* key) const
-    { return key->Get(this); }
+  daxArrayDefineSetGets(int);
+  daxArrayDefineSetGets(daxArrayWeakPtr);
 
   /// Attribute used for ELEMENT_TYPE.
   static daxAttributeKey<int, daxArray>* ELEMENT_TYPE();
+
+  /// Attribute used for indicating the referred array.
+  static daxAttributeKey<daxArrayWeakPtr, daxArray>* REF();
+
+  /// Attribute used for indicating the array being depended upon.
+  static daxAttributeKey<daxArrayWeakPtr, daxArray>* DEP();
 
 protected:
   int Rank;
@@ -57,5 +75,4 @@ private:
   daxInternals* Internals;
 };
 
-daxDefinePtrMacro(daxArray);
 #endif

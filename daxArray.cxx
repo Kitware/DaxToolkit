@@ -16,6 +16,8 @@ public:
 };
 
 daxDefineKey(daxArray, ELEMENT_TYPE, int, daxArray);
+daxDefineKey(daxArray, REF, daxArrayWeakPtr, daxArray);
+daxDefineKey(daxArray, DEP, daxArrayWeakPtr, daxArray);
 //-----------------------------------------------------------------------------
 daxArray::daxArray()
 {

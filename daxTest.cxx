@@ -19,8 +19,11 @@
 
 int main(int, char**)
 {
+  daxArrayPtr array2(new daxArray());
   daxArrayPtr array(new daxArray());
   array->Set(daxArray::ELEMENT_TYPE(), 12);
+  array->Set(daxArray::DEP(), array2);
+  array->Set(daxArray::DEP(), array2);
   cout << array->Get(daxArray::ELEMENT_TYPE()) << endl;
   
   daxExecutivePtr executive(new daxExecutive());
