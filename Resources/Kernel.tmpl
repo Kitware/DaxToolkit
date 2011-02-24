@@ -1,0 +1,63 @@
+
+// Depends on google-ctemplate system for substitutions.
+__constant uint __daxNumberOfArrays = {{dax_array_count}};
+
+void __daxGenerate(work, uchar generator, daxArrays* arrays)
+{
+  switch (generator)
+    {
+  case 0: // inputs, no generator.
+    break;
+{{#dax_generators}}
+  case {{dax_name}}:
+    // call the functor.
+    {{dax_invoke}};
+    break;
+{{/dax_generators}}
+    }
+}
+
+__kernel void main(
+  // we assume that there are __daxNumberOfArrays items in arrayCores.
+  __global const __daxArrayCore* arrayCores,
+
+  // for each global input-array
+{{#dax_input_arrays}}
+  __global const float* {{dax_name}} {{#dax_input_arrays_separator}},{{/dax_input_arrays_separator}}
+{{/dax_input_arrays}}
+
+ // DOH! I need to insert a ',' here conditionally. For now, I am going to
+ // assumer there's always atleast 1 input and 1 output array.
+ ,
+
+  // for each global output-array
+{{#dax_output_arrays}}
+  __global float* {{dax_name}} {{#dax_output_arrays_separator}},{{/dax_output_arrays_separator}}
+{{/dax_output_arrays}}
+)
+{
+  daxWork work;
+  __daxInitializeWorkFromGlobal(&work);
+
+  daxArrays arrays[{{dax_array_count}}];
+  __daxInitializeArrays(arrays, arrayCores, __daxNumberOfArrays);
+
+  // for each input array initialize the appropriate "daxArray" object.
+{{#dax_input_arrays}}
+  arrays[{{INDEX}}].InputDataF = {{dax_name}};
+{{/dax_input_arrays}}
+
+{{#dax_output_arrays}}
+  arrays[{{INDEX}}].OutputDataF = {{dax_name}};
+{{/dax_output_arrays}}
+
+  // This will go over all the arrays and start generating every output array
+  // for the work specified.
+  for (uint cc=0; cc < __daxNumberOfArrays; cc++)
+    {
+    if (arrays[cc].OutputDataF != NULL)
+      {
+      __daxGenerate(work, arrays[cc].Core.Generator, arrays[cc].Arrays);
+      }
+    }
+}

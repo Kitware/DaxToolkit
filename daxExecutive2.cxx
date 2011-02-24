@@ -8,6 +8,8 @@
 #include "daxExecutive2.h"
 
 // Generated headers.
+#include "Kernel.tmpl.h"
+#include "dAPI.cl.h"
 
 // dax headers
 #include "daxModule.h"
@@ -20,6 +22,9 @@
 # include <CL/cl.hpp>
 # include "opecl_util.h"
 #endif
+
+// Google CTemplate Includes
+#include <ctemplate/template.h>  
 
 // external headers
 #include <algorithm>
@@ -183,4 +188,45 @@ bool daxExecutive2::Connect(
 void daxExecutive2::Reset()
 {
   this->Internals->Connectivity = daxInternals::Graph();
+}
+//daxHeaderString_Kernel
+
+//-----------------------------------------------------------------------------
+void daxExecutive2::PrintKernel()
+{
+  ctemplate::TemplateDictionary dictionary("kernel");
+  dictionary.SetValue("dax_array_count", "3");
+  
+  // 2 inputs, 1 output.
+  ctemplate::TemplateDictionary *input0 = dictionary.AddSectionDictionary(
+    "dax_input_arrays");
+  input0->SetValue("dax_name", "input0");
+  input0->SetValue("INDEX", "0");
+
+  ctemplate::TemplateDictionary *input1 = dictionary.AddSectionDictionary(
+    "dax_input_arrays");
+  input1->SetValue("dax_name", "input1");
+  input1->SetValue("INDEX", "1");
+
+  ctemplate::TemplateDictionary *output0 = dictionary.AddSectionDictionary(
+    "dax_output_arrays");
+  output0->SetValue("dax_name", "output0");
+  output0->SetValue("INDEX", "2");
+
+  ctemplate::TemplateDictionary *dax_generators = dictionary.AddSectionDictionary(
+    "dax_generators");
+  dax_generators->SetValue("dax_name", "1");
+  dax_generators->SetValue("dax_invoke", "functor1(work, arrays[0], arrays[1]);");
+
+  dax_generators = dictionary.AddSectionDictionary(
+    "dax_generators");
+  dax_generators->SetValue("dax_name", "2");
+  dax_generators->SetValue("dax_invoke", "functor2(work, arrays[1], arrays[2]);");
+
+  ctemplate::Template* tmpl = ctemplate::Template::StringToTemplate(
+    daxHeaderString_Kernel, ctemplate::STRIP_BLANK_LINES);
+
+  std::string result;
+  tmpl->Expand(&result, &dictionary);
+  cout << result.c_str() << endl;
 }

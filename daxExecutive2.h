@@ -43,6 +43,7 @@ public:
   /// start supporting de-connecting.
   void Reset();
 
+  void PrintKernel();
 protected:
   /// Executes every subtree in the graph separately. We currently invoke every
   /// subtree as a separate kernel. We can merge the kernels or something of

@@ -28,6 +28,7 @@ int main(int, char**)
   daxModulePtr moduleB(new daxCellAverageModule());
 
   executive->Connect(moduleA, "output", moduleB, "input_point");
+  executive->PrintKernel();
 
 
   //// Create input-buffer.

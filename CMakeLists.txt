@@ -15,6 +15,10 @@ if (FNC_ENABLE_OPENCL)
   endif()
 endif()
 
+FIND_PATH(GOOGLE_CTEMPLATE_INCLUDE_DIR google/template.h /usr/include /usr/local/include)
+FIND_LIBRARY(GOOGLE_CTEMPLATE_THREAD_LIB ctemplate /usr/lib /usr/loca/lib)
+
+
 # List of Boost features used:
 # * Smart Ptr
 # * xpressive
@@ -26,7 +30,7 @@ find_package(Boost REQUIRED
 
 include_directories(${Boost_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR}
-
+  ${GOOGLE_CTEMPLATE_INCLUDE_DIR}
   )
 
 add_executable(daxGenerateHeaderFromFile
@@ -61,6 +65,8 @@ set (functor_modules
 set (core_kernels
   Functors/Elevation.cl
   Functors/CellAverage.cl
+  Resources/Kernel.tmpl
+  Resources/dAPI.cl
 )
 
 set (generated_headers_core)
@@ -108,6 +114,7 @@ add_library(daxFramework SHARED
 
 target_link_libraries(daxFramework
   ${Boost_LIBRARIES}
+  ${GOOGLE_CTEMPLATE_THREAD_LIB}
   )
 
 if(FNC_ENABLE_OPENCL)
