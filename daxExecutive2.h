@@ -50,8 +50,7 @@ protected:
   /// that sort in future.
   template <class Graph>
     bool ExecuteOnce(
-      typename Graph::vertex_descriptor head, const Graph& graph,
-      const daxDataObject* input, daxDataObject* output) const;
+      typename Graph::vertex_descriptor head, const Graph& graph) const;
 
 private:
   daxDisableCopyMacro(daxExecutive2);

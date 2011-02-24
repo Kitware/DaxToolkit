@@ -33,11 +33,10 @@
 #include <boost/bind.hpp>
 #include <boost/config.hpp>
 #include <boost/format.hpp>
+#include <boost/graph/topological_sort.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/depth_first_search.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/graph_utility.hpp>
-#include <boost/graph/reverse_graph.hpp>
 #include <utility>                   // for std::pair
 
 class daxExecutive2::daxInternals
@@ -68,6 +67,7 @@ public:
 
   typedef boost::graph_traits<Graph>::vertex_iterator VertexIterator;
   typedef boost::graph_traits<Graph>::edge_iterator EdgeIterator;
+  typedef boost::graph_traits<Graph>::in_edge_iterator InEdgeIterator;
   Graph Connectivity;
 };
 
@@ -193,6 +193,70 @@ void daxExecutive2::Reset()
 
 //-----------------------------------------------------------------------------
 void daxExecutive2::PrintKernel()
+{
+  cout << endl << "--------------------------" << endl;
+  cout << "Connectivity Graph: " << endl;
+  boost::print_graph(this->Internals->Connectivity);
+  cout << "--------------------------" << endl;
+
+
+  // We can just do a topological sort and then invoke the kernel.
+  std::vector<daxInternals::Graph::vertex_descriptor> sorted_vertices;
+
+  boost::topological_sort(this->Internals->Connectivity,
+    std::back_inserter(sorted_vertices));
+
+  int num_of_arrays = 0;
+  for (size_t cc=0; cc < sorted_vertices.size(); cc++)
+    {
+    daxModulePtr module =
+      this->Internals->Connectivity[sorted_vertices[cc]].Module;
+    int num_ports = module->GetNumberOfOutputs() + module->GetNumberOfInputs();
+    num_of_arrays += num_ports;
+
+    // No determine how many of the input ports are "global input arrays" i.e.
+    // don't have a connection.
+    daxInternals::InEdgeIterator start, end;
+    boost::tie(start, end) = boost::in_edges(sorted_vertices[cc],
+      this->Internals->Connectivity);
+    }
+
+  // Every sink becomes a separate kernel.
+
+//  // FIXME: these are actually sources since I've changed the code to nolonger
+//  // reverse the graph.
+//  // Locate sinks. Sinks are nodes in the dependency graph with in-degree of 0.
+//  std::vector<daxInternals::Graph::vertex_descriptor> sinks;
+//  dax::get_heads(sinks, this->Internals->Connectivity);
+//
+//  // Now we process each sub-graph rooted at each sink separately, create
+//  // separate kernels and executing them individually.
+//
+//  // Maybe using for_each isn't the best thing here since I want to break on
+//  // error. I am just letting myself get a little carried away with boost::bind
+//  // and std::for_each temporarily :).
+//  std::for_each(sinks.begin(), sinks.end(),
+//    boost::bind(&daxExecutive2::ExecuteOnce<daxInternals::Graph>,
+//      this, _1, this->Internals->Connectivity));
+}
+
+//-----------------------------------------------------------------------------
+template <class Graph>
+bool daxExecutive2::ExecuteOnce(
+  typename Graph::vertex_descriptor head, const Graph& graph) const
+{
+  // FIXME: now sure how to dfs over a subgraph starting with head, so for now
+  // we assume there's only 1 connected graph in "graph".
+  cout << "Execute sub-graph: " << head << endl;
+
+  std::vector<std::string> functor_codes;
+
+  // First generate the kernel code.
+  //std::string kernel = dax::GenerateKernel(head, graph, functor_codes);
+}
+
+//-----------------------------------------------------------------------------
+void daxExecutive2PrintKernel()
 {
   ctemplate::TemplateDictionary dictionary("kernel");
   dictionary.SetValue("dax_array_count", "3");
