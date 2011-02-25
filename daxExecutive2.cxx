@@ -29,6 +29,7 @@
 // external headers
 #include <algorithm>
 #include <assert.h>
+#include <map>
 #include <boost/algorithm/string.hpp>
 #include <boost/bind.hpp>
 #include <boost/config.hpp>
@@ -208,76 +209,110 @@ void daxExecutive2::PrintKernel()
   boost::reverse_graph<daxInternals::Graph> rev_connectivity(this->Internals->Connectivity);
   boost::topological_sort(rev_connectivity, std::back_inserter(sorted_vertices));
 
+  // every port gets an array index.
+  std::map<daxPort*, int> index_map;
+  std::map<daxPort*, int> global_outputs_map;
+
   int num_of_arrays = 0;
   int input_array_count = 0;
-  int output_array_count = 0;
   for (size_t cc=0; cc < sorted_vertices.size(); cc++)
     {
     daxModulePtr module =
       this->Internals->Connectivity[sorted_vertices[cc]].Module;
     size_t num_input_ports = module->GetNumberOfInputs();
     size_t num_output_ports = module->GetNumberOfOutputs();
-    size_t num_ports = num_input_ports + num_output_ports;
 
     ctemplate::TemplateDictionary* moduleDict =
       dictionary.AddSectionDictionary("dax_generators");
     moduleDict->SetValue("dax_id", (boost::format("%1%") % (cc+1)).str());
     moduleDict->SetValue("dax_name", module->GetModuleName());
 
-    // now array indices num_of_arrays to (num_ports+num_of_arrays-1) are
-    // reserved for this module.
-    for (size_t portno = 0; portno < num_ports; portno++)
+    // name module's out-arrays. Every out-array gets a unique name.
+    for (size_t portno = 0; portno < num_output_ports; portno++)
       {
-      moduleDict->SetValueAndShowSection("dax_array_index",
-        (boost::format("%1%") % (portno + num_of_arrays) ).str(), "dax_args");
+      int index = num_of_arrays++;
+      index_map[module->GetOutputPort(portno).get()] = index;
+      // Initially, we'll assume any output-array not consumed by another
+      // functor is a global output array. To make it easier to determine those
+      // arrays, we put the output ports in another map. As they are used, we
+      // remove them from the map. Whatever remains in the map are global output
+      // arrays.
+      global_outputs_map[module->GetOutputPort(portno).get()] = index;
+
+      ctemplate::TemplateDictionary* arraysDict =
+        dictionary.AddSectionDictionary("dax_generated_arrays");
+      arraysDict->SetValue("dax_index", (boost::format("%1%")%index).str());
+      arraysDict->SetValue("dax_generator_id",
+        (boost::format("%1%") % (cc+1)).str());
       }
 
-    // Any input port not having an edge is a global array.
-    // initially, we'll even assume any output port not having a connecting is a
-    // output-global array, we may change that later.
-
-    std::set<daxPortPtr> connected_ports;
-
-    daxInternals::EdgeIterator start, end;
-    // using boost::tie instead of std::pair to achieve the same effect.
-    boost::tie(start, end) = boost::edges(this->Internals->Connectivity);
-    for (; start != end; start++)
+    // Now to determine what are the names of the input arrays. There are two
+    // possibilities: they are either global arrays or output-arrays from other
+    // modules.
+    daxInternals::InEdgeIterator start_in, end_in;
+    boost::tie(start_in, end_in) = boost::in_edges(sorted_vertices[cc],
+      this->Internals->Connectivity);
+    for (; start_in != end_in; start_in++)
       {
-      connected_ports.insert(this->Internals->Connectivity[*start].ProducerPort);
-      connected_ports.insert(this->Internals->Connectivity[*start].ConsumerPort);
+      daxPort* producer =
+        this->Internals->Connectivity[*start_in].ProducerPort.get();
+      daxPort* consumer =
+        this->Internals->Connectivity[*start_in].ConsumerPort.get();
+      assert(index_map.find(consumer) == index_map.end());
+      if (index_map.find(producer) != index_map.end())
+        {
+        // producer is consumed, so no longer a global output array.
+        global_outputs_map.erase(producer);
+
+        index_map[consumer] = index_map[producer];
+        }
       }
 
     for (size_t portno=0; portno < num_input_ports; portno++)
       {
-      if (connected_ports.find(module->GetInputPort(portno)) ==
-        connected_ports.end())
+      daxPort* port = module->GetInputPort(portno).get();
+      if (index_map.find(port) == index_map.end())
         {
+        // this is a global-input
+        int array_index = num_of_arrays++;
+        index_map[port] = array_index;
+
         ctemplate::TemplateDictionary* input_array_dict =
           dictionary.AddSectionDictionary("dax_input_arrays");
-        // this is not correct. we'll have to use the output array number if
-        // this input is sourced in from another's output.
         input_array_dict->SetValue("dax_name",
           (boost::format("input_array_%1%")%(input_array_count++)).str());
         input_array_dict->SetValue("dax_index",
-          (boost::format("%1%")%(portno + num_of_arrays)).str());
+          (boost::format("%1%")%(array_index)).str());
         }
+      }
+
+    for (size_t portno=0; portno < num_input_ports; portno++)
+      {
+      daxPort* port = module->GetInputPort(portno).get();
+      assert(index_map.find(port) != index_map.end());
+      moduleDict->SetValueAndShowSection("dax_array_index",
+        (boost::format("%1%") % index_map[port] ).str(), "dax_args");
       }
 
     for (size_t portno=0; portno < num_output_ports; portno++)
       {
-      if (connected_ports.find(module->GetOutputPort(portno)) ==
-        connected_ports.end())
-        {
-        ctemplate::TemplateDictionary* output_array_dict =
-          dictionary.AddSectionDictionary("dax_output_arrays");
-        output_array_dict->SetValue("dax_name",
-          (boost::format("output_array_%1%")%(output_array_count++)).str());
-        output_array_dict->SetValue("dax_index",
-          (boost::format("%1%")%(portno + num_of_arrays + num_input_ports)).str());
-        }
+      daxPort* port = module->GetOutputPort(portno).get();
+      assert(index_map.find(port) != index_map.end());
+      moduleDict->SetValueAndShowSection("dax_array_index",
+        (boost::format("%1%") % index_map[port] ).str(), "dax_args");
       }
+    }
 
-    num_of_arrays += num_ports;
+  int output_array_count = 0;
+  for (std::map<daxPort*, int>::iterator iter = global_outputs_map.begin();
+    iter != global_outputs_map.end(); ++iter)
+    {
+    ctemplate::TemplateDictionary* output_array_dict =
+      dictionary.AddSectionDictionary("dax_output_arrays");
+    output_array_dict->SetValue("dax_name",
+      (boost::format("output_array_%1%")%(output_array_count++)).str());
+    output_array_dict->SetValue("dax_index",
+      (boost::format("%1%")%iter->second).str());
     }
 
   dictionary.SetValue("dax_array_count",
@@ -305,6 +340,7 @@ bool daxExecutive2::ExecuteOnce(
 
   // First generate the kernel code.
   //std::string kernel = dax::GenerateKernel(head, graph, functor_codes);
+  return false;
 }
 
 //-----------------------------------------------------------------------------

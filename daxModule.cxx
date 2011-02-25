@@ -75,7 +75,7 @@ size_t daxModule::GetNumberOfInputs() const
 //-----------------------------------------------------------------------------
 std::string daxModule::GetInputPortName(size_t index) const
 {
-  if (this->Internals->OutputPorts.size() <= index)
+  if (this->Internals->InputPorts.size() <= index)
     {
     return std::string();
     }
@@ -86,7 +86,7 @@ std::string daxModule::GetInputPortName(size_t index) const
 //-----------------------------------------------------------------------------
 daxPortPtr daxModule::GetInputPort(size_t index) const
 {
-  if (this->Internals->OutputPorts.size() <= index)
+  if (this->Internals->InputPorts.size() <= index)
     {
     return daxPortPtr();
     }

@@ -14,7 +14,6 @@ struct __daxArrayCoreI
   uchar Type;
   uchar Rank;
   uchar Shape[2];
-  uchar Generator;
 };
 
 typedef struct __daxArrayCoreI __daxArrayCore;
@@ -25,6 +24,7 @@ struct __daxArrayI
   __global float *OutputDataF;
   __global __daxArrayCore* Core;
   __daxArrayI* Arrays;
+  uchar Generator;
 
   float4 TempResultF;
   uint4 TempResultUI;
@@ -52,5 +52,6 @@ void __daxInitializeArrays(daxArray* arrays, __daxArrayCore* cores,
     arrays[cc].Arrays = arrays;
     arrays[cc].InputDataF = NULL;
     arrays[cc].OutputDataF = NULL;
+    arrays[cc].Generator = 0;
     }
 }

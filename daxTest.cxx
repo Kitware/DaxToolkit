@@ -25,9 +25,9 @@ int main(int, char**)
   daxExecutive2Ptr executive(new daxExecutive2());
   daxModulePtr elevation(new daxElevationModule());
 
-  daxModulePtr cellCenter(new daxCellAverageModule());
+  daxModulePtr cellAverage(new daxCellAverageModule());
 
-  executive->Connect(elevation, "output", cellCenter, "input_point");
+  executive->Connect(elevation, "output", cellAverage, "input_point");
   executive->PrintKernel();
 
 

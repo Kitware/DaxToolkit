@@ -53,6 +53,11 @@ __kernel void main(
 {{#dax_output_arrays}}
   arrays[{{dax_index}}].OutputDataF = {{dax_name}};
 {{/dax_output_arrays}}
+  //
+  // Setup generators correctly for each of the arrays.
+{{#dax_generated_arrays}}
+  arrays[{{dax_index}}].Generator = {{dax_generator_id}};
+{{/dax_generated_arrays}}
 
   // This will go over all the arrays and start generating every output array
   // for the work specified.
@@ -60,7 +65,7 @@ __kernel void main(
     {
     if (arrays[cc].OutputDataF != NULL)
       {
-      __daxGenerate(work, arrays[cc].Core.Generator, arrays[cc].Arrays);
+      __daxGenerate(work, arrays[cc].Generator, arrays[cc].Arrays);
       }
     }
 }
