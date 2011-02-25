@@ -9,9 +9,12 @@ void __daxGenerate(work, uchar generator, daxArrays* arrays)
   case 0: // inputs, no generator.
     break;
 {{#dax_generators}}
-  case {{dax_name}}:
+  case {{dax_id}}:
     // call the functor.
-    {{dax_invoke}};
+    {{dax_name}}(work,
+      {{#dax_args}}arrays[{{dax_array_index}}] {{#dax_args_separator}},{{/dax_args_separator}}
+      {{/dax_args}}
+    );
     break;
 {{/dax_generators}}
     }
@@ -44,11 +47,11 @@ __kernel void main(
 
   // for each input array initialize the appropriate "daxArray" object.
 {{#dax_input_arrays}}
-  arrays[{{INDEX}}].InputDataF = {{dax_name}};
+  arrays[{{dax_index}}].InputDataF = {{dax_name}};
 {{/dax_input_arrays}}
 
 {{#dax_output_arrays}}
-  arrays[{{INDEX}}].OutputDataF = {{dax_name}};
+  arrays[{{dax_index}}].OutputDataF = {{dax_name}};
 {{/dax_output_arrays}}
 
   // This will go over all the arrays and start generating every output array

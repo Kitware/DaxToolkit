@@ -24,7 +24,7 @@
 #endif
 
 // Google CTemplate Includes
-#include <ctemplate/template.h>  
+#include <ctemplate/template.h>
 
 // external headers
 #include <algorithm>
@@ -33,10 +33,11 @@
 #include <boost/bind.hpp>
 #include <boost/config.hpp>
 #include <boost/format.hpp>
-#include <boost/graph/topological_sort.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/graph_utility.hpp>
+#include <boost/graph/reverse_graph.hpp>
+#include <boost/graph/topological_sort.hpp>
 #include <utility>                   // for std::pair
 
 class daxExecutive2::daxInternals
@@ -199,45 +200,96 @@ void daxExecutive2::PrintKernel()
   boost::print_graph(this->Internals->Connectivity);
   cout << "--------------------------" << endl;
 
+  ctemplate::TemplateDictionary dictionary("kernel");
 
   // We can just do a topological sort and then invoke the kernel.
   std::vector<daxInternals::Graph::vertex_descriptor> sorted_vertices;
 
-  boost::topological_sort(this->Internals->Connectivity,
-    std::back_inserter(sorted_vertices));
+  boost::reverse_graph<daxInternals::Graph> rev_connectivity(this->Internals->Connectivity);
+  boost::topological_sort(rev_connectivity, std::back_inserter(sorted_vertices));
 
   int num_of_arrays = 0;
+  int input_array_count = 0;
+  int output_array_count = 0;
   for (size_t cc=0; cc < sorted_vertices.size(); cc++)
     {
     daxModulePtr module =
       this->Internals->Connectivity[sorted_vertices[cc]].Module;
-    int num_ports = module->GetNumberOfOutputs() + module->GetNumberOfInputs();
-    num_of_arrays += num_ports;
+    size_t num_input_ports = module->GetNumberOfInputs();
+    size_t num_output_ports = module->GetNumberOfOutputs();
+    size_t num_ports = num_input_ports + num_output_ports;
 
-    // No determine how many of the input ports are "global input arrays" i.e.
-    // don't have a connection.
-    daxInternals::InEdgeIterator start, end;
-    boost::tie(start, end) = boost::in_edges(sorted_vertices[cc],
-      this->Internals->Connectivity);
+    ctemplate::TemplateDictionary* moduleDict =
+      dictionary.AddSectionDictionary("dax_generators");
+    moduleDict->SetValue("dax_id", (boost::format("%1%") % (cc+1)).str());
+    moduleDict->SetValue("dax_name", module->GetModuleName());
+
+    // now array indices num_of_arrays to (num_ports+num_of_arrays-1) are
+    // reserved for this module.
+    for (size_t portno = 0; portno < num_ports; portno++)
+      {
+      moduleDict->SetValueAndShowSection("dax_array_index",
+        (boost::format("%1%") % (portno + num_of_arrays) ).str(), "dax_args");
+      }
+
+    // Any input port not having an edge is a global array.
+    // initially, we'll even assume any output port not having a connecting is a
+    // output-global array, we may change that later.
+
+    std::set<daxPortPtr> connected_ports;
+
+    daxInternals::EdgeIterator start, end;
+    // using boost::tie instead of std::pair to achieve the same effect.
+    boost::tie(start, end) = boost::edges(this->Internals->Connectivity);
+    for (; start != end; start++)
+      {
+      connected_ports.insert(this->Internals->Connectivity[*start].ProducerPort);
+      connected_ports.insert(this->Internals->Connectivity[*start].ConsumerPort);
+      }
+
+    for (size_t portno=0; portno < num_input_ports; portno++)
+      {
+      if (connected_ports.find(module->GetInputPort(portno)) ==
+        connected_ports.end())
+        {
+        ctemplate::TemplateDictionary* input_array_dict =
+          dictionary.AddSectionDictionary("dax_input_arrays");
+        // this is not correct. we'll have to use the output array number if
+        // this input is sourced in from another's output.
+        input_array_dict->SetValue("dax_name",
+          (boost::format("input_array_%1%")%(input_array_count++)).str());
+        input_array_dict->SetValue("dax_index",
+          (boost::format("%1%")%(portno + num_of_arrays)).str());
+        }
+      }
+
+    for (size_t portno=0; portno < num_output_ports; portno++)
+      {
+      if (connected_ports.find(module->GetOutputPort(portno)) ==
+        connected_ports.end())
+        {
+        ctemplate::TemplateDictionary* output_array_dict =
+          dictionary.AddSectionDictionary("dax_output_arrays");
+        output_array_dict->SetValue("dax_name",
+          (boost::format("output_array_%1%")%(output_array_count++)).str());
+        output_array_dict->SetValue("dax_index",
+          (boost::format("%1%")%(portno + num_of_arrays + num_input_ports)).str());
+        }
+      }
+
+    num_of_arrays += num_ports;
     }
 
-  // Every sink becomes a separate kernel.
+  dictionary.SetValue("dax_array_count",
+    (boost::format("%1%")%num_of_arrays).str());
+  dictionary.Dump();
 
-//  // FIXME: these are actually sources since I've changed the code to nolonger
-//  // reverse the graph.
-//  // Locate sinks. Sinks are nodes in the dependency graph with in-degree of 0.
-//  std::vector<daxInternals::Graph::vertex_descriptor> sinks;
-//  dax::get_heads(sinks, this->Internals->Connectivity);
-//
-//  // Now we process each sub-graph rooted at each sink separately, create
-//  // separate kernels and executing them individually.
-//
-//  // Maybe using for_each isn't the best thing here since I want to break on
-//  // error. I am just letting myself get a little carried away with boost::bind
-//  // and std::for_each temporarily :).
-//  std::for_each(sinks.begin(), sinks.end(),
-//    boost::bind(&daxExecutive2::ExecuteOnce<daxInternals::Graph>,
-//      this, _1, this->Internals->Connectivity));
+  ctemplate::Template* tmpl = ctemplate::Template::StringToTemplate(
+    daxHeaderString_Kernel, ctemplate::STRIP_BLANK_LINES);
+
+  std::string result;
+  tmpl->Expand(&result, &dictionary);
+  cout << result.c_str() << endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -260,22 +312,22 @@ void daxExecutive2PrintKernel()
 {
   ctemplate::TemplateDictionary dictionary("kernel");
   dictionary.SetValue("dax_array_count", "3");
-  
+
   // 2 inputs, 1 output.
   ctemplate::TemplateDictionary *input0 = dictionary.AddSectionDictionary(
     "dax_input_arrays");
   input0->SetValue("dax_name", "input0");
-  input0->SetValue("INDEX", "0");
+  input0->SetValue("dax_index", "0");
 
   ctemplate::TemplateDictionary *input1 = dictionary.AddSectionDictionary(
     "dax_input_arrays");
   input1->SetValue("dax_name", "input1");
-  input1->SetValue("INDEX", "1");
+  input1->SetValue("dax_index", "1");
 
   ctemplate::TemplateDictionary *output0 = dictionary.AddSectionDictionary(
     "dax_output_arrays");
   output0->SetValue("dax_name", "output0");
-  output0->SetValue("INDEX", "2");
+  output0->SetValue("dax_index", "2");
 
   ctemplate::TemplateDictionary *dax_generators = dictionary.AddSectionDictionary(
     "dax_generators");

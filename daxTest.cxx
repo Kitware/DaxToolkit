@@ -23,11 +23,11 @@ int main(int, char**)
   cout << array->Get(daxArray::ELEMENT_TYPE()) << endl;
   
   daxExecutive2Ptr executive(new daxExecutive2());
-  daxModulePtr moduleA(new daxElevationModule());
+  daxModulePtr elevation(new daxElevationModule());
 
-  daxModulePtr moduleB(new daxCellAverageModule());
+  daxModulePtr cellCenter(new daxCellAverageModule());
 
-  executive->Connect(moduleA, "output", moduleB, "input_point");
+  executive->Connect(elevation, "output", cellCenter, "input_point");
   executive->PrintKernel();
 
 
