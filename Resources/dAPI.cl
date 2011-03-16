@@ -11,7 +11,9 @@
 
 struct __daxArrayCoreI
 {
-  uchar Type;
+  uchar Type; // 0 -- irregular
+              // 1 -- image-data points array
+              // 2 -- image-data connections array
   uchar Rank;
   uchar Shape[2];
 };

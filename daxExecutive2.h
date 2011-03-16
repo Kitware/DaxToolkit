@@ -44,6 +44,7 @@ public:
   void Reset();
 
   void PrintKernel();
+  std::string GetKernel();
 protected:
   /// Executes every subtree in the graph separately. We currently invoke every
   /// subtree as a separate kernel. We can merge the kernels or something of

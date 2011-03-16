@@ -194,7 +194,7 @@ void daxExecutive2::Reset()
 //daxHeaderString_Kernel
 
 //-----------------------------------------------------------------------------
-void daxExecutive2::PrintKernel()
+std::string daxExecutive2::GetKernel()
 {
   cout << endl << "--------------------------" << endl;
   cout << "Connectivity Graph: " << endl;
@@ -324,6 +324,13 @@ void daxExecutive2::PrintKernel()
 
   std::string result;
   tmpl->Expand(&result, &dictionary);
+  return result;
+}
+
+//-----------------------------------------------------------------------------
+void daxExecutive2::PrintKernel()
+{
+  std::string result = this->GetKernel();
   cout << result.c_str() << endl;
 }
 
