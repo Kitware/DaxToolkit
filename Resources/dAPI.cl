@@ -25,13 +25,13 @@ struct __daxArrayI
   __global const float *InputDataF;
   __global float *OutputDataF;
   __global __daxArrayCore* Core;
-  __daxArrayI* Arrays;
+  struct __daxArrayI* Arrays;
   uchar Generator;
 
   float4 TempResultF;
   uint4 TempResultUI;
 };
-typedef struct daxArray __daxArrayI;
+typedef struct __daxArrayI daxArray;
 
 typedef struct
 {
@@ -45,15 +45,33 @@ void __daxInitializeWorkFromGlobal(daxWork* work)
   work->ElementID = get_global_id(0);
 }
 
-void __daxInitializeArrays(daxArray* arrays, __daxArrayCore* cores,
+void __daxInitializeArrays(daxArray* arrays,
+  __global __daxArrayCore* cores,
   const uint num_items)
 {
   for (uint cc=0; cc < num_items; cc++)
     {
-    arrays[cc].Core = cores[cc];
+    arrays[cc].Core = &cores[cc];
     arrays[cc].Arrays = arrays;
-    arrays[cc].InputDataF = NULL;
-    arrays[cc].OutputDataF = NULL;
+    arrays[cc].InputDataF = 0;
+    arrays[cc].OutputDataF = 0;
     arrays[cc].Generator = 0;
     }
+}
+
+#define __positions__
+#define __and__(x,y)
+#define __dep__(x)
+#define float3 float4
+
+float3 daxGetArrayValue3(const daxWork* work, const daxArray* array)
+{
+  float3 retval;
+  retval.x = retval.y = retval.z = 0.0;
+  return retval;
+}
+
+void daxSetArrayValue(const daxWork* work, daxArray* output, float scalar)
+{
+
 }

@@ -5,6 +5,9 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
+#include "dAPI.cl.h"
+
+
 #include "daxArray.h"
 #include "daxCellAverageModule.h"
 #include "daxElevationModule.h"
@@ -118,7 +121,8 @@ void daxExecute(int num_cores, daxArrayCore* cores,
 
     // Now compile the code.
     cl::Program::Sources sources;
-    // FIXME push dAPI code.
+    sources.push_back(
+      std::make_pair(daxHeaderString_dAPI, strlen(daxHeaderString_dAPI)));
     for (int cc=0; cc < num_kernels; cc++)
       {
       sources.push_back(std::make_pair(kernels[cc].c_str(), kernels[cc].size()));
