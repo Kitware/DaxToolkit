@@ -9,6 +9,7 @@
 #include "daxCellAverageModule.h"
 #include "daxElevationModule.h"
 #include "daxExecutive2.h"
+#include "daxRegularArray.h"
 
 #include <string.h>
 #include <assert.h>
@@ -21,6 +22,15 @@ int main(int, char**)
   array->Set(daxArray::DEP(), array2);
   array->Set(daxArray::REF(), array2);
   cout << array->Get(daxArray::ELEMENT_TYPE()) << endl;
+
+  daxRegularArray<float> pointsX;
+  pointsX.SetRank(1);
+  int _shape[] = {3};
+  pointsX.SetShape(_shape);
+  float origin[3] = {0,0,0};
+  float delta[3] = {1, 0, 0};
+  pointsX.SetOrigin(origin);
+  pointsX.SetDelta(delta);
   
   daxExecutive2Ptr executive(new daxExecutive2());
   daxModulePtr elevation(new daxElevationModule());
