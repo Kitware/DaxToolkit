@@ -39,7 +39,7 @@ public:
     { return this->Rank; }
 
   /// Set the shape.
-  void SetShape(int*);
+  void SetShape(const int*);
 
   /// Get the shape.
   const int* GetShape() const

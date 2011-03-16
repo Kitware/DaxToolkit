@@ -35,7 +35,7 @@ daxArray::~daxArray()
 }
 
 //-----------------------------------------------------------------------------
-void daxArray::SetShape(int* shape)
+void daxArray::SetShape(const int* shape)
 {
   delete [] this->Shape;
   this->Shape = NULL;
