@@ -12,19 +12,20 @@ void CellAverage(const daxWork* work,
   const daxArray* __dep__(in_positions) inputArray,
   daxArray* __dep__(in_connections) outputArray)
 {
-  // Get the connected-components using the connections array.
-  daxConnectedComponent cell;
-  daxGetConnectedComponent(work, in_connections, &cell);
-
-  float sum_value = 0.0;
-  for (int cc=0; cc < daxGetNumberOfElements(&cell); cc++)
-    {
-    // Generate a "work" for the point of interest.
-    daxWork point_work;
-    daxGetWorkForElement(&cell, cc, &point_work);
-
-    sum_value += daxGetArrayValue(point_work, inputArray);
-    }
-  sum_value /= daxGetNumberOfElements(&cell);
-  daxSetArrayValue(work, outputArray, sum_value);
+//  // Get the connected-components using the connections array.
+//  daxConnectedComponent cell;
+//  daxGetConnectedComponent(work, in_connections, &cell);
+//
+//  float sum_value = 0.0;
+//  for (int cc=0; cc < daxGetNumberOfElements(&cell); cc++)
+//    {
+//    // Generate a "work" for the point of interest.
+//    daxWork point_work;
+//    daxGetWorkForElement(&cell, cc, &point_work);
+//
+//    sum_value += daxGetArrayValue(point_work, inputArray);
+//    }
+//  sum_value /= daxGetNumberOfElements(&cell);
+//  daxSetArrayValue(work, outputArray, sum_value);
+  daxSetArrayValue(work, outputArray, 12.0);
 }

@@ -2,7 +2,7 @@
 // Depends on google-ctemplate system for substitutions.
 __constant uint __daxNumberOfArrays = {{dax_array_count}};
 
-void __daxGenerate(work, uchar generator, daxArrays* arrays)
+void __daxGenerate(daxWork* work, uchar generator, daxArray* arrays)
 {
   switch (generator)
     {
@@ -11,10 +11,7 @@ void __daxGenerate(work, uchar generator, daxArrays* arrays)
 {{#dax_generators}}
   case {{dax_id}}:
     // call the functor.
-    {{dax_name}}(work,
-      {{#dax_args}}arrays[{{dax_array_index}}] {{#dax_args_separator}},{{/dax_args_separator}}
-      {{/dax_args}}
-    );
+    {{dax_name}}(work, {{#dax_args}}&arrays[{{dax_array_index}}] {{#dax_args_separator}},{{/dax_args_separator}} {{/dax_args}});
     break;
 {{/dax_generators}}
     }
@@ -42,7 +39,7 @@ __kernel void main(
   daxWork work;
   __daxInitializeWorkFromGlobal(&work);
 
-  daxArrays arrays[{{dax_array_count}}];
+  daxArray arrays[{{dax_array_count}}];
   __daxInitializeArrays(arrays, arrayCores, __daxNumberOfArrays);
 
   // for each input array initialize the appropriate "daxArray" object.
@@ -63,9 +60,9 @@ __kernel void main(
   // for the work specified.
   for (uint cc=0; cc < __daxNumberOfArrays; cc++)
     {
-    if (arrays[cc].OutputDataF != NULL)
+    if (arrays[cc].OutputDataF != 0)
       {
-      __daxGenerate(work, arrays[cc].Generator, arrays[cc].Arrays);
+      __daxGenerate(&work, arrays[cc].Generator, arrays[cc].Arrays);
       }
     }
 }

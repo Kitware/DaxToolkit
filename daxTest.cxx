@@ -160,7 +160,7 @@ void daxExecute(int num_cores, daxArrayCore* cores,
       }
     for (int cc=0; cc < num_out_arrays; cc++)
       {
-      err_code = kernel.setArg(1+cc, *outputs[cc]);
+      err_code = kernel.setArg(1+num_in_arrays+cc, *outputs[cc]);
       RETURN_ON_ERROR(err_code, "pass output buffer.");
       }
 
@@ -226,6 +226,8 @@ int main(int, char**)
 
   executive->Connect(elevation, "output", cellAverage, "input_point");
   kernels.push_back(executive->GetKernel());
+
+  executive->PrintKernel();
 
   // This pipeline has 5 arrays. 
   daxArrayCore cores[5];
