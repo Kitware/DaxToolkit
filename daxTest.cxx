@@ -78,9 +78,11 @@ void daxExecute(int num_cores, daxArrayCore* cores,
     cl::Context context(CL_DEVICE_TYPE_CPU, NULL, NULL, NULL, &err_code);
 #else
     cout << "Using GPU device" << endl;
-    cl::Context context(CL_DEVICE_TYPE_GPU, NULL, NULL, NULL, &err_code);
+    cl_context_properties properties[] =
+      { CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[0])(), 0};
+    cl::Context context(CL_DEVICE_TYPE_GPU, properties);
 #endif
-    RETURN_ON_ERROR(err_code, "create GPU Context");
+    //RETURN_ON_ERROR(err_code, "create GPU Context");
 
     // Query devices.
     std::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
@@ -140,7 +142,7 @@ void daxExecute(int num_cores, daxArrayCore* cores,
       }
     RETURN_ON_ERROR(err_code, "compile the kernel.");
 
-    cl::Kernel kernel(program, "main", &err_code);
+    cl::Kernel kernel(program, "entry_point", &err_code);
     RETURN_ON_ERROR(err_code, "locate entry-point 'main'.");
 
     // * determine the shape of the kernel invocation.

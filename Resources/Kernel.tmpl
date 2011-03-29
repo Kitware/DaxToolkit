@@ -17,7 +17,7 @@ void __daxGenerate(daxWork* work, uchar generator, daxArray* arrays)
     }
 }
 
-__kernel void main(
+__kernel void entry_point(
   // we assume that there are __daxNumberOfArrays items in arrayCores.
   __global const __daxArrayCore* arrayCores,
 

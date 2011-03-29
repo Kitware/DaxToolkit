@@ -12,6 +12,7 @@
 #define ARRAY_TYPE_IRREGULAR 0
 #define ARRAY_TYPE_IMAGE_POINTS 1
 #define ARRAY_TYPE_IMAGE_CELL 2
+#pragma OPENCL EXTENSION cl_khr_byte_addressable_store: enable
 
 struct __daxArrayCoreI
 {
@@ -69,6 +70,7 @@ void __daxInitializeArrays(daxArray* arrays,
 
 #ifndef float3
 # define float3 float4
+# define dax_use_float4_for_float3
 #endif
 
 struct daxImageDataData
@@ -85,7 +87,14 @@ float3 daxGetArrayValue3(const daxWork* work, const daxArray* array)
   // ensures that the array is "generated".
   __daxGenerate(work, array->Generator, array->Arrays);
 
-  float3 retval = (float3)(0, 0, 0);
+
+  float3 retval =
+#ifdef dax_use_float4_for_float3
+    (float3)(0, 0, 0, 0)
+#else
+    (float3)(0,0, 0)
+#endif
+    ;
   if (array->Core->Type == ARRAY_TYPE_IRREGULAR)
     {
     if (array->InputDataF != 0)
@@ -120,7 +129,7 @@ void daxSetArrayValue(const daxWork* work, daxArray* output, float scalar)
       {
       // we are setting value for an intermediate array.
       // simply save the value in local memory.
-      output->TempResultF[0] = scalar;
+      output->TempResultF.x = scalar;
       }
     }
 }
