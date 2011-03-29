@@ -38,6 +38,15 @@ add_executable(daxGenerateHeaderFromFile
 target_link_libraries(daxGenerateHeaderFromFile
   ${Boost_LIBRARIES})
 
+add_executable(openclBuilder
+  openclBuilder.cxx)
+target_link_libraries(openclBuilder
+  ${Boost_LIBRARIES})
+if(FNC_ENABLE_OPENCL)
+  target_link_libraries(openclBuilder ${OPENCL_LIBRARIES})
+endif()
+
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/daxOptions.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/daxOptions.h
   @ONLY)
