@@ -2,20 +2,10 @@
 // Depends on google-ctemplate system for substitutions.
 __constant uint __daxNumberOfArrays = {{dax_array_count}};
 
-void __daxGenerate(daxWork* work, uchar generator, daxArray* arrays)
-{
-  switch (generator)
-    {
-  case 0: // inputs, no generator.
-    break;
-{{#dax_generators}}
-  case {{dax_id}}:
-    // call the functor.
-    {{dax_name}}(work, {{#dax_args}}&arrays[{{dax_array_index}}] {{#dax_args_separator}},{{/dax_args_separator}} {{/dax_args}});
-    break;
-{{/dax_generators}}
-    }
-}
+// Here were define the real "daxGetArray*" functions used by the user-kernels.
+{{#dax_get_array_kernels}}
+{{dax_get_array_kernel}}
+{{/dax_get_array_kernels}}
 
 __kernel void entry_point(
   // we assume that there are __daxNumberOfArrays items in arrayCores.
@@ -38,10 +28,11 @@ __kernel void entry_point(
 {
   daxWork work;
   __daxInitializeWorkFromGlobal(&work);
-
+  //
   daxArray arrays[{{dax_array_count}}];
   __daxInitializeArrays(arrays, arrayCores, __daxNumberOfArrays);
 
+  //
   // for each input array initialize the appropriate "daxArray" object.
 {{#dax_input_arrays}}
   arrays[{{dax_index}}].InputDataF = {{dax_name}};
@@ -56,13 +47,10 @@ __kernel void entry_point(
   arrays[{{dax_index}}].Generator = {{dax_generator_id}};
 {{/dax_generated_arrays}}
 
+  //
   // This will go over all the arrays and start generating every output array
   // for the work specified.
-  for (uint cc=0; cc < __daxNumberOfArrays; cc++)
-    {
-    if (arrays[cc].OutputDataF != 0)
-      {
-      __daxGenerate(&work, arrays[cc].Generator, arrays[cc].Arrays);
-      }
-    }
+{{#dax_output_arrays}}
+  daxGetArrayValue3___final__(&work, &arrays[{{dax_index}}]);
+{{/dax_output_arrays}}
 }

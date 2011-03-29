@@ -29,7 +29,7 @@ struct __daxArrayI
 {
   __global const float *InputDataF;
   __global float *OutputDataF;
-  __global __daxArrayCore* Core;
+  __global const __daxArrayCore* Core;
   struct __daxArrayI* Arrays;
   uchar Generator;
 
@@ -51,7 +51,7 @@ void __daxInitializeWorkFromGlobal(daxWork* work)
 }
 
 void __daxInitializeArrays(daxArray* arrays,
-  __global __daxArrayCore* cores,
+  __global const __daxArrayCore* cores,
   const uint num_items)
 {
   for (uint cc=0; cc < num_items; cc++)
@@ -80,14 +80,8 @@ struct daxImageDataData
   unsigned int Extents[6];
 } __attribute__((packed));
 
-void __daxGenerate(daxWork* work, uchar generator, daxArray* arrays);
-
-float3 daxGetArrayValue3(const daxWork* work, const daxArray* array)
+float3 __daxGetArrayValue3(const daxWork* work, const daxArray* array)
 {
-  // ensures that the array is "generated".
-  __daxGenerate(work, array->Generator, array->Arrays);
-
-
   float3 retval =
 #ifdef dax_use_float4_for_float3
     (float3)(0, 0, 0, 0)

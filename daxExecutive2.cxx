@@ -9,6 +9,7 @@
 
 // Generated headers.
 #include "Kernel.tmpl.h"
+#include "KernelGetArray.tmpl.h"
 #include "dAPI.cl.h"
 
 // dax headers
@@ -201,7 +202,11 @@ std::string daxExecutive2::GetKernel()
   boost::print_graph(this->Internals->Connectivity);
   cout << "--------------------------" << endl;
 
-  ctemplate::TemplateDictionary dictionary("kernel");
+  ctemplate::TemplateDictionary dictionaryKernel("kernel");
+  ctemplate::TemplateDictionary dictionaryGetArray("get_array");
+
+  ctemplate::Template* getArrayTemplate = ctemplate::Template::StringToTemplate(
+    daxHeaderString_KernelGetArray, ctemplate::STRIP_BLANK_LINES);
 
   // We can just do a topological sort and then invoke the kernel.
   std::vector<daxInternals::Graph::vertex_descriptor> sorted_vertices;
@@ -222,8 +227,14 @@ std::string daxExecutive2::GetKernel()
     size_t num_input_ports = module->GetNumberOfInputs();
     size_t num_output_ports = module->GetNumberOfOutputs();
 
+    dictionaryGetArray.SetValue("dax_name", module->GetModuleName());
+    std::string result;
+    getArrayTemplate->Expand(&result, &dictionaryGetArray);
+    dictionaryKernel.SetValueAndShowSection(
+      "dax_get_array_kernel", result, "dax_get_array_kernels");
+
     ctemplate::TemplateDictionary* moduleDict =
-      dictionary.AddSectionDictionary("dax_generators");
+      dictionaryGetArray.AddSectionDictionary("dax_generators");
     moduleDict->SetValue("dax_id", (boost::format("%1%") % (cc+1)).str());
     moduleDict->SetValue("dax_name", module->GetModuleName());
 
@@ -240,7 +251,7 @@ std::string daxExecutive2::GetKernel()
       global_outputs_map[module->GetOutputPort(portno).get()] = index;
 
       ctemplate::TemplateDictionary* arraysDict =
-        dictionary.AddSectionDictionary("dax_generated_arrays");
+        dictionaryKernel.AddSectionDictionary("dax_generated_arrays");
       arraysDict->SetValue("dax_index", (boost::format("%1%")%index).str());
       arraysDict->SetValue("dax_generator_id",
         (boost::format("%1%") % (cc+1)).str());
@@ -278,7 +289,7 @@ std::string daxExecutive2::GetKernel()
         index_map[port] = array_index;
 
         ctemplate::TemplateDictionary* input_array_dict =
-          dictionary.AddSectionDictionary("dax_input_arrays");
+          dictionaryKernel.AddSectionDictionary("dax_input_arrays");
         input_array_dict->SetValue("dax_name",
           (boost::format("input_array_%1%")%(input_array_count++)).str());
         input_array_dict->SetValue("dax_index",
@@ -308,23 +319,29 @@ std::string daxExecutive2::GetKernel()
     iter != global_outputs_map.end(); ++iter)
     {
     ctemplate::TemplateDictionary* output_array_dict =
-      dictionary.AddSectionDictionary("dax_output_arrays");
+      dictionaryKernel.AddSectionDictionary("dax_output_arrays");
     output_array_dict->SetValue("dax_name",
       (boost::format("output_array_%1%")%(output_array_count++)).str());
     output_array_dict->SetValue("dax_index",
       (boost::format("%1%")%iter->second).str());
     }
 
-  dictionary.SetValue("dax_array_count",
+  std::string result;
+  dictionaryGetArray.SetValue("dax_name", "__final__");
+  getArrayTemplate->Expand(&result, &dictionaryGetArray);
+  dictionaryKernel.SetValueAndShowSection(
+    "dax_get_array_kernel", result, "dax_get_array_kernels");
+
+  dictionaryKernel.SetValue("dax_array_count",
     (boost::format("%1%")%num_of_arrays).str());
-  dictionary.Dump();
+  dictionaryKernel.Dump();
 
   ctemplate::Template* tmpl = ctemplate::Template::StringToTemplate(
     daxHeaderString_Kernel, ctemplate::STRIP_BLANK_LINES);
 
-  std::string result;
-  tmpl->Expand(&result, &dictionary);
-  return result;
+  std::string t_result;
+  tmpl->Expand(&t_result, &dictionaryKernel);
+  return t_result;
 }
 
 //-----------------------------------------------------------------------------

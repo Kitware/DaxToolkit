@@ -75,6 +75,7 @@ set (core_kernels
   Functors/Elevation.cl
   Functors/CellAverage.cl
   Resources/Kernel.tmpl
+  Resources/KernelGetArray.tmpl
   Resources/dAPI.cl
 )
 
