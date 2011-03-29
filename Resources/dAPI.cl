@@ -9,6 +9,10 @@
 // Any function or struct beginning with "dax" is public APi while anything
 // beginning with __dax is private/internal API and can change without notice.
 
+#define ARRAY_TYPE_IRREGULAR 0
+#define ARRAY_TYPE_IMAGE_POINTS 1
+#define ARRAY_TYPE_IMAGE_CELL 2
+
 struct __daxArrayCoreI
 {
   uchar Type; // 0 -- irregular
@@ -62,16 +66,61 @@ void __daxInitializeArrays(daxArray* arrays,
 #define __positions__
 #define __and__(x,y)
 #define __dep__(x)
-#define float3 float4
+
+#ifndef float3
+# define float3 float4
+#endif
+
+struct daxImageDataData
+{
+  float Spacing[3];
+  float Origin[3];
+  unsigned int Extents[6];
+} __attribute__((packed));
+
+void __daxGenerate(daxWork* work, uchar generator, daxArray* arrays);
 
 float3 daxGetArrayValue3(const daxWork* work, const daxArray* array)
 {
-  float3 retval;
-  retval.x = retval.y = retval.z = 0.0;
+  // ensures that the array is "generated".
+  __daxGenerate(work, array->Generator, array->Arrays);
+
+  float3 retval = (float3)(0, 0, 0);
+  if (array->Core->Type == ARRAY_TYPE_IRREGULAR)
+    {
+    if (array->InputDataF != 0)
+      {
+      // reading from global input array.
+      retval.x = array->InputDataF[3*work->ElementID];
+      retval.y = array->InputDataF[3*work->ElementID + 1];
+      retval.z = array->InputDataF[3*work->ElementID + 2];
+      }
+    else 
+      {
+      // reading from temporary array.
+      retval.x = array->TempResultF.x;
+      retval.y = array->TempResultF.y;
+      retval.z = array->TempResultF.z;
+      }
+    }
   return retval;
 }
 
 void daxSetArrayValue(const daxWork* work, daxArray* output, float scalar)
 {
-
+  if (output->Core->Type == ARRAY_TYPE_IRREGULAR)
+    {
+    if (output->OutputDataF != 0)
+      {
+      // indicates we are writing to a global out-array.
+      //printf("%d == %f, \t",work->ElementID, scalar);
+      output->OutputDataF[work->ElementID] = scalar;
+      }
+    else if (output->InputDataF == 0)
+      {
+      // we are setting value for an intermediate array.
+      // simply save the value in local memory.
+      output->TempResultF[0] = scalar;
+      }
+    }
 }
