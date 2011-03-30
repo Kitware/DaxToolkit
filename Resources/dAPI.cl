@@ -109,6 +109,25 @@ float3 __daxGetArrayValue3(const daxWork* work, const daxArray* array)
   return retval;
 }
 
+float __daxGetArrayValue(const daxWork* work, const daxArray* array)
+{
+  if (array->Core->Type == ARRAY_TYPE_IRREGULAR)
+    {
+    if (array->InputDataF != 0)
+      {
+      // reading from global input array.
+      return array->InputDataF[work->ElementID];
+      }
+    else 
+      {
+      // reading from temporary array.
+      return array->TempResultF.x;
+      }
+    }
+
+  return 0.0;
+}
+
 void daxSetArrayValue(const daxWork* work, daxArray* output, float scalar)
 {
   if (output->Core->Type == ARRAY_TYPE_IRREGULAR)

@@ -27,6 +27,6 @@ void CellAverage(const daxWork* work,
 //    }
 //  sum_value /= daxGetNumberOfElements(&cell);
 //  daxSetArrayValue(work, outputArray, sum_value);
-  float3 sum_value = daxGetArrayValue3(work, inputArray);
-  daxSetArrayValue(work, outputArray, 12.0);
+  float in_value = daxGetArrayValue(work, inputArray) * 2.0;
+  daxSetArrayValue(work, outputArray, in_value);
 }

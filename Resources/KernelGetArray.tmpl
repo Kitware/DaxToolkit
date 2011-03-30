@@ -11,3 +11,15 @@ float3 daxGetArrayValue3_{{dax_name}}(const daxWork* work, const daxArray* array
   {{/dax_generators}}
   return __daxGetArrayValue3(work, array);
 }
+
+float daxGetArrayValue_{{dax_name}}(const daxWork* work, const daxArray* array)
+{
+  daxArray* arrays = array->Arrays;
+  {{#dax_generators}}
+  if (array->Generator == {{dax_id}})
+    {
+    {{dax_name}}(work, {{#dax_args}}&arrays[{{dax_array_index}}] {{#dax_args_separator}},{{/dax_args_separator}} {{/dax_args}});
+    }
+  {{/dax_generators}}
+  return __daxGetArrayValue(work, array);
+}

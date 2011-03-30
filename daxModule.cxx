@@ -159,11 +159,18 @@ daxPortPtr daxModule::GetOutputPort(const std::string& portname) const
 std::string daxModule::GetCleandupFunctorCode() const
 {
   std::string code = this->GetFunctorCode();
-  std::string format= 
+  std::string format0 = 
     std::string("daxGetArrayValue3_")+this->GetModuleName();
-  boost::replace_all(code, "daxGetArrayValue3", format);
+  std::string format1= std::string("daxGetArrayValue_")+this->GetModuleName();
+
+  boost::replace_all(code, "daxGetArrayValue3", "daxGetArray3Value");
+  boost::replace_all(code, "daxGetArrayValue", format1);
+  boost::replace_all(code, "daxGetArray3Value", format0);
+
   std::string header =
     std::string("float3 daxGetArrayValue3_")+this->GetModuleName() +
+    "(const daxWork* work, const daxArray* array);\n" + 
+    std::string("float daxGetArrayValue_")+this->GetModuleName() +
     "(const daxWork* work, const daxArray* array);\n";
   cout << (header + code).c_str() << endl;
   return (header + code);
