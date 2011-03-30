@@ -73,12 +73,13 @@ void __daxInitializeArrays(daxArray* arrays,
 # define dax_use_float4_for_float3
 #endif
 
-struct daxImageDataData
+struct __daxImageDataData
 {
   float Spacing[3];
   float Origin[3];
   unsigned int Extents[6];
 } __attribute__((packed));
+typedef struct __daxImageDataData daxImageDataData;
 
 float3 __daxGetArrayValue3(const daxWork* work, const daxArray* array)
 {
@@ -105,7 +106,32 @@ float3 __daxGetArrayValue3(const daxWork* work, const daxArray* array)
       retval.y = array->TempResultF.y;
       retval.z = array->TempResultF.z;
       }
+    return retval;
     }
+  else if (array->Core->Type == ARRAY_TYPE_IMAGE_POINTS)
+    {
+    // Now using spacing and extents and id compute the point coordinates.
+    daxImageDataData* imageData = 0;
+    if (array->InputDataF)
+      {
+      imageData = (daxImageDataData*)(array->InputDataF);
+      }
+    uint4 dims;
+    dims.x = imageData->Extents[1] - imageData->Extents[0] + 1;
+    dims.y = imageData->Extents[3] - imageData->Extents[2] + 1;
+    dims.z = imageData->Extents[5] - imageData->Extents[4] + 1;
+    // assume non-zero dims for now.
+    uint4 xyz; 
+    xyz.x = work->ElementID % dims.x;
+    xyz.y = (work->ElementID/dims.x) % dims.y;
+    xyz.z = work->ElementID / (dims.x * dims.y);
+    retval.x = imageData->Origin[0] + (xyz.x + imageData->Extents[0]) * imageData->Spacing[0];
+    retval.y = imageData->Origin[1] + (xyz.y + imageData->Extents[2]) * imageData->Spacing[1];
+    retval.z = imageData->Origin[2] + (xyz.z + imageData->Extents[4]) * imageData->Spacing[2];
+    printf("Location: %f, %f, %f\n", retval.x, retval.y, retval.z);
+    return retval;
+    }
+  printf("__daxGetArrayValue3 case not handled %d", array->Core->Type);
   return retval;
 }
 
