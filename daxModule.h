@@ -32,6 +32,7 @@ public:
 
   /// Returns the functor code.
   virtual const std::string& GetFunctorCode() const = 0;
+  std::string GetCleandupFunctorCode() const;
 
   /// Returns the number of inputs needed by this module.
   virtual size_t GetNumberOfInputs() const;

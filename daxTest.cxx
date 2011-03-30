@@ -223,8 +223,8 @@ int main(int, char**)
   daxModulePtr cellAverage(new daxCellAverageModule());
 
   std::vector<std::string> kernels;
-  kernels.push_back(elevation->GetFunctorCode());
-  kernels.push_back(cellAverage->GetFunctorCode());
+  kernels.push_back(elevation->GetCleandupFunctorCode());
+  kernels.push_back(cellAverage->GetCleandupFunctorCode());
 
   executive->Connect(elevation, "output", cellAverage, "input_point");
   kernels.push_back(executive->GetKernel());
