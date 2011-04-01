@@ -14,6 +14,9 @@
 #define ARRAY_TYPE_IMAGE_CELL 2
 #pragma OPENCL EXTENSION cl_khr_byte_addressable_store: enable
 
+
+#define printf(...)
+
 struct __daxArrayCoreI
 {
   uchar Type; // 0 -- irregular
@@ -81,6 +84,15 @@ struct __daxImageDataData
 } __attribute__((packed));
 typedef struct __daxImageDataData daxImageDataData;
 
+uint4 __daxGetDims(const daxImageDataData* imageData)
+{
+  uint4 dims;
+  dims.x = imageData->Extents[1] - imageData->Extents[0] + 1;
+  dims.y = imageData->Extents[3] - imageData->Extents[2] + 1;
+  dims.z = imageData->Extents[5] - imageData->Extents[4] + 1;
+  return dims;
+}
+
 float3 __daxGetArrayValue3(const daxWork* work, const daxArray* array)
 {
   float3 retval =
@@ -116,10 +128,7 @@ float3 __daxGetArrayValue3(const daxWork* work, const daxArray* array)
       {
       imageData = (daxImageDataData*)(array->InputDataF);
       }
-    uint4 dims;
-    dims.x = imageData->Extents[1] - imageData->Extents[0] + 1;
-    dims.y = imageData->Extents[3] - imageData->Extents[2] + 1;
-    dims.z = imageData->Extents[5] - imageData->Extents[4] + 1;
+    uint4 dims = __daxGetDims(imageData);
     // assume non-zero dims for now.
     uint4 xyz; 
     xyz.x = work->ElementID % dims.x;
@@ -170,5 +179,78 @@ void daxSetArrayValue(const daxWork* work, daxArray* output, float scalar)
       // simply save the value in local memory.
       output->TempResultF.x = scalar;
       }
+    }
+}
+
+
+// API for access topology.
+struct __daxConnectedComponent
+{
+  uint Id;
+  const daxArray* ConnectionsArray;
+};
+
+typedef struct __daxConnectedComponent daxConnectedComponent;
+
+void daxGetConnectedComponent(const daxWork* work,
+  const daxArray* connections_array,
+  daxConnectedComponent* element)
+{
+  element->Id = work->ElementID;
+  element->ConnectionsArray = connections_array;
+}
+
+uint daxGetNumberOfElements(const daxConnectedComponent* element)
+{
+  // For now, we assume that connections array is never generated, but a global
+  // input array. Connections array will start being generated once we start
+  // dealing with topology changing algorithms.
+  switch (element->ConnectionsArray->Core->Type)
+    {
+  case ARRAY_TYPE_IMAGE_CELL:
+    return 8; // assume 3D cells for now.
+
+    }
+  printf("daxGetNumberOfElements case not handled.");
+  return 0;
+}
+
+void daxGetWorkForElement(const daxConnectedComponent* element,
+  uint index, daxWork* element_work)
+{
+  switch (element->ConnectionsArray->Core->Type)
+    {
+  case ARRAY_TYPE_IMAGE_CELL:
+      {
+      daxImageDataData* imageData =
+        (daxImageDataData*)element->ConnectionsArray->InputDataF;
+      uint4 dims = __daxGetDims(imageData);
+      // assume non-zero dims for now.
+      uint4 ijkMin, ijkMax;
+      ijkMin.x = element->Id % (dims.x -1);
+      ijkMin.y = (element->Id / (dims.x - 1)) % (dims.y -1);
+      ijkMin.z = element->Id / ( (dims.x-1) * (dims.y-1) );
+      ijkMax = ijkMin + (uint4)(1,1,1,0);
+      uint cur_index=0; uint4 loc;
+      for (loc.z = ijkMin.z; loc.z <= ijkMax.z; loc.z++)
+        {
+        for (loc.y = ijkMin.y; loc.y <= ijkMax.y; loc.y++)
+          {
+          for (loc.x = ijkMin.x; loc.x < ijkMax.x; loc.x++, cur_index++)
+            {
+            if (cur_index == index)
+              {
+              element_work->ElementID =
+                loc.x + loc.y*dims.x + loc.z*dims.x*dims.y;
+              }
+            }
+          }
+        }
+      }
+
+    break;
+
+  default:
+    printf("daxGetWorkForElement case not handled.");
     }
 }
