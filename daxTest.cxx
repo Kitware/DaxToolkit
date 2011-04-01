@@ -251,6 +251,7 @@ int main(int, char**)
   cores[1].Shape[0] = 3; cores[1].Shape[1] = 0;
   daxImageDataData points;
   points.Spacing[0] = points.Spacing[1] = points.Spacing[2] = 1.0f;
+  points.Origin[0] = points.Origin[1] = points.Origin[2] = 0.0f;
   points.Extents[0] = points.Extents[2] = points.Extents[4] = 0;
   points.Extents[1] = points.Extents[3] = points.Extents[5] = DIMENSION -1;
   global_arrays[0] = reinterpret_cast<float*>(&points);
