@@ -22,11 +22,13 @@ void CellAverage(const daxWork* work,
     // Generate a "work" for the point of interest.
     daxWork point_work;
     daxGetWorkForElement(&cell, cc, &point_work);
-
-    sum_value += daxGetArrayValue(&point_work, inputArray);
+    float val = daxGetArrayValue(&point_work, inputArray);
+    printf("input value %d : %f\n",cc, val);
+    sum_value += val;
     }
   sum_value /= daxGetNumberOfElements(&cell);
   daxSetArrayValue(work, outputArray, sum_value);
+  printf("Cell Average : %f\n", sum_value);
   //  float in_value = daxGetArrayValue(work, inputArray) * 2.0;
   //  daxSetArrayValue(work, outputArray, in_value);
 }

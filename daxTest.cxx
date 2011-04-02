@@ -33,7 +33,7 @@
     }\
   }
 
-#define DIMENSION 3
+#define DIMENSION 2
 
 #define uchar unsigned char
 struct daxArrayCore
@@ -171,7 +171,7 @@ void daxExecute(int num_cores, daxArrayCore* cores,
     // FIXME num-of-cells.
     // FIXME: right now same as num-points since CellAverage is not really
     // computing cell-values currently.
-    int num_items = (DIMENSION*DIMENSION*DIMENSION);
+    int num_items = ((DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1));
     cout << num_items << endl;
     cl::Event event;
     cl::CommandQueue queue(context, devices[0]);
@@ -261,8 +261,8 @@ int main(int, char**)
   cores[2].Type = 0; // irregular
   cores[2].Rank = 0;
   cores[2].Shape[0] = cores[2].Shape[1] = 0;
-  global_arrays[3] = new float[DIMENSION*DIMENSION*DIMENSION];
-  global_array_size_in_bytes[3] = DIMENSION*DIMENSION*DIMENSION*sizeof(float);
+  global_arrays[3] = new float[(DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1)];
+  global_array_size_in_bytes[3] = (DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1)*sizeof(float);
 
   // 3 == same as 1 (point coordinates for CellAverage).
   cores[3] = cores[1];

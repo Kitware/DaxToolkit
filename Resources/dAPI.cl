@@ -15,7 +15,7 @@
 #pragma OPENCL EXTENSION cl_khr_byte_addressable_store: enable
 
 
-#define printf(...)
+//#define printf(...)
 
 struct __daxArrayCoreI
 {
@@ -218,6 +218,7 @@ uint daxGetNumberOfElements(const daxConnectedComponent* element)
 void daxGetWorkForElement(const daxConnectedComponent* element,
   uint index, daxWork* element_work)
 {
+  printf ("daxGetWorkForElement %d\n", index);
   switch (element->ConnectionsArray->Core->Type)
     {
   case ARRAY_TYPE_IMAGE_CELL:
@@ -236,12 +237,16 @@ void daxGetWorkForElement(const daxConnectedComponent* element,
         {
         for (loc.y = ijkMin.y; loc.y <= ijkMax.y; loc.y++)
           {
-          for (loc.x = ijkMin.x; loc.x < ijkMax.x; loc.x++, cur_index++)
+          for (loc.x = ijkMin.x; loc.x <= ijkMax.x; loc.x++, cur_index++)
             {
             if (cur_index == index)
               {
               element_work->ElementID =
                 loc.x + loc.y*dims.x + loc.z*dims.x*dims.y;
+
+              printf ("cellId: %d:%d, structured id: %d %d %d, point id: %d\n",
+                element->Id, index, loc.x, loc.y, loc.z,
+                element_work->ElementID);
               }
             }
           }
