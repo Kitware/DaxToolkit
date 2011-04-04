@@ -23,6 +23,8 @@
 # include "opecl_util.h"
 #endif
 
+#include <boost/progress.hpp>
+
 #define RETURN_ON_ERROR(err, msg) \
   {\
   if (err != CL_SUCCESS)\
@@ -33,7 +35,7 @@
     }\
   }
 
-#define DIMENSION 2
+#define DIMENSION 64
 
 #define uchar unsigned char
 struct daxArrayCore
@@ -282,15 +284,18 @@ int main(int, char**)
   global_arrays[2] = reinterpret_cast<float*>(&points);
   global_array_size_in_bytes[2] = sizeof(points);
 
+  boost::timer timer;
   daxExecute(5, cores, 3, global_arrays, global_array_size_in_bytes,
     1, &global_arrays[3], &global_array_size_in_bytes[3],
     kernels.size(), &kernels[0]);
+  cout << "Time: " << timer.elapsed() << endl;
 
-  cout << "Output" << endl;
-  for (int cc=0; cc < global_array_size_in_bytes[3]/sizeof(float); cc++)
-    {
-    cout << global_arrays[3][cc] <<" , ";
-    }
-  cout << endl;
+  //cout << "Output" << endl;
+  //for (int cc=0; cc < global_array_size_in_bytes[3]/sizeof(float); cc++)
+  //  {
+  //  cout << global_arrays[3][cc] <<" , ";
+  //  }
+  //cout << endl;
+  delete []global_arrays[3];
   return 0;
 }
