@@ -15,9 +15,9 @@
 #pragma OPENCL EXTENSION cl_khr_byte_addressable_store: enable
 
 
-//#define printf(...)
+#define printf(...)
 
-struct __daxArrayCoreI
+struct __attribute__((packed)) __daxArrayCoreI
 {
   uchar Type; // 0 -- irregular
               // 1 -- image-data points array
@@ -26,7 +26,7 @@ struct __daxArrayCoreI
   uchar Shape[2];
 };
 
-typedef struct __daxArrayCoreI __daxArrayCore;
+typedef struct  __attribute__((packed)) __daxArrayCoreI __daxArrayCore;
 
 struct __daxArrayI
 {
@@ -37,7 +37,7 @@ struct __daxArrayI
   uchar Generator;
 
   float4 TempResultF;
-  uint4 TempResultUI;
+//  __private float4 TempResultF;
 };
 typedef struct __daxArrayI daxArray;
 
@@ -76,13 +76,13 @@ void __daxInitializeArrays(daxArray* arrays,
 # define dax_use_float4_for_float3
 #endif
 
-struct __daxImageDataData
+struct __attribute__((packed)) __daxImageDataData
 {
-  float Spacing[3];
-  float Origin[3];
-  unsigned int Extents[6];
-} __attribute__((packed));
-typedef struct __daxImageDataData daxImageDataData;
+  float Spacing[3] __attribute__ ((endian(host)));
+  float Origin[3] __attribute__ ((endian(host)));
+  unsigned int Extents[6] __attribute__ ((endian(host)));
+};
+typedef struct  __daxImageDataData daxImageDataData;
 
 uint4 __daxGetDims(const daxImageDataData* imageData)
 {
@@ -123,20 +123,20 @@ float3 __daxGetArrayValue3(const daxWork* work, const daxArray* array)
   else if (array->Core->Type == ARRAY_TYPE_IMAGE_POINTS)
     {
     // Now using spacing and extents and id compute the point coordinates.
-    daxImageDataData* imageData = 0;
+    daxImageDataData imageData;
     if (array->InputDataF)
       {
-      imageData = (daxImageDataData*)(array->InputDataF);
+      imageData = *((daxImageDataData*)(array->InputDataF));
       }
-    uint4 dims = __daxGetDims(imageData);
+    uint4 dims = __daxGetDims(&imageData);
     // assume non-zero dims for now.
     uint4 xyz; 
     xyz.x = work->ElementID % dims.x;
     xyz.y = (work->ElementID/dims.x) % dims.y;
     xyz.z = work->ElementID / (dims.x * dims.y);
-    retval.x = imageData->Origin[0] + (xyz.x + imageData->Extents[0]) * imageData->Spacing[0];
-    retval.y = imageData->Origin[1] + (xyz.y + imageData->Extents[2]) * imageData->Spacing[1];
-    retval.z = imageData->Origin[2] + (xyz.z + imageData->Extents[4]) * imageData->Spacing[2];
+    retval.x = imageData.Origin[0] + (xyz.x + imageData.Extents[0]) * imageData.Spacing[0];
+    retval.y = imageData.Origin[1] + (xyz.y + imageData.Extents[2]) * imageData.Spacing[1];
+    retval.z = imageData.Origin[2] + (xyz.z + imageData.Extents[4]) * imageData.Spacing[2];
     printf("Location: %f, %f, %f\n", retval.x, retval.y, retval.z);
     return retval;
     }
@@ -146,6 +146,7 @@ float3 __daxGetArrayValue3(const daxWork* work, const daxArray* array)
 
 float __daxGetArrayValue(const daxWork* work, const daxArray* array)
 {
+  printf("__daxGetArrayValue\n");
   if (array->Core->Type == ARRAY_TYPE_IRREGULAR)
     {
     if (array->InputDataF != 0)
@@ -173,7 +174,7 @@ void daxSetArrayValue(const daxWork* work, daxArray* output, float scalar)
       //printf("%d == %f, \t",work->ElementID, scalar);
       output->OutputDataF[work->ElementID] = scalar;
       }
-    else if (output->InputDataF == 0)
+    else if (output->OutputDataF == 0)
       {
       // we are setting value for an intermediate array.
       // simply save the value in local memory.
@@ -223,34 +224,22 @@ void daxGetWorkForElement(const daxConnectedComponent* element,
     {
   case ARRAY_TYPE_IMAGE_CELL:
       {
-      daxImageDataData* imageData =
-        (daxImageDataData*)element->ConnectionsArray->InputDataF;
-      uint4 dims = __daxGetDims(imageData);
+      daxImageDataData imageData =
+        *((daxImageDataData*)(element->ConnectionsArray->InputDataF));
+      uint4 dims = __daxGetDims(&imageData);
       // assume non-zero dims for now.
-      uint4 ijkMin, ijkMax;
-      ijkMin.x = element->Id % (dims.x -1);
-      ijkMin.y = (element->Id / (dims.x - 1)) % (dims.y -1);
-      ijkMin.z = element->Id / ( (dims.x-1) * (dims.y-1) );
-      ijkMax = ijkMin + (uint4)(1,1,1,0);
-      uint cur_index=0; uint4 loc;
-      for (loc.z = ijkMin.z; loc.z <= ijkMax.z; loc.z++)
-        {
-        for (loc.y = ijkMin.y; loc.y <= ijkMax.y; loc.y++)
-          {
-          for (loc.x = ijkMin.x; loc.x <= ijkMax.x; loc.x++, cur_index++)
-            {
-            if (cur_index == index)
-              {
-              element_work->ElementID =
-                loc.x + loc.y*dims.x + loc.z*dims.x*dims.y;
-
-              printf ("cellId: %d:%d, structured id: %d %d %d, point id: %d\n",
-                element->Id, index, loc.x, loc.y, loc.z,
-                element_work->ElementID);
-              }
-            }
-          }
-        }
+      uint4 ijk;
+      ijk.x = element->Id % (dims.x -1);
+      ijk.y = (element->Id / (dims.x - 1)) % (dims.y -1);
+      ijk.z = element->Id / ( (dims.x-1) * (dims.y-1) );
+      ijk.x += index % 2;
+      ijk.y += (index / 2) % 2;
+      ijk.z += (index / 4);
+      element_work->ElementID =
+        ijk.x + ijk.y*dims.x + ijk.z*dims.x*dims.y;
+      //printf ("cellId: %d:%d, structured id: %d %d %d, point id: %d\n",
+      //  element->Id, index, loc.x, loc.y, loc.z,
+      //  element_work->ElementID);
       }
 
     break;

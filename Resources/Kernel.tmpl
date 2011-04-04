@@ -29,7 +29,7 @@ __kernel void entry_point(
   daxWork work;
   __daxInitializeWorkFromGlobal(&work);
   //
-  daxArray arrays[{{dax_array_count}}];
+  __private daxArray arrays[{{dax_array_count}}];
   __daxInitializeArrays(arrays, arrayCores, __daxNumberOfArrays);
 
   //

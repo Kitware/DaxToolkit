@@ -17,16 +17,17 @@ void CellAverage(const daxWork* work,
   daxGetConnectedComponent(work, in_connections, &cell);
 
   float sum_value = 0.0;
-  for (uint cc=0; cc < daxGetNumberOfElements(&cell); cc++)
+  uint num_elements = daxGetNumberOfElements(&cell);
+  daxWork point_work;
+  for (uint cc=0; cc < num_elements; cc++)
     {
     // Generate a "work" for the point of interest.
-    daxWork point_work;
     daxGetWorkForElement(&cell, cc, &point_work);
-    float val = daxGetArrayValue(&point_work, inputArray);
-    printf("input value %d : %f\n",cc, val);
-    sum_value += val;
+    sum_value += daxGetArrayValue(&point_work, inputArray);
+    //printf("input value %d : %f\n",cc, val);
+    //sum_value += val;
     }
-  sum_value /= daxGetNumberOfElements(&cell);
+  sum_value /= num_elements;
   daxSetArrayValue(work, outputArray, sum_value);
   printf("Cell Average : %f\n", sum_value);
   //  float in_value = daxGetArrayValue(work, inputArray) * 2.0;

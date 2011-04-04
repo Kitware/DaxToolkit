@@ -182,7 +182,8 @@ void daxExecute(int num_cores, daxArrayCore* cores,
     RETURN_ON_ERROR(err_code, "enqueue.");
 
     // for for the kernel execution to complete.
-    event.wait();
+    err_code = event.wait();
+    RETURN_ON_ERROR(err_code, "execute");
 
     // now request read back.
     for (int cc=0; cc < num_out_arrays; cc++)
@@ -255,6 +256,7 @@ int main(int, char**)
   points.Extents[0] = points.Extents[2] = points.Extents[4] = 0;
   points.Extents[1] = points.Extents[3] = points.Extents[5] = DIMENSION -1;
   global_arrays[0] = reinterpret_cast<float*>(&points);
+  cout << "Size of points: " << sizeof(points) << endl;
   global_array_size_in_bytes[0] = sizeof(points);
 
   // 2 == output from cellAverage.
@@ -262,6 +264,10 @@ int main(int, char**)
   cores[2].Rank = 0;
   cores[2].Shape[0] = cores[2].Shape[1] = 0;
   global_arrays[3] = new float[(DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1)];
+  for (int cc=0; cc < (DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1); cc++)
+    {
+    global_arrays[3][cc] = -1;
+    }
   global_array_size_in_bytes[3] = (DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1)*sizeof(float);
 
   // 3 == same as 1 (point coordinates for CellAverage).
@@ -280,5 +286,11 @@ int main(int, char**)
     1, &global_arrays[3], &global_array_size_in_bytes[3],
     kernels.size(), &kernels[0]);
 
+  cout << "Output" << endl;
+  for (int cc=0; cc < global_array_size_in_bytes[3]/sizeof(float); cc++)
+    {
+    cout << global_arrays[3][cc] <<" , ";
+    }
+  cout << endl;
   return 0;
 }
