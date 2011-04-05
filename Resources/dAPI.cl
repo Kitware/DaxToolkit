@@ -76,7 +76,8 @@ void __daxInitializeArrays(daxArray* arrays,
 # define dax_use_float4_for_float3
 #endif
 
-struct __attribute__((packed)) __daxImageDataData
+// PERF:  not using packed here gives a speedup of 2.
+struct /*__attribute__((packed))*/ __daxImageDataData
 {
   float Spacing[3] __attribute__ ((endian(host)));
   float Origin[3] __attribute__ ((endian(host)));

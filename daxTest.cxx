@@ -35,7 +35,7 @@
     }\
   }
 
-#define DIMENSION 128
+#define DIMENSION 512
 
 #define uchar unsigned char
 struct daxArrayCore
