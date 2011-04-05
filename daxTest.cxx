@@ -35,7 +35,7 @@
     }\
   }
 
-#define DIMENSION 64
+#define DIMENSION 128
 
 #define uchar unsigned char
 struct daxArrayCore
@@ -180,7 +180,7 @@ void daxExecute(int num_cores, daxArrayCore* cores,
     err_code = queue.enqueueNDRangeKernel(kernel,
       cl::NullRange,
       cl::NDRange(num_items),
-      cl::NDRange(1), NULL, &event);
+      cl::NullRange, NULL, &event);
     RETURN_ON_ERROR(err_code, "enqueue.");
 
     // for for the kernel execution to complete.
