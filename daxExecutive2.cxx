@@ -197,10 +197,10 @@ void daxExecutive2::Reset()
 //-----------------------------------------------------------------------------
 std::string daxExecutive2::GetKernel()
 {
-  cout << endl << "--------------------------" << endl;
-  cout << "Connectivity Graph: " << endl;
-  boost::print_graph(this->Internals->Connectivity);
-  cout << "--------------------------" << endl;
+  //cout << endl << "--------------------------" << endl;
+  //cout << "Connectivity Graph: " << endl;
+  //boost::print_graph(this->Internals->Connectivity);
+  //cout << "--------------------------" << endl;
 
   ctemplate::TemplateDictionary dictionaryKernel("kernel");
   ctemplate::TemplateDictionary dictionaryGetArray("get_array");
@@ -334,7 +334,7 @@ std::string daxExecutive2::GetKernel()
 
   dictionaryKernel.SetValue("dax_array_count",
     (boost::format("%1%")%num_of_arrays).str());
-  dictionaryKernel.Dump();
+  //dictionaryKernel.Dump();
 
   ctemplate::Template* tmpl = ctemplate::Template::StringToTemplate(
     daxHeaderString_Kernel, ctemplate::STRIP_BLANK_LINES);
@@ -358,7 +358,7 @@ bool daxExecutive2::ExecuteOnce(
 {
   // FIXME: now sure how to dfs over a subgraph starting with head, so for now
   // we assume there's only 1 connected graph in "graph".
-  cout << "Execute sub-graph: " << head << endl;
+  //cout << "Execute sub-graph: " << head << endl;
 
   std::vector<std::string> functor_codes;
 

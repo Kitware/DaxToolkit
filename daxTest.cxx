@@ -236,8 +236,6 @@ int main(int, char**)
   executive->Connect(elevation, "output", cellAverage, "input_point");
   kernels.push_back(executive->GetKernel());
 
-  executive->PrintKernel();
-
   // This pipeline has 5 arrays. 
   daxArrayCore cores[5];
   float* global_arrays[4];
@@ -290,12 +288,7 @@ int main(int, char**)
     kernels.size(), &kernels[0]);
   cout << "Time: " << timer.elapsed() << endl;
 
-  //cout << "Output" << endl;
-  //for (int cc=0; cc < global_array_size_in_bytes[3]/sizeof(float); cc++)
-  //  {
-  //  cout << global_arrays[3][cc] <<" , ";
-  //  }
-  //cout << endl;
+  cout << "Output (1): " << global_arrays[3][0] << endl;
   delete []global_arrays[3];
   return 0;
 }

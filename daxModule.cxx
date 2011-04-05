@@ -172,6 +172,5 @@ std::string daxModule::GetCleandupFunctorCode() const
     "(const daxWork* work, const daxArray* array);\n" + 
     std::string("float daxGetArrayValue_")+this->GetModuleName() +
     "(const daxWork* work, const daxArray* array);\n";
-  cout << (header + code).c_str() << endl;
   return (header + code);
 }
