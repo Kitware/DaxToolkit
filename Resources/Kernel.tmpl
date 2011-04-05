@@ -9,11 +9,11 @@ __constant uint __daxNumberOfArrays = {{dax_array_count}};
 
 __kernel void entry_point(
   // we assume that there are __daxNumberOfArrays items in arrayCores.
-  __global const __daxArrayCore* arrayCores,
+  __constant const __daxArrayCore* arrayCores,
 
   // for each global input-array
 {{#dax_input_arrays}}
-  __global const float* {{dax_name}} {{#dax_input_arrays_separator}},{{/dax_input_arrays_separator}}
+  __constant float* {{dax_name}} {{#dax_input_arrays_separator}},{{/dax_input_arrays_separator}}
 {{/dax_input_arrays}}
 
  // DOH! I need to insert a ',' here conditionally. For now, I am going to

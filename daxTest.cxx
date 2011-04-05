@@ -184,8 +184,10 @@ void daxExecute(int num_cores, daxArrayCore* cores,
     RETURN_ON_ERROR(err_code, "enqueue.");
 
     // for for the kernel execution to complete.
+    boost::timer timer;
     err_code = event.wait();
     RETURN_ON_ERROR(err_code, "execute");
+    cout << "Execution Time: " << timer.elapsed() << endl;
 
     // now request read back.
     for (int cc=0; cc < num_out_arrays; cc++)
@@ -286,8 +288,7 @@ int main(int, char**)
   daxExecute(5, cores, 3, global_arrays, global_array_size_in_bytes,
     1, &global_arrays[3], &global_array_size_in_bytes[3],
     kernels.size(), &kernels[0]);
-  cout << "Time: " << timer.elapsed() << endl;
-
+  cout << "Total Time ("<< DIMENSION << "^3) : "<< timer.elapsed() << endl;
   cout << "Output (1): " << global_arrays[3][0] << endl;
   delete []global_arrays[3];
   return 0;

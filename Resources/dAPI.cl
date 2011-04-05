@@ -30,9 +30,9 @@ typedef struct  __attribute__((packed)) __daxArrayCoreI __daxArrayCore;
 
 struct __daxArrayI
 {
-  __global const float *InputDataF;
+  __constant const float *InputDataF;
   __global float *OutputDataF;
-  __global const __daxArrayCore* Core;
+  __constant const __daxArrayCore* Core;
   struct __daxArrayI* Arrays;
   uchar Generator;
 
@@ -54,7 +54,7 @@ void __daxInitializeWorkFromGlobal(daxWork* work)
 }
 
 void __daxInitializeArrays(daxArray* arrays,
-  __global const __daxArrayCore* cores,
+  __constant const __daxArrayCore* cores,
   const uint num_items)
 {
   for (uint cc=0; cc < num_items; cc++)
