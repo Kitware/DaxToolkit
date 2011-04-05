@@ -184,6 +184,27 @@ void daxSetArrayValue(const daxWork* work, daxArray* output, float scalar)
     }
 }
 
+void daxSetArrayValue3(const daxWork* work, daxArray* output, float4 scalar)
+{
+  if (output->Core->Type == ARRAY_TYPE_IRREGULAR)
+    {
+    if (output->OutputDataF != 0)
+      {
+      // indicates we are writing to a global out-array.
+      //printf("%d == %f, \t",work->ElementID, scalar);
+      output->OutputDataF[3*work->ElementID] = scalar.x;
+      output->OutputDataF[3*work->ElementID+1] = scalar.y;
+      output->OutputDataF[3*work->ElementID+2] = scalar.z;
+      }
+    else if (output->OutputDataF == 0)
+      {
+      // we are setting value for an intermediate array.
+      // simply save the value in local memory.
+      output->TempResultF.xyz = scalar.xyz;
+      }
+    }
+}
+
 
 // API for access topology.
 struct __daxConnectedComponent
@@ -248,4 +269,71 @@ void daxGetWorkForElement(const daxConnectedComponent* element,
   default:
     printf("daxGetWorkForElement case not handled.");
     }
+}
+
+float4 daxGetCellDerivative(const daxConnectedComponent* element,
+  uint subid, float4 pcords, const float * scalars)
+{
+  switch (element->ConnectionsArray->Core->Type)
+    {
+  case ARRAY_TYPE_IMAGE_CELL:
+      {
+      daxImageDataData imageData =
+        *((daxImageDataData*)(element->ConnectionsArray->InputDataF));
+      float4 spacing;
+      spacing.x = imageData.Spacing[0];
+      spacing.y = imageData.Spacing[1];
+      spacing.z = imageData.Spacing[2];
+      spacing.w = 1;
+
+      float4 rm_sm_tm;
+      rm_sm_tm = (float4)(1, 1, 1, 0) - pcords;
+
+      float8 derivs[3];
+      derivs[0].s0 = -rm_sm_tm.y*rm_sm_tm.z;
+      derivs[0].s1 = rm_sm_tm.y*rm_sm_tm.z;
+      derivs[0].s2 = -pcords.y*rm_sm_tm.z;
+      derivs[0].s3 = pcords.y*rm_sm_tm.z;
+
+      derivs[0].s4 = -rm_sm_tm.y*pcords.z;
+      derivs[0].s5 = rm_sm_tm.y*pcords.z;
+
+      derivs[0].s6 = -pcords.y*pcords.z;
+      derivs[0].s7 = pcords.y*pcords.z;
+
+      // s derivatives
+      derivs[1].s0 = -rm_sm_tm.x*rm_sm_tm.z;
+      derivs[1].s1 = -pcords.x*rm_sm_tm.z;
+      derivs[1].s2 = rm_sm_tm.x*rm_sm_tm.z;
+      derivs[1].s3 = pcords.x*rm_sm_tm.z;
+      derivs[1].s4 = -rm_sm_tm.x*pcords.z;
+      derivs[1].s5 = -pcords.x*pcords.z;
+      derivs[1].s6 = rm_sm_tm.x*pcords.z;
+      derivs[1].s7 = pcords.x*pcords.z;
+
+      // t derivatives
+      derivs[2].s0 = -rm_sm_tm.x*rm_sm_tm.y;
+      derivs[2].s1 = -pcords.x*rm_sm_tm.y;
+      derivs[2].s2 = -rm_sm_tm.x*pcords.y;
+      derivs[2].s3 = -pcords.x*pcords.y;
+      derivs[2].s4 = rm_sm_tm.x*rm_sm_tm.y;
+      derivs[2].s5 = pcords.x*rm_sm_tm.y;
+      derivs[2].s6 = rm_sm_tm.x*pcords.y;
+      derivs[2].s7 = pcords.x*pcords.y;
+
+      float8 scalars8 = vload8(0, scalars);
+      float8 sum = derivs[0] * scalars8;
+      sum += derivs[1] * scalars8;
+      sum += derivs[2] * scalars8;
+      float all_sum = sum.s0 + sum.s1 + sum.s2 + sum.s3 + sum.s4 + sum.s5 +
+        sum.s6 + sum.s7;
+      return all_sum / spacing;
+      }
+
+    break;
+
+  default:
+    printf("daxGetWorkForElement case not handled.");
+    }
+  return (float4)(1, 0, 0, 0);
 }

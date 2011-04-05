@@ -10,6 +10,7 @@
 
 #include "daxArray.h"
 #include "daxCellAverageModule.h"
+#include "daxCellGradientModule.h"
 #include "daxElevationModule.h"
 #include "daxExecutive2.h"
 #include "daxRegularArray.h"
@@ -35,7 +36,7 @@
     }\
   }
 
-#define DIMENSION 512
+#define DIMENSION 256
 
 #define uchar unsigned char
 struct daxArrayCore
@@ -225,11 +226,17 @@ void daxExecute(int num_cores, daxArrayCore* cores,
 #endif
 }
 
+#define USE_GRADIENT
+
 int main(int, char**)
 {
   daxExecutive2Ptr executive(new daxExecutive2());
   daxModulePtr elevation(new daxElevationModule());
+#ifdef USE_GRADIENT
+  daxModulePtr cellAverage(new daxCellGradientModule());
+#else
   daxModulePtr cellAverage(new daxCellAverageModule());
+#endif
 
   std::vector<std::string> kernels;
   kernels.push_back(elevation->GetCleandupFunctorCode());
@@ -265,12 +272,22 @@ int main(int, char**)
   cores[2].Type = 0; // irregular
   cores[2].Rank = 0;
   cores[2].Shape[0] = cores[2].Shape[1] = 0;
+#ifdef USE_GRADIENT
+  global_arrays[3] = new float[(DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1) * 3];
+  for (int cc=0; cc < (DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1)*3; cc++)
+    {
+    global_arrays[3][cc] = -1;
+    }
+  global_array_size_in_bytes[3] =
+    (DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1)*sizeof(float)*3;
+#else
   global_arrays[3] = new float[(DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1)];
   for (int cc=0; cc < (DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1); cc++)
     {
     global_arrays[3][cc] = -1;
     }
   global_array_size_in_bytes[3] = (DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1)*sizeof(float);
+#endif
 
   // 3 == same as 1 (point coordinates for CellAverage).
   cores[3] = cores[1];
