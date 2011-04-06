@@ -37,6 +37,7 @@
   }
 
 #define DIMENSION 256
+#define USE_GRADIENT
 
 #define uchar unsigned char
 struct daxArrayCore
@@ -226,7 +227,6 @@ void daxExecute(int num_cores, daxArrayCore* cores,
 #endif
 }
 
-#define USE_GRADIENT
 
 int main(int, char**)
 {
@@ -307,6 +307,11 @@ int main(int, char**)
     kernels.size(), &kernels[0]);
   cout << "Total Time ("<< DIMENSION << "^3) : "<< timer.elapsed() << endl;
   cout << "Output (1): " << global_arrays[3][0] << endl;
+
+  //for (int cc=0; cc < global_array_size_in_bytes[3]/sizeof(float); cc++)
+  //  {
+  //  cout << global_arrays[3][cc] << endl;
+  //  }
   delete []global_arrays[3];
   return 0;
 }

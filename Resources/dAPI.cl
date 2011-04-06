@@ -323,9 +323,15 @@ float4 daxGetCellDerivative(const daxConnectedComponent* element,
 
       float8 scalars8 = vload8(0, scalars);
       float8 sum = derivs[0] * scalars8;
-      sum += derivs[1] * scalars8;
-      sum += derivs[2] * scalars8;
-      float all_sum = sum.s0 + sum.s1 + sum.s2 + sum.s3 + sum.s4 + sum.s5 +
+
+      float4 all_sum;
+      all_sum.x = sum.s0 + sum.s1 + sum.s2 + sum.s3 + sum.s4 + sum.s5 +
+        sum.s6 + sum.s7;
+      sum = derivs[1] * scalars8;
+      all_sum.y = sum.s0 + sum.s1 + sum.s2 + sum.s3 + sum.s4 + sum.s5 +
+        sum.s6 + sum.s7;
+      sum = derivs[2] * scalars8;
+      all_sum.z = sum.s0 + sum.s1 + sum.s2 + sum.s3 + sum.s4 + sum.s5 +
         sum.s6 + sum.s7;
       return all_sum / spacing;
       }
