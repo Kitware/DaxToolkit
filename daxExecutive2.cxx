@@ -291,7 +291,11 @@ std::string daxExecutive2::GetKernel()
         ctemplate::TemplateDictionary* input_array_dict =
           dictionaryKernel.AddSectionDictionary("dax_input_arrays");
         input_array_dict->SetValue("dax_name",
-          (boost::format("input_array_%1%")%(input_array_count++)).str());
+          (boost::format("input_array_%1%_%2%")%module->GetModuleName()%
+           port->GetName()).str());
+        input_array_count++;
+        //input_array_dict->SetValue("dax_name",
+        //  (boost::format("input_array_%1%")%(input_array_count++)).str());
         input_array_dict->SetValue("dax_index",
           (boost::format("%1%")%(array_index)).str());
         }
