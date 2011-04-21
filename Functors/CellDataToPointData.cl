@@ -21,8 +21,8 @@ void CellDataToPointData(const daxWork* work,
     {
     daxGetWorkForElement(&cells_containing_point, cc, &cell_work);
     daxFloat3 value = daxGetArrayValue3(&cell_work, in_cell_array);
-    value /= num_cells;
-    //sum += value;
+    value /= as_daxFloat3(num_cells, num_cells, num_cells);
+    sum += value;
     }
   daxSetArrayValue3(work, out_point_array, sum);
 }

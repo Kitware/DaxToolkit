@@ -38,7 +38,7 @@
     }\
   }
 
-#define DIMENSION 2
+#define DIMENSION 3
 #define USE_GRADIENT
 #define USE_2ND_GRADIENT
 

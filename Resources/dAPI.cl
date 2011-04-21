@@ -351,7 +351,7 @@ void daxGetWorkForElement(const daxConnectedComponent* element,
       {
       daxImageDataData imageData =
         *((daxImageDataData*)(element->ConnectionsArray->InputDataF));
-      uint4 dims = __daxGetDims(&imageData);
+      daxUInt3 dims = __daxGetDims(&imageData);
       daxIdType pid = element->Id;
       daxUInt cellids[8];
       daxUInt num_cells = __daxGetStructuredPointCells(pid, dims, cellids);
