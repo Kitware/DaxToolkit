@@ -75,6 +75,8 @@ set (core_kernels
   Functors/Elevation.cl
   Functors/CellAverage.cl
   Functors/CellGradient.cl
+  Functors/CellGradient2.cl
+  Functors/CellDataToPointData.cl
   Resources/Kernel.tmpl
   Resources/KernelGetArray.tmpl
   Resources/dAPI.cl
@@ -108,6 +110,10 @@ add_library(daxFramework SHARED
 
   daxCellAverageModule.cxx
   daxCellAverageModule.h
+  daxCellDataToPointDataModule.cxx
+  daxCellDataToPointDataModule.h
+  daxCellGradientModule2.cxx
+  daxCellGradientModule2.h
   daxCellGradientModule.cxx
   daxCellGradientModule.h
   daxElevationModule.cxx

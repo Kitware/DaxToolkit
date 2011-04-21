@@ -12,6 +12,7 @@
 #define ARRAY_TYPE_IRREGULAR 0
 #define ARRAY_TYPE_IMAGE_POINTS 1
 #define ARRAY_TYPE_IMAGE_CELL 2
+#define ARRAY_TYPE_IMAGE_LINK 3
 #pragma OPENCL EXTENSION cl_khr_byte_addressable_store: enable
 
 
@@ -70,6 +71,7 @@ void __daxInitializeArrays(daxArray* arrays,
 #define __positions__
 #define __and__(x,y)
 #define __dep__(x)
+#define __connections__
 
 #ifndef float3
 # define float3 float4
@@ -228,14 +230,19 @@ uint daxGetNumberOfElements(const daxConnectedComponent* element)
   // For now, we assume that connections array is never generated, but a global
   // input array. Connections array will start being generated once we start
   // dealing with topology changing algorithms.
+  uint val = 7;
   switch (element->ConnectionsArray->Core->Type)
     {
   case ARRAY_TYPE_IMAGE_CELL:
-    return 8; // assume 3D cells for now.
+    val = 8; // assume 3D cells for now.
+    break;
 
+  //case ARRAY_TYPE_IMAGE_LINK:
+  //  val = 7;
+  //  break;
     }
-  printf("daxGetNumberOfElements case not handled.");
-  return 0;
+  //printf("daxGetNumberOfElements case not handled.");
+  return val;
 }
 
 void daxGetWorkForElement(const daxConnectedComponent* element,
@@ -244,6 +251,32 @@ void daxGetWorkForElement(const daxConnectedComponent* element,
   printf ("daxGetWorkForElement %d\n", index);
   switch (element->ConnectionsArray->Core->Type)
     {
+  case ARRAY_TYPE_IMAGE_LINK:
+    // given the point, return the cell-id containing that point.
+      {
+      //daxImageDataData imageData =
+      //  *((daxImageDataData*)(element->ConnectionsArray->InputDataF));
+      //uint4 dims = __daxGetDims(&imageData);
+      //uint4 cell_dims = dims - (uint4)(1,1,1,0);
+      //uint4 point_loc;
+      //int4 offsets[8];
+      //offsets[0] = (int4)(-1,0,0, 0);
+      //offsets[1] = (int4)(-1,-1,0, 0);
+      //offsets[2] = (int4)(-1,-1,-1, 0);
+      //offsets[3] = (int4)(-1,0,-1, 0);
+      //offsets[4] = (int4)(0 , 0, 0, 0);
+      //offsets[5] = (int4)(0,-1,0,0);
+      //offsets[6] = (int4)(0,-1,-1, 0);
+      //offsets[7] = (int4)(0,0,-1, 0);
+
+      //point_loc.x = (element->Id % dims.x);
+      //point_loc.y = (element->Id / dims.x) % dims.y;
+      //point_loc.z = element->Id / (dims.x * dims.y);
+      //
+      element_work->ElementID = 0;
+      }
+    break;
+
   case ARRAY_TYPE_IMAGE_CELL:
       {
       daxImageDataData imageData =
@@ -263,7 +296,6 @@ void daxGetWorkForElement(const daxConnectedComponent* element,
       //  element->Id, index, loc.x, loc.y, loc.z,
       //  element_work->ElementID);
       }
-
     break;
 
   default:
