@@ -14,8 +14,8 @@ void Elevation(const daxWork* work,
   const daxArray* __positions__ positions,
   daxArray* __dep__(positions) output)
 {
-  float3 in_value = daxGetArrayValue3(work, positions);
+  daxFloat3 in_value = daxGetArrayValue3(work, positions);
   in_value *= in_value;
-  float elevation_scalar = sqrt(in_value.x + in_value.y + in_value.z);
+  daxFloat elevation_scalar = sqrt(in_value.x + in_value.y + in_value.z);
   daxSetArrayValue(work, output, elevation_scalar);
 }

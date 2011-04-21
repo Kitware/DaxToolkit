@@ -15,6 +15,42 @@
 #define ARRAY_TYPE_IMAGE_LINK 3
 #pragma OPENCL EXTENSION cl_khr_byte_addressable_store: enable
 
+#ifndef float3
+# define dax_use_float4_for_float3
+#endif
+
+// Define primitive data types.
+typedef float4 daxFloat4;
+typedef float daxFloat;
+typedef uint daxUInt;
+typedef uint4 daxUInt4;
+typedef uint daxIdType;
+#ifdef dax_use_float4_for_float3
+  typedef float4 daxFloat3;
+  typedef uint4 daxUInt3;
+#else
+  typedef float3 daxFloat3;
+  typedef uint3 daxUInt3;
+#endif
+
+// initializer functions
+daxFloat3 as_daxFloat3(const daxFloat x, const daxFloat y, const daxFloat z)
+{
+  daxFloat3 ret;
+  ret.x = x; ret.y = y; ret.z = z;
+#ifdef dax_use_float4_for_float3
+  ret.w = 1;
+#endif
+  return ret;
+}
+
+daxFloat4 as_daxFloat4(
+  const daxFloat x, const daxFloat y, const daxFloat z, const daxFloat w)
+{
+  daxFloat4 ret;
+  ret.x = x; ret.y = y; ret.z = z; ret.w = w;
+  return ret;
+}
 
 #define printf(...)
 
@@ -37,14 +73,13 @@ struct __daxArrayI
   struct __daxArrayI* Arrays;
   uchar Generator;
 
-  float4 TempResultF;
-//  __private float4 TempResultF;
+  daxFloat4 TempResultF;
 };
 typedef struct __daxArrayI daxArray;
 
 typedef struct
 {
-  uint ElementID;
+  daxIdType ElementID;
 } daxWork;
 
 void __daxInitializeWorkFromGlobal(daxWork* work)
@@ -56,9 +91,9 @@ void __daxInitializeWorkFromGlobal(daxWork* work)
 
 void __daxInitializeArrays(daxArray* arrays,
   __constant const __daxArrayCore* cores,
-  const uint num_items)
+  const daxIdType num_items)
 {
-  for (uint cc=0; cc < num_items; cc++)
+  for (daxIdType cc=0; cc < num_items; cc++)
     {
     arrays[cc].Core = &cores[cc];
     arrays[cc].Arrays = arrays;
@@ -73,38 +108,26 @@ void __daxInitializeArrays(daxArray* arrays,
 #define __dep__(x)
 #define __connections__
 
-#ifndef float3
-# define float3 float4
-# define dax_use_float4_for_float3
-#endif
-
-// PERF:  not using packed here gives a speedup of 2.
-struct /*__attribute__((packed))*/ __daxImageDataData
+struct __attribute__((packed)) __daxImageDataData
 {
-  float Spacing[3] __attribute__ ((endian(host)));
-  float Origin[3] __attribute__ ((endian(host)));
-  unsigned int Extents[6] __attribute__ ((endian(host)));
+  daxFloat Spacing[3] __attribute__ ((endian(host)));
+  daxFloat Origin[3] __attribute__ ((endian(host)));
+  daxUInt Extents[6] __attribute__ ((endian(host)));
 };
 typedef struct  __daxImageDataData daxImageDataData;
 
-uint4 __daxGetDims(const daxImageDataData* imageData)
+daxUInt3 __daxGetDims(const daxImageDataData* imageData)
 {
-  uint4 dims;
+  daxUInt3 dims;
   dims.x = imageData->Extents[1] - imageData->Extents[0] + 1;
   dims.y = imageData->Extents[3] - imageData->Extents[2] + 1;
   dims.z = imageData->Extents[5] - imageData->Extents[4] + 1;
   return dims;
 }
 
-float3 __daxGetArrayValue3(const daxWork* work, const daxArray* array)
+daxFloat3 __daxGetArrayValue3(const daxWork* work, const daxArray* array)
 {
-  float3 retval =
-#ifdef dax_use_float4_for_float3
-    (float3)(0, 0, 0, 0)
-#else
-    (float3)(0,0, 0)
-#endif
-    ;
+  daxFloat3 retval = as_daxFloat3(0, 0, 0);
   if (array->Core->Type == ARRAY_TYPE_IRREGULAR)
     {
     if (array->InputDataF != 0)
@@ -117,9 +140,7 @@ float3 __daxGetArrayValue3(const daxWork* work, const daxArray* array)
     else 
       {
       // reading from temporary array.
-      retval.x = array->TempResultF.x;
-      retval.y = array->TempResultF.y;
-      retval.z = array->TempResultF.z;
+      retval.xyz = array->TempResultF.xyz;
       }
     return retval;
     }
@@ -131,9 +152,9 @@ float3 __daxGetArrayValue3(const daxWork* work, const daxArray* array)
       {
       imageData = *((daxImageDataData*)(array->InputDataF));
       }
-    uint4 dims = __daxGetDims(&imageData);
+    daxUInt3 dims = __daxGetDims(&imageData);
     // assume non-zero dims for now.
-    uint4 xyz; 
+    daxUInt3 xyz; 
     xyz.x = work->ElementID % dims.x;
     xyz.y = (work->ElementID/dims.x) % dims.y;
     xyz.z = work->ElementID / (dims.x * dims.y);
@@ -147,7 +168,7 @@ float3 __daxGetArrayValue3(const daxWork* work, const daxArray* array)
   return retval;
 }
 
-float __daxGetArrayValue(const daxWork* work, const daxArray* array)
+daxFloat __daxGetArrayValue(const daxWork* work, const daxArray* array)
 {
   printf("__daxGetArrayValue\n");
   if (array->Core->Type == ARRAY_TYPE_IRREGULAR)
@@ -167,7 +188,7 @@ float __daxGetArrayValue(const daxWork* work, const daxArray* array)
   return 0.0;
 }
 
-void daxSetArrayValue(const daxWork* work, daxArray* output, float scalar)
+void daxSetArrayValue(const daxWork* work, daxArray* output, const daxFloat scalar)
 {
   if (output->Core->Type == ARRAY_TYPE_IRREGULAR)
     {
@@ -186,7 +207,7 @@ void daxSetArrayValue(const daxWork* work, daxArray* output, float scalar)
     }
 }
 
-void daxSetArrayValue3(const daxWork* work, daxArray* output, float4 scalar)
+void daxSetArrayValue3(const daxWork* work, daxArray* output, const daxFloat3 scalar)
 {
   if (output->Core->Type == ARRAY_TYPE_IRREGULAR)
     {
@@ -211,7 +232,7 @@ void daxSetArrayValue3(const daxWork* work, daxArray* output, float4 scalar)
 // API for access topology.
 struct __daxConnectedComponent
 {
-  uint Id;
+  daxIdType Id;
   const daxArray* ConnectionsArray;
 };
 
@@ -225,28 +246,28 @@ void daxGetConnectedComponent(const daxWork* work,
   element->ConnectionsArray = connections_array;
 }
 
-uint daxGetNumberOfElements(const daxConnectedComponent* element)
+daxIdType daxGetNumberOfElements(const daxConnectedComponent* element)
 {
   // For now, we assume that connections array is never generated, but a global
   // input array. Connections array will start being generated once we start
   // dealing with topology changing algorithms.
-  uint val = 7;
+  daxIdType val = 0;
   switch (element->ConnectionsArray->Core->Type)
     {
   case ARRAY_TYPE_IMAGE_CELL:
     val = 8; // assume 3D cells for now.
     break;
 
-  //case ARRAY_TYPE_IMAGE_LINK:
-  //  val = 7;
-  //  break;
+  case ARRAY_TYPE_IMAGE_LINK:
+    val = 7;
+    break;
     }
   //printf("daxGetNumberOfElements case not handled.");
   return val;
 }
 
 void daxGetWorkForElement(const daxConnectedComponent* element,
-  uint index, daxWork* element_work)
+  daxIdType index, daxWork* element_work)
 {
   printf ("daxGetWorkForElement %d\n", index);
   switch (element->ConnectionsArray->Core->Type)
@@ -281,9 +302,9 @@ void daxGetWorkForElement(const daxConnectedComponent* element,
       {
       daxImageDataData imageData =
         *((daxImageDataData*)(element->ConnectionsArray->InputDataF));
-      uint4 dims = __daxGetDims(&imageData);
+      daxUInt3 dims = __daxGetDims(&imageData);
       // assume non-zero dims for now.
-      uint4 ijk;
+      daxUInt3 ijk;
       ijk.x = element->Id % (dims.x -1);
       ijk.y = (element->Id / (dims.x - 1)) % (dims.y -1);
       ijk.z = element->Id / ( (dims.x-1) * (dims.y-1) );
@@ -303,8 +324,8 @@ void daxGetWorkForElement(const daxConnectedComponent* element,
     }
 }
 
-float4 daxGetCellDerivative(const daxConnectedComponent* element,
-  uint subid, float4 pcords, const float * scalars)
+daxFloat3 daxGetCellDerivative(const daxConnectedComponent* element,
+  daxIdType subid, const daxFloat3 pcords, const daxFloat* scalars)
 {
   switch (element->ConnectionsArray->Core->Type)
     {
@@ -312,14 +333,11 @@ float4 daxGetCellDerivative(const daxConnectedComponent* element,
       {
       daxImageDataData imageData =
         *((daxImageDataData*)(element->ConnectionsArray->InputDataF));
-      float4 spacing;
-      spacing.x = imageData.Spacing[0];
-      spacing.y = imageData.Spacing[1];
-      spacing.z = imageData.Spacing[2];
-      spacing.w = 1;
+      daxFloat3 spacing = as_daxFloat3(
+        imageData.Spacing[0], imageData.Spacing[1], imageData.Spacing[2]);
 
-      float4 rm_sm_tm;
-      rm_sm_tm = (float4)(1, 1, 1, 0) - pcords;
+      daxFloat3 rm_sm_tm;
+      rm_sm_tm = as_daxFloat3(1, 1, 1) - pcords;
 
       float8 derivs[3];
       derivs[0].s0 = -rm_sm_tm.y*rm_sm_tm.z;
@@ -356,7 +374,7 @@ float4 daxGetCellDerivative(const daxConnectedComponent* element,
       float8 scalars8 = vload8(0, scalars);
       float8 sum = derivs[0] * scalars8;
 
-      float4 all_sum;
+      daxFloat3 all_sum;
       all_sum.x = sum.s0 + sum.s1 + sum.s2 + sum.s3 + sum.s4 + sum.s5 +
         sum.s6 + sum.s7;
       sum = derivs[1] * scalars8;
@@ -373,5 +391,5 @@ float4 daxGetCellDerivative(const daxConnectedComponent* element,
   default:
     printf("daxGetWorkForElement case not handled.");
     }
-  return (float4)(1, 0, 0, 0);
+  return as_daxFloat3(0, 0, 0);
 }

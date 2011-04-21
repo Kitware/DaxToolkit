@@ -16,22 +16,20 @@ void CellGradient2(const daxWork* work,
   daxConnectedComponent cell;
   daxGetConnectedComponent(work, in_connections, &cell);
 
-  float scalars[8];
-  uint num_elements = daxGetNumberOfElements(&cell);
+  daxFloat scalars[8];
+  daxIdType num_elements = daxGetNumberOfElements(&cell);
   daxWork point_work;
-  for (uint cc=0; cc < num_elements; cc++)
+  for (daxIdType cc=0; cc < num_elements; cc++)
     {
     daxGetWorkForElement(&cell, cc, &point_work);    
     scalars[cc] = daxGetArrayValue(&point_work, inputArray);
     }
 
-  float4 parametric_cell_center = (float4)(0.5, 0.5, 0.5, 0);
-  float3 gradient = daxGetCellDerivative(&cell,
+  daxFloat3 parametric_cell_center = as_daxFloat3(0.5, 0.5, 0.5);
+  daxFloat3 gradient = daxGetCellDerivative(&cell,
     0, parametric_cell_center, scalars);
 
   daxSetArrayValue3(work, outputArray, gradient);
 
-  printf("Cell Gradient: %f\n", gradient);
-  //  float in_value = daxGetArrayValue(work, inputArray) * 2.0;
-  //  daxSetArrayValue(work, outputArray, in_value);
+  printf("Cell Gradient: %f, %f, %f \n", gradient.x, gradient.y, gradient.z);
 }

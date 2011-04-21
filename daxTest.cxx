@@ -103,7 +103,7 @@ void daxExecute(int num_cores, daxArrayCore* cores,
 
     // Allocate buffer for cores.
     cl::Buffer arrayCores(context,
-      CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
+      CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
       sizeof(daxArrayCore)*num_cores,
       cores, &err_code);
     RETURN_ON_ERROR(err_code, "upload array cores ptr");
@@ -113,7 +113,7 @@ void daxExecute(int num_cores, daxArrayCore* cores,
     for (int cc=0; cc < num_in_arrays; cc++)
       {
       inputs[cc] = new cl::Buffer(context,
-        CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY,
+        CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
         in_arrays_size_in_bytes[cc],
         in_arrays[cc], &err_code);
       RETURN_ON_ERROR(err_code, "upload input data");
@@ -124,7 +124,7 @@ void daxExecute(int num_cores, daxArrayCore* cores,
     for (int cc=0; cc < num_out_arrays; cc++)
       {
       outputs[cc] = new cl::Buffer(context,
-        CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR,
+        CL_MEM_WRITE_ONLY,
         out_arrays_size_in_bytes[cc],
         out_arrays[cc], &err_code);
       RETURN_ON_ERROR(err_code, "create output buffer");
@@ -184,7 +184,7 @@ void daxExecute(int num_cores, daxArrayCore* cores,
     cl::CommandQueue queue(context, devices[0]);
     err_code = queue.enqueueNDRangeKernel(kernel,
       cl::NullRange,
-      cl::NDRange(3),
+      cl::NDRange(num_items),
       cl::NullRange, NULL, &event);
     RETURN_ON_ERROR(err_code, "enqueue.");
 

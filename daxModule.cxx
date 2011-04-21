@@ -168,9 +168,9 @@ std::string daxModule::GetCleandupFunctorCode() const
   boost::replace_all(code, "daxGetArray3Value", format0);
 
   std::string header =
-    std::string("float3 daxGetArrayValue3_")+this->GetModuleName() +
+    std::string("daxFloat3 daxGetArrayValue3_")+this->GetModuleName() +
     "(const daxWork* work, const daxArray* array);\n" + 
-    std::string("float daxGetArrayValue_")+this->GetModuleName() +
+    std::string("daxFloat daxGetArrayValue_")+this->GetModuleName() +
     "(const daxWork* work, const daxArray* array);\n";
   return (header + code);
 }
