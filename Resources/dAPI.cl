@@ -52,6 +52,16 @@ daxFloat4 as_daxFloat4(
   return ret;
 }
 
+daxUInt3 as_daxUInt3(const daxUInt x, const daxUInt y, const daxUInt z)
+{
+  daxUInt3 ret;
+  ret.x = x; ret.y = y; ret.z = z;
+#ifdef dax_use_float4_for_float3
+  ret.w = 1;
+#endif
+  return ret;
+}
+
 #define printf(...)
 
 struct __attribute__((packed)) __daxArrayCoreI
@@ -124,6 +134,61 @@ daxUInt3 __daxGetDims(const daxImageDataData* imageData)
   dims.z = imageData->Extents[5] - imageData->Extents[4] + 1;
   return dims;
 }
+
+daxUInt3 __daxGetPointIJK(daxUInt pid, daxUInt3 dims)
+{
+  daxUInt3 point_loc;
+  point_loc.x = pid % dims.x;
+  point_loc.y = (pid / dims.x) % dims.y;
+  point_loc.z = pid / (dims.x * dims.y);
+  return point_loc;
+}
+
+daxUInt3 __daxGetCellIJK(daxUInt cid, daxUInt3 dims)
+{
+  dims.xyz -= as_daxUInt3(1, 1, 1).xyz;
+  return __daxGetPointIJK(cid, dims);
+}
+
+// returns the number of cells the point in contained in, and updates cell_ids
+// to match the cells.
+daxUInt __daxGetStructuredPointCells(daxIdType pid,
+  daxUInt3 dims,
+  daxUInt cell_ids[8])
+{
+  daxUInt3 upoint_ijk = __daxGetPointIJK(pid, dims);
+  int4 point_ijk = (int4)(upoint_ijk.x, upoint_ijk.y, upoint_ijk.z, 0);
+  daxUInt3 cell_dims;
+  cell_dims.xyz = dims.xyz - as_daxUInt3(1, 1, 1).xyz;
+
+  int4 offsets[8];
+  offsets[0] = (int4)(-1,0,0, 0);
+  offsets[1] = (int4)(-1,-1,0, 0);
+  offsets[2] = (int4)(-1,-1,-1, 0);
+  offsets[3] = (int4)(-1,0,-1, 0);
+  offsets[4] = (int4)(0 , 0, 0, 0);
+  offsets[5] = (int4)(0,-1,0,0);
+  offsets[6] = (int4)(0,-1,-1, 0);
+  offsets[7] = (int4)(0,0,-1, 0);
+
+  int4 cell_ijk;
+  int count = 0;
+  for (uint j=0; j < 8; j++)
+    {
+    cell_ijk.xyz = point_ijk.xyz + offsets[j].xyz;
+    if (cell_ijk.x < 0 || cell_ijk.x >= cell_dims.x ||
+      cell_ijk.y < 0 || cell_ijk.y >= cell_dims.y ||
+      cell_ijk.z < 0 || cell_ijk.z >= cell_dims.z)
+      {
+      continue;
+      }
+    cell_ids[count] = cell_ijk.x +
+      cell_ijk.y * cell_dims.x + cell_ijk.z * cell_dims.x * cell_dims.y;
+    count++;
+    }
+  return count;
+}
+
 
 daxFloat3 __daxGetArrayValue3(const daxWork* work, const daxArray* array)
 {
@@ -251,7 +316,7 @@ daxIdType daxGetNumberOfElements(const daxConnectedComponent* element)
   // For now, we assume that connections array is never generated, but a global
   // input array. Connections array will start being generated once we start
   // dealing with topology changing algorithms.
-  daxIdType val = 0;
+  daxIdType val = 3;
   switch (element->ConnectionsArray->Core->Type)
     {
   case ARRAY_TYPE_IMAGE_CELL:
@@ -259,7 +324,16 @@ daxIdType daxGetNumberOfElements(const daxConnectedComponent* element)
     break;
 
   case ARRAY_TYPE_IMAGE_LINK:
-    val = 7;
+    // this is non-constant even for voxel.
+    // need to compute the number of cells the point belongs to.
+      {
+      daxImageDataData imageData =
+        *((daxImageDataData*)(element->ConnectionsArray->InputDataF));
+      daxUInt3 dims = __daxGetDims(&imageData);
+      daxIdType pid = element->Id;
+      daxUInt temp[8];
+      val = __daxGetStructuredPointCells(pid, dims, temp);
+      }
     break;
     }
   //printf("daxGetNumberOfElements case not handled.");
@@ -275,26 +349,13 @@ void daxGetWorkForElement(const daxConnectedComponent* element,
   case ARRAY_TYPE_IMAGE_LINK:
     // given the point, return the cell-id containing that point.
       {
-      //daxImageDataData imageData =
-      //  *((daxImageDataData*)(element->ConnectionsArray->InputDataF));
-      //uint4 dims = __daxGetDims(&imageData);
-      //uint4 cell_dims = dims - (uint4)(1,1,1,0);
-      //uint4 point_loc;
-      //int4 offsets[8];
-      //offsets[0] = (int4)(-1,0,0, 0);
-      //offsets[1] = (int4)(-1,-1,0, 0);
-      //offsets[2] = (int4)(-1,-1,-1, 0);
-      //offsets[3] = (int4)(-1,0,-1, 0);
-      //offsets[4] = (int4)(0 , 0, 0, 0);
-      //offsets[5] = (int4)(0,-1,0,0);
-      //offsets[6] = (int4)(0,-1,-1, 0);
-      //offsets[7] = (int4)(0,0,-1, 0);
-
-      //point_loc.x = (element->Id % dims.x);
-      //point_loc.y = (element->Id / dims.x) % dims.y;
-      //point_loc.z = element->Id / (dims.x * dims.y);
-      //
-      element_work->ElementID = 0;
+      daxImageDataData imageData =
+        *((daxImageDataData*)(element->ConnectionsArray->InputDataF));
+      uint4 dims = __daxGetDims(&imageData);
+      daxIdType pid = element->Id;
+      daxUInt cellids[8];
+      daxUInt num_cells = __daxGetStructuredPointCells(pid, dims, cellids);
+      element_work->ElementID = cellids[index];
       }
     break;
 
@@ -304,10 +365,7 @@ void daxGetWorkForElement(const daxConnectedComponent* element,
         *((daxImageDataData*)(element->ConnectionsArray->InputDataF));
       daxUInt3 dims = __daxGetDims(&imageData);
       // assume non-zero dims for now.
-      daxUInt3 ijk;
-      ijk.x = element->Id % (dims.x -1);
-      ijk.y = (element->Id / (dims.x - 1)) % (dims.y -1);
-      ijk.z = element->Id / ( (dims.x-1) * (dims.y-1) );
+      daxUInt3 ijk = __daxGetCellIJK(element->Id, dims);
       ijk.x += index % 2;
       ijk.y += (index / 2) % 2;
       ijk.z += (index / 4);
@@ -327,7 +385,8 @@ void daxGetWorkForElement(const daxConnectedComponent* element,
 daxFloat3 daxGetCellDerivative(const daxConnectedComponent* element,
   daxIdType subid, const daxFloat3 pcords, const daxFloat* scalars)
 {
-  switch (element->ConnectionsArray->Core->Type)
+  uchar type = element->ConnectionsArray->Core->Type;
+  switch (type)
     {
   case ARRAY_TYPE_IMAGE_CELL:
       {
@@ -391,5 +450,5 @@ daxFloat3 daxGetCellDerivative(const daxConnectedComponent* element,
   default:
     printf("daxGetWorkForElement case not handled.");
     }
-  return as_daxFloat3(0, 0, 0);
+  return as_daxFloat3(type, 0, 0);
 }

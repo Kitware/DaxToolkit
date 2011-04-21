@@ -124,9 +124,9 @@ void daxExecute(int num_cores, daxArrayCore* cores,
     for (int cc=0; cc < num_out_arrays; cc++)
       {
       outputs[cc] = new cl::Buffer(context,
-        CL_MEM_WRITE_ONLY,
+        CL_MEM_WRITE_ONLY |CL_MEM_ALLOC_HOST_PTR,
         out_arrays_size_in_bytes[cc],
-        out_arrays[cc], &err_code);
+        NULL, &err_code);
       RETURN_ON_ERROR(err_code, "create output buffer");
       }
 
