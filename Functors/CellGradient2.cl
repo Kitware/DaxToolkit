@@ -22,13 +22,13 @@ void CellGradient2(const daxWork* work,
   for (daxIdType cc=0; cc < num_elements; cc++)
     {
     daxGetWorkForElement(&cell, cc, &point_work);    
-    scalars[cc] = daxGetArrayValue(&point_work, inputArray);
+    daxFloat3 temp = daxGetArrayValue3(&point_work, inputArray);
+    scalars[cc] = sqrt(temp.x*temp.x + temp.y*temp.y + temp.z*temp.z);
     }
 
   daxFloat3 parametric_cell_center = as_daxFloat3(0.5, 0.5, 0.5);
   daxFloat3 gradient = daxGetCellDerivative(&cell,
     0, parametric_cell_center, scalars);
-
   daxSetArrayValue3(work, outputArray, gradient);
 
   printf("Cell Gradient: %f, %f, %f \n", gradient.x, gradient.y, gradient.z);

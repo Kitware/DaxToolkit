@@ -9,7 +9,6 @@
 
 
 #include "daxArray.h"
-#include "daxCellAverageModule.h"
 #include "daxCellGradientModule.h"
 #include "daxCellGradientModule2.h"
 #include "daxCellDataToPointDataModule.h"
@@ -38,9 +37,9 @@
     }\
   }
 
-#define DIMENSION 512
-#define USE_GRADIENT
-#define USE_2ND_GRADIENT
+#define PIPELINE_BASE 1 // Distance->CellGradient
+#define PIPELINE_C2P 2// Distance->CellGradient->CellToPoint
+#define PIPELINE_Gradient2 3 // Distance->CellGradient->CellToPoint->CellGradient
 
 #define uchar unsigned char
 struct daxArrayCore
@@ -59,7 +58,8 @@ struct daxImageDataData
   unsigned int Extents[6];
 } __attribute__((__packed__));
 
-void daxExecute(int num_cores, daxArrayCore* cores,
+void daxExecute(int num_items,
+  int num_cores, daxArrayCore* cores,
   int num_in_arrays, float** in_arrays, size_t* in_arrays_size_in_bytes,
   int num_out_arrays, float** out_arrays, size_t* out_arrays_size_in_bytes,
   int num_kernels, const std::string* kernels)
@@ -175,13 +175,10 @@ void daxExecute(int num_cores, daxArrayCore* cores,
       RETURN_ON_ERROR(err_code, "pass output buffer.");
       }
 
-    // FIXME num-of-cells.
-    // FIXME: right now same as num-points since CellAverage is not really
-    // computing cell-values currently.
-    int num_items = ((DIMENSION)*(DIMENSION)*(DIMENSION));
     cout << num_items << endl;
     cl::Event event;
     cl::CommandQueue queue(context, devices[0]);
+    boost::timer timer;
     err_code = queue.enqueueNDRangeKernel(kernel,
       cl::NullRange,
       cl::NDRange(num_items),
@@ -189,7 +186,6 @@ void daxExecute(int num_cores, daxArrayCore* cores,
     RETURN_ON_ERROR(err_code, "enqueue.");
 
     // for for the kernel execution to complete.
-    boost::timer timer;
     err_code = event.wait();
     RETURN_ON_ERROR(err_code, "execute");
     cout << "Execution Time: " << timer.elapsed() << endl;
@@ -203,6 +199,7 @@ void daxExecute(int num_cores, daxArrayCore* cores,
         out_arrays[cc]);
       RETURN_ON_ERROR(err_code, "read output back");
       }
+    cout << "Execution + Readback Time: " << timer.elapsed() << endl;
     for (int cc=0; cc  < num_in_arrays; cc++)
       {
       delete inputs[cc];
@@ -230,38 +227,71 @@ void daxExecute(int num_cores, daxArrayCore* cores,
 #endif
 }
 
+#include <boost/program_options.hpp>
+#include <vector>
+#include <string.h>
 
-int main(int, char**)
+namespace po = boost::program_options;
+
+int main(int argc, char** argv)
 {
+  po::options_description desc("Allowed options");
+  desc.add_options()
+    ("pipeline", po::value<int>(), "Pipeline mode (1,2 or 3) default: 1")
+    ("dimensions", po::value<int>(), "Dimensions (default 256)")
+    ("help", "Generate this help message");
+
+  po::variables_map variables;
+  po::store(po::parse_command_line(argc, argv, desc), variables);
+  po::notify(variables);
+
+  if (variables.count("help") != 0)
+    {
+    cout << desc << endl;
+    return 1;
+    }
+
+ 
+  int DIMENSION = 256;
+  int PIPELINE = PIPELINE_BASE;
+  if (variables.count("dimensions") == 1)
+    {
+    DIMENSION = variables["dimensions"].as<int>();
+    }
+  if (variables.count("pipeline") == 1)
+    {
+    PIPELINE = variables["pipeline"].as<int>();
+    }
+
   daxExecutive2Ptr executive(new daxExecutive2());
   daxModulePtr elevation(new daxElevationModule());
-#ifdef USE_GRADIENT
-  daxModulePtr cellAverage(new daxCellGradientModule());
-#else
-  daxModulePtr cellAverage(new daxCellAverageModule());
-#endif
-#ifdef USE_2ND_GRADIENT
+  daxModulePtr gradient(new daxCellGradientModule());
   daxModulePtr cd2pd(new daxCellDataToPointDataModule());
   daxModulePtr gradient2(new daxCellGradientModule2());
-#endif
 
   std::vector<std::string> kernels;
   kernels.push_back(elevation->GetCleandupFunctorCode());
-  kernels.push_back(cellAverage->GetCleandupFunctorCode());
-#ifdef USE_2ND_GRADIENT
-  kernels.push_back(cd2pd->GetCleandupFunctorCode());
-  kernels.push_back(gradient2->GetCleandupFunctorCode());
-#endif
+  kernels.push_back(gradient->GetCleandupFunctorCode());
+  if (PIPELINE >= PIPELINE_C2P)
+    {
+    kernels.push_back(cd2pd->GetCleandupFunctorCode());
+    if (PIPELINE >= PIPELINE_Gradient2)
+      {
+      kernels.push_back(gradient2->GetCleandupFunctorCode());
+      }
+    }
 
-  executive->Connect(elevation, "output", cellAverage, "input_point");
-#ifdef USE_2ND_GRADIENT
-  executive->Connect(cellAverage, "output_cell", cd2pd, "in_cell_array");
-  //executive->Connect(cd2pd, "out_point_array", gradient2, "input_point");
-  cout << executive->GetKernel().c_str() << endl;
-#endif
+  executive->Connect(elevation, "output", gradient, "input_point");
+  if (PIPELINE >= PIPELINE_C2P)
+    {
+    executive->Connect(gradient, "output_cell", cd2pd, "in_cell_array");
+    if (PIPELINE >= PIPELINE_Gradient2)
+      {
+      executive->Connect(cd2pd, "out_point_array", gradient2, "input_point");
+      }
+    }
   kernels.push_back(executive->GetKernel());
 
-#ifdef USE_2ND_GRADIENT
   // this pipeline has 10 arrays, 7 are global (6-in, 1-out) while other 3 are
   // internal arrays.
   daxArrayCore cores[10];
@@ -343,20 +373,29 @@ int main(int, char**)
   global_array_size_in_bytes[5] = sizeof(points);
 
   // CellGradient2(output)
-  global_arrays[6] = new float[(DIMENSION)*(DIMENSION)*(DIMENSION) * 3];
-  for (int cc=0; cc < (DIMENSION)*(DIMENSION)*(DIMENSION)*3; cc++)
+  int output_dims = (PIPELINE == PIPELINE_C2P)? DIMENSION: DIMENSION-1;
+  global_arrays[6] = new float[output_dims*output_dims*output_dims* 3];
+  for (int cc=0; cc < (output_dims*output_dims*output_dims*3); cc++)
     {
     global_arrays[6][cc] = -1;
     }
-  global_array_size_in_bytes[6] =
-    (DIMENSION)*(DIMENSION)*(DIMENSION)*sizeof(float)*3;
+  global_array_size_in_bytes[6] = output_dims*output_dims*output_dims*sizeof(float)*3;
 
   boost::timer timer;
   //daxExecute(10, cores, 6, global_arrays, global_array_size_in_bytes,
   //  1, &global_arrays[6], &global_array_size_in_bytes[6],
   //  kernels.size(), &kernels[0]);
-
-  daxExecute(10, cores, 4, global_arrays, global_array_size_in_bytes,
+  int num_inputs = 3;
+  if (PIPELINE == PIPELINE_C2P)
+    {
+    num_inputs = 4;
+    }
+  else if (PIPELINE == PIPELINE_Gradient2)
+    {
+    num_inputs = 6;
+    }
+  daxExecute(output_dims*output_dims*output_dims,
+    10, cores, num_inputs, global_arrays, global_array_size_in_bytes,
     1, &global_arrays[6], &global_array_size_in_bytes[6],
     kernels.size(), &kernels[0]);
   cout << "Total Time ("<< DIMENSION << "^3) : "<< timer.elapsed() << endl;
@@ -371,75 +410,5 @@ int main(int, char**)
     }
 
   delete [] global_arrays[6];
-#else
-  // This pipeline has 5 arrays. 
-  daxArrayCore cores[5];
-  float* global_arrays[4];
-  size_t global_array_size_in_bytes[4];
-
-  // 0 == output of elevation.
-  cores[0].Type = 0; 
-  cores[0].Rank = 0;
-  cores[0].Shape[0] = cores[0].Shape[1] = 0;
-
-  // 1 == input to elevation (point coordinates)
-  cores[1].Type = 1; // input image points coordinates
-  cores[1].Rank = 1; // vectors
-  cores[1].Shape[0] = 3; cores[1].Shape[1] = 0;
-  daxImageDataData points;
-  points.Spacing[0] = points.Spacing[1] = points.Spacing[2] = 1.0f;
-  points.Origin[0] = points.Origin[1] = points.Origin[2] = 0.0f;
-  points.Extents[0] = points.Extents[2] = points.Extents[4] = 0;
-  points.Extents[1] = points.Extents[3] = points.Extents[5] = DIMENSION -1;
-  global_arrays[0] = reinterpret_cast<float*>(&points);
-  cout << "Size of points: " << sizeof(points) << endl;
-  global_array_size_in_bytes[0] = sizeof(points);
-
-  // 2 == output from cellAverage.
-  cores[2].Type = 0; // irregular
-  cores[2].Rank = 0;
-  cores[2].Shape[0] = cores[2].Shape[1] = 0;
-#ifdef USE_GRADIENT
-  global_arrays[3] = new float[(DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1) * 3];
-  for (int cc=0; cc < (DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1)*3; cc++)
-    {
-    global_arrays[3][cc] = -1;
-    }
-  global_array_size_in_bytes[3] =
-    (DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1)*sizeof(float)*3;
-#else
-  global_arrays[3] = new float[(DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1)];
-  for (int cc=0; cc < (DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1); cc++)
-    {
-    global_arrays[3][cc] = -1;
-    }
-  global_array_size_in_bytes[3] = (DIMENSION-1)*(DIMENSION-1)*(DIMENSION-1)*sizeof(float);
-#endif
-
-  // 3 == same as 1 (point coordinates for CellAverage).
-  cores[3] = cores[1];
-  global_arrays[1] = global_arrays[0];
-  global_array_size_in_bytes[1] = global_array_size_in_bytes[0];
-
-  // 4 == cell-connections
-  cores[4].Type = 2; // image cell
-  cores[4].Rank = 1;
-  cores[4].Shape[0] = 4; cores[4].Shape[1] = 0;
-  global_arrays[2] = reinterpret_cast<float*>(&points);
-  global_array_size_in_bytes[2] = sizeof(points);
-
-  boost::timer timer;
-  daxExecute(5, cores, 3, global_arrays, global_array_size_in_bytes,
-    1, &global_arrays[3], &global_array_size_in_bytes[3],
-    kernels.size(), &kernels[0]);
-  cout << "Total Time ("<< DIMENSION << "^3) : "<< timer.elapsed() << endl;
-  cout << "Output (1): " << global_arrays[3][0] << endl;
-
-  //for (int cc=0; cc < global_array_size_in_bytes[3]/sizeof(float); cc++)
-  //  {
-  //  cout << global_arrays[3][cc] << endl;
-  //  }
-  delete []global_arrays[3];
-#endif
   return 0;
 }
