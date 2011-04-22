@@ -38,7 +38,7 @@
     }\
   }
 
-#define DIMENSION 3
+#define DIMENSION 512
 #define USE_GRADIENT
 #define USE_2ND_GRADIENT
 
@@ -364,6 +364,10 @@ int main(int, char**)
   for (int cc=0; cc < global_array_size_in_bytes[6]/sizeof(float); cc++)
     {
     cout << global_arrays[6][cc] << endl;
+    if (cc == 11)
+      {
+      break;
+      }
     }
 
   delete [] global_arrays[6];
