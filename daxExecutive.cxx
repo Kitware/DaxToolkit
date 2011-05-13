@@ -8,35 +8,31 @@
 #include "daxExecutive.h"
 
 // Generated headers.
-#include "CoreKernel.cl.h"
-#include "CoreMapField.cl.h"
-#include "CorePointIterator.cl.h"
+#include "Kernel.tmpl.h"
+#include "KernelGetArray.tmpl.h"
+#include "dAPI.cl.h"
 
 // dax headers
-#include "daxImageData.h"
 #include "daxModule.h"
 #include "daxOptions.h"
 #include "daxPort.h"
 
-// OpenCL headers
-#ifdef FNC_ENABLE_OPENCL
-//# define __CL_ENABLE_EXCEPTIONS
-# include <CL/cl.hpp>
-# include "opecl_util.h"
-#endif
+// Google CTemplate Includes
+#include <ctemplate/template.h>
 
 // external headers
 #include <algorithm>
 #include <assert.h>
+#include <map>
 #include <boost/algorithm/string.hpp>
 #include <boost/bind.hpp>
 #include <boost/config.hpp>
 #include <boost/format.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/depth_first_search.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/graph_utility.hpp>
 #include <boost/graph/reverse_graph.hpp>
+#include <boost/graph/topological_sort.hpp>
 #include <utility>                   // for std::pair
 
 class daxExecutive::daxInternals
@@ -67,6 +63,7 @@ public:
 
   typedef boost::graph_traits<Graph>::vertex_iterator VertexIterator;
   typedef boost::graph_traits<Graph>::edge_iterator EdgeIterator;
+  typedef boost::graph_traits<Graph>::in_edge_iterator InEdgeIterator;
   Graph Connectivity;
 };
 
@@ -188,393 +185,221 @@ void daxExecutive::Reset()
 {
   this->Internals->Connectivity = daxInternals::Graph();
 }
+//daxHeaderString_Kernel
 
 //-----------------------------------------------------------------------------
-bool daxExecutive::Execute(
-  const daxImageData* input, daxImageData* output) const
+std::string daxExecutive::GetKernel()
 {
-  cout << endl << "--------------------------" << endl;
-  cout << "Connectivity Graph: " << endl;
-  boost::print_graph(this->Internals->Connectivity);
-  cout << "--------------------------" << endl;
+  //cout << endl << "--------------------------" << endl;
+  //cout << "Connectivity Graph: " << endl;
+  //boost::print_graph(this->Internals->Connectivity);
+  //cout << "--------------------------" << endl;
 
-  // Every sink becomes a separate kernel.
+  ctemplate::TemplateDictionary dictionaryKernel("kernel");
+  ctemplate::TemplateDictionary dictionaryGetArray("get_array");
 
-  // Locate sinks. Sinks are nodes in the dependency graph with in-degree of 0.
-  std::vector<daxInternals::Graph::vertex_descriptor> sinks;
-  dax::get_heads(sinks, this->Internals->Connectivity);
+  ctemplate::Template* getArrayTemplate = ctemplate::Template::StringToTemplate(
+    daxHeaderString_KernelGetArray, ctemplate::STRIP_BLANK_LINES);
 
-  // Now we process each sub-graph rooted at each sink separately, create
-  // separate kernels and executing them individually.
+  // We can just do a topological sort and then invoke the kernel.
+  std::vector<daxInternals::Graph::vertex_descriptor> sorted_vertices;
 
-  // Maybe using for_each isn't the best thing here since I want to break on
-  // error. I am just letting myself get a little carried away with boost::bind
-  // and std::for_each temporarily :).
-  std::for_each(sinks.begin(), sinks.end(),
-    boost::bind(&daxExecutive::ExecuteOnce<daxInternals::Graph>,
-      this, _1, this->Internals->Connectivity, input, output));
-  return false;
+  boost::reverse_graph<daxInternals::Graph> rev_connectivity(this->Internals->Connectivity);
+  boost::topological_sort(rev_connectivity, std::back_inserter(sorted_vertices));
+
+  // every port gets an array index.
+  std::map<daxPort*, int> index_map;
+  std::map<daxPort*, int> global_outputs_map;
+
+  int num_of_arrays = 0;
+  int input_array_count = 0;
+  for (size_t cc=0; cc < sorted_vertices.size(); cc++)
+    {
+    daxModulePtr module =
+      this->Internals->Connectivity[sorted_vertices[cc]].Module;
+    size_t num_input_ports = module->GetNumberOfInputs();
+    size_t num_output_ports = module->GetNumberOfOutputs();
+
+    dictionaryGetArray.SetValue("dax_name", module->GetModuleName());
+    std::string result;
+    getArrayTemplate->Expand(&result, &dictionaryGetArray);
+    dictionaryKernel.SetValueAndShowSection(
+      "dax_get_array_kernel", result, "dax_get_array_kernels");
+
+    ctemplate::TemplateDictionary* moduleDict =
+      dictionaryGetArray.AddSectionDictionary("dax_generators");
+    moduleDict->SetValue("dax_id", (boost::format("%1%") % (cc+1)).str());
+    moduleDict->SetValue("dax_name", module->GetModuleName());
+
+    // name module's out-arrays. Every out-array gets a unique name.
+    for (size_t portno = 0; portno < num_output_ports; portno++)
+      {
+      int index = num_of_arrays++;
+      index_map[module->GetOutputPort(portno).get()] = index;
+      // Initially, we'll assume any output-array not consumed by another
+      // functor is a global output array. To make it easier to determine those
+      // arrays, we put the output ports in another map. As they are used, we
+      // remove them from the map. Whatever remains in the map are global output
+      // arrays.
+      global_outputs_map[module->GetOutputPort(portno).get()] = index;
+
+      ctemplate::TemplateDictionary* arraysDict =
+        dictionaryKernel.AddSectionDictionary("dax_generated_arrays");
+      arraysDict->SetValue("dax_index", (boost::format("%1%")%index).str());
+      arraysDict->SetValue("dax_generator_id",
+        (boost::format("%1%") % (cc+1)).str());
+      }
+
+    // Now to determine what are the names of the input arrays. There are two
+    // possibilities: they are either global arrays or output-arrays from other
+    // modules.
+    daxInternals::InEdgeIterator start_in, end_in;
+    boost::tie(start_in, end_in) = boost::in_edges(sorted_vertices[cc],
+      this->Internals->Connectivity);
+    for (; start_in != end_in; start_in++)
+      {
+      daxPort* producer =
+        this->Internals->Connectivity[*start_in].ProducerPort.get();
+      daxPort* consumer =
+        this->Internals->Connectivity[*start_in].ConsumerPort.get();
+      assert(index_map.find(consumer) == index_map.end());
+      if (index_map.find(producer) != index_map.end())
+        {
+        // producer is consumed, so no longer a global output array.
+        global_outputs_map.erase(producer);
+
+        index_map[consumer] = index_map[producer];
+        }
+      }
+
+    for (size_t portno=0; portno < num_input_ports; portno++)
+      {
+      daxPort* port = module->GetInputPort(portno).get();
+      if (index_map.find(port) == index_map.end())
+        {
+        // this is a global-input
+        int array_index = num_of_arrays++;
+        index_map[port] = array_index;
+
+        ctemplate::TemplateDictionary* input_array_dict =
+          dictionaryKernel.AddSectionDictionary("dax_input_arrays");
+        input_array_dict->SetValue("dax_name",
+          (boost::format("input_array_%1%_%2%")%module->GetModuleName()%
+           port->GetName()).str());
+        input_array_count++;
+        //input_array_dict->SetValue("dax_name",
+        //  (boost::format("input_array_%1%")%(input_array_count++)).str());
+        input_array_dict->SetValue("dax_index",
+          (boost::format("%1%")%(array_index)).str());
+        }
+      }
+
+    for (size_t portno=0; portno < num_input_ports; portno++)
+      {
+      daxPort* port = module->GetInputPort(portno).get();
+      assert(index_map.find(port) != index_map.end());
+      moduleDict->SetValueAndShowSection("dax_array_index",
+        (boost::format("%1%") % index_map[port] ).str(), "dax_args");
+      }
+
+    for (size_t portno=0; portno < num_output_ports; portno++)
+      {
+      daxPort* port = module->GetOutputPort(portno).get();
+      assert(index_map.find(port) != index_map.end());
+      moduleDict->SetValueAndShowSection("dax_array_index",
+        (boost::format("%1%") % index_map[port] ).str(), "dax_args");
+      }
+    }
+
+  int output_array_count = 0;
+  for (std::map<daxPort*, int>::iterator iter = global_outputs_map.begin();
+    iter != global_outputs_map.end(); ++iter)
+    {
+    ctemplate::TemplateDictionary* output_array_dict =
+      dictionaryKernel.AddSectionDictionary("dax_output_arrays");
+    output_array_dict->SetValue("dax_name",
+      (boost::format("output_array_%1%")%(output_array_count++)).str());
+    output_array_dict->SetValue("dax_index",
+      (boost::format("%1%")%iter->second).str());
+    }
+
+  std::string result;
+  dictionaryGetArray.SetValue("dax_name", "__final__");
+  getArrayTemplate->Expand(&result, &dictionaryGetArray);
+  dictionaryKernel.SetValueAndShowSection(
+    "dax_get_array_kernel", result, "dax_get_array_kernels");
+
+  dictionaryKernel.SetValue("dax_array_count",
+    (boost::format("%1%")%num_of_arrays).str());
+  //dictionaryKernel.Dump();
+
+  ctemplate::Template* tmpl = ctemplate::Template::StringToTemplate(
+    daxHeaderString_Kernel, ctemplate::STRIP_BLANK_LINES);
+
+  std::string t_result;
+  tmpl->Expand(&t_result, &dictionaryKernel);
+  return t_result;
 }
 
-template <class Graph, class Stack>
-class DFSVisitor : public boost::default_dfs_visitor
+//-----------------------------------------------------------------------------
+void daxExecutive::PrintKernel()
 {
-  typedef typename boost::graph_traits<Graph>::edge_descriptor edge_descriptor;
-  typedef typename boost::graph_traits<Graph>::vertex_descriptor
-    vertex_descriptor;
-  typedef typename Stack::value_type StackItem;
-  Stack &CommandStack;
-  void operator=(const DFSVisitor&); // not implemented.
-public:
-  DFSVisitor(Stack& stack): CommandStack(stack) { }
-  void tree_edge(edge_descriptor edge, const Graph& graph)
-    {
-    this->handle_vertex(boost::target(edge, graph), graph);
-    }
-
-  void start_vertex(vertex_descriptor vertex, const Graph& graph)
-    {
-    this->handle_vertex(vertex, graph);
-    }
-
-  void finish_vertex(vertex_descriptor vertex, const Graph& graph)
-    {
-    (void)vertex;
-    (void)graph;
-    }
-private:
-  void handle_vertex(vertex_descriptor vertex, const Graph& graph)
-    {
-    cout << "Handle: " << vertex << endl;
-    assert(this->CommandStack.rbegin() != this->CommandStack.rend());
-    // * Determine the type of the module.
-    daxModulePtr module = graph[vertex].Module;
-    daxModule::Types module_type = module->GetType();
-
-    switch (module_type)
-      {
-    case daxModule::map_field:
-        {
-        // this operates on the same field as passed on in the input.
-        StackItem top = this->CommandStack.back();
-        assert(top.IsOperator());
-        this->CommandStack.pop_back();
-        this->CommandStack.push_back(StackItem(vertex));
-        this->CommandStack.push_back(top);
-        }
-      break;
-
-    case daxModule::map_topology_down:
-      cout << "TODO" << endl;
-      abort();
-      break;
-
-    case daxModule::map_topology_up:
-      cout << "TODO" << endl;
-      abort();
-      break;
-
-    default:
-      abort();
-      }
-    }
-};
-
-template <class Graph>
-class CommandStackEntity
-{
-public:
-  enum Types
-    {
-    OPERAND,
-    OPERATOR
-    };
-  CommandStackEntity(typename Graph::vertex_descriptor vertex)
-    {
-    this->Type = OPERAND;
-    this->Operand = vertex;
-    }
-  CommandStackEntity(daxPort::Types operator_)
-    {
-    this->Type = OPERATOR;
-    this->Operator = operator_;
-    }
-  bool IsOperator() const { return this->Type == OPERATOR; }
-  bool IsOperand() const { return this->Type == OPERAND; }
-
-  Types Type;
-  union
-    {
-    typename Graph::vertex_descriptor Operand;
-    daxPort::Types Operator;
-    };
-};
-
-namespace dax
-{
-  std::string daxSubstituteKeywords(
-    const char* source, const std::map<std::string, std::string>& keywords)
-    {
-    std::string result = source;
-    for (std::map<std::string, std::string>::const_iterator
-      iter = keywords.begin(); iter != keywords.end(); ++iter)
-      {
-      boost::replace_all(result, "$" + iter->first + "$", iter->second);
-      }
-    return result;
-    }
-
-  //-----------------------------------------------------------------------------
-  template <class Graph>
-    std::string GenerateKernel(
-      typename Graph::vertex_descriptor head, const Graph& graph,
-      std::vector<std::string>& kernels)
-      {
-      std::map<std::string, std::string> kernel_map;
-      // The algorithm we use is as follows:
-      // We treat the problem like solving a mathematical expression using operand
-      // and operator stacks. Operators are iterators. And all operators are
-      // unary. Operands are modules(functors). Consecutive operators of the same
-      // type can be combined into a single iteration.
-
-      typedef std::vector<CommandStackEntity<Graph> > CommandStack;
-      CommandStack command_stack;
-
-      // Now based on our data-input, we push the first operator on the stack.
-      // We are assuming image-data with point scalars to begin with.
-      command_stack.push_back(CommandStackEntity<Graph>(daxPort::point_array));
-
-      DFSVisitor<Graph, CommandStack> visitor(command_stack);
-      // Do a DFS-visit starting at the head. We are assuming no fan-ins or
-      // fan-outs.
-      boost::depth_first_search(graph, boost::visitor(visitor).root_vertex(head));
-
-      std::string opencl_kernel;
-      std::map<std::string, std::string> keywords;
-      size_t operator_index = 0;
-      for (typename CommandStack::iterator iter = command_stack.begin();
-        iter != command_stack.end(); ++iter)
-        {
-        const typename CommandStack::value_type &item = *iter;
-        if (item.IsOperator())
-          {
-          keywords["index"] = (boost::format("%1%") % operator_index).str();
-          keywords["body"] = opencl_kernel;
-          switch (item.Operator)
-            {
-          case daxPort::point_array:
-              {
-              opencl_kernel = daxSubstituteKeywords(
-                daxHeaderString_CorePointIterator, keywords);
-              }
-            break;
-
-          default:
-            cout << __LINE__ << " : TODO" << endl;
-            }
-          operator_index++;
-          }
-        else // if (item.IsOperand())
-          {
-          daxModule::Types module_type = graph[item.Operand].Module->GetType();
-          std::string module_name = graph[item.Operand].Module->GetModuleName();
-          kernel_map[module_name] = graph[item.Operand].Module->GetFunctorCode();
-          switch (module_type)
-            {
-          case daxModule::map_field:
-            keywords["module_name"] = module_name;
-            keywords["vertexid"] = (boost::format("%1%") % item.Operand).str();
-            opencl_kernel = daxSubstituteKeywords(
-              daxHeaderString_CoreMapField, keywords) + opencl_kernel;
-          default:
-            cout << __LINE__ << ": TODO" << endl;
-            }
-          }
-        }
-      keywords["topology_opaque_pointer"] = "opaque_data_pointer";
-      keywords["input_data_handle"] = "inputHandle";
-      keywords["output_data_handle"] = "outputHandle";
-      keywords["body"] = opencl_kernel;
-      opencl_kernel = daxSubstituteKeywords(daxHeaderString_CoreKernel, keywords);
-      cout << "================================================" <<endl;
-      cout << opencl_kernel.c_str() << endl;
-
-      for (std::map<std::string, std::string>::iterator
-        iter = kernel_map.begin(); iter != kernel_map.end(); ++iter)
-        {
-        kernels.push_back(iter->second);
-        }
-      return opencl_kernel;
-      }
+  std::string result = this->GetKernel();
+  cout << result.c_str() << endl;
 }
-
-#define RETURN_ON_ERROR(err, msg) \
-  {\
-  if (err != CL_SUCCESS)\
-    {\
-    cerr << __FILE__<<":"<<__LINE__ << endl<< "ERROR("<<err<<"):  Failed to " << msg << endl;\
-    cerr << "Error Code: " << oclErrorString(err) << endl;\
-    return false;\
-    }\
-  }
 
 //-----------------------------------------------------------------------------
 template <class Graph>
 bool daxExecutive::ExecuteOnce(
-  typename Graph::vertex_descriptor head, const Graph& graph,
-  const daxDataObject* input, daxDataObject* output) const
+  typename Graph::vertex_descriptor head, const Graph& graph) const
 {
   // FIXME: now sure how to dfs over a subgraph starting with head, so for now
   // we assume there's only 1 connected graph in "graph".
-  cout << "Execute sub-graph: " << head << endl;
+  //cout << "Execute sub-graph: " << head << endl;
 
   std::vector<std::string> functor_codes;
 
   // First generate the kernel code.
-  std::string kernel = dax::GenerateKernel(head, graph, functor_codes);
-
-#ifndef FNC_ENABLE_OPENCL
-
-  cerr <<
-    "You compiled without OpenCL support. So can't really execute "
-    "anything. Here's the generated kernel. Have fun!" << endl;
-  cerr << kernel.c_str() << endl;
+  //std::string kernel = dax::GenerateKernel(head, graph, functor_codes);
   return false;
+}
 
-#else
+//-----------------------------------------------------------------------------
+void daxExecutivePrintKernel()
+{
+  ctemplate::TemplateDictionary dictionary("kernel");
+  dictionary.SetValue("dax_array_count", "3");
 
-  // Now we should invoke the kernel using opencl setting up data arrays etc
-  // etc.
-  std::vector<cl::Platform> platforms;
-  cl::Platform::get(&platforms);
-  if (platforms.size() == 0)
-    {
-    cout << "No OpenCL capable platforms located." << endl;
-    return false;
-    }
+  // 2 inputs, 1 output.
+  ctemplate::TemplateDictionary *input0 = dictionary.AddSectionDictionary(
+    "dax_input_arrays");
+  input0->SetValue("dax_name", "input0");
+  input0->SetValue("dax_index", "0");
 
-  cl_int err_code;
-  try
-    {
-#ifdef __APPLE__
-    cout << "Using CPU device" << endl;
-    cl::Context context(CL_DEVICE_TYPE_CPU, NULL, NULL, NULL, &err_code);
-#else
-    cout << "Using GPU device" << endl;
-    cl::Context context(CL_DEVICE_TYPE_GPU, NULL, NULL, NULL, &err_code);
-#endif
-    RETURN_ON_ERROR(err_code, "create GPU Context");
+  ctemplate::TemplateDictionary *input1 = dictionary.AddSectionDictionary(
+    "dax_input_arrays");
+  input1->SetValue("dax_name", "input1");
+  input1->SetValue("dax_index", "1");
 
-    // Query devices.
-    std::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
-    if (devices.size()==0)
-      {
-      cout << "No OpenGL device located." << endl;
-      return -1;
-      }
+  ctemplate::TemplateDictionary *output0 = dictionary.AddSectionDictionary(
+    "dax_output_arrays");
+  output0->SetValue("dax_name", "output0");
+  output0->SetValue("dax_index", "2");
 
-    // Allocate opaque data pointer.
-    cl::Buffer inputDataHandle(context,
-      CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      input->GetOpaqueDataSize(),
-      const_cast<void*>(input->GetOpaqueDataPointer()),
-      &err_code);
-    RETURN_ON_ERROR(err_code, "upload opaque data ptr");
+  ctemplate::TemplateDictionary *dax_generators = dictionary.AddSectionDictionary(
+    "dax_generators");
+  dax_generators->SetValue("dax_name", "1");
+  dax_generators->SetValue("dax_invoke", "functor1(work, arrays[0], arrays[1]);");
 
-    // Allocate input and output buffers.
-    cl::Buffer inputBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-      input->GetDataSize("mm..not sure"),
-      const_cast<void*>(input->GetDataPointer("mm..not sure")),
-      /* for data sources that have multiple arrays, we need some mechanism of
-       * letting the invoker pick what arrays we are operating on */
-      &err_code);
-    RETURN_ON_ERROR(err_code, "upload input data");
+  dax_generators = dictionary.AddSectionDictionary(
+    "dax_generators");
+  dax_generators->SetValue("dax_name", "2");
+  dax_generators->SetValue("dax_invoke", "functor2(work, arrays[1], arrays[2]);");
 
-    cl::Buffer outputBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR,
-      output->GetDataSize("mm..not sure"),
-      output->GetWriteDataPointer( "mm..not sure"),
-      &err_code);
-    RETURN_ON_ERROR(err_code, "create output_buffer");
+  ctemplate::Template* tmpl = ctemplate::Template::StringToTemplate(
+    daxHeaderString_Kernel, ctemplate::STRIP_BLANK_LINES);
 
-    std::string input_data_code = input->GetCode();
-    // Now compile the code.
-    cl::Program::Sources sources;
-    sources.push_back(std::make_pair(input_data_code.c_str(),
-        input_data_code.size()));
-
-    // push functor codes.
-    for (size_t cc=0; cc < functor_codes.size(); cc++)
-      {
-      sources.push_back(std::make_pair(functor_codes[cc].c_str(),
-          functor_codes[cc].size()));
-      }
-    sources.push_back(std::make_pair(kernel.c_str(), kernel.size()));
-
-    // Build the code.
-    cl::Program program (context, sources);
-    err_code = program.build(devices);
-    if (err_code != CL_SUCCESS)
-      {
-      std::string info;
-      program.getBuildInfo(devices[0],
-        CL_PROGRAM_BUILD_LOG, &info);
-      cout << info.c_str() << endl;
-      }
-    RETURN_ON_ERROR(err_code, "compile the kernel.");
-    
-    cl::Kernel kernel(program, "main", &err_code);
-    RETURN_ON_ERROR(err_code, "locate entry-point 'main'.");
-
-    // * determine the shape of the kernel invocation.
-
-    // Kernel-shape will be decided by the output data type and the "head"
-    // functor module.
-    // For now, we simply invoke the kernel per item.
-
-    // * pass arguments to the kernel
-
-    err_code = kernel.setArg(0, inputDataHandle);
-    err_code = kernel.setArg(1, inputBuffer);
-    RETURN_ON_ERROR(err_code, "pass input buffer.");
-    err_code = kernel.setArg(2, outputBuffer);
-    RETURN_ON_ERROR(err_code, "pass output buffer.");
-
-    int num_items = input->GetDataSize("mm..not sure") / sizeof(float);
-    cout << num_items << endl;
-    cl::Event event;
-    cl::CommandQueue queue(context, devices[0]);
-    err_code = queue.enqueueNDRangeKernel(kernel,
-      cl::NullRange,
-      cl::NDRange(num_items),
-      cl::NDRange(1), NULL, &event);
-    RETURN_ON_ERROR(err_code, "enqueue.");
-
-    // for for the kernel execution to complete.
-    event.wait();
-
-    // now request read back.
-    err_code = queue.enqueueReadBuffer(outputBuffer,
-      CL_TRUE, 0,
-      output->GetDataSize("mm..not sure"),
-      output->GetWriteDataPointer("mm..not sure"));
-    RETURN_ON_ERROR(err_code, "read output back");
-    // * invoke the kernel
-    // * read back the result
-    }
-#ifdef __CL_ENABLE_EXCEPTIONS
-  catch (cl::Error error)
-    {
-    cout << error.what() << "(" << error.err() << ")" << endl;
-    }
-#else
-  catch (...)
-    {
-    cerr << "EXCEPTION"<< endl;
-    return false;
-    }
-#endif
-
-  cout << "So far so good" << endl;
-  return false;
-#endif
+  std::string result;
+  tmpl->Expand(&result, &dictionary);
+  cout << result.c_str() << endl;
 }

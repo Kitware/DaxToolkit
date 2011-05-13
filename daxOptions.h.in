@@ -5,4 +5,3 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#cmakedefine FNC_ENABLE_OPENCL

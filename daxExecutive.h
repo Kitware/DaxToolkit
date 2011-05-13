@@ -10,11 +10,9 @@
 
 #include "daxObject.h"
 
-class daxImageData;
 class daxModule;
 class daxPort;
 class daxDataObject;
-daxDefinePtrMacro(daxImageData);
 daxDefinePtrMacro(daxModule);
 daxDefinePtrMacro(daxPort);
 
@@ -33,10 +31,6 @@ public:
   virtual ~daxExecutive();
   daxTypeMacro(daxExecutive, daxObject);
 
-  /// Executes the pipelines. Return false if there's some error.
-  /// Initially, we'll assume 1 input and 1 output with only 1 pipeline defined.
-  bool Execute(const daxImageData* input, daxImageData* output) const;
-
   /// Register a connection. Returns true if the connection was setup correctly.
   bool Connect(
     const daxModulePtr sourceModule, const daxPortPtr sourcePort,
@@ -49,14 +43,15 @@ public:
   /// start supporting de-connecting.
   void Reset();
 
+  void PrintKernel();
+  std::string GetKernel();
 protected:
   /// Executes every subtree in the graph separately. We currently invoke every
   /// subtree as a separate kernel. We can merge the kernels or something of
   /// that sort in future.
   template <class Graph>
     bool ExecuteOnce(
-      typename Graph::vertex_descriptor head, const Graph& graph,
-      const daxDataObject* input, daxDataObject* output) const;
+      typename Graph::vertex_descriptor head, const Graph& graph) const;
 
 private:
   daxDisableCopyMacro(daxExecutive);
@@ -66,14 +61,4 @@ private:
 };
 
 daxDefinePtrMacro(daxExecutive);
-
-#include <string>
-#include <map>
-
-namespace dax
-{
-  std::string daxSubstituteKeywords(
-    const char* source, const std::map<std::string, std::string>& keywords);
-}
-
 #endif

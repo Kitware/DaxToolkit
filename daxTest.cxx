@@ -8,34 +8,17 @@
 #include "dAPI.cl.h"
 
 
-#include "daxArray.h"
 #include "daxCellGradientModule.h"
 #include "daxCellGradientModule2.h"
 #include "daxCellDataToPointDataModule.h"
 #include "daxElevationModule.h"
-#include "daxExecutive2.h"
-#include "daxRegularArray.h"
+#include "daxExecutive.h"
 #include "daxOptions.h"
 
 #include <vector>
 #include <string.h>
 #include <assert.h>
-#ifdef FNC_ENABLE_OPENCL
-# include <CL/cl.hpp>
-# include "opecl_util.h"
-#endif
-
 #include <boost/progress.hpp>
-
-#define RETURN_ON_ERROR(err, msg) \
-  {\
-  if (err != CL_SUCCESS)\
-    {\
-    cerr << __FILE__<<":"<<__LINE__ << endl<< "ERROR("<<err<<"):  Failed to " << msg << endl;\
-    cerr << "Error Code: " << oclErrorString(err) << endl;\
-    return;\
-    }\
-  }
 
 #define PIPELINE_BASE 1 // Distance->CellGradient
 #define PIPELINE_C2P 2// Distance->CellGradient->CellToPoint
@@ -64,167 +47,6 @@ void daxExecute(int num_items,
   int num_out_arrays, float** out_arrays, size_t* out_arrays_size_in_bytes,
   int num_kernels, const std::string* kernels)
 {
-#ifndef FNC_ENABLE_OPENCL
-  cerr <<
-    "You compiled without OpenCL support. So can't really execute "
-    "anything. Here's the generated kernel. Have fun!" << endl;
-#else
-  // Now we should invoke the kernel using opencl setting up data arrays etc
-  // etc.
-  std::vector<cl::Platform> platforms;
-  cl::Platform::get(&platforms);
-  if (platforms.size() == 0)
-    {
-    cout << "No OpenCL capable platforms located." << endl;
-    return;
-    }
-
-  cl_int err_code;
-  try
-    {
-#ifdef __APPLE__
-    cout << "Using CPU device" << endl;
-    cl::Context context(CL_DEVICE_TYPE_CPU, NULL, NULL, NULL, &err_code);
-#else
-    cout << "Using GPU device" << endl;
-    cl_context_properties properties[] =
-      { CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[0])(), 0};
-    cl::Context context(CL_DEVICE_TYPE_GPU, properties);
-#endif
-    //RETURN_ON_ERROR(err_code, "create GPU Context");
-
-    // Query devices.
-    std::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
-    if (devices.size()==0)
-      {
-      cout << "No OpenGL device located." << endl;
-      return;
-      }
-
-    // Allocate buffer for cores.
-    cl::Buffer arrayCores(context,
-      CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-      sizeof(daxArrayCore)*num_cores,
-      cores, &err_code);
-    RETURN_ON_ERROR(err_code, "upload array cores ptr");
-
-    // Allocate input buffers.
-    cl::Buffer **inputs  = new cl::Buffer*[num_in_arrays];
-    for (int cc=0; cc < num_in_arrays; cc++)
-      {
-      inputs[cc] = new cl::Buffer(context,
-        CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-        in_arrays_size_in_bytes[cc],
-        in_arrays[cc], &err_code);
-      RETURN_ON_ERROR(err_code, "upload input data");
-      }
-
-    //Allocate output buffers.
-    cl::Buffer **outputs = new cl::Buffer*[num_out_arrays];
-    for (int cc=0; cc < num_out_arrays; cc++)
-      {
-      outputs[cc] = new cl::Buffer(context,
-        CL_MEM_WRITE_ONLY |CL_MEM_ALLOC_HOST_PTR,
-        out_arrays_size_in_bytes[cc],
-        NULL, &err_code);
-      RETURN_ON_ERROR(err_code, "create output buffer");
-      }
-
-    // Now compile the code.
-    cl::Program::Sources sources;
-    sources.push_back(
-      std::make_pair(daxHeaderString_dAPI, strlen(daxHeaderString_dAPI)));
-    for (int cc=0; cc < num_kernels; cc++)
-      {
-      sources.push_back(std::make_pair(kernels[cc].c_str(), kernels[cc].size()));
-      }
-
-    // Build the code.
-    cl::Program program (context, sources);
-    err_code = program.build(devices);
-    if (err_code != CL_SUCCESS)
-      {
-      std::string info;
-      program.getBuildInfo(devices[0],
-        CL_PROGRAM_BUILD_LOG, &info);
-      cout << info.c_str() << endl;
-      }
-    RETURN_ON_ERROR(err_code, "compile the kernel.");
-
-    cl::Kernel kernel(program, "entry_point", &err_code);
-    RETURN_ON_ERROR(err_code, "locate entry-point 'main'.");
-
-    // * determine the shape of the kernel invocation.
-
-    // Kernel-shape will be decided by the output data type and the "head"
-    // functor module.
-    // For now, we simply invoke the kernel per item.
-
-    // * pass arguments to the kernel
-
-    err_code = kernel.setArg(0, arrayCores);
-    RETURN_ON_ERROR(err_code, "pass array cores.");
-    for (int cc=0; cc < num_in_arrays; cc++)
-      {
-      err_code = kernel.setArg(1+cc, *inputs[cc]);
-      RETURN_ON_ERROR(err_code, "pass input buffer.");
-      }
-    for (int cc=0; cc < num_out_arrays; cc++)
-      {
-      err_code = kernel.setArg(1+num_in_arrays+cc, *outputs[cc]);
-      RETURN_ON_ERROR(err_code, "pass output buffer.");
-      }
-
-    cout << num_items << endl;
-    cl::Event event;
-    cl::CommandQueue queue(context, devices[0]);
-    boost::timer timer;
-    err_code = queue.enqueueNDRangeKernel(kernel,
-      cl::NullRange,
-      cl::NDRange(num_items),
-      cl::NullRange, NULL, &event);
-    RETURN_ON_ERROR(err_code, "enqueue.");
-
-    // for for the kernel execution to complete.
-    err_code = event.wait();
-    RETURN_ON_ERROR(err_code, "execute");
-    cout << "Execution Time: " << timer.elapsed() << endl;
-
-    // now request read back.
-    for (int cc=0; cc < num_out_arrays; cc++)
-      {
-      err_code = queue.enqueueReadBuffer(*outputs[cc],
-        CL_TRUE, 0,
-        out_arrays_size_in_bytes[cc],
-        out_arrays[cc]);
-      RETURN_ON_ERROR(err_code, "read output back");
-      }
-    cout << "Execution + Readback Time: " << timer.elapsed() << endl;
-    for (int cc=0; cc  < num_in_arrays; cc++)
-      {
-      delete inputs[cc];
-      }
-    delete [] inputs;
-    for (int cc=0; cc  < num_out_arrays; cc++)
-      {
-      delete outputs[cc];
-      }
-    delete [] outputs;
-    }
-#ifdef __CL_ENABLE_EXCEPTIONS
-  catch (cl::Error error)
-    {
-    cout << error.what() << "(" << error.err() << ")" << endl;
-    }
-#else
-  catch (...)
-    {
-    cerr << "EXCEPTION"<< endl;
-    return;
-    }
-#endif
-
-#endif
 }
 
 #include <boost/program_options.hpp>
@@ -263,7 +85,7 @@ int main(int argc, char** argv)
     PIPELINE = variables["pipeline"].as<int>();
     }
 
-  daxExecutive2Ptr executive(new daxExecutive2());
+  daxExecutivePtr executive(new daxExecutive());
   daxModulePtr elevation(new daxElevationModule());
   daxModulePtr gradient(new daxCellGradientModule());
   daxModulePtr cd2pd(new daxCellDataToPointDataModule());
