@@ -10,7 +10,6 @@
 // Generated headers.
 #include "Kernel.tmpl.h"
 #include "KernelGetArray.tmpl.h"
-#include "dAPI.cl.h"
 
 // dax headers
 #include "daxModule.h"

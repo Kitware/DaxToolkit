@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project (Functors)
 
+#set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/cuda" ${CMAKE_MODULE_PATH})
+find_package(CUDA REQUIRED)
+
 FIND_PATH(GOOGLE_CTEMPLATE_INCLUDE_DIR google/template.h /usr/include /usr/local/include)
 FIND_LIBRARY(GOOGLE_CTEMPLATE_THREAD_LIB ctemplate /usr/lib /usr/loca/lib)
 
@@ -49,14 +52,8 @@ set (functor_modules
 )
 
 set (core_kernels
-  Functors/Elevation.cl
-  Functors/CellAverage.cl
-  Functors/CellGradient.cl
-  Functors/CellGradient2.cl
-  Functors/CellDataToPointData.cl
   Resources/Kernel.tmpl
   Resources/KernelGetArray.tmpl
-  Resources/dAPI.cl
 )
 
 set (generated_headers_core)
@@ -69,33 +66,28 @@ encode_to_headers(generated_headers
   )
 #message ("Headers: ${generated_headers}")
 
+CUDA_ADD_LIBRARY(DaxCuda
+  Resources/DaxDataTypes.cu
+  Resources/DaxAPI.cu
+  SHARED)
+
 # daxFramework is the core library
 add_library(daxFramework SHARED
+  daxExecutive.cxx
+  daxExecutive.h
   daxModule.cxx
   daxModule.h
   daxObject.cxx
   daxObject.h
   daxPort.cxx
   daxPort.h
-
-  daxCellAverageModule.cxx
-  daxCellAverageModule.h
-  daxCellDataToPointDataModule.cxx
-  daxCellDataToPointDataModule.h
-  daxCellGradientModule2.cxx
-  daxCellGradientModule2.h
-  daxCellGradientModule.cxx
-  daxCellGradientModule.h
-  daxElevationModule.cxx
-  daxElevationModule.h
-  daxExecutive.cxx
-
   ${generated_headers_core}
 )
 
 target_link_libraries(daxFramework
   ${Boost_LIBRARIES}
   ${GOOGLE_CTEMPLATE_THREAD_LIB}
+  DaxCuda
   )
 
 foreach (file ${generated_headers_core})
