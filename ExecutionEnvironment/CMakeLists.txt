@@ -10,6 +10,7 @@ set(sources
   DaxCommon.h
   DaxWork.cu
   DaxField.cu
+  DaxDataObject.cu
   )
 
 

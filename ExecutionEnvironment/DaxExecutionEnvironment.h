@@ -6,6 +6,7 @@
 #include "DaxCommon.h"
 #include "DaxWork.cu"
 #include "DaxField.cu"
+#include "DaxDataObject.cu"
 
 #define DAX_WORKLET __device__
 #define DAX_IN const

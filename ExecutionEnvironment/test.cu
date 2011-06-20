@@ -8,7 +8,6 @@
 #include "DaxExecutionEnvironment.h"
 #include "DaxCell.cu"
 
-
 DAX_WORKLET void PointDataToCellData(DAX_IN DaxWorkMapCell& work,
   DAX_IN DaxFieldPoint& point_attribute,
   DAX_OUT DaxFieldCell& cell_attribute)
@@ -16,17 +15,70 @@ DAX_WORKLET void PointDataToCellData(DAX_IN DaxWorkMapCell& work,
   DaxVector3 center = make_DaxVector3(0.5, 0.5, 0.5);
   DaxCell cell(work);
   DaxScalar scalar = cell.Interpolate(center, point_attribute, 0);
-  //cell_attribute.Set(work, scalar);
+  cell_attribute.Set(work, scalar);
 }
   
 
-__global__ void Test()
+__global__ void Execute(DaxDataObject input_do, DaxDataObject output_do)
 {
-  DaxWorkMapCell work;
-  DaxCell cell(work);
+  //DaxWorkMapCell work;
+  //DaxFieldPoint in_point_scalars;
+  //DaxFieldCell out_cell_scalars;
+  //PointDataToCellData(work, in_point_scalars, out_cell_scalars);
+
+  int offset = blockIdx.x * blockDim.x + threadIdx.x;
+  output_do.CellData.RawData[offset] = input_do.PointData.RawData[offset];
 }
 
+#include <iostream>
+using namespace std;
+#define POINT_EXTENT 4
+#define CELL_EXTENT 3
 int main()
 {
-  Test<<<1, 10>>>();
+  DaxArrayIrregular point_scalars;
+  point_scalars.SetNumberOfTuples(POINT_EXTENT*POINT_EXTENT*POINT_EXTENT);
+  point_scalars.SetNumberOfComponents(1);
+  point_scalars.Allocate();
+  for (int z=0; z < POINT_EXTENT; z++)
+    {
+    for (int y=0; y < POINT_EXTENT; y++)
+      {
+      for (int x=0; x < POINT_EXTENT; x++)
+        {
+        point_scalars.SetValue(z * POINT_EXTENT * POINT_EXTENT + y *
+          POINT_EXTENT + x, 0, x + 12);
+        }
+      }
+    }
+
+  DaxArrayIrregular cell_scalars;
+  cell_scalars.SetNumberOfTuples(CELL_EXTENT*CELL_EXTENT*CELL_EXTENT);
+  cell_scalars.SetNumberOfComponents(1);
+  cell_scalars.Allocate();
+  for (int cc=0; cc < CELL_EXTENT*CELL_EXTENT*CELL_EXTENT; cc++)
+    {
+    cell_scalars.SetValue(cc, 0, -1);
+    }
+
+  DaxDataObject input, output;
+  input.PointData = point_scalars;
+  output.CellData = cell_scalars;
+
+  DaxDataObjectDevice d_input; d_input.CopyFrom(input);
+  DaxDataObjectDevice d_output; d_output.Allocate(output);
+
+  Execute<<<CELL_EXTENT, CELL_EXTENT*CELL_EXTENT>>>(d_input, d_output);
+
+  output.CopyFrom(d_output);
+  for (int cc=0; cc < CELL_EXTENT*CELL_EXTENT*CELL_EXTENT; cc++)
+    {
+    cout << cell_scalars.GetValue(cc, 0) << endl;
+    }
+
+  d_input.FreeMemory();
+  d_output.FreeMemory();
+  input.FreeMemory();
+  output.FreeMemory();
+  return 0;
 }
