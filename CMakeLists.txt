@@ -69,7 +69,14 @@ encode_to_headers(generated_headers
 CUDA_ADD_LIBRARY(DaxCuda
   Resources/DaxDataTypes.cu
   Resources/DaxAPI.cu
+  Resources/DaxDataModel.cu
   SHARED)
+
+CUDA_ADD_EXECUTABLE(temp
+  Resources/DaxDataTypes.cu
+  Resources/DaxAPI.cu
+  Resources/DaxDataModel.cu
+  Resources/TempMain.cu)
 
 # daxFramework is the core library
 add_library(daxFramework SHARED
@@ -109,3 +116,5 @@ endforeach()
 target_link_libraries(daxTest
   daxFramework
   )
+
+add_subdirectory(ExecutionEnvironment)
