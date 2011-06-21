@@ -10,7 +10,8 @@
 #include "DaxDataObject.cu"
 
 #define DAX_WORKLET __device__
-#define DAX_IN const
+//#define DAX_IN const
+#define DAX_IN 
 #define DAX_OUT
 
 #endif

@@ -15,7 +15,15 @@ DAX_WORKLET void PointDataToCellData(DAX_IN DaxWorkMapCell& work,
   DaxVector3 center = make_DaxVector3(0.5, 0.5, 0.5);
   DaxCell cell(work);
   //DaxScalar scalar = cell.Interpolate(center, point_attribute, 0);
-  DaxScalar scalar = cell.GetNumberOfPoints();
+  //DaxScalar scalar = cell.GetPointID(5);
+  DaxScalar scalar;
+  DaxId numPoints = cell.GetNumberOfPoints();
+  for (int cc=0; cc < numPoints; cc++)
+    {
+    DaxWorkMapField point_work = cell.GetPoint(cc);
+    DaxScalar value = point_attribute.GetScalar(point_work);
+    scalar += value / numPoints;
+    }
   cell_attribute.Set(work, scalar);
 }
 
@@ -29,14 +37,15 @@ __global__ void Execute(DaxDataObject input_do, DaxDataObject output_do)
 
 #include <iostream>
 using namespace std;
-#define POINT_EXTENT 4
-#define CELL_EXTENT 3
+#define POINT_EXTENT 2
+#define CELL_EXTENT 1
 int main()
 {
   DaxArrayIrregular point_scalars;
   point_scalars.SetNumberOfTuples(POINT_EXTENT*POINT_EXTENT*POINT_EXTENT);
   point_scalars.SetNumberOfComponents(1);
   point_scalars.Allocate();
+  int cc=0;
   for (int z=0; z < POINT_EXTENT; z++)
     {
     for (int y=0; y < POINT_EXTENT; y++)
@@ -44,7 +53,8 @@ int main()
       for (int x=0; x < POINT_EXTENT; x++)
         {
         point_scalars.SetValue(z * POINT_EXTENT * POINT_EXTENT + y *
-          POINT_EXTENT + x, 0, x + 0);
+          POINT_EXTENT + x, 0, cc);
+        cc++;
         }
       }
     }

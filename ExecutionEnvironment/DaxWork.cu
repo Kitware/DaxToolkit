@@ -25,9 +25,13 @@ protected:
     {
     this->Item = (DaxId) (blockIdx.x * blockDim.x + threadIdx.x);
     }
-
 public:
   __device__ DaxId GetItem() const { return this->Item; }
+  __device__ void SetItem(DaxId id)
+    {
+    this->Item = id;
+    }
+
 };
 
 ///----------------------------------------------------------------------------

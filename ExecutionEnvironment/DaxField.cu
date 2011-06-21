@@ -25,6 +25,11 @@ public:
     {
     DaxArraySetterTraits::Set(work, this->Array, scalar);
     }
+
+  __device__ DaxScalar GetScalar(const DaxWork& work)
+    {
+    return DaxArrayGetterTraits::GetScalar(work, this->Array);
+    }
 };
 
 class DaxFieldPoint : public DaxField

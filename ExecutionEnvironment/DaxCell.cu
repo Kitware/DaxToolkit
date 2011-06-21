@@ -32,9 +32,10 @@ public:
     }
 
   /// Get the work corresponding to a given point.
-  __device__ DaxWorkMapField GetPoint(const DaxId& id) const
+  __device__ DaxWorkMapField GetPoint(const DaxId index) const
     {
-    return DaxWorkMapField();
+    return DaxArrayConnectivityTraits::GetConnectedElement(
+        this->Work, this->Work.GetCellArray(), index);
     }
 
   /// NOTE: virtual functions are only supported in compute 2.*+

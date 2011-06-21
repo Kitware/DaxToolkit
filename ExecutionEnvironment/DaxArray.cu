@@ -150,10 +150,16 @@ public:
     }
 protected:
   friend class DaxArraySetterTraits;
+  friend class DaxArrayGetterTraits;
 
   __device__ static void Set(const DaxWork& work, DaxArray& array, DaxScalar scalar)
     {
     reinterpret_cast<float*>(array.RawData)[work.GetItem()] = scalar;
+    }
+
+  __device__ static DaxScalar GetScalar(const DaxWork& work, const DaxArray& array)
+    {
+    return reinterpret_cast<float*>(array.RawData)[work.GetItem()];;
     }
 };
 
@@ -228,11 +234,12 @@ public:
     return 8;
     }
 
-  __device__ static DaxWorkMapField GetPoint(const DaxWork& work,
-    const DaxArray& cellArray)
+  __device__ static DaxWorkMapField GetConnectedElement(
+    const DaxWork& work, const DaxArray& connectivityArray,
+    DaxId index)
     {
     MetadataType* metadata = reinterpret_cast<MetadataType*>(
-      cellArray.RawData);
+      connectivityArray.RawData);
 
     DaxId flat_id = work.GetItem();
     // given the flat_id, what is the ijk value?
@@ -241,11 +248,20 @@ public:
     dims.y = metadata->ExtentMax.y - metadata->ExtentMin.y + 1;
     dims.z = metadata->ExtentMax.z - metadata->ExtentMin.z + 1;
 
-    int3 ijk;
-    ijk.x = flat_id % (dims.x -1);
-    ijk.y = (flat_id / (dims.x - 1)) % (dims.y -1);
-    ijk.z = (flat_id / ((dims.x-1) * (dims.y -1)));
-    return DaxWorkMapField();
+    int3 cell_ijk;
+    cell_ijk.x = flat_id % (dims.x -1);
+    cell_ijk.y = (flat_id / (dims.x - 1)) % (dims.y -1);
+    cell_ijk.z = (flat_id / ((dims.x-1) * (dims.y -1)));
+
+    int3 point_ijk;
+    point_ijk.x = cell_ijk.x + (index % 2);
+    point_ijk.y = cell_ijk.y + ((index % 4) / 2);
+    point_ijk.z = cell_ijk.z + (index / 4);
+
+    DaxWorkMapField workPoint;
+    workPoint.SetItem(
+      point_ijk.x + point_ijk.y * dims.x + point_ijk.z * dims.x * dims.y);
+    return workPoint;
     }
 };
 
@@ -264,6 +280,19 @@ public:
       }
     return -1;
     }
+
+  __device__ static DaxWorkMapField GetConnectedElement(
+    const DaxWork& work, const DaxArray& connectivityArray,
+    DaxId index)
+    {
+    switch (connectivityArray.Type)
+      {
+    case DaxArray::STRUCTURED_CONNECTIVITY:
+      return DaxArrayStructuredConnectivity::GetConnectedElement(
+        work, connectivityArray, index);
+      }
+    return DaxWorkMapField();
+    }
 };
 
 class DaxArraySetterTraits
@@ -278,7 +307,20 @@ public:
       return DaxArrayIrregular::Set(work, array, scalar);
       }
     }
+};
 
+class DaxArrayGetterTraits
+{
+public:
+  __device__ static DaxScalar GetScalar(const DaxWork& work, const DaxArray& array)
+    {
+    switch (array.Type)
+      {
+    case DaxArray::IRREGULAR:
+      return DaxArrayIrregular::GetScalar(work, array);
+      }
+    return -1;
+    }
 };
 
 #endif
