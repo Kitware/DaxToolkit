@@ -16,7 +16,7 @@ DAX_WORKLET void PointDataToCellData(DAX_IN DaxWorkMapCell& work,
   DaxCell cell(work);
   //DaxScalar scalar = cell.Interpolate(center, point_attribute, 0);
   //DaxScalar scalar = cell.GetPointID(5);
-  DaxScalar scalar;
+  DaxScalar scalar = 0;
   DaxId numPoints = cell.GetNumberOfPoints();
   for (int cc=0; cc < numPoints; cc++)
     {
@@ -52,8 +52,7 @@ int main()
       {
       for (int x=0; x < POINT_EXTENT; x++)
         {
-        point_scalars.SetValue(z * POINT_EXTENT * POINT_EXTENT + y *
-          POINT_EXTENT + x, 0, cc);
+        point_scalars.SetValue(cc, 0, cc);
         cc++;
         }
       }
