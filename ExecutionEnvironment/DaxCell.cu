@@ -17,16 +17,18 @@ class DaxFieldPoint;
 /// Defines a cell.
 class DaxCell
 {
+  const DaxWorkMapCell& Work;
 public:
   /// Create a cell for the given work.
-  __device__ DaxCell(const DaxWorkMapCell& work)
+  __device__ DaxCell(const DaxWorkMapCell& work) : Work(work)
     {
     }
 
   /// Get the number of points in the cell.
   __device__ DaxId GetNumberOfPoints() const
     {
-    return 0;
+    return DaxArrayConnectivityTraits::GetNumberOfConnectedElements(
+      this->Work, this->Work.GetCellArray());
     }
 
   /// Get the work corresponding to a given point.

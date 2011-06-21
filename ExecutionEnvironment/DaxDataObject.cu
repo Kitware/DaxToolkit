@@ -7,123 +7,11 @@
 =========================================================================*/
 /// This file defines the DataObject that can be used on the host as well as
 /// OnDevice.
+#ifndef __DaxDataObject_h
+#define __DaxDataObject_h
 
 #include "DaxCommon.h"
-
-class DaxArray
-{
-public:
-  enum eType
-    {
-    UNKNOWN,
-    IRREGULAR,
-    STRUCTURED_POINTS,
-    STRUCTURED_CELLS,
-    };
-
-  eType Type;
-  float* RawData;
-  DaxId Size;
-  bool OnDevice;
-
-  __device__ __host__ DaxArray()
-    { 
-    this->Type = UNKNOWN;
-    this->RawData = NULL;
-    this->OnDevice = false;
-    this->Size = 0;
-    }
-
-  __host__ void CopyFrom(const DaxArray& source)
-    {
-    this->Allocate(source);
-    if (!this->OnDevice  && !source.OnDevice)
-      {
-      memcpy(this->RawData, source.RawData, source.Size*sizeof(float));
-      }
-    else if (this->OnDevice)
-      {
-      cudaMemcpy(this->RawData, source.RawData,
-        source.Size*sizeof(float), cudaMemcpyHostToDevice);
-      }
-    else if (source.OnDevice)
-      {
-      cudaMemcpy(this->RawData, source.RawData,
-        this->Size * sizeof(float), cudaMemcpyDeviceToHost);
-      }
-    }
-
-  __host__ void Allocate(const DaxArray& source)
-    {
-    this->FreeMemory();
-    if (this->OnDevice)
-      {
-      cudaMalloc(&this->RawData, source.Size * sizeof(float));
-      }
-    else
-      {
-      this->RawData = new float[source.Size];
-      }
-    this->Size = source.Size;
-    }
-
-  __host__ void FreeMemory()
-    {
-    if (this->OnDevice)
-      {
-      if (this->RawData && this->Size)
-        {
-        cudaFree(this->RawData);
-        }
-      }
-    else
-      {
-      delete [] this->RawData;
-      }
-    this->RawData = NULL;
-    this->Size = 0;
-    }
-};
-
-class DaxArrayIrregular : public DaxArray
-{
-  SUPERCLASS(DaxArray);
-  DaxId NumberOfTuples;
-  DaxId NumberOfComponents;
-public:
-  __host__ DaxArrayIrregular() :
-    NumberOfTuples(0),
-    NumberOfComponents(1)
-    {
-    this->Type = IRREGULAR;
-    }
-
-  __host__ void SetNumberOfTuples(DaxId val)
-    {
-    this->NumberOfTuples = val;
-    }
-
-  __host__ void SetNumberOfComponents(DaxId val)
-    {
-    this->NumberOfComponents = val;
-    }
-
-  __host__ void Allocate()
-    {
-    delete [] this->RawData;
-    this->RawData = new float[this->NumberOfComponents * this->NumberOfTuples];
-    this->Size = this->NumberOfTuples * this->NumberOfComponents;
-    }
-
-  __host__ void SetValue(DaxId tupleId, DaxId componentId, float value)
-    {
-    this->RawData[tupleId * this->NumberOfComponents + componentId] = value;
-    }
-  __host__ float GetValue(DaxId tupleId, DaxId componentId)
-    {
-    return this->RawData[tupleId * this->NumberOfComponents + componentId];
-    }
-};
+#include "DaxArray.cu"
 
 class DaxDataObject
 {
@@ -169,3 +57,5 @@ public:
     this->CellArray.OnDevice = true;
     }
 };
+
+#endif

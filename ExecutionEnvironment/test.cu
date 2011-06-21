@@ -14,20 +14,17 @@ DAX_WORKLET void PointDataToCellData(DAX_IN DaxWorkMapCell& work,
 {
   DaxVector3 center = make_DaxVector3(0.5, 0.5, 0.5);
   DaxCell cell(work);
-  DaxScalar scalar = cell.Interpolate(center, point_attribute, 0);
+  //DaxScalar scalar = cell.Interpolate(center, point_attribute, 0);
+  DaxScalar scalar = cell.GetNumberOfPoints();
   cell_attribute.Set(work, scalar);
 }
-  
 
 __global__ void Execute(DaxDataObject input_do, DaxDataObject output_do)
 {
-  //DaxWorkMapCell work;
-  //DaxFieldPoint in_point_scalars;
-  //DaxFieldCell out_cell_scalars;
-  //PointDataToCellData(work, in_point_scalars, out_cell_scalars);
-
-  int offset = blockIdx.x * blockDim.x + threadIdx.x;
-  output_do.CellData.RawData[offset] = input_do.PointData.RawData[offset];
+  DaxWorkMapCell work(input_do.CellArray);
+  DaxFieldPoint in_point_scalars(input_do.PointData);
+  DaxFieldCell out_cell_scalars(output_do.CellData);
+  PointDataToCellData(work, in_point_scalars, out_cell_scalars);
 }
 
 #include <iostream>
@@ -47,7 +44,7 @@ int main()
       for (int x=0; x < POINT_EXTENT; x++)
         {
         point_scalars.SetValue(z * POINT_EXTENT * POINT_EXTENT + y *
-          POINT_EXTENT + x, 0, x + 12);
+          POINT_EXTENT + x, 0, x + 0);
         }
       }
     }
@@ -61,8 +58,26 @@ int main()
     cell_scalars.SetValue(cc, 0, -1);
     }
 
-  DaxDataObject input, output;
+  DaxArrayStructuredPoints point_coordinates;
+  point_coordinates.SetExtent(0, POINT_EXTENT-1, 0, POINT_EXTENT-1, 0,
+    POINT_EXTENT-1);
+  point_coordinates.SetSpacing(1, 1, 1);
+  point_coordinates.SetOrigin(0, 0, 0);
+  point_coordinates.Allocate();
+
+  DaxArrayStructuredConnectivity cell_array;
+  cell_array.SetExtent(0, POINT_EXTENT-1, 0, POINT_EXTENT-1, 0,
+    POINT_EXTENT-1);
+  cell_array.SetSpacing(1, 1, 1);
+  cell_array.SetOrigin(0, 0, 0);
+  cell_array.Allocate();
+
+  DaxDataObject input;
   input.PointData = point_scalars;
+  input.PointCoordinates = point_coordinates;
+  input.CellArray = cell_array;
+
+  DaxDataObject output;
   output.CellData = cell_scalars;
 
   DaxDataObjectDevice d_input; d_input.CopyFrom(input);

@@ -6,11 +6,12 @@
 #
 #===========================================================================
 set(sources
+  DaxArray.cu
   DaxCell.cu
   DaxCommon.h
-  DaxWork.cu
-  DaxField.cu
   DaxDataObject.cu
+  DaxField.cu
+  DaxWork.cu
   )
 
 

@@ -12,6 +12,8 @@
 
 #include "DaxCommon.h"
 
+class DaxArray;
+
 ///----------------------------------------------------------------------------
 /// Base-class for all different types of work.
 class DaxWork
@@ -21,8 +23,11 @@ protected:
 
   __device__ DaxWork()
     {
-    this->Item = (DaxId) (threadIdx.x);
+    this->Item = (DaxId) (blockIdx.x * blockDim.x + threadIdx.x);
     }
+
+public:
+  __device__ DaxId GetItem() const { return this->Item; }
 };
 
 ///----------------------------------------------------------------------------
@@ -44,8 +49,15 @@ public:
 class DaxWorkMapCell : public DaxWorkMapField
 {
   SUPERCLASS(DaxWorkMapField);
+  const DaxArray& CellArray;
 public:
-  __device__ DaxWorkMapCell()
+
+  __device__ const DaxArray& GetCellArray() const
+    {
+    return this->CellArray;
+    }
+
+  __device__ DaxWorkMapCell(const DaxArray& cell_array) : CellArray(cell_array)
     {
     }
 };
