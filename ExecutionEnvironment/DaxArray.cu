@@ -228,6 +228,9 @@ public:
     this->DataType = INT;
     }
 
+protected:
+  friend class DaxArrayConnectivityTraits;
+
   __device__ static DaxId GetNumberOfConnectedElements(
     const DaxWork&, const DaxArray&)
     {
@@ -263,6 +266,36 @@ public:
       point_ijk.x + point_ijk.y * dims.x + point_ijk.z * dims.x * dims.y);
     return workPoint;
     }
+
+  __device__ static DaxCellType GetElementsType(const DaxArray& connectivityArray)
+    {
+    MetadataType* metadata = reinterpret_cast<MetadataType*>(connectivityArray.RawData);
+    int3 dims;
+    dims.x = metadata->ExtentMax.x - metadata->ExtentMin.x + 1;
+    dims.y = metadata->ExtentMax.y - metadata->ExtentMin.y + 1;
+    dims.z = metadata->ExtentMax.z - metadata->ExtentMin.z + 1;
+    int count = 0;
+    count += (dims.x > 0)? 1 : 0;
+    count += (dims.y > 0)? 1 : 0;
+    count += (dims.z > 0)? 1 : 0;
+    if (dims.x < 1 && dims.y < 1 && dims.z < 1)
+      {
+      return EMPTY_CELL;
+      }
+    else if (count == 3)
+      {
+      return VOXEL;
+      }
+    else if (count == 2)
+      {
+      return QUAD;
+      }
+    else if (count == 1)
+      {
+      return LINE;
+      }
+    return EMPTY_CELL;
+    }
 };
 
 
@@ -292,6 +325,19 @@ public:
         work, connectivityArray, index);
       }
     return DaxWorkMapField();
+    }
+
+  __device__ static DaxCellType GetElementsType(
+    const DaxArray& connectivityArray)
+    {
+    switch (connectivityArray.Type)
+      {
+    case DaxArray::STRUCTURED_CONNECTIVITY:
+      return DaxArrayStructuredConnectivity::GetElementsType(
+        connectivityArray);
+      }
+
+    return EMPTY_CELL;
     }
 };
 

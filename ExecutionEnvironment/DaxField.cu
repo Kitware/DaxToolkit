@@ -26,7 +26,7 @@ public:
     DaxArraySetterTraits::Set(work, this->Array, scalar);
     }
 
-  __device__ DaxScalar GetScalar(const DaxWork& work)
+  __device__ DaxScalar GetScalar(const DaxWork& work) const
     {
     return DaxArrayGetterTraits::GetScalar(work, this->Array);
     }
