@@ -50,23 +50,23 @@ __global__ void Execute(DaxDataObject input_do, DaxDataObject output_p2c,
 
 #include <iostream>
 using namespace std;
-#define POINT_EXTENT 4
-#define CELL_EXTENT 3
+#define POINT_EXTENT 25
+#define CELL_EXTENT 24
 int main()
 {
   DaxArrayIrregular point_scalars;
   point_scalars.SetNumberOfTuples(POINT_EXTENT*POINT_EXTENT*POINT_EXTENT);
   point_scalars.SetNumberOfComponents(1);
   point_scalars.Allocate();
-  int cc=0;
   for (int z=0; z < POINT_EXTENT; z++)
     {
     for (int y=0; y < POINT_EXTENT; y++)
       {
       for (int x=0; x < POINT_EXTENT; x++)
         {
-        point_scalars.SetValue(cc, 0, 12);
-        cc++;
+        point_scalars.SetValue(
+          x + y * POINT_EXTENT + z * POINT_EXTENT * POINT_EXTENT,
+          0, sqrt(x*x + y*y + z*z));
         }
       }
     }
@@ -122,13 +122,14 @@ int main()
   DaxDataObjectDevice d_output_p2c; d_output_p2c.Allocate(output_p2c);
   DaxDataObjectDevice d_output_cg; d_output_cg.Allocate(output_cg);
 
-  Execute<<<CELL_EXTENT, CELL_EXTENT*CELL_EXTENT>>>(d_input,
+  Execute<<<CELL_EXTENT*CELL_EXTENT, CELL_EXTENT>>>(d_input,
     d_output_p2c, d_output_cg.CellData);
 
   output_p2c.CopyFrom(d_output_p2c);
   for (int cc=0; cc < CELL_EXTENT*CELL_EXTENT*CELL_EXTENT; cc++)
     {
     cout << cell_scalars_p2c.GetValue(cc, 0) << endl;
+    if (cc > 10) break;
     }
 
   output_cg.CopyFrom(d_output_cg);
@@ -139,6 +140,7 @@ int main()
       cout << cell_scalars_cg.GetValue(cc, kk) << ", ";
       }
     cout << endl;
+    if (cc > 10) break;
     }
 
   d_input.FreeMemory();
