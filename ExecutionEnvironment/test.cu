@@ -18,12 +18,27 @@ DAX_WORKLET void PointDataToCellData(DAX_IN DaxWorkMapCell& work,
   cell_attribute.Set(work, scalar);
 }
 
-__global__ void Execute(DaxDataObject input_do, DaxDataObject output_do)
+DAX_WORKLET void CellGradient(DAX_IN DaxWorkMapCell& work,
+  DAX_IN DaxFieldCoordinates points,
+  DAX_IN DaxFieldPoint point_attribute,
+  DAX_OUT DaxFieldCell& cell_attribute)
+{
+  DaxScalar scalar = work.GetItem();
+  DaxVector3 vec = make_DaxVector3(scalar, scalar, scalar);
+  cell_attribute.Set(work, vec);
+}
+
+__global__ void Execute(DaxDataObject input_do, DaxDataObject output_p2c,
+  DaxArray output_cg)
 {
   DaxWorkMapCell work(input_do.CellArray);
   DaxFieldPoint in_point_scalars(input_do.PointData);
-  DaxFieldCell out_cell_scalars(output_do.CellData);
+  DaxFieldCell out_cell_scalars(output_p2c.CellData);
   PointDataToCellData(work, in_point_scalars, out_cell_scalars);
+
+  DaxFieldCoordinates in_points(input_do.PointCoordinates);
+  DaxFieldCell out_cell_scalars_cg(output_cg);
+  CellGradient(work, in_points, in_point_scalars, out_cell_scalars_cg);
 }
 
 #include <iostream>
@@ -49,14 +64,27 @@ int main()
       }
     }
 
-  DaxArrayIrregular cell_scalars;
-  cell_scalars.SetNumberOfTuples(CELL_EXTENT*CELL_EXTENT*CELL_EXTENT);
-  cell_scalars.SetNumberOfComponents(1);
-  cell_scalars.Allocate();
+  DaxArrayIrregular cell_scalars_p2c;
+  cell_scalars_p2c.SetNumberOfTuples(CELL_EXTENT*CELL_EXTENT*CELL_EXTENT);
+  cell_scalars_p2c.SetNumberOfComponents(1);
+  cell_scalars_p2c.Allocate();
   for (int cc=0; cc < CELL_EXTENT*CELL_EXTENT*CELL_EXTENT; cc++)
     {
-    cell_scalars.SetValue(cc, 0, -1);
+    cell_scalars_p2c.SetValue(cc, 0, -1);
     }
+
+  DaxArrayIrregular cell_scalars_cg;
+  cell_scalars_cg.SetNumberOfTuples(CELL_EXTENT*CELL_EXTENT*CELL_EXTENT);
+  cell_scalars_cg.SetNumberOfComponents(3);
+  cell_scalars_cg.Allocate();
+  for (int cc=0; cc < CELL_EXTENT*CELL_EXTENT*CELL_EXTENT; cc++)
+    {
+    for (int kk=0; kk < 3; kk++)
+      {
+      cell_scalars_cg.SetValue(cc, kk, -1);
+      }
+    }
+
 
   DaxArrayStructuredPoints point_coordinates;
   point_coordinates.SetExtent(0, POINT_EXTENT-1, 0, POINT_EXTENT-1, 0,
@@ -77,23 +105,42 @@ int main()
   input.PointCoordinates = point_coordinates;
   input.CellArray = cell_array;
 
-  DaxDataObject output;
-  output.CellData = cell_scalars;
+  DaxDataObject output_p2c;
+  output_p2c.CellData = cell_scalars_p2c;
+
+  DaxDataObject output_cg;
+  output_cg.CellData = cell_scalars_cg;
 
   DaxDataObjectDevice d_input; d_input.CopyFrom(input);
-  DaxDataObjectDevice d_output; d_output.Allocate(output);
+  DaxDataObjectDevice d_output_p2c; d_output_p2c.Allocate(output_p2c);
+  DaxDataObjectDevice d_output_cg; d_output_cg.Allocate(output_cg);
 
-  Execute<<<CELL_EXTENT, CELL_EXTENT*CELL_EXTENT>>>(d_input, d_output);
+  Execute<<<CELL_EXTENT, CELL_EXTENT*CELL_EXTENT>>>(d_input,
+    d_output_p2c, d_output_cg.CellData);
 
-  output.CopyFrom(d_output);
+  output_p2c.CopyFrom(d_output_p2c);
   for (int cc=0; cc < CELL_EXTENT*CELL_EXTENT*CELL_EXTENT; cc++)
     {
-    cout << cell_scalars.GetValue(cc, 0) << endl;
+    cout << cell_scalars_p2c.GetValue(cc, 0) << endl;
+    }
+
+  output_cg.CopyFrom(d_output_cg);
+  for (int cc=0; cc < CELL_EXTENT*CELL_EXTENT*CELL_EXTENT; cc++)
+    {
+    for (int kk=0; kk < 3; kk++)
+      {
+      cout << cell_scalars_cg.GetValue(cc, kk) << ", ";
+      }
+    cout << endl;
     }
 
   d_input.FreeMemory();
-  d_output.FreeMemory();
   input.FreeMemory();
-  output.FreeMemory();
+
+  d_output_p2c.FreeMemory();
+  output_p2c.FreeMemory();
+
+  d_output_cg.FreeMemory();
+  output_cg.FreeMemory();
   return 0;
 }

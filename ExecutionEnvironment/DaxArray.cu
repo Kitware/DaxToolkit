@@ -28,8 +28,10 @@ public:
   enum eDataType
     {
     VOID,
-    FLOAT,
-    INT
+    SCALAR,
+    VECTOR3,
+    VECTOR4,
+    ID
     };
 
   eType Type;
@@ -105,6 +107,26 @@ protected:
       }
     this->SizeInBytes = size_in_bytes;
     }
+
+  __device__ static int GetNumberOfComponents(const DaxArray& array)
+    {
+    int num_comps;
+    switch (array.DataType)
+      {
+    case SCALAR:
+      num_comps = 1;
+      break;
+    case VECTOR3:
+      num_comps = 3;
+      break;
+    case VECTOR4:
+      num_comps = 4;
+      break;
+    default:
+      num_comps = 1;
+      }
+    return num_comps;
+    }
 };
 
 class DaxArrayIrregular : public DaxArray
@@ -115,11 +137,9 @@ class DaxArrayIrregular : public DaxArray
 public:
   __host__ DaxArrayIrregular() :
     NumberOfTuples(0),
-    NumberOfComponents(1)
+    NumberOfComponents(0)
     {
     this->Type = IRREGULAR;
-    // maybe we use templates?
-    this->DataType = FLOAT;
     }
 
   __host__ void SetNumberOfTuples(DaxId val)
@@ -130,6 +150,20 @@ public:
   __host__ void SetNumberOfComponents(DaxId val)
     {
     this->NumberOfComponents = val;
+    switch (val)
+      {
+    case 1:
+      this->DataType = SCALAR;
+      break;
+    case 3:
+      this->DataType = VECTOR3;
+      break;
+    case 4:
+      this->DataType = VECTOR4;
+      break;
+    default:
+      abort();
+      }
     }
 
   __host__ void Allocate()
@@ -149,17 +183,57 @@ public:
       [tupleId * this->NumberOfComponents + componentId];
     }
 protected:
+  //---------------------------------------------------------------------------
   friend class DaxArraySetterTraits;
-  friend class DaxArrayGetterTraits;
 
   __device__ static void Set(const DaxWork& work, DaxArray& array, DaxScalar scalar)
     {
-    reinterpret_cast<float*>(array.RawData)[work.GetItem()] = scalar;
+    int num_comps = DaxArrayIrregular::GetNumberOfComponents(array);
+    int index = 0; // FIXME: add API for this
+    reinterpret_cast<DaxScalar*>(array.RawData)[work.GetItem() * num_comps + index] = scalar;
     }
+
+  __device__ static void Set(const DaxWork& work, DaxArray& array, DaxVector3 value)
+    {
+    int num_comps = DaxArrayIrregular::GetNumberOfComponents(array);
+    DaxScalar* ptr = &reinterpret_cast<DaxScalar*>(array.RawData)[work.GetItem() * num_comps];
+    ptr[0] = value.x;
+    ptr[1] = value.y;
+    ptr[2] = value.z;
+    }
+
+  __device__ static void Set(const DaxWork& work, DaxArray& array, DaxVector4 value)
+    {
+    int num_comps = DaxArrayIrregular::GetNumberOfComponents(array);
+    DaxScalar* ptr = &reinterpret_cast<DaxScalar*>(array.RawData)[work.GetItem() * num_comps];
+    ptr[0] = value.x;
+    ptr[1] = value.y;
+    ptr[2] = value.z;
+    ptr[3] = value.w;
+    }
+
+  //---------------------------------------------------------------------------
+  friend class DaxArrayGetterTraits;
 
   __device__ static DaxScalar GetScalar(const DaxWork& work, const DaxArray& array)
     {
-    return reinterpret_cast<float*>(array.RawData)[work.GetItem()];;
+    int num_comps = DaxArrayIrregular::GetNumberOfComponents(array);
+    int index = 0; // FIXME: add API for this
+    return reinterpret_cast<DaxScalar*>(array.RawData)[work.GetItem() * num_comps + index];
+    }
+
+  __device__ static DaxVector3 GetVector3(const DaxWork& work, const DaxArray& array)
+    {
+    int num_comps = DaxArrayIrregular::GetNumberOfComponents(array);
+    DaxScalar* ptr = &reinterpret_cast<DaxScalar*>(array.RawData)[work.GetItem() * num_comps];
+    return make_DaxVector3(ptr[0], ptr[1], ptr[2]);
+    }
+
+  __device__ static DaxVector4 GetVector4(const DaxWork& work, const DaxArray& array)
+    {
+    int num_comps = DaxArrayIrregular::GetNumberOfComponents(array);
+    DaxScalar* ptr = &reinterpret_cast<DaxScalar*>(array.RawData)[work.GetItem() * num_comps];
+    return make_DaxVector4(ptr[0], ptr[1], ptr[2], ptr[3]);
     }
 };
 
@@ -225,7 +299,6 @@ public:
   __host__ DaxArrayStructuredConnectivity()
     {
     this->Type = STRUCTURED_CONNECTIVITY;
-    this->DataType = INT;
     }
 
 protected:
@@ -353,6 +426,28 @@ public:
       return DaxArrayIrregular::Set(work, array, scalar);
       }
     }
+
+  __device__ static void Set(
+    const DaxWork& work, DaxArray& array, DaxVector3 vector3)
+    {
+    switch (array.Type)
+      {
+    case DaxArray::IRREGULAR:
+      return DaxArrayIrregular::Set(work, array, vector3);
+      }
+    }
+
+  __device__ static void Set(
+    const DaxWork& work, DaxArray& array, DaxVector4 vector4)
+    {
+    switch (array.Type)
+      {
+    case DaxArray::IRREGULAR:
+      return DaxArrayIrregular::Set(work, array, vector4);
+      }
+    }
+
+
 };
 
 class DaxArrayGetterTraits
@@ -366,6 +461,26 @@ public:
       return DaxArrayIrregular::GetScalar(work, array);
       }
     return -1;
+    }
+
+  __device__ static DaxVector3 GetVector3(const DaxWork& work, const DaxArray& array)
+    {
+    switch (array.Type)
+      {
+    case DaxArray::IRREGULAR:
+      return DaxArrayIrregular::GetVector3(work, array);
+      }
+    return make_DaxVector3(0, 0, 0);
+    }
+
+  __device__ static DaxVector4 GetVector4(const DaxWork& work, const DaxArray& array)
+    {
+    switch (array.Type)
+      {
+    case DaxArray::IRREGULAR:
+      return DaxArrayIrregular::GetVector4(work, array);
+      }
+    return make_DaxVector4(0, 0, 0, 0);
     }
 };
 
