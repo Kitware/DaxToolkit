@@ -26,6 +26,13 @@ DAX_WORKLET void CellGradient(DAX_IN DaxWorkMapCell& work,
   DaxScalar scalar = work.GetItem();
   DaxVector3 vec = make_DaxVector3(scalar, scalar, scalar);
   cell_attribute.Set(work, vec);
+
+  DaxVector3 parametric_cell_center = make_DaxVector3(0.5, 0.5, 0.5);
+  DaxCell cell(work);
+ 
+  DaxVector3 value = cell.Derivative(parametric_cell_center,
+    points, point_attribute, 0);
+  cell_attribute.Set(work, value);
 }
 
 __global__ void Execute(DaxDataObject input_do, DaxDataObject output_p2c,
@@ -58,7 +65,7 @@ int main()
       {
       for (int x=0; x < POINT_EXTENT; x++)
         {
-        point_scalars.SetValue(cc, 0, cc);
+        point_scalars.SetValue(cc, 0, 12);
         cc++;
         }
       }

@@ -290,6 +290,33 @@ public:
     this->Superclass::Allocate(sizeof(Metadata));
     memcpy(this->RawData, &this->Metadata, sizeof(Metadata)); 
     }
+
+protected:
+  friend class DaxArrayGetterTraits;
+
+  __device__ static DaxVector3 GetVector3(const DaxWork& work, const DaxArray& array)
+    {
+    MetadataType* metadata = reinterpret_cast<MetadataType*>(array.RawData);
+
+    DaxId flat_id = work.GetItem();
+
+    // given the flat_id, what is the ijk value?
+    int3 dims;
+    dims.x = metadata->ExtentMax.x - metadata->ExtentMin.x + 1;
+    dims.y = metadata->ExtentMax.y - metadata->ExtentMin.y + 1;
+    dims.z = metadata->ExtentMax.z - metadata->ExtentMin.z + 1;
+
+    int3 point_ijk;
+    point_ijk.x = flat_id % dims.x;
+    point_ijk.y = (flat_id / dims.x)  % dims.y;
+    point_ijk.z = flat_id / (dims.x * dims.y);
+
+    DaxVector3 point;
+    point.x = metadata->Origin.x + (point_ijk.x + metadata->ExtentMin.x) * metadata->Spacing.x;
+    point.y = metadata->Origin.y + (point_ijk.y + metadata->ExtentMin.y) * metadata->Spacing.y;
+    point.z = metadata->Origin.z + (point_ijk.z + metadata->ExtentMin.z) * metadata->Spacing.z;
+    return point;
+    }
 };
 
 class DaxArrayStructuredConnectivity : public DaxArrayStructuredPoints
@@ -469,6 +496,9 @@ public:
       {
     case DaxArray::IRREGULAR:
       return DaxArrayIrregular::GetVector3(work, array);
+
+    case DaxArray::STRUCTURED_POINTS:
+      return DaxArrayStructuredPoints::GetVector3(work, array);
       }
     return make_DaxVector3(0, 0, 0);
     }
