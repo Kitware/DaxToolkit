@@ -9,6 +9,7 @@
 
 #include "PointDataToCellData.worklet"
 #include "CellGradient.worklet"
+#include "CellAverage.worklet"
 
 __global__ void Execute(DaxDataObject input_do, DaxDataObject output_p2c,
   DaxArray output_cg)
@@ -18,6 +19,7 @@ __global__ void Execute(DaxDataObject input_do, DaxDataObject output_p2c,
   DaxFieldCell out_cell_scalars(output_p2c.CellData);
 
   PointDataToCellData(work, in_point_scalars, out_cell_scalars);
+  //CellAverage(work, in_point_scalars, out_cell_scalars);
 
   DaxFieldCoordinates in_points(input_do.PointCoordinates);
   DaxFieldCell out_cell_scalars_cg(output_cg);
