@@ -6,34 +6,9 @@
 
 ===========================================================================*/
 #include "DaxExecutionEnvironment.h"
-#include "DaxCell.cu"
 
-DAX_WORKLET void PointDataToCellData(DAX_IN DaxWorkMapCell& work,
-  DAX_IN DaxFieldPoint& point_attribute,
-  DAX_OUT DaxFieldCell& cell_attribute)
-{
-  DaxVector3 center = make_DaxVector3(0.5, 0.5, 0.5);
-  DaxCell cell(work);
-  DaxScalar scalar = cell.Interpolate(center, point_attribute, 0);
-  cell_attribute.Set(work, scalar);
-}
-
-DAX_WORKLET void CellGradient(DAX_IN DaxWorkMapCell& work,
-  DAX_IN DaxFieldCoordinates points,
-  DAX_IN DaxFieldPoint point_attribute,
-  DAX_OUT DaxFieldCell& cell_attribute)
-{
-  DaxScalar scalar = work.GetItem();
-  DaxVector3 vec = make_DaxVector3(scalar, scalar, scalar);
-  cell_attribute.Set(work, vec);
-
-  DaxVector3 parametric_cell_center = make_DaxVector3(0.5, 0.5, 0.5);
-  DaxCell cell(work);
- 
-  DaxVector3 value = cell.Derivative(parametric_cell_center,
-    points, point_attribute, 0);
-  cell_attribute.Set(work, value);
-}
+#include "PointDataToCellData.worklet"
+#include "CellGradient.worklet"
 
 __global__ void Execute(DaxDataObject input_do, DaxDataObject output_p2c,
   DaxArray output_cg)
@@ -41,6 +16,7 @@ __global__ void Execute(DaxDataObject input_do, DaxDataObject output_p2c,
   DaxWorkMapCell work(input_do.CellArray);
   DaxFieldPoint in_point_scalars(input_do.PointData);
   DaxFieldCell out_cell_scalars(output_p2c.CellData);
+
   PointDataToCellData(work, in_point_scalars, out_cell_scalars);
 
   DaxFieldCoordinates in_points(input_do.PointCoordinates);

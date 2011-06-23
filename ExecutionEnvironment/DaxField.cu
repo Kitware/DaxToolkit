@@ -8,9 +8,8 @@
 #ifndef __DaxField_h
 #define __DaxField_h
 
-#include "DaxCommon.h"
-#include "DaxWork.cu"
-#include "DaxDataObject.cu"
+#include "DaxArrayTraits.cu"
+class DaxWork;
 
 class DaxField
 {

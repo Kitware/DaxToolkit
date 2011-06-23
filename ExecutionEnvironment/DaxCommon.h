@@ -18,31 +18,6 @@ typedef float3 DaxVector3;
 typedef float4 DaxVector4;
 typedef int DaxId;
 
-//*****************************************************************************
-// Cell Types
-//*****************************************************************************
-enum DaxCellType
-{
-  EMPTY_CELL       = 0,
-  VERTEX           = 1,
-  POLY_VERTEX      = 2,
-  LINE             = 3,
-  POLY_LINE        = 4,
-  TRIANGLE         = 5,
-  TRIANGLE_STRIP   = 6,
-  POLYGON          = 7,
-  PIXEL            = 8,
-  QUAD             = 9,
-  TETRA            = 10,
-  VOXEL            = 11,
-  HEXAHEDRON       = 12,
-  WEDGE            = 13,
-  PYRAMID          = 14,
-  PENTAGONAL_PRISM = 15,
-  HEXAGONAL_PRISM  = 16,
-};
-
-
 #define make_DaxVector3 make_float3
 #define make_DaxVector4 make_float4
 

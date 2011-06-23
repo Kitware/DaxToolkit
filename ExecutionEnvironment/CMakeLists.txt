@@ -7,18 +7,20 @@
 #===========================================================================
 set(sources
   DaxArray.cu
+  DaxArrayIrregular.cu
+  DaxArrayStructuredConnectivity.cu
+  DaxArrayStructuredPoints.cu
+  DaxArrayTraits.cu
   DaxCell.cu
+  DaxCellTypes.h
   DaxCommon.h
   DaxDataObject.cu
+  DaxExecutionEnvironment.h
   DaxField.cu
   DaxWork.cu
   )
 
-
-CUDA_ADD_LIBRARY(DaxExecutionEnvironment
+CUDA_ADD_EXECUTABLE(DaxExecutionEnvironmentTest DaxExecutionEnvironmentTest.cu
   ${sources}
-  SHARED)
+)
 
-CUDA_ADD_EXECUTABLE(DaxExecutionEnvironmentTest test.cu)
-TARGET_LINK_LIBRARIES(DaxExecutionEnvironmentTest
-  DaxExecutionEnvironment)
