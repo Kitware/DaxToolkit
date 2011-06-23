@@ -97,13 +97,16 @@ protected:
   void Allocate(int size_in_bytes)
     {
     this->FreeMemory();
-    if (this->OnDevice)
+    if (size_in_bytes > 0)
       {
-      cudaMalloc(&this->RawData, size_in_bytes);
-      }
-    else
-      {
-      this->RawData = malloc(size_in_bytes);
+      if (this->OnDevice)
+        {
+        cudaMalloc(&this->RawData, size_in_bytes);
+        }
+      else
+        {
+        this->RawData = malloc(size_in_bytes);
+        }
       }
     this->SizeInBytes = size_in_bytes;
     }

@@ -50,8 +50,8 @@ __global__ void Execute(DaxDataObject input_do, DaxDataObject output_p2c,
 
 #include <iostream>
 using namespace std;
-#define POINT_EXTENT 25
-#define CELL_EXTENT 24
+#define POINT_EXTENT 128
+#define CELL_EXTENT 127
 int main()
 {
   DaxArrayIrregular point_scalars;
@@ -92,7 +92,6 @@ int main()
       }
     }
 
-
   DaxArrayStructuredPoints point_coordinates;
   point_coordinates.SetExtent(0, POINT_EXTENT-1, 0, POINT_EXTENT-1, 0,
     POINT_EXTENT-1);
@@ -122,13 +121,15 @@ int main()
   DaxDataObjectDevice d_output_p2c; d_output_p2c.Allocate(output_p2c);
   DaxDataObjectDevice d_output_cg; d_output_cg.Allocate(output_cg);
 
+  cout << __LINE__ << endl;
   Execute<<<CELL_EXTENT*CELL_EXTENT, CELL_EXTENT>>>(d_input,
     d_output_p2c, d_output_cg.CellData);
+  cout << __LINE__ << endl;
 
   output_p2c.CopyFrom(d_output_p2c);
   for (int cc=0; cc < CELL_EXTENT*CELL_EXTENT*CELL_EXTENT; cc++)
     {
-    cout << cell_scalars_p2c.GetValue(cc, 0) << endl;
+    cout << reinterpret_cast<float*>(output_p2c.CellData.RawData)[cc] << endl;
     if (cc > 10) break;
     }
 
@@ -137,7 +138,8 @@ int main()
     {
     for (int kk=0; kk < 3; kk++)
       {
-      cout << cell_scalars_cg.GetValue(cc, kk) << ", ";
+      cout <<
+        reinterpret_cast<float*>(output_cg.CellData.RawData)[cc*3 + kk] << ", ";
       }
     cout << endl;
     if (cc > 10) break;
