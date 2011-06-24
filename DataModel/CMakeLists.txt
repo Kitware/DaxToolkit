@@ -29,3 +29,6 @@ CUDA_ADD_LIBRARY(daxDataModel SHARED
 target_link_libraries(daxDataModel
   daxCommon
   ${Boost_LIBRARIES})
+
+add_executable(DataModelTest DataModelTest.cxx)
+target_link_libraries(DataModelTest daxDataModel)
