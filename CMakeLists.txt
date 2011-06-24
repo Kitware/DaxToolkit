@@ -1,3 +1,10 @@
+#=========================================================================
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.  See the above copyright notice for more information.
+#
+#=========================================================================
 cmake_minimum_required(VERSION 2.8)
 project (Dax)
 
@@ -19,6 +26,22 @@ set( LIBRARY_OUTPUT_PATH
 )
 
 find_package(CUDA REQUIRED)
+
+# List of Boost features used:
+# * Smart Ptr
+# * program options
+find_package(Boost REQUIRED
+  COMPONENTS program_options # program_options is only needed for the testing
+                             # executables
+  )
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/daxOptions.h.in
+  ${CMAKE_CURRENT_BINARY_DIR}/daxOptions.h
+  @ONLY)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+add_subdirectory(Common)
+add_subdirectory(DataModel)
 
 if (BUILD_EXECUTION_ENVIRONMENT)
   # Add the execution environment

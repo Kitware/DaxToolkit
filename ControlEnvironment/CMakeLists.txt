@@ -1,32 +1,20 @@
 cmake_minimum_required(VERSION 2.8)
-project (Dax)
+project (DaxControlEnvironment)
 
 FIND_PATH(GOOGLE_CTEMPLATE_INCLUDE_DIR google/template.h /usr/include /usr/local/include)
 FIND_LIBRARY(GOOGLE_CTEMPLATE_THREAD_LIB ctemplate /usr/lib /usr/loca/lib)
 
 
-# List of Boost features used:
-# * Smart Ptr
-# * xpressive
-# * program options
-find_package(Boost REQUIRED
-  COMPONENTS program_options # program_options is only needed for the testing
-                             # executables
-  )
-
 include_directories(${Boost_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR}
   ${GOOGLE_CTEMPLATE_INCLUDE_DIR}
+  ${DaxCommon_SOURCE_DIR}
   )
 
 add_executable(daxGenerateHeaderFromFile
   daxGenerateHeaderFromFile.cxx)
 target_link_libraries(daxGenerateHeaderFromFile
   ${Boost_LIBRARIES})
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/daxOptions.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/daxOptions.h
-  @ONLY)
 
 function (encode_to_headers out_variable)
   set (all_headers)
@@ -69,8 +57,6 @@ add_library(daxFramework SHARED
   daxExecutive.h
   daxModule.cxx
   daxModule.h
-  daxObject.cxx
-  daxObject.h
   daxPort.cxx
   daxPort.h
   ${generated_headers_core}
@@ -79,6 +65,7 @@ add_library(daxFramework SHARED
 target_link_libraries(daxFramework
   ${Boost_LIBRARIES}
   ${GOOGLE_CTEMPLATE_THREAD_LIB}
+  daxCommon
   )
 
 foreach (file ${generated_headers_core})

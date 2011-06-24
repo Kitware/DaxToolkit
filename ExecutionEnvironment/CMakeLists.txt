@@ -5,6 +5,8 @@
 #  PURPOSE.  See the above copyright notice for more information.
 #
 #===========================================================================
+project(DaxExecutionEnvironment)
+
 set(sources
   DaxArray.cu
   DaxArrayIrregular.cu

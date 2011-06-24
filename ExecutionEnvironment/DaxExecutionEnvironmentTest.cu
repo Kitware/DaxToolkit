@@ -11,6 +11,8 @@
 #include "CellGradient.worklet"
 #include "CellAverage.worklet"
 
+#include <thrust/host_vector.h>
+
 __global__ void Execute(DaxDataObject input_do, DaxDataObject output_p2c,
   DaxArray output_cg)
 {
