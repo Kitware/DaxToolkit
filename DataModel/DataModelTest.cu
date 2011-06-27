@@ -1,7 +1,42 @@
 
 #include "daxImageData.h"
 #include "daxDataArrayIrregular.h"
+#include "daxDataBridge.h"
+
 #include <math.h>
+
+#include <thrust/device_vector.h>
+
+struct Array
+{
+  void* RawData;
+};
+
+
+struct DataSet
+{
+  int foo;
+  int bar;
+  int asd;
+  int num_arrays;
+  Array* Arrays;
+};
+
+struct KernelArgument
+{
+  DataSet* DataSets;
+  Array* Arrays;
+  int DataSetCount;
+  int ArrayCount;
+};
+
+__device__ int *foo;
+__global__ void Execute(KernelArgument argument)
+{
+
+  int temp  = *foo;
+}
+
 int main()
 {
   daxImageDataPtr imageData(new daxImageData());
@@ -25,4 +60,9 @@ int main()
         }
       }
     }
+
+  daxDataBridge bridge;
+  bridge.AddInputData(imageData);
+
+  //Execute<<<10, 10>>>( argument);
 }

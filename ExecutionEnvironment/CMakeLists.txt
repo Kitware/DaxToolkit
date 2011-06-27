@@ -7,6 +7,8 @@
 #===========================================================================
 project(DaxExecutionEnvironment)
 
+include_directories(${DaxDataModel_SOURCE_DIR})
+
 set(sources
   DaxArray.cu
   DaxArrayIrregular.cu

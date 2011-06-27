@@ -21,6 +21,8 @@ set (sources
   daxDataSet.h
   daxImageData.cxx
   daxImageData.h
+  daxDataBridge.cu
+  daxDataBridge.h
   )
 
 CUDA_ADD_LIBRARY(daxDataModel SHARED
@@ -30,5 +32,5 @@ target_link_libraries(daxDataModel
   daxCommon
   ${Boost_LIBRARIES})
 
-add_executable(DataModelTest DataModelTest.cxx)
+cuda_add_executable(DataModelTest DataModelTest.cu)
 target_link_libraries(DataModelTest daxDataModel)
