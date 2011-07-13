@@ -8,14 +8,18 @@
 #include "daxDataBridge.h"
 
 #include "daxDataSet.h"
+#include "DaxDataArray.h"
 
 #include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
 
+#include <map>
 class daxDataBridge::daxInternals
 {
   std::vector<daxDataSetPtr> Inputs;
   std::vector<daxDataSetPtr> Intermediates;
   std::vector<daxDataSetPtr> Outputs;
+  std::map<daxDataArray*, int> Arrays;
 };
 
 //-----------------------------------------------------------------------------
@@ -45,3 +49,17 @@ void daxDataBridge::AddIntermediateData(daxDataSetPtr dataset)
 void daxDataBridge::AddOutputData(daxDataSetPtr dataset)
 {
 }
+
+//-----------------------------------------------------------------------------
+//void daxDataBridge::Upload()
+//{
+//  // * Upload all daxDataArray's.
+//  std::vector<daxDataSetPtr>::iterator iter;
+//  for (iter = this->Internals->Inputs.begin();
+//    iter != this->Internals->Inputs.end(); ++iter)
+//    {
+//    
+//    }
+//
+//}
+

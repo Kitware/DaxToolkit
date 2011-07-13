@@ -25,6 +25,8 @@ public:
 
   std::vector<daxDataArrayPtr> PointData;
   std::vector<daxDataArrayPtr> CellData;
+  virtual daxDataArrayPtr GetPointCoordinates() const = 0;
+  virtual daxDataArrayPtr GetCellArray() const = 0;
 
 protected:
   daxDataSet();

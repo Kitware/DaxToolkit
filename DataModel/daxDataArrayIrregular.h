@@ -41,6 +41,10 @@ public:
   const T& Get(DaxId index) const
     { return this->HeavyData[index]; }
 
+  /// Called to convert the array to a DaxDataArray which can be passed the
+  /// Execution environment.
+  virtual bool Convert(DaxDataArray* array);
+
 protected:
   thrust::host_vector<T> HeavyData;
   std::string Name;
