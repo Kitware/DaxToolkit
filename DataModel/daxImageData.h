@@ -9,6 +9,7 @@
 #define __daxImageData_h
 
 #include "daxDataSet.h"
+#include "daxTypes.h"
 
 /// daxImageData is the abstract superclass for data array object containing
 /// numeric data.
@@ -29,18 +30,28 @@ public:
   const int* GetExtent() const
     { return this->Extent; }
 
-  /// Get/Set the origin.
+  void SetOrigin(const DaxVector3& origin)
+    { this->Origin = origin; }
   void SetOrigin(double x, double y, double z)
-    { this->Origin[0] = x; this->Origin[1] = y; this->Origin[2] = z; }
-  const double* GetOrigin() const
+    {
+    this->Origin.x = x;
+    this->Origin.y = y;
+    this->Origin.z = z;
+    }
+
+  const DaxVector3& GetOrigin() const
     { return this->Origin; }
 
-  /// Get/Set spacing.
   void SetSpacing(double x, double y, double z)
-    { this->Spacing[0] = x; this->Spacing[1] = y; this->Spacing[2] = z; }
-  const double* GetSpacing() const
+    {
+    this->Spacing.x = x;
+    this->Spacing.y = y;
+    this->Spacing.z = z;
+    }
+  void SetSpacing(const DaxVector3& spacing)
+    { this->Spacing = spacing; }
+  const DaxVector3& GetSpacing() const
     { return this->Spacing; }
-
 
   /// Get number of points;
   int GetNumberOfPoints() const
@@ -58,12 +69,13 @@ public:
        (this->Extent[5] - this->Extent[4]);
     }
 
+  virtual daxDataArrayPtr GetPointCoordinates() const;
+  virtual daxDataArrayPtr GetCellArray() const;
 
 protected:
   int Extent[6];
-  double Spacing[3];
-  double Origin[3];
-
+  DaxVector3 Origin;
+  DaxVector3 Spacing;
 private:
   daxDisableCopyMacro(daxImageData)
 };

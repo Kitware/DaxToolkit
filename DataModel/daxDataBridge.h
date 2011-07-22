@@ -14,7 +14,9 @@
 class daxDataSet;
 daxDefinePtrMacro(daxDataSet);
 
-class DaxKernelArgument;
+class daxKernelArgument;
+daxDefinePtrMacro(daxKernelArgument);
+
 #endif
 
 /// daxDataBridge is used to transfer host-memory data objects to the device.
@@ -38,7 +40,7 @@ public:
   void AddOutputData(daxDataSetPtr dataset);
 
   /// makes it possible to pass this class as an argument to a CUDA kernel.
-  // operator DaxKernelArgument ();
+  daxKernelArgumentPtr Upload() const;
 
 private:
   daxDisableCopyMacro(daxDataBridge)

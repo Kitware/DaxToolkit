@@ -22,12 +22,6 @@ public:
   virtual ~daxDataArrayIrregular();
   daxTypeMacro(daxDataArrayIrregular, daxDataArray);
 
-  /// Get/Set the array name.
-  void SetName(const std::string& name)
-    { this->Name = name; }
-  const std::string& GetName() const
-    { return this->Name; }
-
   /// Get/Set the number of tuples. Not that the internal data-space will be
   /// resized when the number of tuples is changed.
   void SetNumberOfTuples(size_t num_tuples)
@@ -47,7 +41,6 @@ public:
 
 protected:
   thrust::host_vector<T> HeavyData;
-  std::string Name;
   
 private:
   daxDisableCopyMacro(daxDataArrayIrregular)

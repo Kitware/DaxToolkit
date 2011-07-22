@@ -17,6 +17,10 @@ typedef struct DaxVector3Struct {
   float x; float y; float z;
 } DaxVector3 __attribute__ ((aligned(4)));
 
+typedef struct DaxInt3Struct {
+  int x; int y; int z;
+} DaxInt3 __attribute__ ((aligned(4)));
+
 typedef struct DaxVector4Struct {
   float x; float y; float z; float w;
 } DaxVector4 __attribute__ ((aligned(16)));

@@ -23,6 +23,11 @@ set (sources
   daxImageData.h
   daxDataBridge.cu
   daxDataBridge.h
+  daxDataArrayStructuredPoints.cu
+  daxDataArrayStructuredPoints.h
+  daxKernelArgument.cu
+  daxKernelArgument.h
+  DaxKernelArgument.h
   )
 
 CUDA_ADD_LIBRARY(daxDataModel SHARED

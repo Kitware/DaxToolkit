@@ -21,11 +21,20 @@ public:
   virtual ~daxDataArray();
   daxTypeMacro(daxDataArray, daxObject);
 
+  /// Get/Set the array name.
+  void SetName(const std::string& name)
+    { this->Name = name; }
+  const std::string& GetName() const
+    { return this->Name; }
+
+
   /// Called to convert the array to a DaxDataArray which can be passed the
   /// Execution environment.
   virtual bool Convert(DaxDataArray* array) = 0;
 
 protected: 
+  std::string Name;
+
 private:
   daxDisableCopyMacro(daxDataArray)
 };

@@ -2,39 +2,14 @@
 #include "daxImageData.h"
 #include "daxDataArrayIrregular.h"
 #include "daxDataBridge.h"
+#include "daxKernelArgument.h"
+#include "DaxKernelArgument.h"
 
 #include <math.h>
 
-#include <thrust/device_vector.h>
-
-struct Array
-{
-  void* RawData;
-};
-
-
-struct DataSet
-{
-  int foo;
-  int bar;
-  int asd;
-  int num_arrays;
-  Array* Arrays;
-};
-
-struct KernelArgument
-{
-  DataSet* DataSets;
-  Array* Arrays;
-  int DataSetCount;
-  int ArrayCount;
-};
-
-__device__ int *foo;
-__global__ void Execute(KernelArgument argument)
+__global__ void Execute(DaxKernelArgument argument)
 {
 
-  int temp  = *foo;
 }
 
 int main()
@@ -61,8 +36,20 @@ int main()
       }
     }
 
+  daxImageDataPtr imageData2(new daxImageData());
+  imageData2->SetExtent(0, 100, 0, 100, 0, 100);
+  imageData2->SetOrigin(0, 0, 0);
+  imageData2->SetSpacing(1, 1, 1);
+
+  daxDataArrayScalarPtr point_scalars2 (new daxDataArrayScalar());
+  point_scalars2->SetName("Scalars");
+  point_scalars2->SetNumberOfTuples(imageData->GetNumberOfPoints());
+  imageData2->PointData.push_back(point_scalars2);
+
   daxDataBridge bridge;
   bridge.AddInputData(imageData);
+  bridge.AddOutputData(imageData2);
+  daxKernelArgumentPtr arg = bridge.Upload();
 
-  //Execute<<<10, 10>>>( argument);
+  Execute<<<1, 1>>>(arg->Get());
 }
