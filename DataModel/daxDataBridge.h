@@ -42,6 +42,9 @@ public:
   /// makes it possible to pass this class as an argument to a CUDA kernel.
   daxKernelArgumentPtr Upload() const;
 
+  /// downloads the results.
+  bool Download(daxKernelArgumentPtr argument) const;
+
 private:
   daxDisableCopyMacro(daxDataBridge)
 

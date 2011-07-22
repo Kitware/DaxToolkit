@@ -37,5 +37,15 @@ const DaxKernelArgument& daxKernelArgument::Get()
     {
     this->Argument.Arrays = NULL;
     }
+
+  this->Argument.NumberOfDatasets = this->Datasets.size();
+  if (this->Datasets.size() > 0)
+    {
+    this->Argument.Datasets = thrust::raw_pointer_cast(&this->Datasets[0]);
+    }
+  else
+    {
+    this->Argument.Datasets = NULL;
+    }
   return this->Argument;
 }

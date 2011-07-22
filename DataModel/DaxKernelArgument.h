@@ -9,12 +9,15 @@
 #define __DaxKernelArgument_h
 
 class DaxDataArray;
+class DaxDataSet;
 
 class DaxKernelArgument
 {
 public:
-  int NumberOfArrays;
   DaxDataArray* Arrays;
+  DaxDataSet* Datasets;
+  int NumberOfArrays;
+  int NumberOfDatasets;
 };
 
 #endif

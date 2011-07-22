@@ -7,9 +7,9 @@
 
 #include <math.h>
 
-__global__ void Execute(DaxKernelArgument argument)
+__global__ void Execute(DaxKernelArgument argument, int *temp)
 {
-
+  *temp = argument.NumberOfArrays;
 }
 
 int main()
@@ -51,5 +51,9 @@ int main()
   bridge.AddOutputData(imageData2);
   daxKernelArgumentPtr arg = bridge.Upload();
 
-  Execute<<<1, 1>>>(arg->Get());
+  thrust::device_vector<int> temp(1);
+  *temp.begin() = -1;
+
+  Execute<<<1, 1>>>(arg->Get(), thrust::raw_pointer_cast(&temp[0]));
+  cout << "Value: " << *temp.begin() << endl;
 }

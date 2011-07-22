@@ -11,6 +11,7 @@
 #include "daxObject.h"
 #include "DaxKernelArgument.h"
 #include "DaxDataArray.h"
+#include "DaxDataSet.h"
 #include <thrust/device_vector.h>
 
 class daxKernelArgument : public daxObject
@@ -27,6 +28,7 @@ private:
   friend class daxDataBridge;
   DaxKernelArgument Argument;
   thrust::device_vector<DaxDataArray> Arrays;
+  thrust::device_vector<DaxDataSet> Datasets;
 };
 
 daxDefinePtrMacro(daxKernelArgument)

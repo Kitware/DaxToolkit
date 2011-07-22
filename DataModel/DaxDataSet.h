@@ -10,19 +10,23 @@
 
 #include "DaxDataArray.h"
 
+#define MAX_NUMBER_OF_FIELDS 10
+
 class DaxDataSet
 {
 public:
   int PointCoordinatesIndex;
   int CellArrayIndex;
-  int *CellDataIndices;
-  int *PointDataIndices;
+  int CellDataIndices[MAX_NUMBER_OF_FIELDS];
+  int PointDataIndices[MAX_NUMBER_OF_FIELDS];
   __device__ __host__ DaxDataSet() :
     PointCoordinatesIndex(-1),
-    CellArrayIndex(-1),
-    CellDataIndices(NULL),
-    PointDataIndices(NULL)
+    CellArrayIndex(-1)
   {
+  for (int cc=0; cc < MAX_NUMBER_OF_FIELDS; cc++)
+    {
+    this->CellDataIndices[cc] = this->PointDataIndices[cc] = -1;
+    }
   }
 };
 

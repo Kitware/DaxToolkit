@@ -17,6 +17,75 @@
 #include <map>
 #include <set>
 
+namespace
+{
+  DaxDataSet Convert(daxDataSetPtr ds,
+    std::map<daxDataArrayPtr, int> &arrayIndexes)
+    {
+    DaxDataSet temp;
+    if (ds->GetPointCoordinates())
+      {
+      temp.PointCoordinatesIndex = arrayIndexes[ds->GetPointCoordinates()];
+      }
+
+    if (ds->GetCellArray())
+      {
+      temp.CellArrayIndex = arrayIndexes[ds->GetCellArray()];
+      }
+
+    int cc;
+    std::vector<daxDataArrayPtr>::iterator iter2;
+    for (cc=0, iter2 = ds->PointData.begin(); iter2 != ds->PointData.end();
+      ++iter2, ++cc)
+      {
+      temp.PointDataIndices[cc] = arrayIndexes[*iter2];
+      }
+
+    for (cc=0, iter2 = ds->CellData.begin(); iter2 != ds->CellData.end();
+      ++iter2, ++cc)
+      {
+      arrayIndexes[*iter2] = -1;
+      temp.CellDataIndices[cc] = arrayIndexes[*iter2];
+      }
+    return temp;
+    }
+
+  void AddArrays(daxDataSetPtr ds, std::map<daxDataArrayPtr, int> &arrayIndexes, bool input)
+    {
+    if (ds->GetPointCoordinates())
+      {
+      if (arrayIndexes.find(ds->GetPointCoordinates()) == arrayIndexes.end())
+        {
+        arrayIndexes[ds->GetPointCoordinates()] = input? -1 : -2;
+        }
+      }
+    if (ds->GetCellArray())
+      {
+      if (arrayIndexes.find(ds->GetCellArray()) == arrayIndexes.end())
+        {
+        arrayIndexes[ds->GetCellArray()] = input? -1 : -2;
+        }
+      }
+
+    std::vector<daxDataArrayPtr>::iterator iter2;
+    for (iter2 = ds->PointData.begin(); iter2 != ds->PointData.end(); ++iter2)
+      {
+      if (arrayIndexes.find(*iter2) == arrayIndexes.end())
+        {
+        arrayIndexes[*iter2] = input? -1 : -2;
+        }
+      }
+    for (iter2 = ds->CellData.begin(); iter2 != ds->CellData.end(); ++iter2)
+      {
+      if (arrayIndexes.find(*iter2) == arrayIndexes.end())
+        {
+        arrayIndexes[*iter2] = input? -1 : -2;
+        }
+      }
+    }
+
+};
+
 class daxDataBridge::daxInternals
 {
 public:
@@ -65,29 +134,12 @@ daxKernelArgumentPtr daxDataBridge::Upload() const
 
   // First build the list of unique arrays we need to upload.
   std::map<daxDataArrayPtr, int> arrayIndexes;
+
   for (ds_iter = this->Internals->Inputs.begin();
     ds_iter != this->Internals->Inputs.end(); ++ds_iter)
     {
     daxDataSetPtr ds = *ds_iter;
-    if (ds->GetPointCoordinates())
-      {
-      arrayIndexes[ds->GetPointCoordinates()] = -1;
-      }
-    if (ds->GetCellArray())
-      {
-      arrayIndexes[ds->GetCellArray()] = -1;
-      }
-
-    std::vector<daxDataArrayPtr>::iterator iter2;
-    for (iter2 = ds->PointData.begin(); iter2 != ds->PointData.end(); ++iter2)
-      {
-      arrayIndexes[*iter2] = -1;
-      }
-
-    for (iter2 = ds->CellData.begin(); iter2 != ds->CellData.end(); ++iter2)
-      {
-      arrayIndexes[*iter2] = -1;
-      }
+    AddArrays(ds, arrayIndexes, true);
     }
 
   // FIXME: skipping intermediates for now, since I am not sure how to handle
@@ -97,37 +149,7 @@ daxKernelArgumentPtr daxDataBridge::Upload() const
     ds_iter != this->Internals->Outputs.end(); ++ds_iter)
     {
     daxDataSetPtr ds = *ds_iter;
-    if (ds->GetPointCoordinates())
-      {
-      if (arrayIndexes.find(ds->GetPointCoordinates()) == arrayIndexes.end())
-        {
-        arrayIndexes[ds->GetPointCoordinates()] = -2;
-        }
-      }
-    if (ds->GetCellArray())
-      {
-      if (arrayIndexes.find(ds->GetCellArray()) == arrayIndexes.end())
-        {
-        arrayIndexes[ds->GetCellArray()] = -2;
-        }
-      }
-
-    std::vector<daxDataArrayPtr>::iterator iter2;
-    for (iter2 = ds->PointData.begin(); iter2 != ds->PointData.end(); ++iter2)
-      {
-      if (arrayIndexes.find(*iter2) == arrayIndexes.end())
-        {
-        arrayIndexes[*iter2] = -2;
-        }
-      }
-
-    for (iter2 = ds->CellData.begin(); iter2 != ds->CellData.end(); ++iter2)
-      {
-      if (arrayIndexes.find(*iter2) == arrayIndexes.end())
-        {
-        arrayIndexes[*iter2] = -2;
-        }
-      }
+    AddArrays(ds, arrayIndexes, false);
     }
 
   daxKernelArgumentPtr argument(new daxKernelArgument);
@@ -157,6 +179,29 @@ daxKernelArgumentPtr daxDataBridge::Upload() const
     }
 
   // now that arrays have been uploaded, upload the datasets.
+  for (ds_iter = this->Internals->Inputs.begin();
+    ds_iter != this->Internals->Inputs.end(); ++ds_iter)
+    {
+    daxDataSetPtr ds = *ds_iter;
+    DaxDataSet temp = Convert(ds, arrayIndexes);
+    argument->Datasets.push_back(temp);
+    }
+
+  for (ds_iter = this->Internals->Intermediates.begin();
+    ds_iter != this->Internals->Intermediates.end(); ++ds_iter)
+    {
+    daxDataSetPtr ds = *ds_iter;
+    DaxDataSet temp = Convert(ds, arrayIndexes);
+    argument->Datasets.push_back(temp);
+    }
+
+  for (ds_iter = this->Internals->Outputs.begin();
+    ds_iter != this->Internals->Outputs.end(); ++ds_iter)
+    {
+    daxDataSetPtr ds = *ds_iter;
+    DaxDataSet temp = Convert(ds, arrayIndexes);
+    argument->Datasets.push_back(temp);
+    }
 
   return argument;
 }
