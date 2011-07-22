@@ -10,6 +10,10 @@
 
 #include "daxTypes.h"
 
+/// DaxDataArray is the data-structure used to represent a data-array in the
+/// Execution environment. In the control environment, users never use this
+/// class directly. It's only meant to be used by the DataModel classes to
+/// upload/download data to/from the execution environment.
 class DaxDataArray
 {
 public:
@@ -34,7 +38,7 @@ public:
   void* RawData;
   unsigned int SizeInBytes;
 
-  __device__ __host__ DaxDataArray() :
+  DaxDataArray() :
     Type (UNKNOWN),
     DataType (VOID),
     RawData (NULL),
@@ -42,22 +46,22 @@ public:
     {
     }
 
-  __host__ static eDataType type(const DaxScalar&)
+  static eDataType type(const DaxScalar&)
     {
     return DaxDataArray::SCALAR;
     }
 
-  __host__ static eDataType type(const DaxVector3&)
+  static eDataType type(const DaxVector3&)
     {
     return DaxDataArray::VECTOR3;
     }
 
-  __host__ static eDataType type(const DaxVector4&)
+  static eDataType type(const DaxVector4&)
     {
     return DaxDataArray::VECTOR4;
     }
 
-  __host__ static eDataType type(const DaxId&)
+  static eDataType type(const DaxId&)
     {
     return DaxDataArray::ID;
     }

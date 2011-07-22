@@ -11,6 +11,9 @@
 class DaxDataArray;
 class DaxDataSet;
 
+/// DaxKernelArgument is passed to the entry-point into the execution
+/// environment. It encapsulates all information about the datasets used in the
+/// pipeline.
 class DaxKernelArgument
 {
 public:

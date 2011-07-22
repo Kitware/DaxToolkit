@@ -10,10 +10,15 @@ project (DaxCommon)
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_library(daxCommon SHARED
+  DaxDataArray.h
+  DaxDataSet.h
+  DaxKernelArgument.h
+  daxMacros.h
   daxObject.cxx
   daxObject.h
-  daxMacros.h
-  daxSystemIncludes.h)
+  daxSystemIncludes.h
+  )
+
 
 target_link_libraries(daxCommon
   ${Boost_LIBRARIES}

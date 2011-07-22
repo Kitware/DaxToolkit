@@ -12,6 +12,9 @@
 
 #define MAX_NUMBER_OF_FIELDS 10
 
+/// DaxDataSet is the data-structure that encapsulates a data-set in the
+/// execution environment. The user code never uses this class directly neither
+/// worklets, nor in the control environment.
 class DaxDataSet
 {
 public:
@@ -19,7 +22,7 @@ public:
   int CellArrayIndex;
   int CellDataIndices[MAX_NUMBER_OF_FIELDS];
   int PointDataIndices[MAX_NUMBER_OF_FIELDS];
-  __device__ __host__ DaxDataSet() :
+  DaxDataSet() :
     PointCoordinatesIndex(-1),
     CellArrayIndex(-1)
   {

@@ -27,7 +27,6 @@ set (sources
   daxDataArrayStructuredPoints.h
   daxKernelArgument.cu
   daxKernelArgument.h
-  DaxKernelArgument.h
   )
 
 CUDA_ADD_LIBRARY(daxDataModel SHARED
