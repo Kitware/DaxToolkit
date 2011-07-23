@@ -17,6 +17,8 @@ set (sources
   daxDataArray.h
   daxDataArrayIrregular.h
   daxDataArrayIrregular.txx
+  daxDataArrayStructuredConnectivity.cxx
+  daxDataArrayStructuredConnectivity.h
   daxDataArrayStructuredPoints.cxx
   daxDataArrayStructuredPoints.h
   daxDataBridge.cu

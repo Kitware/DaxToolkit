@@ -7,11 +7,17 @@
 ===========================================================================*/
 #include "DaxExecutionEnvironment.h"
 
+#include "daxImageData.h"
+#include "daxDataArrayIrregular.h"
+#include "daxDataBridge.h"
+#include "daxKernelArgument.h"
+#include "DaxKernelArgument.h"
+
 #include "PointDataToCellData.worklet"
 #include "CellGradient.worklet"
 #include "CellAverage.worklet"
 
-__global__ void Execute()
+__global__ void Execute(DaxKernelArgument argument)
 {
 
 
@@ -29,9 +35,74 @@ __global__ void Execute()
 
 #include <iostream>
 using namespace std;
-#define POINT_EXTENT 128
-#define CELL_EXTENT 127
+
+daxImageDataPtr CreateInputDataSet(int dim)
+{
+  daxImageDataPtr imageData(new daxImageData());
+  imageData->SetExtent(0, dim-1, 0, dim-1, 0, dim-1);
+  imageData->SetOrigin(0, 0, 0);
+  imageData->SetSpacing(1, 1, 1);
+
+  daxDataArrayScalarPtr point_scalars (new daxDataArrayScalar());
+  point_scalars->SetName("Scalars");
+  point_scalars->SetNumberOfTuples(imageData->GetNumberOfPoints());
+  imageData->PointData.push_back(point_scalars);
+
+  for (int x=0 ; x < dim; x ++)
+    {
+    for (int y=0 ; y < dim; y ++)
+      {
+      for (int z=0 ; z < dim; z ++)
+        {
+        point_scalars->Set(
+          z * dim * dim + y * dim + x, sqrt(x*x+y*y+z*z));
+        }
+      }
+    }
+
+  return imageData;
+}
+
+daxImageDataPtr CreateOutputDataSet(int dim)
+{
+  daxImageDataPtr imageData(new daxImageData());
+  imageData->SetExtent(0, dim-1, 0, dim-1, 0, dim-1);
+  imageData->SetOrigin(0, 0, 0);
+  imageData->SetSpacing(1, 1, 1);
+
+  daxDataArrayVector3Ptr cell_gradients (new daxDataArrayVector3());
+  cell_gradients->SetName("CellScalars");
+  cell_gradients->SetNumberOfTuples(imageData->GetNumberOfCells());
+  imageData->PointData.push_back(cell_gradients);
+
+  for (int x=0 ; x < dim-1; x ++)
+    {
+    for (int y=0 ; y < dim-1; y ++)
+      {
+      for (int z=0 ; z < dim-1; z ++)
+        {
+        cell_gradients->Set(
+          z * (dim-1) * (dim-1) + y * (dim-1) + x, make_DaxVector3(0, 0, 0));
+        }
+      }
+    }
+
+  return imageData;
+}
+
+
+#define MAX_SIZE 128
+
 int main()
 {
+  daxImageDataPtr input = CreateInputDataSet(MAX_SIZE);
+  daxImageDataPtr output = CreateOutputDataSet(MAX_SIZE);
+
+  daxDataBridge bridge;
+  bridge.AddInputData(input);
+  bridge.AddOutputData(output);
+
+  daxKernelArgumentPtr arg = bridge.Upload();
+  Execute<<< (MAX_SIZE-1)*(MAX_SIZE-1), MAX_SIZE >>>(arg->Get());
   return 0;
 }

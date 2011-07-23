@@ -29,3 +29,5 @@ CUDA_ADD_EXECUTABLE(DaxExecutionEnvironmentTest DaxExecutionEnvironmentTest.cu
   ${sources}
 )
 
+target_link_libraries(DaxExecutionEnvironmentTest
+  daxDataModel)

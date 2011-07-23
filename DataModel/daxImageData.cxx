@@ -7,6 +7,7 @@
 =========================================================================*/
 #include "daxImageData.h"
 #include "daxDataArrayStructuredPoints.h"
+#include "daxDataArrayStructuredConnectivity.h"
 
 //-----------------------------------------------------------------------------
 daxImageData::daxImageData()
@@ -38,5 +39,12 @@ daxDataArrayPtr daxImageData::GetPointCoordinates() const
 //-----------------------------------------------------------------------------
 daxDataArrayPtr daxImageData::GetCellArray() const
 {
-  return daxDataArrayPtr();
+  daxDataArrayStructuredConnectivityPtr connectivity_array(new
+    daxDataArrayStructuredConnectivity);
+  connectivity_array->SetOrigin(this->Origin);
+  connectivity_array->SetSpacing(this->Spacing);
+  connectivity_array->SetExtents(
+    this->Extent[0], this->Extent[1], this->Extent[2],
+    this->Extent[3], this->Extent[4], this->Extent[5]);
+  return connectivity_array; 
 }
