@@ -19,7 +19,22 @@
 
 __global__ void Execute(DaxKernelArgument argument)
 {
+  DaxWorkMapCell work(
+    argument.Arrays[
+      argument.Datasets[0].CellArrayIndex]);
 
+  DaxFieldCoordinates in_points(
+    argument.Arrays[
+    argument.Datasets[0].PointCoordinatesIndex]);
+  DaxFieldPoint in_point_scalars (
+    argument.Arrays[
+    argument.Datasets[0].PointDataIndices[0]]);
+  DaxFieldCell out_cell_vectors(
+    argument.Arrays[
+    argument.Datasets[1].CellDataIndices[0]]);
+
+  CellGradient(work, in_points,
+    in_point_scalars, out_cell_vectors);
 
 //  DaxWorkMapCell work(input_do.CellArray);
 //  DaxFieldPoint in_point_scalars(input_do.PointData);
@@ -104,5 +119,7 @@ int main()
 
   daxKernelArgumentPtr arg = bridge.Upload();
   Execute<<< (MAX_SIZE-1)*(MAX_SIZE-1), MAX_SIZE >>>(arg->Get());
+  bridge.Download(arg);
+
   return 0;
 }

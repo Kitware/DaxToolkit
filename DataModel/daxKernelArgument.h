@@ -13,8 +13,10 @@
 #include "DaxDataArray.h"
 #include "DaxDataSet.h"
 #include <thrust/device_vector.h>
+#include <map>
 
 daxDeclareClass(daxKernelArgument);
+daxDeclareClass(daxDataArray);
 
 class daxKernelArgument : public daxObject
 {
@@ -31,6 +33,7 @@ private:
   DaxKernelArgument Argument;
   thrust::device_vector<DaxDataArray> Arrays;
   thrust::device_vector<DaxDataSet> Datasets;
+  std::map<daxDataArrayPtr, int> ArrayMap;
 };
 
 #endif

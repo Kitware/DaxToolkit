@@ -203,6 +203,20 @@ daxKernelArgumentPtr daxDataBridge::Upload() const
     argument->Datasets.push_back(temp);
     }
 
+  argument->ArrayMap = arrayIndexes;
   return argument;
 }
 
+//-----------------------------------------------------------------------------
+bool daxDataBridge::Download(daxKernelArgumentPtr argument) const
+{
+  // iterate over output datasets and download all arrays. For now, I'll only
+  // download the cell-data and point-data arrays.
+  for (ds_iter = this->Internals->Outputs.begin();
+    ds_iter != this->Internals->Outputs.end(); ++ds_iter)
+    {
+    daxDataSetPtr ds = *ds_iter;
+    DownloadArrays(ds, argument, false);
+    }
+  return true;
+}
