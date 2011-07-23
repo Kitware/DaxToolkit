@@ -11,6 +11,8 @@
 #include "daxDataSet.h"
 #include "daxTypes.h"
 
+daxDeclareClass(daxImageData);
+
 /// daxImageData is the abstract superclass for data array object containing
 /// numeric data.
 class daxImageData : public daxDataSet
@@ -79,8 +81,5 @@ protected:
 private:
   daxDisableCopyMacro(daxImageData)
 };
-
-/// declares daxImageDataPtr
-daxDefinePtrMacro(daxImageData)
 
 #endif

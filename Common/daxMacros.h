@@ -26,6 +26,11 @@
   typedef boost::shared_ptr<classname> classname##Ptr; \
   typedef boost::weak_ptr<classname> classname##WeakPtr;
 
+#define daxDeclareClass(classname)\
+  class classname;\
+  daxDefinePtrMacro(classname)
+
+
 /// Error macro to use to report error messages.
 #define daxErrorMacro(txt)\
   cerr << "Error at " << __FILE__ << ":" << __LINE__ << "\n" txt << endl;

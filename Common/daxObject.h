@@ -14,6 +14,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
+daxDeclareClass(daxObject);
+
 /// daxObject is the base class for all daxFramework classes.
 class daxObject
 {
@@ -23,8 +25,5 @@ public:
 private:
   daxDisableCopyMacro(daxObject)
 };
-
-/// declares daxObjectPtr
-daxDefinePtrMacro(daxObject)
 
 #endif

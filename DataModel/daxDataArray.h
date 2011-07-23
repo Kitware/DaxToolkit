@@ -12,6 +12,8 @@
 
 class DaxDataArray;
 
+daxDeclareClass(daxDataArray);
+
 /// daxDataArray is the abstract superclass for data array object containing
 /// numeric data.
 class daxDataArray : public daxObject
@@ -38,8 +40,5 @@ protected:
 private:
   daxDisableCopyMacro(daxDataArray)
 };
-
-/// declares daxDataArrayPtr
-daxDefinePtrMacro(daxDataArray)
 
 #endif

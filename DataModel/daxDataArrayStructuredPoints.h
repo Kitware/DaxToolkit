@@ -11,6 +11,8 @@
 #include "daxDataArray.h"
 #include "daxTypes.h"
 
+daxDeclareClass(daxDataArrayStructuredPoints);
+
 /// daxDataArrayStructuredPoints is the abstract superclass for data array object containing
 /// numeric data.
 class daxDataArrayStructuredPoints : public daxDataArray
@@ -51,5 +53,4 @@ private:
   daxDisableCopyMacro(daxDataArrayStructuredPoints)
 };
 
-daxDefinePtrMacro(daxDataArrayStructuredPoints)
 #endif

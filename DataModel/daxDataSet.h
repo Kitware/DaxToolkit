@@ -11,10 +11,8 @@
 #include "daxObject.h"
 #include <vector>
 
-#ifndef SKIP_DOXYGEN
-class daxDataArray;
-daxDefinePtrMacro(daxDataArray);
-#endif
+daxDeclareClass(daxDataArray);
+daxDeclareClass(daxDataSet);
 
 /// daxDataSet is the abstract superclass for data array object containing
 /// numeric data.
@@ -35,8 +33,5 @@ protected:
 private:
   daxDisableCopyMacro(daxDataSet)
 };
-
-/// declares daxDataSetPtr
-daxDefinePtrMacro(daxDataSet)
 
 #endif

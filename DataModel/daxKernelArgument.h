@@ -14,6 +14,8 @@
 #include "DaxDataSet.h"
 #include <thrust/device_vector.h>
 
+daxDeclareClass(daxKernelArgument);
+
 class daxKernelArgument : public daxObject
 {
 public:
@@ -31,5 +33,4 @@ private:
   thrust::device_vector<DaxDataSet> Datasets;
 };
 
-daxDefinePtrMacro(daxKernelArgument)
 #endif

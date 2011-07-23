@@ -10,14 +10,9 @@
 
 #include "daxObject.h"
 
-#ifndef SKIP_DOXYGEN
-class daxDataSet;
-daxDefinePtrMacro(daxDataSet);
-
-class daxKernelArgument;
-daxDefinePtrMacro(daxKernelArgument);
-
-#endif
+daxDeclareClass(daxDataSet);
+daxDeclareClass(daxKernelArgument);
+daxDeclareClass(daxDataBridge);
 
 /// daxDataBridge is used to transfer host-memory data objects to the device.
 /// This class is not meant to be used by users of the ControlEnvironment. It
@@ -52,6 +47,4 @@ private:
   daxInternals* Internals;
 };
 
-/// declares daxDataBridgePtr
-daxDefinePtrMacro(daxDataBridge)
 #endif

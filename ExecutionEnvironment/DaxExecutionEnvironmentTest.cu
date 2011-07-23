@@ -13,6 +13,8 @@
 
 __global__ void Execute()
 {
+
+
 //  DaxWorkMapCell work(input_do.CellArray);
 //  DaxFieldPoint in_point_scalars(input_do.PointData);
 //  DaxFieldCell out_cell_scalars(output_p2c.CellData);
