@@ -10,10 +10,14 @@
 
 #include "daxTypes.h"
 
-/// DaxDataArray is the data-structure used to represent a data-array in the
-/// Execution environment. In the control environment, users never use this
-/// class directly. It's only meant to be used by the DataModel classes to
-/// upload/download data to/from the execution environment.
+/// DaxDataArray is a basic data-storage device in Dax data model. It stores the
+/// heavy data. A dataset comprises for DaxDataArray instances assigned different
+/// roles, for example an "array" for storing point coordinates, an "array" for
+/// cell-connectivity etc. Different types of arrays exist. The subclasses are
+/// used in control environment to define the datasets. In the execution
+/// environment, user code i.e the worklet should never use DaxDataArray directly
+/// (it should rely on DaxField or subclasses). The execution environment uses
+/// various traits to access raw-data from the DaxDataArray.
 class DaxDataArray
 {
 public:
@@ -65,6 +69,28 @@ public:
     {
     return DaxDataArray::ID;
     }
+
+#ifdef __CUDACC__
+  __device__ static int GetNumberOfComponents(const DaxDataArray& array)
+    {
+    int num_comps;
+    switch (array.DataType)
+      {
+    case SCALAR:
+      num_comps = 1;
+      break;
+    case VECTOR3:
+      num_comps = 3;
+      break;
+    case VECTOR4:
+      num_comps = 4;
+      break;
+    default:
+      num_comps = 1;
+      }
+    return num_comps;
+    }
+#endif
 };
 
 #endif

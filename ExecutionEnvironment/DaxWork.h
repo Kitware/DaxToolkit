@@ -12,7 +12,7 @@
 
 #include "DaxCommon.h"
 
-class DaxArray;
+class DaxDataArray;
 
 ///----------------------------------------------------------------------------
 /// Base-class for all different types of work.
@@ -53,15 +53,15 @@ public:
 class DaxWorkMapCell : public DaxWorkMapField
 {
   SUPERCLASS(DaxWorkMapField);
-  const DaxArray& CellArray;
+  const DaxDataArray& CellArray;
 public:
 
-  __device__ const DaxArray& GetCellArray() const
+  __device__ const DaxDataArray& GetCellArray() const
     {
     return this->CellArray;
     }
 
-  __device__ DaxWorkMapCell(const DaxArray& cell_array) : CellArray(cell_array)
+  __device__ DaxWorkMapCell(const DaxDataArray& cell_array) : CellArray(cell_array)
     {
     }
 };

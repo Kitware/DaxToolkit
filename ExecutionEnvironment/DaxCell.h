@@ -8,10 +8,10 @@
 #ifndef __DaxCell_h
 #define __DaxCell_h
 
-#include "DaxCommon.h"
 #include "DaxCellTypes.h"
-#include "DaxWork.cu"
-#include "DaxField.cu"
+#include "DaxCommon.h"
+#include "DaxField.h"
+#include "DaxWork.h"
 
 class DaxFieldPoint;
 
@@ -31,21 +31,21 @@ public:
   /// Returns the cell type.
   __device__ DaxCellType GetCellType() const
     {
-    return DaxArrayConnectivityTraits::GetElementsType(
+    return DaxDataArrayConnectivityTraits::GetElementsType(
       this->Work.GetCellArray());
     }
 
   /// Get the number of points in the cell.
   __device__ DaxId GetNumberOfPoints() const
     {
-    return DaxArrayConnectivityTraits::GetNumberOfConnectedElements(
+    return DaxDataArrayConnectivityTraits::GetNumberOfConnectedElements(
       this->Work, this->Work.GetCellArray());
     }
 
   /// Get the work corresponding to a given point.
   __device__ DaxWorkMapField GetPoint(const DaxId index) const
     {
-    return DaxArrayConnectivityTraits::GetConnectedElement(
+    return DaxDataArrayConnectivityTraits::GetConnectedElement(
         this->Work, this->Work.GetCellArray(), index);
     }
 

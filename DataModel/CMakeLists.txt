@@ -17,14 +17,14 @@ set (sources
   daxDataArray.h
   daxDataArrayIrregular.h
   daxDataArrayIrregular.txx
+  daxDataArrayStructuredPoints.cxx
+  daxDataArrayStructuredPoints.h
+  daxDataBridge.cu
+  daxDataBridge.h
   daxDataSet.cxx
   daxDataSet.h
   daxImageData.cxx
   daxImageData.h
-  daxDataBridge.cu
-  daxDataBridge.h
-  daxDataArrayStructuredPoints.cu
-  daxDataArrayStructuredPoints.h
   daxKernelArgument.cu
   daxKernelArgument.h
   )

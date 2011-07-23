@@ -45,13 +45,7 @@ public:
   virtual bool Convert(DaxDataArray* array);
 
 protected:
-  typedef struct MetadataStruct {
-    DaxVector3 Origin;
-    DaxVector3 Spacing;
-    DaxInt3 ExtentMin;
-    DaxInt3 ExtentMax;
-  } Metadata __attribute__ ((aligned(4)));
-  Metadata HeavyData;
+  DaxStructuredPointsMetaData HeavyData;
 
 private:
   daxDisableCopyMacro(daxDataArrayStructuredPoints)

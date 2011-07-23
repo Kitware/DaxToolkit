@@ -30,5 +30,6 @@ bool daxDataArrayStructuredPoints::Convert(DaxDataArray* array)
   array->Type = DaxDataArray::STRUCTURED_POINTS;
   array->DataType = DaxDataArray::VECTOR3;
   array->RawData = &this->HeavyData;
-  array->SizeInBytes = sizeof(Metadata);
+  array->SizeInBytes = sizeof(DaxStructuredPointsMetaData);
+  return true;
 }

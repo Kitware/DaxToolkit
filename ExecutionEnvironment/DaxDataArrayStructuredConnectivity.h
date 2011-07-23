@@ -5,37 +5,31 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __DaxArrayStructuredConnectivity_h
-#define __DaxArrayStructuredConnectivity_h
+#ifndef __DaxDataArrayStructuredConnectivity_h
+#define __DaxDataArrayStructuredConnectivity_h
 
-#include "DaxArrayStructuredPoints.cu"
+#include "DaxDataArrayStructuredPoints.h"
 #include "DaxCellTypes.h"
 
-/// DaxArrayStructuredConnectivity is used for cell-array (vtkCellArray) for a
+/// DaxDataArrayStructuredConnectivity is used for cell-array (vtkCellArray) for a
 /// structured dataset.
-class DaxArrayStructuredConnectivity : public DaxArrayStructuredPoints
+class DaxDataArrayStructuredConnectivity : public DaxDataArrayStructuredPoints
 {
-  SUPERCLASS(DaxArrayStructuredPoints);
-public:
-  __host__ DaxArrayStructuredConnectivity()
-    {
-    this->Type = STRUCTURED_CONNECTIVITY;
-    }
-
 protected:
-  friend class DaxArrayConnectivityTraits;
+  friend class DaxDataArrayConnectivityTraits;
 
   __device__ static DaxId GetNumberOfConnectedElements(
-    const DaxWork&, const DaxArray&)
+    const DaxWork&, const DaxDataArray&)
     {
     return 8;
     }
 
   __device__ static DaxWorkMapField GetConnectedElement(
-    const DaxWork& work, const DaxArray& connectivityArray,
+    const DaxWork& work, const DaxDataArray& connectivityArray,
     DaxId index)
     {
-    MetadataType* metadata = reinterpret_cast<MetadataType*>(
+    DaxStructuredPointsMetaData* metadata =
+      reinterpret_cast<DaxStructuredPointsMetaData*>(
       connectivityArray.RawData);
 
     DaxId flat_id = work.GetItem();
@@ -61,9 +55,10 @@ protected:
     return workPoint;
     }
 
-  __device__ static DaxCellType GetElementsType(const DaxArray& connectivityArray)
+  __device__ static DaxCellType GetElementsType(const DaxDataArray& connectivityArray)
     {
-    MetadataType* metadata = reinterpret_cast<MetadataType*>(connectivityArray.RawData);
+    DaxStructuredPointsMetaData* metadata =
+      reinterpret_cast<DaxStructuredPointsMetaData*>(connectivityArray.RawData);
     int3 dims;
     dims.x = metadata->ExtentMax.x - metadata->ExtentMin.x + 1;
     dims.y = metadata->ExtentMax.y - metadata->ExtentMin.y + 1;

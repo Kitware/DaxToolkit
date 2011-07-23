@@ -7,21 +7,22 @@
 #===========================================================================
 project(DaxExecutionEnvironment)
 
-include_directories(${DaxDataModel_SOURCE_DIR})
+include_directories(
+  ${DaxCommon_SOURCE_DIR}
+  ${DaxDataModel_SOURCE_DIR}
+  )
 
 set(sources
-  DaxArray.cu
-  DaxArrayIrregular.cu
-  DaxArrayStructuredConnectivity.cu
-  DaxArrayStructuredPoints.cu
-  DaxArrayTraits.cu
-  DaxCell.cu
+  DaxDataArrayIrregular.h
+  DaxDataArrayStructuredPoints.h
+  DaxDataArrayStructuredConnectivity.h
+  DaxDataArrayTraits.h
+  DaxCell.h
   DaxCellTypes.h
   DaxCommon.h
-  DaxDataObject.cu
   DaxExecutionEnvironment.h
-  DaxField.cu
-  DaxWork.cu
+  DaxField.h
+  DaxWork.h
   )
 
 CUDA_ADD_EXECUTABLE(DaxExecutionEnvironmentTest DaxExecutionEnvironmentTest.cu

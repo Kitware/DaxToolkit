@@ -10,16 +10,7 @@
 #ifndef __DaxCommon_h
 #define __DaxCommon_h
 
-//*****************************************************************************
-// Typedefs for basic types.
-//*****************************************************************************
-typedef float DaxScalar;
-typedef float3 DaxVector3;
-typedef float4 DaxVector4;
-typedef int DaxId;
-
-#define make_DaxVector3 make_float3
-#define make_DaxVector4 make_float4
+#include "daxTypes.h"
 
 #define SUPERCLASS(__name__) \
   typedef __name__ Superclass
