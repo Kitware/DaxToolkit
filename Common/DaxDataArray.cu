@@ -49,6 +49,8 @@ DaxDataArray DaxDataArray::Create(
   if (data_size_in_bytes > 0)
     {
     cudaMalloc(&array.RawData, data_size_in_bytes);
+    assert(array.RawData != NULL);
     }
   return array;
 }
+

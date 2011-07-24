@@ -12,8 +12,6 @@
 #include "daxDataSet.h"
 #include "daxKernelArgument.h"
 
-#include <thrust/host_vector.h>
-
 #include <map>
 #include <set>
 
@@ -91,7 +89,6 @@ public:
   std::vector<daxDataSetPtr> Inputs;
   std::vector<daxDataSetPtr> Intermediates;
   std::vector<daxDataSetPtr> Outputs;
-  std::map<daxDataArray*, int> Arrays;
 };
 
 //-----------------------------------------------------------------------------
@@ -151,8 +148,8 @@ daxKernelArgumentPtr daxDataBridge::Upload() const
     AddArrays(ds, arrayIndexes, false);
     }
 
-  daxKernelArgumentPtr argument(new daxKernelArgument);
 
+  std::vector<DaxDataArray> arrays;
   int index = 0;
   std::map<daxDataArrayPtr, int>::iterator map_iter;
   for (map_iter = arrayIndexes.begin(); map_iter != arrayIndexes.end();
@@ -160,10 +157,12 @@ daxKernelArgumentPtr daxDataBridge::Upload() const
     {
     DaxDataArray temp = map_iter->first->Upload(
       /*copy_heavy_data=*/ map_iter->second == -1);
-    argument->Arrays.push_back(temp);
+    arrays.push_back(temp);
     map_iter->second = index;
     index++;
     }
+
+  std::vector<DaxDataSet> datasets;
 
   // now that arrays have been uploaded, upload the datasets.
   for (ds_iter = this->Internals->Inputs.begin();
@@ -171,7 +170,7 @@ daxKernelArgumentPtr daxDataBridge::Upload() const
     {
     daxDataSetPtr ds = *ds_iter;
     DaxDataSet temp = Convert(ds, arrayIndexes);
-    argument->Datasets.push_back(temp);
+    datasets.push_back(temp);
     }
 
   for (ds_iter = this->Internals->Intermediates.begin();
@@ -179,7 +178,7 @@ daxKernelArgumentPtr daxDataBridge::Upload() const
     {
     daxDataSetPtr ds = *ds_iter;
     DaxDataSet temp = Convert(ds, arrayIndexes);
-    argument->Datasets.push_back(temp);
+    datasets.push_back(temp);
     }
 
   for (ds_iter = this->Internals->Outputs.begin();
@@ -187,10 +186,13 @@ daxKernelArgumentPtr daxDataBridge::Upload() const
     {
     daxDataSetPtr ds = *ds_iter;
     DaxDataSet temp = Convert(ds, arrayIndexes);
-    argument->Datasets.push_back(temp);
+    datasets.push_back(temp);
     }
 
-  argument->ArrayMap = arrayIndexes;
+  daxKernelArgumentPtr argument(new daxKernelArgument);
+  argument->SetArrays(arrays);
+  argument->SetDataSets(datasets);
+  argument->SetArrayMap(arrayIndexes);
   return argument;
 }
 
@@ -210,7 +212,7 @@ bool daxDataBridge::Download(daxKernelArgumentPtr argument) const
       {
       if (argument->ArrayMap.find(*iter2) != argument->ArrayMap.end())
         {
-        DaxDataArray array = argument->Arrays[argument->ArrayMap[*iter2]];
+        DaxDataArray array = argument->HostArrays[argument->ArrayMap[*iter2]];
         (*iter2)->Download(array);
         }
       }
@@ -218,7 +220,9 @@ bool daxDataBridge::Download(daxKernelArgumentPtr argument) const
       {
       if (argument->ArrayMap.find(*iter2) != argument->ArrayMap.end())
         {
-        DaxDataArray array = argument->Arrays[argument->ArrayMap[*iter2]];
+        cout << "index: " << argument->ArrayMap[*iter2] << endl;
+        DaxDataArray array = argument->HostArrays[argument->ArrayMap[*iter2]];
+
         (*iter2)->Download(array);
         }
       }

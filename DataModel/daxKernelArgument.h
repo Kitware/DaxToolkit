@@ -12,8 +12,8 @@
 #include "DaxKernelArgument.h"
 #include "DaxDataArray.h"
 #include "DaxDataSet.h"
-#include <thrust/device_vector.h>
 #include <map>
+#include <vector>
 
 daxDeclareClass(daxKernelArgument);
 daxDeclareClass(daxDataArray);
@@ -28,12 +28,21 @@ public:
   /// return the object that can be passed to the kernel.
   const DaxKernelArgument& Get();
 
-private:
+  void SetDataSets(const std::vector<DaxDataSet>& datasets);
+  void SetArrays(const std::vector<DaxDataArray>& arrays);
+  void SetArrayMap(const std::map<daxDataArrayPtr, int> array_map);
+
+protected:
   friend class daxDataBridge;
-  DaxKernelArgument Argument;
-  thrust::device_vector<DaxDataArray> Arrays;
-  thrust::device_vector<DaxDataSet> Datasets;
+  std::vector<DaxDataArray> HostArrays;
+  std::vector<DaxDataSet> HostDatasets;
   std::map<daxDataArrayPtr, int> ArrayMap;
+
+
+private:
+  DaxKernelArgument Argument;
+  DaxDataArray* DeviceArrays;
+  DaxDataSet* DeviceDatasets;
 };
 
 #endif

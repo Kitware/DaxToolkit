@@ -6,6 +6,7 @@
 #include "DaxKernelArgument.h"
 
 #include <math.h>
+#include <thrust/device_vector.h>
 
 __global__ void Execute(DaxKernelArgument argument, int *temp)
 {
