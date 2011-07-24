@@ -30,6 +30,7 @@ public:
     { return this->Name; }
 
   virtual DaxDataArray Upload(bool copy_heavy_data=false) = 0;
+  virtual bool Download(const DaxDataArray& array) = 0;
 
 protected: 
   std::string Name;

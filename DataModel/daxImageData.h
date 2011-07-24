@@ -12,6 +12,8 @@
 #include "daxTypes.h"
 
 daxDeclareClass(daxImageData);
+daxDeclareClass(daxDataArrayStructuredPoints);
+daxDeclareClass(daxDataArrayStructuredConnectivity);
 
 /// daxImageData is the abstract superclass for data array object containing
 /// numeric data.
@@ -78,6 +80,9 @@ protected:
   int Extent[6];
   DaxVector3 Origin;
   DaxVector3 Spacing;
+  daxDataArrayStructuredPointsPtr PointCoordinates;
+  daxDataArrayStructuredConnectivityPtr CellArray;
+
 private:
   daxDisableCopyMacro(daxImageData)
 };

@@ -44,7 +44,6 @@ namespace
     for (cc=0, iter2 = ds->CellData.begin(); iter2 != ds->CellData.end();
       ++iter2, ++cc)
       {
-      arrayIndexes[*iter2] = -1;
       temp.CellDataIndices[cc] = arrayIndexes[*iter2];
       }
     return temp;
@@ -154,15 +153,16 @@ daxKernelArgumentPtr daxDataBridge::Upload() const
 
   daxKernelArgumentPtr argument(new daxKernelArgument);
 
+  int index = 0;
   std::map<daxDataArrayPtr, int>::iterator map_iter;
   for (map_iter = arrayIndexes.begin(); map_iter != arrayIndexes.end();
     ++map_iter)
     {
-    size_t index = argument->Arrays.size();
     DaxDataArray temp = map_iter->first->Upload(
       /*copy_heavy_data=*/ map_iter->second == -1);
     argument->Arrays.push_back(temp);
     map_iter->second = index;
+    index++;
     }
 
   // now that arrays have been uploaded, upload the datasets.
@@ -197,12 +197,32 @@ daxKernelArgumentPtr daxDataBridge::Upload() const
 //-----------------------------------------------------------------------------
 bool daxDataBridge::Download(daxKernelArgumentPtr argument) const
 {
-//  // iterate over output datasets and download all arrays. For now, I'll only
-//  // download the cell-data and point-data arrays.
-//  for (ds_iter = this->Internals->Outputs.begin();
-//    ds_iter != this->Internals->Outputs.end(); ++ds_iter)
-//    {
-//    daxDataSetPtr ds = *ds_iter;
-//    }
+  // iterate over output datasets and download all arrays. For now, I'll only
+  // download the cell-data and point-data arrays.
+  std::vector<daxDataSetPtr>::iterator ds_iter;
+  for (ds_iter = this->Internals->Outputs.begin();
+    ds_iter != this->Internals->Outputs.end(); ++ds_iter)
+    {
+    daxDataSetPtr ds = *ds_iter;
+
+    std::vector<daxDataArrayPtr>::iterator iter2;
+    for (iter2 = ds->PointData.begin(); iter2 != ds->PointData.end(); ++iter2)
+      {
+      if (argument->ArrayMap.find(*iter2) != argument->ArrayMap.end())
+        {
+        DaxDataArray array = argument->Arrays[argument->ArrayMap[*iter2]];
+        (*iter2)->Download(array);
+        }
+      }
+    for (iter2 = ds->CellData.begin(); iter2 != ds->CellData.end(); ++iter2)
+      {
+      if (argument->ArrayMap.find(*iter2) != argument->ArrayMap.end())
+        {
+        DaxDataArray array = argument->Arrays[argument->ArrayMap[*iter2]];
+        (*iter2)->Download(array);
+        }
+      }
+
+    }
   return true;
 }

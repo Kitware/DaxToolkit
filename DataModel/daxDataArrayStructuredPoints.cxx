@@ -38,3 +38,10 @@ DaxDataArray daxDataArrayStructuredPoints::Upload(bool copy_heavy_data/*=false*/
       DaxDataArray::VECTOR3,
       sizeof(DaxStructuredPointsMetaData));
 }
+
+//-----------------------------------------------------------------------------
+bool daxDataArrayStructuredPoints::Download(const DaxDataArray& array)
+{
+  assert (array.SizeInBytes == sizeof(DaxStructuredPointsMetaData));
+  return array.CopyTo(&this->HeavyData, sizeof(DaxStructuredPointsMetaData));
+}

@@ -43,8 +43,8 @@ int main()
 
   daxDataArrayScalarPtr point_scalars2 (new daxDataArrayScalar());
   point_scalars2->SetName("Scalars");
-  point_scalars2->SetNumberOfTuples(imageData->GetNumberOfPoints());
-  imageData2->PointData.push_back(point_scalars2);
+  point_scalars2->SetNumberOfTuples(imageData->GetNumberOfCells());
+  imageData2->CellData.push_back(point_scalars2);
 
   daxDataBridge bridge;
   bridge.AddInputData(imageData);

@@ -99,6 +99,7 @@ public:
   static DaxDataArray Create(
     eType type, eDataType dataType, unsigned int data_size_in_bytes);
 
+  bool CopyTo(void* raw_data, unsigned int data_size_in_bytes) const;
 };
 
 #endif

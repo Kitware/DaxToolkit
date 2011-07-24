@@ -8,6 +8,8 @@
 #include "daxDataArrayIrregular.h"
 
 #include "DaxDataArray.h"
+#include <assert.h>
+
 //-----------------------------------------------------------------------------
 template <class T>
 daxDataArrayIrregular<T>::daxDataArrayIrregular()
@@ -33,4 +35,12 @@ DaxDataArray daxDataArrayIrregular<T>::Upload(bool copy_heavy_data/*=false*/)
     DaxDataArray::Create(DaxDataArray::IRREGULAR,
       DaxDataArray::type(T()),
       sizeof(T) * this->HeavyData.size());
+}
+
+//-----------------------------------------------------------------------------
+template <class T>
+bool daxDataArrayIrregular<T>::Download(const DaxDataArray& array)
+{
+  assert (array.SizeInBytes == sizeof(T) * this->HeavyData.size());
+  return array.CopyTo(this->HeavyData.data(), array.SizeInBytes);
 }

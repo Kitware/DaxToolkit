@@ -88,7 +88,7 @@ daxImageDataPtr CreateOutputDataSet(int dim)
   daxDataArrayVector3Ptr cell_gradients (new daxDataArrayVector3());
   cell_gradients->SetName("CellScalars");
   cell_gradients->SetNumberOfTuples(imageData->GetNumberOfCells());
-  imageData->PointData.push_back(cell_gradients);
+  imageData->CellData.push_back(cell_gradients);
 
   for (int x=0 ; x < dim-1; x ++)
     {
@@ -97,7 +97,7 @@ daxImageDataPtr CreateOutputDataSet(int dim)
       for (int z=0 ; z < dim-1; z ++)
         {
         cell_gradients->Set(
-          z * (dim-1) * (dim-1) + y * (dim-1) + x, make_DaxVector3(0, 0, 0));
+          z * (dim-1) * (dim-1) + y * (dim-1) + x, make_DaxVector3(-1, 0, 0));
         }
       }
     }
@@ -106,7 +106,7 @@ daxImageDataPtr CreateOutputDataSet(int dim)
 }
 
 
-#define MAX_SIZE 128
+#define MAX_SIZE 4
 
 int main()
 {
@@ -121,5 +121,12 @@ int main()
   Execute<<< (MAX_SIZE-1)*(MAX_SIZE-1), MAX_SIZE >>>(arg->Get());
   bridge.Download(arg);
 
+  daxDataArrayVector3* array = dynamic_cast<
+    daxDataArrayVector3*>( &(*output->CellData[0]) );
+  for (size_t cc=0; cc < array->GetNumberOfTuples(); cc++)
+    {
+    DaxVector3 value = array->Get(cc);
+    cout << value.x << ", " << value.y << ", " << value.z << endl;
+    }
   return 0;
 }

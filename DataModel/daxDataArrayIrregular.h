@@ -36,6 +36,7 @@ public:
     { return this->HeavyData[index]; }
 
   virtual DaxDataArray Upload(bool copy_heavy_data=false);
+  virtual bool Download(const DaxDataArray& array);
 
 protected:
   thrust::host_vector<T> HeavyData;
