@@ -106,7 +106,7 @@ daxImageDataPtr CreateOutputDataSet(int dim)
 }
 
 
-#define MAX_SIZE 4
+#define MAX_SIZE 32
 
 int main()
 {
@@ -126,7 +126,8 @@ int main()
   for (size_t cc=0; cc < array->GetNumberOfTuples(); cc++)
     {
     DaxVector3 value = array->Get(cc);
-    cout << value.x << ", " << value.y << ", " << value.z << endl;
+    cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
+    if (cc == 20) break;
     }
   return 0;
 }
