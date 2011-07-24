@@ -100,6 +100,15 @@ public:
     eType type, eDataType dataType, unsigned int data_size_in_bytes);
 
   bool CopyTo(void* raw_data, unsigned int data_size_in_bytes) const;
+
+  DaxDataArray& operator=(const DaxDataArray& other)
+    {
+    this->Type = other.Type;
+    this->DataType = other.DataType;
+    this->RawData = other.RawData;
+    this->SizeInBytes = other.SizeInBytes;
+    return *this;
+    }
 };
 
 #endif

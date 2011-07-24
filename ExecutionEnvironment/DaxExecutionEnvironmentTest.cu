@@ -35,6 +35,9 @@ __global__ void Execute(DaxKernelArgument argument)
 
   CellGradient(work, in_points,
     in_point_scalars, out_cell_vectors);
+  //out_cell_vectors.Set(work,
+  //  make_DaxVector3(work.GetItem(), 0, 0));
+
 
 //  DaxWorkMapCell work(input_do.CellArray);
 //  DaxFieldPoint in_point_scalars(input_do.PointData);
@@ -106,7 +109,7 @@ daxImageDataPtr CreateOutputDataSet(int dim)
 }
 
 
-#define MAX_SIZE 32
+#define MAX_SIZE 256
 
 int main()
 {
@@ -118,7 +121,7 @@ int main()
   bridge.AddOutputData(output);
 
   daxKernelArgumentPtr arg = bridge.Upload();
-  Execute<<< (MAX_SIZE-1)*(MAX_SIZE-1), MAX_SIZE >>>(arg->Get());
+  Execute<<< (MAX_SIZE-1)*(MAX_SIZE-1), (MAX_SIZE-1)>>>(arg->Get());
   bridge.Download(arg);
 
   daxDataArrayVector3* array = dynamic_cast<
@@ -127,6 +130,7 @@ int main()
     {
     DaxVector3 value = array->Get(cc);
     cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
+    //assert(cc == value.x);
     if (cc == 20) break;
     }
   return 0;
