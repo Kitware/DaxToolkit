@@ -19,12 +19,10 @@ daxDataArrayStructuredConnectivity::~daxDataArrayStructuredConnectivity()
 }
 
 //-----------------------------------------------------------------------------
-bool daxDataArrayStructuredConnectivity::Convert(DaxDataArray* array)
+DaxDataArray daxDataArrayStructuredConnectivity::Upload(
+  bool copy_heavy_data/*=false*/)
 {
-  if (this->Superclass::Convert(array))
-    {
-    array->Type = DaxDataArray::STRUCTURED_CONNECTIVITY;
-    return true;
-    }
-  return false;
+  DaxDataArray array = this->Superclass::Upload(copy_heavy_data);
+  array.Type = DaxDataArray::STRUCTURED_CONNECTIVITY;
+  return array;
 }

@@ -91,6 +91,14 @@ public:
     return num_comps;
     }
 #endif
+
+  static DaxDataArray CreateAndCopy(
+    eType type, eDataType dataType,
+    unsigned int data_size_in_bytes, void* raw_data);
+
+  static DaxDataArray Create(
+    eType type, eDataType dataType, unsigned int data_size_in_bytes);
+
 };
 
 #endif

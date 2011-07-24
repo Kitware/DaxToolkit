@@ -23,11 +23,14 @@ daxDataArrayIrregular<T>::~daxDataArrayIrregular()
 
 //-----------------------------------------------------------------------------
 template <class T>
-bool daxDataArrayIrregular<T>::Convert(DaxDataArray* array)
+DaxDataArray daxDataArrayIrregular<T>::Upload(bool copy_heavy_data/*=false*/)
 {
-  array->Type = DaxDataArray::IRREGULAR;
-  array->DataType = DaxDataArray::type(T());
-  array->RawData = this->HeavyData.data();
-  array->SizeInBytes = sizeof(T) * this->HeavyData.size();
-  return true;
+  return copy_heavy_data?
+    DaxDataArray::CreateAndCopy(DaxDataArray::IRREGULAR,
+      DaxDataArray::type(T()),
+      sizeof(T) * this->HeavyData.size(),
+      this->HeavyData.data()) :
+    DaxDataArray::Create(DaxDataArray::IRREGULAR,
+      DaxDataArray::type(T()),
+      sizeof(T) * this->HeavyData.size());
 }

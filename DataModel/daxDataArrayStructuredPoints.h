@@ -44,7 +44,7 @@ public:
 
   /// Called to convert the array to a DaxDataArray which can be passed the
   /// Execution environment.
-  virtual bool Convert(DaxDataArray* array);
+  virtual DaxDataArray Upload(bool copy_heavy_data=false);
 
 protected:
   DaxStructuredPointsMetaData HeavyData;

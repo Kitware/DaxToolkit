@@ -25,11 +25,16 @@ daxDataArrayStructuredPoints::~daxDataArrayStructuredPoints()
 }
 
 //-----------------------------------------------------------------------------
-bool daxDataArrayStructuredPoints::Convert(DaxDataArray* array)
+DaxDataArray daxDataArrayStructuredPoints::Upload(bool copy_heavy_data/*=false*/)
 {
-  array->Type = DaxDataArray::STRUCTURED_POINTS;
-  array->DataType = DaxDataArray::VECTOR3;
-  array->RawData = &this->HeavyData;
-  array->SizeInBytes = sizeof(DaxStructuredPointsMetaData);
-  return true;
+  return copy_heavy_data?
+    DaxDataArray::CreateAndCopy(
+      DaxDataArray::STRUCTURED_POINTS,
+      DaxDataArray::VECTOR3,
+      sizeof(DaxStructuredPointsMetaData),
+      &this->HeavyData) :
+    DaxDataArray::Create(
+      DaxDataArray::STRUCTURED_POINTS,
+      DaxDataArray::VECTOR3,
+      sizeof(DaxStructuredPointsMetaData));
 }

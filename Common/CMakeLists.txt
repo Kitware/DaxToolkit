@@ -9,7 +9,8 @@ project (DaxCommon)
 
 include_directories(${Boost_INCLUDE_DIRS})
 
-add_library(daxCommon SHARED
+CUDA_ADD_LIBRARY(daxCommon SHARED
+  DaxDataArray.cu
   DaxDataArray.h
   DaxDataSet.h
   DaxKernelArgument.h

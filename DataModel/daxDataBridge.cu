@@ -158,24 +158,11 @@ daxKernelArgumentPtr daxDataBridge::Upload() const
   for (map_iter = arrayIndexes.begin(); map_iter != arrayIndexes.end();
     ++map_iter)
     {
-    DaxDataArray temp;
-    if (map_iter->first->Convert(&temp))
-      {
-      size_t index = argument->Arrays.size();
-      DaxDataArray device_temp = temp;
-      if (temp.RawData)
-        {
-        cudaMalloc(&device_temp.RawData, temp.SizeInBytes);
-        }
-      if (map_iter->second == -1)
-        {
-        cudaMemcpy(device_temp.RawData, temp.RawData,
-          temp.SizeInBytes, cudaMemcpyHostToDevice);
-        }
-
-      argument->Arrays.push_back(device_temp);
-      map_iter->second = index;
-      }
+    size_t index = argument->Arrays.size();
+    DaxDataArray temp = map_iter->first->Upload(
+      /*copy_heavy_data=*/ map_iter->second == -1);
+    argument->Arrays.push_back(temp);
+    map_iter->second = index;
     }
 
   // now that arrays have been uploaded, upload the datasets.

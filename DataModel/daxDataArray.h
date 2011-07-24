@@ -29,10 +29,7 @@ public:
   const std::string& GetName() const
     { return this->Name; }
 
-
-  /// Called to convert the array to a DaxDataArray which can be passed the
-  /// Execution environment.
-  virtual bool Convert(DaxDataArray* array) = 0;
+  virtual DaxDataArray Upload(bool copy_heavy_data=false) = 0;
 
 protected: 
   std::string Name;
