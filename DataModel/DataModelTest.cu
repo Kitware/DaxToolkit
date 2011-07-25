@@ -13,6 +13,14 @@ __global__ void Execute(DaxKernelArgument argument, int *temp)
   *temp = argument.NumberOfArrays;
 }
 
+__global__ void SimpleTest(float* val)
+{
+  val[blockIdx.x * blockDim.x + threadIdx.x] = blockIdx.x * blockDim.x +
+    threadIdx.x;
+}
+
+
+#define SIZE 128
 int main()
 {
   daxImageDataPtr imageData(new daxImageData());
@@ -57,4 +65,16 @@ int main()
 
   Execute<<<1, 1>>>(arg->Get(), thrust::raw_pointer_cast(&temp[0]));
   cout << "Value: " << *temp.begin() << endl;
+
+  thrust::device_vector<float> temp2(SIZE*SIZE*SIZE);
+  thrust::host_vector<float> host_temp2;
+  SimpleTest<<<SIZE*SIZE, SIZE>>>( thrust::raw_pointer_cast(temp2.data()));
+  host_temp2 = temp2;
+  for (int cc=0; cc < SIZE*SIZE*SIZE; cc++)
+    {
+    if (cc != host_temp2[cc]) {
+      cout << cc << " != " << host_temp2[cc] << endl;
+      abort(); }
+    }
+
 }
