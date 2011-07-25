@@ -17,6 +17,7 @@
 #include "CellGradient.worklet"
 #include "CellAverage.worklet"
 
+#include <boost/progress.hpp>
 __global__ void Execute(DaxKernelArgument argument)
 {
   DaxWorkMapCell work(
@@ -113,16 +114,33 @@ daxImageDataPtr CreateOutputDataSet(int dim)
 
 int main()
 {
+  boost::timer timer;
+
+  timer.restart();
   daxImageDataPtr input = CreateInputDataSet(MAX_SIZE);
   daxImageDataPtr output = CreateOutputDataSet(MAX_SIZE);
+  double init_time = timer.elapsed();
+
 
   daxDataBridge bridge;
   bridge.AddInputData(input);
   bridge.AddOutputData(output);
 
+  timer.restart();
   daxKernelArgumentPtr arg = bridge.Upload();
+  cudaThreadSynchronize();
+  double upload_time = timer.elapsed();
+
+  timer.restart();
   Execute<<< (MAX_SIZE-1)*(MAX_SIZE-1), (MAX_SIZE-1)>>>(arg->Get());
+  cudaThreadSynchronize();
+  double execute_time = timer.elapsed();
+
+
+  timer.restart();
   bridge.Download(arg);
+  cudaThreadSynchronize();
+  double download_time = timer.elapsed();
 
   daxDataArrayVector3* array = dynamic_cast<
     daxDataArrayVector3*>( &(*output->CellData[0]) );
@@ -133,5 +151,10 @@ int main()
     //assert(cc == value.x);
     if (cc == 20) break;
     }
+  cout << endl << endl << "Summary: -- " << endl;
+  cout << "Initialize: " << init_time << endl
+       << "Upload: " << upload_time << endl
+       << "Execute: " << execute_time << endl
+       << "Download: " << download_time << endl;
   return 0;
 }
