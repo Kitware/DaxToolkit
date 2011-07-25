@@ -110,10 +110,24 @@ daxImageDataPtr CreateOutputDataSet(int dim)
 }
 
 
-#define MAX_SIZE 256
+#define MAX_SIZE 257
 
 int main()
 {
+
+  const int warpSize = 32;
+  const int maxGridSize = 112; // 8 blocks per MP for a tesla C2050.
+
+  unsigned int N = (MAX_SIZE -1 ) * (MAX_SIZE -1) * (MAX_SIZE -1);
+  
+  int warpCount = (N / warpSize) + (((N % warpSize) == 0)?  0 : 1);
+  int warpPerBlock = std::max( 1, std::min(4, warpCount));
+  int threadCount = warpSize * warpPerBlock;
+  int blockCount = max(1, warpCount/warpPerBlock);
+
+  cout << "Execute " << blockCount << ", " << threadCount << endl;
+
+
   boost::timer timer;
 
   timer.restart();
@@ -128,18 +142,29 @@ int main()
 
   timer.restart();
   daxKernelArgumentPtr arg = bridge.Upload();
-  cudaThreadSynchronize();
+  if (cudaThreadSynchronize() != cudaSuccess)
+    {
+    abort();
+    }
+
   double upload_time = timer.elapsed();
 
   timer.restart();
-  Execute<<< (MAX_SIZE-1)*(MAX_SIZE-1), (MAX_SIZE-1)>>>(arg->Get());
-  cudaThreadSynchronize();
+  Execute<<< blockCount, threadCount>>>(arg->Get());
+  if (cudaThreadSynchronize() != cudaSuccess)
+    {
+    abort();
+    }
+
   double execute_time = timer.elapsed();
 
 
   timer.restart();
   bridge.Download(arg);
-  cudaThreadSynchronize();
+  if (cudaThreadSynchronize() != cudaSuccess)
+    {
+    abort();
+    }
   double download_time = timer.elapsed();
 
   daxDataArrayVector3* array = dynamic_cast<
