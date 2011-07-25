@@ -110,22 +110,22 @@ daxImageDataPtr CreateOutputDataSet(int dim)
 }
 
 
-#define MAX_SIZE 257
+#define MAX_SIZE 128
 
 int main()
 {
 
-  const int warpSize = 32;
-  const int maxGridSize = 112; // 8 blocks per MP for a tesla C2050.
+  //const int warpSize = 32;
+  //const int maxGridSize = 112; // 8 blocks per MP for a tesla C2050.
 
-  unsigned int N = (MAX_SIZE -1 ) * (MAX_SIZE -1) * (MAX_SIZE -1);
-  
-  int warpCount = (N / warpSize) + (((N % warpSize) == 0)?  0 : 1);
-  int warpPerBlock = std::max( 1, std::min(4, warpCount));
-  int threadCount = warpSize * warpPerBlock;
-  int blockCount = max(1, warpCount/warpPerBlock);
+  //unsigned int N = (MAX_SIZE -1 ) * (MAX_SIZE -1) * (MAX_SIZE -1);
+  //
+  //int warpCount = (N / warpSize) + (((N % warpSize) == 0)?  0 : 1);
+  //int warpPerBlock = std::max( 1, std::min(4, warpCount));
+  //int threadCount = warpSize * warpPerBlock;
+  //int blockCount = max(1, warpCount/warpPerBlock);
 
-  cout << "Execute " << blockCount << ", " << threadCount << endl;
+  //cout << "Execute " << blockCount << ", " << threadCount << endl;
 
 
   boost::timer timer;
@@ -150,7 +150,7 @@ int main()
   double upload_time = timer.elapsed();
 
   timer.restart();
-  Execute<<< blockCount, threadCount>>>(arg->Get());
+  Execute<<< (MAX_SIZE-1) * (MAX_SIZE-1), (MAX_SIZE-1)>>>(arg->Get());
   if (cudaThreadSynchronize() != cudaSuccess)
     {
     abort();
@@ -172,9 +172,17 @@ int main()
   for (size_t cc=0; cc < array->GetNumberOfTuples(); cc++)
     {
     DaxVector3 value = array->Get(cc);
-    cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
+    if (cc < 20)
+      {
+      cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
+      }
+    if (value.x > 1  || value.x == -1) 
+      {
+      cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
+      break;
+      }
     //assert(cc == value.x);
-    if (cc == 20) break;
+    //if (cc == 100) break;
     }
   cout << endl << endl << "Summary: -- " << endl;
   cout << "Initialize: " << init_time << endl
