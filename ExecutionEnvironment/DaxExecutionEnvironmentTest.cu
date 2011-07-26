@@ -17,6 +17,7 @@
 #include "PointDataToCellData.worklet"
 #include "CellGradient.worklet"
 #include "CellAverage.worklet"
+#include "Sine.worklet"
 
 #include <boost/progress.hpp>
 
@@ -46,6 +47,7 @@ __global__ void Execute(DaxKernelArgument argument,
 
       CellGradient(work, in_points,
         in_point_scalars, out_cell_vectors);
+      Sine(work, out_cell_vectors, out_cell_vectors);
 #if DEBUG_INDEX
       out_cell_vectors.Set(work,
         make_DaxVector3(work.GetItem(), 0 ,0));

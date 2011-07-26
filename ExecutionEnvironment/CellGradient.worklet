@@ -10,7 +10,7 @@
 
 DAX_WORKLET void CellGradient(DAX_IN DaxWorkMapCell& work,
   DAX_IN DaxFieldCoordinates points,
-  DAX_IN DaxFieldPoint point_attribute,
+  DAX_IN DaxFieldPoint& point_attribute,
   DAX_OUT DaxFieldCell& cell_attribute)
 {
   DaxVector3 parametric_cell_center = make_DaxVector3(0.5, 0.5, 0.5);

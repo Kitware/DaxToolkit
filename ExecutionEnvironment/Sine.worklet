@@ -1,0 +1,19 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+===========================================================================*/
+#ifndef __Sine_worklet_
+#define __Sine_worklet_
+
+DAX_WORKLET void Sine(DAX_IN DaxWorkMapField& work,
+  DAX_IN DaxField& in_field,
+  DAX_OUT DaxField& out_field)
+{
+  DaxVector3 value = in_field.GetVector3(work);
+  out_field.Set(work,
+    make_DaxVector3(sinf(value.x), sinf(value.y), sinf(value.z)));
+}
+#endif
