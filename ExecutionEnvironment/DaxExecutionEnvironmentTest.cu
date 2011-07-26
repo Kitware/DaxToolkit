@@ -17,25 +17,38 @@
 #include "CellGradient.worklet"
 #include "CellAverage.worklet"
 
+#define DEBUG_INDEX 0
+
 #include <boost/progress.hpp>
-__global__ void Execute(DaxKernelArgument argument)
+__global__ void Execute(DaxKernelArgument argument,
+  unsigned int number_of_threads,
+  unsigned int number_of_iterations)
 {
-  DaxWorkMapCell work(
-    argument.Arrays[
-      argument.Datasets[0].CellArrayIndex]);
+  for (unsigned int cc=0; cc < number_of_iterations; cc++)
+    {
+    DaxWorkMapCell work(
+      argument.Arrays[
+      argument.Datasets[0].CellArrayIndex], cc);
+    if (work.GetItem() < number_of_threads)
+      {
+      DaxFieldCoordinates in_points(
+        argument.Arrays[
+        argument.Datasets[0].PointCoordinatesIndex]);
+      DaxFieldPoint in_point_scalars (
+        argument.Arrays[
+        argument.Datasets[0].PointDataIndices[0]]);
+      DaxFieldCell out_cell_vectors(
+        argument.Arrays[
+        argument.Datasets[1].CellDataIndices[0]]);
 
-  DaxFieldCoordinates in_points(
-    argument.Arrays[
-    argument.Datasets[0].PointCoordinatesIndex]);
-  DaxFieldPoint in_point_scalars (
-    argument.Arrays[
-    argument.Datasets[0].PointDataIndices[0]]);
-  DaxFieldCell out_cell_vectors(
-    argument.Arrays[
-    argument.Datasets[1].CellDataIndices[0]]);
-
-  CellGradient(work, in_points,
-    in_point_scalars, out_cell_vectors);
+      CellGradient(work, in_points,
+        in_point_scalars, out_cell_vectors);
+#if DEBUG_INDEX
+      out_cell_vectors.Set(work,
+        make_DaxVector3(work.GetItem(), 0 ,0));
+#endif
+      }
+    }
   //out_cell_vectors.Set(work,
   //  make_DaxVector3(work.GetItem(), 0, 0));
 
@@ -110,23 +123,21 @@ daxImageDataPtr CreateOutputDataSet(int dim)
 }
 
 
-#define MAX_SIZE 128
+const unsigned int MAX_SIZE  = 128;
+const unsigned int MAX_WARP_SIZE = 128;
+const unsigned int MAX_GRID_SIZE = 32768;
 
 int main()
 {
-
-  //const int warpSize = 32;
-  //const int maxGridSize = 112; // 8 blocks per MP for a tesla C2050.
-
-  //unsigned int N = (MAX_SIZE -1 ) * (MAX_SIZE -1) * (MAX_SIZE -1);
-  //
-  //int warpCount = (N / warpSize) + (((N % warpSize) == 0)?  0 : 1);
-  //int warpPerBlock = std::max( 1, std::min(4, warpCount));
-  //int threadCount = warpSize * warpPerBlock;
-  //int blockCount = max(1, warpCount/warpPerBlock);
-
-  //cout << "Execute " << blockCount << ", " << threadCount << endl;
-
+  unsigned int number_of_threads = (MAX_SIZE-1) * (MAX_SIZE-1) * (MAX_SIZE-1);
+  unsigned int threadCount = min(MAX_WARP_SIZE, number_of_threads);
+  unsigned int warpCount = (number_of_threads / MAX_WARP_SIZE) +
+    (((number_of_threads % MAX_WARP_SIZE) == 0)? 0 : 1);
+  unsigned int blockCount = min(MAX_GRID_SIZE, max(1, warpCount));
+  unsigned int iterations = ceil(warpCount * 1.0 / MAX_GRID_SIZE);
+  cout << "Execute iterations="
+    << iterations << " : blockCount="  << blockCount
+    << ", threadCount=" << threadCount << endl;
 
   boost::timer timer;
 
@@ -134,7 +145,6 @@ int main()
   daxImageDataPtr input = CreateInputDataSet(MAX_SIZE);
   daxImageDataPtr output = CreateOutputDataSet(MAX_SIZE);
   double init_time = timer.elapsed();
-
 
   daxDataBridge bridge;
   bridge.AddInputData(input);
@@ -150,7 +160,7 @@ int main()
   double upload_time = timer.elapsed();
 
   timer.restart();
-  Execute<<< (MAX_SIZE-1) * (MAX_SIZE-1), (MAX_SIZE-1)>>>(arg->Get());
+  Execute<<<blockCount, threadCount>>>(arg->Get(), number_of_threads, iterations);
   if (cudaThreadSynchronize() != cudaSuccess)
     {
     abort();
@@ -176,13 +186,15 @@ int main()
       {
       cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
       }
-    if (value.x > 1  || value.x == -1) 
+#if DEBUG_INDEX
+    if (value.x != cc) 
+#else
+    if (value.x == -1 || value.x > 1) 
+#endif
       {
       cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
       break;
       }
-    //assert(cc == value.x);
-    //if (cc == 100) break;
     }
   cout << endl << endl << "Summary: -- " << endl;
   cout << "Initialize: " << init_time << endl

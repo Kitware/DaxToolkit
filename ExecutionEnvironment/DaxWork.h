@@ -20,10 +20,12 @@ class DaxWork
 {
 protected:
   DaxId Item;
+  DaxId Iteration;
 
-  __device__ DaxWork()
+  __device__ DaxWork(DaxId cur_iteration) : Iteration(cur_iteration)
     {
-    this->Item = (DaxId) (blockIdx.x * blockDim.x + threadIdx.x);
+    this->Item = (DaxId) (blockIdx.x * blockDim.x + threadIdx.x
+      + Iteration * gridDim.x * blockDim.x);
     }
 public:
   __device__ DaxId GetItem() const { return this->Item; }
@@ -41,7 +43,7 @@ class DaxWorkMapField : public DaxWork
 {
   SUPERCLASS(DaxWork);
 public:
-  __device__ DaxWorkMapField()
+  __device__ DaxWorkMapField(DaxId cur_iteration=0): Superclass(cur_iteration)
     {
 
     }
@@ -61,7 +63,8 @@ public:
     return this->CellArray;
     }
 
-  __device__ DaxWorkMapCell(const DaxDataArray& cell_array) : CellArray(cell_array)
+  __device__ DaxWorkMapCell(const DaxDataArray& cell_array, DaxId cur_iteration) :
+    Superclass(cur_iteration), CellArray(cell_array) 
     {
     }
 };
