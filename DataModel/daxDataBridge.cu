@@ -220,7 +220,6 @@ bool daxDataBridge::Download(daxKernelArgumentPtr argument) const
       {
       if (argument->ArrayMap.find(*iter2) != argument->ArrayMap.end())
         {
-        cout << "index: " << argument->ArrayMap[*iter2] << endl;
         DaxDataArray array = argument->HostArrays[argument->ArrayMap[*iter2]];
 
         (*iter2)->Download(array);
