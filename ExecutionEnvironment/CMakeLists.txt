@@ -25,13 +25,26 @@ set(sources
   DaxWork.h
   )
 
-CUDA_ADD_EXECUTABLE(DaxExecutionEnvironmentTest DaxExecutionEnvironmentTest.cu
+CUDA_ADD_LIBRARY(daxExecutionEnvironment
   ${sources}
+)
+
+target_link_libraries(daxExecutionEnvironment
+  daxDataModel)
+
+CUDA_ADD_EXECUTABLE(DaxExecutionEnvironmentTest DaxExecutionEnvironmentTest.cu
+  DaxArgumentsParser.cxx
+  DaxArgumentsParser.h
 )
 
 CUDA_ADD_EXECUTABLE(SimpleCUDAKernelTest SimpleCUDAKernelTest.cu
-  ${sources}
 )
 
 target_link_libraries(DaxExecutionEnvironmentTest
-  daxDataModel)
+  daxExecutionEnvironment
+  ${BOOST_LIBRARIES})
+  )
+
+target_link_libraries(SimpleCUDAKernelTest
+  daxExecutionEnvironment
+  )

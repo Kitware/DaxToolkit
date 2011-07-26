@@ -7,9 +7,10 @@
 ===========================================================================*/
 #include "DaxExecutionEnvironment.h"
 
-#include "daxImageData.h"
+#include "DaxArgumentsParser.h"
 #include "daxDataArrayIrregular.h"
 #include "daxDataBridge.h"
+#include "daxImageData.h"
 #include "daxKernelArgument.h"
 #include "DaxKernelArgument.h"
 
@@ -17,9 +18,11 @@
 #include "CellGradient.worklet"
 #include "CellAverage.worklet"
 
+#include <boost/progress.hpp>
+
+
 #define DEBUG_INDEX 0
 
-#include <boost/progress.hpp>
 __global__ void Execute(DaxKernelArgument argument,
   unsigned int number_of_threads,
   unsigned int number_of_iterations)
@@ -123,12 +126,19 @@ daxImageDataPtr CreateOutputDataSet(int dim)
 }
 
 
-const unsigned int MAX_SIZE  = 128;
-const unsigned int MAX_WARP_SIZE = 128;
-const unsigned int MAX_GRID_SIZE = 32768;
 
-int main()
+int main(int argc, char* argv[])
 {
+  DaxArgumentsParser parser;
+  if (!parser.ParseArguments(argc, argv))
+    {
+    return 1;
+    }
+
+  const unsigned int MAX_SIZE = parser.GetProblemSize();
+  const unsigned int MAX_WARP_SIZE = parser.GetMaxWarpSize();
+  const unsigned int MAX_GRID_SIZE = parser.GetMaxGridSize();
+
   unsigned int number_of_threads = (MAX_SIZE-1) * (MAX_SIZE-1) * (MAX_SIZE-1);
   unsigned int threadCount = min(MAX_WARP_SIZE, number_of_threads);
   unsigned int warpCount = (number_of_threads / MAX_WARP_SIZE) +
