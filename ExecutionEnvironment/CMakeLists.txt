@@ -42,7 +42,7 @@ CUDA_ADD_EXECUTABLE(SimpleCUDAKernelTest SimpleCUDAKernelTest.cu
 
 target_link_libraries(DaxExecutionEnvironmentTest
   daxExecutionEnvironment
-  ${BOOST_LIBRARIES})
+  ${BOOST_LIBRARIES}
   )
 
 target_link_libraries(SimpleCUDAKernelTest
