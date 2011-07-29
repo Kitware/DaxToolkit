@@ -236,7 +236,7 @@ int main(int argc, char* argv[])
       break;
       }
     }
-  cout << endl << endl << "Summary: -- " << endl;
+  cout << endl << endl << "Summary: -- " << MAX_SIZE << "^3 Dataset" << endl;
   cout << "Initialize: " << init_time << endl
        << "Upload: " << upload_time << endl
        << "Execute: " << execute_time << endl
