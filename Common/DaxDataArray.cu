@@ -23,7 +23,6 @@ DaxDataArray DaxDataArray::CreateAndCopy(
     }
   return cur_array;
 }
-
 //-----------------------------------------------------------------------------
 bool DaxDataArray::CopyTo(void* raw_data, unsigned int data_size_in_bytes) const
 {

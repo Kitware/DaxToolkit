@@ -108,24 +108,6 @@ daxImageDataPtr CreateInputDataSet(int dim)
   imageData->SetExtent(0, dim-1, 0, dim-1, 0, dim-1);
   imageData->SetOrigin(0, 0, 0);
   imageData->SetSpacing(1, 1, 1);
-
-  daxDataArrayScalarPtr point_scalars (new daxDataArrayScalar());
-  point_scalars->SetName("Scalars");
-  point_scalars->SetNumberOfTuples(imageData->GetNumberOfPoints());
-  imageData->PointData.push_back(point_scalars);
-
-  for (int x=0 ; x < dim; x ++)
-    {
-    for (int y=0 ; y < dim; y ++)
-      {
-      for (int z=0 ; z < dim; z ++)
-        {
-        point_scalars->Set(
-          z * dim * dim + y * dim + x, -1);
-        }
-      }
-    }
-
   return imageData;
 }
 
@@ -204,7 +186,7 @@ int main(int argc, char* argv[])
 
   daxDataBridge bridge;
   bridge.AddInputData(input);
-  bridge.AddIntermediateData(input);
+  bridge.AddIntermediateData(intermediate);
   bridge.AddOutputData(output);
 
   timer.restart();
