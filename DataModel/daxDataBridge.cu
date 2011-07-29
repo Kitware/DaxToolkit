@@ -47,7 +47,8 @@ namespace
     return temp;
     }
 
-  void AddArrays(daxDataSetPtr ds, std::map<daxDataArrayPtr, int> &arrayIndexes, bool input)
+  void AddArrays(daxDataSetPtr ds, std::map<daxDataArrayPtr, int> &arrayIndexes, 
+    bool input)
     {
     if (ds->GetPointCoordinates())
       {
@@ -138,8 +139,12 @@ daxKernelArgumentPtr daxDataBridge::Upload() const
     AddArrays(ds, arrayIndexes, true);
     }
 
-  // FIXME: skipping intermediates for now, since I am not sure how to handle
-  // them.
+  for (ds_iter = this->Internals->Intermediates.begin();
+    ds_iter != this->Internals->Intermediates.end(); ++ds_iter)
+    {
+    daxDataSetPtr ds = *ds_iter;
+    AddArrays(ds, arrayIndexes, false);
+    }
 
   for (ds_iter = this->Internals->Outputs.begin();
     ds_iter != this->Internals->Outputs.end(); ++ds_iter)
