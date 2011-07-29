@@ -1,0 +1,19 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+===========================================================================*/
+#ifndef __Cosine_worklet_
+#define __Cosine_worklet_
+
+DAX_WORKLET void Cosine(DAX_IN DaxWorkMapField& work,
+  DAX_IN DaxField& in_field,
+  DAX_OUT DaxField& out_field)
+{
+  DaxVector3 value = in_field.GetVector3(work);
+  out_field.Set(work,
+    make_DaxVector3(cosf(value.x), cosf(value.y), cosf(value.z)));
+}
+#endif

@@ -20,8 +20,17 @@ public:
     { return this->MaxGridSize; }
   unsigned int GetProblemSize() const
     { return this->ProblemSize; }
+
+  enum PipelineMode
+    {
+    CELL_GRADIENT = 1,
+    CELL_GRADIENT_SINE_SQUARE_COS = 2
+    };
+  PipelineMode GetPipeline() const
+    { return this->Pipeline; }
 private:
   unsigned int MaxWarpSize;
   unsigned int MaxGridSize;
   unsigned int ProblemSize;
+  PipelineMode Pipeline;
 };

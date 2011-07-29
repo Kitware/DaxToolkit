@@ -20,7 +20,8 @@ inline unsigned int max(unsigned int a, unsigned int b)
 DaxArgumentsParser::DaxArgumentsParser():
   MaxWarpSize(128),
   MaxGridSize(32768),
-  ProblemSize(128)
+  ProblemSize(128),
+  Pipeline(CELL_GRADIENT)
 {
 }
 
@@ -37,6 +38,7 @@ bool DaxArgumentsParser::ParseArguments(int argc, char* argv[])
     ("max-grid", po::value<unsigned int>(), "Maximum grid size (default:32768)")
     ("max-warp", po::value<unsigned int>(), "Maximum warp size (default:128)")
     ("size", po::value<unsigned int>(), "Problem size (default: 128)")
+    ("pipeline", po::value<unsigned int>(), "Pipeline (1 or 2) (default: 1)")
     ("help", "Generate this help message");
 
   po::variables_map variables;
@@ -59,5 +61,16 @@ bool DaxArgumentsParser::ParseArguments(int argc, char* argv[])
     {
     this->ProblemSize = max(1, variables["size"].as<unsigned int>());
     }
+  if (variables.count("pipeline") == 1 &&
+    variables["pipeline"].as<unsigned int>() == 1)
+    {
+    this->Pipeline = CELL_GRADIENT;
+    }
+  if (variables.count("pipeline") == 1 &&
+    variables["pipeline"].as<unsigned int>() == 2)
+    {
+    this->Pipeline = CELL_GRADIENT_SINE_SQUARE_COS;
+    }
+
   return true;
 }

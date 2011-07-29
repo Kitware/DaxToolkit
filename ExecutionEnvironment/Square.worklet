@@ -1,0 +1,22 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+===========================================================================*/
+#ifndef __Square_worklet_
+#define __Square_worklet_
+
+DAX_WORKLET void Square(DAX_IN DaxWorkMapField& work,
+  DAX_IN DaxField& in_field,
+  DAX_OUT DaxField& out_field)
+{
+  DaxVector3 value = in_field.GetVector3(work);
+  value.x *= value.x;
+  value.y *= value.y;
+  value.z *= value.z;
+  out_field.Set(work, value);
+}
+
+#endif

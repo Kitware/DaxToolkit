@@ -18,13 +18,46 @@
 #include "CellGradient.worklet"
 #include "CellAverage.worklet"
 #include "Sine.worklet"
+#include "Cosine.worklet"
+#include "Square.worklet"
 
 #include <boost/progress.hpp>
 
 
 #define DEBUG_INDEX 0
 
-__global__ void Execute(DaxKernelArgument argument,
+__global__ void ExecutePipeline1(DaxKernelArgument argument,
+  unsigned int number_of_threads,
+  unsigned int number_of_iterations)
+{
+  for (unsigned int cc=0; cc < number_of_iterations; cc++)
+    {
+    DaxWorkMapCell work(
+      argument.Arrays[
+      argument.Datasets[0].CellArrayIndex], cc);
+    if (work.GetItem() < number_of_threads)
+      {
+      DaxFieldCoordinates in_points(
+        argument.Arrays[
+        argument.Datasets[0].PointCoordinatesIndex]);
+      DaxFieldPoint in_point_scalars (
+        argument.Arrays[
+        argument.Datasets[0].PointDataIndices[0]]);
+      DaxFieldCell out_cell_vectors(
+        argument.Arrays[
+        argument.Datasets[1].CellDataIndices[0]]);
+
+      CellGradient(work, in_points,
+        in_point_scalars, out_cell_vectors);
+#if DEBUG_INDEX
+      out_cell_vectors.Set(work,
+        make_DaxVector3(work.GetItem(), 0 ,0));
+#endif
+      }
+    }
+}
+
+__global__ void ExecutePipeline2(DaxKernelArgument argument,
   unsigned int number_of_threads,
   unsigned int number_of_iterations)
 {
@@ -48,26 +81,14 @@ __global__ void Execute(DaxKernelArgument argument,
       CellGradient(work, in_points,
         in_point_scalars, out_cell_vectors);
       Sine(work, out_cell_vectors, out_cell_vectors);
+      Square(work, out_cell_vectors, out_cell_vectors);
+      Cosine(work, out_cell_vectors, out_cell_vectors);
 #if DEBUG_INDEX
       out_cell_vectors.Set(work,
         make_DaxVector3(work.GetItem(), 0 ,0));
 #endif
       }
     }
-  //out_cell_vectors.Set(work,
-  //  make_DaxVector3(work.GetItem(), 0, 0));
-
-
-//  DaxWorkMapCell work(input_do.CellArray);
-//  DaxFieldPoint in_point_scalars(input_do.PointData);
-//  DaxFieldCell out_cell_scalars(output_p2c.CellData);
-//
-//  PointDataToCellData(work, in_point_scalars, out_cell_scalars);
-//  //CellAverage(work, in_point_scalars, out_cell_scalars);
-//
-//  DaxFieldCoordinates in_points(input_do.PointCoordinates);
-//  DaxFieldCell out_cell_scalars_cg(output_cg);
-//  CellGradient(work, in_points, in_point_scalars, out_cell_scalars_cg);
 }
 
 #include <iostream>
@@ -172,15 +193,22 @@ int main(int argc, char* argv[])
   double upload_time = timer.elapsed();
 
   timer.restart();
-  Execute<<<blockCount, threadCount>>>(arg->Get(), number_of_threads, iterations);
+  if (parser.GetPipeline() == DaxArgumentsParser::CELL_GRADIENT)
+    {
+    cout << "Pipeline #1" << endl;
+    ExecutePipeline1<<<blockCount, threadCount>>>(arg->Get(), number_of_threads, iterations);
+    }
+  else
+    {
+    cout << "Pipeline #2" << endl;
+    ExecutePipeline2<<<blockCount, threadCount>>>(arg->Get(), number_of_threads, iterations);
+    }
   if (cudaThreadSynchronize() != cudaSuccess)
     {
     abort();
     }
 
   double execute_time = timer.elapsed();
-
-
   timer.restart();
   bridge.Download(arg);
   if (cudaThreadSynchronize() != cudaSuccess)
