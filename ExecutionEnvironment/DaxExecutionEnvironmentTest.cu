@@ -199,16 +199,17 @@ int main(int argc, char* argv[])
   double upload_time = timer.elapsed();
 
   timer.restart();
-  ExecuteElevation<<<blockCount, threadCount>>>(arg->Get(), number_of_threads, iterations);
+  DaxKernelArgument _arg= arg->Get();
+  ExecuteElevation<<<blockCount, threadCount>>>(_arg, number_of_threads, iterations);
   if (parser.GetPipeline() == DaxArgumentsParser::CELL_GRADIENT)
     {
     cout << "Pipeline #1" << endl;
-    ExecutePipeline1<<<blockCount, threadCount>>>(arg->Get(), number_of_threads, iterations);
+    ExecutePipeline1<<<blockCount, threadCount>>>(_arg, number_of_threads, iterations);
     }
   else
     {
     cout << "Pipeline #2" << endl;
-    ExecutePipeline2<<<blockCount, threadCount>>>(arg->Get(), number_of_threads, iterations);
+    ExecutePipeline2<<<blockCount, threadCount>>>(_arg, number_of_threads, iterations);
     }
   if (cudaThreadSynchronize() != cudaSuccess)
     {
