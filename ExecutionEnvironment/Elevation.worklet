@@ -1,0 +1,22 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+===========================================================================*/
+#ifndef __Elevation_worklet_
+#define __Elevation_worklet_
+
+DAX_WORKLET void Elevation(
+  DAX_IN DaxWork& work,
+  DAX_IN DaxFieldCoordinates points,
+  DAX_OUT DaxFieldPoint& point_attribute)
+{
+  DaxVector3 point_location = points.GetVector3(work);
+  point_attribute.Set(work,
+    sqrtf(point_location.x * point_location.x + 
+      point_location.y * point_location.y +
+      point_location.z * point_location.z));
+}
+#endif

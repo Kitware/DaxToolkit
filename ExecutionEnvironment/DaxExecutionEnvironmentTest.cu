@@ -14,17 +14,33 @@
 #include "daxKernelArgument.h"
 #include "DaxKernelArgument.h"
 
-#include "PointDataToCellData.worklet"
-#include "CellGradient.worklet"
 #include "CellAverage.worklet"
-#include "Sine.worklet"
+#include "CellGradient.worklet"
 #include "Cosine.worklet"
+#include "Elevation.worklet"
+#include "PointDataToCellData.worklet"
+#include "Sine.worklet"
 #include "Square.worklet"
 
 #include <boost/progress.hpp>
 
 
-#define DEBUG_INDEX 0
+__global__ void ExecuteElevation(DaxKernelArgument argument,
+  unsigned int number_of_threads,
+  unsigned int number_of_iterations)
+{
+  for (unsigned int cc=0; cc < number_of_iterations; cc++)
+    {
+    DaxWorkMapField work(cc);
+    DaxFieldCoordinates in_points(
+      argument.Arrays[
+      argument.Datasets[0].PointCoordinatesIndex]);
+    DaxFieldPoint out_point_scalars (
+      argument.Arrays[
+      argument.Datasets[1].PointDataIndices[0]]);
+    Elevation(work, in_points, out_point_scalars);
+    }
+}
 
 __global__ void ExecutePipeline1(DaxKernelArgument argument,
   unsigned int number_of_threads,
@@ -42,17 +58,13 @@ __global__ void ExecutePipeline1(DaxKernelArgument argument,
         argument.Datasets[0].PointCoordinatesIndex]);
       DaxFieldPoint in_point_scalars (
         argument.Arrays[
-        argument.Datasets[0].PointDataIndices[0]]);
+        argument.Datasets[1].PointDataIndices[0]]);
       DaxFieldCell out_cell_vectors(
         argument.Arrays[
-        argument.Datasets[1].CellDataIndices[0]]);
+        argument.Datasets[2].CellDataIndices[0]]);
 
       CellGradient(work, in_points,
         in_point_scalars, out_cell_vectors);
-#if DEBUG_INDEX
-      out_cell_vectors.Set(work,
-        make_DaxVector3(work.GetItem(), 0 ,0));
-#endif
       }
     }
 }
@@ -73,20 +85,16 @@ __global__ void ExecutePipeline2(DaxKernelArgument argument,
         argument.Datasets[0].PointCoordinatesIndex]);
       DaxFieldPoint in_point_scalars (
         argument.Arrays[
-        argument.Datasets[0].PointDataIndices[0]]);
+        argument.Datasets[1].PointDataIndices[0]]);
       DaxFieldCell out_cell_vectors(
         argument.Arrays[
-        argument.Datasets[1].CellDataIndices[0]]);
+        argument.Datasets[2].CellDataIndices[0]]);
 
       CellGradient(work, in_points,
         in_point_scalars, out_cell_vectors);
       Sine(work, out_cell_vectors, out_cell_vectors);
       Square(work, out_cell_vectors, out_cell_vectors);
       Cosine(work, out_cell_vectors, out_cell_vectors);
-#if DEBUG_INDEX
-      out_cell_vectors.Set(work,
-        make_DaxVector3(work.GetItem(), 0 ,0));
-#endif
       }
     }
 }
@@ -113,11 +121,25 @@ daxImageDataPtr CreateInputDataSet(int dim)
       for (int z=0 ; z < dim; z ++)
         {
         point_scalars->Set(
-          z * dim * dim + y * dim + x, sqrt(x*x+y*y+z*z));
+          z * dim * dim + y * dim + x, -1);
         }
       }
     }
 
+  return imageData;
+}
+
+daxImageDataPtr CreateIntermediateDataset(int dim)
+{
+  daxImageDataPtr imageData(new daxImageData());
+  imageData->SetExtent(0, dim-1, 0, dim-1, 0, dim-1);
+  imageData->SetOrigin(0, 0, 0);
+  imageData->SetSpacing(1, 1, 1);
+
+  daxDataArrayScalarPtr point_scalars (new daxDataArrayScalar());
+  point_scalars->SetName("ElevationScalars");
+  point_scalars->SetNumberOfTuples(imageData->GetNumberOfPoints());
+  imageData->PointData.push_back(point_scalars);
   return imageData;
 }
 
@@ -176,11 +198,13 @@ int main(int argc, char* argv[])
 
   timer.restart();
   daxImageDataPtr input = CreateInputDataSet(MAX_SIZE);
+  daxImageDataPtr intermediate = CreateIntermediateDataset(MAX_SIZE);
   daxImageDataPtr output = CreateOutputDataSet(MAX_SIZE);
   double init_time = timer.elapsed();
 
   daxDataBridge bridge;
   bridge.AddInputData(input);
+  bridge.AddIntermediateData(input);
   bridge.AddOutputData(output);
 
   timer.restart();
@@ -193,6 +217,7 @@ int main(int argc, char* argv[])
   double upload_time = timer.elapsed();
 
   timer.restart();
+  ExecuteElevation<<<blockCount, threadCount>>>(arg->Get(), number_of_threads, iterations);
   if (parser.GetPipeline() == DaxArgumentsParser::CELL_GRADIENT)
     {
     cout << "Pipeline #1" << endl;
@@ -226,11 +251,7 @@ int main(int argc, char* argv[])
       {
       cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
       }
-#if DEBUG_INDEX
-    if (value.x != cc) 
-#else
     if (value.x == -1 || value.x > 1) 
-#endif
       {
       cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
       break;
