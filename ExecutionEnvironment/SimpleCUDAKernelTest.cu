@@ -23,6 +23,18 @@ __global__ void SimpleCUDAKernelTest(float3* data_array)
 
 int main()
 {
+  int deviceCount;
+  cuDeviceGetCount(&deviceCount);
+  cout << "deviceCount: " << deviceCount << endl;
+  for (int device=0; device < deviceCount; device++)
+    {
+    CUdevice cuDevice;
+    cuDeviceGet(&cuDevice, device);
+    int major, minor;
+    cuDeviceComputeCapability(&major, &minor, cuDevice);
+    cout << "Device: " << device << " = " << major << "." << minor << endl;
+    }
+
   thrust::host_vector<float3> host_vector(SIZE * SIZE * SIZE);
   thrust::device_vector<float3> device_vector;
 
