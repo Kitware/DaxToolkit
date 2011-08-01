@@ -38,7 +38,7 @@ bool DaxArgumentsParser::ParseArguments(int argc, char* argv[])
     ("max-grid", po::value<unsigned int>(), "Maximum grid size (default:32768)")
     ("max-warp", po::value<unsigned int>(), "Maximum warp size (default:128)")
     ("size", po::value<unsigned int>(), "Problem size (default: 128)")
-    ("pipeline", po::value<unsigned int>(), "Pipeline (1 or 2) (default: 1)")
+    ("pipeline", po::value<unsigned int>(), "Pipeline (1, 2 or 3) (default: 1)")
     ("help", "Generate this help message");
 
   po::variables_map variables;
@@ -71,6 +71,12 @@ bool DaxArgumentsParser::ParseArguments(int argc, char* argv[])
     {
     this->Pipeline = CELL_GRADIENT_SINE_SQUARE_COS;
     }
+  if (variables.count("pipeline") == 1 &&
+    variables["pipeline"].as<unsigned int>() == 3)
+    {
+    this->Pipeline = SINE_SQUARE_COS;
+    }
+
 
   return true;
 }

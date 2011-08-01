@@ -19,4 +19,12 @@ DAX_WORKLET void Square(DAX_IN DaxWorkMapField& work,
   out_field.Set(work, value);
 }
 
+DAX_WORKLET void SquareScalar(DAX_IN DaxWorkMapField& work,
+  DAX_IN DaxField& in_field,
+  DAX_OUT DaxField& out_field)
+{
+  DaxScalar value = in_field.GetScalar(work);
+  out_field.Set(work, value * value);
+}
+
 #endif

@@ -24,7 +24,8 @@ public:
   enum PipelineMode
     {
     CELL_GRADIENT = 1,
-    CELL_GRADIENT_SINE_SQUARE_COS = 2
+    CELL_GRADIENT_SINE_SQUARE_COS = 2,
+    SINE_SQUARE_COS = 3,
     };
   PipelineMode GetPipeline() const
     { return this->Pipeline; }

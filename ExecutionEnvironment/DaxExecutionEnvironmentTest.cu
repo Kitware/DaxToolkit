@@ -90,12 +90,32 @@ __global__ void ExecutePipeline2(DaxKernelArgument argument,
         argument.Arrays[
         argument.Datasets[2].CellDataIndices[0]]);
 
-      CellGradient(work, in_points,
-        in_point_scalars, out_cell_vectors);
+      //CellGradient(work, in_points,
+      //  in_point_scalars, out_cell_vectors);
       Sine(work, out_cell_vectors, out_cell_vectors);
       Square(work, out_cell_vectors, out_cell_vectors);
       Cosine(work, out_cell_vectors, out_cell_vectors);
       }
+    }
+}
+
+__global__ void ExecutePipeline3(DaxKernelArgument argument,
+  unsigned int number_of_threads,
+  unsigned int number_of_iterations)
+{
+  for (unsigned int cc=0; cc < number_of_iterations; cc++)
+    {
+    DaxWorkMapField work(cc);
+    DaxFieldCoordinates in_points(
+      argument.Arrays[
+      argument.Datasets[0].PointCoordinatesIndex]);
+    DaxFieldPoint out_point_scalars (
+      argument.Arrays[
+      argument.Datasets[1].PointDataIndices[0]]);
+     Elevation(work, in_points, out_point_scalars);
+     SineScalar(work, out_point_scalars, out_point_scalars);
+     SquareScalar(work, out_point_scalars, out_point_scalars);
+     CosineScalar(work, out_point_scalars, out_point_scalars);
     }
 }
 
@@ -166,15 +186,26 @@ int main(int argc, char* argv[])
   const unsigned int MAX_WARP_SIZE = parser.GetMaxWarpSize();
   const unsigned int MAX_GRID_SIZE = parser.GetMaxGridSize();
 
-  unsigned int number_of_threads = (MAX_SIZE-1) * (MAX_SIZE-1) * (MAX_SIZE-1);
-  unsigned int threadCount = min(MAX_WARP_SIZE, number_of_threads);
-  unsigned int warpCount = (number_of_threads / MAX_WARP_SIZE) +
-    (((number_of_threads % MAX_WARP_SIZE) == 0)? 0 : 1);
-  unsigned int blockCount = min(MAX_GRID_SIZE, max(1, warpCount));
-  unsigned int iterations = ceil(warpCount * 1.0 / MAX_GRID_SIZE);
-  cout << "Execute iterations="
-    << iterations << " : blockCount="  << blockCount
-    << ", threadCount=" << threadCount << endl;
+  unsigned int cell_number_of_threads = (MAX_SIZE-1) * (MAX_SIZE-1) * (MAX_SIZE-1);
+  unsigned int cell_threadCount = min(MAX_WARP_SIZE, cell_number_of_threads);
+  unsigned int warpCount = (cell_number_of_threads / MAX_WARP_SIZE) +
+    (((cell_number_of_threads % MAX_WARP_SIZE) == 0)? 0 : 1);
+  unsigned int cell_blockCount = min(MAX_GRID_SIZE, max(1, warpCount));
+  unsigned int cell_iterations = ceil(warpCount * 1.0 / MAX_GRID_SIZE);
+  cout << "Execute (Cell) iterations="
+    << cell_iterations << " : blockCount="  << cell_blockCount
+    << ", threadCount=" << cell_threadCount << endl;
+
+  unsigned int point_number_of_threads = MAX_SIZE * MAX_SIZE * MAX_SIZE;
+  unsigned int point_threadCount = min(MAX_WARP_SIZE, point_number_of_threads);
+  warpCount = (point_number_of_threads / MAX_WARP_SIZE) +
+    (((point_number_of_threads % MAX_WARP_SIZE) == 0)? 0 : 1);
+  unsigned int point_blockCount = min(MAX_GRID_SIZE, max(1, warpCount));
+  unsigned int point_iterations = ceil(warpCount * 1.0 / MAX_GRID_SIZE);
+  cout << "Execute (Point) iterations="
+    << point_iterations << " : blockCount="  << point_blockCount
+    << ", threadCount=" << point_threadCount << endl;
+
 
   boost::timer timer;
 
@@ -186,8 +217,15 @@ int main(int argc, char* argv[])
 
   daxDataBridge bridge;
   bridge.AddInputData(input);
-  bridge.AddIntermediateData(intermediate);
-  bridge.AddOutputData(output);
+  if (parser.GetPipeline() == DaxArgumentsParser::SINE_SQUARE_COS)
+    {
+    bridge.AddOutputData(intermediate);
+    }
+  else
+    {
+    bridge.AddIntermediateData(intermediate);
+    bridge.AddOutputData(output);
+    }
 
   timer.restart();
   daxKernelArgumentPtr arg = bridge.Upload();
@@ -200,16 +238,28 @@ int main(int argc, char* argv[])
 
   timer.restart();
   DaxKernelArgument _arg= arg->Get();
-  ExecuteElevation<<<blockCount, threadCount>>>(_arg, number_of_threads, iterations);
-  if (parser.GetPipeline() == DaxArgumentsParser::CELL_GRADIENT)
+  switch (parser.GetPipeline())
     {
+  case DaxArgumentsParser::CELL_GRADIENT:
     cout << "Pipeline #1" << endl;
-    ExecutePipeline1<<<blockCount, threadCount>>>(_arg, number_of_threads, iterations);
-    }
-  else
-    {
+    ExecuteElevation<<<point_blockCount, point_threadCount>>>(
+      _arg, point_number_of_threads, point_iterations);
+    ExecutePipeline1<<<cell_blockCount, cell_threadCount>>>(
+      _arg, cell_number_of_threads, cell_iterations);
+    break;
+  case DaxArgumentsParser::CELL_GRADIENT_SINE_SQUARE_COS:
     cout << "Pipeline #2" << endl;
-    ExecutePipeline2<<<blockCount, threadCount>>>(_arg, number_of_threads, iterations);
+    ExecuteElevation<<<point_blockCount, point_threadCount>>>(
+      _arg, point_number_of_threads, point_iterations);
+    ExecutePipeline2<<<cell_blockCount, cell_threadCount>>>(
+      _arg, cell_number_of_threads, cell_iterations);
+    break;
+
+  case DaxArgumentsParser::SINE_SQUARE_COS:
+    cout << "Pipeline #3" << endl;
+    ExecutePipeline3<<<point_blockCount, point_threadCount>>>(
+      _arg, point_number_of_threads, point_iterations);
+    break;
     }
   if (cudaThreadSynchronize() != cudaSuccess)
     {
@@ -225,21 +275,44 @@ int main(int argc, char* argv[])
     }
   double download_time = timer.elapsed();
 
-  daxDataArrayVector3* array = dynamic_cast<
-    daxDataArrayVector3*>( &(*output->CellData[0]) );
-  for (size_t cc=0; cc < array->GetNumberOfTuples(); cc++)
+  if (parser.GetPipeline() == DaxArgumentsParser::SINE_SQUARE_COS)
     {
-    DaxVector3 value = array->Get(cc);
-    if (cc < 20)
+    daxDataArrayScalar* array =
+      dynamic_cast<daxDataArrayScalar*>(&(*intermediate->PointData[0]));
+    for (size_t cc=0; cc < array->GetNumberOfTuples(); cc++)
       {
-      cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
-      }
-    if (value.x == -1 || value.x > 1) 
-      {
-      cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
-      break;
+      DaxScalar value = array->Get(cc);
+      if (cc < 20)
+        {
+        cout << cc << " : " << value << endl;
+        }
+      if (value == -1 || value > 1) 
+        {
+        cout << cc << " : " << value << endl;
+        break;
+        }
       }
     }
+  else
+    {
+    daxDataArrayVector3* array =
+      dynamic_cast<daxDataArrayVector3*>(&(*output->CellData[0]));
+    for (size_t cc=0; cc < array->GetNumberOfTuples(); cc++)
+      {
+      DaxVector3 value = array->Get(cc);
+      if (cc < 20)
+        {
+        cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
+        }
+      if (value.x == -1 || value.x > 1) 
+        {
+        cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
+        break;
+        }
+      }
+    }
+
+
   cout << endl << endl << "Summary: -- " << MAX_SIZE << "^3 Dataset" << endl;
   cout << "Initialize: " << init_time << endl
        << "Upload: " << upload_time << endl

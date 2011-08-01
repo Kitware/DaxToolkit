@@ -16,4 +16,11 @@ DAX_WORKLET void Cosine(DAX_IN DaxWorkMapField& work,
   out_field.Set(work,
     make_DaxVector3(cosf(value.x), cosf(value.y), cosf(value.z)));
 }
+
+DAX_WORKLET void CosineScalar(DAX_IN DaxWorkMapField& work,
+  DAX_IN DaxField& in_field,
+  DAX_OUT DaxField& out_field)
+{
+  out_field.Set(work, sinf(in_field.GetScalar(work)));
+}
 #endif
