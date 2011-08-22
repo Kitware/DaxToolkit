@@ -5,6 +5,11 @@
 #  PURPOSE.  See the above copyright notice for more information.
 #
 #=========================================================================
+
+#-----------------------------------------------------------------------------
+CUDA_INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+
+#-----------------------------------------------------------------------------
 CUDA_ADD_LIBRARY(daxCUDACont SHARED
   DataArray.cu
   DataArray.h
@@ -12,4 +17,8 @@ CUDA_ADD_LIBRARY(daxCUDACont SHARED
   DataBridge.h
   KernelArgument.cu
   KernelArgument.h
+  )
+
+target_link_libraries(daxCUDACont
+  daxCont
   )

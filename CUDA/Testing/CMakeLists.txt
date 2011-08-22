@@ -7,6 +7,10 @@
 #=========================================================================
 
 #-----------------------------------------------------------------------------
+#CUDA_INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
+
+#-----------------------------------------------------------------------------
 CUDA_ADD_EXECUTABLE(DaxCUDATest
   DaxCUDATest.cu
   ArgumentsParser.cxx
