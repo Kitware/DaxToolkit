@@ -90,8 +90,8 @@ __global__ void ExecutePipeline2(DaxKernelArgument argument,
         argument.Arrays[
         argument.Datasets[2].CellDataIndices[0]]);
 
-      //CellGradient(work, in_points,
-      //  in_point_scalars, out_cell_vectors);
+      CellGradient(work, in_points,
+        in_point_scalars, out_cell_vectors);
       Sine(work, out_cell_vectors, out_cell_vectors);
       Square(work, out_cell_vectors, out_cell_vectors);
       Cosine(work, out_cell_vectors, out_cell_vectors);
