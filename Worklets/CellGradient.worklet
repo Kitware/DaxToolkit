@@ -1,0 +1,23 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+===========================================================================*/
+#ifndef __CellGradient_worklet_
+#define __CellGradient_worklet_
+
+DAX_WORKLET void CellGradient(DAX_IN dax::exec::WorkMapCell& work,
+  DAX_IN dax::exec::FieldCoordinates points,
+  DAX_IN dax::exec::FieldPoint& point_attribute,
+  DAX_OUT dax::exec::FieldCell& cell_attribute)
+{
+  dax::Vector3 parametric_cell_center = dax::make_Vector3(0.5, 0.5, 0.5);
+  dax::exec::Cell cell(work);
+ 
+  dax::Vector3 value = cell.Derivative(parametric_cell_center,
+    points, point_attribute, 0);
+  cell_attribute.Set(work, value);
+}
+#endif

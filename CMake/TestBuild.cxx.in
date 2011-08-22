@@ -1,0 +1,9 @@
+
+#define __device__
+
+@HEADERS@
+
+int main()
+{
+  return 0;
+}

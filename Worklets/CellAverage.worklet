@@ -1,0 +1,27 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+===========================================================================*/
+#ifndef __CellAverage_worklet_
+#define __CellAverage_worklet_
+
+DAX_WORKLET void CellAverage(DAX_IN dax::exec::WorkMapCell& work,
+  DAX_IN dax::exec::FieldPoint point_scalar,
+  DAX_OUT dax::exec::FieldCell& cell_attribute)
+{
+  dax::exec::Cell cell(work);
+
+  dax::Scalar avg = 0.0;
+  dax::Id number_of_points = cell.GetNumberOfPoints();
+  for (dax::Id cc=0; cc < number_of_points; cc++)
+    {
+    dax::exec::WorkMapField point_work = cell.GetPoint(cc);
+    avg += point_scalar.GetScalar(point_work);
+    }
+  avg /= number_of_points;
+  cell_attribute.Set(work, avg);
+}
+#endif

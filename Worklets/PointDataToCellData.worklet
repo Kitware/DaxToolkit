@@ -1,0 +1,21 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+===========================================================================*/
+#ifndef __PointDataToCellData_worklet_
+#define __PointDataToCellData_worklet_
+
+DAX_WORKLET void PointDataToCellData(DAX_IN dax::exec::WorkMapCell& work,
+  DAX_IN dax::exec::FieldPoint& point_attribute,
+  DAX_OUT dax::exec::FieldCell& cell_attribute)
+{
+  dax::Vector3 center = dax::make_Vector3(0.5, 0.5, 0.5);
+  dax::exec::Cell cell(work);
+  dax::Scalar scalar = cell.Interpolate(center, point_attribute, 0);
+  cell_attribute.Set(work, scalar);
+}
+
+#endif

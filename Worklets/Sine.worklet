@@ -1,0 +1,26 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+===========================================================================*/
+#ifndef __Sine_worklet_
+#define __Sine_worklet_
+
+DAX_WORKLET void Sine(DAX_IN dax::exec::WorkMapField& work,
+  DAX_IN dax::exec::Field& in_field,
+  DAX_OUT dax::exec::Field& out_field)
+{
+  dax::Vector3 value = in_field.GetVector3(work);
+  out_field.Set(work,
+    dax::make_Vector3(sinf(value.x), sinf(value.y), sinf(value.z)));
+}
+
+DAX_WORKLET void SineScalar(DAX_IN dax::exec::WorkMapField& work,
+  DAX_IN dax::exec::Field& in_field,
+  DAX_OUT dax::exec::Field& out_field)
+{
+  out_field.Set(work, sinf(in_field.GetScalar(work)));
+}
+#endif
