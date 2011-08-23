@@ -16,6 +16,11 @@ include (CMake/DaxMacros.cmake)
 option(DAX_ENABLE_CUDA "Enable Cuda support" ON)
 option(DAX_ENABLE_TESTING "Enable DAX Testing" ON)
 
+if (DAX_ENABLE_TESTING)
+  enable_testing()
+  include(CTest)
+endif()
+
 #-----------------------------------------------------------------------------
 
 ## Set the directory where the binaries will be stored
