@@ -8,6 +8,12 @@
 #ifndef __dax_Types_h
 #define __dax_Types_h
 
+/*! \namespace dax
+ *  dax is the namespace for the Dax Toolkit. It contains other sub namespaces,
+ *  as well as basic data types and functions callable from all components in
+ *  Dax toolkit.
+ */
+
 namespace dax
 {
   //*****************************************************************************
@@ -15,24 +21,43 @@ namespace dax
   //*****************************************************************************
 
 #ifndef __CUDACC__
+
+  /// \internal
+  struct Vector3Struct {
+    float x; float y; float z;
+  } __attribute__ ((aligned(4)));
+
+  struct Vector4Struct {
+    float x; float y; float z; float w;
+  } __attribute__ ((aligned(16)));
+
+  /// \endinternal
+
+
+
   /// Alignment requirements are prescribed by CUDA on device (Table B-1 in NVIDIA
   /// CUDA C Programming Guide 4.0)
+
+  /// Scalar corresponds to a single-valued floating point number.
   typedef float Scalar __attribute__ ((aligned (4)));
 
-  typedef struct Vector3Struct {
-    float x; float y; float z;
-  } Vector3 __attribute__ ((aligned(4)));
+  /// Vector3 corresponds to a 3-tuple.
+  typedef struct Vector3Struct Vector3; 
 
-  typedef struct Int3Struct {
+  struct Int3Struct {
     int x; int y; int z;
-  } Int3 __attribute__ ((aligned(4)));
+  } __attribute__ ((aligned(4)));
+  
+  /// Int3 corresponds to a integral valued, 3-tuple.
+  typedef struct Int3Struct Int3;
+  
+  /// Vector4 corresponds to a 4-tuple.
+  typedef struct Vector4Struct Vector4;
 
-  typedef struct Vector4Struct {
-    float x; float y; float z; float w;
-  } Vector4 __attribute__ ((aligned(16)));
-
+  /// Represents an ID.
   typedef int Id __attribute__ ((aligned(4)));
 
+  /// Initializes and returns a Vector3.
   inline Vector3 make_Vector3(float x, float y, float z)
     {
     Vector3 temp;
@@ -40,6 +65,7 @@ namespace dax
     return temp;
     }
 
+  /// Initializes and returns a Vector4.
   inline Vector4 make_Vector4(float x, float y, float z, float w)
     {
     Vector4 temp;

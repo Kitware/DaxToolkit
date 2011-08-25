@@ -15,10 +15,16 @@ include (CMake/DaxMacros.cmake)
 # Configurable Options
 option(DAX_ENABLE_CUDA "Enable Cuda support" ON)
 option(DAX_ENABLE_TESTING "Enable DAX Testing" ON)
+option(DAX_ENABLE_DOXYGEN
+  "Enable DAX Documentation Generation (Needs Doxygen)" OFF)
 
 if (DAX_ENABLE_TESTING)
   enable_testing()
   include(CTest)
+endif()
+
+if (DAX_ENABLE_DOXYGEN)
+  add_subdirectory(Doxygen)
 endif()
 
 #-----------------------------------------------------------------------------

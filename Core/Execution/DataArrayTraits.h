@@ -5,7 +5,6 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-/// Defines various access traits for dax::core::DataArray
 #ifndef __dax_core_exec_DataArrayTraits_h
 #define __dax_core_exec_DataArrayTraits_h
 
@@ -18,6 +17,7 @@
 
 namespace dax { namespace core { namespace exec {
 
+/// Defines various access traits for dax::core::DataArray
 class DataArrayConnectivityTraits
 {
 public:
