@@ -8,10 +8,70 @@
 #ifndef __dax_Types_h
 #define __dax_Types_h
 
-/*! \namespace dax
- *  dax is the namespace for the Dax Toolkit. It contains other sub namespaces,
- *  as well as basic data types and functions callable from all components in
- *  Dax toolkit.
+/*!
+ * \namespace dax
+ * \brief Dax Toolkit.
+ *
+ * dax is the namespace for the Dax Toolkit. It contains other sub namespaces,
+ * as well as basic data types and functions callable from all components in
+ * Dax toolkit.
+
+ * \namespace dax::core
+ * \brief Core classes.
+ *
+ * dax::core corresponds to the core classes. Users of Dax toolkit should never
+ * directly use any classes in this namespace or any of the sub-namespaces.
+ *
+ * \namespace dax::core::cont
+ * \brief Core classes for Control Environment.
+ *
+ * dax::core::cont includes dax::core classes used in the Control Environment.
+ * Note that classes in Control and Execution environments cannot have
+ * dependencies on each other.
+ *
+ *
+ * \namespace dax::core::exec
+ * \brief Core classes for Execution Environment.
+ *
+ * dax::core::exec includes dax::core classes used in the Execution Environment.
+ * Note that classes in Control and Execution environments cannot have
+ * dependencies on each other.
+ *
+ * \namespace dax::cont
+ * \brief Dax Control Environment.
+ *
+ * dax::cont defines the publicly accessible API for the Dax Control
+ * Environment. Users of the Dax Toolkit can use this namespace to access the
+ * Control Environment.
+ *
+ * \namespace dax::exec
+ * \brief Dax Execution Environment.
+ *
+ * dax::exec defines the publicly accessible API for the Dax Execution
+ * Environment. Worklets typically use classes/apis defined within this
+ * namespace alone.
+ *
+ * \namespace dax::cuda
+ * \brief CUDA implementation.
+ *
+ * dax::cuda includes the code to implement the Dax for CUDA-based
+ * platforms.
+ *
+ * \namespace dax::cuda::cont
+ * \brief CUDA implementation for Control Environment.
+ *
+ * dax::cuda::cont includes the code to implement the Dax Control Environment
+ * for CUDA-based platforms.
+ *
+ * \namespace dax::cuda::exec
+ * \brief CUDA implementation for Execution Environment.
+ *
+ * dax::cuda::exec includes the code to implement the Dax Execution Environment
+ * for CUDA-based platforms.
+ *
+ * \namespace dax::testing
+ * \brief Internal testing classes
+ *
  */
 
 namespace dax

@@ -10,11 +10,6 @@
 
 #include "BasicTypes/Common/Types.h"
 
-/*! \namespace dax::core
- * dax::core corresponds to the core classes. Users of Dax toolkit should never
- * directly use any classes in this namespace.
- */
-
 namespace dax { namespace core {
 
 /// DataArray is a basic data-storage device in Dax data model. It stores the
