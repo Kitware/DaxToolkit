@@ -17,6 +17,10 @@ option(DAX_ENABLE_CUDA "Enable Cuda support" ON)
 option(DAX_ENABLE_TESTING "Enable DAX Testing" ON)
 option(DAX_ENABLE_DOXYGEN
   "Enable DAX Documentation Generation (Needs Doxygen)" OFF)
+option(DAX_DISABLE_KITS
+  "Internal option useful on machines generating documentation alone"
+  OFF)
+mark_as_advanced(DAX_DISABLE_KITS)
 
 if (DAX_ENABLE_TESTING)
   enable_testing()
@@ -51,14 +55,6 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   )
 
-# List of Boost features used:
-# * Smart Ptr
-# * program options
-find_package(Boost REQUIRED
-  COMPONENTS program_options # program_options is only needed for the testing
-                             # executables
-)
-
 #-----------------------------------------------------------------------------
 # Configure the options file. There should be nothing more in this file besides
 # #defines based on the CMake settings, if any.
@@ -66,12 +62,25 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/daxOptions.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/daxOptions.h
   @ONLY)
 
-#-----------------------------------------------------------------------------
-# Add subdirectories
-add_subdirectory(BasicTypes)
-add_subdirectory(Core)
-add_subdirectory(Interface)
 
-if (DAX_ENABLE_CUDA)
-  add_subdirectory(CUDA)
+if (NOT DAX_DISABLE_KITS)
+
+  # List of Boost features used:
+  # * Smart Ptr
+  # * program options
+  find_package(Boost REQUIRED
+    COMPONENTS program_options # program_options is only needed for the testing
+                               # executables
+  )
+
+  #-----------------------------------------------------------------------------
+  # Add subdirectories
+  add_subdirectory(BasicTypes)
+  add_subdirectory(Core)
+  add_subdirectory(Interface)
+
+  if (DAX_ENABLE_CUDA)
+    add_subdirectory(CUDA)
+  endif()
+
 endif()
