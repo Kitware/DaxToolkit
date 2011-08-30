@@ -6,14 +6,14 @@
 
 =========================================================================*/
 
-#ifndef __dax_core_cont_SystemIncludes_h
-#define __dax_core_cont_SystemIncludes_h
+#ifndef __dax_cont_internal_SystemIncludes_h
+#define __dax_cont_internal_SystemIncludes_h
 
 #include <iostream>  // Include real ansi istream and ostream.
 #include <fstream>   // Include real ansi ifstream and ofstream.
 #include <iomanip>   // Include real ansi io manipulators.
 
-namespace dax { namespace core { namespace cont {
+namespace dax { namespace cont { namespace internal {
   // Need these in global namespace so the same code will work with ansi
   // and old-style streams.
   using std::dec;

@@ -8,8 +8,9 @@
 #ifndef __dax_cont_DataArrayStructuredPoints_h
 #define __dax_cont_DataArrayStructuredPoints_h
 
-#include "Interface/Control/DataArray.h"
-#include "BasicTypes/Common/Types.h"
+#include <dax/Types.h>
+
+#include <dax/cont/DataArray.h>
 
 namespace dax { namespace cont {
 

@@ -5,9 +5,10 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "Interface/Control/ImageData.h"
-#include "Interface/Control/DataArrayStructuredPoints.h"
-#include "Interface/Control/DataArrayStructuredConnectivity.h"
+#include <dax/cont/ImageData.h>
+
+#include <dax/cont/DataArrayStructuredConnectivity.h>
+#include <dax/cont/DataArrayStructuredPoints.h>
 
 //-----------------------------------------------------------------------------
 dax::cont::ImageData::ImageData()

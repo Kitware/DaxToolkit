@@ -5,7 +5,7 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "Interface/Control/DataArrayStructuredPoints.h"
+#include <dax/cont/DataArrayStructuredPoints.h>
 
 //-----------------------------------------------------------------------------
 dax::cont::DataArrayStructuredPoints::DataArrayStructuredPoints()

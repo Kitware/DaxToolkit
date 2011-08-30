@@ -8,20 +8,20 @@
 #ifndef __dax_cont_DataArray_h
 #define __dax_cont_DataArray_h
 
-#include "Core/Control/Object.h"
+#include <dax/cont/internal/Object.h>
 
 namespace dax { namespace cont {
 
 daxDeclareClass(DataArray);
 
-/// dax::cont::DataArray is the abstract superclass for data array object
+/// dax::internal::DataArray is the abstract superclass for data array object
 /// containing numeric data.
-class DataArray : public dax::core::cont::Object
+class DataArray : public dax::cont::internal::Object
 {
 public:
   DataArray();
   virtual ~DataArray();
-  daxTypeMacro(DataArray, dax::core::cont::Object);
+  daxTypeMacro(DataArray, dax::cont::internal::Object);
 
   /// Get/Set the array name.
   void SetName(const std::string& name)

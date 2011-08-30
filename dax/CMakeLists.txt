@@ -14,4 +14,5 @@ dax_declare_headers(${headers})
 
 add_subdirectory(internal)
 
+add_subdirectory(cont)
 add_subdirectory(exec)

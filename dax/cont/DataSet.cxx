@@ -5,7 +5,7 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "Interface/Control/DataSet.h"
+#include <dax/cont/DataSet.h>
 
 //-----------------------------------------------------------------------------
 dax::cont::DataSet::DataSet()

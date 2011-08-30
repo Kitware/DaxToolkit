@@ -5,8 +5,8 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __dax_core_cont_Macros_h
-#define __dax_core_cont_Macros_h
+#ifndef __dax_cont_internal_Macros_h
+#define __dax_cont_internal_Macros_h
 
 /// Macro to be used to define the class hierarchy.
 #define daxTypeMacro(classname, superclassname) \

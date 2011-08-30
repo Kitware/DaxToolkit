@@ -8,7 +8,7 @@
 #ifndef __dax_cont_DataArrayStructuredConnectivity_h
 #define __dax_cont_DataArrayStructuredConnectivity_h
 
-#include "Interface/Control/DataArrayStructuredPoints.h"
+#include <dax/cont/DataArrayStructuredPoints.h>
 
 namespace dax { namespace cont {
 

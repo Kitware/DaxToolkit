@@ -8,8 +8,9 @@
 #ifndef __dax_cont_DataArrayIrregular_h
 #define __dax_cont_DataArrayIrregular_h
 
-#include "Interface/Control/DataArray.h"
-#include "BasicTypes/Common/Types.h"
+#include <dax/Types.h>
+
+#include <dax/cont/DataArray.h>
 
 #include <vector>
 
@@ -52,7 +53,7 @@ private:
 
 ///daxDefinePtrMacro(daxDataArrayIrregular)
 
-#include "Interface/Control/DataArrayIrregular.txx"
+#include <dax/cont/DataArrayIrregular.txx>
 
 typedef dax::cont::DataArrayIrregular<dax::Scalar> DataArrayScalar;
 typedef dax::cont::DataArrayIrregular<dax::Vector3> DataArrayVector3;

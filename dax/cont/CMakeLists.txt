@@ -7,19 +7,29 @@
 #=========================================================================
 include_directories(${Boost_INCLUDE_DIRS})
 
-add_library(daxCont SHARED
+set(sources
   DataArray.cxx
-  DataArray.h
   DataArrayStructuredConnectivity.cxx
-  DataArrayStructuredConnectivity.h
   DataArrayStructuredPoints.cxx
-  DataArrayStructuredPoints.h
   DataSet.cxx
-  DataSet.h
   ImageData.cxx
-  ImageData.h
-)
+
+  internal/Object.cxx
+  )
+
+set(headers
+  DataArrayIrregular.h
+  DataArrayIrregular.txx
+  )
+
+add_library(daxCont SHARED ${sources} ${headers})
+
+set_source_files_properties(${headers}
+  PROPERTIES HEADER_FILE_ONLY TRUE
+  )
 
 target_link_libraries(daxCont
   ${Boost_LIBRARIES}
-  daxCoreCont)
+  )
+
+add_subdirectory(internal)

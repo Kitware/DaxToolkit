@@ -5,15 +5,14 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "Core/Control/Object.h"
+#include <dax/cont/DataArrayStructuredConnectivity.h>
 
 //-----------------------------------------------------------------------------
-dax::core::cont::Object::Object()
+dax::cont::DataArrayStructuredConnectivity::DataArrayStructuredConnectivity()
 {
-
 }
 
 //-----------------------------------------------------------------------------
-dax::core::cont::Object::~Object()
+dax::cont::DataArrayStructuredConnectivity::~DataArrayStructuredConnectivity()
 {
 }

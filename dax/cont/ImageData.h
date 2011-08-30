@@ -8,8 +8,9 @@
 #ifndef __dax_cont_ImageData_h
 #define __dax_cont_ImageData_h
 
-#include "Interface/Control/DataSet.h"
-#include "BasicTypes/Common/Types.h"
+#include <dax/Types.h>
+
+#include <dax/cont/DataSet.h>
 
 namespace dax { namespace cont {
 

@@ -6,10 +6,10 @@
 
 =========================================================================*/
 
-#include "Interface/Control/DataArray.h"
+#include <dax/cont/DataArray.h>
 
 // FIXME
-#include "Interface/Control/DataArrayIrregular.h"
+#include <dax/cont/DataArrayIrregular.h>
 
 // explicit instantiation
 template class dax::cont::DataArrayIrregular<dax::Scalar>;

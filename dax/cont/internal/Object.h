@@ -5,15 +5,16 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __dax_core_cont_Object_h
-#define __dax_core_cont_Object_h
+#ifndef __dax_cont_internal_Object_h
+#define __dax_cont_internal_Object_h
 
-#include "Core/Control/SystemIncludes.h"
-#include "Core/Control/Macros.h"
+#include <dax/cont/internal/SystemIncludes.h>
+#include <dax/cont/internal/Macros.h>
+
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
-namespace dax { namespace core { namespace cont {
+namespace dax { namespace cont { namespace internal {
 
   daxDeclareClass(Object);
 

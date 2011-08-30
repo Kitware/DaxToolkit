@@ -5,9 +5,15 @@
 #  PURPOSE.  See the above copyright notice for more information.
 #
 #=========================================================================
-add_subdirectory(Control)
-add_subdirectory(Execution)
 
-if (DAX_ENABLE_TESTING)
-  add_subdirectory(Testing)
-endif()
+set(headers
+  Macros.h
+  SystemIncludes.h
+  )
+
+dax_declare_headers(${headers})
+
+# These source files are actually compiled in the parent directory.
+# They are in a seperate directory to highlight which objects are
+# internal and which are part of the external interface.
+add_custom_target(daxContPrivate ALL DEPENDS daxCont)

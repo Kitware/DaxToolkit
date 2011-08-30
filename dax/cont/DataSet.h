@@ -8,7 +8,8 @@
 #ifndef __dax_cont_DataSet_h
 #define __dax_cont_DataSet_h
 
-#include "Core/Control/Object.h"
+#include <dax/cont/internal/Object.h>
+
 #include <vector>
 
 namespace dax { namespace cont {
@@ -18,13 +19,13 @@ daxDeclareClass(DataSet);
 
 /// daxDataSet is the abstract superclass for data array object containing
 /// numeric data.
-class DataSet : public dax::core::cont::Object
+class DataSet : public dax::cont::internal::Object
 {
 public:
   DataSet();
   virtual ~DataSet();
 
-  daxTypeMacro(DataSet, dax::core::cont::Object);
+  daxTypeMacro(DataSet, dax::cont::internal::Object);
 
   std::vector<dax::cont::DataArrayPtr> PointData;
   std::vector<dax::cont::DataArrayPtr> CellData;
