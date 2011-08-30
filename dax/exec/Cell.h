@@ -8,9 +8,9 @@
 #ifndef __dax_exec_Cell_h
 #define __dax_exec_Cell_h
 
-#include "Core/Common/CellTypes.h"
-#include "Interface/Execution/Field.h"
-#include "Interface/Execution/Work.h"
+#include <dax/internal/CellTypes.h>
+#include <dax/exec/Field.h>
+#include <dax/exec/Work.h>
 
 namespace dax { namespace exec {
 
@@ -28,23 +28,23 @@ public:
     }
 
   /// Returns the cell type.
-  __device__ dax::core::CellType GetCellType() const
+  __device__ dax::internal::CellType GetCellType() const
     {
-    return dax::core::exec::DataArrayConnectivityTraits::GetElementsType(
+    return dax::exec::internal::DataArrayConnectivityTraits::GetElementsType(
       this->Work.GetCellArray());
     }
 
   /// Get the number of points in the cell.
   __device__ dax::Id GetNumberOfPoints() const
     {
-    return dax::core::exec::DataArrayConnectivityTraits::GetNumberOfConnectedElements(
+    return dax::exec::internal::DataArrayConnectivityTraits::GetNumberOfConnectedElements(
       this->Work, this->Work.GetCellArray());
     }
 
   /// Get the work corresponding to a given point.
   __device__ dax::exec::WorkMapField GetPoint(const dax::Id index) const
     {
-    return dax::core::exec::DataArrayConnectivityTraits::GetConnectedElement(
+    return dax::exec::internal::DataArrayConnectivityTraits::GetConnectedElement(
         this->Work, this->Work.GetCellArray(), index);
     }
 
@@ -67,10 +67,10 @@ public:
     dax::Scalar output = 0;
     switch (this->GetCellType())
       {
-    case dax::core::VOXEL:
+    case dax::internal::VOXEL:
         {
         dax::Scalar functions[8];
-        dax::core::CellVoxel::InterpolationFunctions(pcoords, functions);
+        dax::internal::CellVoxel::InterpolationFunctions(pcoords, functions);
         for (dax::Id cc=0; cc < 8; cc++)
           {
           dax::exec::WorkMapField point_work = this->GetPoint(cc);
@@ -97,12 +97,12 @@ public:
     dax::Vector3 output;
     switch (this->GetCellType())
       {
-    case dax::core::VOXEL:
+    case dax::internal::VOXEL:
         {
         dax::Scalar functionDerivs[24];
         dax::Vector3 x0, x1, x2, x4, spacing;
         // get derivatives in r-s-t directions
-        dax::core::CellVoxel::InterpolationDerivs(pcoords, functionDerivs);
+        dax::internal::CellVoxel::InterpolationDerivs(pcoords, functionDerivs);
 
         x0 = this->GetPoint(0, points);
         x1  = this->GetPoint(1, points);

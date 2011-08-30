@@ -5,12 +5,13 @@
 #  PURPOSE.  See the above copyright notice for more information.
 #
 #=========================================================================
-set (headers
-  CellTypes.h
-  DataArray.h
-  DataSet.h)
 
-set(DAX_CORE_COMMON_HEADERS
-  ${headers}
-  CACHE INTERNAL
-  "Headers in Core/Common")
+set(headers
+  Cell.h
+  Field.h
+  Work.h
+)
+
+dax_declare_headers(${headers})
+
+add_subdirectory(internal)

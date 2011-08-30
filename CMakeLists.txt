@@ -75,12 +75,10 @@ if (NOT DAX_DISABLE_KITS)
 
   #-----------------------------------------------------------------------------
   # Add subdirectories
-  add_subdirectory(BasicTypes)
-  add_subdirectory(Core)
-  add_subdirectory(Interface)
+  add_subdirectory(dax)
 
   if (DAX_ENABLE_CUDA)
-    add_subdirectory(CUDA)
+    #add_subdirectory(CUDA)
   endif()
 
 endif()

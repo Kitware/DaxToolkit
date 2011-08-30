@@ -8,11 +8,11 @@
 #ifndef __dax_core_DataSet_h
 #define __dax_core_DataSet_h
 
-#include "Core/Common/DataArray.h"
+#include <dax/internal/DataArray.h>
 
 #define MAX_NUMBER_OF_FIELDS 10
 
-namespace dax { namespace core {
+namespace dax { namespace internal {
 
 /// DataSet is the data-structure that encapsulates a data-set in the
 /// execution environment. The user code never uses this class directly neither

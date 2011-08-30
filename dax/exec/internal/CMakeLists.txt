@@ -5,4 +5,12 @@
 #  PURPOSE.  See the above copyright notice for more information.
 #
 #=========================================================================
-add_subdirectory(Common)
+set(headers
+  DataArrayIrregular.h
+  DataArrayStructuredConnectivity.h
+  DataArrayStructuredPoints.h
+  DataArrayTraits.h
+  Macros.h
+  )
+
+dax_declare_headers(${headers})

@@ -6,8 +6,8 @@
 
 =========================================================================*/
 /// This file defines some common stuff.
-#ifndef __dax_core_exec_Common_h
-#define __dax_core_exec_Common_h
+#ifndef __dax_exec_internal_Macros_h
+#define __dax_exec_internal_Macros_h
 
 #define SUPERCLASS(__name__) \
   typedef __name__ Superclass

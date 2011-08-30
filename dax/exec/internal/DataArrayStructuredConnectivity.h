@@ -5,31 +5,32 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __dax_core_exec_DataArrayStructuredConnectivity_h
-#define __dax_core_exec_DataArrayStructuredConnectivity_h
+#ifndef __dax_exec_internal_DataArrayStructuredConnectivity_h
+#define __dax_exec_internal_DataArrayStructuredConnectivity_h
 
-#include "Core/Execution/DataArrayStructuredPoints.h"
-#include "Core/Common/CellTypes.h"
+#include <dax/internal/CellTypes.h>
 
-namespace dax { namespace core { namespace exec {
+#include <dax/exec/internal/DataArrayStructuredPoints.h>
+
+namespace dax { namespace exec { namespace internal {
 
   class DataArrayConnectivityTraits;
 
 /// DataArrayStructuredConnectivity is used for cell-array (vtkCellArray) for a
 /// structured dataset.
-class DataArrayStructuredConnectivity : public dax::core::exec::DataArrayStructuredPoints
+class DataArrayStructuredConnectivity : public dax::exec::internal::DataArrayStructuredPoints
 {
 protected:
-  friend class dax::core::exec::DataArrayConnectivityTraits;
+  friend class dax::exec::internal::DataArrayConnectivityTraits;
 
   __device__ static dax::Id GetNumberOfConnectedElements(
-    const dax::core::exec::Work&, const dax::core::DataArray&)
+    const dax::exec::Work&, const dax::internal::DataArray&)
     {
     return 8;
     }
 
-  __device__ static dax::core::exec::WorkMapField GetConnectedElement(
-    const dax::core::exec::Work& work, const dax::core::DataArray& connectivityArray,
+  __device__ static dax::exec::WorkMapField GetConnectedElement(
+    const dax::exec::Work& work, const dax::internal::DataArray& connectivityArray,
     dax::Id index)
     {
     dax::StructuredPointsMetaData* metadata =
@@ -53,13 +54,13 @@ protected:
     point_ijk.y = cell_ijk.y + ((index % 4) / 2);
     point_ijk.z = cell_ijk.z + (index / 4);
 
-    dax::core::exec::WorkMapField workPoint;
+    dax::exec::WorkMapField workPoint;
     workPoint.SetItem(
       point_ijk.x + point_ijk.y * dims.x + point_ijk.z * dims.x * dims.y);
     return workPoint;
     }
 
-  __device__ static dax::core::CellType GetElementsType(const dax::core::DataArray& connectivityArray)
+  __device__ static dax::internal::CellType GetElementsType(const dax::internal::DataArray& connectivityArray)
     {
     dax::StructuredPointsMetaData* metadata =
       reinterpret_cast<dax::StructuredPointsMetaData*>(connectivityArray.RawData);
@@ -73,21 +74,21 @@ protected:
     count += (dims.z > 0)? 1 : 0;
     if (dims.x < 1 && dims.y < 1 && dims.z < 1)
       {
-      return dax::core::EMPTY_CELL;
+      return dax::internal::EMPTY_CELL;
       }
     else if (count == 3)
       {
-      return dax::core::VOXEL;
+      return dax::internal::VOXEL;
       }
     else if (count == 2)
       {
-      return dax::core::QUAD;
+      return dax::internal::QUAD;
       }
     else if (count == 1)
       {
-      return LINE;
+      return dax::internal::LINE;
       }
-    return dax::core::EMPTY_CELL;
+    return dax::internal::EMPTY_CELL;
     }
 };
 

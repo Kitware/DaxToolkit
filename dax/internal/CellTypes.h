@@ -11,9 +11,9 @@
 #ifndef __dax_core_CellTypes_h
 #define __dax_core_CellTypes_h
 
-#include "BasicTypes/Common/Types.h"
+#include <dax/Types.h>
 
-namespace dax { namespace core {
+namespace dax { namespace internal {
 
 //*****************************************************************************
 // Cell Types

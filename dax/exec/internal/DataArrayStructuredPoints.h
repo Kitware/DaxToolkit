@@ -5,23 +5,23 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __dax_core_exec_DataArrayStructuredPoints_h
-#define __dax_core_exec_DataArrayStructuredPoints_h
+#ifndef __dax_exec_internal_DataArrayStructuredPoints_h
+#define __dax_exec_internal_DataArrayStructuredPoints_h
 
-#include "Core/Common/DataArray.h"
-#include "Core/Execution/Work.h"
+#include <dax/internal/DataArray.h>
+#include <dax/exec/Work.h>
 
-namespace dax { namespace core { namespace exec {
+namespace dax { namespace exec { namespace internal {
 
 /// DataArrayStructuredPoints is used for point-coordinates for an uniform grid
 /// (vtkImageData).
-class DataArrayStructuredPoints : public dax::core::DataArray
+class DataArrayStructuredPoints : public dax::internal::DataArray
 {
 protected:
-  friend class dax::core::exec::DataArrayGetterTraits;
+  friend class dax::exec::internal::DataArrayGetterTraits;
 
   __device__ static dax::Vector3 GetVector3(
-    const dax::core::exec::Work& work, const dax::core::DataArray& array)
+    const dax::exec::Work& work, const dax::internal::DataArray& array)
     {
     dax::StructuredPointsMetaData* metadata =
       reinterpret_cast<dax::StructuredPointsMetaData*>(array.RawData);

@@ -8,9 +8,9 @@
 #ifndef __dax_core_DataArray_h
 #define __dax_core_DataArray_h
 
-#include "BasicTypes/Common/Types.h"
+#include <dax/Types.h>
 
-namespace dax { namespace core {
+namespace dax { namespace internal {
 
 /// DataArray is a basic data-storage device in Dax data model. It stores the
 /// heavy data. A dataset comprises for DataArray instances assigned different

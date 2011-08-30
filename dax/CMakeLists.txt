@@ -5,3 +5,13 @@
 #  PURPOSE.  See the above copyright notice for more information.
 #
 #=========================================================================
+
+set(headers
+  Types.h
+  )
+
+dax_declare_headers(${headers})
+
+add_subdirectory(internal)
+
+add_subdirectory(exec)
