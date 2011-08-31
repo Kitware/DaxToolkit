@@ -8,28 +8,29 @@
 #include "ArgumentsParser.h"
 
 // Includes for host code.
-#include "Interface/Control/DataArrayIrregular.h"
-#include "CUDA/Control/DataBridge.h"
-#include "Interface/Control/ImageData.h"
-#include "CUDA/Common/KernelArgument.h"
-#include "CUDA/Control/KernelArgument.h"
+#include <dax/cont/DataArrayIrregular.h>
+#include <dax/cont/ImageData.h>
+
+#include <dax/cuda/internal/KernelArgument.h>
+#include <dax/cuda/cont/internal/DataBridge.h>
+#include <dax/cuda/cont/internal/KernelArgument.h>
 
 
 // Includes for device code.
-#include "CUDA/Execution/ExecutionEnvironment.h"
+#include <dax/cuda/exec/ExecutionEnvironment.h>
 
-#include "Worklets/CellAverage.worklet"
-#include "Worklets/CellGradient.worklet"
-#include "Worklets/Cosine.worklet"
-#include "Worklets/Elevation.worklet"
-#include "Worklets/PointDataToCellData.worklet"
-#include "Worklets/Sine.worklet"
-#include "Worklets/Square.worklet"
+#include <Worklets/CellAverage.worklet>
+#include <Worklets/CellGradient.worklet>
+#include <Worklets/Cosine.worklet>
+#include <Worklets/Elevation.worklet>
+#include <Worklets/PointDataToCellData.worklet>
+#include <Worklets/Sine.worklet>
+#include <Worklets/Square.worklet>
 
 #include <boost/progress.hpp>
 
 
-__global__ void ExecuteElevation(dax::cuda::KernelArgument argument,
+__global__ void ExecuteElevation(dax::cuda::internal::KernelArgument argument,
   unsigned int number_of_threads,
   unsigned int number_of_iterations)
 {
@@ -46,7 +47,7 @@ __global__ void ExecuteElevation(dax::cuda::KernelArgument argument,
     }
 }
 
-__global__ void ExecutePipeline1(dax::cuda::KernelArgument argument,
+__global__ void ExecutePipeline1(dax::cuda::internal::KernelArgument argument,
   unsigned int number_of_threads,
   unsigned int number_of_iterations)
 {
@@ -73,7 +74,7 @@ __global__ void ExecutePipeline1(dax::cuda::KernelArgument argument,
     }
 }
 
-__global__ void ExecutePipeline2(dax::cuda::KernelArgument argument,
+__global__ void ExecutePipeline2(dax::cuda::internal::KernelArgument argument,
   unsigned int number_of_threads,
   unsigned int number_of_iterations)
 {
@@ -103,7 +104,7 @@ __global__ void ExecutePipeline2(dax::cuda::KernelArgument argument,
     }
 }
 
-__global__ void ExecutePipeline3(dax::cuda::KernelArgument argument,
+__global__ void ExecutePipeline3(dax::cuda::internal::KernelArgument argument,
   unsigned int number_of_threads,
   unsigned int number_of_iterations)
 {
@@ -218,7 +219,7 @@ int main(int argc, char* argv[])
   dax::cont::ImageDataPtr output = CreateOutputDataSet(MAX_SIZE);
   double init_time = timer.elapsed();
 
-  dax::cuda::cont::DataBridge bridge;
+  dax::cuda::cont::internal::DataBridge bridge;
   bridge.AddInputData(input);
   if (parser.GetPipeline() == dax::testing::ArgumentsParser::SINE_SQUARE_COS)
     {
@@ -231,7 +232,7 @@ int main(int argc, char* argv[])
     }
 
   timer.restart();
-  dax::cuda::cont::KernelArgumentPtr arg = bridge.Upload();
+  dax::cuda::cont::internal::KernelArgumentPtr arg = bridge.Upload();
   if (cudaThreadSynchronize() != cudaSuccess)
     {
     abort();
@@ -240,7 +241,7 @@ int main(int argc, char* argv[])
   double upload_time = timer.elapsed();
 
   timer.restart();
-  dax::cuda::KernelArgument _arg= arg->Get();
+  dax::cuda::internal::KernelArgument _arg= arg->Get();
   switch (parser.GetPipeline())
     {
   case dax::testing::ArgumentsParser::CELL_GRADIENT:

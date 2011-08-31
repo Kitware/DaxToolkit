@@ -77,4 +77,8 @@ if (NOT DAX_DISABLE_KITS)
   # Add subdirectories
   add_subdirectory(dax)
 
+  if (DAX_ENABLE_TESTING)
+    add_subdirectory(Testing)
+  endif (DAX_ENABLE_TESTING)
+
 endif()

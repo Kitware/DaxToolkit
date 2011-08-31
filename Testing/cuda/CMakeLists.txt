@@ -11,26 +11,24 @@
 include_directories(${Boost_INCLUDE_DIRS})
 
 #-----------------------------------------------------------------------------
-CUDA_ADD_EXECUTABLE(DaxCUDATest
+cuda_add_executable(DaxCUDATest
   DaxCUDATest.cu
   ArgumentsParser.cxx
   ArgumentsParser.h
 )
 
 target_link_libraries(DaxCUDATest
-  daxCoreCont
   daxCont
   daxCUDACont 
   ${BOOST_LIBRARIES}
   )
 
 #-----------------------------------------------------------------------------
-CUDA_ADD_EXECUTABLE(SimpleCUDAKernelTest
+cuda_add_executable(SimpleCUDAKernelTest
   SimpleCUDAKernelTest.cu
 )
 
 target_link_libraries(SimpleCUDAKernelTest
-  daxCoreCont
   daxCont
   daxCUDACont 
   ${BOOST_LIBRARIES}

@@ -7,7 +7,7 @@
 ===========================================================================*/
 
 #include <thrust/device_vector.h>
-#include "CUDA/Execution/ExecutionEnvironment.h"
+#include <dax/cuda/exec/ExecutionEnvironment.h>
 #include <iostream>
 using namespace std;
 
