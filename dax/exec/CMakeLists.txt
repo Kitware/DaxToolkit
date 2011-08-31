@@ -8,7 +8,9 @@
 
 set(headers
   Cell.h
+  Derivative.h
   Field.h
+  Interpolate.h
   Work.h
 )
 
