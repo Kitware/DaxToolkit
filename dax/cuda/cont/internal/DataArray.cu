@@ -5,18 +5,18 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "CUDA/Control/DataArray.h"
+#include <dax/cuda/cont/internal/DataArray.h>
 
 
 #include <assert.h>
 
 //-----------------------------------------------------------------------------
-dax::core::DataArray dax::cuda::cont::CreateAndCopyToDevice(
-  dax::core::DataArray::eType type, dax::core::DataArray::eDataType dataType,
+dax::internal::DataArray dax::cuda::cont::internal::CreateAndCopyToDevice(
+  dax::internal::DataArray::eType type, dax::internal::DataArray::eDataType dataType,
   unsigned int data_size_in_bytes, const void* raw_data)
 {
-  dax::core::DataArray cur_array =
-    dax::cuda::cont::CreateOnDevice(type, dataType, data_size_in_bytes);
+  dax::internal::DataArray cur_array =
+    dax::cuda::cont::internal::CreateOnDevice(type, dataType, data_size_in_bytes);
   assert(cur_array.SizeInBytes == data_size_in_bytes);
   if (data_size_in_bytes > 0)
     {
@@ -28,7 +28,7 @@ dax::core::DataArray dax::cuda::cont::CreateAndCopyToDevice(
 }
 
 //-----------------------------------------------------------------------------
-bool dax::cuda::cont::CopyToHost(const dax::core::DataArray& array,
+bool dax::cuda::cont::internal::CopyToHost(const dax::internal::DataArray& array,
   void* raw_data, unsigned int data_size_in_bytes)
 {
   assert(array.SizeInBytes >= data_size_in_bytes);
@@ -42,11 +42,11 @@ bool dax::cuda::cont::CopyToHost(const dax::core::DataArray& array,
 }
 
 //-----------------------------------------------------------------------------
-dax::core::DataArray dax::cuda::cont::CreateOnDevice(
-  dax::core::DataArray::eType type,
-  dax::core::DataArray::eDataType dataType, unsigned int data_size_in_bytes)
+dax::internal::DataArray dax::cuda::cont::internal::CreateOnDevice(
+  dax::internal::DataArray::eType type,
+  dax::internal::DataArray::eDataType dataType, unsigned int data_size_in_bytes)
 {
-  dax::core::DataArray cur_array;
+  dax::internal::DataArray cur_array;
   cur_array.Type = type;
   cur_array.DataType = dataType;
   cur_array.SizeInBytes = data_size_in_bytes;

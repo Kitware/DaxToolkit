@@ -5,18 +5,18 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __dax_cuda_cont_DataBridge_h
-#define __dax_cuda_cont_DataBridge_h
+#ifndef __dax_cuda_cont_internal_DataBridge_h
+#define __dax_cuda_cont_internal_DataBridge_h
 
-#include "Core/Control/Object.h"
-#include "Core/Common/DataArray.h"
+#include <dax/internal/DataArray.h>
+#include <dax/cont/internal/Object.h>
 
 namespace dax { namespace cont {
   daxDeclareClass(DataSet);
   daxDeclareClass(DataArray);
 }}
 
-namespace dax { namespace cuda { namespace cont {
+namespace dax { namespace cuda { namespace cont { namespace internal {
 
 daxDeclareClass(DataBridge);
 daxDeclareClass(KernelArgument);
@@ -25,12 +25,12 @@ daxDeclareClass(KernelArgument);
 /// This class is not meant to be used by users of the ControlEnvironment. It
 /// will be used internally to invoke the kernel once the ControlEnvironment is
 /// mature enough.
-class DataBridge : public dax::core::cont::Object
+class DataBridge : public dax::cont::internal::Object
 {
 public:
   DataBridge();
   virtual ~DataBridge();
-  daxTypeMacro(DataBridge, dax::core::cont::Object);
+  daxTypeMacro(DataBridge, dax::cont::internal::Object);
 
   /// Add an input dataset.
   void AddInputData(dax::cont::DataSetPtr dataset);
@@ -42,18 +42,18 @@ public:
   void AddOutputData(dax::cont::DataSetPtr dataset);
 
   /// makes it possible to pass this class as an argument to a CUDA kernel.
-  dax::cuda::cont::KernelArgumentPtr Upload() const;
+  dax::cuda::cont::internal::KernelArgumentPtr Upload() const;
 
   /// downloads the results.
-  bool Download(dax::cuda::cont::KernelArgumentPtr argument) const;
+  bool Download(dax::cuda::cont::internal::KernelArgumentPtr argument) const;
 
 protected:
-  virtual dax::core::DataArray UploadArray(
+  virtual dax::internal::DataArray UploadArray(
     dax::cont::DataArrayPtr host_array, bool copy_heavy_data) const;
 
   virtual bool DownloadArray(
     dax::cont::DataArrayPtr host_array,
-    const dax::core::DataArray& device_array) const;
+    const dax::internal::DataArray& device_array) const;
 
 private:
   daxDisableCopyMacro(DataBridge)
@@ -62,6 +62,6 @@ private:
   daxInternals* Internals;
 };
 
-}}}
+}}}}
 
 #endif

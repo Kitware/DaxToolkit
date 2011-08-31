@@ -8,12 +8,12 @@
 #ifndef __dax_cuda_KernelArgument_h
 #define __dax_cuda_KernelArgument_h
 
-namespace dax { namespace core {
+namespace dax { namespace internal {
   class DataArray;
   class DataSet;
 }}
 
-namespace dax { namespace cuda {
+namespace dax { namespace cuda { namespace internal {
 
 /// KernelArgument is passed to the entry-point into the execution
 /// environment. It encapsulates all information about the datasets used in the
@@ -21,12 +21,12 @@ namespace dax { namespace cuda {
 class KernelArgument
 {
 public:
-  dax::core::DataArray* Arrays;
-  dax::core::DataSet* Datasets;
+  dax::internal::DataArray* Arrays;
+  dax::internal::DataSet* Datasets;
   int NumberOfArrays;
   int NumberOfDatasets;
 };
 
-}}
+}}}
 
 #endif

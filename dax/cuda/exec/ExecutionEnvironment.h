@@ -6,9 +6,9 @@
 
 ===========================================================================*/
 // Includes for device code.
-#include "Interface/Execution/Field.h"
-#include "Interface/Execution/Work.h"
-#include "Interface/Execution/Cell.h"
+#include <dax/exec/Cell.h>
+#include <dax/exec/Field.h>
+#include <dax/exec/Work.h>
 
 
 #define DAX_WORKLET __device__
