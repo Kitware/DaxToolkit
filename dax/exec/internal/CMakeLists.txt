@@ -7,7 +7,6 @@
 #=========================================================================
 set(headers
   DataArrayIrregular.h
-  DataArrayStructuredConnectivity.h
   DataArrayStructuredPoints.h
   DataArrayTraits.h
   Macros.h

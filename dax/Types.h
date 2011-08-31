@@ -132,6 +132,11 @@ namespace dax
 
 #endif
 
+  inline Int3 operator+(const Int3 &a, const Int3 &b)
+  {
+    Int3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
+  }
+
   typedef struct StructuredPointsMetaDataStruct {
     Vector3 Origin;
     Vector3 Spacing;

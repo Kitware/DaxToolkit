@@ -19,55 +19,6 @@
 
 namespace dax { namespace exec { namespace internal {
 
-/// Defines various access traits for dax::internal::DataArray
-class DataArrayConnectivityTraits
-{
-public:
-  __device__ static dax::Id GetNumberOfConnectedElements(
-    const dax::exec::Work& work, const dax::internal::DataArray& array)
-    {
-    switch (array.Type)
-      {
-    case dax::internal::DataArray::STRUCTURED_CONNECTIVITY:
-      return dax::exec::internal::DataArrayStructuredConnectivity::GetNumberOfConnectedElements(
-        work, array);
-    default:
-      break;
-      }
-    return -1;
-    }
-
-  __device__ static dax::exec::WorkMapField GetConnectedElement(
-    const dax::exec::Work& work, const dax::internal::DataArray& connectivityArray,
-    dax::Id index)
-    {
-    switch (connectivityArray.Type)
-      {
-    case dax::internal::DataArray::STRUCTURED_CONNECTIVITY:
-      return dax::exec::internal::DataArrayStructuredConnectivity::GetConnectedElement(
-        work, connectivityArray, index);
-    default:
-      break;
-      }
-    return dax::exec::WorkMapField();
-    }
-
-  __device__ static dax::internal::CellType GetElementsType(
-    const dax::internal::DataArray& connectivityArray)
-    {
-    switch (connectivityArray.Type)
-      {
-    case dax::internal::DataArray::STRUCTURED_CONNECTIVITY:
-      return dax::exec::internal::DataArrayStructuredConnectivity::GetElementsType(
-        connectivityArray);
-    default:
-      break;
-      }
-
-    return dax::internal::EMPTY_CELL;
-    }
-};
-
 class DataArraySetterTraits
 {
 public:

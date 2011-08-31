@@ -23,11 +23,13 @@ namespace dax { namespace exec {
 class CellVoxel
 {
 private:
-  const dax::exec::WorkMapCell &Work;
+  const dax::StructuredPointsMetaData &GridStructure;
+  const dax::Id CellId;
 
 public:
   /// Create a cell for the given work.
-  __device__ CellVoxel(const dax::exec::WorkMapCell &work): Work(work) { }
+  __device__ CellVoxel(const dax::StructuredPointsMetaData &gs, dax::Id id)
+    : GridStructure(gs), CellId(id) { }
 
   /// Get the number of points in the cell.
   __device__ dax::Id GetNumberOfPoints() const
@@ -38,13 +40,32 @@ public:
   /// Get the work corresponding to a given point.
   __device__ dax::exec::WorkMapField GetPoint(const dax::Id index) const
   {
-    // This seems marginally wrong.  We know we are voxel, so we should be
-    // able to find points just by indexing.  That may shake itself out,
-    // however, once the connectivity "array" structure is templated.
-    return dax::exec::internal::DataArrayConnectivityTraits::GetConnectedElement(
-        this->Work,
-        this->Work.GetCellArray(),
-        index);
+    dax::Int3 dims;
+    dims.x = this->GridStructure.ExtentMax.x - this->GridStructure.ExtentMin.x + 1;
+    dims.y = this->GridStructure.ExtentMax.y - this->GridStructure.ExtentMin.y + 1;
+    dims.z = this->GridStructure.ExtentMax.z - this->GridStructure.ExtentMin.z + 1;
+
+    dax::Int3 cell_ijk;
+    cell_ijk.x = this->CellId % (dims.x - 1);
+    cell_ijk.y = (this->CellId / (dims.x - 1)) % (dims.y -1 );
+    cell_ijk.z = (this->CellId / ((dims.x - 1) * (dims.y -1 )));
+
+    const dax::Int3 cellToPointIndex[8] = {
+      { 0, 0, 0 },
+      { 0, 0, 1 },
+      { 0, 1, 1 },
+      { 0, 1, 0 },
+      { 1, 0, 0 },
+      { 1, 0, 1 },
+      { 1, 1, 1 },
+      { 1, 1, 0 }
+    };
+
+    dax::Int3 point_ijk = cell_ijk + cellToPointIndex[index];
+
+    dax::exec::WorkMapField workPoint;
+    workPoint.SetItem(point_ijk.x + dims.x*(point_ijk.y + dims.y*point_ijk.z));
+    return workPoint;
   }
 
   /// Convenience method to a get a point coordinate
