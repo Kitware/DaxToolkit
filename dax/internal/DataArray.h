@@ -5,101 +5,56 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __dax_core_DataArray_h
-#define __dax_core_DataArray_h
+#ifndef __dax_internal_DataArray_h
+#define __dax_internal_DataArray_h
 
 #include <dax/Types.h>
 
 namespace dax { namespace internal {
 
-/// DataArray is a basic data-storage device in Dax data model. It stores the
-/// heavy data. A dataset comprises for DataArray instances assigned different
-/// roles, for example an "array" for storing point coordinates, an "array" for
-/// cell-connectivity etc. Different types of arrays exist. The subclasses are
-/// used in control environment to define the datasets. In the execution
-/// environment, user code i.e the worklet should never use DataArray directly
-/// (it should rely on DaxField or subclasses). The execution environment uses
-/// various traits to access raw-data from the DataArray.
+/// DataArary is a simple but basic data-storage device in the Dax data model.
+/// It stores an array of some templated type that should be a compact
+/// storage structure.  No management of the array is done other than hold
+/// it.
+template<typename T>
 class DataArray
 {
 public:
-  enum eType
-    {
-    UNKNOWN= -1,
-    IRREGULAR = 1,
-    STRUCTURED_POINTS = 2,
-    STRUCTURED_CONNECTIVITY=3,
-    };
-  enum eDataType
-    {
-    VOID,
-    SCALAR,
-    VECTOR3,
-    VECTOR4,
-    ID
-    };
+  typedef T ValueType;
 
-  eType Type;
-  eDataType DataType;
-  void* RawData;
-  unsigned int SizeInBytes;
+  __device__ DataArray(ValueType *data, dax::Id numEntries)
+    : Data(data), NumEntries(numEntries)
+  { }
 
-  DataArray() :
-    Type (UNKNOWN),
-    DataType (VOID),
-    RawData (0),
-    SizeInBytes (0)
-    {
-    }
+  __device__ DataArray() : Data(0), NumEntries(0) { }
 
-  static eDataType type(const dax::Scalar&)
-    {
-    return DataArray::SCALAR;
-    }
+  __device__ const ValueType &GetValue(dax::Id index) const
+  {
+    return this->Data[index];
+  }
 
-  static eDataType type(const dax::Vector3&)
-    {
-    return DataArray::VECTOR3;
-    }
+  __device__ void SetValue(dax::Id index, const ValueType &value)
+  {
+    this->Data[index] = value;
+  }
 
-  static eDataType type(const dax::Vector4&)
-    {
-    return DataArray::VECTOR4;
-    }
+  __device__ dax::Id GetNumberOfEntries() const
+  {
+    return this->NumEntries;
+  }
 
-  static eDataType type(const dax::Id&)
-    {
-    return DataArray::ID;
-    }
+  __device__ const ValueType *GetPointer() const { return this->Data; }
+  __device__ ValueType *GetPointer() { return this->Data; }
 
-  __device__ static int GetNumberOfComponents(const DataArray& array)
-    {
-    int num_comps;
-    switch (array.DataType)
-      {
-    case SCALAR:
-      num_comps = 1;
-      break;
-    case VECTOR3:
-      num_comps = 3;
-      break;
-    case VECTOR4:
-      num_comps = 4;
-      break;
-    default:
-      num_comps = 1;
-      }
-    return num_comps;
-    }
+  __device__ void SetPointer(ValueType *data, dax::Id numEntries)
+  {
+    this->Data = data;
+    this->NumEntries = numEntries;
+  }
 
-  DataArray& operator=(const DataArray& other)
-    {
-    this->Type = other.Type;
-    this->DataType = other.DataType;
-    this->RawData = other.RawData;
-    this->SizeInBytes = other.SizeInBytes;
-    return *this;
-    }
+private:
+  ValueType *Data;
+  dax::Id NumEntries;
 };
 
 }}

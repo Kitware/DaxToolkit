@@ -8,75 +8,65 @@
 #ifndef __dax_exec_Field_h
 #define __dax_exec_Field_h
 
-#include <dax/exec/internal/DataArrayTraits.h>
+#include <dax/internal/DataArray.h>
 
 namespace dax { namespace exec {
 
+template<typename T>
 class Field
 {
-  dax::internal::DataArray& Array;
 public:
-  __device__ Field(dax::internal::DataArray& array) : Array(array)
-    {
-    }
+  typedef T ValueType;
 
-  /// Set a scalar value.
-  __device__ void Set(const dax::exec::Work& work, dax::Scalar scalar)
-    {
-    dax::exec::internal::DataArraySetterTraits::Set(work, this->Array, scalar);
-    }
+  __device__ Field(dax::internal::DataArray<ValueType> &array) : Array(array)
+  {
+  }
 
-  __device__ void Set(const dax::exec::Work& work, dax::Vector3 vector3)
-    {
-    dax::exec::internal::DataArraySetterTraits::Set(work, this->Array, vector3);
-    }
+  /// Get the internal array.  Work objects use this to get/set values.
+  __device__ const dax::internal::DataArray<ValueType> &GetArray() const
+  {
+    return this->Array;
+  }
+  __device__ dax::internal::DataArray<ValueType> &GetArray()
+  {
+    return this->Array;
+  }
 
-  __device__ void Set(const dax::exec::Work& work, dax::Vector4 vector4)
-    {
-    dax::exec::internal::DataArraySetterTraits::Set(work, this->Array, vector4);
-    }
-
-  __device__ dax::Scalar GetScalar(const dax::exec::Work& work) const
-    {
-    return dax::exec::internal::DataArrayGetterTraits::GetScalar(work, this->Array);
-    }
-
-  __device__ dax::Vector3 GetVector3(const dax::exec::Work& work) const
-    {
-    return dax::exec::internal::DataArrayGetterTraits::GetVector3(work, this->Array);
-    }
-
-  __device__ dax::Vector4 GetVector4(const dax::exec::Work& work) const
-    {
-    return dax::exec::internal::DataArrayGetterTraits::GetVector4(work, this->Array);
-    }
+private:
+  dax::internal::DataArray<ValueType> &Array;
 };
 
-class FieldPoint : public dax::exec::Field
+template<typename T>
+class FieldPoint : public dax::exec::Field<T>
 {
-  SUPERCLASS(dax::exec::Field);
 public:
-  __device__ FieldPoint(dax::internal::DataArray& array) : Superclass(array)
-    {
-    }
+  typedef T ValueType;
+  typedef dax::exec::Field<ValueType> Superclass;
+
+  __device__ FieldPoint(dax::internal::DataArray<ValueType> &array)
+    : Superclass(array)
+  { }
 };
 
-class FieldCoordinates : public dax::exec::Field
+class FieldCoordinates : public dax::exec::FieldPoint<dax::Vector3>
 {
-  SUPERCLASS(dax::exec::Field);
 public:
-  __device__ FieldCoordinates(dax::internal::DataArray& array) : Superclass(array)
-    {
-    }
+  typedef dax::Vector3 ValueType;
+  typedef dax::exec::FieldPoint<ValueType> Superclass;
+  __device__ FieldCoordinates(dax::internal::DataArray<ValueType> &array)
+    : Superclass(array)
+   { }
 };
 
-class FieldCell : public dax::exec::Field
+template<class T>
+class FieldCell : public dax::exec::Field<T>
 {
-  SUPERCLASS(dax::exec::Field);
 public:
-  __device__ FieldCell(dax::internal::DataArray& array) : Superclass(array)
-    {
-    }
+  typedef T ValueType;
+  typedef dax::exec::Field<ValueType> Superclass;
+  __device__ FieldCell(dax::internal::DataArray<ValueType> &array)
+    : Superclass(array)
+  { }
 };
 
 }}

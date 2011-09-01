@@ -11,38 +11,27 @@
 
 #include <dax/exec/Cell.h>
 
-#include <dax/internal/CellTypes.h>
+#include <dax/exec/internal/InterpolationWeights.h>
 
 namespace dax { namespace exec {
 
-template<class CellType>
-__device__ dax::Scalar cellInterpolate(
-    const CellType &cell,
-    const dax::Vector3 &pcoords,
-    const dax::exec::FieldPoint &point_coords,
-    const dax::Id &component_number);
-
 //-----------------------------------------------------------------------------
-template<>
-__device__ dax::Scalar cellInterpolate(
-    const dax::exec::CellVoxel &cell,
-    const dax::Vector3 &pcoords,
-    const dax::exec::FieldPoint &point_scalar,
-    const dax::Id &component_number)
+template<class WorkType, class T>
+__device__ T cellInterpolate(const WorkType &work,
+                             const dax::exec::CellVoxel &cell,
+                             const dax::Vector3 &pcoords,
+                             const dax::exec::FieldPoint<T> &point_field)
 {
-  dax::Scalar functions[8];
-  // This seems like a weird place for this low level function.
-  // Also, I suggest we order the vertices of voxels in CGNS order (i.e., the
-  // same as a hexahedron).
-  dax::internal::CellVoxel::InterpolationFunctions(pcoords, functions);
+  const dax::Id numVerts;
 
-  dax::Scalar result = 0;
+  dax::Scalar weights[numVerts];
+  dax::exec::internal::interpolationWeightsVoxel(pcoords, weights);
 
-  for (dax::Id vertexId = 0; vertexId < 8; vertexId++)
+  T result = 0;
+  for (dax::Id vertexId = 0; vertexId < numVerts; vertexId++)
     {
-    dax::exec::WorkMapField point_work = cell.GetPoint(vertexId);
-    dax::Scalar cur_value = point_scalar.GetScalar(point_work /*, component_number*/);
-    result += functions[vertexId] * cur_value;
+    T value = work.GetFieldValue(point_field, vertexId);
+    result += value * weights[vertexId];
     }
 
   return result;

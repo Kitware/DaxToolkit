@@ -12,10 +12,10 @@ dax::cont::DataArrayStructuredPoints::DataArrayStructuredPoints()
 {
   this->HeavyData.Origin.x = this->HeavyData.Origin.y = this->HeavyData.Origin.z = 0;
   this->HeavyData.Spacing.x = this->HeavyData.Spacing.y = this->HeavyData.Spacing.z = 1;
-  this->HeavyData.ExtentMin.x = this->HeavyData.ExtentMin.y =
-    this->HeavyData.ExtentMin.z = -1;
-  this->HeavyData.ExtentMax.x = this->HeavyData.ExtentMax.y =
-    this->HeavyData.ExtentMax.z = 0;
+  this->HeavyData.Extent.Min.x = this->HeavyData.Extent.Min.y =
+    this->HeavyData.Extent.Min.z = -1;
+  this->HeavyData.Extent.Max.x = this->HeavyData.Extent.Max.y =
+    this->HeavyData.Extent.Max.z = 0;
 }
 
 //-----------------------------------------------------------------------------

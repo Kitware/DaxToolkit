@@ -6,10 +6,9 @@
 #
 #=========================================================================
 set(headers
-  DataArrayIrregular.h
-  DataArrayStructuredPoints.h
-  DataArrayTraits.h
-  Macros.h
+  DerivativeWeights.h
+  FieldAccess.h
+  InterpolationWeights.h
   )
 
 dax_declare_headers(${headers})

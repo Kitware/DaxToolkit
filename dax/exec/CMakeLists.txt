@@ -11,7 +11,8 @@ set(headers
   Derivative.h
   Field.h
   Interpolate.h
-  Work.h
+  WorkMapCell.h
+  WorkMapField.h
 )
 
 dax_declare_headers(${headers})

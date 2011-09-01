@@ -135,14 +135,137 @@ namespace dax
   inline Int3 operator+(const Int3 &a, const Int3 &b)
   {
     Int3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
+    return result;
+  }
+  inline Int3 operator*(const Int3 &a, const Int3 &b)
+  {
+    Int3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
+    return result;
+  }
+  inline Int3 operator-(const Int3 &a, const Int3 &b)
+  {
+    Int3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
+    return result;
+  }
+  inline Int3 operator/(const Int3 &a, const Int3 &b)
+  {
+    Int3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
+    return result;
   }
 
-  typedef struct StructuredPointsMetaDataStruct {
+  inline Vector3 operator+(const Vector3 &a, const Vector3 &b)
+  {
+    Vector3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
+    return result;
+  }
+  inline Vector3 operator*(const Vector3 &a, const Vector3 &b)
+  {
+    Vector3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
+    return result;
+  }
+  inline Vector3 operator-(const Vector3 &a, const Vector3 &b)
+  {
+    Vector3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
+    return result;
+  }
+  inline Vector3 operator/(const Vector3 &a, const Vector3 &b)
+  {
+    Vector3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
+    return result;
+  }
+
+  inline Vector3 operator*(dax::Scalar a, const Vector3 &b)
+  {
+    Vector3 result = { a * b.x, a * b.y, a * b.z };
+    return result;
+  }
+
+  inline Vector3 operator+(const Vector3 &a, const Int3 &b)
+  {
+    Vector3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
+    return result;
+  }
+  inline Vector3 operator+(const Int3 &a, const Vector3 &b)
+  {
+    Vector3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
+    return result;
+  }
+  inline Vector3 operator*(const Vector3 &a, const Int3 &b)
+  {
+    Vector3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
+    return result;
+  }
+  inline Vector3 operator*(const Int3 &a, const Vector3 &b)
+  {
+    Vector3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
+    return result;
+  }
+  inline Vector3 operator-(const Vector3 &a, const Int3 &b)
+  {
+    Vector3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
+    return result;
+  }
+  inline Vector3 operator-(const Int3 &a, const Vector3 &b)
+  {
+    Vector3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
+    return result;
+  }
+  inline Vector3 operator/(const Vector3 &a, const Int3 &b)
+  {
+    Vector3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
+    return result;
+  }
+  inline Vector3 operator/(const Int3 &a, const Vector3 &b)
+  {
+    Vector3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
+    return result;
+  }
+
+  struct Extent3 {
+    Int3 Min;
+    Int3 Max;
+  } __attribute__ ((aligned(4)));
+
+  inline dax::Int3 extentDimensions(const Extent3 &extent)
+  {
+    dax::Int3 dims;
+    dims.x = extent.Max.x - extent.Min.x + 1;
+    dims.y = extent.Max.y - extent.Min.y + 1;
+    dims.z = extent.Max.z - extent.Min.z + 1;
+    return dims;
+  }
+
+  inline dax::Int3 flatIndexToInt3Index(dax::Id index, const Int3 dims)
+  {
+    dax::Int3 cell_ijk;
+    cell_ijk.x = index % (dims.x - 1);
+    cell_ijk.y = (index / (dims.x - 1)) % (dims.y -1 );
+    cell_ijk.z = (index / ((dims.x - 1) * (dims.y -1 )));
+    return cell_ijk;
+  }
+
+  inline dax::Int3 flatIndexToInt3Index(dax::Id index, const Extent3 &extent)
+  {
+    dax::Int3 dims = extentDimensions(extent);
+    return flatIndexToInt3Index(index, dims);
+  }
+
+  inline dax::Id int3IndexToFlatIndex(dax::Int3 ijk, const Int3 dims)
+  {
+    return ijk.x + dims.x*(ijk.y + dims.y*ijk.z);
+  }
+
+  inline dax::Id int3IndexToFlatIndex(dax::Int3 ijk, const Extent3 &extent)
+  {
+    dax::Int3 dims = extentDimensions(extent);
+    return int3IndexToFlatIndex(ijk, dims);
+  }
+
+  struct StructuredPointsMetaData {
     Vector3 Origin;
     Vector3 Spacing;
-    Int3 ExtentMin;
-    Int3 ExtentMax;
-  } StructuredPointsMetaData __attribute__ ((aligned(4)));
+    Extent3 Extent;
+  } __attribute__ ((aligned(4)));
 
 }
 #endif

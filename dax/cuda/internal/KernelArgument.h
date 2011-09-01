@@ -9,7 +9,7 @@
 #define __dax_cuda_KernelArgument_h
 
 namespace dax { namespace internal {
-  class DataArray;
+  template<typename T> class DataArray;
   class DataSet;
 }}
 
@@ -18,6 +18,7 @@ namespace dax { namespace cuda { namespace internal {
 /// KernelArgument is passed to the entry-point into the execution
 /// environment. It encapsulates all information about the datasets used in the
 /// pipeline.
+/// TODO: Fix this: DataArrays are now typed.  Maybe cast to void.
 class KernelArgument
 {
 public:

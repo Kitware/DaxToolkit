@@ -37,12 +37,12 @@ public:
 
   void SetExtents(int minx, int maxx, int miny, int maxy, int minz, int maxz)
     {
-    this->HeavyData.ExtentMin.x = minx;
-    this->HeavyData.ExtentMin.y = miny;
-    this->HeavyData.ExtentMin.z = minz;
-    this->HeavyData.ExtentMax.x = maxx;
-    this->HeavyData.ExtentMax.y = maxy;
-    this->HeavyData.ExtentMax.z = maxz;
+    this->HeavyData.Extent.Min.x = minx;
+    this->HeavyData.Extent.Min.y = miny;
+    this->HeavyData.Extent.Min.z = minz;
+    this->HeavyData.Extent.Max.x = maxx;
+    this->HeavyData.Extent.Max.y = maxy;
+    this->HeavyData.Extent.Max.z = maxz;
     }
 
   const dax::StructuredPointsMetaData& GetHeavyData() const

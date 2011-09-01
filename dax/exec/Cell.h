@@ -9,7 +9,6 @@
 #define __dax_exec_Cell_h
 
 #include <dax/exec/Field.h>
-#include <dax/exec/Work.h>
 
 namespace dax { namespace exec {
 
@@ -24,12 +23,12 @@ class CellVoxel
 {
 private:
   const dax::StructuredPointsMetaData &GridStructure;
-  const dax::Id CellId;
+  dax::Id CellIndex;
 
 public:
   /// Create a cell for the given work.
-  __device__ CellVoxel(const dax::StructuredPointsMetaData &gs, dax::Id id)
-    : GridStructure(gs), CellId(id) { }
+  __device__ CellVoxel(const dax::StructuredPointsMetaData &gs, dax::Id index)
+    : GridStructure(gs), CellIndex(index) { }
 
   /// Get the number of points in the cell.
   __device__ dax::Id GetNumberOfPoints() const
@@ -37,20 +36,15 @@ public:
     return 8;
   }
 
-  /// Get the work corresponding to a given point.
-  __device__ dax::exec::WorkMapField GetPoint(const dax::Id index) const
+  /// Given a vertex index for a point (0 to GetNumberOfPoints() - 1), returns
+  /// the index for the point in point space.
+  __device__ dax::Id GetPointIndex(const dax::Id vertexIndex) const
   {
-    dax::Int3 dims;
-    dims.x = this->GridStructure.ExtentMax.x - this->GridStructure.ExtentMin.x + 1;
-    dims.y = this->GridStructure.ExtentMax.y - this->GridStructure.ExtentMin.y + 1;
-    dims.z = this->GridStructure.ExtentMax.z - this->GridStructure.ExtentMin.z + 1;
+    dax::Int3 pointDims = dax::extentDimensions(this->GridStructure.Extent);
+    dax::Int3 cellDims = { pointDims.x - 1, pointDims.y - 1, pointDims.z - 1 };
+    dax::Int3 ijkCell = dax::flatIndexToInt3Index(this->GetIndex(), cellDims);
 
-    dax::Int3 cell_ijk;
-    cell_ijk.x = this->CellId % (dims.x - 1);
-    cell_ijk.y = (this->CellId / (dims.x - 1)) % (dims.y -1 );
-    cell_ijk.z = (this->CellId / ((dims.x - 1) * (dims.y -1 )));
-
-    const dax::Int3 cellToPointIndex[8] = {
+    const dax::Int3 cellVertexToPointIndex[8] = {
       { 0, 0, 0 },
       { 0, 0, 1 },
       { 0, 1, 1 },
@@ -61,20 +55,44 @@ public:
       { 1, 1, 0 }
     };
 
-    dax::Int3 point_ijk = cell_ijk + cellToPointIndex[index];
+    dax::Int3 ijkPoint = ijkCell + cellVertexToPointIndex[vertexIndex];
 
-    dax::exec::WorkMapField workPoint;
-    workPoint.SetItem(point_ijk.x + dims.x*(point_ijk.y + dims.y*point_ijk.z));
-    return workPoint;
+    dax::Id pointIndex = int3IndexToFlatIndex(ijkPoint, pointDims);
+
+    return pointIndex;
   }
 
-  /// Convenience method to a get a point coordinate
-  __device__ dax::Vector3 GetPoint(
-      const dax::Id& index,
-      const dax::exec::FieldCoordinates& points) const
+  /// Get the origin (the location of the point at grid coordinates 0,0,0).
+  __device__ const dax::Vector3 &GetOrigin() const
   {
-    dax::exec::WorkMapField point_work = this->GetPoint(index);
-    return points.GetVector3(point_work);
+    return this->GetGridStructure().Origin;
+  }
+
+  /// Get the spacing (the distance between grid points in each dimension).
+  __device__ const dax::Vector3 &GetSpacing() const
+  {
+    return this->GetGridStructure().Spacing;
+  }
+
+  /// Get the extent of the grid in which this cell resides.
+  __device__ const dax::Extent3 &GetExtent() const
+  {
+    return this->GetGridStructure().Extent;
+  }
+
+  /// Get the cell index.  Probably only useful internally.
+  __device__ dax::Id GetIndex() const { return this->CellIndex; }
+
+  /// Change the cell id.  (Used internally.)
+  __device__ void SetIndex(dax::Id cellIndex)
+  {
+    this->CellIndex = cellIndex;
+  }
+
+  /// Get the grid structure details.  Only useful internally.
+  __device__ const dax::StructuredPointsMetaData &GetGridStructure() const
+  {
+    return this->GridStructure;
   }
 };
 
