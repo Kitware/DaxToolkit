@@ -62,6 +62,46 @@ private:
   dax::Id NumEntries;
 };
 
+/// Create a dax::internal::DataArray from a raw pointer.
+DAX_EXEC_CONT_EXPORT inline
+DataArray<dax::Id> make_DataArrayId(dax::Id *rawData, dax::Id numEntries)
+{
+  return DataArray<dax::Id>(rawData, numEntries);
+}
+
+/// Create a dax::internal::DataArray from a raw pointer.
+DAX_EXEC_CONT_EXPORT inline
+DataArray<dax::Id3> make_DataArrayId3(dax::Id *rawData, dax::Id numTuples)
+{
+  return DataArray<dax::Id3>(reinterpret_cast<dax::Id3*>(rawData), numTuples);
+}
+
+/// Create a dax::internal::DataArray from a raw pointer.
+DAX_EXEC_CONT_EXPORT inline
+DataArray<dax::Scalar> make_DataArrayScalar(dax::Scalar *rawData,
+                                            dax::Id numEntries)
+{
+  return DataArray<dax::Scalar>(rawData, numEntries);
+}
+
+/// Create a dax::internal::DataArray from a raw pointer.
+DAX_EXEC_CONT_EXPORT inline
+DataArray<dax::Vector3> make_DataArrayVector3(dax::Scalar *rawData,
+                                              dax::Id numTuples)
+{
+  return DataArray<dax::Vector3>(reinterpret_cast<dax::Vector3*>(rawData),
+                                 numTuples);
+}
+
+/// Create a dax::internal::DataArray from a raw pointer.
+DAX_EXEC_CONT_EXPORT inline
+DataArray<dax::Vector4> make_DataArrayVector4(dax::Scalar *rawData,
+                                              dax::Id numTuples)
+{
+  return DataArray<dax::Vector4>(reinterpret_cast<dax::Vector4*>(rawData),
+                                 numTuples);
+}
+
 }}
 
 #endif

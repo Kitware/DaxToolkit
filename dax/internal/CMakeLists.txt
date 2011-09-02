@@ -15,6 +15,7 @@ set(headers
 dax_declare_headers(${headers})
 
 set(unit_tests
+  UnitTestDataArray.cxx
   UnitTestExtent.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
