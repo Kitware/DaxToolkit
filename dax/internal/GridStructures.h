@@ -1,4 +1,4 @@
-/*=========================================================================
+  /*=========================================================================
 
   This software is distributed WITHOUT ANY WARRANTY; without even
   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
@@ -21,7 +21,7 @@ struct Extent3 {
 } __attribute__ ((aligned(4)));
 
 /// Given an extent, returns the array dimensions in each direction.
-inline dax::Id3 extentDimensions(const Extent3 &extent)
+DAX_EXEC_CONT_EXPORT inline dax::Id3 extentDimensions(const Extent3 &extent)
 {
   return extent.Max - extent.Min + make_Id3(1, 1, 1);
 }
@@ -30,7 +30,8 @@ inline dax::Id3 extentDimensions(const Extent3 &extent)
 /// the minimum extent in every direction and then increasing first in the r
 /// then s then t directions.  This method converts a flat index to the r,s,t
 /// 3d indices.
-inline dax::Id3 flatIndexToIndex3(dax::Id index, const Extent3 &extent)
+DAX_EXEC_CONT_EXPORT inline dax::Id3 flatIndexToIndex3(dax::Id index,
+                                                       const Extent3 &extent)
 {
   dax::Id3 dims = extentDimensions(extent);
 
@@ -44,8 +45,8 @@ inline dax::Id3 flatIndexToIndex3(dax::Id index, const Extent3 &extent)
 
 /// Same as flatIndexToIndex3 except performed for cells using extents for
 /// for points, which have one more in every direction than cells.
-inline dax::Id3 flatIndexToIndex3Cell(dax::Id index,
-                                          const Extent3 &pointExtent)
+DAX_EXEC_CONT_EXPORT inline
+dax::Id3 flatIndexToIndex3Cell(dax::Id index, const Extent3 &pointExtent)
 {
   dax::Id3 dims = extentDimensions(pointExtent) - dax::make_Id3(1, 1, 1);
 
@@ -61,7 +62,8 @@ inline dax::Id3 flatIndexToIndex3Cell(dax::Id index,
 /// the minimum extent in every direction and then increasing first in the r
 /// then s then t directions.  This method converts r,s,t 3d indices to a flat
 /// index.
-inline dax::Id index3ToFlatIndex(dax::Id3 ijk, const Extent3 &extent)
+DAX_EXEC_CONT_EXPORT inline dax::Id index3ToFlatIndex(dax::Id3 ijk,
+                                                      const Extent3 &extent)
 {
   dax::Id3 dims = extentDimensions(extent);
   dax::Id3 deltas = ijk - extent.Min;
@@ -71,8 +73,8 @@ inline dax::Id index3ToFlatIndex(dax::Id3 ijk, const Extent3 &extent)
 
 /// Same as index3ToFlatIndex except performed for cells using extents for
 /// for points, which have one more in every direction than cells.
-inline dax::Id index3ToFlatIndexCell(dax::Id3 ijk,
-                                        const Extent3 &pointExtent)
+DAX_EXEC_CONT_EXPORT inline
+dax::Id index3ToFlatIndexCell(dax::Id3 ijk, const Extent3 &pointExtent)
 {
   dax::Id3 dims = extentDimensions(pointExtent) - dax::make_Id3(1, 1, 1);
   dax::Id3 deltas = ijk - pointExtent.Min;

@@ -34,21 +34,27 @@ private:
 public:
   typedef CellVoxel CellType;
 
-  __device__ WorkMapCell(const dax::internal::StructureUniformGrid &gridStructure,
-                         dax::Id cellIndex)
+  DAX_EXEC_EXPORT WorkMapCell(
+    const dax::internal::StructureUniformGrid &gridStructure,
+    dax::Id cellIndex)
     : Cell(gridStructure, cellIndex) { }
 
-  __device__ const dax::exec::CellVoxel GetCell() const { return this->Cell; }
+  DAX_EXEC_EXPORT const dax::exec::CellVoxel GetCell() const
+  {
+    return this->Cell;
+  }
 
   template<typename T>
-  __device__ const T &GetFieldValue(const dax::exec::FieldCell<T> &field) const
+  DAX_EXEC_EXPORT
+  const T &GetFieldValue(const dax::exec::FieldCell<T> &field) const
   {
     return dax::exec::internal::fieldAccessNormalGet(field,
                                                      this->GetCellIndex());
   }
 
   template<typename T>
-  __device__ void SetFieldValue(dax::exec::FieldCell<T> &field, const T &value)
+  DAX_EXEC_EXPORT void SetFieldValue(dax::exec::FieldCell<T> &field,
+                                     const T &value)
   {
     dax::exec::internal::fieldAccessNormalSet(field,
                                               this->GetCellIndex(),
@@ -56,14 +62,14 @@ public:
   }
 
   template<typename T>
-  __device__ const T &GetFieldValue(const dax::exec::FieldPoint<T> &field,
-                                    dax::Id vertexIndex) const
+  DAX_EXEC_EXPORT const T &GetFieldValue(const dax::exec::FieldPoint<T> &field,
+                                         dax::Id vertexIndex) const
   {
     dax::Id pointIndex = this->GetCell().GetPointIndex(vertexIndex);
     return dax::exec::internal::fieldAccessNormalGet(field, pointIndex);
   }
 
-  __device__ dax::Vector3 GetFieldValue(
+  DAX_EXEC_EXPORT dax::Vector3 GetFieldValue(
     const dax::exec::FieldCoordinates &, dax::Id vertexIndex) const
   {
     dax::Id pointIndex = this->GetCell().GetPointIndex(vertexIndex);
@@ -74,9 +80,9 @@ public:
                                                               pointIndex);
   }
 
-  __device__ dax::Id GetCellIndex() const { return this->Cell.GetIndex(); }
+  DAX_EXEC_EXPORT dax::Id GetCellIndex() const { return this->Cell.GetIndex(); }
 
-  __device__ void SetCellIndex(dax::Id cellIndex)
+  DAX_EXEC_EXPORT void SetCellIndex(dax::Id cellIndex)
   {
     this->Cell.SetIndex(cellIndex);
   }

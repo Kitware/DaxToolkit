@@ -8,6 +8,7 @@
 set(headers
   DataArray.h
   DataSet.h
+  ExportMacros.h
   GridStructures.h
   )
 

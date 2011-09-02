@@ -26,21 +26,21 @@ class WorkMapFieldBase
   dax::Id Index;
 
 public:
-  __device__ WorkMapFieldBase(dax::Id index)
+  DAX_EXEC_EXPORT WorkMapFieldBase(dax::Id index)
   {  }
 
-  __device__ dax::Id GetIndex() const { return this->Index; }
+  DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->Index; }
 
-  __device__ void SetIndex(dax::Id index) { this->Index = index; }
+  DAX_EXEC_EXPORT void SetIndex(dax::Id index) { this->Index = index; }
 
   template<typename T>
-  __device__ const T &GetFieldValue(const dax::exec::Field<T> &field) const
+  DAX_EXEC_EXPORT const T &GetFieldValue(const dax::exec::Field<T> &field) const
   {
     return dax::exec::internal::fieldAccessNormalGet(field, this->GetIndex());
   }
 
   template<typename T>
-  __device__ void SetFieldValue(dax::exec::Field<T> &field, const T &value)
+  DAX_EXEC_EXPORT void SetFieldValue(dax::exec::Field<T> &field, const T &value)
   {
     dax::exec::internal::fieldAccessNormalSet(field, this->GetIndex(), value);
   }
@@ -52,7 +52,7 @@ class WorkMapField : public dax::exec::WorkMapFieldBase
 public:
   typedef CellT CellType;
 
-  __device__ WorkMapField(dax::Id index) : WorkMapFieldBase(index) { }
+  DAX_EXEC_EXPORT WorkMapField(dax::Id index) : WorkMapFieldBase(index) { }
 };
 
 template<>
@@ -63,11 +63,12 @@ class WorkMapField<CellVoxel> : public dax::exec::WorkMapFieldBase
 public:
   typedef CellVoxel CellType;
 
-  __device__ WorkMapField(const dax::internal::StructureUniformGrid &gs,
-                          dax::Id index)
+  DAX_EXEC_EXPORT WorkMapField(const dax::internal::StructureUniformGrid &gs,
+                               dax::Id index)
     : WorkMapFieldBase(index), GridStructure(gs) { }
 
-  __device__ dax::Vector3 GetFieldValue(const dax::exec::FieldCoordinates &)
+  DAX_EXEC_EXPORT dax::Vector3 GetFieldValue(
+    const dax::exec::FieldCoordinates &)
   {
     // Special case.  Point coordiantes are determined implicitly by index.
     return dax::exec::internal::fieldAccessUniformCoordinatesGet(

@@ -17,10 +17,10 @@ namespace dax { namespace exec {
 
 //-----------------------------------------------------------------------------
 template<class WorkType, class T>
-__device__ T cellInterpolate(const WorkType &work,
-                             const dax::exec::CellVoxel &cell,
-                             const dax::Vector3 &pcoords,
-                             const dax::exec::FieldPoint<T> &point_field)
+DAX_EXEC_EXPORT T cellInterpolate(const WorkType &work,
+                                  const dax::exec::CellVoxel &cell,
+                                  const dax::Vector3 &pcoords,
+                                  const dax::exec::FieldPoint<T> &point_field)
 {
   const dax::Id numVerts;
 

@@ -24,19 +24,16 @@ endfunction(dax_get_kit_name)
 # Builds a source file and an executable that does nothing other than
 # compile the given header files.
 function(dax_add_header_build_test name dir_prefix)
-  set(HEADERS)
-  set(hfiles)
-  foreach (hdr ${ARGN})
-    set(HEADERS "${HEADERS}#include <${dir_prefix}/${hdr}>\n")
-    set(hfiles ${hfiles} ${Dax_SOURCE_DIR}/${dir_prefix}/${hdr})
-  endforeach()
+  set(hfiles ${ARGN})
+  set(cxxfiles)
+  foreach (header ${ARGN})
+    get_filename_component(headername ${header} NAME_WE)
+    set(src ${CMAKE_CURRENT_BINARY_DIR}/TestBuild_${name}_${headername}.cxx)
+    configure_file(${Dax_SOURCE_DIR}/CMake/TestBuild.cxx.in ${src} @ONLY)
+    set(cxxfiles ${cxxfiles} ${src})
+  endforeach (header)
   
-  configure_file(${Dax_SOURCE_DIR}/CMake/TestBuild.cxx.in
-    ${CMAKE_CURRENT_BINARY_DIR}/TestBuild_${name}.cxx
-    @ONLY)
-  add_executable(TestBuild_${name}
-    ${CMAKE_CURRENT_BINARY_DIR}/TestBuild_${name}.cxx
-    ${hfiles})
+  add_library(TestBuild_${name} ${cxxfiles} ${hfiles})
   set_source_files_properties(${hfiles}
     PROPERTIES HEADER_FILE_ONLY TRUE
     )

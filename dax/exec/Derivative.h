@@ -18,7 +18,7 @@ namespace dax { namespace exec {
 
 //-----------------------------------------------------------------------------
 template<class WorkType>
-__device__ dax::Vector3 derivativeCell(
+DAX_EXEC_EXPORT dax::Vector3 derivativeCell(
     const WorkType &work,
     const dax::exec::CellVoxel &cell,
     const dax::Vector3 &pcoords,

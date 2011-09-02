@@ -8,6 +8,8 @@
 #ifndef __dax_Types_h
 #define __dax_Types_h
 
+#include <dax/internal/ExportMacros.h>
+
 /*!
  * \namespace dax
  * \brief Dax Toolkit.
@@ -87,7 +89,7 @@ namespace dax
   typedef int Id __attribute__ ((aligned(4)));
 
   /// Initializes and returns a Vector3.
-  inline Vector3 make_Vector3(Scalar x, Scalar y, Scalar z)
+  DAX_EXEC_CONT_EXPORT inline Vector3 make_Vector3(Scalar x, Scalar y, Scalar z)
     {
     Vector3 temp;
     temp.x = x; temp.y = y; temp.z = z;
@@ -95,7 +97,8 @@ namespace dax
     }
 
   /// Initializes and returns a Vector4.
-  inline Vector4 make_Vector4(Scalar x, Scalar y, Scalar z, Scalar w)
+  DAX_EXEC_CONT_EXPORT inline
+  Vector4 make_Vector4(Scalar x, Scalar y, Scalar z, Scalar w)
     {
     Vector4 temp;
     temp.x = x; temp.y = y; temp.z = z; temp.w = w;
@@ -103,7 +106,7 @@ namespace dax
     }
 
   /// Initializes and returns an Id3
-  inline Id3 make_Id3(int x, int y, int z)
+  DAX_EXEC_CONT_EXPORT inline Id3 make_Id3(int x, int y, int z)
     {
     Id3 temp;
     temp.x = x;  temp.y = y;  temp.z = z;
@@ -118,103 +121,112 @@ namespace dax
   typedef float4 Vector4;
   typedef int Id;
 
-  __host__ __device__ inline Vector3 make_Vector3(float x, float y, float z)
+  DAX_EXEC_CONT_EXPORT inline Vector3 make_Vector3(float x, float y, float z)
     {
     return make_float3(x, y, z);
     }
 
-  __host__ __device__ inline Vector4 make_Vector4(float x, float y, float z, float w)
+  DAX_EXEC_CONT_EXPORT inline
+  Vector4 make_Vector4(float x, float y, float z, float w)
     {
     return make_float4(x, y, z, w);
     }
 
-  __host__ __device__ inline Id3 make_Id3(int x, int y, int z)
+  DAX_EXEC_CONT_EXPORT inline Id3 make_Id3(int x, int y, int z)
     {
     return make_int3(x, y, z);
     }
 
 #endif
 
-  inline Id3 operator+(const Id3 &a, const Id3 &b)
+  DAX_EXEC_CONT_EXPORT inline Id3 operator+(const Id3 &a, const Id3 &b)
   {
     Id3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
     return result;
   }
-  inline Id3 operator*(const Id3 &a, const Id3 &b)
+  DAX_EXEC_CONT_EXPORT inline Id3 operator*(const Id3 &a, const Id3 &b)
   {
     Id3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
     return result;
   }
-  inline Id3 operator-(const Id3 &a, const Id3 &b)
+  DAX_EXEC_CONT_EXPORT inline Id3 operator-(const Id3 &a, const Id3 &b)
   {
     Id3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
     return result;
   }
-  inline Id3 operator/(const Id3 &a, const Id3 &b)
+  DAX_EXEC_CONT_EXPORT inline Id3 operator/(const Id3 &a, const Id3 &b)
   {
     Id3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
     return result;
   }
 
-  inline Vector3 operator+(const Vector3 &a, const Vector3 &b)
+  DAX_EXEC_CONT_EXPORT inline Vector3
+  operator+(const Vector3 &a, const Vector3 &b)
   {
     Vector3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
     return result;
   }
-  inline Vector3 operator*(const Vector3 &a, const Vector3 &b)
+  DAX_EXEC_CONT_EXPORT inline Vector3
+  operator*(const Vector3 &a, const Vector3 &b)
   {
     Vector3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
     return result;
   }
-  inline Vector3 operator-(const Vector3 &a, const Vector3 &b)
+  DAX_EXEC_CONT_EXPORT inline Vector3
+  operator-(const Vector3 &a, const Vector3 &b)
   {
     Vector3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
     return result;
   }
-  inline Vector3 operator/(const Vector3 &a, const Vector3 &b)
+  DAX_EXEC_CONT_EXPORT inline Vector3
+  operator/(const Vector3 &a, const Vector3 &b)
   {
     Vector3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
     return result;
   }
 
-  inline Vector3 operator*(Scalar a, const Vector3 &b)
+  DAX_EXEC_CONT_EXPORT inline Vector3 operator*(Scalar a, const Vector3 &b)
   {
     Vector3 result = { a * b.x, a * b.y, a * b.z };
     return result;
   }
-  inline Vector3 operator*(const Vector3 &a, Scalar &b)
+  DAX_EXEC_CONT_EXPORT inline Vector3 operator*(const Vector3 &a, Scalar &b)
   {
     Vector3 result = { a.x * b, a.y * b, a.z * b };
     return result;
   }
 
-  inline Vector4 operator+(const Vector4 &a, const Vector4 &b)
+  DAX_EXEC_CONT_EXPORT inline
+  Vector4 operator+(const Vector4 &a, const Vector4 &b)
   {
     Vector4 result = { a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w };
     return result;
   }
-  inline Vector4 operator*(const Vector4 &a, const Vector4 &b)
+  DAX_EXEC_CONT_EXPORT inline
+  Vector4 operator*(const Vector4 &a, const Vector4 &b)
   {
     Vector4 result = { a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w };
     return result;
   }
-  inline Vector4 operator-(const Vector4 &a, const Vector4 &b)
+  DAX_EXEC_CONT_EXPORT inline
+  Vector4 operator-(const Vector4 &a, const Vector4 &b)
   {
     Vector4 result = { a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w };
     return result;
   }
-  inline Vector4 operator/(const Vector4 &a, const Vector4 &b)
+  DAX_EXEC_CONT_EXPORT inline
+  Vector4 operator/(const Vector4 &a, const Vector4 &b)
   {
     Vector4 result = { a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w };
     return result;
   }
 
-  inline Vector4 operator*(Scalar a, const Vector4 &b)
+  DAX_EXEC_CONT_EXPORT inline Vector4 operator*(Scalar a, const Vector4 &b)
   {
     Vector4 result = { a * b.x, a * b.y, a * b.z, a * b.w };
     return result;
   }
-  inline Vector4 operator*(const Vector4 &a, Scalar &b)
+  DAX_EXEC_CONT_EXPORT inline Vector4 operator*(const Vector4 &a, Scalar &b)
   {
     Vector4 result = { a.x * b, a.y * b, a.z * b, a.w * b };
     return result;

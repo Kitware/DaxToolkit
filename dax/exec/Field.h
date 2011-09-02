@@ -18,16 +18,17 @@ class Field
 public:
   typedef T ValueType;
 
-  __device__ Field(dax::internal::DataArray<ValueType> &array) : Array(array)
+  DAX_EXEC_EXPORT Field(dax::internal::DataArray<ValueType> &array)
+    : Array(array)
   {
   }
 
   /// Get the internal array.  Work objects use this to get/set values.
-  __device__ const dax::internal::DataArray<ValueType> &GetArray() const
+  DAX_EXEC_EXPORT const dax::internal::DataArray<ValueType> &GetArray() const
   {
     return this->Array;
   }
-  __device__ dax::internal::DataArray<ValueType> &GetArray()
+  DAX_EXEC_EXPORT dax::internal::DataArray<ValueType> &GetArray()
   {
     return this->Array;
   }
@@ -43,7 +44,7 @@ public:
   typedef T ValueType;
   typedef dax::exec::Field<ValueType> Superclass;
 
-  __device__ FieldPoint(dax::internal::DataArray<ValueType> &array)
+  DAX_EXEC_EXPORT FieldPoint(dax::internal::DataArray<ValueType> &array)
     : Superclass(array)
   { }
 };
@@ -53,7 +54,7 @@ class FieldCoordinates : public dax::exec::FieldPoint<dax::Vector3>
 public:
   typedef dax::Vector3 ValueType;
   typedef dax::exec::FieldPoint<ValueType> Superclass;
-  __device__ FieldCoordinates(dax::internal::DataArray<ValueType> &array)
+  DAX_EXEC_EXPORT FieldCoordinates(dax::internal::DataArray<ValueType> &array)
     : Superclass(array)
    { }
 };
@@ -64,7 +65,7 @@ class FieldCell : public dax::exec::Field<T>
 public:
   typedef T ValueType;
   typedef dax::exec::Field<ValueType> Superclass;
-  __device__ FieldCell(dax::internal::DataArray<ValueType> &array)
+  DAX_EXEC_EXPORT FieldCell(dax::internal::DataArray<ValueType> &array)
     : Superclass(array)
   { }
 };

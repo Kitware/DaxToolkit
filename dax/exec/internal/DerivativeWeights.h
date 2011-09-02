@@ -14,8 +14,8 @@ namespace dax {
 namespace exec {
 namespace internal {
 
-__device__ static void derivativeWeightsVoxel(const dax::Vector3 &pcoords,
-                                              dax::Vector3 weights[8])
+DAX_EXEC_EXPORT static void derivativeWeightsVoxel(const dax::Vector3 &pcoords,
+                                                   dax::Vector3 weights[8])
 {
   dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
 

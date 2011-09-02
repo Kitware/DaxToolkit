@@ -8,6 +8,8 @@
 #ifndef __dax_internal_DataArray_h
 #define __dax_internal_DataArray_h
 
+#include <dax/internal/ExportMacros.h>
+
 #include <dax/Types.h>
 
 namespace dax { namespace internal {
@@ -22,31 +24,34 @@ class DataArray
 public:
   typedef T ValueType;
 
-  __device__ DataArray(ValueType *data, dax::Id numEntries)
+  DAX_EXEC_CONT_EXPORT DataArray(ValueType *data, dax::Id numEntries)
     : Data(data), NumEntries(numEntries)
   { }
 
-  __device__ DataArray() : Data(0), NumEntries(0) { }
+  DAX_EXEC_CONT_EXPORT DataArray() : Data(0), NumEntries(0) { }
 
-  __device__ const ValueType &GetValue(dax::Id index) const
+  DAX_EXEC_CONT_EXPORT const ValueType &GetValue(dax::Id index) const
   {
     return this->Data[index];
   }
 
-  __device__ void SetValue(dax::Id index, const ValueType &value)
+  DAX_EXEC_CONT_EXPORT void SetValue(dax::Id index, const ValueType &value)
   {
     this->Data[index] = value;
   }
 
-  __device__ dax::Id GetNumberOfEntries() const
+  DAX_EXEC_CONT_EXPORT dax::Id GetNumberOfEntries() const
   {
     return this->NumEntries;
   }
 
-  __device__ const ValueType *GetPointer() const { return this->Data; }
-  __device__ ValueType *GetPointer() { return this->Data; }
+  DAX_EXEC_CONT_EXPORT const ValueType *GetPointer() const
+  {
+    return this->Data;
+  }
+  DAX_EXEC_CONT_EXPORT ValueType *GetPointer() { return this->Data; }
 
-  __device__ void SetPointer(ValueType *data, dax::Id numEntries)
+  DAX_EXEC_CONT_EXPORT void SetPointer(ValueType *data, dax::Id numEntries)
   {
     this->Data = data;
     this->NumEntries = numEntries;

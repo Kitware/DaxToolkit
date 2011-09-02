@@ -24,7 +24,7 @@ public:
   int CellArrayIndex;
   int CellDataIndices[MAX_NUMBER_OF_FIELDS];
   int PointDataIndices[MAX_NUMBER_OF_FIELDS];
-  DataSet() :
+  DAX_EXEC_CONT_EXPORT DataSet() :
     PointCoordinatesIndex(-1),
     CellArrayIndex(-1)
   {

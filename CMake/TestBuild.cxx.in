@@ -1,9 +1,6 @@
+#include <@dir_prefix@/@header@>
 
-#define __device__
-
-@HEADERS@
-
-int main()
+int @headername@()
 {
   return 0;
 }
