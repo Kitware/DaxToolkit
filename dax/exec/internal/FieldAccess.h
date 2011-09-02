@@ -35,10 +35,11 @@ __device__ dax::Vector3 fieldAccessUniformCoordinatesGet(
   const dax::internal::StructureUniformGrid &gridStructure,
   dax::Id index)
 {
-  dax::Int3 ijk = flatIndexToInt3Index(index, gridStructure.Extent);
+  dax::Id3 ijk = flatIndexToIndex3(index, gridStructure.Extent);
   dax::Vector3 coords;
-  coords = (  gridStructure.Origin
-            + (ijk + gridStructure.Extent.Min) * gridStructure.Spacing );
+  coords.x = gridStructure.Origin.x + ijk.x * gridStructure.Spacing.x;
+  coords.y = gridStructure.Origin.y + ijk.y * gridStructure.Spacing.y;
+  coords.z = gridStructure.Origin.z + ijk.z * gridStructure.Spacing.z;
   return coords;
 }
 

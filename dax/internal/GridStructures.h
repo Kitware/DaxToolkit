@@ -16,25 +16,25 @@ namespace internal {
 /// Extent3 stores the 6 values for the extents of a structured grid array.
 /// It gives the minimum indices and the maximum indices.
 struct Extent3 {
-  Int3 Min;
-  Int3 Max;
+  Id3 Min;
+  Id3 Max;
 } __attribute__ ((aligned(4)));
 
 /// Given an extent, returns the array dimensions in each direction.
-inline dax::Int3 extentDimensions(const Extent3 &extent)
+inline dax::Id3 extentDimensions(const Extent3 &extent)
 {
-  return extent.Max - extent.Min + make_Int3(1, 1, 1);
+  return extent.Max - extent.Min + make_Id3(1, 1, 1);
 }
 
 /// Elements in structured grids have a single index with 0 being the entry at
 /// the minimum extent in every direction and then increasing first in the r
 /// then s then t directions.  This method converts a flat index to the r,s,t
 /// 3d indices.
-inline dax::Int3 flatIndexToInt3Index(dax::Id index, const Extent3 &extent)
+inline dax::Id3 flatIndexToIndex3(dax::Id index, const Extent3 &extent)
 {
-  dax::Int3 dims = extentDimensions(extent);
+  dax::Id3 dims = extentDimensions(extent);
 
-  dax::Int3 ijk;
+  dax::Id3 ijk;
   ijk.x = index % (dims.x - 1);
   ijk.y = (index / (dims.x - 1)) % (dims.y -1 );
   ijk.z = (index / ((dims.x - 1) * (dims.y -1 )));
@@ -42,14 +42,14 @@ inline dax::Int3 flatIndexToInt3Index(dax::Id index, const Extent3 &extent)
   return ijk + extent.Min;
 }
 
-/// Same as flatIndexToInt3Index except performed for cells using extents for
+/// Same as flatIndexToIndex3 except performed for cells using extents for
 /// for points, which have one more in every direction than cells.
-inline dax::Int3 flatIndexToInt3IndexCell(dax::Id index,
+inline dax::Id3 flatIndexToIndex3Cell(dax::Id index,
                                           const Extent3 &pointExtent)
 {
-  dax::Int3 dims = extentDimensions(pointExtent) - dax::make_Int3(1, 1, 1);
+  dax::Id3 dims = extentDimensions(pointExtent) - dax::make_Id3(1, 1, 1);
 
-  dax::Int3 ijk;
+  dax::Id3 ijk;
   ijk.x = index % (dims.x - 1);
   ijk.y = (index / (dims.x - 1)) % (dims.y -1 );
   ijk.z = (index / ((dims.x - 1) * (dims.y -1 )));
@@ -61,21 +61,21 @@ inline dax::Int3 flatIndexToInt3IndexCell(dax::Id index,
 /// the minimum extent in every direction and then increasing first in the r
 /// then s then t directions.  This method converts r,s,t 3d indices to a flat
 /// index.
-inline dax::Id int3IndexToFlatIndex(dax::Int3 ijk, const Extent3 &extent)
+inline dax::Id index3ToFlatIndex(dax::Id3 ijk, const Extent3 &extent)
 {
-  dax::Int3 dims = extentDimensions(extent);
-  dax::Int3 deltas = ijk - extent.Min;
+  dax::Id3 dims = extentDimensions(extent);
+  dax::Id3 deltas = ijk - extent.Min;
 
   return deltas.x + dims.x*(deltas.y + dims.y*deltas.z);
 }
 
-/// Same as int3IndexToFlatIndex except performed for cells using extents for
+/// Same as index3ToFlatIndex except performed for cells using extents for
 /// for points, which have one more in every direction than cells.
-inline dax::Id int3IndexToFlatIndexCell(dax::Int3 ijk,
+inline dax::Id index3ToFlatIndexCell(dax::Id3 ijk,
                                         const Extent3 &pointExtent)
 {
-  dax::Int3 dims = extentDimensions(pointExtent) - dax::make_Int3(1, 1, 1);
-  dax::Int3 deltas = ijk - pointExtent.Min;
+  dax::Id3 dims = extentDimensions(pointExtent) - dax::make_Id3(1, 1, 1);
+  dax::Id3 deltas = ijk - pointExtent.Min;
 
   return deltas.x + dims.x*(deltas.y + dims.y*deltas.z);
 }

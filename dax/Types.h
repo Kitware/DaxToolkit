@@ -77,8 +77,9 @@ namespace dax
     Scalar x; Scalar y; Scalar z; Scalar w;
   } __attribute__ ((aligned(16)));
 
-  /// Int3 corresponds to a 3-tuple of integers (used for 3d array indices).
-  struct Int3 {
+  /// Id3 corresponds to a 3-dimensional index for 3d arrays.  Note that
+  /// the precision of each index may be less than dax::Id.
+  struct Id3 {
     int x; int y; int z;
   } __attribute__ ((aligned(4)));
 
@@ -101,10 +102,10 @@ namespace dax
     return temp;
     }
 
-  /// Initializes and returns an Int3
-  inline Int3 make_Int3(int x, int y, int z)
+  /// Initializes and returns an Id3
+  inline Id3 make_Id3(int x, int y, int z)
     {
-    Int3 temp;
+    Id3 temp;
     temp.x = x;  temp.y = y;  temp.z = z;
     return temp;
     }
@@ -113,7 +114,7 @@ namespace dax
 
   typedef float Scalar;
   typedef float3 Vector3;
-  typedef int3 Int3;
+  typedef int3 Id3;
   typedef float4 Vector4;
   typedef int Id;
 
@@ -127,31 +128,31 @@ namespace dax
     return make_float4(x, y, z, w);
     }
 
-  __host__ __device__ inline Int3 make_Int3(int x, int y, int z)
+  __host__ __device__ inline Id3 make_Id3(int x, int y, int z)
     {
     return make_int3(x, y, z);
     }
 
 #endif
 
-  inline Int3 operator+(const Int3 &a, const Int3 &b)
+  inline Id3 operator+(const Id3 &a, const Id3 &b)
   {
-    Int3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
+    Id3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
     return result;
   }
-  inline Int3 operator*(const Int3 &a, const Int3 &b)
+  inline Id3 operator*(const Id3 &a, const Id3 &b)
   {
-    Int3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
+    Id3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
     return result;
   }
-  inline Int3 operator-(const Int3 &a, const Int3 &b)
+  inline Id3 operator-(const Id3 &a, const Id3 &b)
   {
-    Int3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
+    Id3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
     return result;
   }
-  inline Int3 operator/(const Int3 &a, const Int3 &b)
+  inline Id3 operator/(const Id3 &a, const Id3 &b)
   {
-    Int3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
+    Id3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
     return result;
   }
 
@@ -179,47 +180,6 @@ namespace dax
   inline Vector3 operator*(dax::Scalar a, const Vector3 &b)
   {
     Vector3 result = { a * b.x, a * b.y, a * b.z };
-    return result;
-  }
-
-  inline Vector3 operator+(const Vector3 &a, const Int3 &b)
-  {
-    Vector3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
-    return result;
-  }
-  inline Vector3 operator+(const Int3 &a, const Vector3 &b)
-  {
-    Vector3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
-    return result;
-  }
-  inline Vector3 operator*(const Vector3 &a, const Int3 &b)
-  {
-    Vector3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
-    return result;
-  }
-  inline Vector3 operator*(const Int3 &a, const Vector3 &b)
-  {
-    Vector3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
-    return result;
-  }
-  inline Vector3 operator-(const Vector3 &a, const Int3 &b)
-  {
-    Vector3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
-    return result;
-  }
-  inline Vector3 operator-(const Int3 &a, const Vector3 &b)
-  {
-    Vector3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
-    return result;
-  }
-  inline Vector3 operator/(const Vector3 &a, const Int3 &b)
-  {
-    Vector3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
-    return result;
-  }
-  inline Vector3 operator/(const Int3 &a, const Vector3 &b)
-  {
-    Vector3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
     return result;
   }
 

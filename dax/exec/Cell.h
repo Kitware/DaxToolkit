@@ -44,12 +44,12 @@ public:
   /// the index for the point in point space.
   __device__ dax::Id GetPointIndex(const dax::Id vertexIndex) const
   {
-    dax::Int3 ijkCell
-        = dax::internal::flatIndexToInt3IndexCell(
+    dax::Id3 ijkCell
+        = dax::internal::flatIndexToIndex3Cell(
           this->GetIndex(),
           this->GetGridStructure().Extent);
 
-    const dax::Int3 cellVertexToPointIndex[8] = {
+    const dax::Id3 cellVertexToPointIndex[8] = {
       { 0, 0, 0 },
       { 0, 0, 1 },
       { 0, 1, 1 },
@@ -60,9 +60,9 @@ public:
       { 1, 1, 0 }
     };
 
-    dax::Int3 ijkPoint = ijkCell + cellVertexToPointIndex[vertexIndex];
+    dax::Id3 ijkPoint = ijkCell + cellVertexToPointIndex[vertexIndex];
 
-    dax::Id pointIndex = int3IndexToFlatIndex(ijkPoint,
+    dax::Id pointIndex = index3ToFlatIndex(ijkPoint,
                                               this->GetGridStructure().Extent);
 
     return pointIndex;
