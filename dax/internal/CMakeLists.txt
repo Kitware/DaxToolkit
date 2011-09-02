@@ -8,6 +8,7 @@
 set(headers
   DataArray.h
   DataSet.h
+  GridStructures.h
   )
 
 dax_declare_headers(${headers})

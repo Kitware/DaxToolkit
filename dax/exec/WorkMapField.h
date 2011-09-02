@@ -12,6 +12,7 @@
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 
+#include <dax/internal/GridStructures.h>
 #include <dax/exec/internal/FieldAccess.h>
 
 namespace dax { namespace exec {
@@ -57,19 +58,19 @@ public:
 template<>
 class WorkMapField<CellVoxel> : public dax::exec::WorkMapFieldBase
 {
-  const dax::StructuredPointsMetaData &GridStructure;
+  const dax::internal::StructureUniformGrid &GridStructure;
 
 public:
   typedef CellVoxel CellType;
 
-  __device__ WorkMapField(const dax::StructuredPointsMetaData &gs,
+  __device__ WorkMapField(const dax::internal::StructureUniformGrid &gs,
                           dax::Id index)
     : WorkMapFieldBase(index), GridStructure(gs) { }
 
   __device__ dax::Vector3 GetFieldValue(const dax::exec::FieldCoordinates &)
   {
     // Special case.  Point coordiantes are determined implicitly by index.
-    return dax::exec::internal::fieldAccessStructuredCoordinatesGet(
+    return dax::exec::internal::fieldAccessUniformCoordinatesGet(
           this->GridStructure,
           this->GetIndex());
   }

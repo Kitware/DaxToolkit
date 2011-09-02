@@ -8,6 +8,9 @@
 #ifndef __dax_exec_Cell_h
 #define __dax_exec_Cell_h
 
+#include <dax/Types.h>
+#include <dax/internal/GridStructures.h>
+
 #include <dax/exec/Field.h>
 
 namespace dax { namespace exec {
@@ -22,12 +25,13 @@ namespace dax { namespace exec {
 class CellVoxel
 {
 private:
-  const dax::StructuredPointsMetaData &GridStructure;
+  const dax::internal::StructureUniformGrid &GridStructure;
   dax::Id CellIndex;
 
 public:
   /// Create a cell for the given work.
-  __device__ CellVoxel(const dax::StructuredPointsMetaData &gs, dax::Id index)
+  __device__ CellVoxel(const dax::internal::StructureUniformGrid &gs,
+                       dax::Id index)
     : GridStructure(gs), CellIndex(index) { }
 
   /// Get the number of points in the cell.
@@ -40,9 +44,10 @@ public:
   /// the index for the point in point space.
   __device__ dax::Id GetPointIndex(const dax::Id vertexIndex) const
   {
-    dax::Int3 pointDims = dax::extentDimensions(this->GridStructure.Extent);
-    dax::Int3 cellDims = { pointDims.x - 1, pointDims.y - 1, pointDims.z - 1 };
-    dax::Int3 ijkCell = dax::flatIndexToInt3Index(this->GetIndex(), cellDims);
+    dax::Int3 ijkCell
+        = dax::internal::flatIndexToInt3IndexCell(
+          this->GetIndex(),
+          this->GetGridStructure().Extent);
 
     const dax::Int3 cellVertexToPointIndex[8] = {
       { 0, 0, 0 },
@@ -57,7 +62,8 @@ public:
 
     dax::Int3 ijkPoint = ijkCell + cellVertexToPointIndex[vertexIndex];
 
-    dax::Id pointIndex = int3IndexToFlatIndex(ijkPoint, pointDims);
+    dax::Id pointIndex = int3IndexToFlatIndex(ijkPoint,
+                                              this->GetGridStructure().Extent);
 
     return pointIndex;
   }
@@ -75,7 +81,7 @@ public:
   }
 
   /// Get the extent of the grid in which this cell resides.
-  __device__ const dax::Extent3 &GetExtent() const
+  __device__ const dax::internal::Extent3 &GetExtent() const
   {
     return this->GetGridStructure().Extent;
   }
@@ -90,7 +96,7 @@ public:
   }
 
   /// Get the grid structure details.  Only useful internally.
-  __device__ const dax::StructuredPointsMetaData &GetGridStructure() const
+  __device__ const dax::internal::StructureUniformGrid &GetGridStructure() const
   {
     return this->GridStructure;
   }

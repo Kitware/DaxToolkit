@@ -12,6 +12,7 @@
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 
+#include <dax/internal/GridStructures.h>
 #include <dax/exec/internal/FieldAccess.h>
 
 namespace dax {
@@ -33,7 +34,7 @@ private:
 public:
   typedef CellVoxel CellType;
 
-  __device__ WorkMapCell(const dax::StructuredPointsMetaData &gridStructure,
+  __device__ WorkMapCell(const dax::internal::StructureUniformGrid &gridStructure,
                          dax::Id cellIndex)
     : Cell(gridStructure, cellIndex) { }
 
@@ -66,11 +67,11 @@ public:
     const dax::exec::FieldCoordinates &, dax::Id vertexIndex) const
   {
     dax::Id pointIndex = this->GetCell().GetPointIndex(vertexIndex);
-    const dax::StructuredPointsMetaData &gridStructure
+    const dax::internal::StructureUniformGrid &gridStructure
         = this->GetCell().GetGridStructure();
     return
-        dax::exec::internal::fieldAccessStructuredCoordinatesGet(gridStructure,
-                                                                 pointIndex);
+        dax::exec::internal::fieldAccessUniformCoordinatesGet(gridStructure,
+                                                              pointIndex);
   }
 
   __device__ dax::Id GetCellIndex() const { return this->Cell.GetIndex(); }

@@ -61,43 +61,32 @@ namespace dax
 
 #ifndef __CUDACC__
 
-  /// \internal
-  struct Vector3Struct {
-    float x; float y; float z;
-  } __attribute__ ((aligned(4)));
-
-  struct Vector4Struct {
-    float x; float y; float z; float w;
-  } __attribute__ ((aligned(16)));
-
-  /// \endinternal
-
-
-
   /// Alignment requirements are prescribed by CUDA on device (Table B-1 in NVIDIA
   /// CUDA C Programming Guide 4.0)
 
   /// Scalar corresponds to a single-valued floating point number.
   typedef float Scalar __attribute__ ((aligned (4)));
 
-  /// Vector3 corresponds to a 3-tuple.
-  typedef struct Vector3Struct Vector3; 
+  /// Vector3 corresponds to a 3-tuple
+  struct Vector3 {
+    Scalar x; Scalar y; Scalar z;
+  } __attribute__ ((aligned(4)));
 
-  struct Int3Struct {
+  /// Vector4 corresponds to a 4-tuple
+  struct Vector4 {
+    Scalar x; Scalar y; Scalar z; Scalar w;
+  } __attribute__ ((aligned(16)));
+
+  /// Int3 corresponds to a 3-tuple of integers (used for 3d array indices).
+  struct Int3 {
     int x; int y; int z;
   } __attribute__ ((aligned(4)));
-  
-  /// Int3 corresponds to a integral valued, 3-tuple.
-  typedef struct Int3Struct Int3;
-  
-  /// Vector4 corresponds to a 4-tuple.
-  typedef struct Vector4Struct Vector4;
 
   /// Represents an ID.
   typedef int Id __attribute__ ((aligned(4)));
 
   /// Initializes and returns a Vector3.
-  inline Vector3 make_Vector3(float x, float y, float z)
+  inline Vector3 make_Vector3(Scalar x, Scalar y, Scalar z)
     {
     Vector3 temp;
     temp.x = x; temp.y = y; temp.z = z;
@@ -105,10 +94,18 @@ namespace dax
     }
 
   /// Initializes and returns a Vector4.
-  inline Vector4 make_Vector4(float x, float y, float z, float w)
+  inline Vector4 make_Vector4(Scalar x, Scalar y, Scalar z, Scalar w)
     {
     Vector4 temp;
     temp.x = x; temp.y = y; temp.z = z; temp.w = w;
+    return temp;
+    }
+
+  /// Initializes and returns an Int3
+  inline Int3 make_Int3(int x, int y, int z)
+    {
+    Int3 temp;
+    temp.x = x;  temp.y = y;  temp.z = z;
     return temp;
     }
 
@@ -128,6 +125,11 @@ namespace dax
   __host__ __device__ inline Vector4 make_Vector4(float x, float y, float z, float w)
     {
     return make_float4(x, y, z, w);
+    }
+
+  __host__ __device__ inline Int3 make_Int3(int x, int y, int z)
+    {
+    return make_int3(x, y, z);
     }
 
 #endif
@@ -220,52 +222,6 @@ namespace dax
     Vector3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
     return result;
   }
-
-  struct Extent3 {
-    Int3 Min;
-    Int3 Max;
-  } __attribute__ ((aligned(4)));
-
-  inline dax::Int3 extentDimensions(const Extent3 &extent)
-  {
-    dax::Int3 dims;
-    dims.x = extent.Max.x - extent.Min.x + 1;
-    dims.y = extent.Max.y - extent.Min.y + 1;
-    dims.z = extent.Max.z - extent.Min.z + 1;
-    return dims;
-  }
-
-  inline dax::Int3 flatIndexToInt3Index(dax::Id index, const Int3 dims)
-  {
-    dax::Int3 cell_ijk;
-    cell_ijk.x = index % (dims.x - 1);
-    cell_ijk.y = (index / (dims.x - 1)) % (dims.y -1 );
-    cell_ijk.z = (index / ((dims.x - 1) * (dims.y -1 )));
-    return cell_ijk;
-  }
-
-  inline dax::Int3 flatIndexToInt3Index(dax::Id index, const Extent3 &extent)
-  {
-    dax::Int3 dims = extentDimensions(extent);
-    return flatIndexToInt3Index(index, dims);
-  }
-
-  inline dax::Id int3IndexToFlatIndex(dax::Int3 ijk, const Int3 dims)
-  {
-    return ijk.x + dims.x*(ijk.y + dims.y*ijk.z);
-  }
-
-  inline dax::Id int3IndexToFlatIndex(dax::Int3 ijk, const Extent3 &extent)
-  {
-    dax::Int3 dims = extentDimensions(extent);
-    return int3IndexToFlatIndex(ijk, dims);
-  }
-
-  struct StructuredPointsMetaData {
-    Vector3 Origin;
-    Vector3 Spacing;
-    Extent3 Extent;
-  } __attribute__ ((aligned(4)));
 
 }
 #endif

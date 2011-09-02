@@ -10,6 +10,8 @@
 
 #include <dax/exec/Field.h>
 
+#include <dax/internal/GridStructures.h>
+
 namespace dax { namespace exec { class CellVoxel; }}
 
 namespace dax { namespace exec { namespace internal {
@@ -29,8 +31,8 @@ __device__ void fieldAccessNormalSet(dax::exec::Field<T> &field,
   field.GetArray().SetValue(index, value);
 }
 
-__device__ dax::Vector3 fieldAccessStructuredCoordinatesGet(
-  const dax::StructuredPointsMetaData &gridStructure,
+__device__ dax::Vector3 fieldAccessUniformCoordinatesGet(
+  const dax::internal::StructureUniformGrid &gridStructure,
   dax::Id index)
 {
   dax::Int3 ijk = flatIndexToInt3Index(index, gridStructure.Extent);

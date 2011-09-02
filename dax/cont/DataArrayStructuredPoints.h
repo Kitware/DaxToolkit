@@ -10,6 +10,8 @@
 
 #include <dax/Types.h>
 
+#include<dax/internal/GridStructures.h>
+
 #include <dax/cont/DataArray.h>
 
 namespace dax { namespace cont {
@@ -45,11 +47,11 @@ public:
     this->HeavyData.Extent.Max.z = maxz;
     }
 
-  const dax::StructuredPointsMetaData& GetHeavyData() const
+  const dax::internal::StructureUniformGrid& GetHeavyData() const
     { return this->HeavyData; }
 
 protected:
-  dax::StructuredPointsMetaData HeavyData;
+  dax::internal::StructureUniformGrid HeavyData;
 
 private:
   daxDisableCopyMacro(DataArrayStructuredPoints)
