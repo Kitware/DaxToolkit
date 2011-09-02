@@ -177,9 +177,46 @@ namespace dax
     return result;
   }
 
-  inline Vector3 operator*(dax::Scalar a, const Vector3 &b)
+  inline Vector3 operator*(Scalar a, const Vector3 &b)
   {
     Vector3 result = { a * b.x, a * b.y, a * b.z };
+    return result;
+  }
+  inline Vector3 operator*(const Vector3 &a, Scalar &b)
+  {
+    Vector3 result = { a.x * b, a.y * b, a.z * b };
+    return result;
+  }
+
+  inline Vector4 operator+(const Vector4 &a, const Vector4 &b)
+  {
+    Vector4 result = { a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w };
+    return result;
+  }
+  inline Vector4 operator*(const Vector4 &a, const Vector4 &b)
+  {
+    Vector4 result = { a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w };
+    return result;
+  }
+  inline Vector4 operator-(const Vector4 &a, const Vector4 &b)
+  {
+    Vector4 result = { a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w };
+    return result;
+  }
+  inline Vector4 operator/(const Vector4 &a, const Vector4 &b)
+  {
+    Vector4 result = { a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w };
+    return result;
+  }
+
+  inline Vector4 operator*(Scalar a, const Vector4 &b)
+  {
+    Vector4 result = { a * b.x, a * b.y, a * b.z, a * b.w };
+    return result;
+  }
+  inline Vector4 operator*(const Vector4 &a, Scalar &b)
+  {
+    Vector4 result = { a.x * b, a.y * b, a.z * b, a.w * b };
     return result;
   }
 
