@@ -20,3 +20,8 @@ add_subdirectory(exec)
 if (DAX_ENABLE_CUDA)
   add_subdirectory(cuda)
 endif (DAX_ENABLE_CUDA)
+
+set(unit_tests
+  UnitTestTypes.cxx
+  )
+dax_unit_tests(SOURCES ${unit_tests})
