@@ -35,9 +35,9 @@ inline dax::Id3 flatIndexToIndex3(dax::Id index, const Extent3 &extent)
   dax::Id3 dims = extentDimensions(extent);
 
   dax::Id3 ijk;
-  ijk.x = index % (dims.x - 1);
-  ijk.y = (index / (dims.x - 1)) % (dims.y -1 );
-  ijk.z = (index / ((dims.x - 1) * (dims.y -1 )));
+  ijk.x = index % dims.x;
+  ijk.y = (index / dims.x) % dims.y;
+  ijk.z = (index / (dims.x * dims.y));
 
   return ijk + extent.Min;
 }
@@ -50,9 +50,9 @@ inline dax::Id3 flatIndexToIndex3Cell(dax::Id index,
   dax::Id3 dims = extentDimensions(pointExtent) - dax::make_Id3(1, 1, 1);
 
   dax::Id3 ijk;
-  ijk.x = index % (dims.x - 1);
-  ijk.y = (index / (dims.x - 1)) % (dims.y -1 );
-  ijk.z = (index / ((dims.x - 1) * (dims.y -1 )));
+  ijk.x = index % dims.x;
+  ijk.y = (index / dims.x) % dims.y;
+  ijk.z = (index / (dims.x * dims.y));
 
   return ijk + pointExtent.Min;
 }
