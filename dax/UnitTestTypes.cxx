@@ -62,6 +62,15 @@ static void TestVector3()
     {
     TEST_FAIL(<< "Vector and scalar to not multiply correctly.");
     }
+
+  if (a == b)
+    {
+    TEST_FAIL(<< "operator== wrong");
+    }
+  if (!(a != b))
+    {
+    TEST_FAIL(<< "operator!= wrong");
+    }
 }
 
 static void TestVector4()
@@ -105,6 +114,15 @@ static void TestVector4()
     {
     TEST_FAIL(<< "Vector and scalar to not multiply correctly.");
     }
+
+  if (a == b)
+    {
+    TEST_FAIL(<< "operator== wrong");
+    }
+  if (!(a != b))
+    {
+    TEST_FAIL(<< "operator!= wrong");
+    }
 }
 
 static void TestId3()
@@ -134,6 +152,15 @@ static void TestId3()
   if ((div.x != 2) || (div.y != 2) || (div.z != 2))
     {
     TEST_FAIL(<< "Vectors to not divide correctly.");
+    }
+
+  if (a == b)
+    {
+    TEST_FAIL(<< "operator== wrong");
+    }
+  if (!(a != b))
+    {
+    TEST_FAIL(<< "operator!= wrong");
     }
 }
 

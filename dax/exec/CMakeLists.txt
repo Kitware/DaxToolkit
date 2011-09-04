@@ -18,3 +18,8 @@ set(headers
 dax_declare_headers(${headers})
 
 add_subdirectory(internal)
+
+set(unit_tests
+  UnitTestCells.cxx
+  )
+dax_unit_tests(SOURCES ${unit_tests})

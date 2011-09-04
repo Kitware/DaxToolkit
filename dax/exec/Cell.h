@@ -51,13 +51,13 @@ public:
 
     const dax::Id3 cellVertexToPointIndex[8] = {
       { 0, 0, 0 },
-      { 0, 0, 1 },
-      { 0, 1, 1 },
-      { 0, 1, 0 },
       { 1, 0, 0 },
+      { 1, 1, 0 },
+      { 0, 1, 0 },
+      { 0, 0, 1 },
       { 1, 0, 1 },
       { 1, 1, 1 },
-      { 1, 1, 0 }
+      { 0, 1, 1 }
     };
 
     dax::Id3 ijkPoint = ijkCell + cellVertexToPointIndex[vertexIndex];
