@@ -17,8 +17,8 @@ namespace dax { namespace exec { class CellVoxel; }}
 namespace dax { namespace exec { namespace internal {
 
 template<typename T>
-DAX_EXEC_EXPORT T fieldAccessNormalGet(const dax::exec::Field<T> &field,
-                                       dax::Id index)
+DAX_EXEC_EXPORT const T &fieldAccessNormalGet(const dax::exec::Field<T> &field,
+                                              dax::Id index)
 {
   return field.GetArray().GetValue(index);
 }

@@ -21,17 +21,15 @@ namespace dax { namespace exec {
 /// Work for worklets that map fields without regard to topology or any other
 /// connectivity information.  The template is because the internal accessors
 /// of the cells may change based on type.
-class WorkMapFieldBase
+template<class CellT>
+class WorkMapField
 {
   dax::Id Index;
 
 public:
-  DAX_EXEC_EXPORT WorkMapFieldBase(dax::Id index)
-  {  }
+  typedef CellT CellType;
 
-  DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->Index; }
-
-  DAX_EXEC_EXPORT void SetIndex(dax::Id index) { this->Index = index; }
+  DAX_EXEC_EXPORT WorkMapField(dax::Id index) : Index(index) { }
 
   template<typename T>
   DAX_EXEC_EXPORT const T &GetFieldValue(const dax::exec::Field<T> &field) const
@@ -44,28 +42,36 @@ public:
   {
     dax::exec::internal::fieldAccessNormalSet(field, this->GetIndex(), value);
   }
-};
 
-template<class CellT>
-class WorkMapField : public dax::exec::WorkMapFieldBase
-{
-public:
-  typedef CellT CellType;
+  DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->Index; }
 
-  DAX_EXEC_EXPORT WorkMapField(dax::Id index) : WorkMapFieldBase(index) { }
+  DAX_EXEC_EXPORT void SetIndex(dax::Id index) { this->Index = index; }
 };
 
 template<>
-class WorkMapField<CellVoxel> : public dax::exec::WorkMapFieldBase
+class WorkMapField<dax::exec::CellVoxel>
 {
   const dax::internal::StructureUniformGrid &GridStructure;
+  dax::Id Index;
 
 public:
   typedef CellVoxel CellType;
 
   DAX_EXEC_EXPORT WorkMapField(const dax::internal::StructureUniformGrid &gs,
                                dax::Id index)
-    : WorkMapFieldBase(index), GridStructure(gs) { }
+    : GridStructure(gs), Index(index) { }
+
+  template<typename T>
+  DAX_EXEC_EXPORT const T &GetFieldValue(const dax::exec::Field<T> &field) const
+  {
+    return dax::exec::internal::fieldAccessNormalGet(field, this->GetIndex());
+  }
+
+  template<typename T>
+  DAX_EXEC_EXPORT void SetFieldValue(dax::exec::Field<T> &field, const T &value)
+  {
+    dax::exec::internal::fieldAccessNormalSet(field, this->GetIndex(), value);
+  }
 
   DAX_EXEC_EXPORT dax::Vector3 GetFieldValue(
     const dax::exec::FieldCoordinates &)
@@ -75,6 +81,10 @@ public:
           this->GridStructure,
           this->GetIndex());
   }
+
+  DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->Index; }
+
+  DAX_EXEC_EXPORT void SetIndex(dax::Id index) { this->Index = index; }
 };
 
 }}
