@@ -21,6 +21,7 @@ add_subdirectory(internal)
 
 set(unit_tests
   UnitTestCells.cxx
+  UnitTestWorkMapCell.cxx
   UnitTestWorkMapField.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

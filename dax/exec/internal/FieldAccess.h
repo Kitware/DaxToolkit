@@ -17,21 +17,22 @@ namespace dax { namespace exec { class CellVoxel; }}
 namespace dax { namespace exec { namespace internal {
 
 template<typename T>
-DAX_EXEC_EXPORT const T &fieldAccessNormalGet(const dax::exec::Field<T> &field,
-                                              dax::Id index)
+DAX_EXEC_EXPORT inline const T &fieldAccessNormalGet(
+  const dax::exec::Field<T> &field,
+  dax::Id index)
 {
   return field.GetArray().GetValue(index);
 }
 
 template<typename T>
-DAX_EXEC_EXPORT void fieldAccessNormalSet(dax::exec::Field<T> &field,
-                                          dax::Id index,
-                                          const T &value)
+DAX_EXEC_EXPORT inline void fieldAccessNormalSet(dax::exec::Field<T> &field,
+                                                 dax::Id index,
+                                                 const T &value)
 {
   field.GetArray().SetValue(index, value);
 }
 
-DAX_EXEC_EXPORT dax::Vector3 fieldAccessUniformCoordinatesGet(
+DAX_EXEC_EXPORT inline dax::Vector3 fieldAccessUniformCoordinatesGet(
   const dax::internal::StructureUniformGrid &gridStructure,
   dax::Id index)
 {

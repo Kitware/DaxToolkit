@@ -35,12 +35,14 @@ static void CheckPointIndex(dax::Id pointFlatIndex,
     }
 }
 
-static void TestCellVoxel(const dax::internal::StructureUniformGrid &gridstruct,
-                          dax::Id cellFlatIndex)
+// This function is available in the global scope so that it can be used
+// in other tests such as UnitTestWorkMapCell.
+void TestCellVoxel(const dax::exec::CellVoxel cell,
+                   const dax::internal::StructureUniformGrid &gridstruct,
+                   dax::Id cellFlatIndex)
 {
   dax::Id3 cellIjkIndex
       = dax::internal::flatIndexToIndex3Cell(cellFlatIndex, gridstruct.Extent);
-  dax::exec::CellVoxel cell = dax::exec::CellVoxel(gridstruct, cellFlatIndex);
 
   if (cell.GetNumberOfPoints() != 8)
     {
@@ -77,7 +79,7 @@ static void TestCellVoxel(const dax::internal::StructureUniformGrid &gridstruct,
 
   if (cell.GetSpacing() != gridstruct.Spacing)
     {
-    TEST_FAIL(<< "CelLVoxel has wrong spacing");
+    TEST_FAIL(<< "CellVoxel has wrong spacing");
     }
 
   if (   (cell.GetExtent().Min != gridstruct.Extent.Min)
@@ -102,16 +104,19 @@ static void TestCellVoxel()
   gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
   for (dax::Id flatIndex = 0; flatIndex < 1000; flatIndex++)
     {
-    TestCellVoxel(gridstruct, flatIndex);
+    dax::exec::CellVoxel cell(gridstruct, flatIndex);
+    TestCellVoxel(cell, gridstruct, flatIndex);
     }
 
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
   gridstruct.Extent.Max = dax::make_Id3(15, 6, 13);
+  dax::exec::CellVoxel cell(gridstruct, 0);
   for (dax::Id flatIndex = 0; flatIndex < 1500; flatIndex++)
     {
-    TestCellVoxel(gridstruct, flatIndex);
+    cell.SetIndex(flatIndex);
+    TestCellVoxel(cell, gridstruct, flatIndex);
     }
 }
 

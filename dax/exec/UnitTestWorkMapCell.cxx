@@ -5,7 +5,7 @@
   PURPOSE.  See the above copyright notice for more information.
 
 ===========================================================================*/
-#include <dax/exec/WorkMapField.h>
+#include <dax/exec/WorkMapCell.h>
 
 #include <fstream>
 #include <iostream>
@@ -15,6 +15,11 @@
 #include <algorithm>
 #include <vector>
 
+extern void TestCellVoxel(const dax::exec::CellVoxel cell,
+                          const dax::internal::StructureUniformGrid &gridstruct,
+                          dax::Id cellFlatIndex);
+
+
 #define TEST_FAIL(msg)                                  \
   {                                                     \
     std::stringstream error;                            \
@@ -23,91 +28,75 @@
     throw error.str();                                  \
   }
 
-static void TestMapFieldVoxel(
-  dax::exec::WorkMapField<dax::exec::CellVoxel> work,
+static void TestMapCellVoxel(
+  dax::exec::WorkMapCell<dax::exec::CellVoxel> &work,
   const dax::internal::StructureUniformGrid &gridstruct,
-  dax::Id pointFlatIndex)
+  dax::Id cellFlatIndex)
 {
-  if (work.GetIndex() != pointFlatIndex)
+  if (work.GetCellIndex() != cellFlatIndex)
     {
-    TEST_FAIL(<< "Work object returned wrong index.");
+    TEST_FAIL(<< "Work object returned wrong cell index.");
     }
 
-  dax::Id3 pointIjkIndex = dax::internal::flatIndexToIndex3(pointFlatIndex,
-                                                            gridstruct.Extent);
-
   dax::Id3 dim = dax::internal::extentDimensions(gridstruct.Extent);
-  dax::Id numPoints = dim.x*dim.y*dim.z;
+  dax::Id numCells = dim.x*dim.y*dim.z;
 
-  std::vector<dax::Scalar> fieldData(numPoints);
+  std::vector<dax::Scalar> fieldData(numCells);
   std::fill(fieldData.begin(), fieldData.end(), -1.0);
-  fieldData[pointFlatIndex] = pointFlatIndex;
+  fieldData[cellFlatIndex] = cellFlatIndex;
 
   dax::internal::DataArray<dax::Scalar> fieldArray(&fieldData.at(0),
                                                    fieldData.size());
-  dax::exec::FieldPoint<dax::Scalar> field(fieldArray);
+  dax::exec::FieldCell<dax::Scalar> field(fieldArray);
 
   dax::Scalar scalarValue = work.GetFieldValue(field);
-  if (scalarValue != pointFlatIndex)
+  if (scalarValue != cellFlatIndex)
     {
     TEST_FAIL(<< "Did not get expected data value.");
     }
 
   work.SetFieldValue(field, static_cast<dax::Scalar>(-2));
-  if (fieldData[pointFlatIndex] != -2)
+  if (fieldData[cellFlatIndex] != -2)
     {
     TEST_FAIL(<< "Field value did not set as expected.");
     }
 
-  dax::Vector3 expectedCoords
-      = dax::make_Vector3(static_cast<dax::Scalar>(pointIjkIndex.x),
-                          static_cast<dax::Scalar>(pointIjkIndex.y),
-                          static_cast<dax::Scalar>(pointIjkIndex.z));
-  expectedCoords = gridstruct.Origin + expectedCoords * gridstruct.Spacing;
-
-  dax::internal::DataArray<dax::Vector3> dummyArray;
-  dax::exec::FieldCoordinates fieldCoords(dummyArray);
-  dax::Vector3 coords = work.GetFieldValue(fieldCoords);
-
-  if (expectedCoords != coords)
-    {
-    TEST_FAIL(<< "Did not get expected point coordinates.");
-    }
+  TestCellVoxel(work.GetCell(), gridstruct, cellFlatIndex);
 }
 
-static void TestMapFieldVoxel()
+static void TestMapCellVoxel()
 {
-  std::cout << "Testing WorkMapField<CellVoxel>" << std::endl;
+  std::cout << "Testing WorkMapCell<CellVoxel>" << std::endl;
 
   dax::internal::StructureUniformGrid gridstruct;
 
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
-  gridstruct.Extent.Max = dax::make_Id3(9, 9, 9);
+  gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
   for (dax::Id flatIndex = 0; flatIndex < 1000; flatIndex++)
     {
-    dax::exec::WorkMapField<dax::exec::CellVoxel> work(gridstruct, flatIndex);
-    TestMapFieldVoxel(work, gridstruct, flatIndex);
+    dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, flatIndex);
+    TestMapCellVoxel(work, gridstruct, flatIndex);
     }
 
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
-  gridstruct.Extent.Max = dax::make_Id3(14, 5, 12);
-  dax::exec::WorkMapField<dax::exec::CellVoxel> work(gridstruct, 0);
+  gridstruct.Extent.Max = dax::make_Id3(15, 6, 13);
+  dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, 0);
   for (dax::Id flatIndex = 0; flatIndex < 1500; flatIndex++)
     {
-    work.SetIndex(flatIndex);
-    TestMapFieldVoxel(work, gridstruct, flatIndex);
+    work.SetCellIndex(flatIndex);
+    TestMapCellVoxel(work, gridstruct, flatIndex);
     }
 }
 
-int UnitTestWorkMapField(int, char *[])
+int UnitTestWorkMapCell(int, char *[])
 {
   try
     {
-    TestMapFieldVoxel();
+    TestMapCellVoxel();
     }
   catch (std::string error)
     {
