@@ -71,6 +71,11 @@ static void TestVector3()
     {
     TEST_FAIL(<< "operator!= wrong");
     }
+
+  if (dax::dot(a, b) != 28)
+    {
+    TEST_FAIL(<< "dot(Vector3) wrong");
+    }
 }
 
 static void TestVector4()
@@ -122,6 +127,11 @@ static void TestVector4()
   if (!(a != b))
     {
     TEST_FAIL(<< "operator!= wrong");
+    }
+
+  if (dax::dot(a, b) != 60)
+    {
+    TEST_FAIL(<< "dot(Vector4) wrong");
     }
 }
 
