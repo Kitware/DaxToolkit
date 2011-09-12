@@ -12,3 +12,8 @@ set(headers
   )
 
 dax_declare_headers(${headers})
+
+set(unit_tests
+  UnitTestInterpolationWeights.cxx
+  )
+dax_unit_tests(SOURCES ${unit_tests})
