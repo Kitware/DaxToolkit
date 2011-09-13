@@ -11,6 +11,7 @@ set(headers
   Derivative.h
   Field.h
   Interpolate.h
+  ParametricCoordinates.h
   WorkMapCell.h
   WorkMapField.h
 )
@@ -21,6 +22,7 @@ add_subdirectory(internal)
 
 set(unit_tests
   UnitTestCells.cxx
+  UnitTestParametricCoordinates.cxx
   UnitTestWorkMapCell.cxx
   UnitTestWorkMapField.cxx
   )
