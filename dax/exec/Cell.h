@@ -25,7 +25,7 @@ namespace dax { namespace exec {
 class CellVoxel
 {
 private:
-  const dax::internal::StructureUniformGrid &GridStructure;
+  const dax::internal::StructureUniformGrid GridStructure;
   dax::Id CellIndex;
 
 public:

@@ -34,7 +34,7 @@ public:
   }
 
 private:
-  dax::internal::DataArray<ValueType> &Array;
+  dax::internal::DataArray<ValueType> Array;
 };
 
 template<typename T>

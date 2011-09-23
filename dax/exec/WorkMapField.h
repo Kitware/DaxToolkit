@@ -51,7 +51,7 @@ public:
 template<>
 class WorkMapField<dax::exec::CellVoxel>
 {
-  const dax::internal::StructureUniformGrid &GridStructure;
+  const dax::internal::StructureUniformGrid GridStructure;
   dax::Id Index;
 
 public:
