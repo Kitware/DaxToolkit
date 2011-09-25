@@ -5,9 +5,8 @@
   PURPOSE.  See the above copyright notice for more information.
 
 ===========================================================================*/
-#include <dax/exec/Interpolate.h>
+#include <dax/exec/Derivative.h>
 
-#include <dax/exec/ParametricCoordinates.h>
 #include <dax/exec/WorkMapCell.h>
 #include <dax/exec/WorkMapField.h>
 #include <dax/internal/GridStructures.h>
@@ -74,7 +73,7 @@ static dax::exec::FieldPoint<dax::Scalar> CreatePointField(
 }
 
 template<class CellType>
-static void TestInterpolateCell(
+static void TestDerivativeCell(
     const dax::exec::WorkMapCell<CellType> &work,
     const dax::exec::FieldCoordinates &coordField,
     const dax::exec::FieldPoint<dax::Scalar> &scalarField,
@@ -89,26 +88,22 @@ static void TestInterpolateCell(
       {
       for (pcoords.x = 0.0; pcoords.x <= 1.0; pcoords.x += 0.25)
         {
-        dax::Scalar interpolatedValue
-            = dax::exec::cellInterpolate(work, cell, pcoords, scalarField);
-
-        dax::Vector3 wcoords
-            = dax::exec::parametricCoordinatesToWorldCoordinates(work,
-                                                                 cell,
-                                                                 coordField,
-                                                                 pcoords);
-        dax::Scalar trueValue = fieldValues.GetValue(wcoords);
-
-        if (interpolatedValue != trueValue)
+        dax::Vector3 computedDerivative
+            = dax::exec::cellDerivative(work,
+                                        cell,
+                                        pcoords,
+                                        coordField,
+                                        scalarField);
+        if (computedDerivative != fieldValues.Gradient)
           {
-          TEST_FAIL(<< "Bad interpolated value");
+          TEST_FAIL(<< "Bad derivative");
           }
         }
       }
     }
 }
 
-static void TestInterpolateVoxel(
+static void TestDerivativeVoxel(
     const dax::internal::StructureUniformGrid &gridstruct,
     const LinearField &fieldValues)
 {
@@ -124,11 +119,11 @@ static void TestInterpolateVoxel(
   for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
     {
     dax::exec::WorkMapCell<dax::exec::CellVoxel> workCell(gridstruct,cellIndex);
-    TestInterpolateCell(workCell, coordField, scalarField, fieldValues);
+    TestDerivativeCell(workCell, coordField, scalarField, fieldValues);
     }
 }
 
-static void TestInterpolateVoxel()
+static void TestDerivativeVoxel()
 {
   dax::internal::StructureUniformGrid gridstruct;
   LinearField fieldValues;
@@ -140,7 +135,7 @@ static void TestInterpolateVoxel()
   gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
   fieldValues.Gradient = dax::make_Vector3(1.0, 1.0, 1.0);
   fieldValues.OriginValue = 0.0;
-  TestInterpolateVoxel(gridstruct, fieldValues);
+  TestDerivativeVoxel(gridstruct, fieldValues);
 
   std::cout << "Uneven spacing/gradient." << std::endl;
   gridstruct.Origin = dax::make_Vector3(1.0, -0.5, 13.0);
@@ -149,7 +144,7 @@ static void TestInterpolateVoxel()
   gridstruct.Extent.Max = dax::make_Id3(20, 4, 10);
   fieldValues.Gradient = dax::make_Vector3(0.25, 14.0, 11.125);
   fieldValues.OriginValue = -7.0;
-  TestInterpolateVoxel(gridstruct, fieldValues);
+  TestDerivativeVoxel(gridstruct, fieldValues);
 
   std::cout << "Negative gradient directions." << std::endl;
   gridstruct.Origin = dax::make_Vector3(-5.0, -5.0, -5.0);
@@ -158,14 +153,14 @@ static void TestInterpolateVoxel()
   gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
   fieldValues.Gradient = dax::make_Vector3(-11.125, -0.25, 14.0);
   fieldValues.OriginValue = 5.0;
-  TestInterpolateVoxel(gridstruct, fieldValues);
+  TestDerivativeVoxel(gridstruct, fieldValues);
 }
 
-int UnitTestInterpolate(int, char *[])
+int UnitTestDerivative(int, char *[])
 {
   try
     {
-    TestInterpolateVoxel();
+    TestDerivativeVoxel();
     }
   catch (std::string error)
     {

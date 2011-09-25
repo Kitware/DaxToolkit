@@ -22,6 +22,7 @@ add_subdirectory(internal)
 
 set(unit_tests
   UnitTestCells.cxx
+  UnitTestDerivative.cxx
   UnitTestInterpolate.cxx
   UnitTestParametricCoordinates.cxx
   UnitTestWorkMapCell.cxx

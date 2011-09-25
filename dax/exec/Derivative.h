@@ -18,7 +18,7 @@ namespace dax { namespace exec {
 
 //-----------------------------------------------------------------------------
 template<class WorkType>
-DAX_EXEC_EXPORT dax::Vector3 derivativeCell(
+DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
     const WorkType &work,
     const dax::exec::CellVoxel &cell,
     const dax::Vector3 &pcoords,
@@ -34,7 +34,7 @@ DAX_EXEC_EXPORT dax::Vector3 derivativeCell(
   for (dax::Id vertexId = 0; vertexId < numVerts; vertexId++)
     {
     dax::Scalar value = work.GetFieldValue(point_scalar, vertexId);
-    sum += value * derivativeWeights[vertexId];
+    sum = sum + value * derivativeWeights[vertexId];
     }
 
   return sum/cell.GetSpacing();
