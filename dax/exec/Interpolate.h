@@ -22,7 +22,7 @@ DAX_EXEC_EXPORT T cellInterpolate(const WorkType &work,
                                   const dax::Vector3 &pcoords,
                                   const dax::exec::FieldPoint<T> &point_field)
 {
-  const dax::Id numVerts;
+  const dax::Id numVerts = 8;
 
   dax::Scalar weights[numVerts];
   dax::exec::internal::interpolationWeightsVoxel(pcoords, weights);

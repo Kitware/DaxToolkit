@@ -74,7 +74,9 @@ static void TestMapCellVoxel()
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
   gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
-  for (dax::Id flatIndex = 0; flatIndex < 1000; flatIndex++)
+  for (dax::Id flatIndex = 0;
+       flatIndex < dax::internal::numberOfCells(gridstruct);
+       flatIndex++)
     {
     dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, flatIndex);
     TestMapCellVoxel(work, gridstruct, flatIndex);
@@ -85,7 +87,9 @@ static void TestMapCellVoxel()
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
   gridstruct.Extent.Max = dax::make_Id3(15, 6, 13);
   dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, 0);
-  for (dax::Id flatIndex = 0; flatIndex < 1500; flatIndex++)
+  for (dax::Id flatIndex = 0;
+       flatIndex < dax::internal::numberOfPoints(gridstruct);
+       flatIndex++)
     {
     work.SetCellIndex(flatIndex);
     TestMapCellVoxel(work, gridstruct, flatIndex);

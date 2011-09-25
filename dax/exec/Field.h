@@ -18,7 +18,7 @@ class Field
 public:
   typedef T ValueType;
 
-  DAX_EXEC_EXPORT Field(dax::internal::DataArray<ValueType> &array)
+  DAX_EXEC_EXPORT Field(const dax::internal::DataArray<ValueType> &array)
     : Array(array)
   {
   }
@@ -44,7 +44,7 @@ public:
   typedef T ValueType;
   typedef dax::exec::Field<ValueType> Superclass;
 
-  DAX_EXEC_EXPORT FieldPoint(dax::internal::DataArray<ValueType> &array)
+  DAX_EXEC_EXPORT FieldPoint(const dax::internal::DataArray<ValueType> &array)
     : Superclass(array)
   { }
 };
@@ -54,7 +54,8 @@ class FieldCoordinates : public dax::exec::FieldPoint<dax::Vector3>
 public:
   typedef dax::Vector3 ValueType;
   typedef dax::exec::FieldPoint<ValueType> Superclass;
-  DAX_EXEC_EXPORT FieldCoordinates(dax::internal::DataArray<ValueType> &array)
+  DAX_EXEC_EXPORT FieldCoordinates(
+      const dax::internal::DataArray<ValueType> &array)
     : Superclass(array)
    { }
 };
@@ -65,7 +66,7 @@ class FieldCell : public dax::exec::Field<T>
 public:
   typedef T ValueType;
   typedef dax::exec::Field<ValueType> Superclass;
-  DAX_EXEC_EXPORT FieldCell(dax::internal::DataArray<ValueType> &array)
+  DAX_EXEC_EXPORT FieldCell(const dax::internal::DataArray<ValueType> &array)
     : Superclass(array)
   { }
 };
