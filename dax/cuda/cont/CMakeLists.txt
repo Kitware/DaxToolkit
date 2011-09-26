@@ -9,13 +9,13 @@
 set(sources
   internal/DataArray.cu
   internal/DataBridge.cu
-  internal/KernelArgument.cu
+#  internal/KernelArgument.cu
   )
 
 set(headers
   internal/DataArray.h
   internal/DataBridge.h
-  internal/KernelArgument.h
+#  internal/KernelArgument.h
   )
 
 #-----------------------------------------------------------------------------
