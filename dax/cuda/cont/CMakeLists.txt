@@ -7,14 +7,16 @@
 #=========================================================================
 
 set(sources
-  internal/DataArray.cu
-  internal/DataBridge.cu
+#  internal/ManagedDeviceDataArray.cu
+#  internal/DataArray.cu
+#  internal/DataBridge.cu
 #  internal/KernelArgument.cu
   )
 
 set(headers
-  internal/DataArray.h
-  internal/DataBridge.h
+  internal/ManagedDeviceDataArray.h
+#  internal/DataArray.h
+#  internal/DataBridge.h
 #  internal/KernelArgument.h
   )
 
