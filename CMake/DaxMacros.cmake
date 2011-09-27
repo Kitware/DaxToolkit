@@ -32,7 +32,7 @@ function(dax_add_header_build_test name dir_prefix)
     configure_file(${Dax_SOURCE_DIR}/CMake/TestBuild.cxx.in ${src} @ONLY)
     set(cxxfiles ${cxxfiles} ${src})
   endforeach (header)
-  
+
   add_library(TestBuild_${name} ${cxxfiles} ${hfiles})
   set_source_files_properties(${hfiles}
     PROPERTIES HEADER_FILE_ONLY TRUE
@@ -55,7 +55,7 @@ endfunction(dax_declare_headers)
 #   LIBRARIES <dependent_library_list>
 #   )
 function(dax_unit_tests)
-  set(options)
+  set(options CUDA)
   set(oneValueArgs)
   set(multiValueArgs SOURCES LIBRARIES)
   cmake_parse_arguments(DAX_UT
@@ -66,7 +66,11 @@ function(dax_unit_tests)
     dax_get_kit_name(kit)
     set(test_prog UnitTests_${kit})
     create_test_sourcelist(TestSources ${test_prog}.cxx ${DAX_UT_SOURCES})
-    add_executable(${test_prog} ${TestSources})
+    if (DAX_UT_CUDA)
+      cuda_add_executable(${test_prog} ${TestSources})
+    else (DAX_UT_CUDA)
+      add_executable(${test_prog} ${TestSources})
+    endif (DAX_UT_CUDA)
     target_link_libraries(${test_prog} ${DAX_UT_LIBRARIES})
     foreach (test ${DAX_UT_SOURCES})
       get_filename_component(tname ${test} NAME_WE)
