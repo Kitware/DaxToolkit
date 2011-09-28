@@ -22,14 +22,14 @@ namespace cuda {
 namespace cont {
 namespace internal {
 
-daxDeclareClass(ManagedDeviceDataArray);
+daxDeclareClassTemplate1(ManagedDeviceDataArray);
 
 template<typename T>
 class ManagedDeviceDataArray : public dax::cont::internal::Object
 {
 public:
   typedef T ValueType;
-  const dax::Id ValueSize = sizeof(ValueType);
+  static const dax::Id ValueSize = sizeof(ValueType);
 
   inline ManagedDeviceDataArray() : Array() { }
 
@@ -59,7 +59,7 @@ public:
       }
   }
 
-  void CopyToDevice(const dax::internal::DataArray &srcArray)
+  void CopyToDevice(const dax::internal::DataArray<ValueType> &srcArray)
   {
     dax::Id numEntries = srcArray.GetNumberOfEntries();
     this->Allocate(numEntries);
@@ -74,9 +74,12 @@ public:
     assert(error == cudaSuccess);
   }
 
-  void CopyToHost(dax::internal::DataArray &destArray) const
+  void CopyToHost(dax::internal::DataArray<ValueType> &destArray) const
   {
-    dax::Id numEntries = srcArray.GetNumberOfEntries();
+    dax::Id numEntries = this->Array.GetNumberOfEntries();
+    // TODO: Better error checking
+    assert(numEntries == destArray.GetNumberOfEntries());
+
     dax::Id sizeInBytes = numEntries * ManagedDeviceDataArray::ValueSize;
 
     cudaError_t error;

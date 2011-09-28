@@ -31,6 +31,37 @@
   daxDefinePtrMacro(classname)
 
 
+#define daxDefinePtrTemplate1Macro(classname) \
+  template<class T> \
+  class classname##Ptr : public boost::shared_ptr<classname<T> > \
+  { \
+  public: \
+    classname##Ptr() { } \
+    template<class Y> explicit classname##Ptr(Y *p) \
+      : boost::shared_ptr<T>(p) { } \
+    template<class Y> classname##Ptr(boost::shared_ptr<Y> const &r) \
+      : boost::shared_ptr<T>(r) { } \
+    template<class Y> explicit classname##Ptr(boost::weak_ptr<Y> const & r) \
+      : boost::shared_ptr<T>(r) { } \
+  }; \
+  template<class T> \
+  class classname##WeakPtr : public boost::weak_ptr<classname<T> > \
+  { \
+  public: \
+    classname##WeakPtr() { } \
+    template<class Y> explicit classname##WeakPtr(Y *p) \
+      : boost::weak_ptr<T>(p) { } \
+    template<class Y> classname##WeakPtr(boost::shared_ptr<Y> const &r) \
+      : boost::weak_ptr<T>(r) { } \
+    template<class Y> explicit classname##WeakPtr(boost::weak_ptr<Y> const & r)\
+      : boost::weak_ptr<T>(r) { } \
+  };
+
+#define daxDeclareClassTemplate1(classname) \
+  template <class T> class classname; \
+  daxDefinePtrTemplate1Macro(classname);
+
+
 /// Error macro to use to report error messages.
 #define daxErrorMacro(txt)\
   cerr << "Error at " << __FILE__ << ":" << __LINE__ << "\n" txt << endl;

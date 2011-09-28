@@ -21,7 +21,7 @@
     throw error.str();                                  \
   }
 
-int UnitTestCudaManagedDeviceArray(int, char *[])
+int UnitTestCudaManagedDeviceDataArray(int, char *[])
 {
   try
     {
