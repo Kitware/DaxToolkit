@@ -9,4 +9,4 @@
 set(unit_tests
   UnitTestCudaManagedDeviceDataArray.cu
   )
-dax_unit_tests(CUDA SOURCES ${unit_tests})
+dax_unit_tests(CUDA SOURCES ${unit_tests} LIBRARIES daxCont)

@@ -38,11 +38,11 @@
   public: \
     classname##Ptr() { } \
     template<class Y> explicit classname##Ptr(Y *p) \
-      : boost::shared_ptr<T>(p) { } \
+      : boost::shared_ptr<classname<T> >(p) { } \
     template<class Y> classname##Ptr(boost::shared_ptr<Y> const &r) \
-      : boost::shared_ptr<T>(r) { } \
+      : boost::shared_ptr<classname<T> >(r) { } \
     template<class Y> explicit classname##Ptr(boost::weak_ptr<Y> const & r) \
-      : boost::shared_ptr<T>(r) { } \
+      : boost::shared_ptr<classname<T> >(r) { } \
   }; \
   template<class T> \
   class classname##WeakPtr : public boost::weak_ptr<classname<T> > \
@@ -50,11 +50,11 @@
   public: \
     classname##WeakPtr() { } \
     template<class Y> explicit classname##WeakPtr(Y *p) \
-      : boost::weak_ptr<T>(p) { } \
+      : boost::weak_ptr<classname<T> >(p) { } \
     template<class Y> classname##WeakPtr(boost::shared_ptr<Y> const &r) \
-      : boost::weak_ptr<T>(r) { } \
+      : boost::weak_ptr<classname<T> >(r) { } \
     template<class Y> explicit classname##WeakPtr(boost::weak_ptr<Y> const & r)\
-      : boost::weak_ptr<T>(r) { } \
+      : boost::weak_ptr<classname<T> >(r) { } \
   };
 
 #define daxDeclareClassTemplate1(classname) \

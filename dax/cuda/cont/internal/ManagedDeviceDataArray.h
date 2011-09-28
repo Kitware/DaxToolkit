@@ -41,7 +41,7 @@ public:
 
     dax::Id sizeInBytes = numEntries * ManagedDeviceDataArray::ValueSize;
 
-    void *buffer;
+    T *buffer;
     cudaMalloc(&buffer, sizeInBytes);
     assert(buffer != NULL);
 
