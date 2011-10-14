@@ -8,6 +8,7 @@
 set(headers
   DerivativeWeights.h
   FieldAccess.h
+  FieldBuild.h
   InterpolationWeights.h
   )
 

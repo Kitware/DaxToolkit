@@ -95,7 +95,7 @@ public:
 private:
   dax::internal::DataArray<ValueType> Array;
 
-  daxDisableCopyMacro(ManagedDeviceDataArray);
+  daxDisableCopyMacro(ManagedDeviceDataArray)
 };
 
 }}}}

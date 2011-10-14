@@ -8,15 +8,23 @@
 #ifndef __Elevation_worklet_
 #define __Elevation_worklet_
 
+#include <dax/exec/Cell.h>
+#include <dax/exec/Field.h>
+#include <dax/exec/WorkMapField.h>
+
+template<class CellType>
 DAX_WORKLET void Elevation(
-  DAX_IN dax::exec::Work& work,
-  DAX_IN dax::exec::FieldCoordinates points,
-  DAX_OUT dax::exec::FieldPoint& point_attribute)
+    DAX_IN dax::exec::WorkMapField<CellType> &work,
+    DAX_IN const dax::exec::FieldCoordinates &pointCoord,
+    DAX_OUT dax::exec::FieldPoint<dax::Scalar> &outField)
 {
-  dax::Vector3 point_location = points.GetVector3(work);
-  point_attribute.Set(work,
-    sqrtf(point_location.x * point_location.x + 
-      point_location.y * point_location.y +
-      point_location.z * point_location.z));
+  dax::Vector3 pointLocation = work.GetFieldValue(pointCoord);
+  // TODO: This is not an elevation calculation.  Rather, it is the distance
+  // to the origin, which is different.  However, I am leaving like this
+  // for now because this is the old calculation, and I want to measure
+  // consistent timings for now.
+  dax::Scalar elevation = sqrtf(dax::dot(pointLocation, pointLocation));
+  work.SetFieldValue(outField, elevation);
 }
+
 #endif

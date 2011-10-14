@@ -7,174 +7,334 @@
 ===========================================================================*/
 #include "ArgumentsParser.h"
 
+#include <cuda.h>
+
 // Includes for host code.
-#include <dax/cont/DataArrayIrregular.h>
-#include <dax/cont/ImageData.h>
-
-#include <dax/cuda/internal/KernelArgument.h>
-#include <dax/cuda/cont/internal/DataBridge.h>
-#include <dax/cuda/cont/internal/KernelArgument.h>
-
+#include <dax/cuda/cont/internal/ManagedDeviceDataArray.h>
 
 // Includes for device code.
+#include <dax/internal/DataArray.h>
+#include <dax/internal/GridStructures.h>
+#include <dax/exec/Cell.h>
+#include <dax/exec/Field.h>
+#include <dax/exec/WorkMapCell.h>
+#include <dax/exec/WorkMapField.h>
+#include <dax/exec/internal/FieldBuild.h>
 #include <dax/cuda/exec/ExecutionEnvironment.h>
 
-#include <Worklets/CellAverage.worklet>
+//#include <Worklets/CellAverage.worklet>
 #include <Worklets/CellGradient.worklet>
 #include <Worklets/Cosine.worklet>
 #include <Worklets/Elevation.worklet>
-#include <Worklets/PointDataToCellData.worklet>
+//#include <Worklets/PointDataToCellData.worklet>
 #include <Worklets/Sine.worklet>
 #include <Worklets/Square.worklet>
 
 #include <boost/progress.hpp>
 
 
-__global__ void ExecuteElevation(dax::cuda::internal::KernelArgument argument,
-  unsigned int number_of_threads,
-  unsigned int number_of_iterations)
+__global__ void ExecuteElevation(
+    dax::internal::StructureUniformGrid grid,
+    dax::internal::DataArray<dax::Scalar> outPointScalars)
 {
-  for (unsigned int cc=0; cc < number_of_iterations; cc++)
+  dax::Id pointIndex = (blockIdx.x * blockDim.x) + threadIdx.x;
+  dax::Id pointIncrement = gridDim.x;
+  dax::Id numPoints = dax::internal::numberOfPoints(grid);
+
+  dax::exec::WorkMapField<dax::exec::CellVoxel> work(grid, pointIndex);
+  dax::exec::FieldCoordinates pointCoord
+      = dax::exec::internal::fieldCoordinatesBuild(grid);
+  dax::exec::FieldPoint<dax::Scalar> outField(outPointScalars);
+
+  for ( ; pointIndex < numPoints; pointIndex += pointIncrement)
     {
-    dax::exec::WorkMapField work(cc);
-    dax::exec::FieldCoordinates in_points(
-      argument.Arrays[
-      argument.Datasets[0].PointCoordinatesIndex]);
-    dax::exec::FieldPoint out_point_scalars (
-      argument.Arrays[
-      argument.Datasets[1].PointDataIndices[0]]);
-    Elevation(work, in_points, out_point_scalars);
+    work.SetIndex(pointIndex);
+    Elevation(work, pointCoord, outField);
     }
 }
 
-__global__ void ExecutePipeline1(dax::cuda::internal::KernelArgument argument,
-  unsigned int number_of_threads,
-  unsigned int number_of_iterations)
+__global__ void ExecutePipeline1(
+    dax::internal::StructureUniformGrid grid,
+    dax::internal::DataArray<dax::Scalar> inPointScalars,
+    dax::internal::DataArray<dax::Vector3> outCellVectors)
 {
-  for (unsigned int cc=0; cc < number_of_iterations; cc++)
-    {
-    dax::exec::WorkMapCell work(
-      argument.Arrays[
-      argument.Datasets[0].CellArrayIndex], cc);
-    if (work.GetItem() < number_of_threads)
-      {
-      dax::exec::FieldCoordinates in_points(
-        argument.Arrays[
-        argument.Datasets[0].PointCoordinatesIndex]);
-      dax::exec::FieldPoint in_point_scalars (
-        argument.Arrays[
-        argument.Datasets[1].PointDataIndices[0]]);
-      dax::exec::FieldCell out_cell_vectors(
-        argument.Arrays[
-        argument.Datasets[2].CellDataIndices[0]]);
+  dax::Id cellIndex = (blockIdx.x * blockDim.x) + threadIdx.x;
+  dax::Id cellIncrement = gridDim.x;
+  dax::Id numCells = dax::internal::numberOfCells(grid);
 
-      CellGradient<dax::exec::CellVoxel>(work, in_points,
-        in_point_scalars, out_cell_vectors);
-      }
+  dax::exec::WorkMapCell<dax::exec::CellVoxel> work(grid, cellIndex);
+  dax::exec::FieldCoordinates pointCoord
+      = dax::exec::internal::fieldCoordinatesBuild(grid);
+  dax::exec::FieldPoint<dax::Scalar> inPointField(inPointScalars);
+  dax::exec::FieldCell<dax::Vector3> outCellField(outCellVectors);
+
+  for ( ; cellIndex < numCells; cellIndex += cellIncrement)
+    {
+    work.SetCellIndex(cellIndex);
+    CellGradient(work, pointCoord, inPointField, outCellField);
     }
 }
 
-__global__ void ExecutePipeline2(dax::cuda::internal::KernelArgument argument,
-  unsigned int number_of_threads,
-  unsigned int number_of_iterations)
+__global__ void ExecutePipeline2(
+    dax::internal::StructureUniformGrid grid,
+    dax::internal::DataArray<dax::Scalar> inPointScalars,
+    dax::internal::DataArray<dax::Vector3> intermediateArray1,
+    dax::internal::DataArray<dax::Vector3> intermediateArray2,
+    dax::internal::DataArray<dax::Vector3> intermediateArray3,
+    dax::internal::DataArray<dax::Vector3> outCellVectors)
 {
-  for (unsigned int cc=0; cc < number_of_iterations; cc++)
-    {
-    dax::exec::WorkMapCell work(
-      argument.Arrays[
-      argument.Datasets[0].CellArrayIndex], cc);
-    if (work.GetItem() < number_of_threads)
-      {
-      dax::exec::FieldCoordinates in_points(
-        argument.Arrays[
-        argument.Datasets[0].PointCoordinatesIndex]);
-      dax::exec::FieldPoint in_point_scalars (
-        argument.Arrays[
-        argument.Datasets[1].PointDataIndices[0]]);
-      dax::exec::FieldCell out_cell_vectors(
-        argument.Arrays[
-        argument.Datasets[2].CellDataIndices[0]]);
+  dax::Id cellIndex = (blockIdx.x * blockDim.x) + threadIdx.x;
+  dax::Id cellIncrement = gridDim.x;
+  dax::Id numCells = dax::internal::numberOfCells(grid);
 
-      CellGradient<dax::exec::CellVoxel>(work, in_points,
-        in_point_scalars, out_cell_vectors);
-      Sine(work, out_cell_vectors, out_cell_vectors);
-      Square(work, out_cell_vectors, out_cell_vectors);
-      Cosine(work, out_cell_vectors, out_cell_vectors);
-      }
+  dax::exec::WorkMapCell<dax::exec::CellVoxel> workCell(grid, cellIndex);
+  dax::exec::WorkMapField<dax::exec::CellVoxel> workField(grid, cellIndex);
+  dax::exec::FieldCoordinates pointCoord
+      = dax::exec::internal::fieldCoordinatesBuild(grid);
+  dax::exec::FieldPoint<dax::Scalar> inPointField(inPointScalars);
+  dax::exec::FieldCell<dax::Vector3> intermediateField1(intermediateArray1);
+  dax::exec::FieldCell<dax::Vector3> intermediateField2(intermediateArray2);
+  dax::exec::FieldCell<dax::Vector3> intermediateField3(intermediateArray3);
+  dax::exec::FieldCell<dax::Vector3> outCellField(outCellVectors);
+
+  for ( ; cellIndex < numCells; cellIndex += cellIncrement)
+    {
+    workCell.SetCellIndex(cellIndex);
+    workField.SetIndex(cellIndex);
+    CellGradient(workCell, pointCoord, inPointField, intermediateField1);
+    Sine(workField, intermediateField1, intermediateField2);
+    Square(workField, intermediateField2, intermediateField3);
+    Cosine(workField, intermediateField3, outCellField);
     }
 }
 
-__global__ void ExecutePipeline3(dax::cuda::internal::KernelArgument argument,
-  unsigned int number_of_threads,
-  unsigned int number_of_iterations)
+__global__ void ExecutePipeline3(
+    dax::internal::StructureUniformGrid grid,
+    dax::internal::DataArray<dax::Scalar> intermediateArray1,
+    dax::internal::DataArray<dax::Scalar> intermediateArray2,
+    dax::internal::DataArray<dax::Scalar> intermediateArray3,
+    dax::internal::DataArray<dax::Scalar> outPointScalars)
 {
-  for (unsigned int cc=0; cc < number_of_iterations; cc++)
+  dax::Id pointIndex = (blockIdx.x * blockDim.x) + threadIdx.x;
+  dax::Id pointIncrement = gridDim.x;
+  dax::Id numPoints = dax::internal::numberOfPoints(grid);
+
+  dax::exec::WorkMapField<dax::exec::CellVoxel> work(grid, pointIndex);
+  dax::exec::FieldCoordinates pointCoord
+      = dax::exec::internal::fieldCoordinatesBuild(grid);
+  dax::exec::FieldPoint<dax::Scalar> intermediateField1(intermediateArray1);
+  dax::exec::FieldPoint<dax::Scalar> intermediateField2(intermediateArray2);
+  dax::exec::FieldPoint<dax::Scalar> intermediateField3(intermediateArray3);
+  dax::exec::FieldPoint<dax::Scalar> outField(outPointScalars);
+
+  for ( ; pointIndex < numPoints; pointIndex += pointIncrement)
     {
-    dax::exec::WorkMapField work(cc);
-    dax::exec::FieldCoordinates in_points(
-      argument.Arrays[
-      argument.Datasets[0].PointCoordinatesIndex]);
-    dax::exec::FieldPoint out_point_scalars (
-      argument.Arrays[
-      argument.Datasets[1].PointDataIndices[0]]);
-     Elevation(work, in_points, out_point_scalars);
-     SineScalar(work, out_point_scalars, out_point_scalars);
-     SquareScalar(work, out_point_scalars, out_point_scalars);
-     CosineScalar(work, out_point_scalars, out_point_scalars);
+    work.SetIndex(pointIndex);
+    Elevation(work, pointCoord, intermediateField1);
+    Sine(work, intermediateField1, intermediateField2);
+    Square(work, intermediateField2, intermediateField3);
+    Cosine(work, intermediateField3, outField);
     }
 }
 
 #include <iostream>
+#include <vector>
 using namespace std;
 
-dax::cont::ImageDataPtr CreateInputDataSet(int dim)
+static void PrintCheckValues(const dax::internal::DataArray<dax::Vector3> &array)
 {
-  dax::cont::ImageDataPtr imageData(new dax::cont::ImageData());
-  imageData->SetExtent(0, dim-1, 0, dim-1, 0, dim-1);
-  imageData->SetOrigin(0, 0, 0);
-  imageData->SetSpacing(1, 1, 1);
-  return imageData;
-}
-
-dax::cont::ImageDataPtr CreateIntermediateDataset(int dim)
-{
-  dax::cont::ImageDataPtr imageData(new dax::cont::ImageData());
-  imageData->SetExtent(0, dim-1, 0, dim-1, 0, dim-1);
-  imageData->SetOrigin(0, 0, 0);
-  imageData->SetSpacing(1, 1, 1);
-
-  dax::cont::DataArrayScalarPtr point_scalars (new dax::cont::DataArrayScalar());
-  point_scalars->SetName("ElevationScalars");
-  point_scalars->SetNumberOfTuples(imageData->GetNumberOfPoints());
-  imageData->PointData.push_back(point_scalars);
-  return imageData;
-}
-
-dax::cont::ImageDataPtr CreateOutputDataSet(int dim)
-{
-  dax::cont::ImageDataPtr imageData(new dax::cont::ImageData());
-  imageData->SetExtent(0, dim-1, 0, dim-1, 0, dim-1);
-  imageData->SetOrigin(0, 0, 0);
-  imageData->SetSpacing(1, 1, 1);
-
-  dax::cont::DataArrayVector3Ptr cell_gradients (new dax::cont::DataArrayVector3());
-  cell_gradients->SetName("CellScalars");
-  cell_gradients->SetNumberOfTuples(imageData->GetNumberOfCells());
-  imageData->CellData.push_back(cell_gradients);
-
-  for (int x=0 ; x < dim-1; x ++)
+  for (dax::Id index = 0; index < array.GetNumberOfEntries(); index++)
     {
-    for (int y=0 ; y < dim-1; y ++)
+    dax::Vector3 value = array.GetValue(index);
+    if (index < 20)
       {
-      for (int z=0 ; z < dim-1; z ++)
-        {
-        cell_gradients->Set(
-          z * (dim-1) * (dim-1) + y * (dim-1) + x, dax::make_Vector3(-1, 0, 0));
-        }
+      cout << index << " : " << value.x << ", " << value.y << ", " << value.z
+           << endl;
+      }
+    if (   (value.x < -1) || (value .x > 1)
+        || (value.y < -1) || (value .y > 1)
+        || (value.z < -1) || (value .z > 1) )
+      {
+      cout << index << " : " << value.x << ", " << value.y << ", " << value.z
+           << endl;
+      break;
       }
     }
+}
 
-  return imageData;
+static void PrintCheckValues(const dax::internal::DataArray<dax::Scalar> &array)
+{
+  for (dax::Id index = 0; index < array.GetNumberOfEntries(); index++)
+    {
+    dax::Scalar value = array.GetValue(index);
+    if (index < 20)
+      {
+      cout << index << " : " << value << endl;
+      }
+    if ((value < -1) || (value > 1))
+      {
+      cout << "BAD VALUE " << index << " : " << value << endl;
+      break;
+      }
+    }
+}
+
+static dax::internal::StructureUniformGrid CreateInputStructure(dax::Id dim)
+{
+  dax::internal::StructureUniformGrid grid;
+  grid.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
+  grid.Spacing = dax::make_Vector3(1.0, 1.0, 1.0);
+  grid.Extent.Min = dax::make_Id3(0, 0, 0);
+  grid.Extent.Max = dax::make_Id3(dim-1, dim-1, dim-1);
+
+  return grid;
+}
+
+static void RunCellGradient(dax::internal::StructureUniformGrid &grid,
+                            dax::Id point_blockCount,
+                            dax::Id point_threadsPerBlock,
+                            dax::Id cell_blockCount,
+                            dax::Id cell_threadsPerBlock,
+                            double &upload_time,
+                            double &execute_time,
+                            double &download_time)
+{
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar> elevationResult;
+  elevationResult->Allocate(dax::internal::numberOfPoints(grid));
+
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3> gradientResult;
+  gradientResult->Allocate(dax::internal::numberOfCells(grid));
+
+  boost::timer timer;
+
+  upload_time = 0.0;
+
+  timer.restart();
+  ExecuteElevation<<<point_blockCount, point_threadsPerBlock>>>(
+        grid,
+        elevationResult->GetArray());
+  ExecutePipeline1<<<cell_blockCount, cell_threadsPerBlock>>>(
+        grid,
+        elevationResult->GetArray(),
+        gradientResult->GetArray());
+  if (cudaThreadSynchronize() != cudaSuccess)
+    {
+    abort();
+    }
+  execute_time = timer.elapsed();
+
+  // Download the result, just to time it.
+  vector<dax::Vector3> hostResult(numberOfCells(grid));
+  dax::internal::DataArray<dax::Vector3> hostResultArray(&hostResult.at(0),
+                                                         hostResult.size());
+  timer.restart();
+  gradientResult->CopyToHost(hostResultArray);
+  download_time = timer.elapsed();
+
+  PrintCheckValues(hostResultArray);
+}
+
+static void RunCellGradientSinSqrCos(dax::internal::StructureUniformGrid &grid,
+                                     dax::Id point_blockCount,
+                                     dax::Id point_threadsPerBlock,
+                                     dax::Id cell_blockCount,
+                                     dax::Id cell_threadsPerBlock,
+                                     double &upload_time,
+                                     double &execute_time,
+                                     double &download_time)
+{
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar> elevationResult;
+  elevationResult->Allocate(dax::internal::numberOfPoints(grid));
+
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3> intermediate1;
+  intermediate1->Allocate(dax::internal::numberOfCells(grid));
+
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3> intermediate2;
+  intermediate2->Allocate(dax::internal::numberOfCells(grid));
+
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3> intermediate3;
+  intermediate3->Allocate(dax::internal::numberOfCells(grid));
+
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3> finalResult;
+  finalResult->Allocate(dax::internal::numberOfCells(grid));
+
+  boost::timer timer;
+
+  upload_time = 0.0;
+
+  timer.restart();
+  ExecuteElevation<<<point_blockCount, point_threadsPerBlock>>>(
+        grid,
+        elevationResult->GetArray());
+  ExecutePipeline2<<<cell_blockCount, cell_threadsPerBlock>>>(
+        grid,
+        elevationResult->GetArray(),
+        intermediate1->GetArray(),
+        intermediate2->GetArray(),
+        intermediate3->GetArray(),
+        finalResult->GetArray());
+  if (cudaThreadSynchronize() != cudaSuccess)
+    {
+    abort();
+    }
+  execute_time = timer.elapsed();
+
+  // Download the result, just to time it.
+  vector<dax::Vector3> hostResult(numberOfCells(grid));
+  dax::internal::DataArray<dax::Vector3> hostResultArray(&hostResult.at(0),
+                                                         hostResult.size());
+  timer.restart();
+  finalResult->CopyToHost(hostResultArray);
+  download_time = timer.elapsed();
+
+  PrintCheckValues(hostResultArray);
+}
+
+static void RunSinSqrCos(dax::internal::StructureUniformGrid &grid,
+                         dax::Id point_blockCount,
+                         dax::Id point_threadsPerBlock,
+                         double &upload_time,
+                         double &execute_time,
+                         double &download_time)
+{
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar> intermediate1;
+  intermediate1->Allocate(dax::internal::numberOfPoints(grid));
+
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar> intermediate2;
+  intermediate2->Allocate(dax::internal::numberOfPoints(grid));
+
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar> intermediate3;
+  intermediate3->Allocate(dax::internal::numberOfPoints(grid));
+
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar> finalResult;
+  finalResult->Allocate(dax::internal::numberOfPoints(grid));
+
+  boost::timer timer;
+
+  upload_time = 0.0;
+
+  timer.restart();
+  ExecutePipeline3<<<point_blockCount, point_threadsPerBlock>>>(
+        grid,
+        intermediate1->GetArray(),
+        intermediate2->GetArray(),
+        intermediate3->GetArray(),
+        finalResult->GetArray());
+  if (cudaThreadSynchronize() != cudaSuccess)
+    {
+    abort();
+    }
+  execute_time = timer.elapsed();
+
+  // Download the result, just to time it.
+  vector<dax::Scalar> hostResult(numberOfCells(grid));
+  dax::internal::DataArray<dax::Scalar> hostResultArray(&hostResult.at(0),
+                                                        hostResult.size());
+  timer.restart();
+  finalResult->CopyToHost(hostResultArray);
+  download_time = timer.elapsed();
+
+  PrintCheckValues(hostResultArray);
 }
 
 
@@ -186,134 +346,68 @@ int main(int argc, char* argv[])
     return 1;
     }
 
-  const unsigned int MAX_SIZE = parser.GetProblemSize();
-  const unsigned int MAX_WARP_SIZE = parser.GetMaxWarpSize();
-  const unsigned int MAX_GRID_SIZE = parser.GetMaxGridSize();
+  const dax::Id MAX_SIZE = parser.GetProblemSize();
+  // I think you mean threads per block, not warp size, which is different.
+  // I don't think you can control the warp size.
+  const dax::Id MAX_WARP_SIZE = parser.GetMaxWarpSize();
+  // I think what you actually mean here is blocks per grid. I believe in CUDA
+  // "grid size" is meant to be the total number of threads (threadsPerBlock *
+  // blocksPerGrid).
+  const dax::Id MAX_GRID_SIZE = parser.GetMaxGridSize();
 
-  unsigned int cell_number_of_threads = (MAX_SIZE-1) * (MAX_SIZE-1) * (MAX_SIZE-1);
-  unsigned int cell_threadCount = min(MAX_WARP_SIZE, cell_number_of_threads);
-  unsigned int warpCount = (cell_number_of_threads / MAX_WARP_SIZE) +
-    (((cell_number_of_threads % MAX_WARP_SIZE) == 0)? 0 : 1);
-  unsigned int cell_blockCount = min(MAX_GRID_SIZE, max(1, warpCount));
-  unsigned int cell_iterations = ceil(warpCount * 1.0 / MAX_GRID_SIZE);
-  cout << "Execute (Cell) iterations="
-    << cell_iterations << " : blockCount="  << cell_blockCount
-    << ", threadCount=" << cell_threadCount << endl;
+  dax::Id numCells = (MAX_SIZE-1) * (MAX_SIZE-1) * (MAX_SIZE-1);
+  dax::Id cell_threadsPerBlock = min(MAX_WARP_SIZE, numCells);
+  dax::Id cell_blockCount = min(MAX_GRID_SIZE, numCells/cell_threadsPerBlock+1);
+  cout << "Execute (Cell) blockCount="  << cell_blockCount
+       << ", threadsPerBlock=" << cell_threadsPerBlock << endl;
 
-  unsigned int point_number_of_threads = MAX_SIZE * MAX_SIZE * MAX_SIZE;
-  unsigned int point_threadCount = min(MAX_WARP_SIZE, point_number_of_threads);
-  warpCount = (point_number_of_threads / MAX_WARP_SIZE) +
-    (((point_number_of_threads % MAX_WARP_SIZE) == 0)? 0 : 1);
-  unsigned int point_blockCount = min(MAX_GRID_SIZE, max(1, warpCount));
-  unsigned int point_iterations = ceil(warpCount * 1.0 / MAX_GRID_SIZE);
-  cout << "Execute (Point) iterations="
-    << point_iterations << " : blockCount="  << point_blockCount
-    << ", threadCount=" << point_threadCount << endl;
+  dax::Id numPoints = MAX_SIZE * MAX_SIZE * MAX_SIZE;
+  dax::Id point_threadsPerBlock = min(MAX_WARP_SIZE, numPoints);
+  dax::Id point_blockCount =
+      min(MAX_GRID_SIZE, numPoints/point_threadsPerBlock+1);
+  cout << "Execute (Point) blockCount="  << point_blockCount
+       << ", threadsPerBlock=" << point_threadsPerBlock << endl;
 
 
   boost::timer timer;
 
   timer.restart();
-  dax::cont::ImageDataPtr input = CreateInputDataSet(MAX_SIZE);
-  dax::cont::ImageDataPtr intermediate = CreateIntermediateDataset(MAX_SIZE);
-  dax::cont::ImageDataPtr output = CreateOutputDataSet(MAX_SIZE);
+  dax::internal::StructureUniformGrid grid = CreateInputStructure(MAX_SIZE);
   double init_time = timer.elapsed();
 
-  dax::cuda::cont::internal::DataBridge bridge;
-  bridge.AddInputData(input);
-  if (parser.GetPipeline() == dax::testing::ArgumentsParser::SINE_SQUARE_COS)
-    {
-    bridge.AddOutputData(intermediate);
-    }
-  else
-    {
-    bridge.AddIntermediateData(intermediate);
-    bridge.AddOutputData(output);
-    }
+  double upload_time;
+  double execute_time;
+  double download_time;
 
-  timer.restart();
-  dax::cuda::cont::internal::KernelArgumentPtr arg = bridge.Upload();
-  if (cudaThreadSynchronize() != cudaSuccess)
-    {
-    abort();
-    }
-
-  double upload_time = timer.elapsed();
-
-  timer.restart();
-  dax::cuda::internal::KernelArgument _arg= arg->Get();
   switch (parser.GetPipeline())
     {
   case dax::testing::ArgumentsParser::CELL_GRADIENT:
     cout << "Pipeline #1" << endl;
-    ExecuteElevation<<<point_blockCount, point_threadCount>>>(
-      _arg, point_number_of_threads, point_iterations);
-    ExecutePipeline1<<<cell_blockCount, cell_threadCount>>>(
-      _arg, cell_number_of_threads, cell_iterations);
+    RunCellGradient(grid,
+                    point_blockCount, point_threadsPerBlock,
+                    cell_blockCount, cell_threadsPerBlock,
+                    upload_time,
+                    execute_time,
+                    download_time);
     break;
   case dax::testing::ArgumentsParser::CELL_GRADIENT_SINE_SQUARE_COS:
     cout << "Pipeline #2" << endl;
-    ExecuteElevation<<<point_blockCount, point_threadCount>>>(
-      _arg, point_number_of_threads, point_iterations);
-    ExecutePipeline2<<<cell_blockCount, cell_threadCount>>>(
-      _arg, cell_number_of_threads, cell_iterations);
+    RunCellGradientSinSqrCos(grid,
+                             point_blockCount, point_threadsPerBlock,
+                             cell_blockCount, cell_threadsPerBlock,
+                             upload_time,
+                             execute_time,
+                             download_time);
     break;
 
   case dax::testing::ArgumentsParser::SINE_SQUARE_COS:
     cout << "Pipeline #3" << endl;
-    ExecutePipeline3<<<point_blockCount, point_threadCount>>>(
-      _arg, point_number_of_threads, point_iterations);
+    RunSinSqrCos(grid,
+                 point_blockCount, point_threadsPerBlock,
+                 upload_time,
+                 execute_time,
+                 download_time);
     break;
-    }
-  if (cudaThreadSynchronize() != cudaSuccess)
-    {
-    abort();
-    }
-
-  double execute_time = timer.elapsed();
-  timer.restart();
-  bridge.Download(arg);
-  if (cudaThreadSynchronize() != cudaSuccess)
-    {
-    abort();
-    }
-  double download_time = timer.elapsed();
-
-  if (parser.GetPipeline() == dax::testing::ArgumentsParser::SINE_SQUARE_COS)
-    {
-    dax::cont::DataArrayScalar* array =
-      dynamic_cast<dax::cont::DataArrayScalar*>(&(*intermediate->PointData[0]));
-    for (size_t cc=0; cc < array->GetNumberOfTuples(); cc++)
-      {
-      dax::Scalar value = array->Get(cc);
-      if (cc < 20)
-        {
-        cout << cc << " : " << value << endl;
-        }
-      if (value == -1 || value > 1) 
-        {
-        cout << cc << " : " << value << endl;
-        break;
-        }
-      }
-    }
-  else
-    {
-    dax::cont::DataArrayVector3* array =
-      dynamic_cast<dax::cont::DataArrayVector3*>(&(*output->CellData[0]));
-    for (size_t cc=0; cc < array->GetNumberOfTuples(); cc++)
-      {
-      dax::Vector3 value = array->Get(cc);
-      if (cc < 20)
-        {
-        cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
-        }
-      if (value.x == -1 || value.x > 1) 
-        {
-        cout << cc << " : " << value.x << ", " << value.y << ", " << value.z << endl;
-        break;
-        }
-      }
     }
 
 

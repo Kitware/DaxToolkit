@@ -8,23 +8,32 @@
 #ifndef __Square_worklet_
 #define __Square_worklet_
 
-DAX_WORKLET void Square(DAX_IN dax::exec::WorkMapField& work,
-  DAX_IN dax::exec::Field& in_field,
-  DAX_OUT dax::exec::Field& out_field)
+#include <dax/exec/Cell.h>
+#include <dax/exec/Field.h>
+#include <dax/exec/WorkMapField.h>
+
+// TODO: Template to handle any field type, scalar or vector.
+
+template<class CellType>
+DAX_WORKLET void Square(
+    DAX_IN dax::exec::WorkMapField<CellType> &work,
+    DAX_IN const dax::exec::Field<dax::Vector3> &inField,
+    DAX_OUT dax::exec::Field<dax::Vector3> &outField)
 {
-  dax::Vector3 value = in_field.GetVector3(work);
-  value.x *= value.x;
-  value.y *= value.y;
-  value.z *= value.z;
-  out_field.Set(work, value);
+  dax::Vector3 inValue = work.GetFieldValue(inField);
+  dax::Vector3 outValue = inValue * inValue;
+  work.SetFieldValue(outField, outValue);
 }
 
-DAX_WORKLET void SquareScalar(DAX_IN dax::exec::WorkMapField& work,
-  DAX_IN dax::exec::Field& in_field,
-  DAX_OUT dax::exec::Field& out_field)
+template<class CellType>
+DAX_WORKLET void Square(
+    DAX_IN dax::exec::WorkMapField<CellType> &work,
+    DAX_IN const dax::exec::Field<dax::Scalar> &inField,
+    DAX_OUT dax::exec::Field<dax::Scalar> &outField)
 {
-  dax::Scalar value = in_field.GetScalar(work);
-  out_field.Set(work, value * value);
+  dax::Scalar inValue = work.GetFieldValue(inField);
+  dax::Scalar outValue = inValue*inValue;
+  work.SetFieldValue(outField, outValue);
 }
 
 #endif
