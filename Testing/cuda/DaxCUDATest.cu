@@ -199,10 +199,14 @@ static void RunCellGradient(dax::internal::StructureUniformGrid &grid,
                             double &execute_time,
                             double &download_time)
 {
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar> elevationResult;
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar>
+      elevationResult(
+        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Scalar>());
   elevationResult->Allocate(dax::internal::numberOfPoints(grid));
 
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3> gradientResult;
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3>
+      gradientResult(
+        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Vector3>());
   gradientResult->Allocate(dax::internal::numberOfCells(grid));
 
   boost::timer timer;
@@ -243,19 +247,29 @@ static void RunCellGradientSinSqrCos(dax::internal::StructureUniformGrid &grid,
                                      double &execute_time,
                                      double &download_time)
 {
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar> elevationResult;
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar>
+      elevationResult(
+        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Scalar>());
   elevationResult->Allocate(dax::internal::numberOfPoints(grid));
 
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3> intermediate1;
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3>
+      intermediate1(
+        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Vector3>());
   intermediate1->Allocate(dax::internal::numberOfCells(grid));
 
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3> intermediate2;
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3>
+      intermediate2(
+        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Vector3>());
   intermediate2->Allocate(dax::internal::numberOfCells(grid));
 
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3> intermediate3;
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3>
+      intermediate3(
+        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Vector3>());
   intermediate3->Allocate(dax::internal::numberOfCells(grid));
 
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3> finalResult;
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3>
+      finalResult(
+        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Vector3>());
   finalResult->Allocate(dax::internal::numberOfCells(grid));
 
   boost::timer timer;
@@ -297,16 +311,24 @@ static void RunSinSqrCos(dax::internal::StructureUniformGrid &grid,
                          double &execute_time,
                          double &download_time)
 {
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar> intermediate1;
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar>
+      intermediate1(
+        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Scalar>());
   intermediate1->Allocate(dax::internal::numberOfPoints(grid));
 
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar> intermediate2;
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar>
+      intermediate2(
+        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Scalar>());
   intermediate2->Allocate(dax::internal::numberOfPoints(grid));
 
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar> intermediate3;
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar>
+      intermediate3(
+        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Scalar>());
   intermediate3->Allocate(dax::internal::numberOfPoints(grid));
 
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar> finalResult;
+  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar>
+      finalResult(
+        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Scalar>());
   finalResult->Allocate(dax::internal::numberOfPoints(grid));
 
   boost::timer timer;
