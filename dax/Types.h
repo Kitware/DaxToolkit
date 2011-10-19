@@ -139,123 +139,6 @@ namespace dax
 
 #endif
 
-  DAX_EXEC_CONT_EXPORT inline Id3 operator+(const Id3 &a, const Id3 &b)
-  {
-    Id3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
-    return result;
-  }
-  DAX_EXEC_CONT_EXPORT inline Id3 operator*(const Id3 &a, const Id3 &b)
-  {
-    Id3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
-    return result;
-  }
-  DAX_EXEC_CONT_EXPORT inline Id3 operator-(const Id3 &a, const Id3 &b)
-  {
-    Id3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
-    return result;
-  }
-  DAX_EXEC_CONT_EXPORT inline Id3 operator/(const Id3 &a, const Id3 &b)
-  {
-    Id3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
-    return result;
-  }
-  DAX_EXEC_CONT_EXPORT inline bool operator==(const Id3 &a, const Id3 &b)
-  {
-    return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
-  }
-  DAX_EXEC_CONT_EXPORT inline bool operator!=(const Id3 &a, const Id3 &b)
-  {
-    return !(a == b);
-  }
-
-  DAX_EXEC_CONT_EXPORT inline Vector3
-  operator+(const Vector3 &a, const Vector3 &b)
-  {
-    Vector3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
-    return result;
-  }
-  DAX_EXEC_CONT_EXPORT inline Vector3
-  operator*(const Vector3 &a, const Vector3 &b)
-  {
-    Vector3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
-    return result;
-  }
-  DAX_EXEC_CONT_EXPORT inline Vector3
-  operator-(const Vector3 &a, const Vector3 &b)
-  {
-    Vector3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
-    return result;
-  }
-  DAX_EXEC_CONT_EXPORT inline Vector3
-  operator/(const Vector3 &a, const Vector3 &b)
-  {
-    Vector3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
-    return result;
-  }
-  DAX_EXEC_CONT_EXPORT inline bool operator==(const Vector3 &a, const Vector3 &b)
-  {
-    return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
-  }
-  DAX_EXEC_CONT_EXPORT inline bool operator!=(const Vector3 &a, const Vector3 &b)
-  {
-    return !(a == b);
-  }
-
-  DAX_EXEC_CONT_EXPORT inline Vector3 operator*(Scalar a, const Vector3 &b)
-  {
-    Vector3 result = { a * b.x, a * b.y, a * b.z };
-    return result;
-  }
-  DAX_EXEC_CONT_EXPORT inline Vector3 operator*(const Vector3 &a, Scalar &b)
-  {
-    Vector3 result = { a.x * b, a.y * b, a.z * b };
-    return result;
-  }
-
-  DAX_EXEC_CONT_EXPORT inline
-  Vector4 operator+(const Vector4 &a, const Vector4 &b)
-  {
-    Vector4 result = { a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w };
-    return result;
-  }
-  DAX_EXEC_CONT_EXPORT inline
-  Vector4 operator*(const Vector4 &a, const Vector4 &b)
-  {
-    Vector4 result = { a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w };
-    return result;
-  }
-  DAX_EXEC_CONT_EXPORT inline
-  Vector4 operator-(const Vector4 &a, const Vector4 &b)
-  {
-    Vector4 result = { a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w };
-    return result;
-  }
-  DAX_EXEC_CONT_EXPORT inline
-  Vector4 operator/(const Vector4 &a, const Vector4 &b)
-  {
-    Vector4 result = { a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w };
-    return result;
-  }
-  DAX_EXEC_CONT_EXPORT inline bool operator==(const Vector4 &a, const Vector4 &b)
-  {
-    return (a.x == b.x) && (a.y == b.y) && (a.z == b.z) && (a.w == b.w);
-  }
-  DAX_EXEC_CONT_EXPORT inline bool operator!=(const Vector4 &a, const Vector4 &b)
-  {
-    return !(a == b);
-  }
-
-  DAX_EXEC_CONT_EXPORT inline Vector4 operator*(Scalar a, const Vector4 &b)
-  {
-    Vector4 result = { a * b.x, a * b.y, a * b.z, a * b.w };
-    return result;
-  }
-  DAX_EXEC_CONT_EXPORT inline Vector4 operator*(const Vector4 &a, Scalar &b)
-  {
-    Vector4 result = { a.x * b, a.y * b, a.z * b, a.w * b };
-    return result;
-  }
-
   DAX_EXEC_CONT_EXPORT inline Scalar dot(const Vector3 &a, const Vector3 &b)
   {
     return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
@@ -267,4 +150,136 @@ namespace dax
   }
 
 }
+
+DAX_EXEC_CONT_EXPORT inline dax::Id3 operator+(const dax::Id3 &a,
+                                               const dax::Id3 &b)
+{
+  dax::Id3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
+  return result;
+}
+DAX_EXEC_CONT_EXPORT inline dax::Id3 operator*(const dax::Id3 &a,
+                                               const dax::Id3 &b)
+{
+  dax::Id3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
+  return result;
+}
+DAX_EXEC_CONT_EXPORT inline dax::Id3 operator-(const dax::Id3 &a,
+                                               const dax::Id3 &b)
+{
+  dax::Id3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
+  return result;
+}
+DAX_EXEC_CONT_EXPORT inline dax::Id3 operator/(const dax::Id3 &a,
+                                               const dax::Id3 &b)
+{
+  dax::Id3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
+  return result;
+}
+DAX_EXEC_CONT_EXPORT inline bool operator==(const dax::Id3 &a,
+                                            const dax::Id3 &b)
+{
+  return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
+}
+DAX_EXEC_CONT_EXPORT inline bool operator!=(const dax::Id3 &a,
+                                            const dax::Id3 &b)
+{
+  return !(a == b);
+}
+
+DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator+(const dax::Vector3 &a,
+                                                   const dax::Vector3 &b)
+{
+  dax::Vector3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
+  return result;
+}
+DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator*(const dax::Vector3 &a,
+                                                   const dax::Vector3 &b)
+{
+  dax::Vector3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
+  return result;
+}
+DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator-(const dax::Vector3 &a,
+                                                   const dax::Vector3 &b)
+{
+  dax::Vector3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
+  return result;
+}
+DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator/(const dax::Vector3 &a,
+                                                   const dax::Vector3 &b)
+{
+  dax::Vector3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
+  return result;
+}
+DAX_EXEC_CONT_EXPORT inline bool operator==(const dax::Vector3 &a,
+                                            const dax::Vector3 &b)
+{
+  return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
+}
+DAX_EXEC_CONT_EXPORT inline bool operator!=(const dax::Vector3 &a,
+                                            const dax::Vector3 &b)
+{
+  return !(a == b);
+}
+
+DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator*(dax::Scalar a,
+                                                   const dax::Vector3 &b)
+{
+  dax::Vector3 result = { a * b.x, a * b.y, a * b.z };
+  return result;
+}
+DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator*(const dax::Vector3 &a,
+                                                   dax::Scalar &b)
+{
+  dax::Vector3 result = { a.x * b, a.y * b, a.z * b };
+  return result;
+}
+
+DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator+(const dax::Vector4 &a,
+                                                   const dax::Vector4 &b)
+{
+  dax::Vector4 result = { a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w };
+  return result;
+}
+DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator*(const dax::Vector4 &a,
+                                                   const dax::Vector4 &b)
+{
+  dax::Vector4 result = { a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w };
+  return result;
+}
+DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator-(const dax::Vector4 &a,
+                                                   const dax::Vector4 &b)
+{
+  dax::Vector4 result = { a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w };
+  return result;
+}
+DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator/(const dax::Vector4 &a,
+                                                   const dax::Vector4 &b)
+{
+  dax::Vector4 result = { a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w };
+  return result;
+}
+DAX_EXEC_CONT_EXPORT inline bool operator==(const dax::Vector4 &a,
+                                            const dax::Vector4 &b)
+{
+  return (a.x == b.x) && (a.y == b.y) && (a.z == b.z) && (a.w == b.w);
+}
+DAX_EXEC_CONT_EXPORT inline bool operator!=(const dax::Vector4 &a,
+                                            const dax::Vector4 &b)
+{
+  return !(a == b);
+}
+
+DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator*(dax::Scalar a,
+                                                   const dax::Vector4 &b)
+{
+  dax::Vector4 result = { a * b.x, a * b.y, a * b.z, a * b.w };
+  return result;
+}
+DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator*(const dax::Vector4 &a,
+                                                   dax::Scalar &b)
+{
+  dax::Vector4 result = { a.x * b, a.y * b, a.z * b, a.w * b };
+  return result;
+}
+
 #endif
