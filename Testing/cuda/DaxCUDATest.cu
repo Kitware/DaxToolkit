@@ -78,61 +78,87 @@ __global__ void ExecutePipeline1(
 __global__ void ExecutePipeline2(
     dax::internal::StructureUniformGrid grid,
     dax::internal::DataArray<dax::Scalar> inPointScalars,
-    dax::internal::DataArray<dax::Vector3> intermediateArray1,
-    dax::internal::DataArray<dax::Vector3> intermediateArray2,
-    dax::internal::DataArray<dax::Vector3> intermediateArray3,
     dax::internal::DataArray<dax::Vector3> outCellVectors)
 {
   dax::Id cellIndex = (blockIdx.x * blockDim.x) + threadIdx.x;
   dax::Id cellIncrement = gridDim.x;
   dax::Id numCells = dax::internal::numberOfCells(grid);
 
+  dax::Vector3 intermediateValue1;
+  dax::internal::DataArray<dax::Vector3> intermediateArray1;
+
+  dax::Vector3 intermediateValue2;
+  dax::internal::DataArray<dax::Vector3> intermediateArray2;
+
+  dax::Vector3 intermediateValue3;
+  dax::internal::DataArray<dax::Vector3> intermediateArray3;
+
   dax::exec::WorkMapCell<dax::exec::CellVoxel> workCell(grid, cellIndex);
   dax::exec::WorkMapField<dax::exec::CellVoxel> workField(grid, cellIndex);
   dax::exec::FieldCoordinates pointCoord
       = dax::exec::internal::fieldCoordinatesBuild(grid);
   dax::exec::FieldPoint<dax::Scalar> inPointField(inPointScalars);
-  dax::exec::FieldCell<dax::Vector3> intermediateField1(intermediateArray1);
-  dax::exec::FieldCell<dax::Vector3> intermediateField2(intermediateArray2);
-  dax::exec::FieldCell<dax::Vector3> intermediateField3(intermediateArray3);
   dax::exec::FieldCell<dax::Vector3> outCellField(outCellVectors);
 
   for ( ; cellIndex < numCells; cellIndex += cellIncrement)
     {
     workCell.SetCellIndex(cellIndex);
     workField.SetIndex(cellIndex);
+
+    intermediateArray1.SetPointer(&intermediateValue1, 1, cellIndex);
+    dax::exec::FieldCell<dax::Vector3> intermediateField1(intermediateArray1);
     CellGradient(workCell, pointCoord, inPointField, intermediateField1);
+
+    intermediateArray2.SetPointer(&intermediateValue2, 1, cellIndex);
+    dax::exec::FieldCell<dax::Vector3> intermediateField2(intermediateArray2);
     Sine(workField, intermediateField1, intermediateField2);
+
+    intermediateArray3.SetPointer(&intermediateValue3, 1, cellIndex);
+    dax::exec::FieldCell<dax::Vector3> intermediateField3(intermediateArray3);
     Square(workField, intermediateField2, intermediateField3);
+
     Cosine(workField, intermediateField3, outCellField);
     }
 }
 
 __global__ void ExecutePipeline3(
     dax::internal::StructureUniformGrid grid,
-    dax::internal::DataArray<dax::Scalar> intermediateArray1,
-    dax::internal::DataArray<dax::Scalar> intermediateArray2,
-    dax::internal::DataArray<dax::Scalar> intermediateArray3,
     dax::internal::DataArray<dax::Scalar> outPointScalars)
 {
   dax::Id pointIndex = (blockIdx.x * blockDim.x) + threadIdx.x;
   dax::Id pointIncrement = gridDim.x;
   dax::Id numPoints = dax::internal::numberOfPoints(grid);
 
+  dax::Scalar intermediateValue1;
+  dax::internal::DataArray<dax::Scalar> intermediateArray1;
+
+  dax::Scalar intermediateValue2;
+  dax::internal::DataArray<dax::Scalar> intermediateArray2;
+
+  dax::Scalar intermediateValue3;
+  dax::internal::DataArray<dax::Scalar> intermediateArray3;
+
   dax::exec::WorkMapField<dax::exec::CellVoxel> work(grid, pointIndex);
   dax::exec::FieldCoordinates pointCoord
       = dax::exec::internal::fieldCoordinatesBuild(grid);
-  dax::exec::FieldPoint<dax::Scalar> intermediateField1(intermediateArray1);
-  dax::exec::FieldPoint<dax::Scalar> intermediateField2(intermediateArray2);
-  dax::exec::FieldPoint<dax::Scalar> intermediateField3(intermediateArray3);
   dax::exec::FieldPoint<dax::Scalar> outField(outPointScalars);
 
   for ( ; pointIndex < numPoints; pointIndex += pointIncrement)
     {
     work.SetIndex(pointIndex);
+
+    intermediateArray1.SetPointer(&intermediateValue1, 1, pointIndex);
+    dax::exec::FieldPoint<dax::Scalar> intermediateField1(intermediateArray1);
     Elevation(work, pointCoord, intermediateField1);
+
+    intermediateArray2.SetPointer(&intermediateValue2, 1, pointIndex);
+    dax::exec::FieldPoint<dax::Scalar> intermediateField2(intermediateArray2);
     Sine(work, intermediateField1, intermediateField2);
+
+    intermediateArray3.SetPointer(&intermediateValue3, 1, pointIndex);
+    dax::exec::FieldPoint<dax::Scalar> intermediateField3(intermediateArray1);
     Square(work, intermediateField2, intermediateField3);
+
     Cosine(work, intermediateField3, outField);
     }
 }
@@ -253,21 +279,6 @@ static void RunCellGradientSinSqrCos(dax::internal::StructureUniformGrid &grid,
   elevationResult->Allocate(dax::internal::numberOfPoints(grid));
 
   dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3>
-      intermediate1(
-        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Vector3>());
-  intermediate1->Allocate(dax::internal::numberOfCells(grid));
-
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3>
-      intermediate2(
-        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Vector3>());
-  intermediate2->Allocate(dax::internal::numberOfCells(grid));
-
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3>
-      intermediate3(
-        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Vector3>());
-  intermediate3->Allocate(dax::internal::numberOfCells(grid));
-
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3>
       finalResult(
         new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Vector3>());
   finalResult->Allocate(dax::internal::numberOfCells(grid));
@@ -283,9 +294,6 @@ static void RunCellGradientSinSqrCos(dax::internal::StructureUniformGrid &grid,
   ExecutePipeline2<<<cell_blockCount, cell_threadsPerBlock>>>(
         grid,
         elevationResult->GetArray(),
-        intermediate1->GetArray(),
-        intermediate2->GetArray(),
-        intermediate3->GetArray(),
         finalResult->GetArray());
   if (cudaThreadSynchronize() != cudaSuccess)
     {
@@ -312,21 +320,6 @@ static void RunSinSqrCos(dax::internal::StructureUniformGrid &grid,
                          double &download_time)
 {
   dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar>
-      intermediate1(
-        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Scalar>());
-  intermediate1->Allocate(dax::internal::numberOfPoints(grid));
-
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar>
-      intermediate2(
-        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Scalar>());
-  intermediate2->Allocate(dax::internal::numberOfPoints(grid));
-
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar>
-      intermediate3(
-        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Scalar>());
-  intermediate3->Allocate(dax::internal::numberOfPoints(grid));
-
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar>
       finalResult(
         new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Scalar>());
   finalResult->Allocate(dax::internal::numberOfPoints(grid));
@@ -338,9 +331,6 @@ static void RunSinSqrCos(dax::internal::StructureUniformGrid &grid,
   timer.restart();
   ExecutePipeline3<<<point_blockCount, point_threadsPerBlock>>>(
         grid,
-        intermediate1->GetArray(),
-        intermediate2->GetArray(),
-        intermediate3->GetArray(),
         finalResult->GetArray());
   if (cudaThreadSynchronize() != cudaSuccess)
     {
@@ -349,7 +339,7 @@ static void RunSinSqrCos(dax::internal::StructureUniformGrid &grid,
   execute_time = timer.elapsed();
 
   // Download the result, just to time it.
-  vector<dax::Scalar> hostResult(numberOfCells(grid));
+  vector<dax::Scalar> hostResult(numberOfPoints(grid));
   dax::internal::DataArray<dax::Scalar> hostResultArray(&hostResult.at(0),
                                                         hostResult.size());
   timer.restart();
