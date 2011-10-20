@@ -8,6 +8,9 @@
 
 #include <thrust/device_vector.h>
 #include <dax/cuda/exec/ExecutionEnvironment.h>
+#include <dax/exec/Cell.h>
+#include <dax/exec/WorkMapField.h>
+#include <dax/internal/GridStructures.h>
 #include <iostream>
 using namespace std;
 
@@ -15,10 +18,16 @@ using namespace std;
 
 __global__ void SimpleCUDAKernelTest(float3* data_array)
 {
-  dax::exec::WorkMapField work;
-  data_array[work.GetItem()].x = work.GetItem();
-  data_array[work.GetItem()].y = 12;
-  data_array[work.GetItem()].z = 13;
+  dax::internal::StructureUniformGrid grid;
+  grid.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
+  grid.Spacing = dax::make_Vector3(1.0, 1.0, 1.0);
+  grid.Extent.Min = dax::make_Id3(0, 0, 0);
+  grid.Extent.Max = dax::make_Id3(SIZE-1, SIZE-1, (SIZE/128)-1);
+  dax::exec::WorkMapField<dax::exec::CellVoxel> work(
+        grid, (blockIdx.x * blockDim.x) + threadIdx.x);
+  data_array[work.GetIndex()].x = work.GetIndex();
+  data_array[work.GetIndex()].y = 12;
+  data_array[work.GetIndex()].z = 13;
 }
 
 int main()
