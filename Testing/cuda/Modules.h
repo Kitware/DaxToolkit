@@ -20,8 +20,44 @@
 #include <Worklets/Elevation.worklet>
 #include <Worklets/CellGradient.worklet>
 
+
 namespace cudaExecution
 {
+  class CudaParameters
+  {
+    //holds the basic information needed to determine the
+    //number of threads and blocks to run on the current cuda card
+  public:
+    template< typename T>
+    CudaParameters(T source):
+      NumPointThreads(128),
+      NumCellThreads(128)
+    {
+      dax::Id numPts = dax::internal::numberOfPoints(source);
+      dax::Id numCells = dax::internal::numberOfCells(source);
+
+      NumPointBlocks = (numPts+NumPointThreads-1)/NumPointThreads;
+      NumCellBlocks = (numCells+NumPointThreads-1)/NumPointThreads;
+
+      std::cout << "NumPointBlocks = " << NumPointBlocks << std::endl;
+      std::cout << "NumPointThreads = " << NumPointThreads << std::endl;
+
+      std::cout << "NumCellBlocks = " << NumCellBlocks << std::endl;
+      std::cout << "NumCellThreads = " << NumCellThreads << std::endl;
+    }
+
+    dax::Id numPointBlocks() const { return NumPointBlocks; }
+    dax::Id numPointThreads() const { return NumPointThreads; }
+
+    dax::Id numCellBlocks() const { return NumCellBlocks; }
+    dax::Id numCellThreads() const { return NumCellThreads; }
+  protected:
+    dax::Id NumPointBlocks;
+    dax::Id NumPointThreads;
+    dax::Id NumCellBlocks;
+    dax::Id NumCellThreads;
+  };
+
   //this will need to be auto moc'ed from looking at the worklet
 __global__ void ComputeElevation(dax::internal::StructureUniformGrid input,
                                  dax::internal::DataArray<dax::Scalar> output)
@@ -64,48 +100,36 @@ __global__ void ComputeGradient(dax::internal::StructureUniformGrid source,
     }
   }
 
-}
-
-namespace dax { namespace cuda {
-class CudaParameters
+struct ElevationWorklet
 {
-  //holds the basic information needed to determine the
-  //number of threads and blocks to run on the current cuda card
-public:
-  template< typename T>
-  CudaParameters(T source):
-    NumPointThreads(128),
-    NumCellThreads(128)
-  {
-    dax::Id numPts = dax::internal::numberOfPoints(source);
-    dax::Id numCells = dax::internal::numberOfCells(source);
-
-    NumPointBlocks = (numPts+NumPointThreads-1)/NumPointThreads;
-    NumCellBlocks = (numCells+NumPointThreads-1)/NumPointThreads;
-
-    std::cout << "NumPointBlocks = " << NumPointBlocks << std::endl;
-    std::cout << "NumPointThreads = " << NumPointThreads << std::endl;
-
-    std::cout << "NumCellBlocks = " << NumCellBlocks << std::endl;
-    std::cout << "NumCellThreads = " << NumCellThreads << std::endl;
-  }
-
-  dax::Id numPointBlocks() const { return NumPointBlocks; }
-  dax::Id numPointThreads() const { return NumPointThreads; }
-
-  dax::Id numCellBlocks() const { return NumCellBlocks; }
-  dax::Id numCellThreads() const { return NumCellThreads; }
-protected:
-  dax::Id NumPointBlocks;
-  dax::Id NumPointThreads;
-  dax::Id NumCellBlocks;
-  dax::Id NumCellThreads;
+  void run(const cudaExecution::CudaParameters &params,
+          dax::internal::StructureUniformGrid input,
+          dax::internal::DataArray<dax::Scalar> output)
+       {
+         ComputeElevation<<<params.numPointBlocks(),
+                 params.numPointThreads()>>>(input,output);
+       }
 };
-} }
 
+struct GradientWorklet
+{
+  //this will need to be auto moc'ed from looking at the worklet
+  void run(const cudaExecution::CudaParameters &params,
+          dax::internal::StructureUniformGrid source,
+          dax::internal::DataArray<dax::Scalar> input,
+          dax::internal::DataArray<dax::Vector3> output)
+  {
+  ComputeGradient<<<params.numPointBlocks(),
+          params.numPointThreads()>>>(source,input,output);
+  }
+};
+
+}
 namespace dax { namespace modules {
 
-template< typename SourceType, typename OutputType>
+template< typename SourceType,
+          typename OutputType,
+          typename Worklet>
 class MapFieldModule
 {
 public:
@@ -119,14 +143,16 @@ public:
     //how do we determine the size of the output grid
     //is this always defined by the size of the input?
     //or is it defined by the type of work?
-    const dax::cuda::CudaParameters params(source);
+    const cudaExecution::CudaParameters params(source);
     output->Allocate(dax::internal::numberOfPoints(source));
-    cudaExecution::ComputeElevation<<<params.numPointBlocks(),
-        params.numPointThreads()>>>(source,output->GetArray());
+    Worklet().run(params,source,output->GetArray());
     }
 };
 
-template< typename SourceType, typename InputType, typename OutputType>
+template< typename SourceType,
+          typename InputType,
+          typename OutputType,
+          typename Worklet>
 class MapCellModule
 {
 public:
@@ -142,18 +168,17 @@ public:
   static void compute(SourceType source, InputDeviceDataArrayPtr input,
                       OutputDeviceDataArrayPtr output)
     {
-    const dax::cuda::CudaParameters params(source);
+    const cudaExecution::CudaParameters params(source);
     output->Allocate(dax::internal::numberOfCells(source));
-    cudaExecution::ComputeGradient<<<params.numCellBlocks(),
-        params.numCellThreads()>>>(source,input->GetArray(),output->GetArray());
+    Worklet().run(params,source,input->GetArray(),output->GetArray());
     }
 };
 
 //ElevationM and GraidentM can be typedefs,
 //which mean in theory all user defined classes will just be typedefs
 //ToDo: push the function pointer into the template definition, rather than hard coded
-typedef MapFieldModule <dax::internal::StructureUniformGrid,dax::Scalar> ElevationM;
-typedef MapCellModule <dax::internal::StructureUniformGrid,dax::Scalar,dax::Vector3> GradientM;
+typedef MapFieldModule <dax::internal::StructureUniformGrid,dax::Scalar, cudaExecution::ElevationWorklet> ElevationM;
+typedef MapCellModule <dax::internal::StructureUniformGrid,dax::Scalar,dax::Vector3,cudaExecution::GradientWorklet> GradientM;
 
 }}
 
