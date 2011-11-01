@@ -53,11 +53,13 @@ static void PrintCheckValues(std::vector<dax::Vector3> &data)
 template<typename T>
 void ExecutePipeline(T data)
 {
-  std::vector<dax::Vector3> results;
+  std::vector<dax::modules::GradientM::OutputDataType> results;
 
   dax::exec::Source<T> s(data); //name: Push?
   dax::exec::Filter< dax::modules::ElevationM > filter1(s);
   dax::exec::Filter< dax::modules::GradientM > filter2(s,filter1);
+
+
   dax::exec::Sink(filter2,results); //name: Pull? Fetch?
   PrintCheckValues(results);
 }
