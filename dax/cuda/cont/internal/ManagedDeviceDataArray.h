@@ -33,6 +33,11 @@ public:
 
   inline ManagedDeviceDataArray() : Array() { }
 
+  dax::Id size() const
+  {
+    return this->Array.GetNumberOfEntries();
+  }
+
   void Allocate(dax::Id numEntries)
   {
     if (numEntries == this->Array.GetNumberOfEntries()) { return; }
