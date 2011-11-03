@@ -101,10 +101,11 @@ struct ElevationWorklet
   void run(const cudaExecution::CudaParameters &params,
           dax::internal::StructureUniformGrid input,
           dax::internal::DataArray<dax::Scalar> output)
-       {
-         ComputeElevation<<<params.numPointBlocks(),
-                 params.numPointThreads()>>>(input,output);
-       }
+    {
+    std::cout << "Execute Elevation Worklet" << std::endl;
+    ComputeElevation<<<params.numPointBlocks(),
+        params.numPointThreads()>>>(input,output);
+    }
 };
 
 struct GradientWorklet
@@ -115,8 +116,9 @@ struct GradientWorklet
           dax::internal::DataArray<dax::Scalar> input,
           dax::internal::DataArray<dax::Vector3> output)
   {
+  std::cout << "Execute Gradient Worklet" << std::endl;
   ComputeGradient<<<params.numPointBlocks(),
-          params.numPointThreads()>>>(source,input,output);
+      params.numPointThreads()>>>(source,input,output);
   }
 };
 
@@ -128,15 +130,12 @@ class ModuleBase
 {
 public:
   ModuleBase():AlreadyComputed(false){}
-  void executeComputation()
+  void compute()
     {
     if(!AlreadyComputed)
       {
       static_cast<Derived*>(this)->executeComputation();
       AlreadyComputed=true;
-      }
-    else
-      {
       }
     }
 protected:

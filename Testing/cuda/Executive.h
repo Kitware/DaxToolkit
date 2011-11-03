@@ -44,41 +44,49 @@ public:
 
   DeviceDataArrayPtr OutputData;
   Module M;
-  boost::function<void(void)> Dependency;
+  std::vector< boost::function<void(void)> > Dependencies;
 
   template<typename T>
   Filter(Source<T> &src):
     OutputData(new DeviceDataArray() ),
-    M(src.Input,OutputData),
-    Dependency(boost::bind(&no_dependency))
+    M(src.Input,OutputData)
   {
   }
 
   template<typename T, typename U>
   Filter(Source<T> &src, Filter<U>  &conn):
     OutputData(new DeviceDataArray() ),
-    M(src.Input,conn.OutputData,OutputData),
-    Dependency(boost::bind(&Filter<U>::compute,&conn))
+    M(src.Input,conn.OutputData,OutputData)
   {
+    Dependencies.push_back(boost::bind(&Filter<U>::execute,&conn));
   }
 
-  void compute()
+  void executeDependencies()
+  {
+    //recursively do a depth first walk up the tree
+    //so that we properly call execute from the
+    //top of the pipeline down correctly
+    std::vector< boost::function<void(void)> >::iterator it;
+    for(it=Dependencies.begin();it!=Dependencies.end();++it)
+      {
+      //call my input filters execute function
+      (*it)();
+      }
+  }
+
+  void execute()
     {
-    //this is does the actual computation
-    //Dependency call makes sure we do a depth first walk
-    //up the pipeline
-    Dependency();
-    M.executeComputation();
+    executeDependencies();
+    M.compute();
     }
 };
 
 //we need to pull down the gradient array from the device and store
 //it for the user to use on the host
 template<typename T>
-void  Sink(Filter<T> filter, std::vector<typename T::OutputDataType> &data)
+void  Sink(Filter<T> &filter, std::vector<typename T::OutputDataType> &data)
 {
-  std::cout << "In Sink" << std::endl;
-  filter.compute();
+  filter.execute();
 
   if (cudaThreadSynchronize() != cudaSuccess)
     {
