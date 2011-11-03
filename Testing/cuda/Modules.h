@@ -20,6 +20,8 @@
 #include <Worklets/Elevation.worklet>
 #include <Worklets/CellGradient.worklet>
 
+#include <vector>
+
 
 namespace cudaExecution
 {
@@ -38,12 +40,6 @@ namespace cudaExecution
 
       NumPointBlocks = (numPts+NumPointThreads-1)/NumPointThreads;
       NumCellBlocks = (numCells+NumPointThreads-1)/NumPointThreads;
-
-      std::cout << "NumPointBlocks = " << NumPointBlocks << std::endl;
-      std::cout << "NumPointThreads = " << NumPointThreads << std::endl;
-
-      std::cout << "NumCellBlocks = " << NumCellBlocks << std::endl;
-      std::cout << "NumCellThreads = " << NumCellThreads << std::endl;
     }
 
     dax::Id numPointBlocks() const { return NumPointBlocks; }
@@ -127,10 +123,31 @@ struct GradientWorklet
 }
 namespace dax { namespace modules {
 
+template< class Derived >
+class ModuleBase
+{
+public:
+  ModuleBase():AlreadyComputed(false){}
+  void executeComputation()
+    {
+    if(!AlreadyComputed)
+      {
+      static_cast<Derived*>(this)->executeComputation();
+      AlreadyComputed=true;
+      }
+    else
+      {
+      }
+    }
+protected:
+  bool AlreadyComputed;
+
+};
+
 template< typename SourceType,
           typename OutputType,
           typename Worklet>
-class MapFieldModule
+class MapFieldModule : public ModuleBase< MapFieldModule<SourceType,OutputType,Worklet> >
 {
 public:
   typedef OutputType OutputDataType;
@@ -138,14 +155,18 @@ public:
   typedef dax::cuda::cont::internal::ManagedDeviceDataArrayPtr
                                 <OutputDataType> DeviceDataArrayPtr;
 
-  static void compute(SourceDataType source, DeviceDataArrayPtr output)
+  SourceDataType *Source;
+  DeviceDataArrayPtr Output;
+
+  MapFieldModule(SourceDataType& source, DeviceDataArrayPtr output):
+    Source(&source),Output(output)
+    {}
+
+  void executeComputation()
     {
-    //how do we determine the size of the output grid
-    //is this always defined by the size of the input?
-    //or is it defined by the type of work?
-    const cudaExecution::CudaParameters params(source);
-    output->Allocate(dax::internal::numberOfPoints(source));
-    Worklet().run(params,source,output->GetArray());
+    const cudaExecution::CudaParameters params(*this->Source);
+    this->Output->Allocate(dax::internal::numberOfPoints(*this->Source));
+    Worklet().run(params,*this->Source,this->Output->GetArray());
     }
 };
 
@@ -153,11 +174,11 @@ template< typename SourceType,
           typename InputType,
           typename OutputType,
           typename Worklet>
-class MapCellModule
+class MapCellModule : public ModuleBase< MapCellModule<SourceType,InputType,OutputType,Worklet> >
 {
 public:
   typedef SourceType SourceDataType;
-  typedef InputType InputDataType;
+  typedef InputType  InputDataType;
   typedef OutputType OutputDataType;
 
   typedef dax::cuda::cont::internal::ManagedDeviceDataArrayPtr
@@ -165,12 +186,22 @@ public:
   typedef dax::cuda::cont::internal::ManagedDeviceDataArrayPtr
                                       <OutputDataType> OutputDeviceDataArrayPtr;
 
-  static void compute(SourceType source, InputDeviceDataArrayPtr input,
-                      OutputDeviceDataArrayPtr output)
+  SourceDataType *Source;
+  InputDeviceDataArrayPtr Input;
+  OutputDeviceDataArrayPtr Output;
+
+  MapCellModule(SourceType& source, InputDeviceDataArrayPtr input,
+                OutputDeviceDataArrayPtr output):
+    Source(&source),Input(input),Output(output)
+    {}
+
+  void executeComputation()
     {
-    const cudaExecution::CudaParameters params(source);
-    output->Allocate(dax::internal::numberOfCells(source));
-    Worklet().run(params,source,input->GetArray(),output->GetArray());
+    const cudaExecution::CudaParameters params(*this->Source);
+    this->Output->Allocate(dax::internal::numberOfCells(*this->Source));
+    Worklet().run(params,*this->Source,
+                         this->Input->GetArray(),
+                         this->Output->GetArray());
     }
 };
 

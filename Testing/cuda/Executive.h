@@ -8,6 +8,18 @@
 
 #include <vector>
 
+#include "boost/function.hpp"
+#include "boost/bind.hpp"
+#include <typeinfo>  //for 'typeid' to work
+
+namespace{
+void no_dependency()
+  {
+  //we generate an empty function that we can bind too
+  //when we have no dependent filters.
+  };
+}
+
 namespace dax { namespace exec {
 
 template< typename T>
@@ -22,38 +34,52 @@ public:
   T Input;
 };
 
-template<typename Function>
+template<typename Module>
 class Filter
 {
 public:
-  typedef typename Function::OutputDataType OutputDataType;
+  typedef typename Module::OutputDataType OutputDataType;
   typedef dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<OutputDataType> DeviceDataArrayPtr;
   typedef dax::cuda::cont::internal::ManagedDeviceDataArray<OutputDataType> DeviceDataArray;
+
   DeviceDataArrayPtr OutputData;
+  Module M;
+  boost::function<void(void)> Dependency;
 
   template<typename T>
-  Filter(Source<T> src):
-    OutputData(new DeviceDataArray() )
+  Filter(Source<T> &src):
+    OutputData(new DeviceDataArray() ),
+    M(src.Input,OutputData),
+    Dependency(boost::bind(&no_dependency))
   {
-    Function::compute(src.Input,OutputData);
   }
 
   template<typename T, typename U>
-  Filter(Source<T> src, Filter<U> conn):
-    OutputData(new DeviceDataArray() )
+  Filter(Source<T> &src, Filter<U>  &conn):
+    OutputData(new DeviceDataArray() ),
+    M(src.Input,conn.OutputData,OutputData),
+    Dependency(boost::bind(&Filter<U>::compute,&conn))
   {
-    Function::compute(src.Input,conn.OutputData,OutputData);
   }
+
+  void compute()
+    {
+    //this is does the actual computation
+    //Dependency call makes sure we do a depth first walk
+    //up the pipeline
+    Dependency();
+    M.executeComputation();
+    }
 };
 
-
 //we need to pull down the gradient array from the device and store
-//it for the user to use on the host, this is just a wrapper
-//class to the function that does everything
+//it for the user to use on the host
 template<typename T>
-void Sink(Filter<T> filter, std::vector<typename T::OutputDataType> &data)
+void  Sink(Filter<T> filter, std::vector<typename T::OutputDataType> &data)
 {
-  std::cout << "in Sink " << std::endl;
+  std::cout << "In Sink" << std::endl;
+  filter.compute();
+
   if (cudaThreadSynchronize() != cudaSuccess)
     {
     std::cout << "failed to synchronize the cuda device" << std::endl;
@@ -68,8 +94,9 @@ void Sink(Filter<T> filter, std::vector<typename T::OutputDataType> &data)
   dataArray.SetPointer(&data[0],data.size());
 
   filter.OutputData->CopyToHost(dataArray);
-  std::cout << "Properly copied vector back to host" << std::endl;
+  std::cout << "Properly copied data back to host" << std::endl;
 }
+
 
 }}
 

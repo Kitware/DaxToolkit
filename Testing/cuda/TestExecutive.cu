@@ -55,15 +55,16 @@ void ExecutePipeline(T data)
 {
   std::vector<dax::modules::GradientM::OutputDataType> results;
 
-  dax::exec::Source<T> s(data); //name: Push?
+  dax::exec::Source<T> s(data);
+  std::cout << "Source Made" << std::endl;
   dax::exec::Filter< dax::modules::ElevationM > filter1(s);
+  std::cout << "Elevation Made " << std::endl;
   dax::exec::Filter< dax::modules::GradientM > filter2(s,filter1);
+  std::cout << "Gradient Made " << std::endl;
 
-
-  dax::exec::Sink(filter2,results); //name: Pull? Fetch?
+  dax::exec::Sink(filter2,results);
   PrintCheckValues(results);
 }
-
 
 int main(int argc, char* argv[])
 {
