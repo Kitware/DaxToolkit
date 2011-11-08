@@ -5,14 +5,24 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include <dax/cont/DataSet.h>
 
-//-----------------------------------------------------------------------------
-dax::cont::DataSet::DataSet()
-{
-}
+#ifndef __dax_cuda_cont_Model_h
+#define __dax_cuda_cont_Model_h
 
-//-----------------------------------------------------------------------------
-dax::cont::DataSet::~DataSet()
+namespace dax { namespace cuda { namespace cont {
+
+template< typename DataType>
+class Model
 {
-}
+public:
+  Model(DataType input):
+    Data(input)
+    {
+    }
+
+  DataType Data;
+};
+
+} } }
+
+#endif

@@ -25,6 +25,7 @@ target_link_libraries(DaxCUDATest
 
 cuda_add_executable(ExecutiveConcept
   TestExecutive.cu
+  Worklets.h
 )
 
 target_link_libraries(ExecutiveConcept

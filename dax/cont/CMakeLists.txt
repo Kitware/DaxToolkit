@@ -8,21 +8,22 @@
 include_directories(${Boost_INCLUDE_DIRS})
 
 set(sources
-  DataArray.cxx
-  DataArrayStructuredConnectivity.cxx
-  DataArrayStructuredPoints.cxx
-  DataSet.cxx
-  ImageData.cxx
-
   internal/Object.cxx
   )
 
-set(headers
-  DataArrayIrregular.h
-  DataArrayIrregular.txx
+set(impl_headers
+  internal/Object.h
+  FilterFieldTypes.h
   )
 
-add_library(daxCont SHARED ${sources} ${headers})
+set(headers
+  internal/ModuleBase.h
+  internal/FilterBase.h
+  )
+
+dax_declare_headers(${impl_headers})
+
+add_library(daxCont SHARED ${sources} ${headers} ${impl_headers})
 
 set_source_files_properties(${headers}
   PROPERTIES HEADER_FILE_ONLY TRUE

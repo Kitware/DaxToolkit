@@ -15,9 +15,8 @@ set(sources
 
 set(headers
   internal/ManagedDeviceDataArray.h
-#  internal/DataArray.h
-#  internal/DataBridge.h
-#  internal/KernelArgument.h
+  Executive.h
+  Modules.h
   )
 
 #-----------------------------------------------------------------------------

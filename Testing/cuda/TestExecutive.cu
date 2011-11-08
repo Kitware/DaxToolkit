@@ -9,8 +9,12 @@
 #include <iostream>
 
 #include <dax/internal/GridStructures.h>
-#include "Modules.h"
-#include "Executive.h"
+#include <dax/cuda/cont/Executive.h>
+#include <dax/cuda/cont/MapCellModule.h>
+#include <dax/cuda/cont/MapFieldModule.h>
+#include <dax/cuda/cont/Filter.h>
+#include "Worklets.h"
+
 
 static dax::internal::StructureUniformGrid CreateInputStructure(dax::Id dim)
 {
@@ -21,7 +25,6 @@ static dax::internal::StructureUniformGrid CreateInputStructure(dax::Id dim)
   grid.Extent.Max = dax::make_Id3(dim-1, dim-1, dim-1);
   return grid;
 }
-
 
 static void PrintCheckValues(std::vector<dax::Vector3> &data)
 {
@@ -48,22 +51,27 @@ static void PrintCheckValues(std::vector<dax::Vector3> &data)
     }
 }
 
+template<typename T, typename U>
+void ExecuteSinSquareCos(T& data, U& fieldType)
+{
+  dax::cuda::cont::Model<T> model(data);
+}
 
 
 template<typename T>
 void ExecutePipeline(T data)
 {
-  std::vector<dax::modules::GradientM::OutputDataType> results;
+  using namespace dax::cont;
 
-  dax::exec::Source<T> s(data);
-  std::cout << "Source Made" << std::endl;
-  dax::exec::Filter< dax::modules::ElevationM > filter1(s);
-  std::cout << "Elevation Made " << std::endl;
-  dax::exec::Filter< dax::modules::GradientM > filter2(s,filter1);
-  std::cout << "Gradient Made " << std::endl;
+  std::vector<modules::CellGradient::OutputType> gradientResults;
 
-  dax::exec::Sink(filter2,results);
-  PrintCheckValues(results);
+  dax::cuda::cont::Model<T> model(data);
+
+  Filter<modules::Elevation> elev(model,PointField());
+  Filter<modules::CellGradient> gradient(model,elev);
+
+  Pull(gradient,gradientResults);
+  PrintCheckValues(gradientResults);
 }
 
 int main(int argc, char* argv[])
@@ -71,5 +79,6 @@ int main(int argc, char* argv[])
   dax::internal::StructureUniformGrid grid = CreateInputStructure(32);
   ExecutePipeline(grid);
 
-  return 1;
+  //ExecuteSinSquareCos(grid,dax::cont::PointField());
+  return 0;
 }

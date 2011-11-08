@@ -17,6 +17,8 @@
 
 #include <assert.h>
 
+#include <vector>
+
 namespace dax {
 namespace cuda {
 namespace cont {
@@ -89,6 +91,22 @@ public:
 
     cudaError_t error;
     error = cudaMemcpy(destArray.GetPointer(),
+                       this->Array.GetPointer(),
+                       sizeInBytes,
+                       cudaMemcpyDeviceToHost);
+    assert(error == cudaSuccess);
+  }
+
+  void CopyToHost(std::vector<ValueType> &destArray) const
+  {
+    dax::Id numEntries = this->Array.GetNumberOfEntries();
+    // TODO: Better error checking
+    assert(numEntries == destArray.size());
+
+    dax::Id sizeInBytes = numEntries * ManagedDeviceDataArray::ValueSize;
+
+    cudaError_t error;
+    error = cudaMemcpy(&(destArray[0]),
                        this->Array.GetPointer(),
                        sizeInBytes,
                        cudaMemcpyDeviceToHost);

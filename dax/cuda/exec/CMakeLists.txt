@@ -8,6 +8,7 @@
 
 set(headers
   ExecutionEnvironment.h
+  CudaParameters.h
   )
 
 dax_declare_headers(${headers})
