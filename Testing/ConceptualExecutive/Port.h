@@ -1,38 +1,7 @@
 #ifndef PORT_H
 #define PORT_H
 
-#include "HeterogeneousContainer.h"
-
-//------------------------------------------------------------------------------
-struct Grid
-{
-  //copy constructor
-  Grid():
-    NumPoints(-1),NumCells(-1)
-  {}
-
-  Grid(const Grid& copy_from_me):
-    NumPoints(copy_from_me.NumPoints),NumCells(copy_from_me.NumCells)
-  {}
-
-  Grid(const int Points, const int Cells):NumPoints(Points),NumCells(Cells)
-  {}
-
-  const int NumPoints;
-  const int NumCells;
-};
-
-//------------------------------------------------------------------------------
-int numberOfPoints(const Grid &gridstructure)
-{
-  return gridstructure.NumPoints;
-}
-
-//------------------------------------------------------------------------------
-int numberOfCells(const Grid &gridstructure)
-{
-  return gridstructure.NumCells;
-}
+#include "DataSet.h"
 
 //------------------------------------------------------------------------------
 struct field_type
@@ -82,26 +51,26 @@ public:
 
   //default constructor with an empty grid
   Port():
-    G(Grid(-1,-1)), FieldType(NULL),Property(NULL)
+    DataSet_(NULL), FieldType(NULL),Property(NULL)
   {}
 
   //copy constructor
   Port(const Port& copy_from_me):
-    G(copy_from_me.G), FieldType(copy_from_me.FieldType->clone()),Property(NULL)
+    DataSet_(copy_from_me->DataSet_), FieldType(copy_from_me.FieldType->clone()),Property(NULL)
   {}
 
   //create a connection data based on the grid g, and the
   //passed in templated type
   template<typename T>
-  Port(const Grid &g, const T&):
-    G(g), FieldType(new T),Property(NULL)
+  Port(const DataSet* ds, const T&):
+    DataSet_(ds), FieldType(new T),Property(NULL)
   {
 
   }
 
   template<typename T>
   Port(const Port &copy_grid_from_me, const T&):
-    G(copy_grid_from_me.G), FieldType(new T),Property(NULL)
+    DataSet_(copy_grid_from_me->DataSet_), FieldType(new T),Property(NULL)
   {
   }
 
@@ -111,15 +80,11 @@ public:
       {
       delete FieldType;
       }
-    if(Property)
-      {
-      delete Property;
-      }
   }
 
   int size() const
   {
-    return this->FieldType->size(this->G);
+    return 0;
   }
 
   std::string fieldType() const
@@ -132,23 +97,22 @@ public:
   template<typename T>
   void setProperty(const T& t)
   {
-    Property = new ObjectHandleT<T>(t);
+
   }
 
   template<typename T>
   void getProperty(T &t)
   {
-    t = static_cast<ObjectHandleT<T>*>(Property)->get();
+
   }
 
-  bool hasProperty() const { return Property!=NULL;}
+  bool hasProperty() const { return false;}
 
-  bool hasModel() const { return (G.NumCells > 0 && G.NumPoints > 0); }
+  bool hasModel() const { return false; }
 
 protected:
   const field_type* FieldType;
-  const Grid G;
-  ObjectHandle* Property;
+  const DataSet* DataSet_;
 };
 
 

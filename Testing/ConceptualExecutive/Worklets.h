@@ -2,52 +2,76 @@
 #define WORKLETS_H
 
 #include <math.h>
+#include "daxTypes.h"
 
-namespace worklets
+namespace worklet_functions
 {
-void Cosine(float inValue, float &outValue)
+void Cosine(dax::Scalar inValue, dax::Scalar &outValue)
 {
   outValue = cosf(inValue);
 }
 
-void Sine(float inValue, float &outValue)
+void Sine(dax::Scalar inValue, dax::Scalar &outValue)
 {
   outValue = sinf(inValue);
 }
 
-void Square(float inValue, float &outValue)
+void Square(dax::Scalar inValue, dax::Scalar &outValue)
 {
   outValue = inValue * inValue;
 }
+
+void Elevation(dax::Vector3 inCoordinate, dax::Scalar& outValue)
+{
+  outValue = sqrtf( dax::dot(inCoordinate, inCoordinate) );
+}
 }
 
-namespace sWorklets
+namespace worklets
 {
 
 struct Cosine
 {
-  float run(float v)
+  typedef dax::Scalar InputType;
+  typedef dax::Scalar OutputType;
+  dax::Scalar run(dax::Scalar v)
   {
-    worklets::Cosine(v,v);
+    worklet_functions::Cosine(v,v);
     return v;
   }
 };
 
 struct Sine
 {
-  float run(float v)
+  typedef dax::Scalar InputType;
+  typedef dax::Scalar OutputType;
+  dax::Scalar run(dax::Scalar v)
   {
-    worklets::Sine(v,v);
+    worklet_functions::Sine(v,v);
     return v;
   }
 };
 
 struct Square
 {
-  float run(float v)
+  typedef dax::Scalar InputType;
+  typedef dax::Scalar OutputType;
+  dax::Scalar run(dax::Scalar v)
   {
-    worklets::Square(v,v);
+    worklet_functions::Square(v,v);
     return v;
+  }
+};
+
+struct Elevation
+{
+  typedef dax::Vector3 InputType;
+  typedef dax::Scalar OutputType;
+  dax::Scalar run(dax::Vector3 v)
+  {
+    dax::Scalar result;
+    worklet_functions::Elevation(v,result);
+    return result;
   }
 };
 
