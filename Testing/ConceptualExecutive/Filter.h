@@ -1,9 +1,7 @@
 #ifndef FILTER_H
 #define FILTER_H
 
-#include "Port.h"
-#include "Module.h"
-
+#include "DataSet.h"
 
 #include "boost/function.hpp"
 #include "boost/bind.hpp"
@@ -17,7 +15,7 @@ public:
   typedef typename Worklet::InputType InputType;
   typedef typename Worklet::OutputType OutputType;
 
-  Filter(Port* inputPort)
+  Filter(DataSet* inputData)
   {}
 
   template<typename T>

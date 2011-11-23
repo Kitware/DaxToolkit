@@ -4,6 +4,39 @@
 #include <math.h>
 #include "daxTypes.h"
 
+
+//------------------------------------------------------------------------------
+template <typename Worklet>
+struct execute
+{
+
+  template<typename A, typename B>
+  void operator()(const A& input, B* output)
+  {
+    operator()(input,*output);
+  }
+  template<typename A, typename B>
+  void operator()(const A* input, B& output)
+  {
+    operator()(*input,output);
+  }
+  template<typename A, typename B>
+  void operator()(const A* input, B* output)
+  {
+    operator()(*input,*output);
+  }
+  template<typename A, typename B>
+  void operator()(const A &input, B &output)
+  {
+    Worklet work;
+    output.resize(input.size());
+    for(int i=0; i < input.size(); i++)
+      {
+      output[(work.run(input[i]))];
+      }
+  }
+};
+
 namespace worklet_functions
 {
 void Cosine(dax::Scalar inValue, dax::Scalar &outValue)

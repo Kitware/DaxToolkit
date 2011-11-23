@@ -40,10 +40,13 @@ void RuntimeFields()
   StructuredGrid* grid;
   createGrid(grid);
 
-  //Filter<worklets::Elevation> f(grid->points());
-  //Filter<worklets::Sine> sf(f); //implicitly copy everything from elevation
+  //we create a trivial producer filter
+  Filter<worklets::Elevation> elev(grid);
+  Filter<worklets::Sine> sf(elev); //implicitly copy everything from the producer
 //  Filter<worklets::Square> sqf(sf);
 //  Filter<worklets::Cosine> cf(sqf);
+
+  //instead of working on creation time, we now execute when we call run
 //  cf.run();
 }
 

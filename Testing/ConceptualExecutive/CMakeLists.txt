@@ -13,8 +13,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 #-----------------------------------------------------------------------------
 add_executable(FilterConcept
   main.cxx
-  Module.h
-  Module.cxx
 )
 
 target_link_libraries(FilterConcept
