@@ -1,23 +1,43 @@
 #ifndef MODULE_H
 #define MODULE_H
-
-#include <vector>
-#include <assert.h>
+#include <boost/static_assert.hpp>
 
 //------------------------------------------------------------------------------
 template <typename Worklet>
-class Module
+struct execute
 {
-public:
-  Module()
-  {}
-  virtual ~Module() {}
+  template<typename A, typename B>
+  void operator()(const A &input, B &output)
+  {
+    Worklet work;
+    output.reserve(input.size());
+    for(int i=0; i < input.size(); i++)
+      {
+      output.push_back(work.run(input[i]));
+      }
+  }
 
-
-
-protected:
+  template<typename A, typename B>
+  void operator()(const A* input, B* output)
+  {
+    Worklet work;
+    output->reserve(input->size());
+    for(int i=0; i < input->size(); i++)
+      {
+      output->push_back(work.run(input->at(i)));
+      }
+  }
 };
 
+//class Module
+//{
+//public:
+//  Module()
+//  {}
+//  virtual ~Module() {}
+
+//protected:
+//};
 ////------------------------------------------------------------------------------
 //template < typename Worklet>
 //class FieldModule : public Module//aka MapFieldModule

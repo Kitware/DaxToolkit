@@ -29,7 +29,6 @@ void Elevation(dax::Vector3 inCoordinate, dax::Scalar& outValue)
 
 namespace worklets
 {
-
 struct Cosine
 {
   typedef dax::Scalar InputType;

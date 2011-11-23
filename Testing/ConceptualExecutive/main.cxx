@@ -27,18 +27,8 @@ void TestElevation()
   createGrid(grid);
 
   const StructuredGrid::Coordinates* coords = grid->points();
-  worklets::Elevation elevation;
   dax::ScalarArray result("result");
-  for(int i=0; i < coords->size(); ++i)
-    {
-    result.push_back(elevation.run((*coords)[i]));
-    }
-  std::cout << result.size() << std::endl;
-  grid->addPointField(&result);
-
-  dax::ScalarArray* r = dynamic_cast<dax::ScalarArray*>(
-                        grid->pointField("result"));
-  assert(r==&result);
+  execute<worklets::Elevation>()(grid->points(),&result);
 }
 
 void RuntimeFields()
@@ -47,8 +37,8 @@ void RuntimeFields()
   StructuredGrid* grid;
   createGrid(grid);
 
-//  Filter<worklets::Elevation> f(grid);
-//  Filter<worklets::Sine> sf(f);
+  Filter<worklets::Elevation> f(grid);
+  Filter<worklets::Sine> sf(f); //implicitly copy everything from elevation
 //  Filter<worklets::Square> sqf(sf);
 //  Filter<worklets::Cosine> cf(sqf);
 //  cf.run();

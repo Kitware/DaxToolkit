@@ -12,10 +12,11 @@ class BaseArray
 {
 public:
     virtual ~BaseArray(){}
-    virtual const std::string name() const = 0;    
+    virtual std::size_t size() const=0;
+    virtual std::string name() const=0;
   };
 
-class BaseCoordinates
+class BaseCoordinates : public BaseArray
 {
 public:
   typedef dax::Vector3 OutputType;
@@ -23,6 +24,8 @@ public:
   virtual std::size_t size() const=0;
   virtual dax::Vector3 operator [](const std::size_t& idx) const=0;
   virtual dax::Vector3 at(const std::size_t& idx) const=0;
+
+  virtual std::string name() const { return "coords"; }
 };
 } }
 
@@ -51,7 +54,7 @@ public:
   virtual ~Array(){}
 
   void setName(const std::string &name) { Name = name; }
-  virtual const std::string name() const { return Name; }
+  virtual std::string name() const { return Name; }
 
   std::size_t size() const { return this->Data.size(); }
   std::size_t capacity() const { return this->Data.capacity(); }
