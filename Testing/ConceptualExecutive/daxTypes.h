@@ -1,5 +1,6 @@
 #ifndef DAXTYPES_H
 #define DAXTYPES_H
+#include <dax/internal/ExportMacros.h>
 
 namespace dax
 {
@@ -34,6 +35,7 @@ inline Id3 make_Id3(int x, int y, int z)
   return v;
   }
 
+DAX_EXEC_CONT_EXPORT
 inline Scalar dot(const Vector3 &a, const Vector3 &b)
 {
   return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);

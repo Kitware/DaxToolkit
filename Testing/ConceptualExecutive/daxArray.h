@@ -4,16 +4,25 @@
 #include <vector>
 #include <string>
 
+#include <dax/internal/ExportMacros.h>
+
 #include "daxTypes.h"
+
+#include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
 
 namespace dax { namespace internal {
 
 class BaseArray
 {
 public:
-    virtual ~BaseArray(){}
-    virtual std::size_t size() const=0;
+    virtual ~BaseArray(const std::string &n):
+    Name(n)
+    {
+    }
     virtual std::string name() const=0;
+protected:
+    std::string Name;
   };
 
 class BaseCoordinates : public BaseArray
@@ -31,25 +40,19 @@ public:
 
 namespace dax {
 
-//expose the storage type so that
-//we can easily convert the underlying array
-//from an std::vector to thrust vector
-template<typename valueType,
-          typename storageType=std::vector<valueType> >
-class Array : public dax::internal::BaseArray
+template<typename valueType>
+class HostArray :
+    public dax::internal::BaseArray,
+    public thrust::host_vector<valueType>
+
 {
+private:
+  typedef thrust::host_vector<valueType> Parent;
+
 public:
-  typedef valueType ValueType;
-  typedef storageType StorageType;
-
-  typedef typename StorageType::const_iterator const_iterator;
-  typedef typename StorageType::iterator iterator;
-
-  Array(const std::string& name, const int& reserveSize=0):
-  Name(name)
-  {
-  this->Data.reserve(reserveSize);
-  }
+  HostArray(const std::string& name):
+    BaseArray(name),Parent()
+    {}
 
   virtual ~Array(){}
 
@@ -84,9 +87,29 @@ protected:
   StorageType Data;
 };
 
-typedef dax::Array<dax::Id,std::vector<dax::Id> > IdArray;
-typedef dax::Array<dax::Scalar,std::vector<dax::Scalar> > ScalarArray;
-typedef dax::Array<dax::Vector3,std::vector<dax::Vector3> > Vector3Array;
+template<typename T, typename Alloc = thrust::device_malloc_allocator<T> >
+class DeviceArray : public thrust::device_vector<T,Alloc>
+{
+private:
+  typedef thrust::device_vector<T,Alloc> Parent;
+
+  /*! Assign operator copies from an exemplar <tt>std::vector</tt>.
+   *  \param v The <tt>std::vector</tt> to copy.
+   */
+  template<typename OtherT>
+  __host__
+  DeviceArray &operator=(const dax::HostArray<OtherT> &v)
+  { Parent::operator=(v.Data); return *this;}
+};
+
+typedef dax::HostArray<dax::Id,thrust::host_vector<dax::Id> > IdArray;
+typedef dax::HostArray<dax::Scalar,thrust::host_vector<dax::Scalar> > ScalarArray;
+typedef dax::HostArray<dax::Vector3,thrust::host_vector<dax::Vector3> > Vector3Array;
+
+typedef dax::DeviceArray<dax::Id> DeviceIdArray;
+typedef dax::DeviceArray<dax::Scalar> DeviceScalarArray;
+typedef dax::DeviceArray<dax::Vector3> Vector3Array;
+
 
 
 template <typename realArray>
@@ -110,7 +133,7 @@ public:
 
   virtual dax::Vector3 at(const std::size_t& idx) const
   {
-    return this->Data->at(idx);
+    return this->RealArrayPtr->at(idx);
   }
 
 protected:

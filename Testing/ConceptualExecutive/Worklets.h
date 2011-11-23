@@ -1,15 +1,16 @@
 #ifndef WORKLETS_H
 #define WORKLETS_H
 
+#include <dax/internal/ExportMacros.h>
+
 #include <math.h>
 #include "daxTypes.h"
-
+#include <thrust/device_vector.h>
 
 //------------------------------------------------------------------------------
 template <typename Worklet>
 struct execute
 {
-
   template<typename A, typename B>
   void operator()(const A& input, B* output)
   {
@@ -39,22 +40,22 @@ struct execute
 
 namespace worklet_functions
 {
-void Cosine(dax::Scalar inValue, dax::Scalar &outValue)
+DAX_EXEC_CONT_EXPORT void Cosine(dax::Scalar inValue, dax::Scalar &outValue)
 {
   outValue = cosf(inValue);
 }
 
-void Sine(dax::Scalar inValue, dax::Scalar &outValue)
+DAX_EXEC_CONT_EXPORT void Sine(dax::Scalar inValue, dax::Scalar &outValue)
 {
   outValue = sinf(inValue);
 }
 
-void Square(dax::Scalar inValue, dax::Scalar &outValue)
+DAX_EXEC_CONT_EXPORT void Square(dax::Scalar inValue, dax::Scalar &outValue)
 {
   outValue = inValue * inValue;
 }
 
-void Elevation(dax::Vector3 inCoordinate, dax::Scalar& outValue)
+DAX_EXEC_CONT_EXPORT void Elevation(dax::Vector3 inCoordinate, dax::Scalar& outValue)
 {
   outValue = sqrtf( dax::dot(inCoordinate, inCoordinate) );
 }
@@ -66,7 +67,7 @@ struct Cosine
 {
   typedef dax::Scalar InputType;
   typedef dax::Scalar OutputType;
-  dax::Scalar run(dax::Scalar v)
+  DAX_EXEC_CONT_EXPORT dax::Scalar run(dax::Scalar v)
   {
     worklet_functions::Cosine(v,v);
     return v;
@@ -77,7 +78,7 @@ struct Sine
 {
   typedef dax::Scalar InputType;
   typedef dax::Scalar OutputType;
-  dax::Scalar run(dax::Scalar v)
+  DAX_EXEC_CONT_EXPORT dax::Scalar run(dax::Scalar v)
   {
     worklet_functions::Sine(v,v);
     return v;
@@ -88,7 +89,7 @@ struct Square
 {
   typedef dax::Scalar InputType;
   typedef dax::Scalar OutputType;
-  dax::Scalar run(dax::Scalar v)
+  DAX_EXEC_CONT_EXPORT dax::Scalar run(dax::Scalar v)
   {
     worklet_functions::Square(v,v);
     return v;
@@ -99,7 +100,7 @@ struct Elevation
 {
   typedef dax::Vector3 InputType;
   typedef dax::Scalar OutputType;
-  dax::Scalar run(dax::Vector3 v)
+  DAX_EXEC_CONT_EXPORT dax::Scalar run(dax::Vector3 v)
   {
     dax::Scalar result;
     worklet_functions::Elevation(v,result);

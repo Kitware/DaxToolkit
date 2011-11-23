@@ -7,12 +7,13 @@
 #=========================================================================
 
 #-----------------------------------------------------------------------------
-#CUDA_INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-include_directories(${Boost_INCLUDE_DIRS})
+find_package(CUDA REQUIRED)
+CUDA_INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+
 
 #-----------------------------------------------------------------------------
-add_executable(FilterConcept
-  main.cxx
+cuda_add_executable(FilterConcept
+  main.cu
 )
 
 target_link_libraries(FilterConcept
