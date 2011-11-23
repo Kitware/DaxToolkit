@@ -26,9 +26,12 @@ void TestElevation()
   StructuredGrid* grid;
   createGrid(grid);
 
-  const StructuredGrid::Coordinates* coords = grid->points();
+  //hand created push driven pipeline
   dax::ScalarArray result("result");
-  execute<worklets::Elevation>()(grid->points(),&result);
+  execute<worklets::Elevation>()(grid->points(),result);
+  execute<worklets::Sine>()(result,result);
+  execute<worklets::Square>()(result,result);
+  execute<worklets::Cosine>()(result,result);
 }
 
 void RuntimeFields()
@@ -37,8 +40,8 @@ void RuntimeFields()
   StructuredGrid* grid;
   createGrid(grid);
 
-  Filter<worklets::Elevation> f(grid);
-  Filter<worklets::Sine> sf(f); //implicitly copy everything from elevation
+  //Filter<worklets::Elevation> f(grid->points());
+  //Filter<worklets::Sine> sf(f); //implicitly copy everything from elevation
 //  Filter<worklets::Square> sqf(sf);
 //  Filter<worklets::Cosine> cf(sqf);
 //  cf.run();

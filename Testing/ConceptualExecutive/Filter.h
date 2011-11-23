@@ -1,7 +1,7 @@
 #ifndef FILTER_H
 #define FILTER_H
 
-#include "DataSet.h"
+#include "Port.h"
 #include "Module.h"
 
 
@@ -17,13 +17,11 @@ public:
   typedef typename Worklet::InputType InputType;
   typedef typename Worklet::OutputType OutputType;
 
-  Filter(DataSet* ds):
-    DataSet_(ds)
+  Filter(Port* inputPort)
   {}
 
   template<typename T>
-  Filter(const Filter<T>& input):
-    DataSet_(input.dataSet())
+  Filter(const Filter<T>& input)
   {
     Dependencies.push_back(boost::bind(&Filter<T>::run,input));
   }
@@ -33,8 +31,6 @@ public:
     this->executeDependencies();
     //execute<Worklet>(Input,Output);
   }
-
-  DataSet * const dataSet() const { return DataSet_; }
 
 protected:
   void executeDependencies()
@@ -58,7 +54,6 @@ protected:
 //  dax::basic_iterator output;
 
   //dataset can be changed but we can't change the pointer location
-  DataSet * const DataSet_;
   std::vector< boost::function<void(void)> > Dependencies;
 };
 

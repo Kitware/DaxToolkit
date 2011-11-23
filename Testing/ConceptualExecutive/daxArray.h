@@ -60,8 +60,6 @@ public:
   std::size_t capacity() const { return this->Data.capacity(); }
 
   void reserve(const std::size_t& sz) { this->Data.reserve(sz); }
-
-  template <typename ValueType>
   void resize(const std::size_t& sz, ValueType t=ValueType() ) { this->Data.resize(sz,t); }
 
   const_iterator begin() const { return this->Data.begin(); }

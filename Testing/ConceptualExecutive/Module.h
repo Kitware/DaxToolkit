@@ -6,25 +6,30 @@
 template <typename Worklet>
 struct execute
 {
+
+  template<typename A, typename B>
+  void operator()(const A& input, B* output)
+  {
+    operator()(input,*output);
+  }
+  template<typename A, typename B>
+  void operator()(const A* input, B& output)
+  {
+    operator()(*input,output);
+  }
+  template<typename A, typename B>
+  void operator()(const A* input, B* output)
+  {
+    operator()(*input,*output);
+  }
   template<typename A, typename B>
   void operator()(const A &input, B &output)
   {
     Worklet work;
-    output.reserve(input.size());
+    output.resize(input.size());
     for(int i=0; i < input.size(); i++)
       {
-      output.push_back(work.run(input[i]));
-      }
-  }
-
-  template<typename A, typename B>
-  void operator()(const A* input, B* output)
-  {
-    Worklet work;
-    output->reserve(input->size());
-    for(int i=0; i < input->size(); i++)
-      {
-      output->push_back(work.run(input->at(i)));
+      output[(work.run(input[i]))];
       }
   }
 };
