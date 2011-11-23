@@ -55,6 +55,7 @@ const DataSet::Coordinates* StructuredGrid::points() const
 }
 
 //------------------------------------------------------------------------------
+DAX_EXEC_CONT_EXPORT
 dax::Vector3 StructuredGrid::computePointCoordinate(int index) const
 {
   dax::Id3 ijk = this->flatIndexToIndex3(index);
@@ -62,12 +63,14 @@ dax::Vector3 StructuredGrid::computePointCoordinate(int index) const
 }
 
 //------------------------------------------------------------------------------
+DAX_EXEC_CONT_EXPORT
 dax::Id3 StructuredGrid::extentDimensions() const
 {
   return this->Extent.Max - this->Extent.Min + dax::make_Id3(1, 1, 1);;
 }
 
 //------------------------------------------------------------------------------
+DAX_EXEC_CONT_EXPORT
 dax::Id3 StructuredGrid::flatIndexToIndex3(dax::Id index) const
   {
     dax::Id3 dims = this->extentDimensions();

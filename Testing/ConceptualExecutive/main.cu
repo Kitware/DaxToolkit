@@ -20,14 +20,22 @@ void createGrid(StructuredGrid *&grid)
   grid = new StructuredGrid(origin,spacing,extents);
 }
 
-template <typename T, typename U>
-void executePipeline(T *points, U &result)
+
+void TestCoordinatesIterator()
 {
-  execute<worklets::Elevation>()(points,result);
-  execute<worklets::Sine>()(result,result);
-  execute<worklets::Square>()(result,result);
-  execute<worklets::Cosine>()(result,result);
+  std::cout << "TestElevation Host" << std::endl;
+  StructuredGrid* grid;
+  createGrid(grid);
+
+//  StructuredGrid::Coordinates::iterator it;
+//  for(it = grid->points()->begin();
+//      it != grid->points()->end();
+//      it++)
+//    {
+//    std::cout << *it << std::endl;
+//    }
 }
+
 
 void TestHostPipeline()
 {
@@ -39,6 +47,19 @@ void TestHostPipeline()
   dax::ScalarArray result("result");
   executePipeline(grid->points(),result);
 
+  //verify this versus the old algorithm
+  dax::ScalarArray oldResult("oldResult");
+  execute<worklets::Elevation>()(grid->points(),oldResult);
+  execute<worklets::Sine>()(oldResult,oldResult);
+  execute<worklets::Square>()(oldResult,oldResult);
+  execute<worklets::Cosine>()(oldResult,oldResult);
+
+  assert(result.size()==oldResult.size());
+  for(int i=0; i < result.size();++i)
+    {
+    assert(result[i]==oldResult[i]);
+    }
+
 }
 
 void TestDevicePipeline()
@@ -48,10 +69,15 @@ void TestDevicePipeline()
   createGrid(grid);
 
   //move the data to the gpu
+  dax::DeviceScalarArray result(grid->points()->size());
+
+  //cell_execute<DataSet::Coordinates> ce(grid->points());
 
   //hand created push driven pipeline on the gpu
-  dax::DeviceScalarArray result("result");
-  executePipeline(grid->points(),result);
+  //thrust::generate(result.begin(),result.end(),ce);
+
+
+  std::cout << "finished pipeline execution" << std::endl;
 }
 
 void RuntimeFields()

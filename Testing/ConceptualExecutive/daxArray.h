@@ -16,19 +16,15 @@ namespace dax { namespace internal {
 class BaseArray
 {
 public:
-    virtual ~BaseArray(const std::string &n):
-    Name(n)
-    {
-    }
+    virtual ~BaseArray(){}
     virtual std::string name() const=0;
-protected:
-    std::string Name;
   };
 
 class BaseCoordinates : public BaseArray
 {
 public:
   typedef dax::Vector3 OutputType;
+  typedef dax::Vector3 value_type;
   virtual ~BaseCoordinates(){}
   virtual std::size_t size() const=0;
   virtual dax::Vector3 operator [](const std::size_t& idx) const=0;
@@ -50,65 +46,52 @@ private:
   typedef thrust::host_vector<valueType> Parent;
 
 public:
+  typedef typename Parent::size_type  size_type;
+  typedef typename Parent::value_type value_type;
+
   HostArray(const std::string& name):
-    BaseArray(name),Parent()
+    BaseArray(),Parent(),
+    Name(name)
     {}
 
-  virtual ~Array(){}
+  virtual ~HostArray(){}
 
-  void setName(const std::string &name) { Name = name; }
   virtual std::string name() const { return Name; }
 
-  std::size_t size() const { return this->Data.size(); }
-  std::size_t capacity() const { return this->Data.capacity(); }
-
-  void reserve(const std::size_t& sz) { this->Data.reserve(sz); }
-  void resize(const std::size_t& sz, ValueType t=ValueType() ) { this->Data.resize(sz,t); }
-
-  const_iterator begin() const { return this->Data.begin(); }
-  const_iterator end() const { return this->Data.end(); }
-
-  iterator begin() { return this->Data.begin(); }
-  iterator end() { return this->Data.end(); }
-
-  void push_back(const ValueType& v) { this->Data.push_back(v); }
-
-  template<typename T>
-  ValueType operator [](const T& idx) const { return this->Data[idx]; }
-
-  template<typename T>
-  ValueType& operator [](const T& idx) { return this->Data[idx]; }
-
-  template<typename T>
-  ValueType at(const T& idx) const { return this->Data.at(idx); }
-
 protected:
-  std::string Name;
-  StorageType Data;
+    const std::string Name;
 };
 
-template<typename T, typename Alloc = thrust::device_malloc_allocator<T> >
-class DeviceArray : public thrust::device_vector<T,Alloc>
+template<typename valueType>
+class DeviceArray : public thrust::device_vector<valueType>
 {
 private:
-  typedef thrust::device_vector<T,Alloc> Parent;
+  typedef thrust::device_vector<valueType> Parent;
 
-  /*! Assign operator copies from an exemplar <tt>std::vector</tt>.
-   *  \param v The <tt>std::vector</tt> to copy.
-   */
-  template<typename OtherT>
+public:
+  typedef typename Parent::size_type  size_type;
+  typedef typename Parent::value_type value_type;
+
   __host__
-  DeviceArray &operator=(const dax::HostArray<OtherT> &v)
-  { Parent::operator=(v.Data); return *this;}
+  DeviceArray(void)
+    :Parent() {}
+
+  __host__
+  explicit DeviceArray(size_type n, const value_type &value = value_type())
+    :Parent(n,value) {}
+
+  __host__
+  DeviceArray(const DeviceArray &v)
+    :Parent(v) {}
 };
 
-typedef dax::HostArray<dax::Id,thrust::host_vector<dax::Id> > IdArray;
-typedef dax::HostArray<dax::Scalar,thrust::host_vector<dax::Scalar> > ScalarArray;
-typedef dax::HostArray<dax::Vector3,thrust::host_vector<dax::Vector3> > Vector3Array;
+typedef dax::HostArray<dax::Id> IdArray;
+typedef dax::HostArray<dax::Scalar> ScalarArray;
+typedef dax::HostArray<dax::Vector3> Vector3Array;
 
 typedef dax::DeviceArray<dax::Id> DeviceIdArray;
 typedef dax::DeviceArray<dax::Scalar> DeviceScalarArray;
-typedef dax::DeviceArray<dax::Vector3> Vector3Array;
+typedef dax::DeviceArray<dax::Vector3> DeviceVector3Array;
 
 
 
