@@ -20,86 +20,75 @@ void createGrid(StructuredGrid *&grid)
   grid = new StructuredGrid(origin,spacing,extents);
 }
 
-
-void TestCoordinatesIterator()
+dax::ScalarArray TestHostPipeline()
 {
   std::cout << "TestElevation Host" << std::endl;
   StructuredGrid* grid;
   createGrid(grid);
 
-//  StructuredGrid::Coordinates::iterator it;
-//  for(it = grid->points()->begin();
-//      it != grid->points()->end();
-//      it++)
-//    {
-//    std::cout << *it << std::endl;
-//    }
+  //point coords are not real, and we don't
+  //have a clean interface for this yet
+  dax::ScalarArray result;
+  dax::Vector3Array pointCoords;
+  dax::ConvertCoordinatesToArray(grid->points(),pointCoords);
+
+  executeCellPipeline(pointCoords,result);
+
+  return result;
 }
 
-
-void TestHostPipeline()
-{
-  std::cout << "TestElevation Host" << std::endl;
-  StructuredGrid* grid;
-  createGrid(grid);
-
-  //hand created push driven pipeline on the cpu
-  dax::ScalarArray result("result");
-  executePipeline(grid->points(),result);
-
-  //verify this versus the old algorithm
-  dax::ScalarArray oldResult("oldResult");
-  execute<worklets::Elevation>()(grid->points(),oldResult);
-  execute<worklets::Sine>()(oldResult,oldResult);
-  execute<worklets::Square>()(oldResult,oldResult);
-  execute<worklets::Cosine>()(oldResult,oldResult);
-
-  assert(result.size()==oldResult.size());
-  for(int i=0; i < result.size();++i)
-    {
-    assert(result[i]==oldResult[i]);
-    }
-
-}
-
-void TestDevicePipeline()
+dax::ScalarArray TestDevicePipeline()
 {
   std::cout << "TestElevation Device" << std::endl;
   StructuredGrid* grid;
   createGrid(grid);
 
-  //move the data to the gpu
-  dax::DeviceScalarArray result(grid->points()->size());
+  dax::ScalarArray result;
+  dax::Vector3Array pointCoords;
+  dax::ConvertCoordinatesToArray(grid->points(),pointCoords);
 
-  //cell_execute<DataSet::Coordinates> ce(grid->points());
+  dax::DeviceVector3Array devicePCorrds(pointCoords);
+  dax::DeviceScalarArray devicePResult(result);
 
-  //hand created push driven pipeline on the gpu
-  //thrust::generate(result.begin(),result.end(),ce);
+  executeCellPipeline(devicePCorrds,devicePResult);
 
-
-  std::cout << "finished pipeline execution" << std::endl;
+  dax::toHost(devicePResult,result);
+  return result;
 }
 
-void RuntimeFields()
+bool validPipeline(dax::ScalarArray sa1, dax::ScalarArray sa2)
 {
-  std::cout << "RuntimeFields" << std::endl;
+  std::size_t size1 = sa1.size();
+  std::size_t size2 = sa2.size();
+  assert(size1==size2);
+  return true;
+}
+
+
+void buildExamplePipeline()
+{
+
+  std::cout << "Build Example Pipeline" << std::endl;
   StructuredGrid* grid;
   createGrid(grid);
 
-//  we create a trivial producer filter
-//  Filter<worklets::Elevation> elev(grid);
-//  Filter<worklets::Sine> sf(elev); //implicitly copy everything from the producer
-//  Filter<worklets::Square> sqf(sf);
-//  Filter<worklets::Cosine> cf(sqf);
+  //virtual point coordinates suck shit
+  dax::Vector3Array pointCoords;
+  dax::ConvertCoordinatesToArray(grid->points(),pointCoords);
 
-//  instead of working on creation time, we now execute when we call run
-//  cf.run();
+
+  Filter<worklets::Elevation> elev(grid,&pointCoords);
+  Filter<worklets::Sine> sin(elev);
+  Filter<worklets::Square> sq(sin);
+  Filter<worklets::Cosine> cos(sq);
+
+  cos.run();
 }
 
 int main()
 {
-  TestHostPipeline();
-  TestDevicePipeline();
+  assert(validPipeline(TestHostPipeline(),TestDevicePipeline())==true);
+  buildExamplePipeline();
 
   return 0;
 }

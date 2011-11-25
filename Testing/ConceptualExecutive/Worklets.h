@@ -5,7 +5,10 @@
 
 #include <math.h>
 #include <algorithm>
+
 #include "daxTypes.h"
+#include "daxArray.h"
+#include "daxDeviceArray.h"
 
 namespace worklet_functions
 {
@@ -41,6 +44,8 @@ struct Cosine
     worklet_functions::Cosine(v,v);
     return v;
   }
+
+  std::string name() const { return "Cosine"; }
 };
 
 struct Sine
@@ -52,6 +57,8 @@ struct Sine
     worklet_functions::Sine(v,v);
     return v;
   }
+
+  std::string name() const { return "Sine"; }
 };
 
 struct Square
@@ -63,6 +70,8 @@ struct Square
     worklet_functions::Square(v,v);
     return v;
   }
+
+  std::string name() const { return "Square"; }
 };
 
 struct Elevation
@@ -75,6 +84,8 @@ struct Elevation
     worklet_functions::Elevation(v,result);
     return result;
   }
+
+  std::string name() const { return "Elevation"; }
 };
 }
 
@@ -98,9 +109,9 @@ struct execute
     operator()(*input,*output);
   }
   template<typename A, typename B>
+  DAX_EXEC_CONT_EXPORT
   void operator()(const A &input, B &output)
   {
-    output.resize(input.size());
     for(int i=0; i < input.size(); i++)
       {
       output[i]=(Worklet()(input[i]));
@@ -108,40 +119,68 @@ struct execute
   }
 };
 
+//template <typename T, typename U>
+//void executePipeline(T *points, U &result)
+//{
+//  result.resize(points->size());
+//  execute<worklets::Elevation>()(&points,result);
+//  execute<worklets::Sine>()(result,result);
+//  execute<worklets::Square>()(result,result);
+//  execute<worklets::Cosine>()(result,result);
+//}
+
+
 //------------------------------------------------------------------------------
-template <typename DataType,
-          typename InputType,
+template <typename InputType,
           typename OutputType>
 struct cell_execute
 {
-  int index;
-  const DataType* Data;
-
-  cell_execute(const DataType *data):
-    index(0), Data(data)
-  {
-
-  }
-
-
   DAX_EXEC_CONT_EXPORT
-  void operator()(OutputType& value)
+  OutputType operator()(InputType& input)
   {
-    value = worklets::Cosine()(
+    return worklets::Cosine()(
             worklets::Square()(
             worklets::Sine()(
-            worklets::Elevation()((*Data)[index++]))));
+            worklets::Elevation()(input))));
   }
 };
 
 
 template <typename T, typename U>
-void executePipeline(T *points, U &result)
+void executeCellPipeline(dax::HostArray<T> &points, dax::HostArray<U> &result)
 {
-  result.resize(points->size());
-  cell_execute<T, typename T::value_type, typename U::value_type> ce(points);
-  std::for_each(result.begin(),result.end(),ce);
+
+  result.resize(points.size());
+  cell_execute< typename dax::HostArray<T>::ValueType,
+                typename dax::HostArray<U>::ValueType> functor;
+
+  //currently thrust transform spits out warnings when running on the client
+  //which means we can't compile
+  std::cout << "start execution on the cpu" << std::endl;
+
+  std::transform(points.begin(),points.end(),result.begin(),functor);
+
+  std::cout << "finished execution on the cpu" << std::endl;
 }
+
+template <typename T, typename U>
+void executeCellPipeline(dax::DeviceArray<T> &points, dax::DeviceArray<U> &result)
+{
+
+  result.resize(points.size());
+  cell_execute< typename dax::DeviceArray<T>::ValueType,
+                typename dax::DeviceArray<U>::ValueType> functor;
+
+  std::cout << "start execution on gpu" << std::endl;
+
+  thrust::transform(points.begin(),points.end(),result.begin(),functor);
+
+  std::cout << "finished execution on gpu" << std::endl;
+}
+
+
+
+
 
 
 #endif // WORKLETS_H

@@ -4,27 +4,37 @@
 #include <vector>
 #include <string>
 
-#include <dax/internal/ExportMacros.h>
-
 #include "daxTypes.h"
 
-#include <thrust/device_vector.h>
-#include <thrust/host_vector.h>
+//forward declerations
+
+namespace dax {
+
+// forward declaration of HostArray
+template<typename Type> class HostArray;
+
+// forward declaration of deviceArray
+template<typename OtherT> class DeviceArray;
+
+}
 
 namespace dax { namespace internal {
 
 class BaseArray
 {
 public:
-    virtual ~BaseArray(){}
-    virtual std::string name() const=0;
+  virtual ~BaseArray(){}
+  virtual std::string name() const=0;
+protected:
+    std::string Name;
   };
 
 class BaseCoordinates : public BaseArray
 {
 public:
   typedef dax::Vector3 OutputType;
-  typedef dax::Vector3 value_type;
+  typedef dax::Vector3 ValueType;
+
   virtual ~BaseCoordinates(){}
   virtual std::size_t size() const=0;
   virtual dax::Vector3 operator [](const std::size_t& idx) const=0;
@@ -32,69 +42,118 @@ public:
 
   virtual std::string name() const { return "coords"; }
 };
+
 } }
 
 namespace dax {
 
-template<typename valueType>
+template<typename Type>
 class HostArray :
     public dax::internal::BaseArray,
-    public thrust::host_vector<valueType>
+    public std::vector<Type>
 
 {
 private:
-  typedef thrust::host_vector<valueType> Parent;
+  typedef std::vector<Type> Parent;
 
 public:
-  typedef typename Parent::size_type  size_type;
-  typedef typename Parent::value_type value_type;
+  typedef Type ValueType;
+  typedef typename Parent::iterator iterator;
+  typedef typename Parent::const_iterator const_iterator;
 
-  HostArray(const std::string& name):
-    BaseArray(),Parent(),
-    Name(name)
-    {}
+  //the device array needs to be a friend class
+  //so that it can copy the real data in the host array
+  template <class OtherT> friend class DeviceArray;
+
+  HostArray(void):
+    BaseArray(), Name(""), Data()
+  {
+  }
+
+  explicit HostArray(const std::size_t n, const ValueType &value = ValueType()):
+    BaseArray(), Name(""), Data(n,value)
+  {
+  }
+
+  HostArray(const HostArray &v)
+    :Parent(v) {}
+
+  HostArray &operator=(const HostArray &v)
+  { Parent::operator=(v); return *this; }
+
+  template<typename OtherT>
+  HostArray(const HostArray<OtherT> &v)
+    :Parent(v) {}
+
+  template<typename OtherT>
+  HostArray(const std::vector<OtherT> &v)
+    :Parent(v) {}
+
+  template<typename InputIterator>
+  HostArray(InputIterator first, InputIterator last)
+    :Parent(first, last) {}
 
   virtual ~HostArray(){}
 
+  void setName(const std::string &name) { Name = name; }
   virtual std::string name() const { return Name; }
 
+  std::size_t size() const { return this->Data.size(); }
+  std::size_t capacity() const { return this->Data.capacity(); }
+
+  void reserve(const std::size_t& sz) { this->Data.reserve(sz); }
+  void resize(const std::size_t& sz, ValueType t=ValueType() ) { this->Data.resize(sz,t); }
+
+  const_iterator begin() const { return this->Data.begin(); }
+  const_iterator end() const { return this->Data.end(); }
+
+  iterator begin() { return this->Data.begin(); }
+  iterator end() { return this->Data.end(); }
+
+  void push_back(const ValueType& v) { this->Data.push_back(v); }
+
+  template<typename T>
+  ValueType operator [](const T& idx) const { return this->Data[idx]; }
+
+  template<typename T>
+  ValueType& operator [](const T& idx) { return this->Data[idx]; }
+
+  template<typename T>
+  ValueType at(const T& idx) const { return this->Data.at(idx); }
+
+  template<typename OtherT>
+  HostArray &operator=(const std::vector<OtherT> &v)
+  { Parent::operator=(v); return *this;}
+
+  template<typename OtherT>
+  HostArray &operator=(const HostArray<OtherT> &v)
+  { Parent::operator=(v); return *this;}
+
+
 protected:
-    const std::string Name;
-};
-
-template<typename valueType>
-class DeviceArray : public thrust::device_vector<valueType>
-{
-private:
-  typedef thrust::device_vector<valueType> Parent;
-
-public:
-  typedef typename Parent::size_type  size_type;
-  typedef typename Parent::value_type value_type;
-
-  __host__
-  DeviceArray(void)
-    :Parent() {}
-
-  __host__
-  explicit DeviceArray(size_type n, const value_type &value = value_type())
-    :Parent(n,value) {}
-
-  __host__
-  DeviceArray(const DeviceArray &v)
-    :Parent(v) {}
+  std::string Name;
+  Parent Data;
 };
 
 typedef dax::HostArray<dax::Id> IdArray;
 typedef dax::HostArray<dax::Scalar> ScalarArray;
 typedef dax::HostArray<dax::Vector3> Vector3Array;
 
-typedef dax::DeviceArray<dax::Id> DeviceIdArray;
-typedef dax::DeviceArray<dax::Scalar> DeviceScalarArray;
-typedef dax::DeviceArray<dax::Vector3> DeviceVector3Array;
+//I do not like this,
+//I do not like
+//Coordinates.
+
+//I would not like them
+//on the Heap or Stack.
+//I would not like them
+//anywhere.
+//I do not like
+//Coordinates.
+//I do not like them
 
 
-
+//I need to create a device version of coordinates
+//the facade really sucks
 template <typename realArray>
 class Coordinates : public dax::internal::BaseCoordinates
 {
@@ -155,6 +214,21 @@ public:
 protected:
   const InputType *Data;
 };
+
+
+void ConvertCoordinatesToArray(const dax::internal::BaseCoordinates *baseC,
+               dax::Vector3Array& result)
+{
+  //I hate this, we really need a device agnostic
+  //mapping of coordinate arrays
+  std::size_t size = baseC->size();
+  result.reserve(size);
+  for(std::size_t i=0; i < size; ++i)
+    {
+    result.push_back((*baseC)[i]);
+    }
+
+}
 
 
 //typedef boost::shared_ptr< dax::Array<ValueType,StorageType> > ArrayPtr;
