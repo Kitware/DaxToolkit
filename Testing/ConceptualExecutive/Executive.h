@@ -24,6 +24,23 @@ public:
 
 };
 
+template<typename ArrayType>
+class arrayHandleT : public workletHandle
+{
+private:
+  ArrayType *Array;
+
+public:
+  arrayHandleT(ArrayType *array):
+    Array(array)
+  {
+
+  }
+
+  std::string name() const{ return Array->name(); }
+
+};
+
 } }
 
 class Executive
@@ -37,7 +54,8 @@ public:
 
   void run()
   {
-    std::cout << "dumping the worklets to run" << std::endl;
+
+    std::cout << "Executive has " << this->Tasks.size() << " number of Tasks" << std::endl;
     for(TaskIterator it=Tasks.begin();
         it!=Tasks.end();
         ++it)
@@ -50,6 +68,12 @@ public:
   void add()
   {
     Tasks.push_back( new dax::exec::workletHandleT<Worklet>());
+  }
+
+  template<typename ArrayType>
+  void addData(ArrayType* array)
+  {
+    Tasks.push_back( new dax::exec::arrayHandleT<ArrayType>(array));
   }
 
 };

@@ -23,22 +23,30 @@ private:
   std::vector< ExecutiveFuncSignature > Dependencies;
 
   dax::HostArray<InputType>* InputArray;
-  dax::HostArray<OutputType> OutputArray;
-  DataSet *Data;
-
 public:
-  Filter(DataSet* inputData, dax::HostArray<InputType> *t):
-    Data(inputData),
-    InputArray(t)
-  {}
-
-  template<typename T>
-  Filter(const Filter<T>& input):
-    Data(input.Data),
-    InputArray(input.OutputArray)
+  Filter(dax::HostArray<InputType> *t):
+  InputArray(t)
   {
     Dependencies.push_back(
-          boost::bind(&Filter<T>::addDependenciesToExecutive,&input,_1));
+          boost::bind(&Filter<Worklet>::addDataToExecutive,boost::ref(*this),_1));
+  }
+
+  //constructor when connecting a filter to a different type of filter
+  template<typename T>
+  Filter(const Filter<T>& input):
+    InputArray(NULL)
+  {
+    Dependencies.push_back(
+          boost::bind(&Filter<T>::addDependenciesToExecutive,boost::ref(input),_1));
+  }
+
+  //constructor when connecting a filter to an identical filter
+  //needed as the T templated constructor doesn't work on those
+  Filter(const Filter<Worklet>& input):
+    InputArray(NULL)
+  {
+    Dependencies.push_back(
+          boost::bind(&Filter<Worklet>::addDependenciesToExecutive,boost::ref(input),_1));
   }
 
   void run() const
@@ -46,6 +54,11 @@ public:
     Executive exec;
     this->addDependenciesToExecutive(exec);
     exec.run();
+  }
+
+  void addDataToExecutive(Executive& exec) const
+  {
+    exec.addData< dax::HostArray<InputType> >( this->InputArray );
   }
 
   void addDependenciesToExecutive(Executive& exec) const
@@ -58,7 +71,7 @@ public:
       {
       //call my input filters execute function
       (*it)(exec);
-      }
+      }    
     exec.add<Worklet>();
   }
 };

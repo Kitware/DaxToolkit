@@ -77,12 +77,18 @@ void buildExamplePipeline()
   dax::ConvertCoordinatesToArray(grid->points(),pointCoords);
 
 
-  Filter<worklets::Elevation> elev(grid,&pointCoords);
+  Filter<worklets::Elevation> elev(&pointCoords);
   Filter<worklets::Sine> sin(elev);
   Filter<worklets::Square> sq(sin);
   Filter<worklets::Cosine> cos(sq);
 
   cos.run();
+
+  Filter<worklets::Square> sqa2(sq);
+
+  sqa2.run();
+
+
 }
 
 int main()

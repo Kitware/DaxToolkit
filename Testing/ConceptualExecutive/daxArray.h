@@ -228,6 +228,8 @@ void ConvertCoordinatesToArray(const dax::internal::BaseCoordinates *baseC,
     result.push_back((*baseC)[i]);
     }
 
+  result.setName(baseC->name());
+
 }
 
 
