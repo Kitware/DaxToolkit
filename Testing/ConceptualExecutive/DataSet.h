@@ -9,7 +9,7 @@ class DataSet
 {
 public:
   typedef dax::internal::BaseArray Field;
-  typedef dax::internal::BaseCoordinates Coordinates;
+  typedef dax::Coordinates Coordinates;
 
   DataSet( const std::size_t& numPoints, const std::size_t& numCells);
   DataSet();

@@ -5,9 +5,10 @@
 #include <string>
 
 #include "daxTypes.h"
+#include "boost/iterator/counting_iterator.hpp"
+#include "boost/iterator/transform_iterator.hpp"
 
 //forward declerations
-
 namespace dax {
 
 // forward declaration of HostArray
@@ -28,29 +29,13 @@ public:
 protected:
     std::string Name;
   };
-
-class BaseCoordinates : public BaseArray
-{
-public:
-  typedef dax::Vector3 OutputType;
-  typedef dax::Vector3 ValueType;
-
-  virtual ~BaseCoordinates(){}
-  virtual std::size_t size() const=0;
-  virtual dax::Vector3 operator [](const std::size_t& idx) const=0;
-  virtual dax::Vector3 at(const std::size_t& idx) const=0;
-
-  virtual std::string name() const { return "coords"; }
-};
-
 } }
 
 namespace dax {
 
 template<typename Type>
 class HostArray :
-    public dax::internal::BaseArray,
-    public std::vector<Type>
+    public dax::internal::BaseArray
 
 {
 private:
@@ -76,22 +61,19 @@ public:
   }
 
   HostArray(const HostArray &v)
-    :Parent(v) {}
-
-  HostArray &operator=(const HostArray &v)
-  { Parent::operator=(v); return *this; }
+    :Data(v.Data),Name(v.Name) {}
 
   template<typename OtherT>
   HostArray(const HostArray<OtherT> &v)
-    :Parent(v) {}
+    :Data(v), Name(v.name()) {}
 
   template<typename OtherT>
   HostArray(const std::vector<OtherT> &v)
-    :Parent(v) {}
+    :Data(v) {}
 
   template<typename InputIterator>
   HostArray(InputIterator first, InputIterator last)
-    :Parent(first, last) {}
+    :Data(first, last) {}
 
   virtual ~HostArray(){}
 
@@ -123,11 +105,14 @@ public:
 
   template<typename OtherT>
   HostArray &operator=(const std::vector<OtherT> &v)
-  { Parent::operator=(v); return *this;}
+  { Data=(v.Data); return *this;}
 
   template<typename OtherT>
   HostArray &operator=(const HostArray<OtherT> &v)
-  { Parent::operator=(v); return *this;}
+  { Data=(v.Data); Name=v.name();return *this;}
+
+  HostArray &operator=(const HostArray &v)
+  { Data=(v.Data); Name=v.name(); return *this; }
 
 
 protected:
@@ -135,102 +120,12 @@ protected:
   Parent Data;
 };
 
+
 typedef dax::HostArray<dax::Id> IdArray;
 typedef dax::HostArray<dax::Scalar> ScalarArray;
 typedef dax::HostArray<dax::Vector3> Vector3Array;
 
-//I do not like this,
-//I do not like
-//Coordinates.
-
-//I would not like them
-//on the Heap or Stack.
-//I would not like them
-//anywhere.
-//I do not like
-//Coordinates.
-//I do not like them
-
-
-//I need to create a device version of coordinates
-//the facade really sucks
-template <typename realArray>
-class Coordinates : public dax::internal::BaseCoordinates
-{
-public:
-  Coordinates(realArray* ra)
-  {
-    this->RealArrayPtr = ra;
-  }
-
-  virtual ~Coordinates()
-  {
-    RealArrayPtr = NULL;
-  }
-
-  virtual std::size_t size() const { return this->RealArrayPtr->size(); }
-
-  virtual dax::Vector3 operator [](const std::size_t& idx) const
-  { return this->RealArrayPtr[idx]; }
-
-  virtual dax::Vector3 at(const std::size_t& idx) const
-  {
-    return this->RealArrayPtr->at(idx);
-  }
-
-protected:
-  realArray* RealArrayPtr;
-};
-
-template <typename dataSet>
-class ComputedCoordinates : public dax::internal::BaseCoordinates
-{
-public:
-  typedef dataSet InputType;
-  ComputedCoordinates(const InputType* ds):
-    Data(ds)
-  {
-  }
-
-  virtual ~ComputedCoordinates()
-  {
-    Data = NULL;
-  }
-
-  virtual std::size_t size() const
-  {
-    return this->Data->numPoints();
-  }
-
-  virtual dax::Vector3 operator [](const std::size_t& idx) const
-  {
-    return this->Data->computePointCoordinate(idx);
-  }
-
-  virtual dax::Vector3 at(const std::size_t& idx) const
-  {
-    return this->Data->computePointCoordinate(idx);
-  }
-protected:
-  const InputType *Data;
-};
-
-
-void ConvertCoordinatesToArray(const dax::internal::BaseCoordinates *baseC,
-               dax::Vector3Array& result)
-{
-  //I hate this, we really need a device agnostic
-  //mapping of coordinate arrays
-  std::size_t size = baseC->size();
-  result.reserve(size);
-  for(std::size_t i=0; i < size; ++i)
-    {
-    result.push_back((*baseC)[i]);
-    }
-
-  result.setName(baseC->name());
-
-}
+typedef dax::HostArray<dax::Vector3> Coordinates;
 
 
 //typedef boost::shared_ptr< dax::Array<ValueType,StorageType> > ArrayPtr;

@@ -5,15 +5,13 @@
 
 class StructuredGrid : public DataSet
 {
-public:
-  friend class dax::ComputedCoordinates<StructuredGrid>;
-
+public:  
   StructuredGrid(dax::Vector3 origin, dax::Vector3 spacing,
                  dax::Extent3 extents);
 
   virtual ~StructuredGrid();
 
-  virtual const DataSet::Coordinates* points() const;
+  virtual const dax::Coordinates* points() const;
 
 protected:
   dax::Vector3 computePointCoordinate(int index) const;
@@ -24,7 +22,7 @@ protected:
   dax::Vector3 Spacing;
   dax::Extent3 Extent;
 
-  dax::ComputedCoordinates<StructuredGrid>* Coords;
+  dax::Coordinates* Coords;
 };
 
 //------------------------------------------------------------------------------
@@ -38,7 +36,12 @@ StructuredGrid::StructuredGrid(dax::Vector3 origin, dax::Vector3 spacing,
   size = size - dax::make_Id3(1,1,1);
   this->NumCells = size.x * size.y * size.z;
 
-  this->Coords = new dax::ComputedCoordinates<StructuredGrid>(this);
+  this->Coords = new dax::Coordinates();
+  this->Coords->reserve(this->NumPoints);
+  for(std::size_t i=0; i < this->NumPoints; ++i)
+    {
+    this->Coords->push_back(this->computePointCoordinate(i));
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -48,14 +51,13 @@ StructuredGrid::~StructuredGrid()
 }
 
 //------------------------------------------------------------------------------
-const DataSet::Coordinates* StructuredGrid::points() const
+const dax::Coordinates* StructuredGrid::points() const
 {
   //returns the dataArray that is the point coordinates
   return this->Coords;
 }
 
 //------------------------------------------------------------------------------
-DAX_EXEC_CONT_EXPORT
 dax::Vector3 StructuredGrid::computePointCoordinate(int index) const
 {
   dax::Id3 ijk = this->flatIndexToIndex3(index);
@@ -63,14 +65,12 @@ dax::Vector3 StructuredGrid::computePointCoordinate(int index) const
 }
 
 //------------------------------------------------------------------------------
-DAX_EXEC_CONT_EXPORT
 dax::Id3 StructuredGrid::extentDimensions() const
 {
   return this->Extent.Max - this->Extent.Min + dax::make_Id3(1, 1, 1);;
 }
 
 //------------------------------------------------------------------------------
-DAX_EXEC_CONT_EXPORT
 dax::Id3 StructuredGrid::flatIndexToIndex3(dax::Id index) const
   {
     dax::Id3 dims = this->extentDimensions();

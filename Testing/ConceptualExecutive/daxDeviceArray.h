@@ -3,8 +3,11 @@
 
 #include "daxTypes.h"
 
+#include <thrust/iterator/counting_iterator.h>
 #include <thrust/device_vector.h>
 
+
+class StructuredGrid;
 namespace dax {
 
 // forward declaration of HostArray
@@ -69,7 +72,7 @@ public:
 typedef dax::DeviceArray<dax::Id> DeviceIdArray;
 typedef dax::DeviceArray<dax::Scalar> DeviceScalarArray;
 typedef dax::DeviceArray<dax::Vector3> DeviceVector3Array;
-
+typedef dax::DeviceArray<dax::Vector3> DeviceCoordinates;
 
 template<typename T,
          typename OtherT>

@@ -29,10 +29,8 @@ dax::ScalarArray TestHostPipeline()
   //point coords are not real, and we don't
   //have a clean interface for this yet
   dax::ScalarArray result;
-  dax::Vector3Array pointCoords;
-  dax::ConvertCoordinatesToArray(grid->points(),pointCoords);
 
-  executeCellPipeline(pointCoords,result);
+  executeCellPipeline(*(grid->points()),result);
 
   return result;
 }
@@ -44,15 +42,13 @@ dax::ScalarArray TestDevicePipeline()
   createGrid(grid);
 
   dax::ScalarArray result;
-  dax::Vector3Array pointCoords;
-  dax::ConvertCoordinatesToArray(grid->points(),pointCoords);
 
-  dax::DeviceVector3Array devicePCorrds(pointCoords);
-  dax::DeviceScalarArray devicePResult(result);
+  dax::DeviceCoordinates deviceCorrds(*grid->points());
+  dax::DeviceScalarArray deviceResult(result);
 
-  executeCellPipeline(devicePCorrds,devicePResult);
+  executeCellPipeline(deviceCorrds,deviceResult);
 
-  dax::toHost(devicePResult,result);
+  dax::toHost(deviceResult,result);
   return result;
 }
 
@@ -74,7 +70,7 @@ void buildExamplePipeline()
 
   //virtual point coordinates suck shit
   dax::Vector3Array pointCoords;
-  dax::ConvertCoordinatesToArray(grid->points(),pointCoords);
+  //dax::ConvertCoordinatesToArray(grid->points(),pointCoords);
 
 
   Filter<worklets::Elevation> elev(&pointCoords);

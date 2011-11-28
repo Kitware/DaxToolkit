@@ -119,24 +119,13 @@ struct execute
   }
 };
 
-//template <typename T, typename U>
-//void executePipeline(T *points, U &result)
-//{
-//  result.resize(points->size());
-//  execute<worklets::Elevation>()(&points,result);
-//  execute<worklets::Sine>()(result,result);
-//  execute<worklets::Square>()(result,result);
-//  execute<worklets::Cosine>()(result,result);
-//}
-
-
 //------------------------------------------------------------------------------
 template <typename InputType,
           typename OutputType>
 struct cell_execute
 {
   DAX_EXEC_CONT_EXPORT
-  OutputType operator()(InputType& input)
+  OutputType operator()(const InputType& input)
   {
     return worklets::Cosine()(
             worklets::Square()(
@@ -147,7 +136,7 @@ struct cell_execute
 
 
 template <typename T, typename U>
-void executeCellPipeline(dax::HostArray<T> &points, dax::HostArray<U> &result)
+void executeCellPipeline(const dax::HostArray<T> &points, dax::HostArray<U> &result)
 {
 
   result.resize(points.size());
@@ -164,7 +153,7 @@ void executeCellPipeline(dax::HostArray<T> &points, dax::HostArray<U> &result)
 }
 
 template <typename T, typename U>
-void executeCellPipeline(dax::DeviceArray<T> &points, dax::DeviceArray<U> &result)
+void executeCellPipeline(const dax::DeviceArray<T> &points, dax::DeviceArray<U> &result)
 {
 
   result.resize(points.size());
