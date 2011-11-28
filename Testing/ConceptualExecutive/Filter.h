@@ -4,8 +4,6 @@
 #include "DataSet.h"
 #include "Executive.h"
 
-#include "boost/function.hpp"
-#include "boost/bind.hpp"
 #include <vector>
 
 //------------------------------------------------------------------------------
@@ -16,63 +14,43 @@ public:
   typedef typename Worklet::InputType InputType;
   typedef typename Worklet::OutputType OutputType;
 
+  //we make other filters templated types friends
+  //of this filter so we share the same Executive
+  template <class OtherT> friend class Filter;
+
 private:
-  typedef boost::function<void (Executive& exec)> ExecutiveFuncSignature;
+  const Executive::ExecutivePtr Exec;
+  const dax::HostArray<InputType>* InputArray;
 
-  //dataset can be changed but we can't change the pointer location
-  std::vector< ExecutiveFuncSignature > Dependencies;
-
-  dax::HostArray<InputType>* InputArray;
 public:
-  Filter(dax::HostArray<InputType> *t):
-  InputArray(t)
+  Filter(const dax::HostArray<InputType> *t):
+    Exec( new Executive() ),
+    InputArray(t)
   {
-    Dependencies.push_back(
-          boost::bind(&Filter<Worklet>::addDataToExecutive,boost::ref(*this),_1));
+    //this->Exec->connect<Worklet>(t, Worklet());
   }
 
   //constructor when connecting a filter to a different type of filter
-  template<typename T>
-  Filter(const Filter<T>& input):
+  template<typename OtherT>
+  Filter(const Filter<OtherT>& input):
+    Exec(input.Exec),
     InputArray(NULL)
   {
-    Dependencies.push_back(
-          boost::bind(&Filter<T>::addDependenciesToExecutive,boost::ref(input),_1));
+    //this->Exec->connect< input::Worklet, Worklet >(input, Worklet());
   }
 
   //constructor when connecting a filter to an identical filter
   //needed as the T templated constructor doesn't work on those
   Filter(const Filter<Worklet>& input):
+    Exec(input.Exec),
     InputArray(NULL)
   {
-    Dependencies.push_back(
-          boost::bind(&Filter<Worklet>::addDependenciesToExecutive,boost::ref(input),_1));
+    //this->Exec->connect< input::Worklet, Worklet >(input, Worklet());
   }
 
   void run() const
   {
-    Executive exec;
-    this->addDependenciesToExecutive(exec);
-    exec.run();
-  }
-
-  void addDataToExecutive(Executive& exec) const
-  {
-    exec.addData< dax::HostArray<InputType> >( this->InputArray );
-  }
-
-  void addDependenciesToExecutive(Executive& exec) const
-  {
-    //recursively do a depth first walk up the tree
-    //so that we properly call execute from the
-    //top of the pipeline down correctly
-    std::vector< ExecutiveFuncSignature >::const_iterator it;
-    for(it=Dependencies.begin();it!=Dependencies.end();++it)
-      {
-      //call my input filters execute function
-      (*it)(exec);
-      }    
-    exec.add<Worklet>();
+    this->Exec->run();
   }
 };
 

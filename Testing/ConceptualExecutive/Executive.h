@@ -1,79 +1,63 @@
 #ifndef EXECUTIVE_H
 #define EXECUTIVE_H
 
+#include <vector>
+#include <string>
 
-namespace dax { namespace exec
-{
-//workletHandle and worklet HandleT
+#include "daxTypes.h"
 
-class workletHandle
-{
-public:
-  virtual ~workletHandle(){};
-  virtual std::string name()const=0;
-};
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/graph_traits.hpp>
+#include <boost/graph/graph_utility.hpp>
+#include <boost/graph/reverse_graph.hpp>
+#include <boost/graph/topological_sort.hpp>
+#include <utility>                   // for std::pair
 
-template<typename Worklet>
-class workletHandleT : public workletHandle
-{
-private:
-  Worklet Worklet_;
-
-public:
-  std::string name() const{ return Worklet_.name(); }
-
-};
-
-template<typename ArrayType>
-class arrayHandleT : public workletHandle
-{
-private:
-  ArrayType *Array;
-
-public:
-  arrayHandleT(ArrayType *array):
-    Array(array)
-  {
-
-  }
-
-  std::string name() const{ return Array->name(); }
-
-};
-
-} }
 
 class Executive
 {
 private:
-  typedef std::vector< dax::exec::workletHandle* >  TaskVector;
-  typedef std::vector< dax::exec::workletHandle* >::iterator  TaskIterator;
+  /// Meta-data stored with each vertex in the graph.
+  struct VertexProperty
+    {
 
-  TaskVector Tasks;
+    };
+
+  /// Meta-data stored with each edge in the graph.
+  struct EdgeProperty
+    {
+
+    };
+
+  typedef boost::adjacency_list<boost::vecS,
+          boost::vecS,
+          boost::directedS,
+          /* Vertex Property*/
+          VertexProperty,
+          /* Edge Property*/
+          EdgeProperty > Graph;
+
+  typedef boost::graph_traits<Graph>::vertex_iterator VertexIterator;
+  typedef boost::graph_traits<Graph>::edge_iterator EdgeIterator;
+  typedef boost::graph_traits<Graph>::in_edge_iterator InEdgeIterator;
+  Graph Connectivity;
+
 public:
+  typedef boost::shared_ptr<Executive> ExecutivePtr;
+  void run();
 
-  void run()
+  template<typename Worklet, typename ArrayType>
+  void connect(ArrayType *type)
   {
-
-    std::cout << "Executive has " << this->Tasks.size() << " number of Tasks" << std::endl;
-    for(TaskIterator it=Tasks.begin();
-        it!=Tasks.end();
-        ++it)
-      {
-      std::cout << (*it)->name() << std::endl;
-      }
   }
 
-  template<typename Worklet>
-  void add()
+  template<typename PrevWorklet, typename CurrentWorklet>
+  void connect(const dax::worklets::BaseFieldWorklet<PrevWorklet> &in,
+               dax::worklets::BaseFieldWorklet<CurrentWorklet> &vert )
   {
-    Tasks.push_back( new dax::exec::workletHandleT<Worklet>());
-  }
 
-  template<typename ArrayType>
-  void addData(ArrayType* array)
-  {
-    Tasks.push_back( new dax::exec::arrayHandleT<ArrayType>(array));
   }
 
 };

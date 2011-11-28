@@ -57,6 +57,9 @@ bool validPipeline(dax::ScalarArray sa1, dax::ScalarArray sa2)
   std::size_t size1 = sa1.size();
   std::size_t size2 = sa2.size();
   assert(size1==size2);
+  assert(sa1[0]==sa2[0]);
+  assert(sa1[3]==sa2[3]);
+  assert(sa1[size1-1]==sa2[size2-1]);
   return true;
 }
 
@@ -68,12 +71,7 @@ void buildExamplePipeline()
   StructuredGrid* grid;
   createGrid(grid);
 
-  //virtual point coordinates suck shit
-  dax::Vector3Array pointCoords;
-  //dax::ConvertCoordinatesToArray(grid->points(),pointCoords);
-
-
-  Filter<worklets::Elevation> elev(&pointCoords);
+  Filter<worklets::Elevation> elev(grid->points());
   Filter<worklets::Sine> sin(elev);
   Filter<worklets::Square> sq(sin);
   Filter<worklets::Cosine> cos(sq);

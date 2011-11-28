@@ -35,7 +35,7 @@ DAX_EXEC_CONT_EXPORT void Elevation(dax::Vector3 inCoordinate, dax::Scalar& outV
 
 namespace worklets
 {
-struct Cosine
+struct Cosine : public dax::worklets::BaseFieldWorklet<Cosine>
 {
   typedef dax::Scalar InputType;
   typedef dax::Scalar OutputType;
@@ -48,7 +48,7 @@ struct Cosine
   std::string name() const { return "Cosine"; }
 };
 
-struct Sine
+struct Sine : public dax::worklets::BaseFieldWorklet<Sine>
 {
   typedef dax::Scalar InputType;
   typedef dax::Scalar OutputType;
@@ -61,7 +61,7 @@ struct Sine
   std::string name() const { return "Sine"; }
 };
 
-struct Square
+struct Square : public dax::worklets::BaseFieldWorklet<Square>
 {
   typedef dax::Scalar InputType;
   typedef dax::Scalar OutputType;
@@ -74,7 +74,7 @@ struct Square
   std::string name() const { return "Square"; }
 };
 
-struct Elevation
+struct Elevation : public dax::worklets::BaseFieldWorklet<Elevation>
 {
   typedef dax::Vector3 InputType;
   typedef dax::Scalar OutputType;

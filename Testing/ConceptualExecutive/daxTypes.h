@@ -167,4 +167,31 @@ dax::Vector3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
 return result;
 }
 
+namespace dax { namespace worklets {
+
+template <typename Derived>
+struct BaseFieldWorklet
+{
+
+  template<typename T, typename U>
+  DAX_EXEC_CONT_EXPORT T operator()(const U& u)
+  {
+    return static_cast<Derived*>(this)()(u);
+  }
+
+
+  template<typename T, typename U, typename V>
+  DAX_EXEC_CONT_EXPORT T operator()(const U& u, const V& v)
+  {
+    return static_cast<Derived*>(this)()(u,v);
+  }
+
+  std::string name() const
+  {
+    return static_cast<Derived*>(this)->name();
+  }
+};
+
+} }
+
 #endif // DAXTYPES_H
