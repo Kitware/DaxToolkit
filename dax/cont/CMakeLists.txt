@@ -19,6 +19,10 @@ set(impl_headers
 set(headers
   internal/ModuleBase.h
   internal/FilterBase.h
+  internal/BaseArray.h
+  DataSet.h
+  HostArray.h
+  StructuredGrid.h
   )
 
 dax_declare_headers(${impl_headers})

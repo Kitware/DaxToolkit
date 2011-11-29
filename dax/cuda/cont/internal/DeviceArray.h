@@ -1,18 +1,17 @@
 #ifndef DAXDEVICEARRAY_H
 #define DAXDEVICEARRAY_H
 
-#include "daxTypes.h"
+#include <dax/Types.h>
 
-#include <thrust/iterator/counting_iterator.h>
 #include <thrust/device_vector.h>
 
-
-class StructuredGrid;
 namespace dax {
+namespace cuda {
+namespace cont {
+namespace internal {
 
 // forward declaration of HostArray
 template<typename OtherT> class HostArray;
-
 template<typename T>
 class DeviceArray : public thrust::device_vector<T>
 {
@@ -43,10 +42,10 @@ public:
   DeviceArray(const dax::DeviceArray<OtherT> &v)
     :Parent(v) {}
 
-  //copy constructor from a dax::HostArray
+  //copy constructor from a dax::cont::HostArray
   template<typename OtherT>
   __host__
-  DeviceArray(const dax::HostArray<OtherT> &v)
+  DeviceArray(const dax::cont::HostArray<OtherT> &v)
     :Parent(v.Data){}
 
   //build an array from an iterator range
@@ -64,20 +63,20 @@ public:
   //copy the HostArray on the rhs to this DeviceArray
   template<typename OtherT>
   __host__
-  DeviceArray &operator=(const dax::HostArray<OtherT> &v)
+  DeviceArray &operator=(const dax::cont::HostArray<OtherT> &v)
   { Parent::operator=(v.Data); return *this;}
 
 };
 
-typedef dax::DeviceArray<dax::Id> DeviceIdArray;
-typedef dax::DeviceArray<dax::Scalar> DeviceScalarArray;
-typedef dax::DeviceArray<dax::Vector3> DeviceVector3Array;
-typedef dax::DeviceArray<dax::Vector3> DeviceCoordinates;
+typedef DeviceArray<dax::Id> DeviceIdArray;
+typedef DeviceArray<dax::Scalar> DeviceScalarArray;
+typedef DeviceArray<dax::Vector3> DeviceVector3Array;
+typedef DeviceArray<dax::Vector3> DeviceCoordinates;
 
 template<typename T,
          typename OtherT>
 __host__
-void toHost(dax::DeviceArray<T>& dArray, dax::HostArray<OtherT>& hArray)
+void toHost(dax::DeviceArray<T>& dArray, dax::cont::HostArray<OtherT>& hArray)
 {
   hArray.resize(dArray.size());
   thrust::copy(dArray.begin(),dArray.end(),hArray.begin());
@@ -92,5 +91,5 @@ OutputIterator toHost(InputIterator first, InputIterator last, OutputIterator de
   return thrust::copy(first,last,dest);
 }
 
-}
+} } } }
 #endif // DAXDEVICEARRAY_H

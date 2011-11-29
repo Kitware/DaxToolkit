@@ -8,5 +8,4 @@
 
 if (DAX_ENABLE_CUDA)
   add_subdirectory(cuda)
-  add_subdirectory(ConceptualExecutive)
 endif (DAX_ENABLE_CUDA)

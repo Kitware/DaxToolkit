@@ -1,10 +1,10 @@
-#ifndef DATASET_H
-#define DATASET_H
+#ifndef __dax_cont_DataSet_h
+#define __dax_cont_DataSet_h
 
 #include <vector>
+#include <dax/cont/HostArray.h>
 
-#include "daxArray.h"
-
+namespace dax { namespace cont {
 class DataSet
 {
 public:
@@ -137,4 +137,4 @@ bool DataSet::removeField(const std::string& n, std::vector<Field*>& fields)
 
 
 
-#endif // DATASET_H
+#endif // __dax_cont_DataSet_h

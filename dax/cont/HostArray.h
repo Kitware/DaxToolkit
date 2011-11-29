@@ -1,37 +1,17 @@
-#ifndef DAXARRAY_H
-#define DAXARRAY_H
+#ifndef __dax_cont_HostArray_h
+#define __dax_cont_HostArray_h
 
 #include <vector>
 #include <string>
 
-#include "daxTypes.h"
-#include "boost/iterator/counting_iterator.hpp"
-#include "boost/iterator/transform_iterator.hpp"
+#include <dax/Types.h>
+#include <dax/cont/internal/BaseArray.h>
 
-//forward declerations
-namespace dax {
-
-// forward declaration of HostArray
-template<typename Type> class HostArray;
+namespace dax { namespace cont {
 
 // forward declaration of deviceArray
+//so we can define it for friend being a friend class
 template<typename OtherT> class DeviceArray;
-
-}
-
-namespace dax { namespace internal {
-
-class BaseArray
-{
-public:
-  virtual ~BaseArray(){}
-  virtual std::string name() const=0;
-protected:
-    std::string Name;
-  };
-} }
-
-namespace dax {
 
 template<typename Type>
 class HostArray :
@@ -121,14 +101,10 @@ protected:
 };
 
 
-typedef dax::HostArray<dax::Id> IdArray;
-typedef dax::HostArray<dax::Scalar> ScalarArray;
-typedef dax::HostArray<dax::Vector3> Vector3Array;
+typedef HostArray<dax::Id> IdArray;
+typedef HostArray<dax::Scalar> ScalarArray;
+typedef HostArray<dax::Vector3> Vector3Array;
+typedef HostArray<dax::Vector3> Coordinates;
 
-typedef dax::HostArray<dax::Vector3> Coordinates;
-
-
-//typedef boost::shared_ptr< dax::Array<ValueType,StorageType> > ArrayPtr;
-//typedef boost::weak_ptr< dax::Array<ValueType,StorageType> > ArrayWeakPtr;
-}
-#endif // DAXARRAY_H
+} }
+#endif // __dax_cont_HostArray_h

@@ -15,6 +15,7 @@ set(sources
 
 set(headers
   internal/ManagedDeviceDataArray.h
+  internal/DeviceArray.h
   Executive.h
   Modules.h
   )

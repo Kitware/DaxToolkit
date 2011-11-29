@@ -1,9 +1,10 @@
-#ifndef STRUCTUREDGRID_H
-#define STRUCTUREDGRID_H
+#ifndef __dax_cont_StructuredGrid_h
+#define __dax_cont_StructuredGrid_h
 
-#include "DataSet.h"
+#include <dax/cont/DataSet.h>
 
-class StructuredGrid : public DataSet
+namespace dax { namespace cont {
+class StructuredGrid : public dax::cont::DataSet
 {
 public:  
   StructuredGrid(dax::Vector3 origin, dax::Vector3 spacing,
@@ -81,5 +82,5 @@ dax::Id3 StructuredGrid::flatIndexToIndex3(dax::Id index) const
 
     return ijk + this->Extent.Min;
   }
-
-#endif // STRUCTUREDGRID_H
+}}
+#endif // __dax_cont_StructuredGrid_h
