@@ -2,16 +2,27 @@
 #define DAXDEVICEARRAY_H
 
 #include <dax/Types.h>
+#include <dax/cont/internal/Macros.h>
+#include <dax/internal/DataArray.h>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 #include <thrust/device_vector.h>
+
+namespace dax {
+namespace cont
+{
+// forward declaration of HostArray
+template<typename OtherT> class HostArray;
+}
+}
 
 namespace dax {
 namespace cuda {
 namespace cont {
 namespace internal {
 
-// forward declaration of HostArray
-template<typename OtherT> class HostArray;
+daxDeclareClassTemplate1(DeviceArray);
 template<typename T>
 class DeviceArray : public thrust::device_vector<T>
 {
@@ -39,7 +50,7 @@ public:
   //copy constructor with other valueType
   template<typename OtherT>
   __device__
-  DeviceArray(const dax::DeviceArray<OtherT> &v)
+  DeviceArray(const dax::cuda::cont::internal::DeviceArray<OtherT> &v)
     :Parent(v) {}
 
   //copy constructor from a dax::cont::HostArray
@@ -57,7 +68,7 @@ public:
   //copy the DeviceArray on the rhs to this DeviceArray
   template<typename OtherT>
   __device__
-  DeviceArray &operator=(const DeviceArray<OtherT> &v)
+  DeviceArray &operator=(const dax::cuda::cont::internal::DeviceArray<OtherT> &v)
   { Parent::operator=(v); return *this; }
 
   //copy the HostArray on the rhs to this DeviceArray
@@ -66,22 +77,24 @@ public:
   DeviceArray &operator=(const dax::cont::HostArray<OtherT> &v)
   { Parent::operator=(v.Data); return *this;}
 
+  //copy the contents to the passed in host array
+  template<typename OtherT>
+  __host__
+  void toHost(dax::cont::HostArray<OtherT>* v) const
+  {
+    v->resize(this->size());
+    thrust::copy(this->begin(),this->end(),v->begin());
+  }
+
+  //set the data array to point to this device vector
+  __host__
+  ValueType* rawPtr()
+  {
+    return thrust::raw_pointer_cast(&((*this)[0]));
+  }
+
+
 };
-
-typedef DeviceArray<dax::Id> DeviceIdArray;
-typedef DeviceArray<dax::Scalar> DeviceScalarArray;
-typedef DeviceArray<dax::Vector3> DeviceVector3Array;
-typedef DeviceArray<dax::Vector3> DeviceCoordinates;
-
-template<typename T,
-         typename OtherT>
-__host__
-void toHost(dax::DeviceArray<T>& dArray, dax::cont::HostArray<OtherT>& hArray)
-{
-  hArray.resize(dArray.size());
-  thrust::copy(dArray.begin(),dArray.end(),hArray.begin());
-}
-
 
 template<typename InputIterator,
          typename OutputIterator>

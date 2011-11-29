@@ -5,17 +5,29 @@
 #include <string>
 
 #include <dax/Types.h>
+#include <dax/cont/internal/Macros.h>
 #include <dax/cont/internal/BaseArray.h>
 
-namespace dax { namespace cont {
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+
+namespace dax {
+namespace cuda {
+namespace cont {
+namespace internal {
 
 // forward declaration of deviceArray
 //so we can define it for friend being a friend class
 template<typename OtherT> class DeviceArray;
 
+} } } }
+
+namespace dax { namespace cont {
+
+daxDeclareClassTemplate1(HostArray);
 template<typename Type>
 class HostArray :
-    public dax::internal::BaseArray
+    public dax::cont::internal::BaseArray
 
 {
 private:
@@ -94,17 +106,21 @@ public:
   HostArray &operator=(const HostArray &v)
   { Data=(v.Data); Name=v.name(); return *this; }
 
+  //move data from device to host
+  template<typename OtherT>
+  HostArray &operator=(const dax::cuda::cont::internal::DeviceArray<OtherT> &v)
+  { v.toHost(this); return *this; }
+
+  //move data from device to host
+  template<typename OtherT>
+  HostArray &operator=(dax::cuda::cont::internal::DeviceArray<OtherT>* v)
+  { v->toHost(this); return *this; }
+
 
 protected:
   std::string Name;
   Parent Data;
 };
-
-
-typedef HostArray<dax::Id> IdArray;
-typedef HostArray<dax::Scalar> ScalarArray;
-typedef HostArray<dax::Vector3> Vector3Array;
-typedef HostArray<dax::Vector3> Coordinates;
 
 } }
 #endif // __dax_cont_HostArray_h

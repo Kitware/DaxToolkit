@@ -3,7 +3,7 @@
 
 #include <dax/cont/FilterFieldTypes.h>
 #include <dax/cuda/cont/Model.h>
-#include <dax/cuda/cont/internal/ManagedDeviceDataArray.h>
+#include <dax/cuda/cont/internal/DeviceArray.h>
 #include <dax/cuda/exec/CudaParameters.h>
 #include <vector>
 
@@ -16,9 +16,9 @@ public:
 
   typedef typename Worklet::ModelType ModelType;
   typedef typename Worklet::OutputType OutputType;
-  typedef dax::cuda::cont::internal::ManagedDeviceDataArray
+  typedef dax::cuda::cont::internal::DeviceArray
                                       <OutputType> OutputDataArray;
-  typedef dax::cuda::cont::internal::ManagedDeviceDataArrayPtr
+  typedef dax::cuda::cont::internal::DeviceArrayPtr
                                       <OutputType> OutputDataArrayPtr;
 
   template <typename Field_Type>
@@ -40,19 +40,14 @@ public:
   void compute()
   {
     //uggh finding the size is nasty since we can change it at run time
-    this->Output->Allocate(dax::cont::FieldSize(this->FieldType,this->Model));
+    this->Output->resize(dax::cont::FieldSize(this->FieldType,this->Model));
 
     const dax::cuda::exec::CudaParameters params(*this->Model);
-    Worklet().run(params,*this->Model,this->Output->GetArray());
+
+    //uses implicit constructor conversion from
+    //DeviceArray to DataArray
+    Worklet().run(params,*this->Model,this->Output);
   }
-
-  void pullResults(std::vector<OutputType> &results)
-    {
-
-    results.resize(dax::cont::FieldSize(this->FieldType,this->Model));
-
-    this->Output->CopyToHost(results);
-    }
 
   OutputDataArrayPtr output() const { return Output; }
 

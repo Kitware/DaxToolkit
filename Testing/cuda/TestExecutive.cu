@@ -13,6 +13,7 @@
 #include <dax/cuda/cont/MapCellModule.h>
 #include <dax/cuda/cont/MapFieldModule.h>
 #include <dax/cuda/cont/Filter.h>
+#include <dax/cont/HostArray.h>
 #include "Worklets.h"
 
 
@@ -26,12 +27,9 @@ static dax::internal::StructureUniformGrid CreateInputStructure(dax::Id dim)
   return grid;
 }
 
-static void PrintCheckValues(std::vector<dax::Vector3> &data)
+static void PrintCheckValues(const dax::internal::DataArray<dax::Vector3> &array)
 {
-  std::cout << "PrintCheckValues" << std::endl;
-  dax::internal::DataArray<dax::Vector3> array;
-  array.SetPointer(&data[0],data.size());
-
+  std::cout << "PrintCheckValues" << std::endl;   
   for (dax::Id index = 0; index < array.GetNumberOfEntries(); index++)
     {
     dax::Vector3 value = array.GetValue(index);
@@ -51,19 +49,13 @@ static void PrintCheckValues(std::vector<dax::Vector3> &data)
     }
 }
 
-template<typename T, typename U>
-void ExecuteSinSquareCos(T& data, U& fieldType)
-{
-  dax::cuda::cont::Model<T> model(data);
-}
-
-
 template<typename T>
 void ExecutePipeline(T data)
 {
   using namespace dax::cont;
 
-  std::vector<modules::CellGradient::OutputType> gradientResults;
+
+  dax::cont::HostArray<modules::CellGradient::OutputType> gradientResults;
 
   dax::cuda::cont::Model<T> model(data);
 

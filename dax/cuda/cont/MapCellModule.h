@@ -3,7 +3,7 @@
 
 #include <dax/cont/FilterFieldTypes.h>
 #include <dax/cuda/cont/Model.h>
-#include <dax/cuda/cont/internal/ManagedDeviceDataArray.h>
+#include <dax/cuda/cont/internal/DeviceArray.h>
 #include <dax/cuda/exec/CudaParameters.h>
 #include <vector>
 
@@ -17,23 +17,16 @@ public:
   typedef typename Worklet::InputType InputType;
   typedef typename Worklet::OutputType OutputType;
 
-  typedef dax::cuda::cont::internal::ManagedDeviceDataArray
+  typedef dax::cuda::cont::internal::DeviceArray
                                       <InputType> InputDataArray;
-  typedef dax::cuda::cont::internal::ManagedDeviceDataArrayPtr
+  typedef dax::cuda::cont::internal::DeviceArrayPtr
                                       <InputType> InputDataArrayPtr;
 
 
-  typedef dax::cuda::cont::internal::ManagedDeviceDataArray
+  typedef dax::cuda::cont::internal::DeviceArray
                                       <OutputType> OutputDataArray;
-  typedef dax::cuda::cont::internal::ManagedDeviceDataArrayPtr
+  typedef dax::cuda::cont::internal::DeviceArrayPtr
                                       <OutputType> OutputDataArrayPtr;
-
-
-
-  //  MapCellModule(SourceType& source, InputDeviceDataArrayPtr input,
-  //                OutputDeviceDataArrayPtr output):
-  //    Source(&source),Input(input),Output(output)
-  //    {}
 
   template <typename Module >
   MapCellModule(dax::cuda::cont::Model<ModelType> &m, const Module &module):
@@ -54,19 +47,17 @@ public:
 
   void compute()
   {
-    this->Output->Allocate(dax::cont::FieldSize(this->FieldType,this->Model));
+    this->Output->resize(dax::cont::FieldSize(this->FieldType,this->Model));
 
     const dax::cuda::exec::CudaParameters params(*this->Model);
+
+    //uses implicit constructor conversion from
+    //DeviceArray to DataArray
     Worklet().run(params,*this->Model,
-                         this->Input->GetArray(),
-                         this->Output->GetArray());
+                  this->Input,
+                  this->Output);
   }
 
-  void pullResults(std::vector<OutputType> &results)
-    {
-    results.resize(dax::cont::FieldSize(this->FieldType,this->Model));
-    this->Output->CopyToHost(results);
-    }
 
   OutputDataArrayPtr output() { return Output; }
 

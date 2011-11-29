@@ -11,7 +11,7 @@
 
 #include <dax/Types.h>
 #include <dax/cont/internal/FilterBase.h>
-#include <vector>
+#include <dax/cont/HostArray.h>
 
 #include "Model.h"
 #include "Modules.h"
@@ -45,9 +45,9 @@ public:
     this->AlreadyComputed = false;
   }
 
-  void pullResults(std::vector<OutputType> &data)
+  void pullResults(dax::cont::HostArray<OutputType> &data)
   {
-    Module.pullResults(data);
+    data = Module.output().get();
   }
 
   void compute()
@@ -74,9 +74,9 @@ public:
     this->AlreadyComputed = false;
   }
 
-  void pullResults(std::vector<OutputType> &data)
+  void pullResults(dax::cont::HostArray<OutputType> &data)
   {
-    Module.pullResults(data);
+    data = Module.output().get();
   }
 
   void compute()

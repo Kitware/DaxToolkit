@@ -10,7 +10,8 @@
 #include <cuda.h>
 
 // Includes for host code.
-#include <dax/cuda/cont/internal/ManagedDeviceDataArray.h>
+#include <dax/cuda/cont/internal/DeviceArray.h>
+#include <dax/cont/HostArray.h>
 
 // Includes for device code.
 #include <dax/internal/DataArray.h>
@@ -225,15 +226,11 @@ static void RunCellGradient(dax::internal::StructureUniformGrid &grid,
                             double &execute_time,
                             double &download_time)
 {
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar>
-      elevationResult(
-        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Scalar>());
-  elevationResult->Allocate(dax::internal::numberOfPoints(grid));
+  dax::cuda::cont::internal::DeviceArray<dax::Scalar> elevationResult(
+        dax::internal::numberOfPoints(grid));
 
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3>
-      gradientResult(
-        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Vector3>());
-  gradientResult->Allocate(dax::internal::numberOfCells(grid));
+  dax::cuda::cont::internal::DeviceArray<dax::Vector3> gradientResult(
+        dax::internal::numberOfCells(grid));
 
   boost::timer timer;
 
@@ -242,11 +239,11 @@ static void RunCellGradient(dax::internal::StructureUniformGrid &grid,
   timer.restart();
   ExecuteElevation<<<point_blockCount, point_threadsPerBlock>>>(
         grid,
-        elevationResult->GetArray());
+        elevationResult);
   ExecutePipeline1<<<cell_blockCount, cell_threadsPerBlock>>>(
         grid,
-        elevationResult->GetArray(),
-        gradientResult->GetArray());
+        elevationResult,
+        gradientResult);
   if (cudaThreadSynchronize() != cudaSuccess)
     {
     abort();
@@ -254,14 +251,12 @@ static void RunCellGradient(dax::internal::StructureUniformGrid &grid,
   execute_time = timer.elapsed();
 
   // Download the result, just to time it.
-  vector<dax::Vector3> hostResult(numberOfCells(grid));
-  dax::internal::DataArray<dax::Vector3> hostResultArray(&hostResult.at(0),
-                                                         hostResult.size());
+  dax::cont::HostArray<dax::Vector3> hostResult(numberOfCells(grid));
   timer.restart();
-  gradientResult->CopyToHost(hostResultArray);
+  hostResult = gradientResult;
   download_time = timer.elapsed();
 
-  PrintCheckValues(hostResultArray);
+  PrintCheckValues(hostResult);
 }
 
 static void RunCellGradientSinSqrCos(dax::internal::StructureUniformGrid &grid,
@@ -273,15 +268,11 @@ static void RunCellGradientSinSqrCos(dax::internal::StructureUniformGrid &grid,
                                      double &execute_time,
                                      double &download_time)
 {
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar>
-      elevationResult(
-        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Scalar>());
-  elevationResult->Allocate(dax::internal::numberOfPoints(grid));
+  dax::cuda::cont::internal::DeviceArray<dax::Scalar> elevationResult(
+        dax::internal::numberOfPoints(grid));
 
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Vector3>
-      finalResult(
-        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Vector3>());
-  finalResult->Allocate(dax::internal::numberOfCells(grid));
+  dax::cuda::cont::internal::DeviceArray<dax::Vector3> finalResult(
+        dax::internal::numberOfCells(grid));
 
   boost::timer timer;
 
@@ -290,11 +281,11 @@ static void RunCellGradientSinSqrCos(dax::internal::StructureUniformGrid &grid,
   timer.restart();
   ExecuteElevation<<<point_blockCount, point_threadsPerBlock>>>(
         grid,
-        elevationResult->GetArray());
+        elevationResult);
   ExecutePipeline2<<<cell_blockCount, cell_threadsPerBlock>>>(
         grid,
-        elevationResult->GetArray(),
-        finalResult->GetArray());
+        elevationResult,
+        finalResult);
   if (cudaThreadSynchronize() != cudaSuccess)
     {
     abort();
@@ -302,14 +293,12 @@ static void RunCellGradientSinSqrCos(dax::internal::StructureUniformGrid &grid,
   execute_time = timer.elapsed();
 
   // Download the result, just to time it.
-  vector<dax::Vector3> hostResult(numberOfCells(grid));
-  dax::internal::DataArray<dax::Vector3> hostResultArray(&hostResult.at(0),
-                                                         hostResult.size());
+  dax::cont::HostArray<dax::Vector3> hostResult(numberOfCells(grid));
   timer.restart();
-  finalResult->CopyToHost(hostResultArray);
+  hostResult = finalResult;
   download_time = timer.elapsed();
 
-  PrintCheckValues(hostResultArray);
+  PrintCheckValues(hostResult);
 }
 
 static void RunSinSqrCos(dax::internal::StructureUniformGrid &grid,
@@ -319,10 +308,8 @@ static void RunSinSqrCos(dax::internal::StructureUniformGrid &grid,
                          double &execute_time,
                          double &download_time)
 {
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<dax::Scalar>
-      finalResult(
-        new dax::cuda::cont::internal::ManagedDeviceDataArray<dax::Scalar>());
-  finalResult->Allocate(dax::internal::numberOfPoints(grid));
+  dax::cuda::cont::internal::DeviceArray<dax::Scalar> finalResult(
+        dax::internal::numberOfPoints(grid));
 
   boost::timer timer;
 
@@ -331,7 +318,7 @@ static void RunSinSqrCos(dax::internal::StructureUniformGrid &grid,
   timer.restart();
   ExecutePipeline3<<<point_blockCount, point_threadsPerBlock>>>(
         grid,
-        finalResult->GetArray());
+        finalResult);
   if (cudaThreadSynchronize() != cudaSuccess)
     {
     abort();
@@ -339,14 +326,13 @@ static void RunSinSqrCos(dax::internal::StructureUniformGrid &grid,
   execute_time = timer.elapsed();
 
   // Download the result, just to time it.
-  vector<dax::Scalar> hostResult(numberOfPoints(grid));
-  dax::internal::DataArray<dax::Scalar> hostResultArray(&hostResult.at(0),
-                                                        hostResult.size());
+  dax::cont::HostArray<dax::Scalar> hostResult;
+
   timer.restart();
-  finalResult->CopyToHost(hostResultArray);
+  hostResult = finalResult;
   download_time = timer.elapsed();
 
-  PrintCheckValues(hostResultArray);
+  PrintCheckValues(hostResult);
 }
 
 
