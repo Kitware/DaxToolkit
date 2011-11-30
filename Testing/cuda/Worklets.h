@@ -5,9 +5,9 @@
 #include <dax/Types.h>
 
 #include <dax/cuda/cont/Modules.h>
+#include <dax/cont/StructuredGrid.h>
 
 #include <dax/internal/DataArray.h>
-#include <dax/internal/GridStructures.h>
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapCell.h>
@@ -24,7 +24,8 @@
 #include <Worklets/Square.worklet>
 
 //this will need to be auto moc'ed from looking at the worklet
-__global__ void ComputeElevation(dax::internal::StructureUniformGrid input,
+template<typename GridType>
+__global__ void ComputeElevation(GridType input,
                                dax::internal::DataArray<dax::Scalar> output)
 {
   dax::Id pointIndex = (blockIdx.x * blockDim.x) + threadIdx.x;
@@ -43,8 +44,9 @@ __global__ void ComputeElevation(dax::internal::StructureUniformGrid input,
     }
 }
 
+template<typename GridType>
 //this will need to be auto moc'ed from looking at the worklet
-__global__ void ComputeGradient(dax::internal::StructureUniformGrid source,
+__global__ void ComputeGradient(GridType source,
                               dax::internal::DataArray<dax::Scalar> input,
                               dax::internal::DataArray<dax::Vector3> output)
 {
@@ -67,34 +69,56 @@ __global__ void ComputeGradient(dax::internal::StructureUniformGrid source,
 
 struct ElevationWorklet
 {
-  typedef dax::internal::StructureUniformGrid ModelType;
   typedef dax::Scalar OutputType;
 
+  template<typename GridType>
   void run(const dax::cuda::exec::CudaParameters &params,
-          dax::internal::StructureUniformGrid input,
+          GridType& input,
           dax::internal::DataArray<dax::Scalar> output)
-    {
-    std::cout << "Execute Elevation Worklet" << std::endl;
-    ComputeElevation<<<params.numPointBlocks(),
-        params.numPointThreads()>>>(input,output);
+    {    
+    dax::cont::StructuredGrid *sg =
+        dynamic_cast<dax::cont::StructuredGrid*>(&input);
+    if(sg)
+      {
+      dax::internal::StructureUniformGrid grid;
+      grid.Origin = sg->Origin;
+      grid.Spacing = sg->Spacing;
+      grid.Extent.Max = sg->Extent.Max;
+      grid.Extent.Min = sg->Extent.Min;
+
+      std::cout << "Execute Elevation Worklet" << std::endl;
+      ComputeElevation<<<params.numPointBlocks(),
+        params.numPointThreads()>>>(grid,output);
+      }
     }
 };
 
 struct GradientWorklet
-{  
-  typedef dax::internal::StructureUniformGrid ModelType;
+{
   typedef dax::Scalar InputType;
   typedef dax::Vector3 OutputType;
 
   //this will need to be auto moc'ed from looking at the worklet
+  template<typename GridType>
   void run(const dax::cuda::exec::CudaParameters &params,
-          dax::internal::StructureUniformGrid source,
+          GridType& source,
           dax::internal::DataArray<dax::Scalar> input,
           dax::internal::DataArray<dax::Vector3> output)
   {
-  std::cout << "Execute Gradient Worklet" << std::endl;
-  ComputeGradient<<<params.numPointBlocks(),
-      params.numPointThreads()>>>(source,input,output);
+  dax::cont::StructuredGrid *sg =
+      dynamic_cast<dax::cont::StructuredGrid*>(&source);
+  if(sg)
+    {
+    dax::internal::StructureUniformGrid grid;
+    grid.Origin = sg->Origin;
+    grid.Spacing = sg->Spacing;
+    grid.Extent.Max = sg->Extent.Max;
+    grid.Extent.Min = sg->Extent.Min;
+
+    std::cout << "Execute Gradient Worklet" << std::endl;
+    ComputeGradient<<<params.numPointBlocks(),
+      params.numPointThreads()>>>(grid,input,output);
+    }
   }
 };
 

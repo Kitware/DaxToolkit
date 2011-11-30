@@ -2,17 +2,20 @@
 #define __dax_cont_DataSet_h
 
 #include <vector>
+#include <dax/cont/internal/BaseArray.h>
 #include <dax/cont/HostArray.h>
 
 namespace dax { namespace cont {
 class DataSet
 {
 public:
-  typedef dax::internal::BaseArray Field;
-  typedef dax::Coordinates Coordinates;
+  typedef dax::cont::internal::BaseArray Field;
+  typedef dax::cont::HostArray<dax::Vector3> Coordinates;
 
   DataSet( const std::size_t& numPoints, const std::size_t& numCells);
   DataSet();
+  DataSet( const dax::cont::DataSet& ds);
+
   virtual ~DataSet(){}
 
   std::size_t numPoints() const { return NumPoints; }
@@ -44,7 +47,6 @@ private:
   bool removeField(const std::string& n,std::vector<Field*>& fields);
   Field* getField(const std::string& n, std::vector<Field*>& fields);
 
-  DataSet(const DataSet&);
   void operator=(const DataSet&);
 };
 
@@ -59,6 +61,17 @@ DataSet::DataSet():
   NumPoints(0), NumCells(0)
 {
 }
+
+//------------------------------------------------------------------------------
+DataSet::DataSet( const dax::cont::DataSet& ds):
+  NumPoints(ds.numPoints()),
+  NumCells(ds.numCells()),
+  PointFields(ds.PointFields),
+  CellFields(ds.CellFields)
+{
+
+}
+
 
 //------------------------------------------------------------------------------
 bool DataSet::addPointField(Field* field)
@@ -134,6 +147,8 @@ bool DataSet::removeField(const std::string& n, std::vector<Field*>& fields)
     }
   return false;
 }
+
+} }
 
 
 

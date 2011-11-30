@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <iostream>
 
-#include <dax/internal/GridStructures.h>
+#include <dax/cont/StructuredGrid.h>
 #include <dax/cuda/cont/Executive.h>
 #include <dax/cuda/cont/MapCellModule.h>
 #include <dax/cuda/cont/MapFieldModule.h>
@@ -17,19 +17,20 @@
 #include "Worklets.h"
 
 
-static dax::internal::StructureUniformGrid CreateInputStructure(dax::Id dim)
+static dax::cont::StructuredGrid CreateInputStructure(dax::Id dim)
 {
-  dax::internal::StructureUniformGrid grid;
-  grid.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
-  grid.Spacing = dax::make_Vector3(1.0, 1.0, 1.0);
-  grid.Extent.Min = dax::make_Id3(0, 0, 0);
-  grid.Extent.Max = dax::make_Id3(dim-1, dim-1, dim-1);
+  dax::cont::StructuredGrid grid(
+    dax::make_Vector3(0.0, 0.0, 0.0),
+    dax::make_Vector3(1.0, 1.0, 1.0),
+    dax::make_Id3(0, 0, 0),
+    dax::make_Id3(dim-1, dim-1, dim-1) );
+
   return grid;
 }
 
 static void PrintCheckValues(const dax::internal::DataArray<dax::Vector3> &array)
 {
-  std::cout << "PrintCheckValues" << std::endl;   
+  std::cout << "PrintCheckValues" << std::endl;
   for (dax::Id index = 0; index < array.GetNumberOfEntries(); index++)
     {
     dax::Vector3 value = array.GetValue(index);
@@ -50,7 +51,7 @@ static void PrintCheckValues(const dax::internal::DataArray<dax::Vector3> &array
 }
 
 template<typename T>
-void ExecutePipeline(T data)
+void ExecutePipeline(T& data)
 {
   using namespace dax::cont;
 
@@ -64,13 +65,13 @@ void ExecutePipeline(T data)
 
   Pull(gradient,gradientResults);
   PrintCheckValues(gradientResults);
+
+  data.addCellField(&gradientResults);
 }
 
 int main(int argc, char* argv[])
 {
-  dax::internal::StructureUniformGrid grid = CreateInputStructure(32);
+  dax::cont::StructuredGrid grid = CreateInputStructure(32);
   ExecutePipeline(grid);
-
-  //ExecuteSinSquareCos(grid,dax::cont::PointField());
   return 0;
 }

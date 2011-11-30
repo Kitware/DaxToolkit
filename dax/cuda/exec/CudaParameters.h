@@ -11,12 +11,12 @@ class CudaParameters
   //number of threads and blocks to run on the current cuda card
 public:
   template< typename T>
-  CudaParameters(T source):
+  CudaParameters(const T& source):
     NumPointThreads(128),
     NumCellThreads(128)
   {
-    dax::Id numPts = dax::internal::numberOfPoints(source);
-    dax::Id numCells = dax::internal::numberOfCells(source);
+    dax::Id numPts = source.numPoints();
+    dax::Id numCells = source.numCells();
 
     NumPointBlocks = (numPts+NumPointThreads-1)/NumPointThreads;
     NumCellBlocks = (numCells+NumPointThreads-1)/NumPointThreads;

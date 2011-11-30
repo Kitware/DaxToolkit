@@ -2,6 +2,8 @@
 #define __dax_cuda_cont_MapCellModule_h
 
 #include <dax/cont/FilterFieldTypes.h>
+#include <dax/cont/DataSet.h>
+
 #include <dax/cuda/cont/Model.h>
 #include <dax/cuda/cont/internal/DeviceArray.h>
 #include <dax/cuda/exec/CudaParameters.h>
@@ -13,7 +15,7 @@ template< typename Worklet>
 class MapCellModule
 {
 public:
-  typedef typename Worklet::ModelType ModelType;
+  typedef typename dax::cont::DataSet ModelType;
   typedef typename Worklet::InputType InputType;
   typedef typename Worklet::OutputType OutputType;
 
@@ -28,8 +30,8 @@ public:
   typedef dax::cuda::cont::internal::DeviceArrayPtr
                                       <OutputType> OutputDataArrayPtr;
 
-  template <typename Module >
-  MapCellModule(dax::cuda::cont::Model<ModelType> &m, const Module &module):
+  template <typename MT, typename Module >
+  MapCellModule(dax::cuda::cont::Model<MT> &m, const Module &module):
     Input(module.output()),
     Output( new OutputDataArray() ),
     FieldType( new dax::cont::CellField()),

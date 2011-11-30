@@ -67,11 +67,11 @@ dax::Id FieldSize(F *field,T *t )
 {
   if(field->type()== FieldType::POINTS)
     {
-    return dax::cont::PointField::size(t);
+    return t->numPoints();
     }
   else if(field->type() == FieldType::CELLS)
     {
-    return dax::cont::CellField::size(t);
+    return t->numCells();
     }
   return -1;
 }
