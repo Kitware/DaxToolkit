@@ -6,7 +6,16 @@
 #
 #=========================================================================
 
-if (DAX_ENABLE_CUDA)
-  add_subdirectory(cuda)
-endif (DAX_ENABLE_CUDA)
-add_subdirectory(PortConcept)
+#-----------------------------------------------------------------------------
+include_directories(${Boost_INCLUDE_DIRS})
+
+#-----------------------------------------------------------------------------
+add_executable(PortsTest
+  main.cxx  
+  Concept.h
+
+)
+
+target_link_libraries(PortsTest
+  ${BOOST_LIBRARIES}
+  )
