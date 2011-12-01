@@ -17,5 +17,6 @@ add_executable(PortsTest
 )
 
 target_link_libraries(PortsTest
+  daxCont
   ${BOOST_LIBRARIES}
   )

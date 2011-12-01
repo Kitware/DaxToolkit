@@ -7,56 +7,63 @@
 #include <vector>
 #include <assert.h>
 
+#include <boost/shared_ptr.hpp>
+#include <dax/cont/StructuredGrid.h>
 
-//------------------------------------------------------------------------------
-struct Grid
-{
-  //copy constructor
-  Grid():
-    NumPoints(-1),NumCells(-1)
-  {}
-
-  Grid(const Grid& copy_from_me):
-    NumPoints(copy_from_me.NumPoints),NumCells(copy_from_me.NumCells)
-  {}
-
-  Grid(const int Points, const int Cells):NumPoints(Points),NumCells(Cells)
-  {}
-
-  int NumPoints;
-  int NumCells;
-};
-
-//------------------------------------------------------------------------------
-int numberOfPoints(const Grid &gridstructure)
-{
-  return gridstructure.NumPoints;
-}
-
-//------------------------------------------------------------------------------
-int numberOfCells(const Grid &gridstructure)
-{
-  return gridstructure.NumCells;
-}
 
 //------------------------------------------------------------------------------
 struct field_type
 {
-  virtual int size(const Grid &grid) const {return -1;}
-  virtual std::string type() const {return "field";}
-  virtual field_type* clone() const = 0;
+  field_type(){}
+
+  virtual ~field_type()
+  {
+  }
+  virtual int size(const dax::cont::DataSet* grid) const = 0;
+  virtual std::string type() const = 0;
+  virtual field_type* clone() const = 0;  
+  std::string name;
+};
+
+//------------------------------------------------------------------------------
+struct field_unkown : public field_type
+{
+
+  field_unkown()
+  {
+    name="unkown";
+  }
+  ~field_unkown(){}
+
+  int size(const dax::cont::DataSet* grid) const
+  {
+    return 0;
+  }
+
+  std::string type() const {return name;}
+
+  field_unkown* clone() const
+  {
+    return new field_unkown;
+  }
 };
 
 //------------------------------------------------------------------------------
 struct field_points : public field_type
 {
 
-  int size(const Grid &grid) const
+  field_points()
   {
-    return numberOfPoints(grid);
+    name="points";
+  }
+  ~field_points(){}
+
+  int size(const dax::cont::DataSet* grid) const
+  {
+    return grid->numPoints();
   }
 
-  std::string type() const {return "points";}
+  std::string type() const {return name;}
 
   field_points* clone() const
   {
@@ -67,12 +74,19 @@ struct field_points : public field_type
 //------------------------------------------------------------------------------
 struct field_cells : public field_type
 {
-  int size(const Grid &grid) const
+  field_cells()
   {
-    return numberOfCells(grid);
+    name="cells";
   }
 
-  std::string type() const {return "cells";}
+  ~field_cells(){}
+
+  int size(const dax::cont::DataSet* grid) const
+  {
+    return grid->numCells();
+  }
+
+  std::string type() const {return name;}
 
   field_cells* clone() const
   {
@@ -85,40 +99,40 @@ class Port
 {
 public:
 
-  //default constructor with an empty grid
+  //default constructor with an empty DataSet_
   Port():
-    G(Grid(-1,-1)), FieldType(NULL)
-  {}
+    DataSet_(NULL), FieldType(new field_unkown())
+  {
+  }
+
+  Port(Port& copy_from_me):
+    DataSet_(copy_from_me.DataSet_), FieldType(copy_from_me.FieldType->clone())
+  {
+  }
 
   //copy constructor
   Port(const Port& copy_from_me):
-    G(copy_from_me.G), FieldType(copy_from_me.FieldType->clone())
+    DataSet_(copy_from_me.DataSet_), FieldType(copy_from_me.FieldType->clone())
   {
-    //hack to make sure the FauxProperty is the right size
-    this->FauxProperty.resize(this->FieldType->size(this->G),1);
   }
 
-  //create a connection data based on the grid g, and the
+  //create a connection data based on the DataSet_ g, and the
   //passed in templated type
   template<typename T>
-  Port(const Grid &g, const T&):
-    G(g), FieldType(new T)
+  Port(dax::cont::DataSet *g, const T& t):
+    DataSet_(g), FieldType(t.clone())
   {
-    //hack to make sure the FauxProperty is the right size
-    this->FauxProperty.resize(this->FieldType->size(this->G),1);
   }
 
   template<typename T>
-  Port(const Port &copy_grid_from_me, const T&):
-    G(copy_grid_from_me.G), FieldType(new T)
-  {
-    //hack to make sure the FauxProperty is the right size
-    this->FauxProperty.resize(this->FieldType->size(this->G),1);
+  Port(const Port &copy_DataSet__from_me, const T& t):
+    DataSet_(copy_DataSet__from_me.DataSet_), FieldType(t.clone())
+  {    
   }
 
   Port& operator=(const Port& op)
   {
-    this->G=op.G;
+    this->DataSet_=op.DataSet_;
 
     if(this->FieldType)
       {
@@ -140,7 +154,7 @@ public:
 
   int size() const
   {    
-    return this->FieldType->size(this->G);
+    return this->FieldType->size(this->DataSet_);
   }
 
   std::string fieldType() const
@@ -148,12 +162,20 @@ public:
   return this->FieldType->type();
   }
 
-  const field_type* getFieldType() const { return FieldType; }
+  const field_type& getFieldType() const { return *FieldType; }
 
-  bool hasModel() const { return (G.NumCells > 0 && G.NumPoints > 0); }
+  bool hasModel() const { return (this->DataSet_ &&
+                                  this->DataSet_->numCells() > 0 &&
+                                  this->DataSet_->numPoints() > 0); }
 
 
   bool isValid() const { return FieldType!=NULL; }
+
+  void initProp() const
+  {
+    //hack to make sure the FauxProperty is the right size
+    this->FauxProperty.resize(this->FieldType->size(this->DataSet_),1);
+  }
 
   //the port should be holding an array that
   //we than using an iterator on!
@@ -167,10 +189,15 @@ public:
     return *(&FauxProperty[idx]);
   }
 
+  dax::cont::DataSet* dataSet() const
+  {
+    return this->DataSet_;
+  }
+
 protected:
   std::vector<dax::Scalar> FauxProperty;
   field_type* FieldType;
-  Grid G;
+  dax::cont::DataSet* DataSet_;
 };
 
 //------------------------------------------------------------------------------
@@ -178,7 +205,7 @@ template < typename T>
 class Model
 {
 public:
-  Model(T& data):Data(data)
+  Model(T& data):Data(&data)
   {
 
   }
@@ -202,7 +229,7 @@ public:
     return Port(Data,field_cells());
   }
 
-  T Data;
+  T* Data;
 };
 
 //------------------------------------------------------------------------------
@@ -266,7 +293,7 @@ public:
 
   virtual const Port& inputPort(const int idx=0) const
   {
-    return *(InputPorts[idx]);
+    return *(&InputPorts[idx]);
   }
 
   virtual size_t numberOfInputPorts() const { return InputPorts.size(); }
@@ -274,7 +301,7 @@ public:
   virtual size_t numberOfOutputPorts()  const { return OutputPorts.size(); }
 
 protected:
-  std::vector<const Port*> InputPorts;
+  std::vector<Port> InputPorts;
   std::vector<Port> OutputPorts;
   const int NumInputs;
   const int NumOutputs;
@@ -287,11 +314,11 @@ private:
     this->OutputPorts = std::vector<Port>(NumOutputs,output);
 
     //keep a reference to all the used input ports
-    this->InputPorts.push_back(&input1);
-    this->InputPorts.push_back(&input2);
-    this->InputPorts.push_back(&input3);
-    this->InputPorts.push_back(&input4);
-    this->InputPorts.push_back(&input5);
+    this->InputPorts.push_back(input1);
+    this->InputPorts.push_back(input2);
+    this->InputPorts.push_back(input3);
+    this->InputPorts.push_back(input4);
+    this->InputPorts.push_back(input5);
     this->InputPorts.resize(NumInputs);
   }
 
@@ -393,59 +420,88 @@ public:
 };
 
 //------------------------------------------------------------------------------
-template < typename Functor >
+template < typename Worklet>
+class ChangeDataSetModule: public Module  //aka Change Topology
+{
+public:
+   //copy inputs data, and set field to point
+  ChangeDataSetModule(const Port& input):
+    Module(Worklet::NumInputs,Worklet::NumOutputs,input)
+  {
+    STATIC_ASSERT(Worklet::NumInputs==1,Incorrect_Number_Of_Parameters);
+
+    //instead of using the default output ports we need to set
+    //them to the new data set that this worklet is generating
+    std::vector<Port>::iterator it;
+    Worklet work;
+    for(int i=0;i<this->numberOfOutputPorts();++i)
+      {
+      this->OutputPorts[i] = Port(work.requestDataSet(i,this->InputPorts),
+                                  this->InputPorts[i].getFieldType());
+      }
+
+  }
+
+  void run()
+  {
+    std::cout << "Executing " << Worklet().name() << std::endl;
+    Worklet()(this->InputPorts,this->OutputPorts);
+  }
+};
+
+//------------------------------------------------------------------------------
+template < typename ModuleFunction >
 class Filter
 {
 public:
-  typedef Functor Function;
 
   Filter(const Port& input):
-    Funct(input)
+    Module_(input)
   {}
 
   Filter(const Port& input, const Port& input2):
-    Funct(input,input2)
+    Module_(input,input2)
   {}
 
   Filter(const Port& input, const Port& input2, const Port& input3):
-    Funct(input,input2,input3)
+    Module_(input,input2,input3)
   {}
 
   Filter(const Port& input, const Port& input2, const Port& input3,
          const Port& input4):
-    Funct(input,input2,input3,input4)
+    Module_(input,input2,input3,input4)
   {}
 
 
-  template <typename FunctorA>
-  Filter(Filter<FunctorA>& inputFilter):
-    Funct(inputFilter.outputPort())
+  template <typename ModuleFunctionA>
+  Filter(Filter<ModuleFunctionA>& inputFilter):
+    Module_(inputFilter.outputPort())
   {
 
   }
 
-  template <typename FunctorA, typename FunctorB>
-  Filter(Filter<FunctorA>& inputFilter, Filter<FunctorB>& inputFilter2):
-    Funct(inputFilter.outputPort(),
+  template <typename ModuleFunctionA, typename ModuleFunctionB>
+  Filter(Filter<ModuleFunctionA>& inputFilter, Filter<ModuleFunctionB>& inputFilter2):
+    Module_(inputFilter.outputPort(),
           inputFilter2.outputPort())
   {
 
   }
 
-  template <typename FunctorA, typename FunctorB, typename FunctorC>
-  Filter(Filter<FunctorA>& inputFilterA, Filter<FunctorB>& inputFilterB,
-         Filter<FunctorC>& inputFilterC):
-    Funct(inputFilterA.outputPort(),
+  template <typename ModuleFunctionA, typename ModuleFunctionB, typename ModuleFunctionC>
+  Filter(Filter<ModuleFunctionA>& inputFilterA, Filter<ModuleFunctionB>& inputFilterB,
+         Filter<ModuleFunctionC>& inputFilterC):
+    Module_(inputFilterA.outputPort(),
           inputFilterB.outputPort(),
           inputFilterC.outputPort())
   {
 
   }
 
-  template <typename FunctorA, typename FunctorB, typename FunctorC, typename FunctorD>
-  Filter(Filter<FunctorA>& inputFilterA, Filter<FunctorB>& inputFilterB,
-          Filter<FunctorC>& inputFilterC, Filter<FunctorD>& inputFilterD):
-    Funct(inputFilterA.outputPort(),
+  template <typename ModuleFunctionA, typename ModuleFunctionB, typename ModuleFunctionC, typename ModuleFunctionD>
+  Filter(Filter<ModuleFunctionA>& inputFilterA, Filter<ModuleFunctionB>& inputFilterB,
+          Filter<ModuleFunctionC>& inputFilterC, Filter<ModuleFunctionD>& inputFilterD):
+    Module_(inputFilterA.outputPort(),
           inputFilterB.outputPort(),
           inputFilterC.outputPort(),
           inputFilterD.outputPort())
@@ -455,7 +511,7 @@ public:
 
   const Port& outputPort(const int index=0) const
   {
-    return Funct.outputPort(index);
+    return Module_.outputPort(index);
   }
 
   std::string fieldType(const int index=0) const
@@ -463,17 +519,18 @@ public:
     return this->outputPort(index).fieldType();
   }
 
-  std::string isMergeable() const
+  int size(const int index=0) const
   {
-    return Funct.isMergeable() ? "True":"False";
+    return this->outputPort(index).size();
   }
 
   void run()
   {
-    Funct.run();
+    std::cout << "starting run" << std::endl;
+     Module_.run();
   }
 
-  Function Funct;
+  ModuleFunction Module_;
 };
 
 #endif

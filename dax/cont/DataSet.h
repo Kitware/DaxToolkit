@@ -18,8 +18,8 @@ public:
 
   virtual ~DataSet(){}
 
-  std::size_t numPoints() const { return NumPoints; }
-  std::size_t numCells() const { return NumCells; }
+  virtual std::size_t numPoints() const { return NumPoints; }
+  virtual std::size_t numCells() const { return NumCells; }
 
   std::size_t numPointFields() const { return PointFields.size(); }
   std::size_t numCellFields() const { return CellFields.size(); }
