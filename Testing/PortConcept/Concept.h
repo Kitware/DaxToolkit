@@ -279,38 +279,6 @@ protected:
 };
 
 //------------------------------------------------------------------------------
-template < typename T>
-class Model
-{
-public:
-  Model(T& data):Data(&data)
-  {
-
-  }
-  Port pointField(const std::string& name) const
-  {
-  return Port(Data, Data->pointField(name), field_points());
-  }
-
-  Port points() const
-  {
-    return Port(Data, field_pointCoords());
-  }
-
-  Port cellField(const std::string& name) const
-  {
-    return Port(Data, Data->cellField(name), field_cells());
-  }
-
-  Port topology() const
-  {
-    return Port(Data, field_topology());
-  }
-
-  T* Data;
-};
-
-//------------------------------------------------------------------------------
 class Module
 {
 public:
@@ -576,90 +544,5 @@ public:
     Worklet()(this->InputPorts,this->OutputPorts);
   }
 };
-
-//------------------------------------------------------------------------------
-template < typename ModuleFunction >
-class Filter
-{
-public:
-
-  Filter(const Port& input):
-    Module_(input)
-  {}
-
-  Filter(const Port& input, const Port& input2):
-    Module_(input,input2)
-  {}
-
-  Filter(const Port& input, const Port& input2, const Port& input3):
-    Module_(input,input2,input3)
-  {}
-
-  Filter(const Port& input, const Port& input2, const Port& input3,
-         const Port& input4):
-    Module_(input,input2,input3,input4)
-  {}
-
-
-  template <typename ModuleFunctionA>
-  Filter(Filter<ModuleFunctionA>& inputFilter):
-    Module_(inputFilter.outputPort())
-  {
-
-  }
-
-  template <typename ModuleFunctionA, typename ModuleFunctionB>
-  Filter(Filter<ModuleFunctionA>& inputFilter, Filter<ModuleFunctionB>& inputFilter2):
-    Module_(inputFilter.outputPort(),
-          inputFilter2.outputPort())
-  {
-
-  }
-
-  template <typename ModuleFunctionA, typename ModuleFunctionB, typename ModuleFunctionC>
-  Filter(Filter<ModuleFunctionA>& inputFilterA, Filter<ModuleFunctionB>& inputFilterB,
-         Filter<ModuleFunctionC>& inputFilterC):
-    Module_(inputFilterA.outputPort(),
-          inputFilterB.outputPort(),
-          inputFilterC.outputPort())
-  {
-
-  }
-
-  template <typename ModuleFunctionA, typename ModuleFunctionB, typename ModuleFunctionC, typename ModuleFunctionD>
-  Filter(Filter<ModuleFunctionA>& inputFilterA, Filter<ModuleFunctionB>& inputFilterB,
-          Filter<ModuleFunctionC>& inputFilterC, Filter<ModuleFunctionD>& inputFilterD):
-    Module_(inputFilterA.outputPort(),
-          inputFilterB.outputPort(),
-          inputFilterC.outputPort(),
-          inputFilterD.outputPort())
-  {
-
-  }
-
-  const Port& outputPort(const int index=0) const
-  {
-    return Module_.outputPort(index);
-  }
-
-  std::string fieldType(const int index=0) const
-  {
-    return this->outputPort(index).fieldType();
-  }
-
-  int size(const int index=0) const
-  {
-    return this->outputPort(index).size();
-  }
-
-  void execute()
-  {
-    std::cout << "starting run" << std::endl;
-     Module_.execute();
-  }
-
-  ModuleFunction Module_;
-};
-
 #endif
 

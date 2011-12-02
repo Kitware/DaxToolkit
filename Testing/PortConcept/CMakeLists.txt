@@ -11,7 +11,8 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 #-----------------------------------------------------------------------------
 add_executable(PortsTest
-  main.cxx  
+  main.cxx
+  PortGenerators.h
   Concept.h
 
 )

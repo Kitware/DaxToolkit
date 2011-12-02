@@ -14,8 +14,8 @@
 #include <dax/cont/StructuredGrid.h>
 #include <dax/cont/HostArray.h>
 
-#include "PortGenerators.h"
-#include "Concept.h"
+#include "Model.h"
+#include "Filters.h"
 #include "Worklets.h"
 
 
@@ -52,17 +52,6 @@ dax::cont::StructuredGrid CreateInputStructure(dax::Id dim)
   grid.addCellField(testCData);
 
   return grid;
-}
-
-void RuntimeFields()
-{
-  std::cout << "RuntimeFields" << std::endl;
-  dax::cont::StructuredGrid grid = CreateInputStructure(32);
-  Model<dax::cont::StructuredGrid> model(grid);
-
-  Filter< Elevation > m(model.points());
-  std::cout << "Field type is " << m.fieldType() << std::endl;
-  m.execute();
 }
 
 void ConnectFilterFields()
@@ -109,7 +98,7 @@ void ConnectCellWithPoint()
   Model<dax::cont::StructuredGrid> model(grid);
 
   Filter< Elevation > Filter1(model.points());
-  Filter< CellGradient > Filter2(model.topology(),Filter1.outputPort(0));
+  Filter< CellGradient > Filter2(model.topology(),Filter1.output(0));
 
   std::cout << "Filter1 Field Type: " << Filter1.fieldType() << std::endl;
   std::cout << "Filter2 Field Type: " << Filter2.fieldType() << std::endl;
@@ -121,11 +110,11 @@ void ConnectCellWithPoint2()
   dax::cont::StructuredGrid grid = CreateInputStructure(32);
   Model<dax::cont::StructuredGrid> model(grid);
 
-  Filter< Cosine > Filter1(model.pointField("pointArray"));  
+  Filter< Cosine > Filter1(model.pointField("pointArray"));
   Filter< CellGradient > Filter2(Filter1,Filter1);
 
   std::cout << "Filter1 Field Type: " << Filter1.fieldType() << std::endl;
-  std::cout << "Filter2 Field Type: " << Filter2.fieldType() << std::endl;  
+  std::cout << "Filter2 Field Type: " << Filter2.fieldType() << std::endl;
 }
 
 void ConnectCellToPoint()
@@ -162,14 +151,17 @@ void ChangeGrid()
 {
   std::cout << "ConnectCellToPoint" << std::endl;
   dax::cont::StructuredGrid grid = CreateInputStructure(32);
+  Model<dax::cont::StructuredGrid> model(grid);
 
-  Filter< Square > Filter1( pointField(grid, "pointArray") );
+  Filter< Square > Filter1( model.pointField("pointArray") );
 
-  //we have to make it easy to express changing the the model/port
-  //that filters are working on
+  //topology is a function that creates a connection
+  //between Filter1 and Filter2 so that Filter2 requires
+  //Filter1 to be executed. We also encode the type of connection
+  //so here we know it is
   Filter< NewGridOutput > Filter2( topology(Filter1) );
 
-  //this is also a problem we need
+  //we know cleary state that we are doing sine on a pointField
   Filter< Sine > FilterTest( pointField(Filter2, "pointArray") );
 
   std::cout << "Filter1 Field Type: " << Filter1.fieldType() << std::endl;
@@ -179,13 +171,9 @@ void ChangeGrid()
   std::cout << "Filter1 array length " << Filter1.size() << std::endl;
   std::cout << "FilterTest array length " << FilterTest.size() << std::endl;
 
-  //because of the usage of Ports we can't tie filters together
-  //we need to look at having two things.
-  //Ports tie modules togther.
-  //Connections tie Filters together.
+
   Filter1.execute();
   Filter2.execute();
-
   try
     {
     FilterTest.execute();
@@ -202,7 +190,6 @@ void ChangeGrid()
 
 int main(int argc, char* argv[])
 {
-  RuntimeFields();
   ConnectFilterFields();
   ConnectPointToCell1();
   ConnectCellWithPoint();
