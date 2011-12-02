@@ -9,6 +9,7 @@ class BaseArray
 public:
   virtual ~BaseArray(){}
   virtual std::string name() const=0;
+  virtual std::size_t size() const=0;
   };
 
 } } }

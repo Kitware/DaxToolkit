@@ -7,9 +7,13 @@
 #include <vector>
 #include <assert.h>
 
-#include <boost/any.hpp>
+#include <boost/exception/all.hpp>
 #include <boost/shared_ptr.hpp>
 #include <dax/cont/StructuredGrid.h>
+
+struct exception_base: virtual std::exception, virtual boost::exception { };
+struct module_error: virtual exception_base { };
+struct invalid_module_input: virtual module_error { };
 
 
 //------------------------------------------------------------------------------
@@ -21,6 +25,12 @@ struct field_type
   {
   }
   virtual int size(const dax::cont::DataSet* grid) const = 0;
+  virtual bool validData(const dax::cont::DataSet* grid,
+                         const dax::cont::internal::BaseArray* array)
+  {
+    return grid!=NULL;
+  }
+
   virtual std::string type() const = 0;
   virtual field_type* clone() const = 0;  
   std::string name;
@@ -64,6 +74,13 @@ struct field_points : public field_type
     return grid->numPoints();
   }
 
+  virtual bool validData(const dax::cont::DataSet* grid,
+                         const dax::cont::internal::BaseArray* array)
+  {
+    return (grid!=NULL && array!=NULL && this->size(grid) == array->size());
+  }
+
+
   std::string type() const {return name;}
 
   field_points* clone() const
@@ -87,11 +104,63 @@ struct field_cells : public field_type
     return grid->numCells();
   }
 
+  virtual bool validData(const dax::cont::DataSet* grid,
+                         const dax::cont::internal::BaseArray* array)
+  {
+    return (grid!=NULL && array!=NULL && this->size(grid) == array->size());
+  }
+
   std::string type() const {return name;}
 
   field_cells* clone() const
   {
     return new field_cells;
+  }
+};
+
+//------------------------------------------------------------------------------
+struct field_pointCoords : public field_type
+{
+  field_pointCoords()
+  {
+    name="point coords";
+  }
+
+  ~field_pointCoords(){}
+
+  int size(const dax::cont::DataSet* grid) const
+  {
+    return grid->numPoints();
+  }
+
+  std::string type() const {return name;}
+
+  field_pointCoords* clone() const
+  {
+    return new field_pointCoords;
+  }
+};
+
+//------------------------------------------------------------------------------
+struct field_topology : public field_type
+{
+  field_topology()
+  {
+    name="topology";
+  }
+
+  ~field_topology(){}
+
+  int size(const dax::cont::DataSet* grid) const
+  {
+    return grid->numCells();
+  }
+
+  std::string type() const {return name;}
+
+  field_topology* clone() const
+  {
+    return new field_topology;
   }
 };
 
@@ -132,6 +201,16 @@ public:
     FieldType(t.clone())
   {
   }
+
+  template<typename T>
+  Port(dax::cont::DataSet *data,
+       const T& t):
+    Data(data),
+    Property(NULL),
+    FieldType(t.clone())
+  {
+  }
+
 
   template<typename T>
   Port(const Port &copy_Data_from_me, const T& t):
@@ -176,17 +255,11 @@ public:
 
   const field_type& getFieldType() const { return *FieldType; }
 
-  bool hasModel() const
-  {
-  return (this->Data &&
-          this->Data->numCells() > 0 &&
-          this->Data->numPoints() > 0);
-  }
-
 
   bool isValid() const
   {
-  return  this->hasModel() && FieldType!=NULL;
+    return this->FieldType && this->FieldType->validData(this->Data,
+                                                         this->Property);
   }
 
   dax::cont::DataSet* dataSet() const
@@ -221,12 +294,17 @@ public:
 
   Port points() const
   {
-    return Port(Data, Data->points(), field_points());
+    return Port(Data, field_pointCoords());
   }
 
   Port cellField(const std::string& name) const
   {
     return Port(Data, Data->cellField(name), field_cells());
+  }
+
+  Port topology() const
+  {
+    return Port(Data, field_topology());
   }
 
   T* Data;
@@ -258,9 +336,6 @@ public:
     NumInputs(numInputPorts),
     NumOutputs(numOutputPorts)
     {
-    //create our output port as using the same data
-    //as the input port but with the new field
-    //copy input port as our ouput port
     this->init(Port(input1,field),input1,input2,input3,input4,input5);
     }
 
@@ -274,8 +349,32 @@ public:
     NumInputs(numInputPorts),
     NumOutputs(numOutputPorts)
     {
-    //create our output port as using the same data
-    //as the input port but with the new field
+    this->init(Port(input1,field),input1,input2,input3,input4,input5);
+    }
+
+  Module(const int& numInputPorts, const int &numOutputPorts,
+         const field_topology& field,
+         const Port& input1,
+         const Port& input2 = Port(),
+         const Port& input3 = Port(),
+         const Port& input4 = Port(),
+         const Port& input5 = Port()):
+    NumInputs(numInputPorts),
+    NumOutputs(numOutputPorts)
+    {
+    this->init(Port(input1,field),input1,input2,input3,input4,input5);
+    }
+
+  Module(const int& numInputPorts, const int &numOutputPorts,
+         const field_pointCoords& field,
+         const Port& input1,
+         const Port& input2 = Port(),
+         const Port& input3 = Port(),
+         const Port& input4 = Port(),
+         const Port& input5 = Port()):
+    NumInputs(numInputPorts),
+    NumOutputs(numOutputPorts)
+    {
     this->init(Port(input1,field),input1,input2,input3,input4,input5);
     }
 
@@ -300,11 +399,41 @@ public:
 
   virtual size_t numberOfOutputPorts()  const { return OutputPorts.size(); }
 
+
+  void execute()
+  {
+    bool v = this->validInput();
+    if(!v)
+      {
+      throw invalid_module_input();
+      }
+    this->run();
+
+  }
+
 protected:
   std::vector<Port> InputPorts;
   std::vector<Port> OutputPorts;
   const int NumInputs;
   const int NumOutputs;
+
+  //verify that that input arrays are valid. Each port
+  //checks its field type to make sure that rest of its information
+  //is valid for that type
+  virtual bool validInput( ) const
+  {
+    bool valid = true;
+    std::vector<Port>::const_iterator it;
+    for(it=this->InputPorts.begin();
+        it!=this->InputPorts.end() && valid == true;
+        ++it)
+      {
+      valid = it->isValid();
+      }
+    return valid;
+  }
+
+  virtual void run()=0;
 
 private:
   void init(Port output, const Port& input1, const Port& input2,
@@ -426,7 +555,7 @@ class ChangeDataModule: public Module  //aka Change Topology
 public:
    //copy inputs data, and set field to point
   ChangeDataModule(const Port& input):
-    Module(Worklet::NumInputs,Worklet::NumOutputs,input)
+    Module(Worklet::NumInputs,Worklet::NumOutputs,field_topology(),input)
   {
     STATIC_ASSERT(Worklet::NumInputs==1,Incorrect_Number_Of_Parameters);
 
@@ -437,10 +566,8 @@ public:
     for(int i=0;i<this->numberOfOutputPorts();++i)
       {
       this->OutputPorts[i] = Port(work.requestDataSet(i,this->InputPorts),
-                                  NULL,
-                                  this->InputPorts[i].getFieldType());
+                                  field_topology());
       }
-
   }
 
   void run()
@@ -525,10 +652,10 @@ public:
     return this->outputPort(index).size();
   }
 
-  void run()
+  void execute()
   {
     std::cout << "starting run" << std::endl;
-     Module_.run();
+     Module_.execute();
   }
 
   ModuleFunction Module_;
