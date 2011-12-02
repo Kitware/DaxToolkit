@@ -30,7 +30,7 @@ public:
   Field* pointField(const std::string& n);
   Field* cellField(const std::string& n);
 
-  virtual const Coordinates* points() const=0;
+  virtual Coordinates* points() const=0;
 
   bool removePointField(const std::string& n);
   bool removeCellField(const std::string& n);

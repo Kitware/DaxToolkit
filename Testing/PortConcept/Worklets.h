@@ -12,6 +12,7 @@
 #include <algorithm>
 
 #include <dax/cont/StructuredGrid.h>
+#include <dax/cont/HostArray.h>
 
 namespace worklet_functions
 {
@@ -45,6 +46,12 @@ DAX_EXEC_CONT_EXPORT void CellGradient(dax::Scalar inScalar, dax::Vector3 inVec,
 
 namespace worklets
 {
+template <class T, class U>
+void ConvertType (T *inObject,U* result)
+{
+  result = dynamic_cast<U*>(inObject);
+}
+
 struct Cosine
 {
   enum {NumInputs = 1,
@@ -53,12 +60,35 @@ struct Cosine
   template<typename T, typename U>
   DAX_EXEC_CONT_EXPORT void operator()(const T& in, U& out)
   {
-    //passed down the port vectors as in and out
-    //might need iterators here
-    for(int i=0; i < in[0].size(); i++)
-      {
-      worklet_functions::Cosine(in[0].at(i),out[0].set(i));
-      }
+
+  //what if base array had a method that returned
+  //the type as an enum? than we used type2type
+  //to propery cast each array?
+  //Is the design of the BaseArray and all
+  //the children arrays wrong and need to be fixed?
+
+  //rather than store everything in the dataset
+  //as the base class we can store them with boost
+  //any as the correct type and save our selves a dynamic
+  //cast. Is that worth the increase in design complexity?
+
+  //need a way for the port to get the data type
+  //of an array that is stored
+
+//  void getHostArray( std::string &n, T& t)
+//  {
+//    //find array of name n, and convert to type t
+//  }
+
+  dax::cont::HostArray<dax::Scalar> *input;
+  ConvertType(in[0].property(),input);
+
+  dax::cont::HostArray<dax::Scalar> *output;
+  ConvertType(out[0].property(),output);
+
+  dax::cont::HostArray<dax::Scalar>::iterator inIt;
+  dax::cont::HostArray<dax::Scalar>::iterator outIt;
+
   }
 
   std::string name() const { return "Cosine"; }
@@ -72,12 +102,23 @@ struct Sine
   template<typename T, typename U>
   DAX_EXEC_CONT_EXPORT void operator()(const T& in, U& out)
   {
-    //passed down the port vectors as in and out
-    //might need iterators here
-    for(int i=0; i < in[0].size(); i++)
-      {
-      worklet_functions::Sine(in[0].at(i),out[0].set(i));
-      }
+
+  dax::cont::HostArray<dax::Scalar> *input;
+  ConvertType(in[0].property(),input);
+
+  dax::cont::HostArray<dax::Scalar> *output;
+  ConvertType(out[0].property(),output);
+
+  dax::cont::HostArray<dax::Scalar>::iterator inIt;
+  dax::cont::HostArray<dax::Scalar>::iterator outIt;
+
+  for(inIt=input->begin(), outIt=output->begin();
+      inIt!=input->end();
+      ++inIt, ++outIt)
+    {
+    worklet_functions::Sine(*inIt,*outIt);
+    }
+
   }
 
   std::string name() const { return "Sine"; }
@@ -91,12 +132,15 @@ struct Square
   template<typename T, typename U>
   DAX_EXEC_CONT_EXPORT void operator()(const T& in, U& out)
   {
-    //passed down the port vectors as in and out
-    //might need iterators here
-    for(int i=0; i < in[0].size(); i++)
-      {
-      worklet_functions::Square(in[0].at(i),out[0].set(i));
-      }
+
+  dax::cont::HostArray<dax::Scalar> *input;
+  ConvertType(in[0].property(),input);
+
+  dax::cont::HostArray<dax::Scalar> *output;
+  ConvertType(out[0].property(),output);
+
+  dax::cont::HostArray<dax::Scalar>::iterator inIt;
+  dax::cont::HostArray<dax::Scalar>::iterator outIt;
   }
 
   std::string name() const { return "Square"; }
@@ -111,6 +155,7 @@ struct Elevation
   DAX_EXEC_CONT_EXPORT void operator()(const T& in, U& out)
   {
 
+
   }
 
   std::string name() const { return "Elevation"; }
@@ -124,14 +169,6 @@ struct CellGradient
   template<typename T, typename U>
   DAX_EXEC_CONT_EXPORT void operator()(const T& in, U& out)
   {
-    //passed down the port vectors as in and out
-    //might need iterators here
-    for(int i=0; i < in[0].size(); i++)
-      {
-      worklet_functions::Square(in[0]->at(i),
-                                in[1]->at(i),
-                                out[0].set(i));
-      }
   }
 
   std::string name() const { return "CellGradient"; }

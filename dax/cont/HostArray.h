@@ -86,14 +86,9 @@ public:
 
   void push_back(const ValueType& v) { this->Data.push_back(v); }
 
-  template<typename T>
-  ValueType operator [](const T& idx) const { return this->Data[idx]; }
-
-  template<typename T>
-  ValueType& operator [](const T& idx) { return this->Data[idx]; }
-
-  template<typename T>
-  ValueType at(const T& idx) const { return this->Data.at(idx); }
+  ValueType operator [](const std::size_t& idx) const { return this->Data[idx]; }
+  ValueType& operator [](const std::size_t& idx) { return this->Data[idx]; }
+  ValueType at(const std::size_t& idx) const { return this->Data.at(idx); }
 
   template<typename OtherT>
   HostArray &operator=(const std::vector<OtherT> &v)

@@ -12,6 +12,7 @@
 #include <assert.h>
 
 #include <dax/cont/StructuredGrid.h>
+#include <dax/cont/HostArray.h>
 #include "Concept.h"
 #include "Worklets.h"
 
@@ -26,7 +27,7 @@ typedef CellModuleWithPointInput<worklets::CellGradient> CellGradient;
 typedef PointToCellModule<worklets::PointToCell> PointToCell;
 typedef CellToPointModule<worklets::CellToPoint> CellToPoint;
 
-typedef ChangeDataSetModule<worklets::ChangeTopology> NewGridOutput;
+typedef ChangeDataModule<worklets::ChangeTopology> NewGridOutput;
 
 dax::cont::StructuredGrid CreateInputStructure(dax::Id dim)
 {
@@ -36,36 +37,20 @@ dax::cont::StructuredGrid CreateInputStructure(dax::Id dim)
     dax::make_Id3(0, 0, 0),
     dax::make_Id3(dim-1, dim-1, dim-1) );
 
+  dax::cont::HostArray<dax::Id>* testPData = new
+    dax::cont::HostArray<dax::Id>();
+  testPData->setName("pointArray");
+  testPData->resize(grid.numPoints(),1);
+  grid.addPointField(testPData);
+
+  dax::cont::HostArray<dax::Id>* testCData = new
+    dax::cont::HostArray<dax::Id>();
+  testCData->setName("cellArray");
+  testCData->resize(grid.numCells(),1);
+  grid.addCellField(testCData);
+
   return grid;
 }
-
-void testPolymorphism()
-{
-  {
-  dax::cont::StructuredGrid grid = CreateInputStructure(32);
-  Model<dax::cont::StructuredGrid> model(grid);
-  std::cout << model.points().dataSet()->numPoints() << std::endl;
-
-
-  dax::cont::DataSet *ds = model.points().dataSet();
-  std::cout << ds->numPoints() << std::endl;
-
-  Port p(ds,field_points());
-  std::cout << p.dataSet()->numPoints() << std::endl;
-  }
-
-
-  dax::cont::StructuredGrid grid;
-  Model<dax::cont::StructuredGrid> model(grid);
-  std::cout << model.points().dataSet()->numPoints() << std::endl;
-
-  grid.Spacing = dax::make_Vector3(1,1,1);
-  grid.Extent.Max = dax::make_Id3(31,31,31);
-  std::cout << model.points().dataSet()->numPoints() << std::endl;
-
-
-}
-
 
 void RuntimeFields()
 {
@@ -93,7 +78,7 @@ void ConnectFilterFields()
   }
 
   {
-    Filter< Sine > Filter3(model.cellField());
+    Filter< Sine > Filter3(model.cellField("cellArray"));
     Filter< Cosine > Filter4(Filter3);
     Filter4.run();
 
@@ -122,7 +107,7 @@ void ConnectCellWithPoint()
   Model<dax::cont::StructuredGrid> model(grid);
 
   Filter< Elevation > Filter1(model.points());
-  Filter< CellGradient > Filter2(model.cellField(),Filter1.outputPort(0));
+  Filter< CellGradient > Filter2(model.cellField("cellArray"),Filter1.outputPort(0));
 
   std::cout << "Filter2 Field Type: " << Filter2.fieldType() << std::endl;
   std::cout << "Filter2 Field Type: " << Filter2.fieldType() << std::endl;
@@ -134,8 +119,8 @@ void ConnectCellWithPoint2()
   dax::cont::StructuredGrid grid = CreateInputStructure(32);
   Model<dax::cont::StructuredGrid> model(grid);
 
-  Filter< Cosine > Filter1(model.pointField());
-  Filter< Square > Filter2(model.cellField());
+  Filter< Cosine > Filter1(model.pointField("pointArray"));
+  Filter< Square > Filter2(model.cellField("cellArray"));
   Filter< CellGradient > Filter3(Filter2,Filter1);
 
   std::cout << "Filter2 Field Type: " << Filter2.fieldType() << std::endl;
@@ -149,7 +134,7 @@ void ConnectCellToPoint()
   dax::cont::StructuredGrid grid = CreateInputStructure(32);
   Model<dax::cont::StructuredGrid> model(grid);
 
-  Filter< Cosine > Filter1(model.cellField());
+  Filter< Cosine > Filter1(model.cellField("cellArray"));
   Filter< CellToPoint > Filter2(Filter1);
 
   std::cout << "Filter2 Field Type: " << Filter2.fieldType() << std::endl;
@@ -162,7 +147,7 @@ void ConnectPointToCell_TO_CellToPoint()
   dax::cont::StructuredGrid grid = CreateInputStructure(32);
   Model<dax::cont::StructuredGrid> model(grid);
 
-  Filter< Square > Filter1(model.pointField());
+  Filter< Square > Filter1(model.pointField("pointArray"));
   Filter< PointToCell > Filter2(Filter1);
   Filter< Sine > FilterTest(Filter2);
   Filter< CellToPoint > Filter3(FilterTest);
@@ -209,7 +194,6 @@ int main(int argc, char* argv[])
 //  ConnectCellToPoint();
 //  ConnectPointToCell_TO_CellToPoint();
 
-  testPolymorphism();
   ChangeGrid();
 
 

@@ -25,7 +25,7 @@ public:
   Vector3 Spacing;
   Extent3 Extent;
 
-  virtual const Coordinates* points() const { return NULL; }
+  virtual Coordinates* points() const { return NULL; }
 
   virtual ~StructuredGrid();
 
@@ -86,7 +86,6 @@ StructuredGrid::~StructuredGrid()
 //------------------------------------------------------------------------------
 std::size_t StructuredGrid::numPoints() const
 {
-  std::cout << "StructuredGrid::numPoints" << std::endl;
   return this->numberOfPoints();
 }
 

@@ -7,6 +7,7 @@
 #include <vector>
 #include <assert.h>
 
+#include <boost/any.hpp>
 #include <boost/shared_ptr.hpp>
 #include <dax/cont/StructuredGrid.h>
 
@@ -99,40 +100,51 @@ class Port
 {
 public:
 
-  //default constructor with an empty DataSet_
+  //default constructor with an empty Data
   Port():
-    DataSet_(NULL), FieldType(new field_unkown())
+    Data(NULL),
+    Property(NULL),
+    FieldType(new field_unkown())
   {
   }
 
   Port(Port& copy_from_me):
-    DataSet_(copy_from_me.DataSet_), FieldType(copy_from_me.FieldType->clone())
+    Data(copy_from_me.Data),
+    Property(copy_from_me.Property),
+    FieldType(copy_from_me.FieldType->clone())
   {
   }
 
   //copy constructor
   Port(const Port& copy_from_me):
-    DataSet_(copy_from_me.DataSet_), FieldType(copy_from_me.FieldType->clone())
-  {
-  }
-
-  //create a connection data based on the DataSet_ g, and the
-  //passed in templated type
-  template<typename T>
-  Port(dax::cont::DataSet *g, const T& t):
-    DataSet_(g), FieldType(t.clone())
+    Data(copy_from_me.Data),
+    Property(copy_from_me.Property),
+    FieldType(copy_from_me.FieldType->clone())
   {
   }
 
   template<typename T>
-  Port(const Port &copy_DataSet__from_me, const T& t):
-    DataSet_(copy_DataSet__from_me.DataSet_), FieldType(t.clone())
+  Port(dax::cont::DataSet *data,
+       dax::cont::internal::BaseArray* ba,
+       const T& t):
+    Data(data),
+    Property(ba),
+    FieldType(t.clone())
+  {
+  }
+
+  template<typename T>
+  Port(const Port &copy_Data_from_me, const T& t):
+    Data(copy_Data_from_me.Data),
+    Property(copy_Data_from_me.Property),
+    FieldType(t.clone())
   {    
   }
 
   Port& operator=(const Port& op)
   {
-    this->DataSet_=op.DataSet_;
+    this->Data=op.Data;
+    this->Property=op.Property;
 
     if(this->FieldType)
       {
@@ -154,7 +166,7 @@ public:
 
   int size() const
   {    
-    return this->FieldType->size(this->DataSet_);
+    return this->FieldType->size(this->Data);
   }
 
   std::string fieldType() const
@@ -164,40 +176,33 @@ public:
 
   const field_type& getFieldType() const { return *FieldType; }
 
-  bool hasModel() const { return (this->DataSet_ &&
-                                  this->DataSet_->numCells() > 0 &&
-                                  this->DataSet_->numPoints() > 0); }
-
-
-  bool isValid() const { return FieldType!=NULL; }
-
-  void initProp() const
+  bool hasModel() const
   {
-    //hack to make sure the FauxProperty is the right size
-    this->FauxProperty.resize(this->FieldType->size(this->DataSet_),1);
+  return (this->Data &&
+          this->Data->numCells() > 0 &&
+          this->Data->numPoints() > 0);
   }
 
-  //the port should be holding an array that
-  //we than using an iterator on!
-  dax::Scalar at(int idx) const
-  {
-    return FauxProperty[idx];
-  }
 
-  dax::Scalar& set(int idx)
+  bool isValid() const
   {
-    return *(&FauxProperty[idx]);
+  return  this->hasModel() && FieldType!=NULL;
   }
 
   dax::cont::DataSet* dataSet() const
   {
-    return this->DataSet_;
+    return this->Data;
+  }
+
+  dax::cont::internal::BaseArray* property() const
+  {
+    return this->Property;
   }
 
 protected:
-  std::vector<dax::Scalar> FauxProperty;
+  dax::cont::DataSet* Data;
+  dax::cont::internal::BaseArray* Property;
   field_type* FieldType;
-  dax::cont::DataSet* DataSet_;
 };
 
 //------------------------------------------------------------------------------
@@ -209,24 +214,19 @@ public:
   {
 
   }
-  Port pointField(const std::string& name="") const
+  Port pointField(const std::string& name) const
   {
-    return Port(Data,field_points());
+  return Port(Data, Data->pointField(name), field_points());
   }
 
   Port points() const
   {
-    return Port(Data,field_points());
+    return Port(Data, Data->points(), field_points());
   }
 
-  Port cellField(const std::string& name="") const
+  Port cellField(const std::string& name) const
   {
-    return Port(Data,field_cells());
-  }
-
-  Port cells() const
-  {
-    return Port(Data,field_cells());
+    return Port(Data, Data->cellField(name), field_cells());
   }
 
   T* Data;
@@ -421,11 +421,11 @@ public:
 
 //------------------------------------------------------------------------------
 template < typename Worklet>
-class ChangeDataSetModule: public Module  //aka Change Topology
+class ChangeDataModule: public Module  //aka Change Topology
 {
 public:
    //copy inputs data, and set field to point
-  ChangeDataSetModule(const Port& input):
+  ChangeDataModule(const Port& input):
     Module(Worklet::NumInputs,Worklet::NumOutputs,input)
   {
     STATIC_ASSERT(Worklet::NumInputs==1,Incorrect_Number_Of_Parameters);
@@ -437,6 +437,7 @@ public:
     for(int i=0;i<this->numberOfOutputPorts();++i)
       {
       this->OutputPorts[i] = Port(work.requestDataSet(i,this->InputPorts),
+                                  NULL,
                                   this->InputPorts[i].getFieldType());
       }
 
