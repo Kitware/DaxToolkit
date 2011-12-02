@@ -14,18 +14,35 @@ template < typename ModuleFunction >
 class Filter
 {
 private:
+
   std::vector< boost::function<void(void)> > Dependencies;
-  template< class Base>
-  void addDependency(Base &filter)
+
+  template<class Base>
+  void addDependency(Base *const source)
     {
-    Dependencies.push_back(boost::bind(&Base::execute,&filter));
+    Dependencies.push_back(boost::bind(&Base::execute,source));
     }
+
+  void executeDependencies()
+  {
+    //recursively do a depth first walk up the tree
+    //so that we properly call execute from the
+    //top of the pipeline down correctly
+    std::vector< boost::function<void(void)> >::iterator it;
+    for(it=Dependencies.begin();it!=Dependencies.end();++it)
+      {
+      //call my input filters execute function
+      (*it)();
+      }
+  }
 public:
 
   template <typename TypeA>
   Filter(const FilterConnector<TypeA>& input):
     Module_(input.port())
-  {}
+  {
+    this->addDependency(input.source());
+  }
 
   template <typename TypeA, typename TypeB>
   Filter(const FilterConnector<TypeA>& input,
@@ -54,7 +71,7 @@ public:
   Filter(Filter<ModuleFunctionA>& inputFilter):
     Module_(inputFilter.output().port())
   {
-
+    this->addDependency(&inputFilter);
   }
 
   template <typename ModuleFunctionA, typename ModuleFunctionB>
@@ -86,7 +103,7 @@ public:
 
   }
 
-  FilterConnector< Filter<ModuleFunction > > output(const int index=0) const
+  FilterConnector< Filter<ModuleFunction > > output(const int index=0)
   {
   return FilterConnector< Filter<ModuleFunction > >(this,
                                                     Module_.outputPort(index));
@@ -94,18 +111,18 @@ public:
 
   std::string fieldType(const int index=0) const
   {
-    return this->output(index).port().fieldType();
+    return Module_.outputPort(index).fieldType();
   }
 
   int size(const int index=0) const
   {
-    return this->output(index).port().size();
+    return Module_.outputPort(index).size();
   }
 
   void execute()
   {
-    std::cout << "starting run" << std::endl;
-     Module_.execute();
+    this->executeDependencies();
+    Module_.execute();
   }
 
   ModuleFunction Module_;
@@ -115,52 +132,52 @@ public:
 // Functions that generate Port objects, a potential way around
 // having models and making it easier to make filter connections
 template<typename T>
-FilterConnector<T> pointField(const FilterConnector<T> &fc, const std::string& name)
+FilterConnector<T> pointField(FilterConnector<T> fc, const std::string& name)
 {
   return FilterConnector<T>(fc,name,field_points());
 }
 
 template <typename T>
-FilterConnector< Filter<T> > pointField(const Filter<T>& filter, const std::string& name)
+FilterConnector< Filter<T> > pointField(Filter<T>& filter, const std::string& name)
 {
   return pointField(filter.output(0),name);
 }
 
 //------------------------------------------------------------------------------
 template <typename T>
-FilterConnector<T> cellField(const FilterConnector<T> &fc, const std::string& name )
+FilterConnector<T> cellField(FilterConnector<T> fc, const std::string& name )
 {
   return FilterConnector<T>(fc,name,field_cells());
 }
 
 template <typename T>
-FilterConnector< Filter<T> > cellField(const Filter<T>& filter, const std::string& name )
+FilterConnector< Filter<T> > cellField(Filter<T>& filter, const std::string& name )
 {
   return cellField(filter.outputPort(0),name);
 }
 
 //------------------------------------------------------------------------------
 template <typename T>
-FilterConnector<T> points(const FilterConnector<T> &fc)
+FilterConnector<T> points(FilterConnector<T> fc)
 {
   return FilterConnector<T>(fc,field_points());
 }
 
 template <typename T>
-FilterConnector< Filter<T> > points(const Filter<T>& filter)
+FilterConnector< Filter<T> > points(Filter<T>& filter)
 {
   return points(filter.output(0));
 }
 
 //------------------------------------------------------------------------------
 template <typename T>
-FilterConnector<T> topology(const FilterConnector<T> &fc )
+FilterConnector<T> topology(FilterConnector<T> fc )
 {
   return FilterConnector<T>(fc,field_topology());
 }
 
 template <typename T>
-FilterConnector< Filter<T> > topology(const Filter<T>& filter)
+FilterConnector< Filter<T> > topology(Filter<T>& filter)
 {
   return topology(filter.output(0));
 }

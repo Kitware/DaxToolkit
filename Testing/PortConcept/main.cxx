@@ -171,9 +171,6 @@ void ChangeGrid()
   std::cout << "Filter1 array length " << Filter1.size() << std::endl;
   std::cout << "FilterTest array length " << FilterTest.size() << std::endl;
 
-
-  Filter1.execute();
-  Filter2.execute();
   try
     {
     FilterTest.execute();

@@ -23,7 +23,7 @@ template <typename Source>
 class FilterConnector
 {
 public:
-  FilterConnector(const Source *const f, const Port& p):
+  FilterConnector(Source *const f, const Port& p):
   Port_(p),
   Source_(f)
   {}
@@ -50,14 +50,14 @@ public:
   return Port_;
   }
 
-  const Source* source() const
+  Source * const source() const
   {
   return Source_;
   }
 
 private:
   Port Port_;
-  const Source* Source_;
+  Source* const Source_; //constant pointer to changle Source
 };
 
 #endif // FILTERCONNECTERS_H

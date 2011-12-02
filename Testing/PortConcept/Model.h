@@ -12,25 +12,25 @@ public:
   {
 
   }
-  FilterConnector< Model<T> > pointField(const std::string& name) const
+  FilterConnector< Model<T> > pointField(const std::string& name)
   {
   return FilterConnector< Model<T> >(this,
           Port(Data, Data->pointField(name), field_points()));
   }
 
-  FilterConnector< Model<T> > points() const
+  FilterConnector< Model<T> > points()
   {
     return FilterConnector< Model<T> >(this,
             Port(Data, field_pointCoords()));
   }
 
-  FilterConnector< Model<T> > cellField(const std::string& name) const
+  FilterConnector< Model<T> > cellField(const std::string& name)
   {
     return FilterConnector< Model<T> >(this,
             Port(Data, Data->cellField(name), field_cells()));
   }
 
-  FilterConnector< Model<T> > topology() const
+  FilterConnector< Model<T> > topology()
   {
     return FilterConnector< Model<T> >(this,
             Port(Data, field_topology()));

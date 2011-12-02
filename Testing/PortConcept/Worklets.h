@@ -112,12 +112,12 @@ struct Sine
   dax::cont::HostArray<dax::Scalar>::iterator inIt;
   dax::cont::HostArray<dax::Scalar>::iterator outIt;
 
-  for(inIt=input->begin(), outIt=output->begin();
-      inIt!=input->end();
-      ++inIt, ++outIt)
-    {
-    worklet_functions::Sine(*inIt,*outIt);
-    }
+//  for(inIt=input->begin(), outIt=output->begin();
+//      inIt!=input->end();
+//      ++inIt, ++outIt)
+//    {
+//    worklet_functions::Sine(*inIt,*outIt);
+//    }
 
   }
 
