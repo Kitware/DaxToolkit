@@ -6,7 +6,9 @@
 
 =========================================================================*/
 
-#include <dax/cuda/cont/internal/ManagedDeviceDataArray.h>
+#include <dax/cont/HostArray.h>
+#include <dax/cuda/cont/internal/DeviceArray.h>
+
 
 #include <fstream>
 #include <iostream>
@@ -44,29 +46,27 @@ __global__ void AddOneToArray(dax::internal::DataArray<T> array)
   array.SetValue(index, AddOne(value));
 }
 
-static void TestManagedDeviceDataArray()
+static void TestDeviceDataArray()
 {
-  T inputBuffer[ARRAY_SIZE];
-  dax::internal::DataArray<T> inputArray(inputBuffer, ARRAY_SIZE);
+  dax::cont::HostArray<T> inputArray(ARRAY_SIZE);
+  //dax::internal::DataArray<T> inputArray(inputBuffer, ARRAY_SIZE);
   for (dax::Id i = 0; i < ARRAY_SIZE; i++)
     {
-    inputArray.SetValue(i, StartValue(i));
+    inputArray[i] = StartValue(i);
     }
 
-  dax::cuda::cont::internal::ManagedDeviceDataArrayPtr<T> deviceArray(
-        new dax::cuda::cont::internal::ManagedDeviceDataArray<T>());
-  deviceArray->CopyToDevice(inputArray);
+  dax::cuda::cont::internal::DeviceArray<T> deviceArray;
+  deviceArray = inputArray;
 
-  AddOneToArray<<<1, ARRAY_SIZE>>>(deviceArray->GetArray());
+  AddOneToArray<<<1, ARRAY_SIZE>>>(deviceArray);
 
-  T outputBuffer[ARRAY_SIZE];
-  dax::internal::DataArray<T> outputArray(outputBuffer, ARRAY_SIZE);
-  deviceArray->CopyToHost(outputArray);
+  dax::cont::HostArray<T> outputArray(ARRAY_SIZE);
+  outputArray = deviceArray;
 
   for (dax::Id i = 0; i < ARRAY_SIZE; i++)
     {
-    T inValue = inputArray.GetValue(i);
-    T outValue = outputArray.GetValue(i);
+    T inValue = inputArray[i];
+    T outValue = outputArray[i];
     if (outValue != AddOne(inValue))
       {
       TEST_FAIL(<< "Bad value in copied array.");
@@ -74,10 +74,40 @@ static void TestManagedDeviceDataArray()
     }
 }
 
-int UnitTestCudaManagedDeviceDataArray(int, char *[])
+static void TestManagedDeviceDataArray()
+{
+  dax::cont::HostArray<T> inputArray(ARRAY_SIZE);
+  //dax::internal::DataArray<T> inputArray(inputBuffer, ARRAY_SIZE);
+  for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+    {
+    inputArray[i] = StartValue(i);
+    }
+
+  dax::cuda::cont::internal::DeviceArrayPtr<T> deviceArray(
+        new dax::cuda::cont::internal::DeviceArray<T>(ARRAY_SIZE));
+  (*deviceArray.get()) = inputArray;
+
+  AddOneToArray<<<1, ARRAY_SIZE>>>(deviceArray);
+
+  dax::cont::HostArray<T> outputArray(ARRAY_SIZE);
+  outputArray = deviceArray.get();
+
+  for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+    {
+    T inValue = inputArray[i];
+    T outValue = outputArray[i];
+    if (outValue != AddOne(inValue))
+      {
+      TEST_FAIL(<< "Bad value in copied array.");
+      }
+    }
+}
+
+int UnitTestCudaDeviceArray(int, char *[])
 {
   try
     {
+    TestDeviceDataArray();
     TestManagedDeviceDataArray();
     }
   catch (std::string error)

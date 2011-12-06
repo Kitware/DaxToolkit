@@ -6,15 +6,7 @@
 #
 #=========================================================================
 
-set(sources
-#  internal/ManagedDeviceDataArray.cu
-#  internal/DataArray.cu
-#  internal/DataBridge.cu
-#  internal/KernelArgument.cu
-  )
-
 set(headers
-  internal/ManagedDeviceDataArray.h
   internal/DeviceArray.h
   Executive.h
   Modules.h

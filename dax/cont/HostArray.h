@@ -40,7 +40,7 @@ public:
 
   //the device array needs to be a friend class
   //so that it can copy the real data in the host array
-  template <class OtherT> friend class DeviceArray;
+  template <class OtherT> friend class dax::cuda::cont::internal::DeviceArray;
 
   HostArray(void):
     BaseArray(), Name(""), Data()
