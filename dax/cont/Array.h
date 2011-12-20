@@ -6,7 +6,6 @@
 
 #include <dax/Types.h>
 #include <dax/cont/internal/Macros.h>
-#include <dax/cont/internal/BaseArray.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
@@ -26,9 +25,7 @@ namespace dax { namespace cont {
 
 daxDeclareClassTemplate1(Array);
 template<typename Type>
-class Array :
-    public dax::cont::internal::BaseArray
-
+class Array
 {
 private:
   typedef std::vector<Type> Parent;
@@ -43,21 +40,23 @@ public:
   template <class OtherT> friend class dax::cuda::cont::internal::DeviceArray;
 
   Array(void):
-    BaseArray(), Name(""), Data()
+  Data()
   {
   }
 
   explicit Array(const std::size_t n, const ValueType &value = ValueType()):
-    BaseArray(), Name(""), Data(n,value)
+    Data(n,value)
   {
   }
 
   Array(const Array &v)
-    :Data(v.Data),Name(v.Name) {}
+    :Data(v.Data)
+    {}
 
   template<typename OtherT>
   Array(const Array<OtherT> &v)
-    :Data(v), Name(v.name()) {}
+    :Data(v)
+    {}
 
   template<typename OtherT>
   Array(const std::vector<OtherT> &v)
@@ -68,9 +67,6 @@ public:
     :Data(first, last) {}
 
   virtual ~Array(){}
-
-  void setName(const std::string &name) { Name = name; }
-  virtual std::string name() const { return Name; }
 
   std::size_t size() const { return this->Data.size(); }
   std::size_t capacity() const { return this->Data.capacity(); }
@@ -96,10 +92,10 @@ public:
 
   template<typename OtherT>
   Array &operator=(const Array<OtherT> &v)
-  { Data=(v.Data); Name=v.name();return *this;}
+  { Data=(v.Data);return *this;}
 
   Array &operator=(const Array &v)
-  { Data=(v.Data); Name=v.name(); return *this; }
+  { Data=(v.Data); return *this; }
 
   //move data from device to host
   template<typename OtherT>
@@ -113,7 +109,6 @@ public:
 
 
 protected:
-  std::string Name;
   Parent Data;
 };
 

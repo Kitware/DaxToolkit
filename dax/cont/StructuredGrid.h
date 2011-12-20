@@ -25,7 +25,22 @@ public:
   Vector3 Spacing;
   Extent3 Extent;
 
-  virtual Coordinates* points() const { return NULL; }
+
+  void computePointLocations()
+    {
+    std::size_t size = this->numPoints();
+    this->Points.resize(size);
+    for (std::size_t i=0; i < size; ++i)
+      {
+      this->Points[i] = dax::make_Vector3(i,i,i);
+      }
+    }
+
+  const Coordinates& points() const
+    {
+    //return a fake array for now
+    return Points;
+    }
 
   virtual ~StructuredGrid();
 
@@ -33,6 +48,7 @@ public:
   virtual std::size_t numCells() const;
 
 private:
+  Coordinates Points;
 
   dax::Id3 extentDimensions() const
   {

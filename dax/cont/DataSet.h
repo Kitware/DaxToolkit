@@ -1,53 +1,39 @@
 #ifndef __dax_cont_DataSet_h
 #define __dax_cont_DataSet_h
 
-#include <vector>
-#include <dax/cont/internal/BaseArray.h>
+#include <dax/cont/internal/Object.h>
 #include <dax/cont/Array.h>
+#include <dax/cont/FieldData.h>
 
 namespace dax { namespace cont {
-class DataSet
+class DataSet : public dax::cont::internal::Object
 {
 public:
-  typedef dax::cont::internal::BaseArray Field;
   typedef dax::cont::Array<dax::Vector3> Coordinates;
 
   DataSet( const std::size_t& numPoints, const std::size_t& numCells);
   DataSet();
-  DataSet( const dax::cont::DataSet& ds);
 
   virtual ~DataSet(){}
 
   virtual std::size_t numPoints() const { return NumPoints; }
   virtual std::size_t numCells() const { return NumCells; }
 
-  std::size_t numPointFields() const { return PointFields.size(); }
-  std::size_t numCellFields() const { return CellFields.size(); }
+  virtual const Coordinates& points() const=0;
 
-  bool addPointField(Field* field);
-  bool addCellField(Field* field);
+  FieldData& getFieldsPoint() { return FieldPoint; }
+  const FieldData& getFieldsPoint() const { return FieldPoint; }
 
-  Field* pointField(const std::string& n);
-  Field* cellField(const std::string& n);
-
-  virtual Coordinates* points() const=0;
-
-  bool removePointField(const std::string& n);
-  bool removeCellField(const std::string& n);
+  FieldData& getFieldsCell() { return FieldCell; }
+  const FieldData& getFieldsCell() const { return FieldCell; }
 
 protected:
-  std::vector<Field*> PointFields;
-  std::vector<Field*> CellFields;
 
   std::size_t NumPoints;
   std::size_t NumCells;
 
-private:  
-  bool addField(Field* f, std::vector<Field*>& fields);
-  bool removeField(const std::string& n,std::vector<Field*>& fields);
-  Field* getField(const std::string& n, std::vector<Field*>& fields);
-
-  void operator=(const DataSet&);
+  FieldData FieldPoint;
+  FieldData FieldCell;
 };
 
 //------------------------------------------------------------------------------
@@ -62,91 +48,6 @@ DataSet::DataSet():
 {
 }
 
-//------------------------------------------------------------------------------
-DataSet::DataSet( const dax::cont::DataSet& ds):
-  NumPoints(ds.numPoints()),
-  NumCells(ds.numCells()),
-  PointFields(ds.PointFields),
-  CellFields(ds.CellFields)
-{
-
-}
-
-
-//------------------------------------------------------------------------------
-bool DataSet::addPointField(Field* field)
-{
-  return this->addField(field,this->PointFields);
-}
-
-//------------------------------------------------------------------------------
-bool DataSet::addCellField(Field* field)
-{
-  return this->addField(field,this->CellFields);
-}
-
-//------------------------------------------------------------------------------
-bool DataSet::addField(Field* field,std::vector<Field*>& fields)
-{
-  //need proper ownership of the array
-  //currently we are copying it rather than properly using a smart pointer
-  fields.push_back(field);
-  return true;
-}
-
-//------------------------------------------------------------------------------
-DataSet::Field* DataSet::pointField(const std::string& n)
-{
-  return this->getField(n,this->PointFields);
-}
-
-//------------------------------------------------------------------------------
-DataSet::Field* DataSet::cellField(const std::string& n)
-{
-  return this->getField(n,this->CellFields);
-}
-
-//------------------------------------------------------------------------------
-DataSet::Field* DataSet::getField(const std::string& n,
-                                      std::vector<Field*>& fields)
-{
-  std::vector<Field*>::iterator i;
-  for(i=fields.begin();i!=fields.end();++i)
-    {
-    if(n == (*i)->name())
-      {
-      return (*i);
-      }
-    }
-  return NULL;
-}
-
-//------------------------------------------------------------------------------
-bool DataSet::removePointField(const std::string& n)
-{
-  return this->removeField(n,this->PointFields);
-}
-
-//------------------------------------------------------------------------------
-bool DataSet::removeCellField(const std::string& n)
-{
-  return this->removeField(n,this->CellFields);
-}
-
-//------------------------------------------------------------------------------
-bool DataSet::removeField(const std::string& n, std::vector<Field*>& fields)
-{
-  std::vector<Field*>::iterator it;
-  for(it=fields.begin();it!=fields.end();++it)
-    {
-    if ((*it)->name() == n)
-      {
-      fields.erase(it);
-      return true;
-      }
-    }
-  return false;
-}
 
 } }
 
