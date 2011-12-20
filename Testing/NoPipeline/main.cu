@@ -42,19 +42,23 @@ void ConnectFilterFields()
   dax::cont::StructuredGrid grid;
   CreateInputStructure(32,grid);
   {  
+    std::cout << "Elevation" << std::endl;
     worklets::Elevation(grid,
                         grid.points(),
                         helpers::pointFieldHandle<dax::Scalar>("Elevation"));
+    std::cout << "Square" << std::endl;
     worklets::Square(grid,
                      grid.getFieldsPoint().getScalar("Elevation"),
                      helpers::pointFieldHandle<dax::Scalar>("Square"));
   }
 
   {
-    worklets::Sine(grid,
+    std::cout << "Square" << std::endl;
+    worklets::Square(grid,
                    grid.getFieldsCell().getScalar("cellArray"),
                    helpers::cellFieldHandle<dax::Scalar>("Sine"));
 
+    std::cout << "Cosine" << std::endl;
     worklets::Cosine(grid,
                      grid.getFieldsCell().getScalar("Sine"),
                      helpers::cellFieldHandle<dax::Scalar>("Square"));
@@ -68,16 +72,30 @@ void ConnectCellWithPoint()
   dax::cont::StructuredGrid grid;
   CreateInputStructure(32,grid);
 
-//  worklets::CellGradient(grid,
-//                         grid.points(),
-//                         grid.pointField("pointArray"),
-//                         helpers::cellFieldHandle<dax::Vector3>("Gradient"));
+  worklets::CellGradient(grid,
+                         grid.points(),
+                         grid.getFieldsPoint().getScalar("pointArray"),
+                         helpers::cellFieldHandle<dax::Vector3>("Gradient"));
+
+  std::cout << "Elevation" << std::endl;
+  worklets::Elevation(grid,
+                      grid.getFieldsCell().getVector3("Gradient"),
+                      helpers::cellFieldHandle<dax::Scalar>("Elev"));
 }
 
 int main(int argc, char* argv[])
 {
-  ConnectFilterFields();
-  ConnectCellWithPoint();
+  try
+   {
+    ConnectFilterFields();
+   }
+   catch(thrust::system_error e)
+   {
+     std::cerr  << "Error: " << e.what() << std::endl;
+     exit(-1);
+   }
+
+  //ConnectCellWithPoint();
 
   return 0;
 }

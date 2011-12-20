@@ -4,7 +4,6 @@
 
 #include "WorkletProxies.h"
 
-
 namespace helpers
 {
 
@@ -23,8 +22,15 @@ public:
     }
 
   template<typename G>
+  dax::Id static fieldSize(const G& g)
+    {
+    return g.numPoints();
+    }
+
+  template<typename G>
   void associate(G &g)
     {
+    this->Array->resize(pointFieldHandle::fieldSize(g));
     g.getFieldsPoint().addArray(this->Name,*this->Array);
     }
 
@@ -51,9 +57,17 @@ public:
     this->Array = new dax::cont::Array<T>();
     }
 
+
+  template<typename G>
+  dax::Id static fieldSize(const G& g)
+    {
+    return g.numCells();
+    }
+
   template<typename G>
   void associate(G &g)
     {
+    this->Array->resize(cellFieldHandle::fieldSize(g));
     g.getFieldsCell().addArray(this->Name,*this->Array);
     }
 
@@ -77,6 +91,7 @@ public:
   template<typename G, typename T, typename U>
   Elevation(G &g, const T& in, U out)
   {
+    out.associate(g);
     workletProxies::Elevation()(g,in,out);
   }
 };
@@ -85,8 +100,9 @@ class Square
 {
 public:
   template<typename G, typename T, typename U>
-  Square(G &g, T& in, U out)
+  Square(G &g, const T& in, U out)
   {
+    out.associate(g);
     workletProxies::Square()(g,in,out);
   }
 
@@ -96,9 +112,10 @@ class Sine
 {
 public:
   template<typename G, typename T, typename U>
-  Sine(G &g, T& in, U out)
+  Sine(G &g, const T& in, U out)
   {
-    //workletProxies::Elevation()(g,in,out);
+    out.associate(g);
+    workletProxies::Sine()(g,in,out);
   }
 
 };
@@ -107,9 +124,10 @@ class Cosine
 {
 public:
   template<typename G, typename T, typename U>
-  Cosine(G &g, T& in, U out)
+  Cosine(G &g, const T& in, U out)
   {
-    //workletProxies::Elevation()(g,in,out);
+    out.associate(g);
+    workletProxies::Cosine()(g,in,out);
   }
 
 };
@@ -119,9 +137,10 @@ class CellGradient
 
 public:
   template<typename G, typename T, typename T2, typename U>
-  CellGradient(G &g, T& in, T2& in2, U out)
+  CellGradient(G &g, const T& in, const T2& in2, U out)
   {
-    //workletProxies::Elevation()(g,in,out);
+    out.associate(g);
+    workletProxies::CellGradient()(g,in,in2,out);
   }
 };
 
