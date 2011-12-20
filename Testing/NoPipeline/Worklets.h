@@ -20,13 +20,12 @@ public:
     Name(name)
     {
     this->Array = new dax::cont::Array<T>();
-    this->Array->setName(this->Name);
     }
 
   template<typename G>
   void associate(G &g)
     {
-    g.addPointField(this->Array);
+    g.getFieldsPoint().addArray(this->Name,*this->Array);
     }
 
   dax::cont::Array<T>& array()
@@ -50,13 +49,12 @@ public:
     Name(name)
     {
     this->Array = new dax::cont::Array<T>();
-    this->Array->setName(this->Name);
     }
 
   template<typename G>
   void associate(G &g)
     {
-    g.addCellField(this->Array);
+    g.getFieldsCell().addArray(this->Name,*this->Array);
     }
 
   dax::cont::Array<T>& array()
@@ -77,7 +75,7 @@ class Elevation
 {
 public:
   template<typename G, typename T, typename U>
-  Elevation(G &g, T& in, U out)
+  Elevation(G &g, const T& in, U out)
   {
     workletProxies::Elevation()(g,in,out);
   }

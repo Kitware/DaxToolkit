@@ -23,17 +23,6 @@ target_link_libraries(DaxCUDATest
   ${BOOST_LIBRARIES}
   )
 
-cuda_add_executable(ExecutiveConcept
-  TestExecutive.cu
-  Worklets.h
-)
-
-target_link_libraries(ExecutiveConcept
-  daxCont
-  daxCUDACont
-  ${BOOST_LIBRARIES}
-  )
-
 #-----------------------------------------------------------------------------
 cuda_add_executable(SimpleCUDAKernelTest
   SimpleCUDAKernelTest.cu

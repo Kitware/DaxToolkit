@@ -110,7 +110,7 @@ class Elevation
 public:
   template<typename G, typename T, typename U>
   void operator()(G &g,
-                  dax::cont::Array<T>& in,
+                  const dax::cont::Array<T>& in,
                   U& out)
   {
     typedef typename U::DataType OutType;

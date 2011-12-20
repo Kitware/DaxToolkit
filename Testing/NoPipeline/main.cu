@@ -13,49 +13,50 @@
 
 #include "Worklets.h"
 
-dax::cont::StructuredGrid CreateInputStructure(dax::Id dim)
+void CreateInputStructure(dax::Id dim,dax::cont::StructuredGrid &grid )
 {
-  dax::cont::StructuredGrid grid(
-    dax::make_Vector3(0.0, 0.0, 0.0),
-    dax::make_Vector3(1.0, 1.0, 1.0),
-    dax::make_Id3(0, 0, 0),
-    dax::make_Id3(dim-1, dim-1, dim-1) );
 
-  dax::cont::Array<dax::Id>* testPData = new
-    dax::cont::Array<dax::Id>();
-  testPData->setName("pointArray");
+  grid.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
+  grid.Spacing = dax::make_Vector3(1.0, 1.0, 1.0),
+  grid.Extent.Min = dax::make_Id3(0, 0, 0),
+  grid.Extent.Max = dax::make_Id3(dim-1, dim-1, dim-1);
+
+  dax::cont::Array<dax::Scalar>* testPData = new
+    dax::cont::Array<dax::Scalar>();
+
   testPData->resize(grid.numPoints(),1);
-  grid.addPointField(testPData);
+  grid.getFieldsPoint().addArray("pointArray",*testPData);
 
-  dax::cont::Array<dax::Id>* testCData = new
-    dax::cont::Array<dax::Id>();
-  testCData->setName("cellArray");
+  dax::cont::Array<dax::Scalar>* testCData = new
+    dax::cont::Array<dax::Scalar>();
   testCData->resize(grid.numCells(),1);
-  grid.addCellField(testCData);
 
-  return grid;
+  grid.getFieldsCell().addArray("cellArray",*testCData);
+
+  grid.computePointLocations();
 }
 
 void ConnectFilterFields()
 {
   std::cout << "ConnectFilterFields" << std::endl;
-  dax::cont::StructuredGrid grid = CreateInputStructure(32);
+  dax::cont::StructuredGrid grid;
+  CreateInputStructure(32,grid);
   {  
     worklets::Elevation(grid,
-                        *grid.points(),
+                        grid.points(),
                         helpers::pointFieldHandle<dax::Scalar>("Elevation"));
     worklets::Square(grid,
-                     *grid.pointField("Elevation"),
+                     grid.getFieldsPoint().getScalar("Elevation"),
                      helpers::pointFieldHandle<dax::Scalar>("Square"));
   }
 
   {
     worklets::Sine(grid,
-                   *grid.cellField("cellArray"),
+                   grid.getFieldsCell().getScalar("cellArray"),
                    helpers::cellFieldHandle<dax::Scalar>("Sine"));
 
     worklets::Cosine(grid,
-                     *grid.cellField("Sine"),
+                     grid.getFieldsCell().getScalar("Sine"),
                      helpers::cellFieldHandle<dax::Scalar>("Square"));
   }
 }
@@ -64,7 +65,8 @@ void ConnectCellWithPoint()
 {
   std::cout << "ConnectCellWithPoint" << std::endl;
 
-  dax::cont::StructuredGrid grid = CreateInputStructure(32);
+  dax::cont::StructuredGrid grid;
+  CreateInputStructure(32,grid);
 
 //  worklets::CellGradient(grid,
 //                         grid.points(),
