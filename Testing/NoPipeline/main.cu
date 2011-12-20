@@ -40,7 +40,7 @@ void ConnectFilterFields()
 {
   std::cout << "ConnectFilterFields" << std::endl;
   dax::cont::StructuredGrid grid;
-  CreateInputStructure(32,grid);
+  CreateInputStructure(128,grid);
   {  
     std::cout << "Elevation" << std::endl;
     worklets::Elevation(grid,
@@ -70,8 +70,9 @@ void ConnectCellWithPoint()
   std::cout << "ConnectCellWithPoint" << std::endl;
 
   dax::cont::StructuredGrid grid;
-  CreateInputStructure(32,grid);
+  CreateInputStructure(128,grid);
 
+  std::cout << "Gradient" << std::endl;
   worklets::CellGradient(grid,
                          grid.points(),
                          grid.getFieldsPoint().getScalar("pointArray"),
@@ -81,6 +82,46 @@ void ConnectCellWithPoint()
   worklets::Elevation(grid,
                       grid.getFieldsCell().getVector3("Gradient"),
                       helpers::cellFieldHandle<dax::Scalar>("Elev"));
+}
+
+void Pipeline1Test()
+{
+  std::cout << "Pipeline1" << std::endl;
+  dax::cont::StructuredGrid grid;
+  CreateInputStructure(128,grid);
+
+  std::cout << "Elevation" << std::endl;
+  worklets::Elevation(grid,
+                      grid.points(),
+                      helpers::pointFieldHandle<dax::Scalar>("Elevation"));
+
+
+  std::cout << "Gradient" << std::endl;
+  worklets::CellGradient(grid,
+                         grid.points(),
+                         grid.getFieldsPoint().getScalar("Elevation"),
+                         helpers::cellFieldHandle<dax::Vector3>("Gradient"));
+
+
+  dax::internal::DataArray<dax::Vector3> array(
+        grid.getFieldsCell().getVector3("Gradient"));
+  for (dax::Id index = 0; index < array.GetNumberOfEntries(); index++)
+    {
+    dax::Vector3 value = array.GetValue(index);
+    if (index < 20)
+      {
+      std::cout << index << " : " << value.x << ", " << value.y << ", " << value.z
+           << std::endl;
+      }
+    if (   (value.x < -1) || (value .x > 1)
+        || (value.y < -1) || (value .y > 1)
+        || (value.z < -1) || (value .z > 1) )
+      {
+      std::cout << index << " : " << value.x << ", " << value.y << ", " << value.z
+           << std::endl;
+      break;
+      }
+    }
 }
 
 int main(int argc, char* argv[])
@@ -95,7 +136,9 @@ int main(int argc, char* argv[])
      exit(-1);
    }
 
-  //ConnectCellWithPoint();
+  ConnectCellWithPoint();
+
+  Pipeline1Test();
 
   return 0;
 }
