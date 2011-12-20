@@ -10,7 +10,7 @@
 #define __dax_cuda_cont_Executive_h
 
 #include <dax/Types.h>
-#include <dax/cont/HostArray.h>
+#include <dax/cont/Array.h>
 
 #include <dax/cuda/cont/Filter.h>
 
@@ -18,7 +18,7 @@ namespace dax { namespace cuda { namespace cont {
 
 template<typename F>
 void Pull(F &filter,
-          dax::cont::HostArray<typename F::OutputType> &data)
+          dax::cont::Array<typename F::OutputType> &data)
 {
   filter.execute();
   filter.pullResults(data);

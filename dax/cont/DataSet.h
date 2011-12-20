@@ -3,14 +3,14 @@
 
 #include <vector>
 #include <dax/cont/internal/BaseArray.h>
-#include <dax/cont/HostArray.h>
+#include <dax/cont/Array.h>
 
 namespace dax { namespace cont {
 class DataSet
 {
 public:
   typedef dax::cont::internal::BaseArray Field;
-  typedef dax::cont::HostArray<dax::Vector3> Coordinates;
+  typedef dax::cont::Array<dax::Vector3> Coordinates;
 
   DataSet( const std::size_t& numPoints, const std::size_t& numCells);
   DataSet();

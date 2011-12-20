@@ -13,13 +13,13 @@ class pointFieldHandle
 {
 public:
   typedef T DataType;
-  dax::cont::HostArray<T> *Array;
+  dax::cont::Array<T> *Array;
 
 
   pointFieldHandle(const std::string &name):
     Name(name)
     {
-    this->Array = new dax::cont::HostArray<T>();
+    this->Array = new dax::cont::Array<T>();
     this->Array->setName(this->Name);
     }
 
@@ -29,7 +29,7 @@ public:
     g.addPointField(this->Array);
     }
 
-  dax::cont::HostArray<T>& array()
+  dax::cont::Array<T>& array()
     {
     return *this->Array;
     }
@@ -44,12 +44,12 @@ class cellFieldHandle
 {
 public:
   typedef T DataType;
-  dax::cont::HostArray<T> *Array;
+  dax::cont::Array<T> *Array;
 
   cellFieldHandle(const std::string &name):
     Name(name)
     {
-    this->Array = new dax::cont::HostArray<T>();
+    this->Array = new dax::cont::Array<T>();
     this->Array->setName(this->Name);
     }
 
@@ -59,7 +59,7 @@ public:
     g.addCellField(this->Array);
     }
 
-  dax::cont::HostArray<T>& array()
+  dax::cont::Array<T>& array()
     {
     return *this->Array;
     }

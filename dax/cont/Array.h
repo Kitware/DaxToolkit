@@ -24,9 +24,9 @@ template<typename OtherT> class DeviceArray;
 
 namespace dax { namespace cont {
 
-daxDeclareClassTemplate1(HostArray);
+daxDeclareClassTemplate1(Array);
 template<typename Type>
-class HostArray :
+class Array :
     public dax::cont::internal::BaseArray
 
 {
@@ -42,32 +42,32 @@ public:
   //so that it can copy the real data in the host array
   template <class OtherT> friend class dax::cuda::cont::internal::DeviceArray;
 
-  HostArray(void):
+  Array(void):
     BaseArray(), Name(""), Data()
   {
   }
 
-  explicit HostArray(const std::size_t n, const ValueType &value = ValueType()):
+  explicit Array(const std::size_t n, const ValueType &value = ValueType()):
     BaseArray(), Name(""), Data(n,value)
   {
   }
 
-  HostArray(const HostArray &v)
+  Array(const Array &v)
     :Data(v.Data),Name(v.Name) {}
 
   template<typename OtherT>
-  HostArray(const HostArray<OtherT> &v)
+  Array(const Array<OtherT> &v)
     :Data(v), Name(v.name()) {}
 
   template<typename OtherT>
-  HostArray(const std::vector<OtherT> &v)
+  Array(const std::vector<OtherT> &v)
     :Data(v) {}
 
   template<typename InputIterator>
-  HostArray(InputIterator first, InputIterator last)
+  Array(InputIterator first, InputIterator last)
     :Data(first, last) {}
 
-  virtual ~HostArray(){}
+  virtual ~Array(){}
 
   void setName(const std::string &name) { Name = name; }
   virtual std::string name() const { return Name; }
@@ -91,24 +91,24 @@ public:
   ValueType at(const std::size_t& idx) const { return this->Data.at(idx); }
 
   template<typename OtherT>
-  HostArray &operator=(const std::vector<OtherT> &v)
+  Array &operator=(const std::vector<OtherT> &v)
   { Data=(v.Data); return *this;}
 
   template<typename OtherT>
-  HostArray &operator=(const HostArray<OtherT> &v)
+  Array &operator=(const Array<OtherT> &v)
   { Data=(v.Data); Name=v.name();return *this;}
 
-  HostArray &operator=(const HostArray &v)
+  Array &operator=(const Array &v)
   { Data=(v.Data); Name=v.name(); return *this; }
 
   //move data from device to host
   template<typename OtherT>
-  HostArray &operator=(const dax::cuda::cont::internal::DeviceArray<OtherT> &v)
+  Array &operator=(const dax::cuda::cont::internal::DeviceArray<OtherT> &v)
   { v.toHost(this); return *this; }
 
   //move data from device to host
   template<typename OtherT>
-  HostArray &operator=(dax::cuda::cont::internal::DeviceArray<OtherT>* v)
+  Array &operator=(dax::cuda::cont::internal::DeviceArray<OtherT>* v)
   { v->toHost(this); return *this; }
 
 

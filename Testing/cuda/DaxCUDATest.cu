@@ -11,7 +11,7 @@
 
 // Includes for host code.
 #include <dax/cuda/cont/internal/DeviceArray.h>
-#include <dax/cont/HostArray.h>
+#include <dax/cont/Array.h>
 
 // Includes for device code.
 #include <dax/internal/DataArray.h>
@@ -251,7 +251,7 @@ static void RunCellGradient(dax::internal::StructureUniformGrid &grid,
   execute_time = timer.elapsed();
 
   // Download the result, just to time it.
-  dax::cont::HostArray<dax::Vector3> hostResult(numberOfCells(grid));
+  dax::cont::Array<dax::Vector3> hostResult(numberOfCells(grid));
   timer.restart();
   hostResult = gradientResult;
   download_time = timer.elapsed();
@@ -293,7 +293,7 @@ static void RunCellGradientSinSqrCos(dax::internal::StructureUniformGrid &grid,
   execute_time = timer.elapsed();
 
   // Download the result, just to time it.
-  dax::cont::HostArray<dax::Vector3> hostResult(numberOfCells(grid));
+  dax::cont::Array<dax::Vector3> hostResult(numberOfCells(grid));
   timer.restart();
   hostResult = finalResult;
   download_time = timer.elapsed();
@@ -326,7 +326,7 @@ static void RunSinSqrCos(dax::internal::StructureUniformGrid &grid,
   execute_time = timer.elapsed();
 
   // Download the result, just to time it.
-  dax::cont::HostArray<dax::Scalar> hostResult;
+  dax::cont::Array<dax::Scalar> hostResult;
 
   timer.restart();
   hostResult = finalResult;

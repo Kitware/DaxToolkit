@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include <dax/cont/StructuredGrid.h>
-#include <dax/cont/HostArray.h>
+#include <dax/cont/Array.h>
 
 #include "Worklets.h"
 
@@ -21,14 +21,14 @@ dax::cont::StructuredGrid CreateInputStructure(dax::Id dim)
     dax::make_Id3(0, 0, 0),
     dax::make_Id3(dim-1, dim-1, dim-1) );
 
-  dax::cont::HostArray<dax::Id>* testPData = new
-    dax::cont::HostArray<dax::Id>();
+  dax::cont::Array<dax::Id>* testPData = new
+    dax::cont::Array<dax::Id>();
   testPData->setName("pointArray");
   testPData->resize(grid.numPoints(),1);
   grid.addPointField(testPData);
 
-  dax::cont::HostArray<dax::Id>* testCData = new
-    dax::cont::HostArray<dax::Id>();
+  dax::cont::Array<dax::Id>* testCData = new
+    dax::cont::Array<dax::Id>();
   testCData->setName("cellArray");
   testCData->resize(grid.numCells(),1);
   grid.addCellField(testCData);

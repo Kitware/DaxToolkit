@@ -110,7 +110,7 @@ class Elevation
 public:
   template<typename G, typename T, typename U>
   void operator()(G &g,
-                  dax::cont::HostArray<T>& in,
+                  dax::cont::Array<T>& in,
                   U& out)
   {
     typedef typename U::DataType OutType;
@@ -148,7 +148,7 @@ class Square
 public:
   template<typename G, typename T, typename U>
   void operator()(G &g,
-                  dax::cont::HostArray<T>& in,
+                  dax::cont::Array<T>& in,
                   U& out)
   {
     typedef typename U::DataType OutType;

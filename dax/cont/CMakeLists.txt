@@ -21,7 +21,7 @@ set(headers
   internal/FilterBase.h
   internal/BaseArray.h
   DataSet.h
-  HostArray.h
+  Array.h
   StructuredGrid.h
   )
 

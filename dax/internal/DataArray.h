@@ -19,7 +19,7 @@
 //------------------------------------------------------------------------------
 namespace dax {
 namespace cont {
-template<typename OtherT> class HostArray;
+template<typename OtherT> class Array;
 } }
 
 namespace dax {
@@ -67,7 +67,7 @@ public:
 
   /// Builds a DataArray from the HostArray
   DataArray(
-      dax::cont::HostArray<ValueType>& hostArray)
+      dax::cont::Array<ValueType>& hostArray)
     : Data(&hostArray[0]),
       NumEntries(hostArray.size()),
       IndexOffset(0)

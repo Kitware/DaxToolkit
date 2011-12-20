@@ -13,7 +13,7 @@
 #include <dax/cuda/cont/MapCellModule.h>
 #include <dax/cuda/cont/MapFieldModule.h>
 #include <dax/cuda/cont/Filter.h>
-#include <dax/cont/HostArray.h>
+#include <dax/cont/Array.h>
 #include "Worklets.h"
 
 
@@ -56,7 +56,7 @@ void ExecutePipeline(T& data)
   using namespace dax::cont;
 
 
-  dax::cont::HostArray<modules::CellGradient::OutputType> gradientResults;
+  dax::cont::Array<modules::CellGradient::OutputType> gradientResults;
 
   dax::cuda::cont::Model<T> model(data);
 

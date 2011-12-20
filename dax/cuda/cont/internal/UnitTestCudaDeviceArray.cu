@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/cont/HostArray.h>
+#include <dax/cont/Array.h>
 #include <dax/cuda/cont/internal/DeviceArray.h>
 
 
@@ -48,7 +48,7 @@ __global__ void AddOneToArray(dax::internal::DataArray<T> array)
 
 static void TestDeviceDataArray()
 {
-  dax::cont::HostArray<T> inputArray(ARRAY_SIZE);
+  dax::cont::Array<T> inputArray(ARRAY_SIZE);
   //dax::internal::DataArray<T> inputArray(inputBuffer, ARRAY_SIZE);
   for (dax::Id i = 0; i < ARRAY_SIZE; i++)
     {
@@ -60,7 +60,7 @@ static void TestDeviceDataArray()
 
   AddOneToArray<<<1, ARRAY_SIZE>>>(deviceArray);
 
-  dax::cont::HostArray<T> outputArray(ARRAY_SIZE);
+  dax::cont::Array<T> outputArray(ARRAY_SIZE);
   outputArray = deviceArray;
 
   for (dax::Id i = 0; i < ARRAY_SIZE; i++)
@@ -76,7 +76,7 @@ static void TestDeviceDataArray()
 
 static void TestManagedDeviceDataArray()
 {
-  dax::cont::HostArray<T> inputArray(ARRAY_SIZE);
+  dax::cont::Array<T> inputArray(ARRAY_SIZE);
   //dax::internal::DataArray<T> inputArray(inputBuffer, ARRAY_SIZE);
   for (dax::Id i = 0; i < ARRAY_SIZE; i++)
     {
@@ -89,7 +89,7 @@ static void TestManagedDeviceDataArray()
 
   AddOneToArray<<<1, ARRAY_SIZE>>>(deviceArray);
 
-  dax::cont::HostArray<T> outputArray(ARRAY_SIZE);
+  dax::cont::Array<T> outputArray(ARRAY_SIZE);
   outputArray = deviceArray.get();
 
   for (dax::Id i = 0; i < ARRAY_SIZE; i++)

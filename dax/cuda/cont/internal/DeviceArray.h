@@ -56,7 +56,7 @@ public:
   //copy constructor from a dax::cont::HostArray
   template<typename OtherT>
   __host__
-  DeviceArray(const dax::cont::HostArray<OtherT> &v)
+  DeviceArray(const dax::cont::Array<OtherT> &v)
     :Parent(v.Data){}
 
   //build an array from an iterator range
@@ -74,13 +74,13 @@ public:
   //copy the HostArray on the rhs to this DeviceArray
   template<typename OtherT>
   __host__
-  DeviceArray &operator=(const dax::cont::HostArray<OtherT> &v)
+  DeviceArray &operator=(const dax::cont::Array<OtherT> &v)
   { Parent::operator=(v.Data); return *this;}
 
   //copy the contents to the passed in host array
   template<typename OtherT>
   __host__
-  void toHost(dax::cont::HostArray<OtherT>* v) const
+  void toHost(dax::cont::Array<OtherT>* v) const
   {
     v->resize(this->size());
     thrust::copy(this->begin(),this->end(),v->begin());
