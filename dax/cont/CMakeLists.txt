@@ -13,16 +13,17 @@ set(sources
 
 set(impl_headers
   internal/Object.h
-  FilterFieldTypes.h
   )
 
 set(headers
-  internal/ModuleBase.h
-  internal/FilterBase.h
-  internal/BaseArray.h
-  DataSet.h
+  internal/ConvertTypes.h
+  internal/FieldContainer.h
   Array.h
+  DataSet.h
+  FieldData.h
+  FieldHandles.h
   StructuredGrid.h
+  Worklets.h
   )
 
 dax_declare_headers(${impl_headers})

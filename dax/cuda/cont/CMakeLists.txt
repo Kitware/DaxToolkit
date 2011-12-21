@@ -8,8 +8,8 @@
 
 set(headers
   internal/DeviceArray.h
-  Executive.h
-  Modules.h
+  internal/WorkletFunctions.h
+  Worklets.h
   )
 
 #-----------------------------------------------------------------------------

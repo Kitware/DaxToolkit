@@ -1,11 +1,13 @@
-#ifndef NO_PIPELINE_WORKLETS_H
-#define NO_PIPELINE_WORKLETS_H
+#ifndef __dax_cont_FieldHandles_h
+#define __dax_cont_FieldHandles_h
 
+#include <string>
+#include <dax/Types.h>
+#include <dax/cont/Array.h>
 
-#include "WorkletProxies.h"
+namespace dax {
+namespace cont {
 
-namespace helpers
-{
 
 template<typename T>
 class pointFieldHandle
@@ -100,71 +102,7 @@ private:
   const std::string Name;
 };
 
-}
-
-namespace worklets {
-
-class Elevation
-{
-public:
-  template<typename G, typename T, typename U>
-  Elevation(G &g, const T& in, U out)
-  {
-    out.associate(g);
-    workletProxies::Elevation()(g,in,out);
-  }
-};
-
-class Square
-{
-public:
-  template<typename G, typename T, typename U>
-  Square(G &g, const T& in, U out)
-  {
-    out.associate(g);
-    workletProxies::Square()(g,in,out);
-  }
-
-};
-
-class Sine
-{
-public:
-  template<typename G, typename T, typename U>
-  Sine(G &g, const T& in, U out)
-  {
-    out.associate(g);
-    workletProxies::Sine()(g,in,out);
-  }
-
-};
-
-class Cosine
-{
-public:
-  template<typename G, typename T, typename U>
-  Cosine(G &g, const T& in, U out)
-  {
-    out.associate(g);
-    workletProxies::Cosine()(g,in,out);
-  }
-
-};
-
-class CellGradient
-{
-
-public:
-  template<typename G, typename T, typename T2, typename U>
-  CellGradient(G &g, const T& in, const T2& in2, U out)
-  {
-    out.associate(g);
-    workletProxies::CellGradient()(g,in,in2,out);
-  }
-};
+} }
 
 
-}
-
-
-#endif // NO_PIPELINE_WORKLETS_H
+#endif // __dax_cont_FieldHandles_h

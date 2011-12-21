@@ -13,8 +13,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 #-----------------------------------------------------------------------------
 cuda_add_executable(NoPipelineTest
   main.cu
-  Worklets.h
-  WorkletProxies.h
 )
 
 target_link_libraries(NoPipelineTest

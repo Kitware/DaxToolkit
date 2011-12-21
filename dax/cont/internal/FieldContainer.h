@@ -18,6 +18,12 @@ private:
   std::map<std::string,TArray*> Container;
 
 public:
+
+  ~FieldContainer()
+    {
+
+    }
+
   TArray& get(const std::string &name)
     {
     return *(Container.find(name)->second);
@@ -42,6 +48,7 @@ public:
     {
     if(this->exists(name))
       {
+      delete Container.find(name)->second;
       Container.erase(name);
       return true;
       }
