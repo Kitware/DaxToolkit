@@ -17,3 +17,12 @@ dax_declare_headers(${headers})
 # They are in a seperate directory to highlight which objects are
 # internal and which are part of the external interface.
 add_custom_target(daxContPrivate ALL DEPENDS daxCont)
+
+set(unit_tests
+  UnitTestArray.cxx
+  #UnitTestDataSet.cxx
+  #UnitTestFieldData.cxx
+  #UnitTestFieldContainer.cxx
+  #UnitTestFieldHandles.cxx
+  )
+dax_unit_tests(SOURCES ${unit_tests} LIBRARIES daxCont)
