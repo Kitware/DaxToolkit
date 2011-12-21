@@ -16,9 +16,17 @@ public:
 
 
   pointFieldHandle(const std::string &name):
-    Name(name)
+    Name(name), ToDelete(true)
     {
     this->Array = new dax::cont::Array<T>();
+    }
+
+  virtual ~pointFieldHandle()
+    {
+    if(ToDelete)
+      {
+      delete this->Array;
+      }
     }
 
   template<typename G>
@@ -31,7 +39,8 @@ public:
   void associate(G &g)
     {
     this->Array->resize(pointFieldHandle::fieldSize(g));
-    g.getFieldsPoint().addArray(this->Name,*this->Array);
+    g.getFieldsPoint().addArray(this->Name,this->Array);
+    this->ToDelete = false;
     }
 
   dax::cont::Array<T>& array()
@@ -40,6 +49,7 @@ public:
     }
 
 private:
+  bool ToDelete;
   const std::string Name;
 
 };
@@ -52,11 +62,18 @@ public:
   dax::cont::Array<T> *Array;
 
   cellFieldHandle(const std::string &name):
-    Name(name)
+    Name(name), ToDelete(true)
     {
     this->Array = new dax::cont::Array<T>();
     }
 
+  virtual ~cellFieldHandle()
+    {
+    if(ToDelete)
+      {
+      delete this->Array;
+      }
+    }
 
   template<typename G>
   dax::Id static fieldSize(const G& g)
@@ -68,7 +85,8 @@ public:
   void associate(G &g)
     {
     this->Array->resize(cellFieldHandle::fieldSize(g));
-    g.getFieldsCell().addArray(this->Name,*this->Array);
+    g.getFieldsCell().addArray(this->Name,this->Array);
+    this->ToDelete = false;
     }
 
   dax::cont::Array<T>& array()
@@ -78,6 +96,7 @@ public:
 
 
 private:
+  bool ToDelete;
   const std::string Name;
 };
 

@@ -13,7 +13,7 @@ namespace dax {
 namespace cont
 {
 // forward declaration of HostArray
-template<typename OtherT> class HostArray;
+template<typename OtherT> class Array;
 }
 }
 
@@ -53,7 +53,7 @@ public:
   DeviceArray(const dax::cuda::cont::internal::DeviceArray<OtherT> &v)
     :Parent(v) {}
 
-  //copy constructor from a dax::cont::HostArray
+  //copy constructor from a dax::cont::Array
   template<typename OtherT>
   __host__
   DeviceArray(const dax::cont::Array<OtherT> &v)
@@ -71,13 +71,13 @@ public:
   DeviceArray &operator=(const dax::cuda::cont::internal::DeviceArray<OtherT> &v)
   { Parent::operator=(v); return *this; }
 
-  //copy the HostArray on the rhs to this DeviceArray
+  //copy the Array on the rhs to this DeviceArray
   template<typename OtherT>
   __host__
   DeviceArray &operator=(const dax::cont::Array<OtherT> &v)
   { Parent::operator=(v.Data); return *this;}
 
-  //copy the contents to the passed in host array
+  //copy the contents to the passed in array
   template<typename OtherT>
   __host__
   void toHost(dax::cont::Array<OtherT>* v) const

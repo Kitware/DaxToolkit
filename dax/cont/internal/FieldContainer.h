@@ -13,27 +13,22 @@ class FieldContainer : public dax::cont::internal::Object
 {
 private:
   typedef dax::cont::Array<T> TArray;
-  typedef std::pair<std::string,TArray> MapPair;
+  typedef std::pair<std::string,TArray*> MapPair;
 
-  std::map<std::string,TArray> Container;
+  std::map<std::string,TArray*> Container;
 
 public:
   TArray& get(const std::string &name)
     {
-    return Container.find(name)->second;
+    return *(Container.find(name)->second);
     }
 
   const TArray& get(const std::string &name) const
     {
-    return Container.find(name)->second;
+    return *(Container.find(name)->second);
     }
 
-  void get(const std::string &name, TArray& array) const
-    {
-    array = Container.find(name)->second;
-    }
-
-  bool add(const std::string &name, TArray &t)
+  bool add(const std::string &name, TArray *t)
     {
     if(this->exists(name))
       {

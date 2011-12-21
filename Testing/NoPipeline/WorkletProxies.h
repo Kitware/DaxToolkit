@@ -30,7 +30,7 @@
 namespace workletFunctions
 {
 template<typename WorkType>
-__device__ void computeIteration(dax::Id size, dax::Id &start,
+DAX_EXEC_CONT_EXPORT void computeIteration(dax::Id size, dax::Id &start,
                                  dax::Id &end, dax::Id &inc)
 {
   start = (blockIdx.x * blockDim.x) + threadIdx.x;
@@ -188,6 +188,27 @@ dax::internal::StructureUniformGrid convertDataSet(dax::cont::StructuredGrid &sg
   return grid;
   }
 
+
+__global__ void TestCUDAElevation(
+    dax::internal::StructureUniformGrid grid,
+    dax::internal::DataArray<dax::Scalar> outPointScalars)
+{
+  dax::Id pointIndex = (blockIdx.x * blockDim.x) + threadIdx.x;
+  dax::Id pointIncrement = gridDim.x;
+  dax::Id numPoints = dax::internal::numberOfPoints(grid);
+
+  dax::exec::WorkMapField<dax::exec::CellVoxel> work(grid, pointIndex);
+  dax::exec::FieldCoordinates pointCoord
+      = dax::exec::internal::fieldCoordinatesBuild(grid);
+  dax::exec::FieldPoint<dax::Scalar> outField(outPointScalars);
+
+  for ( ; pointIndex < numPoints; pointIndex += pointIncrement)
+    {
+    work.SetIndex(pointIndex);
+    Elevation(work, pointCoord, outField);
+    }
+}
+
 class Elevation
 {
 public:
@@ -200,7 +221,7 @@ public:
 
     //convert from host to device arrayss
     dax::cuda::cont::internal::DeviceArray<T> ind(in);
-    dax::cuda::cont::internal::DeviceArray<OutType> outd(out.array());
+    dax::cuda::cont::internal::DeviceArray<OutType> outd(out.array().size());
 
     //determine the cuda parameters from the data structure
     dax::cuda::exec::CudaParameters params(g);
@@ -212,21 +233,18 @@ public:
     //this type needs to be auto derived
     dax::internal::StructureUniformGrid grid = convertDataSet(g);
 
-    //this should be easier to do
+    //you can't use implicit constructors when calling a global
+    //function
     dax::internal::DataArray<T> inField(ind);
     dax::internal::DataArray<OutType> outField(outd);
-
-
-    //in and out are automatically converted to the correct type
-    //by explicit constructors on FieldPoint and FieldCoordinates
     workletFunctions::ElevationFunction<<<params.numPointBlocks(),
         params.numPointThreads()>>>(size,
                                     grid,
                                     inField,
                                     outField);
 
-   //move the results back from the device to the host
-    out.array() = outd;
+    //move the results back from the device to the host
+    outd.toHost(&out.array());
   }
 };
 
@@ -395,7 +413,7 @@ public:
                                     inField2,
                                     outField);
 
-   //move the results back from the device to the host
+    //move the results back from the device to the host
     out.array() = outd;
   }
 };

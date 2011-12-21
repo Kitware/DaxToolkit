@@ -25,13 +25,13 @@ void CreateInputStructure(dax::Id dim,dax::cont::StructuredGrid &grid )
     dax::cont::Array<dax::Scalar>();
 
   testPData->resize(grid.numPoints(),1);
-  grid.getFieldsPoint().addArray("pointArray",*testPData);
+  grid.getFieldsPoint().addArray("pointArray",testPData);
 
   dax::cont::Array<dax::Scalar>* testCData = new
     dax::cont::Array<dax::Scalar>();
   testCData->resize(grid.numCells(),1);
 
-  grid.getFieldsCell().addArray("cellArray",*testCData);
+  grid.getFieldsCell().addArray("cellArray",testCData);
 
   grid.computePointLocations();
 }
@@ -126,17 +126,8 @@ void Pipeline1Test()
 
 int main(int argc, char* argv[])
 {
-  try
-   {
-    ConnectFilterFields();
-   }
-   catch(thrust::system_error e)
-   {
-     std::cerr  << "Error: " << e.what() << std::endl;
-     exit(-1);
-   }
-
-  ConnectCellWithPoint();
+//  ConnectFilterFields();
+//  ConnectCellWithPoint();
 
   Pipeline1Test();
 
