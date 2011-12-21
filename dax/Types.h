@@ -57,128 +57,158 @@
 
 namespace dax
 {
-  //*****************************************************************************
-  // Typedefs for basic types.
-  //*****************************************************************************
+//*****************************************************************************
+// Typedefs for basic types.
+//*****************************************************************************
 
-#ifndef __CUDACC__
+/// Alignment requirements are prescribed by CUDA on device (Table B-1 in NVIDIA
+/// CUDA C Programming Guide 4.0)
 
-  /// Alignment requirements are prescribed by CUDA on device (Table B-1 in NVIDIA
-  /// CUDA C Programming Guide 4.0)
+/// Scalar corresponds to a single-valued floating point number.
+typedef float Scalar __attribute__ ((aligned (4)));
 
-  /// Scalar corresponds to a single-valued floating point number.
-  typedef float Scalar __attribute__ ((aligned (4)));
+/// Vector3 corresponds to a 3-tuple
+class Vector3 {
+public:
+  typedef dax::Scalar ValueType;
+  static const int NUM_COMPONENTS = 3;
 
-  /// Vector3 corresponds to a 3-tuple
-  struct Vector3 {
-    Scalar x; Scalar y; Scalar z;
-  } __attribute__ ((aligned(4)));
-
-  /// Vector4 corresponds to a 4-tuple
-  struct Vector4 {
-    Scalar x; Scalar y; Scalar z; Scalar w;
-  } __attribute__ ((aligned(16)));
-
-  /// Id3 corresponds to a 3-dimensional index for 3d arrays.  Note that
-  /// the precision of each index may be less than dax::Id.
-  struct Id3 {
-    int x; int y; int z;
-  } __attribute__ ((aligned(4)));
-
-  /// Represents an ID.
-  typedef int Id __attribute__ ((aligned(4)));
-
-  /// Initializes and returns a Vector3.
-  DAX_EXEC_CONT_EXPORT inline Vector3 make_Vector3(Scalar x, Scalar y, Scalar z)
-    {
-    Vector3 temp;
-    temp.x = x; temp.y = y; temp.z = z;
-    return temp;
-    }
-
-  /// Initializes and returns a Vector4.
-  DAX_EXEC_CONT_EXPORT inline
-  Vector4 make_Vector4(Scalar x, Scalar y, Scalar z, Scalar w)
-    {
-    Vector4 temp;
-    temp.x = x; temp.y = y; temp.z = z; temp.w = w;
-    return temp;
-    }
-
-  /// Initializes and returns an Id3
-  DAX_EXEC_CONT_EXPORT inline Id3 make_Id3(int x, int y, int z)
-    {
-    Id3 temp;
-    temp.x = x;  temp.y = y;  temp.z = z;
-    return temp;
-    }
-
-#else
-
-  typedef float Scalar;
-  typedef float3 Vector3;
-  typedef int3 Id3;
-  typedef float4 Vector4;
-  typedef int Id;
-
-  DAX_EXEC_CONT_EXPORT inline Vector3 make_Vector3(float x, float y, float z)
-    {
-    return make_float3(x, y, z);
-    }
-
-  DAX_EXEC_CONT_EXPORT inline
-  Vector4 make_Vector4(float x, float y, float z, float w)
-    {
-    return make_float4(x, y, z, w);
-    }
-
-  DAX_EXEC_CONT_EXPORT inline Id3 make_Id3(int x, int y, int z)
-    {
-    return make_int3(x, y, z);
-    }
-
-#endif
-
-  DAX_EXEC_CONT_EXPORT inline Scalar dot(const Vector3 &a, const Vector3 &b)
-  {
-    return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
+  Vector3() { }
+  Vector3(ValueType x, ValueType y, ValueType z) {
+    this->Values[0] = x;
+    this->Values[1] = y;
+    this->Values[2] = z;
   }
 
-  DAX_EXEC_CONT_EXPORT inline Scalar dot(const Vector4 &a, const Vector4 &b)
-  {
-    return (a.x * b.x) + (a.y * b.y) + (a.z * b.z) + (a.w * b.w);
+  const ValueType &operator[](int idx) const { return this->Values[idx]; }
+  ValueType &operator[](int idx) { return this->Values[idx]; }
+
+private:
+  ValueType Values[NUM_COMPONENTS];
+} __attribute__ ((aligned(4)));
+
+/// Vector4 corresponds to a 3-tuple
+class Vector4 {
+public:
+  typedef dax::Scalar ValueType;
+  static const int NUM_COMPONENTS = 4;
+
+  Vector4() { }
+  Vector4(ValueType x, ValueType y, ValueType z, ValueType w) {
+    this->Values[0] = x;
+    this->Values[1] = y;
+    this->Values[2] = z;
+    this->Values[3] = w;
   }
 
+  const ValueType &operator[](int idx) const { return this->Values[idx]; }
+  ValueType &operator[](int idx) { return this->Values[idx]; }
+
+private:
+  ValueType Values[NUM_COMPONENTS];
+} __attribute__ ((aligned(4)));
+
+/// Represents an ID.
+typedef int Id __attribute__ ((aligned(4)));
+
+/// Id3 corresponds to a 3-dimensional index for 3d arrays.  Note that
+/// the precision of each index may be less than dax::Id.
+class Id3 {
+public:
+  typedef dax::Id ValueType;
+  static const int NUM_COMPONENTS = 3;
+
+  Id3() { }
+  Id3(ValueType x, ValueType y, ValueType z) {
+    this->Values[0] = x;
+    this->Values[1] = y;
+    this->Values[2] = z;
+  }
+
+  const ValueType &operator[](int idx) const { return this->Values[idx]; }
+  ValueType &operator[](int idx) { return this->Values[idx]; }
+
+private:
+  ValueType Values[NUM_COMPONENTS];
+} __attribute__ ((aligned(4)));
+
+/// Initializes and returns a Vector3.
+DAX_EXEC_CONT_EXPORT inline dax::Vector3 make_Vector3(dax::Scalar x,
+                                                      dax::Scalar y,
+                                                      dax::Scalar z)
+{
+  return dax::Vector3(x, y, z);
 }
+
+/// Initializes and returns a Vector4.
+DAX_EXEC_CONT_EXPORT inline dax::Vector4 make_Vector4(dax::Scalar x,
+                                                      dax::Scalar y,
+                                                      dax::Scalar z,
+                                                      dax::Scalar w)
+{
+  return dax::Vector4(x, y, z, w);
+}
+
+/// Initializes and returns an Id3
+DAX_EXEC_CONT_EXPORT inline dax::Id3 make_Id3(dax::Id x, dax::Id y, dax::Id z)
+{
+  return dax::Id3(x, y, z);
+}
+
+DAX_EXEC_CONT_EXPORT inline dax::Id dot(dax::Id a, dax::Id b)
+{
+  return a * b;
+}
+
+DAX_EXEC_CONT_EXPORT inline dax::Id3::ValueType dot(const dax::Id3 &a,
+                                                    const dax::Id3 &b)
+{
+  return (a[0]*b[0]) + (a[1]*b[1]) + (a[2]*b[2]);
+}
+
+DAX_EXEC_CONT_EXPORT inline dax::Scalar dot(dax::Scalar a, dax::Scalar b)
+{
+  return a * b;
+}
+
+DAX_EXEC_CONT_EXPORT inline dax::Vector3::ValueType dot(const dax::Vector3 &a,
+                                                        const dax::Vector3 &b)
+{
+  return (a[0]*b[0]) + (a[1]*b[1]) + (a[2]*b[2]);
+}
+
+DAX_EXEC_CONT_EXPORT inline dax::Vector4::ValueType dot(const dax::Vector4 &a,
+                                                        const dax::Vector4 &b)
+{
+  return (a[0]*b[0]) + (a[1]*b[1]) + (a[2]*b[2]) + (a[3]*b[3]);
+}
+
+} // End of namespace dax
 
 DAX_EXEC_CONT_EXPORT inline dax::Id3 operator+(const dax::Id3 &a,
                                                const dax::Id3 &b)
 {
-  dax::Id3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
-  return result;
+  return dax::make_Id3(a[0]+b[0], a[1]+b[1], a[2]+b[2]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Id3 operator*(const dax::Id3 &a,
                                                const dax::Id3 &b)
 {
-  dax::Id3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
-  return result;
+  return dax::make_Id3(a[0]*b[0], a[1]*b[1], a[2]*b[2]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Id3 operator-(const dax::Id3 &a,
                                                const dax::Id3 &b)
 {
-  dax::Id3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
-  return result;
+  return dax::make_Id3(a[0]-b[0], a[1]-b[1], a[2]-b[2]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Id3 operator/(const dax::Id3 &a,
                                                const dax::Id3 &b)
 {
-  dax::Id3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
-  return result;
+  return dax::make_Id3(a[0]/b[0], a[1]/b[1], a[2]/b[2]);
 }
 DAX_EXEC_CONT_EXPORT inline bool operator==(const dax::Id3 &a,
                                             const dax::Id3 &b)
 {
-  return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
+  return (a[0] == b[0]) && (a[1] == b[1]) && (a[2] == b[2]);
 }
 DAX_EXEC_CONT_EXPORT inline bool operator!=(const dax::Id3 &a,
                                             const dax::Id3 &b)
@@ -186,34 +216,41 @@ DAX_EXEC_CONT_EXPORT inline bool operator!=(const dax::Id3 &a,
   return !(a == b);
 }
 
+DAX_EXEC_CONT_EXPORT inline dax::Id3 operator*(dax::Id3::ValueType a,
+                                               const dax::Id3 &b)
+{
+  return dax::make_Id3(a*b[0], a*b[1], a*b[2]);
+}
+DAX_EXEC_CONT_EXPORT inline dax::Id3 operator*(const dax::Id3 &a,
+                                               dax::Id3::ValueType &b)
+{
+  return dax::make_Id3(a[0]*b, a[1]*b, a[2]*b);
+}
+
 DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator+(const dax::Vector3 &a,
                                                    const dax::Vector3 &b)
 {
-  dax::Vector3 result = { a.x + b.x, a.y + b.y, a.z + b.z };
-  return result;
+  return dax::make_Vector3(a[0]+b[0], a[1]+b[1], a[2]+b[2]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator*(const dax::Vector3 &a,
                                                    const dax::Vector3 &b)
 {
-  dax::Vector3 result = { a.x * b.x, a.y * b.y, a.z * b.z };
-  return result;
+  return dax::make_Vector3(a[0]*b[0], a[1]*b[1], a[2]*b[2]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator-(const dax::Vector3 &a,
                                                    const dax::Vector3 &b)
 {
-  dax::Vector3 result = { a.x - b.x, a.y - b.y, a.z - b.z };
-  return result;
+  return dax::make_Vector3(a[0]-b[0], a[1]-b[1], a[2]-b[2]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator/(const dax::Vector3 &a,
                                                    const dax::Vector3 &b)
 {
-  dax::Vector3 result = { a.x / b.x, a.y / b.y, a.z / b.z };
-  return result;
+  dax::make_Vector3(a[0]/b[0], a[1]/b[1], a[2]/b[2]);
 }
 DAX_EXEC_CONT_EXPORT inline bool operator==(const dax::Vector3 &a,
                                             const dax::Vector3 &b)
 {
-  return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
+  return (a[0] == b[0]) && (a[1] == b[1]) && (a[2] == b[2]);
 }
 DAX_EXEC_CONT_EXPORT inline bool operator!=(const dax::Vector3 &a,
                                             const dax::Vector3 &b)
@@ -221,47 +258,41 @@ DAX_EXEC_CONT_EXPORT inline bool operator!=(const dax::Vector3 &a,
   return !(a == b);
 }
 
-DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator*(dax::Scalar a,
+DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator*(dax::Vector3::ValueType a,
                                                    const dax::Vector3 &b)
 {
-  dax::Vector3 result = { a * b.x, a * b.y, a * b.z };
-  return result;
+  return dax::make_Vector3(a*b[0], a*b[1], a*b[2]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator*(const dax::Vector3 &a,
-                                                   dax::Scalar &b)
+                                                   dax::Vector3::ValueType &b)
 {
-  dax::Vector3 result = { a.x * b, a.y * b, a.z * b };
-  return result;
+  return dax::make_Vector3(a[0]*b, a[1]*b, a[2]*b);
 }
 
 DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator+(const dax::Vector4 &a,
                                                    const dax::Vector4 &b)
 {
-  dax::Vector4 result = { a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w };
-  return result;
+  dax::make_Vector4(a[0]+b[0], a[1]+b[1], a[2]+b[2], a[3]+b[3]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator*(const dax::Vector4 &a,
                                                    const dax::Vector4 &b)
 {
-  dax::Vector4 result = { a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w };
-  return result;
+  dax::make_Vector4(a[0]*b[0], a[1]*b[1], a[2]*b[2], a[3]*b[3]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator-(const dax::Vector4 &a,
                                                    const dax::Vector4 &b)
 {
-  dax::Vector4 result = { a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w };
-  return result;
+  dax::make_Vector4(a[0]-b[0], a[1]-b[1], a[2]-b[2], a[3]-b[3]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator/(const dax::Vector4 &a,
                                                    const dax::Vector4 &b)
 {
-  dax::Vector4 result = { a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w };
-  return result;
+  dax::make_Vector4(a[0]/b[0], a[1]/b[1], a[2]/b[2], a[3]/b[3]);
 }
 DAX_EXEC_CONT_EXPORT inline bool operator==(const dax::Vector4 &a,
                                             const dax::Vector4 &b)
 {
-  return (a.x == b.x) && (a.y == b.y) && (a.z == b.z) && (a.w == b.w);
+  return (a[0] == b[0]) && (a[1] == b[1]) && (a[2] == b[2]) && (a[3] == b[3]);
 }
 DAX_EXEC_CONT_EXPORT inline bool operator!=(const dax::Vector4 &a,
                                             const dax::Vector4 &b)
@@ -269,17 +300,15 @@ DAX_EXEC_CONT_EXPORT inline bool operator!=(const dax::Vector4 &a,
   return !(a == b);
 }
 
-DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator*(dax::Scalar a,
+DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator*(dax::Vector4::ValueType a,
                                                    const dax::Vector4 &b)
 {
-  dax::Vector4 result = { a * b.x, a * b.y, a * b.z, a * b.w };
-  return result;
+  dax::make_Vector4(a*b[0], a*b[1], a*b[2], a*b[3]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator*(const dax::Vector4 &a,
                                                    dax::Scalar &b)
 {
-  dax::Vector4 result = { a.x * b, a.y * b, a.z * b, a.w * b };
-  return result;
+  dax::make_Vector4(a[0]*b, a[1]*b, a[2]*b, a[3]*b);
 }
 
 #endif

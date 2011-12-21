@@ -28,37 +28,37 @@ static void TestVector3()
   dax::Scalar s = 5;
 
   dax::Vector3 plus = a + b;
-  if ((plus.x != 3) || (plus.y != 6) || (plus.z != 9))
+  if ((plus[0] != 3) || (plus[1] != 6) || (plus[2] != 9))
     {
     TEST_FAIL(<< "Vectors do not add correctly.");
     }
 
   dax::Vector3 minus = a - b;
-  if ((minus.x != 1) || (minus.y != 2) || (minus.z != 3))
+  if ((minus[0] != 1) || (minus[1] != 2) || (minus[2] != 3))
     {
     TEST_FAIL(<< "Vectors to not subtract correctly.");
     }
 
   dax::Vector3 mult = a * b;
-  if ((mult.x != 2) || (mult.y != 8) || (mult.z != 18))
+  if ((mult[0] != 2) || (mult[1] != 8) || (mult[2] != 18))
     {
     TEST_FAIL(<< "Vectors to not multiply correctly.");
     }
 
   dax::Vector3 div = a / b;
-  if ((div.x != 2) || (div.y != 2) || (div.z != 2))
+  if ((div[0] != 2) || (div[1] != 2) || (div[2] != 2))
     {
     TEST_FAIL(<< "Vectors to not divide correctly.");
     }
 
   mult = s * a;
-  if ((mult.x != 10) || (mult.y != 20) || (mult.z != 30))
+  if ((mult[0] != 10) || (mult[1] != 20) || (mult[2] != 30))
     {
     TEST_FAIL(<< "Vector and scalar to not multiply correctly.");
     }
 
   mult = a * s;
-  if ((mult.x != 10) || (mult.y != 20) || (mult.z != 30))
+  if ((mult[0] != 10) || (mult[1] != 20) || (mult[2] != 30))
     {
     TEST_FAIL(<< "Vector and scalar to not multiply correctly.");
     }
@@ -85,37 +85,37 @@ static void TestVector4()
   dax::Scalar s = 5;
 
   dax::Vector4 plus = a + b;
-  if ((plus.x != 3) || (plus.y != 6) || (plus.z != 9) || (plus.w != 12))
+  if ((plus[0] != 3) || (plus[1] != 6) || (plus[2] != 9) || (plus[3] != 12))
     {
     TEST_FAIL(<< "Vectors do not add correctly.");
     }
 
   dax::Vector4 minus = a - b;
-  if ((minus.x != 1) || (minus.y != 2) || (minus.z != 3) || (minus.w != 4))
+  if ((minus[0] != 1) || (minus[1] != 2) || (minus[2] != 3) || (minus[3] != 4))
     {
     TEST_FAIL(<< "Vectors to not subtract correctly.");
     }
 
   dax::Vector4 mult = a * b;
-  if ((mult.x != 2) || (mult.y != 8) || (mult.z != 18) || (mult.w != 32))
+  if ((mult[0] != 2) || (mult[1] != 8) || (mult[2] != 18) || (mult[3] != 32))
     {
     TEST_FAIL(<< "Vectors to not multiply correctly.");
     }
 
   dax::Vector4 div = a / b;
-  if ((div.x != 2) || (div.y != 2) || (div.z != 2) || (div.w != 2))
+  if ((div[0] != 2) || (div[1] != 2) || (div[2] != 2) || (div[3] != 2))
     {
     TEST_FAIL(<< "Vectors to not divide correctly.");
     }
 
   mult = s * a;
-  if ((mult.x != 10) || (mult.y != 20) || (mult.z != 30) || (mult.w != 40))
+  if ((mult[0] != 10) || (mult[1] != 20) || (mult[2] != 30) || (mult[3] != 40))
     {
     TEST_FAIL(<< "Vector and scalar to not multiply correctly.");
     }
 
   mult = a * s;
-  if ((mult.x != 10) || (mult.y != 20) || (mult.z != 30) || (mult.w != 40))
+  if ((mult[0] != 10) || (mult[1] != 20) || (mult[2] != 30) || (mult[3] != 40))
     {
     TEST_FAIL(<< "Vector and scalar to not multiply correctly.");
     }
@@ -139,29 +139,42 @@ static void TestId3()
 {
   dax::Id3 a = dax::make_Id3(2, 4, 6);
   dax::Id3 b = dax::make_Id3(1, 2, 3);
+  dax::Id s = 5;
 
   dax::Id3 plus = a + b;
-  if ((plus.x != 3) || (plus.y != 6) || (plus.z != 9))
+  if ((plus[0] != 3) || (plus[1] != 6) || (plus[2] != 9))
     {
     TEST_FAIL(<< "Vectors do not add correctly.");
     }
 
   dax::Id3 minus = a - b;
-  if ((minus.x != 1) || (minus.y != 2) || (minus.z != 3))
+  if ((minus[0] != 1) || (minus[1] != 2) || (minus[2] != 3))
     {
     TEST_FAIL(<< "Vectors to not subtract correctly.");
     }
 
   dax::Id3 mult = a * b;
-  if ((mult.x != 2) || (mult.y != 8) || (mult.z != 18))
+  if ((mult[0] != 2) || (mult[1] != 8) || (mult[2] != 18))
     {
     TEST_FAIL(<< "Vectors to not multiply correctly.");
     }
 
   dax::Id3 div = a / b;
-  if ((div.x != 2) || (div.y != 2) || (div.z != 2))
+  if ((div[0] != 2) || (div[1] != 2) || (div[2] != 2))
     {
     TEST_FAIL(<< "Vectors to not divide correctly.");
+    }
+
+  mult = s * a;
+  if ((mult[0] != 10) || (mult[1] != 20) || (mult[2] != 30))
+    {
+    TEST_FAIL(<< "Vector and scalar to not multiply correctly.");
+    }
+
+  mult = a * s;
+  if ((mult[0] != 10) || (mult[1] != 20) || (mult[2] != 30))
+    {
+    TEST_FAIL(<< "Vector and scalar to not multiply correctly.");
     }
 
   if (a == b)
@@ -171,6 +184,11 @@ static void TestId3()
   if (!(a != b))
     {
     TEST_FAIL(<< "operator!= wrong");
+    }
+
+  if (dax::dot(a, b) != 28)
+    {
+    TEST_FAIL(<< "dot(Id3) wrong");
     }
 }
 
