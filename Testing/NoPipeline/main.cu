@@ -38,6 +38,7 @@ void CreateInputStructure(dax::Id dim,dax::cont::StructuredGrid &grid )
   grid.getFieldsCell().addArray("cellArray",testCData);
 
   grid.computePointLocations();
+  std::cout << "Created Input Structure " << std::endl;
   }
 
 void ConnectFilterFields()
@@ -45,27 +46,31 @@ void ConnectFilterFields()
   std::cout << "ConnectFilterFields" << std::endl;
   dax::cont::StructuredGrid grid;
   CreateInputStructure(128,grid);
-  {
-  std::cout << "Elevation" << std::endl;
+  {  
   dax::cont::worklets::Elevation(grid,
                                  grid.points(),
                                  dax::cont::pointFieldHandle<dax::Scalar>("Elevation"));
-  std::cout << "Square" << std::endl;
+  dax::cont::worklets::Elevation(grid,
+                                 grid.points(),
+                                 dax::cont::pointFieldHandle<dax::Scalar>("Elevation2"));
+  dax::cont::worklets::Elevation(grid,
+                                 grid.points(),
+                                 dax::cont::pointFieldHandle<dax::Scalar>("Elevation3"));
+
   dax::cont::worklets::Square(grid,
                               grid.getFieldsPoint().getScalar("Elevation"),
                               dax::cont::pointFieldHandle<dax::Scalar>("Square"));
   }
 
   {
-  std::cout << "Square" << std::endl;
   dax::cont::worklets::Square(grid,
                               grid.getFieldsCell().getScalar("cellArray"),
-                              dax::cont::cellFieldHandle<dax::Scalar>("Sine"));
-
-  std::cout << "Cosine" << std::endl;
-  dax::cont::worklets::Cosine(grid,
-                              grid.getFieldsCell().getScalar("Sine"),
                               dax::cont::cellFieldHandle<dax::Scalar>("Square"));
+
+
+  dax::cont::worklets::Cosine(grid,
+                              grid.getFieldsCell().getScalar("Square"),
+                              dax::cont::cellFieldHandle<dax::Scalar>("Sine"));
   }
   }
 
@@ -76,13 +81,11 @@ void ConnectCellWithPoint()
   dax::cont::StructuredGrid grid;
   CreateInputStructure(128,grid);
 
-  std::cout << "Gradient" << std::endl;
   dax::cont::worklets::CellGradient(grid,
                                     grid.points(),
                                     grid.getFieldsPoint().getScalar("pointArray"),
                                     dax::cont::cellFieldHandle<dax::Vector3>("Gradient"));
 
-  std::cout << "Elevation" << std::endl;
   dax::cont::worklets::Elevation(grid,
                                  grid.getFieldsCell().getVector3("Gradient"),
                                  dax::cont::cellFieldHandle<dax::Scalar>("Elev"));
@@ -94,17 +97,20 @@ void Pipeline1Test()
   dax::cont::StructuredGrid grid;
   CreateInputStructure(128,grid);
 
-  std::cout << "Elevation" << std::endl;
   dax::cont::worklets::Elevation(grid,
                                  grid.points(),
                                  dax::cont::pointFieldHandle<dax::Scalar>("Elevation"));
 
-
-  std::cout << "Gradient" << std::endl;
   dax::cont::worklets::CellGradient(grid,
                                     grid.points(),
                                     grid.getFieldsPoint().getScalar("Elevation"),
                                     dax::cont::cellFieldHandle<dax::Vector3>("Gradient"));
+
+  //you need use the retrieve function
+  //to get the propery Array, don't attempt to get the array
+  //directly ( TODO remove the ability to get raw array from public control API)
+//  dax::cont::ArrayPtr<dax::Vector3> array = dax::cont::retrieve(
+//                                              grid.getFieldsCell().getVector3("Gradient"));
   }
 
 int main(int argc, char* argv[])

@@ -4,6 +4,7 @@
 
 #include <dax/cont/internal/Object.h>
 #include <dax/cont/Array.h>
+#include <dax/cont/internal/ArrayContainer.h>
 #include <map>
 
 
@@ -12,7 +13,8 @@ template<typename T>
 class FieldContainer : public dax::cont::internal::Object
 {
 private:
-  typedef dax::cont::ArrayPtr<T> TArray;
+  typedef dax::cont::ArrayPtr<T> ContArray;
+  typedef dax::cont::internal::ArrayContainer<T> TArray;
   typedef std::pair<std::string,TArray> MapPair;
 
   std::map<std::string,TArray> Container;
@@ -24,17 +26,17 @@ public:
 
     }
 
-  TArray get(const std::string &name)
+  TArray& get(const std::string &name)
     {
     return Container.find(name)->second;
     }
 
-  const TArray get(const std::string &name) const
+  const TArray& get(const std::string &name) const
     {
     return Container.find(name)->second;
     }
 
-  bool add(const std::string &name, TArray t)
+  bool add(const std::string &name, const TArray &t)
     {
     if(this->exists(name))
       {
@@ -44,11 +46,17 @@ public:
     return true;
     }
 
+  bool add(const std::string &name, ContArray ca)
+    {
+    TArray container;
+    container.setControl(ca);
+    return this->add(name,container);
+    }
+
   bool remove(const std::string &name)
     {
     if(this->exists(name))
       {
-      Container.find(name)->second.reset();
       Container.erase(name);
       return true;
       }

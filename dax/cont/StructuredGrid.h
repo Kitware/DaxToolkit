@@ -28,15 +28,28 @@ public:
 
   void computePointLocations()
     {
+
     std::size_t size = this->numPoints();
-    this->Points->resize(size);
+
+
+    dax::cont::ArrayPtr<Coordinates::ValueType> realPoints(
+          new dax::cont::Array<Coordinates::ValueType>());
+    realPoints->resize(size);
     for (std::size_t i=0; i < size; ++i)
       {
-      (*this->Points)[i] = dax::make_Vector3(i,i,i);
+      (*realPoints)[i] = dax::make_Vector3(i,i,i);
       }
+    //set the control array for the points
+    this->Points.setControl(realPoints);
     }
 
-  const CoordinatesPtr& points() const
+  const Coordinates& points() const
+    {
+    return Points;
+    }
+
+
+  Coordinates& points()
     {
     return Points;
     }
@@ -47,7 +60,7 @@ public:
   virtual std::size_t numCells() const;
 
 private:
-  CoordinatesPtr Points;
+  Coordinates Points;
 
   dax::Id3 extentDimensions() const
   {
@@ -71,7 +84,7 @@ private:
 
 //------------------------------------------------------------------------------
 StructuredGrid::StructuredGrid():
-  DataSet(), Points(new Coordinates())
+  DataSet(), Points()
 {
 
   this->Origin = dax::make_Vector3(0,0,0);
@@ -85,7 +98,7 @@ StructuredGrid::StructuredGrid(const dax::Vector3 &origin,
                                const dax::Vector3 &spacing,
                                const dax::Id3 &minExtents,
                                const dax::Id3 &maxExtents):
-  DataSet(), Points(new Coordinates())
+  DataSet(), Points()
 {
   this->Origin = origin;
   this->Spacing = spacing;

@@ -6,6 +6,7 @@
 
 =========================================================================*/
 
+
 #include <dax/cont/Array.h>
 #include <dax/cuda/cont/internal/DeviceArray.h>
 
@@ -103,12 +104,46 @@ static void TestManagedDeviceDataArray()
     }
 }
 
+
+static void TestManagedDeviceDataArrayAndManagedArray()
+{
+  dax::cont::ArrayPtr<T> inputArray(
+        new dax::cont::Array<T>(ARRAY_SIZE));
+  //dax::internal::DataArray<T> inputArray(inputBuffer, ARRAY_SIZE);
+  for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+    {
+    (*inputArray)[i] = StartValue(i);
+    }
+
+  dax::cuda::cont::internal::DeviceArrayPtr<T> deviceArray(
+        new dax::cuda::cont::internal::DeviceArray<T>());
+  (*deviceArray) = (*inputArray);
+
+  assert(inputArray->size() == deviceArray->size());
+
+  AddOneToArray<<<1, ARRAY_SIZE>>>(deviceArray);
+
+  dax::cont::Array<T> outputArray(ARRAY_SIZE);
+  outputArray = deviceArray.get();
+
+  for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+    {
+    T inValue = (*inputArray)[i];
+    T outValue = outputArray[i];
+    if (outValue != AddOne(inValue))
+      {
+      TEST_FAIL(<< "Bad value in copied array.");
+      }
+    }
+}
+
 int UnitTestCudaDeviceArray(int, char *[])
 {
   try
     {
     TestDeviceDataArray();
     TestManagedDeviceDataArray();
+    TestManagedDeviceDataArrayAndManagedArray();
     }
   catch (std::string error)
     {

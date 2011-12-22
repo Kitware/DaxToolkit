@@ -16,6 +16,7 @@ set(impl_headers
   )
 
 set(headers
+  internal/ArrayContainer.h
   internal/ConvertTypes.h
   internal/FieldContainer.h
   Array.h

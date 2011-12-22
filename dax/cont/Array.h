@@ -18,7 +18,7 @@ namespace internal {
 // forward declaration of deviceArray
 //so we can define it for friend being a friend class
 template<typename OtherT> class DeviceArray;
-
+template<typename OtherT> class DeviceArrayPtr;
 } } } }
 
 namespace dax { namespace cont {
@@ -108,6 +108,20 @@ public:
   Array &operator=(dax::cuda::cont::internal::DeviceArray<OtherT>* v)
   { v->toHost(this); return *this; }
 
+  //this converts a execution array to a control array
+  //it currently presumes we only have a single
+  //type of array in the execution side
+  ArrayPtr<ValueType> convert(
+      boost::shared_ptr<void> execArray)
+    {
+    typedef dax::cuda::cont::internal::DeviceArrayPtr<ValueType> DevArrayPtr;
+    typedef dax::cuda::cont::internal::DeviceArray<ValueType> DevArray;
+
+    ArrayPtr<ValueType> tempControl(new ArrayPtr<ValueType>());
+    DevArrayPtr tempDevice = boost::static_pointer_cast<DevArray>(execArray);
+    (*tempControl) = (*tempDevice);
+    return tempControl;
+    }
 
 protected:
   Parent Data;

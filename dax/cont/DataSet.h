@@ -2,15 +2,14 @@
 #define __dax_cont_DataSet_h
 
 #include <dax/cont/internal/Object.h>
-#include <dax/cont/Array.h>
+#include <dax/cont/internal/ArrayContainer.h>
 #include <dax/cont/FieldData.h>
 
 namespace dax { namespace cont {
 class DataSet : public dax::cont::internal::Object
 {
 public:
-  typedef dax::cont::Array<dax::Vector3> Coordinates;
-  typedef dax::cont::ArrayPtr<dax::Vector3> CoordinatesPtr;
+  typedef dax::cont::internal::ArrayContainer<dax::Vector3> Coordinates;
 
   DataSet( const std::size_t& numPoints, const std::size_t& numCells);
   DataSet();
@@ -20,7 +19,8 @@ public:
   virtual std::size_t numPoints() const { return NumPoints; }
   virtual std::size_t numCells() const { return NumCells; }
 
-  virtual const CoordinatesPtr& points() const=0;
+  virtual const Coordinates& points() const=0;
+  virtual Coordinates& points()=0;
 
   FieldData& getFieldsPoint() { return FieldPoint; }
   const FieldData& getFieldsPoint() const { return FieldPoint; }

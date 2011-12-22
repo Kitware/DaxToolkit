@@ -3,7 +3,9 @@
 
 #include <string>
 #include <dax/Types.h>
-#include <dax/cont/Array.h>
+
+#include <boost/shared_ptr.hpp>
+#include <dax/cont/internal/ArrayContainer.h>
 
 namespace dax {
 namespace cont {
@@ -13,14 +15,13 @@ template<typename T>
 class pointFieldHandle
 {
 public:
-  typedef T DataType;
-  dax::cont::ArrayPtr<DataType> Array;
+  typedef T ValueType;
 
 
   pointFieldHandle(const std::string &name):
-    Name(name), ToDelete(true)
+    Name(name)
     {
-    this->Array = dax::cont::ArrayPtr<DataType>(new dax::cont::Array<DataType>());
+
     }
 
   template<typename G>
@@ -32,18 +33,23 @@ public:
   template<typename G>
   void associate(G &g)
     {
-    this->Array->resize(pointFieldHandle::fieldSize(g));
-    g.getFieldsPoint().addArray(this->Name,this->Array);
-    this->ToDelete = false;
+    g.getFieldsPoint().addArray(this->Name,this->Container);
     }
 
-  dax::cont::ArrayPtr<T> array()
+  template<typename U>
+  void setExecutionArray(U array)
     {
-    return this->Array;
+    this->Container.setExecution(array);
+    }
+
+  template<typename U>
+  void setControlArray(U array)
+    {
+    this->Container.setControl(array);
     }
 
 private:
-  bool ToDelete;
+  dax::cont::internal::ArrayContainer<ValueType> Container;
   const std::string Name;
 
 };
@@ -52,13 +58,11 @@ template<typename T>
 class cellFieldHandle
 {
 public:
-  typedef T DataType;
-  dax::cont::ArrayPtr<DataType> Array;
+  typedef T ValueType;
 
   cellFieldHandle(const std::string &name):
-    Name(name), ToDelete(true)
+    Name(name)
     {
-    this->Array = dax::cont::ArrayPtr<DataType>(new dax::cont::Array<DataType>());
     }
 
   template<typename G>
@@ -70,19 +74,23 @@ public:
   template<typename G>
   void associate(G &g)
     {
-    this->Array->resize(cellFieldHandle::fieldSize(g));
-    g.getFieldsCell().addArray(this->Name,this->Array);
-    this->ToDelete = false;
+    g.getFieldsCell().addArray(this->Name,this->Container);
     }
 
-  dax::cont::ArrayPtr<T> array()
+  template<typename U>
+  void setExecutionArray(U array)
     {
-    return this->Array;
+    this->Container.setExecution(array);
     }
 
+  template<typename U>
+  void setControlArray(U array)
+    {
+    this->Container.setControl(array);
+    }
 
 private:
-  bool ToDelete;
+  dax::cont::internal::ArrayContainer<ValueType> Container;
   const std::string Name;
 };
 
