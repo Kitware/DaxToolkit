@@ -14,21 +14,13 @@ class pointFieldHandle
 {
 public:
   typedef T DataType;
-  dax::cont::Array<T> *Array;
+  dax::cont::ArrayPtr<DataType> Array;
 
 
   pointFieldHandle(const std::string &name):
     Name(name), ToDelete(true)
     {
-    this->Array = new dax::cont::Array<T>();
-    }
-
-  virtual ~pointFieldHandle()
-    {
-    if(ToDelete)
-      {
-      delete this->Array;
-      }
+    this->Array = dax::cont::ArrayPtr<DataType>(new dax::cont::Array<DataType>());
     }
 
   template<typename G>
@@ -45,9 +37,9 @@ public:
     this->ToDelete = false;
     }
 
-  dax::cont::Array<T>& array()
+  dax::cont::ArrayPtr<T> array()
     {
-    return *this->Array;
+    return this->Array;
     }
 
 private:
@@ -61,20 +53,12 @@ class cellFieldHandle
 {
 public:
   typedef T DataType;
-  dax::cont::Array<T> *Array;
+  dax::cont::ArrayPtr<DataType> Array;
 
   cellFieldHandle(const std::string &name):
     Name(name), ToDelete(true)
     {
-    this->Array = new dax::cont::Array<T>();
-    }
-
-  virtual ~cellFieldHandle()
-    {
-    if(ToDelete)
-      {
-      delete this->Array;
-      }
+    this->Array = dax::cont::ArrayPtr<DataType>(new dax::cont::Array<DataType>());
     }
 
   template<typename G>
@@ -91,9 +75,9 @@ public:
     this->ToDelete = false;
     }
 
-  dax::cont::Array<T>& array()
+  dax::cont::ArrayPtr<T> array()
     {
-    return *this->Array;
+    return this->Array;
     }
 
 

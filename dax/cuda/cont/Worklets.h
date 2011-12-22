@@ -24,14 +24,14 @@ class Elevation
 public:
   template<typename G, typename T, typename U>
   void operator()(G &g,
-                  const dax::cont::Array<T>& in,
+                  const dax::cont::ArrayPtr<T>& in,
                   U& out)
   {
     typedef typename U::DataType OutType;
 
     //convert from host to device arrayss
-    dax::cuda::cont::internal::DeviceArray<T> ind(in);
-    dax::cuda::cont::internal::DeviceArray<OutType> outd(out.array().size());
+    dax::cuda::cont::internal::DeviceArray<T> ind(*in.get());
+    dax::cuda::cont::internal::DeviceArray<OutType> outd(out.array()->size());
 
     //determine the cuda parameters from the data structure
     dax::cuda::exec::CudaParameters params(g);
@@ -54,7 +54,7 @@ public:
                                     outField);
 
     //move the results back from the device to the host
-    outd.toHost(&out.array());
+    outd.toHost(out.array().get());
   }
 };
 
@@ -63,14 +63,14 @@ class Square
 public:
   template<typename G, typename T, typename U>
   void operator()(G &g,
-                  const dax::cont::Array<T>& in,
+                  const dax::cont::ArrayPtr<T>& in,
                   U& out)
   {
     typedef typename U::DataType OutType;
 
     //convert from host to device arrayss
-    dax::cuda::cont::internal::DeviceArray<T> ind(in);
-    dax::cuda::cont::internal::DeviceArray<OutType> outd(out.array());
+    dax::cuda::cont::internal::DeviceArray<T> ind(*in.get());
+    dax::cuda::cont::internal::DeviceArray<OutType> outd(out.array()->size());
 
     //determine the cuda parameters from the data structure
     dax::cuda::exec::CudaParameters params(g);
@@ -95,7 +95,7 @@ public:
                                     outField);
 
    //move the results back from the device to the host
-    out.array() = outd;
+   outd.toHost(out.array().get());
   }
 };
 
@@ -105,14 +105,14 @@ class Sine
 public:
   template<typename G, typename T, typename U>
   void operator()(G &g,
-                  const dax::cont::Array<T>& in,
+                  const dax::cont::ArrayPtr<T>& in,
                   U& out)
   {
     typedef typename U::DataType OutType;
 
     //convert from host to device arrayss
-    dax::cuda::cont::internal::DeviceArray<T> ind(in);
-    dax::cuda::cont::internal::DeviceArray<OutType> outd(out.array());
+    dax::cuda::cont::internal::DeviceArray<T> ind(*in.get());
+    dax::cuda::cont::internal::DeviceArray<OutType> outd(out.array()->size());
 
     //determine the cuda parameters from the data structure
     dax::cuda::exec::CudaParameters params(g);
@@ -137,7 +137,7 @@ public:
                                     outField);
 
    //move the results back from the device to the host
-    out.array() = outd;
+   outd.toHost(out.array().get());
   }
 };
 
@@ -146,14 +146,14 @@ class Cosine
 public:
   template<typename G, typename T, typename U>
   void operator()(G &g,
-                  const dax::cont::Array<T>& in,
+                  const dax::cont::ArrayPtr<T>& in,
                   U& out)
   {
     typedef typename U::DataType OutType;
 
     //convert from host to device arrayss
-    dax::cuda::cont::internal::DeviceArray<T> ind(in);
-    dax::cuda::cont::internal::DeviceArray<OutType> outd(out.array());
+    dax::cuda::cont::internal::DeviceArray<T> ind(*in.get());
+    dax::cuda::cont::internal::DeviceArray<OutType> outd(out.array()->size());
 
     //determine the cuda parameters from the data structure
     dax::cuda::exec::CudaParameters params(g);
@@ -178,7 +178,7 @@ public:
                                     outField);
 
    //move the results back from the device to the host
-    out.array() = outd;
+   outd.toHost(out.array().get());
   }
 };
 
@@ -188,16 +188,16 @@ class CellGradient
 public:
   template<typename G, typename T, typename T2, typename U>
   void operator()(G &g,
-                  const dax::cont::Array<T>& in,
-                  const dax::cont::Array<T2>& in2,
+                  const dax::cont::ArrayPtr<T>& in,
+                  const dax::cont::ArrayPtr<T2>& in2,
                   U& out)
   {
     typedef typename U::DataType OutType;
 
     //convert from host to device arrayss
-    dax::cuda::cont::internal::DeviceArray<T> ind(in);
-    dax::cuda::cont::internal::DeviceArray<T2> ind2(in2);
-    dax::cuda::cont::internal::DeviceArray<OutType> outd(out.array());
+    dax::cuda::cont::internal::DeviceArray<T> ind(*in.get());
+    dax::cuda::cont::internal::DeviceArray<T2> ind2(*in2.get());
+    dax::cuda::cont::internal::DeviceArray<OutType> outd(out.array()->size());
 
     //determine the cuda parameters from the data structure
     dax::cuda::exec::CudaParameters params(g);
@@ -224,7 +224,7 @@ public:
                                     outField);
 
     //move the results back from the device to the host
-    out.array() = outd;
+    outd.toHost(out.array().get());
   }
 };
 

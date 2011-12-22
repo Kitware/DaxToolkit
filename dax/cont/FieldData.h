@@ -9,10 +9,10 @@ namespace dax { namespace cont {
 class FieldData : public dax::cont::internal::Object
 {
 private:
-  typedef dax::cont::Array<dax::Id> IdArray;
-  typedef dax::cont::Array<dax::Scalar> ScalarArray;
-  typedef dax::cont::Array<dax::Vector3> Vec3Array;
-  typedef dax::cont::Array<dax::Vector4> Vec4Array;
+  typedef dax::cont::ArrayPtr<dax::Id> IdArray;
+  typedef dax::cont::ArrayPtr<dax::Scalar> ScalarArray;
+  typedef dax::cont::ArrayPtr<dax::Vector3> Vec3Array;
+  typedef dax::cont::ArrayPtr<dax::Vector4> Vec4Array;
 
   dax::cont::internal::FieldContainer<dax::Id> IdContainer;
   dax::cont::internal::FieldContainer<dax::Scalar> ScalarContainer;
@@ -20,33 +20,33 @@ private:
   dax::cont::internal::FieldContainer<dax::Vector4> Vec4Container;
 
 public:
-  bool addArray(const std::string& name, IdArray *array)
+  bool addArray(const std::string& name, IdArray array)
     {return IdContainer.add(name,array);}
-  bool addArray(const std::string& name, ScalarArray *array)
+  bool addArray(const std::string& name, ScalarArray array)
     {return ScalarContainer.add(name,array);}
-  bool addArray(const std::string& name, Vec3Array *array)
+  bool addArray(const std::string& name, Vec3Array array)
     {return Vec3Container.add(name,array);}
-  bool addArray(const std::string& name, Vec4Array *array)
+  bool addArray(const std::string& name, Vec4Array array)
     {return Vec4Container.add(name,array);}
 
-  IdArray &getId(const std::string &name)
+  IdArray getId(const std::string &name)
     { return IdContainer.get(name); }
-  const IdArray &getId(const std::string &name) const
+  const IdArray getId(const std::string &name) const
     { return IdContainer.get(name); }
 
-  ScalarArray &getScalar(const std::string &name)
+  ScalarArray getScalar(const std::string &name)
   { return ScalarContainer.get(name); }
-  const ScalarArray &getScalar(const std::string &name) const
+  const ScalarArray getScalar(const std::string &name) const
   { return ScalarContainer.get(name); }
 
-  Vec3Array &getVector3(const std::string &name)
+  Vec3Array getVector3(const std::string &name)
   { return Vec3Container.get(name); }
-  const Vec3Array &getVector3(const std::string &name) const
+  const Vec3Array getVector3(const std::string &name) const
   { return Vec3Container.get(name); }
 
-  Vec4Array &getVector4(const std::string &name)
+  Vec4Array getVector4(const std::string &name)
   { return Vec4Container.get(name); }
-  const Vec4Array &getVector4(const std::string &name) const
+  const Vec4Array getVector4(const std::string &name) const
   { return Vec4Container.get(name); }
 
   bool removeId(const std::string &name)

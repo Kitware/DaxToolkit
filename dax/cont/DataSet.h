@@ -10,6 +10,7 @@ class DataSet : public dax::cont::internal::Object
 {
 public:
   typedef dax::cont::Array<dax::Vector3> Coordinates;
+  typedef dax::cont::ArrayPtr<dax::Vector3> CoordinatesPtr;
 
   DataSet( const std::size_t& numPoints, const std::size_t& numCells);
   DataSet();
@@ -19,7 +20,7 @@ public:
   virtual std::size_t numPoints() const { return NumPoints; }
   virtual std::size_t numCells() const { return NumCells; }
 
-  virtual const Coordinates& points() const=0;
+  virtual const CoordinatesPtr& points() const=0;
 
   FieldData& getFieldsPoint() { return FieldPoint; }
   const FieldData& getFieldsPoint() const { return FieldPoint; }

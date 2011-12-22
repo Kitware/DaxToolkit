@@ -7,6 +7,9 @@
 #include <dax/Types.h>
 #include <dax/cont/internal/Macros.h>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+
 namespace dax {
 namespace cuda {
 namespace cont {
@@ -20,6 +23,7 @@ template<typename OtherT> class DeviceArray;
 
 namespace dax { namespace cont {
 
+daxDeclareClassTemplate1(Array);
 template<typename Type>
 class Array
 {
@@ -28,6 +32,7 @@ private:
 
 public:
   typedef Type ValueType;
+
   typedef typename Parent::iterator iterator;
   typedef typename Parent::const_iterator const_iterator;
 

@@ -25,14 +25,14 @@ void CreateInputStructure(dax::Id dim,dax::cont::StructuredGrid &grid )
       grid.Extent.Min = dax::make_Id3(0, 0, 0),
       grid.Extent.Max = dax::make_Id3(dim-1, dim-1, dim-1);
 
-  dax::cont::Array<dax::Scalar>* testPData = new
-                                             dax::cont::Array<dax::Scalar>();
+  dax::cont::ArrayPtr<dax::Scalar> testPData(
+        new dax::cont::Array<dax::Scalar>());
 
   testPData->resize(grid.numPoints(),1);
   grid.getFieldsPoint().addArray("pointArray",testPData);
 
-  dax::cont::Array<dax::Scalar>* testCData = new
-                                             dax::cont::Array<dax::Scalar>();
+  dax::cont::ArrayPtr<dax::Scalar> testCData(
+        new dax::cont::Array<dax::Scalar>());
   testCData->resize(grid.numCells(),1);
 
   grid.getFieldsCell().addArray("cellArray",testCData);
