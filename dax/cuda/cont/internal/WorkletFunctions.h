@@ -1,3 +1,11 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+=========================================================================*/
+
 #ifndef __dax_cuda_exec_WorkletFunctions_h
 #define __dax_cuda_exec_WorkletFunctions_h
 
@@ -24,8 +32,7 @@ namespace cuda {
 namespace cont {
 namespace internal {
 
-
-
+//------------------------------------------------------------------------------
 template<typename WorkType>
 DAX_EXEC_CONT_EXPORT void computeIteration(dax::Id size, dax::Id &start,
                                  dax::Id &end, dax::Id &inc)
@@ -36,7 +43,7 @@ DAX_EXEC_CONT_EXPORT void computeIteration(dax::Id size, dax::Id &start,
 
 }
 
-
+//------------------------------------------------------------------------------
 template<typename T, typename T2, typename U>
 __global__ void CellGradientFunction(dax::Id size,
                                      dax::internal::StructureUniformGrid g,
@@ -67,7 +74,7 @@ __global__ void CellGradientFunction(dax::Id size,
     }
 }
 
-
+//------------------------------------------------------------------------------
 template<typename T, typename U>
 __global__ void ElevationFunction(dax::Id size, dax::internal::StructureUniformGrid g,
                                   dax::internal::DataArray<T> in,
@@ -93,6 +100,7 @@ __global__ void ElevationFunction(dax::Id size, dax::internal::StructureUniformG
     }
 }
 
+//------------------------------------------------------------------------------
 template<typename T, typename U>
 __global__ void SquareFunction(dax::Id size, dax::internal::StructureUniformGrid g,
                                   dax::internal::DataArray<T> in,
@@ -118,7 +126,7 @@ __global__ void SquareFunction(dax::Id size, dax::internal::StructureUniformGrid
     }
 }
 
-
+//------------------------------------------------------------------------------
 template<typename T, typename U>
 __global__ void SineFunction(dax::Id size, dax::internal::StructureUniformGrid g,
                                   dax::internal::DataArray<T> in,
@@ -144,7 +152,7 @@ __global__ void SineFunction(dax::Id size, dax::internal::StructureUniformGrid g
     }
 }
 
-
+//------------------------------------------------------------------------------
 template<typename T, typename U>
 __global__ void CosineFunction(dax::Id size, dax::internal::StructureUniformGrid g,
                                   dax::internal::DataArray<T> in,

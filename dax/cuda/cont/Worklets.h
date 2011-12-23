@@ -1,6 +1,13 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+=========================================================================*/
+
 #ifndef __dax_cuda_cont_Worklets_h
 #define __dax_cuda_cont_Worklets_h
-
 
 #include <cuda.h>
 
@@ -24,19 +31,20 @@ using dax::cuda::cont::internal::retrieve;
 using dax::cuda::cont::internal::DeviceArray;
 using dax::cuda::cont::internal::DeviceArrayPtr;
 
+//------------------------------------------------------------------------------
 class Elevation
 {
 public:
   template<typename G, typename T, typename U>
   void operator()(G &g,
-                  dax::cont::internal::ArrayContainer<T>& in,
+                  const dax::cont::internal::ArrayContainer<T>& in,
                   U& out)
   {
     typedef typename U::ValueType OutType;
 
     //get the size of the field we are iterating over
     //this is derived by the output array field type (points, cells)
-    dax::Id size = U::fieldSize(g);
+    dax::Id size = out.fieldSize(g);
 
     DeviceArrayPtr<T> ind(retrieve(in));
     DeviceArrayPtr<OutType> outd(new DeviceArray<OutType>(size));
@@ -68,19 +76,20 @@ public:
   }
 };
 
+//------------------------------------------------------------------------------
 class Square
 {
 public:
   template<typename G, typename T, typename U>
   void operator()(G &g,
-                  dax::cont::internal::ArrayContainer<T>& in,
+                  const dax::cont::internal::ArrayContainer<T>& in,
                   U& out)
   {
     typedef typename U::ValueType OutType;
 
     //get the size of the field we are iterating over
     //this is derived by the output array field type (points, cells)
-    dax::Id size = U::fieldSize(g);
+    dax::Id size = out.fieldSize(g);
 
     DeviceArrayPtr<T> ind(retrieve(in));
     DeviceArrayPtr<OutType> outd(new DeviceArray<OutType>(size));
@@ -111,20 +120,20 @@ public:
   }
 };
 
-
+//------------------------------------------------------------------------------
 class Sine
 {
 public:
   template<typename G, typename T, typename U>
   void operator()(G &g,
-                  dax::cont::internal::ArrayContainer<T>& in,
+                  const dax::cont::internal::ArrayContainer<T>& in,
                   U& out)
   {
     typedef typename U::ValueType OutType;
 
     //get the size of the field we are iterating over
     //this is derived by the output array field type (points, cells)
-    dax::Id size = U::fieldSize(g);
+    dax::Id size = out.fieldSize(g);
 
     DeviceArrayPtr<T> ind(retrieve(in));
     DeviceArrayPtr<OutType> outd(new DeviceArray<OutType>(size));
@@ -155,19 +164,20 @@ public:
   }
 };
 
+//------------------------------------------------------------------------------
 class Cosine
 {
 public:
   template<typename G, typename T, typename U>
   void operator()(G &g,
-                  dax::cont::internal::ArrayContainer<T>& in,
+                  const dax::cont::internal::ArrayContainer<T>& in,
                   U& out)
   {
     typedef typename U::ValueType OutType;
 
     //get the size of the field we are iterating over
     //this is derived by the output array field type (points, cells)
-    dax::Id size = U::fieldSize(g);
+    dax::Id size = out.fieldSize(g);
 
     DeviceArrayPtr<T> ind(retrieve(in));
     DeviceArrayPtr<OutType> outd(new DeviceArray<OutType>(size));
@@ -198,13 +208,13 @@ public:
   }
 };
 
-
+//------------------------------------------------------------------------------
 class CellGradient
 {
 public:
   template<typename G, typename T, typename T2, typename U>
   void operator()(G &g,
-                  dax::cont::internal::ArrayContainer<T>& in,
+                  const dax::cont::internal::ArrayContainer<T>& in,
                   dax::cont::internal::ArrayContainer<T2>& in2,
                   U& out)
   {
@@ -212,7 +222,7 @@ public:
 
     //get the size of the field we are iterating over
     //this is derived by the output array field type (points, cells)
-    dax::Id size = U::fieldSize(g);
+    dax::Id size = out.fieldSize(g);
 
     DeviceArrayPtr<T> ind(retrieve(in));
     DeviceArrayPtr<T2> ind2(retrieve(in2));

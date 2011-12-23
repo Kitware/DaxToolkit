@@ -1,3 +1,11 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+=========================================================================*/
+
 #ifndef DAXDEVICEARRAY_H
 #define DAXDEVICEARRAY_H
 
@@ -122,7 +130,7 @@ OutputIterator toHost(InputIterator first, InputIterator last, OutputIterator de
 }
 
 template<typename T>
-DeviceArrayPtr<T> retrieve(dax::cont::internal::ArrayContainer<T>& container)
+inline DeviceArrayPtr<T> retrieve(const dax::cont::internal::ArrayContainer<T>& container)
   {
   //get device arrays if they already exists, otherwise
   //convert the control arrays to device arrays
