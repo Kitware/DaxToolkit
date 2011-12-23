@@ -1,3 +1,11 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+=========================================================================*/
+
 #ifndef dax_cont_internal_ArrayContainer_h
 #define dax_cont_internal_ArrayContainer_h
 
@@ -14,78 +22,97 @@ class ArrayContainer
 public:
   typedef Type ValueType;
 
-  ArrayContainer(){}
-
-  bool hasControlArray() const
-    {
-    return (this->ControlArray != NULL);
-    }
-
-  bool hasExecutionArray() const
-    {
-    return (this->ExecutionArray != NULL);
-    }
+  bool hasControlArray() const;
+  bool hasExecutionArray() const;
 
   template<typename T>
-  void setArrayControl(boost::shared_ptr<T> array)
-    {
-    this->ControlArray = array;
-    }
+  void setArrayControl(boost::shared_ptr<T> array);
 
   template<typename T>
-  void setArrayExecution(boost::shared_ptr<T> array)
-    {
-    this->ExecutionArray = array;
-    }
+  void setArrayExecution(boost::shared_ptr<T> array);
 
   template<typename T>
-  boost::shared_ptr<T> arrayControl()
-    {
-    if(this->ControlArray)
-      {
-      return boost::static_pointer_cast<T>(this->ControlArray);
-      }
-
-    boost::shared_ptr<T> controlArray(new T());
-    if(this->ExecutionArray)
-      {
-      //copy the array from control to execution
-      //this is a trick to get around the type erasure on control array
-      controlArray = controlArray->convert(this->ExecutionArray);
-      }
-    this->setArrayControl(controlArray);
-    return boost::static_pointer_cast<T>(this->ControlArray);
-    }
+  boost::shared_ptr<T> arrayControl() const;
 
   template<typename T>
-  boost::shared_ptr<T> arrayExecution( )
-    {
-    if(this->ExecutionArray)
-      {
-      return boost::static_pointer_cast<T>(this->ExecutionArray);
-      }
-
-    boost::shared_ptr<T> executionArray(new T());
-    if(this->ControlArray)
-      {
-      //copy the array from control to execution
-      //this is a trick to get around the type erasure on control array
-      executionArray = executionArray->convert(this->ControlArray);
-      }
-    this->setArrayExecution(executionArray);
-    return boost::static_pointer_cast<T>(this->ExecutionArray);
-    }
+  boost::shared_ptr<T> arrayExecution( ) const;
 
 private:
-  ArrayContainer& operator=(const ArrayContainer& rhs);
-
   //see the documentation of shared pointer that it can be
   //used to hold arbitrary datra
   //the issue is that is type erasure so assignment is a real big pain
-  boost::shared_ptr<void> ControlArray;
-  boost::shared_ptr<void> ExecutionArray;
+  mutable boost::shared_ptr<void> ControlArray;
+  mutable boost::shared_ptr<void> ExecutionArray;
 
 };
+
+//------------------------------------------------------------------------------
+template<typename Type>
+inline bool ArrayContainer<Type>::hasControlArray() const
+{
+  return (this->ControlArray != NULL);
+}
+
+//------------------------------------------------------------------------------
+template<typename Type>
+inline bool ArrayContainer<Type>::hasExecutionArray() const
+{
+return (this->ExecutionArray != NULL);
+}
+
+//------------------------------------------------------------------------------
+template<typename Type> template<typename T>
+inline void ArrayContainer<Type>::setArrayControl(boost::shared_ptr<T> array)
+{
+  this->ControlArray = array;
+}
+
+//------------------------------------------------------------------------------
+template<typename Type> template<typename T>
+inline void ArrayContainer<Type>::setArrayExecution(boost::shared_ptr<T> array)
+{
+  this->ExecutionArray = array;
+}
+
+//------------------------------------------------------------------------------
+template<typename Type> template<typename T>
+boost::shared_ptr<T> ArrayContainer<Type>::arrayControl() const
+{
+  if(this->ControlArray)
+    {
+    return boost::static_pointer_cast<T>(this->ControlArray);
+    }
+
+  boost::shared_ptr<T> controlArray(new T());
+  if(this->ExecutionArray)
+    {
+    //copy the array from control to execution
+    //this is a trick to get around the type erasure on control array
+    controlArray = controlArray->convert(this->ExecutionArray);
+    }
+  this->ControlArray = controlArray;
+  return boost::static_pointer_cast<T>(this->ControlArray);
+}
+
+//------------------------------------------------------------------------------
+template<typename Type> template<typename T>
+boost::shared_ptr<T> ArrayContainer<Type>::arrayExecution( ) const
+{
+  if(this->ExecutionArray)
+    {
+    return boost::static_pointer_cast<T>(this->ExecutionArray);
+    }
+
+  boost::shared_ptr<T> executionArray(new T());
+  if(this->ControlArray)
+    {
+    //copy the array from control to execution
+    //this is a trick to get around the type erasure on control array
+    executionArray = executionArray->convert(this->ControlArray);
+    }
+  this->ExecutionArray = executionArray;
+  return boost::static_pointer_cast<T>(this->ExecutionArray);
+}
 
 } } }
 

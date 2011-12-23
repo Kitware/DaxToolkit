@@ -1,3 +1,11 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+=========================================================================*/
+
 #ifndef __dax_cont_HostArray_h
 #define __dax_cont_HostArray_h
 
@@ -130,8 +138,10 @@ protected:
 };
 
 template<typename T>
-dax::cont::ArrayPtr<T> retrieve(dax::cont::internal::ArrayContainer<T>& container)
+inline dax::cont::ArrayPtr<T> retrieve(const dax::cont::internal::ArrayContainer<T>& container)
 {
+  //need the template keyword to help out some compilers
+  //figure out that execution is a templated method
   return container.template arrayControl<dax::cont::Array<T> >();
 }
 

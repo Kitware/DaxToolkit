@@ -1,8 +1,13 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+=========================================================================*/
+
 #ifndef __dax_cont_Worklets_h
 #define __dax_cont_Worklets_h
-
-
-#include <dax/cont/internal/ArrayContainer.h>
 
 namespace dax {
 namespace cuda {
@@ -22,22 +27,24 @@ namespace dax {
 namespace cont {
 namespace worklets {
 
+//------------------------------------------------------------------------------
 class Elevation
 {
 public:
   template<typename G, typename T, typename U>
-  Elevation(G &g, T& in, U out)
+  Elevation(G &g, const T& in, U out)
   {    
     dax::cuda::cont::worklet::Elevation()(g,in,out);
     out.associate(g);
   }
 };
 
+//------------------------------------------------------------------------------
 class Square
 {
 public:
   template<typename G, typename T, typename U>
-  Square(G &g, T& in, U out)
+  Square(G &g, const T& in, U out)
   {
     dax::cuda::cont::worklet::Square()(g,in,out);
     out.associate(g);
@@ -45,11 +52,12 @@ public:
 
 };
 
+//------------------------------------------------------------------------------
 class Sine
 {
 public:
   template<typename G, typename T, typename U>
-  Sine(G &g, T& in, U out)
+  Sine(G &g, const T& in, U out)
   {
     dax::cuda::cont::worklet::Sine()(g,in,out);
     out.associate(g);
@@ -57,11 +65,12 @@ public:
 
 };
 
+//------------------------------------------------------------------------------
 class Cosine
 {
 public:
   template<typename G, typename T, typename U>
-  Cosine(G &g, T& in, U out)
+  Cosine(G &g, const T& in, U out)
   {
     dax::cuda::cont::worklet::Cosine()(g,in,out);
     out.associate(g);
@@ -69,12 +78,13 @@ public:
 
 };
 
+//------------------------------------------------------------------------------
 class CellGradient
 {
 
 public:
   template<typename G, typename T, typename T2, typename U>
-  CellGradient(G &g, T& in, T2& in2, U out)
+  CellGradient(G &g, const T& in, T2& in2, U out)
   {
     dax::cuda::cont::worklet::CellGradient()(g,in,in2,out);
     out.associate(g);
@@ -83,6 +93,4 @@ public:
 
 
 } } }
-
-
 #endif // __dax_cont_Worklets_h
