@@ -30,11 +30,11 @@ public:
   virtual const Coordinates& points() const=0;
   virtual Coordinates& points()=0;
 
-  FieldData& getFieldsPoint() { return FieldPoint; }
-  const FieldData& getFieldsPoint() const { return FieldPoint; }
+  FieldData& fieldsPoint() { return FieldPoint; }
+  const FieldData& fieldsPoint() const { return FieldPoint; }
 
-  FieldData& getFieldsCell() { return FieldCell; }
-  const FieldData& getFieldsCell() const { return FieldCell; }
+  FieldData& fieldsCell() { return FieldCell; }
+  const FieldData& fieldsCell() const { return FieldCell; }
 
 protected:
 
