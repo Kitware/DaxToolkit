@@ -10,11 +10,14 @@
 #include <thrust/device_vector.h>
 
 namespace dax {
-namespace cont
-{
+namespace cont{
 // forward declaration of HostArray
 template<typename OtherT> class Array;
 template<typename OtherT> class ArrayPtr;
+
+namespace internal {
+template<typename OtherT> class ArrayContainer;
+}
 }
 }
 
@@ -118,24 +121,19 @@ OutputIterator toHost(InputIterator first, InputIterator last, OutputIterator de
   return thrust::copy(first,last,dest);
 }
 
-} } } }
-
-namespace dax {
-
 template<typename T>
-dax::cuda::cont::internal::DeviceArrayPtr<T> controlToExecution(
-    boost::shared_ptr<void> controlArray)
+DeviceArrayPtr<T> retrieve(dax::cont::internal::ArrayContainer<T>& container)
   {
-  dax::cuda::cont::internal::DeviceArrayPtr<T> tempDevice(
-        new dax::cuda::cont::internal::DeviceArray<T>() );
-  dax::cont::ArrayPtr<T> tempCont =
-  boost::static_pointer_cast< dax::cont::Array<T> >(controlArray);
-  if(tempCont)
-    {
-    (*tempDevice) = (*tempCont);
-    }
-  return tempDevice;
+  //get device arrays if they already exists, otherwise
+  //convert the control arrays to device arrays
+
+  //need the template keyword to help out some compilers
+  //figure out that execution is a templated method
+  return container.template arrayExecution<
+      dax::cuda::cont::internal::DeviceArray<T> >();
   }
 
-}
+
+} } } }
+
 #endif // DAXDEVICEARRAY_H

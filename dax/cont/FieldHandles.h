@@ -39,13 +39,13 @@ public:
   template<typename U>
   void setExecutionArray(U array)
     {
-    this->Container.setExecution(array);
+    this->Container.setArrayExecution(array);
     }
 
   template<typename U>
   void setControlArray(U array)
     {
-    this->Container.setControl(array);
+    this->Container.setArrayControl(array);
     }
 
 private:
@@ -80,13 +80,13 @@ public:
   template<typename U>
   void setExecutionArray(U array)
     {
-    this->Container.setExecution(array);
+    this->Container.setArrayExecution(array);
     }
 
   template<typename U>
   void setControlArray(U array)
     {
-    this->Container.setControl(array);
+    this->Container.setArrayControl(array);
     }
 
 private:

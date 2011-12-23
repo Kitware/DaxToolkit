@@ -40,7 +40,7 @@ public:
       (*realPoints)[i] = dax::make_Vector3(i,i,i);
       }
     //set the control array for the points
-    this->Points.setControl(realPoints);
+    this->Points.setArrayControl(realPoints);
     }
 
   const Coordinates& points() const

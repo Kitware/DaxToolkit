@@ -1,5 +1,5 @@
-#ifndef dax_cont_ArrayContainer_h
-#define dax_cont_ArrayContainer_h
+#ifndef dax_cont_internal_ArrayContainer_h
+#define dax_cont_internal_ArrayContainer_h
 
 #include <boost/shared_ptr.hpp>
 
@@ -16,30 +16,30 @@ public:
 
   ArrayContainer(){}
 
-  bool hasControl() const
+  bool hasControlArray() const
     {
     return (this->ControlArray != NULL);
     }
 
-  bool hasExecution() const
+  bool hasExecutionArray() const
     {
     return (this->ExecutionArray != NULL);
     }
 
   template<typename T>
-  void setControl(boost::shared_ptr<T> array)
+  void setArrayControl(boost::shared_ptr<T> array)
     {
     this->ControlArray = array;
     }
 
   template<typename T>
-  void setExecution(boost::shared_ptr<T> array)
+  void setArrayExecution(boost::shared_ptr<T> array)
     {
     this->ExecutionArray = array;
     }
 
   template<typename T>
-  boost::shared_ptr<T> control()
+  boost::shared_ptr<T> arrayControl()
     {
     if(this->ControlArray)
       {
@@ -53,12 +53,12 @@ public:
       //this is a trick to get around the type erasure on control array
       controlArray = controlArray->convert(this->ExecutionArray);
       }
-    this->setControl(controlArray);
+    this->setArrayControl(controlArray);
     return boost::static_pointer_cast<T>(this->ControlArray);
     }
 
   template<typename T>
-  boost::shared_ptr<T> execution( )
+  boost::shared_ptr<T> arrayExecution( )
     {
     if(this->ExecutionArray)
       {
@@ -72,7 +72,7 @@ public:
       //this is a trick to get around the type erasure on control array
       executionArray = executionArray->convert(this->ControlArray);
       }
-    this->setExecution(executionArray);
+    this->setArrayExecution(executionArray);
     return boost::static_pointer_cast<T>(this->ExecutionArray);
     }
 
@@ -89,4 +89,4 @@ private:
 
 } } }
 
-#endif
+#endif dax_cont_internal_ArrayContainer_h

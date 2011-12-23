@@ -49,7 +49,7 @@ public:
   bool add(const std::string &name, ContArray ca)
     {
     TArray container;
-    container.setControl(ca);
+    container.setArrayControl(ca);
     return this->add(name,container);
     }
 

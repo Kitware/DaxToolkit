@@ -13,9 +13,10 @@
 
 //has to be above dax/cont/Worklets
 #include <dax/cuda/cont/Worklets.h>
+
+//should we have a commoon all header for control?
 #include <dax/cont/Worklets.h>
 #include <dax/cont/FieldHandles.h>
-
 
 void CreateInputStructure(dax::Id dim,dax::cont::StructuredGrid &grid )
   {
@@ -38,14 +39,34 @@ void CreateInputStructure(dax::Id dim,dax::cont::StructuredGrid &grid )
   grid.getFieldsCell().addArray("cellArray",testCData);
 
   grid.computePointLocations();
-  std::cout << "Created Input Structure " << std::endl;
   }
+
+void PrintCheckValues(const dax::cont::ArrayPtr<dax::Vector3> &array)
+{
+  for (dax::Id index = 0; index < array->size(); index++)
+    {
+    dax::Vector3 value = (*array)[index];
+    if (index < 20)
+      {
+      std::cout << index << " : " << value.x << ", " << value.y << ", " << value.z
+           << std::endl;
+      }
+    if (   (value.x < -1) || (value .x > 1)
+        || (value.y < -1) || (value .y > 1)
+        || (value.z < -1) || (value .z > 1) )
+      {
+      std::cout << index << " : " << value.x << ", " << value.y << ", " << value.z
+           << std::endl;
+      break;
+      }
+    }
+}
 
 void ConnectFilterFields()
   {
   std::cout << "ConnectFilterFields" << std::endl;
   dax::cont::StructuredGrid grid;
-  CreateInputStructure(128,grid);
+  CreateInputStructure(32,grid);
   {  
   dax::cont::worklets::Elevation(grid,
                                  grid.points(),
@@ -79,7 +100,7 @@ void ConnectCellWithPoint()
   std::cout << "ConnectCellWithPoint" << std::endl;
 
   dax::cont::StructuredGrid grid;
-  CreateInputStructure(128,grid);
+  CreateInputStructure(32,grid);
 
   dax::cont::worklets::CellGradient(grid,
                                     grid.points(),
@@ -95,7 +116,7 @@ void Pipeline1Test()
   {
   std::cout << "Pipeline1" << std::endl;
   dax::cont::StructuredGrid grid;
-  CreateInputStructure(128,grid);
+  CreateInputStructure(32,grid);
 
   dax::cont::worklets::Elevation(grid,
                                  grid.points(),
@@ -109,14 +130,16 @@ void Pipeline1Test()
   //you need use the retrieve function
   //to get the propery Array, don't attempt to get the array
   //directly ( TODO remove the ability to get raw array from public control API)
-//  dax::cont::ArrayPtr<dax::Vector3> array = dax::cont::retrieve(
-//                                              grid.getFieldsCell().getVector3("Gradient"));
+  dax::cont::ArrayPtr<dax::Vector3> array = dax::cont::retrieve(
+                                  grid.getFieldsCell().getVector3("Gradient"));
+
+  PrintCheckValues(array);
   }
 
 int main(int argc, char* argv[])
   {
-  ConnectFilterFields();
-  ConnectCellWithPoint();
+  //ConnectFilterFields();
+  //ConnectCellWithPoint();
   Pipeline1Test();
 
   return 0;

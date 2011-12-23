@@ -20,22 +20,9 @@
 
 namespace dax { namespace cuda {  namespace cont { namespace worklet {
 
-namespace
-{
-  template<typename T>
-  dax::cuda::cont::internal::DeviceArrayPtr<T>
-  locateDeviceArray(dax::cont::internal::ArrayContainer<T>& container)
-    {
-    //get device arrays if they already exists, otherwise
-    //convert the control arrays to device arrays
-
-    //need the template keyword to help out some compilers
-    //figure out that execution is a templated method
-    return container.template execution<
-        dax::cuda::cont::internal::DeviceArray<T> >();
-    }
-
-}
+using dax::cuda::cont::internal::retrieve;
+using dax::cuda::cont::internal::DeviceArray;
+using dax::cuda::cont::internal::DeviceArrayPtr;
 
 class Elevation
 {
@@ -51,12 +38,8 @@ public:
     //this is derived by the output array field type (points, cells)
     dax::Id size = U::fieldSize(g);
 
-    dax::cuda::cont::internal::DeviceArrayPtr<T> ind(locateDeviceArray(in));
-    //the reference counting is not working properly so we have to set ind again
-
-
-    dax::cuda::cont::internal::DeviceArrayPtr<OutType> outd(
-          new dax::cuda::cont::internal::DeviceArray<OutType>(size));
+    DeviceArrayPtr<T> ind(retrieve(in));
+    DeviceArrayPtr<OutType> outd(new DeviceArray<OutType>(size));
 
     assert(ind->size()==outd->size());
 
@@ -99,9 +82,8 @@ public:
     //this is derived by the output array field type (points, cells)
     dax::Id size = U::fieldSize(g);
 
-    dax::cuda::cont::internal::DeviceArrayPtr<T> ind(locateDeviceArray(in));
-    dax::cuda::cont::internal::DeviceArrayPtr<OutType> outd(
-          new dax::cuda::cont::internal::DeviceArray<OutType>(size));
+    DeviceArrayPtr<T> ind(retrieve(in));
+    DeviceArrayPtr<OutType> outd(new DeviceArray<OutType>(size));
 
     assert(ind->size()==outd->size());
 
@@ -144,9 +126,8 @@ public:
     //this is derived by the output array field type (points, cells)
     dax::Id size = U::fieldSize(g);
 
-    dax::cuda::cont::internal::DeviceArrayPtr<T> ind(locateDeviceArray(in));
-    dax::cuda::cont::internal::DeviceArrayPtr<OutType> outd(
-          new dax::cuda::cont::internal::DeviceArray<OutType>(size));
+    DeviceArrayPtr<T> ind(retrieve(in));
+    DeviceArrayPtr<OutType> outd(new DeviceArray<OutType>(size));
 
     assert(ind->size()==outd->size());
 
@@ -188,9 +169,8 @@ public:
     //this is derived by the output array field type (points, cells)
     dax::Id size = U::fieldSize(g);
 
-    dax::cuda::cont::internal::DeviceArrayPtr<T> ind(locateDeviceArray(in));
-    dax::cuda::cont::internal::DeviceArrayPtr<OutType> outd(
-          new dax::cuda::cont::internal::DeviceArray<OutType>(size));
+    DeviceArrayPtr<T> ind(retrieve(in));
+    DeviceArrayPtr<OutType> outd(new DeviceArray<OutType>(size));
 
     assert(ind->size()==outd->size());
 
@@ -234,11 +214,9 @@ public:
     //this is derived by the output array field type (points, cells)
     dax::Id size = U::fieldSize(g);
 
-    dax::cuda::cont::internal::DeviceArrayPtr<T> ind(locateDeviceArray(in));
-    dax::cuda::cont::internal::DeviceArrayPtr<T2> ind2(locateDeviceArray(in2));
-    dax::cuda::cont::internal::DeviceArrayPtr<OutType> outd(
-          new dax::cuda::cont::internal::DeviceArray<OutType>(size));
-
+    DeviceArrayPtr<T> ind(retrieve(in));
+    DeviceArrayPtr<T2> ind2(retrieve(in2));
+    DeviceArrayPtr<OutType> outd(new DeviceArray<OutType>(size));
 
     //out is on cells, while in is on points
     assert(ind->size()==ind2->size());

@@ -1,11 +1,13 @@
 #ifndef __dax_cont_HostArray_h
 #define __dax_cont_HostArray_h
 
+
 #include <vector>
 #include <string>
 
 #include <dax/Types.h>
 #include <dax/cont/internal/Macros.h>
+#include <dax/cont/internal/ArrayContainer.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
@@ -117,7 +119,7 @@ public:
     typedef dax::cuda::cont::internal::DeviceArrayPtr<ValueType> DevArrayPtr;
     typedef dax::cuda::cont::internal::DeviceArray<ValueType> DevArray;
 
-    ArrayPtr<ValueType> tempControl(new ArrayPtr<ValueType>());
+    ArrayPtr<ValueType> tempControl(new Array<ValueType>());
     DevArrayPtr tempDevice = boost::static_pointer_cast<DevArray>(execArray);
     (*tempControl) = (*tempDevice);
     return tempControl;
@@ -126,6 +128,12 @@ public:
 protected:
   Parent Data;
 };
+
+template<typename T>
+dax::cont::ArrayPtr<T> retrieve(dax::cont::internal::ArrayContainer<T>& container)
+{
+  return container.template arrayControl<dax::cont::Array<T> >();
+}
 
 } }
 #endif // __dax_cont_HostArray_h

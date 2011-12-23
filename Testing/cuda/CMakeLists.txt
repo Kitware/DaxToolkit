@@ -24,19 +24,6 @@ target_link_libraries(DaxCUDATest
   )
 
 #-----------------------------------------------------------------------------
-cuda_add_executable(SimpleCUDAKernelTest
-  SimpleCUDAKernelTest.cu
-)
-
-target_link_libraries(SimpleCUDAKernelTest
-  daxCont
-  daxCUDACont 
-  ${BOOST_LIBRARIES}
-  )
-
-add_test(SimpleCUDAKernelTest
-  ${EXECUTABLE_OUTPUT_PATH}/SimpleCUDAKernelTest)
-
 add_test(DaxCUDATest1-128
   ${EXECUTABLE_OUTPUT_PATH}/DaxCUDATest --pipeline 1 --size 128)
 add_test(DaxCUDATest2-128
