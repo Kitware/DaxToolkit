@@ -17,6 +17,7 @@
 #include <dax/internal/GridStructures.h>
 
 #include <dax/cont/StructuredGrid.h>
+#include <dax/cont/FieldHandles.h>
 #include <dax/cont/internal/ConvertTypes.h>
 #include <dax/cont/internal/ArrayContainer.h>
 
@@ -47,7 +48,8 @@ public:
     dax::Id size = out.fieldSize(g);
 
     DeviceArrayPtr<T> ind(retrieve(in));
-    DeviceArrayPtr<OutType> outd(new DeviceArray<OutType>(size));
+    DeviceArrayPtr<OutType> outd(retrieve(out));
+    outd->resize(size); //currently needed as retrieve doesn't do it
 
     assert(ind->size()==outd->size());
 
@@ -92,7 +94,8 @@ public:
     dax::Id size = out.fieldSize(g);
 
     DeviceArrayPtr<T> ind(retrieve(in));
-    DeviceArrayPtr<OutType> outd(new DeviceArray<OutType>(size));
+    DeviceArrayPtr<OutType> outd(retrieve(out));
+    outd->resize(size); //currently needed as retrieve doesn't do it
 
     assert(ind->size()==outd->size());
 
@@ -136,7 +139,8 @@ public:
     dax::Id size = out.fieldSize(g);
 
     DeviceArrayPtr<T> ind(retrieve(in));
-    DeviceArrayPtr<OutType> outd(new DeviceArray<OutType>(size));
+    DeviceArrayPtr<OutType> outd(retrieve(out));
+    outd->resize(size); //currently needed as retrieve doesn't do it
 
     assert(ind->size()==outd->size());
 
@@ -180,7 +184,8 @@ public:
     dax::Id size = out.fieldSize(g);
 
     DeviceArrayPtr<T> ind(retrieve(in));
-    DeviceArrayPtr<OutType> outd(new DeviceArray<OutType>(size));
+    DeviceArrayPtr<OutType> outd(retrieve(out));
+    outd->resize(size); //currently needed as retrieve doesn't do it
 
     assert(ind->size()==outd->size());
 
@@ -226,7 +231,8 @@ public:
 
     DeviceArrayPtr<T> ind(retrieve(in));
     DeviceArrayPtr<T2> ind2(retrieve(in2));
-    DeviceArrayPtr<OutType> outd(new DeviceArray<OutType>(size));
+    DeviceArrayPtr<OutType> outd(retrieve(out));
+    outd->resize(size); //currently needed as retrieve doesn't do it
 
     //out is on cells, while in is on points
     assert(ind->size()==ind2->size());

@@ -18,29 +18,8 @@
 #include <dax/cont/Worklets.h>
 #include <dax/cont/FieldHandles.h>
 
-void CreateInputStructure(dax::Id dim,dax::cont::StructuredGrid &grid )
-  {
-
-  grid.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
-  grid.Spacing = dax::make_Vector3(1.0, 1.0, 1.0),
-      grid.Extent.Min = dax::make_Id3(0, 0, 0),
-      grid.Extent.Max = dax::make_Id3(dim-1, dim-1, dim-1);
-
-  dax::cont::ArrayPtr<dax::Scalar> testPData(
-        new dax::cont::Array<dax::Scalar>());
-
-  testPData->resize(grid.numPoints(),1);
-  grid.getFieldsPoint().addArray("pointArray",testPData);
-
-  dax::cont::ArrayPtr<dax::Scalar> testCData(
-        new dax::cont::Array<dax::Scalar>());
-  testCData->resize(grid.numCells(),1);
-
-  grid.getFieldsCell().addArray("cellArray",testCData);
-
-  grid.computePointLocations();
-  }
-
+namespace
+{
 void PrintCheckValues(const dax::cont::ArrayPtr<dax::Vector3> &array)
 {
   for (dax::Id index = 0; index < array->size(); index++)
@@ -62,85 +41,132 @@ void PrintCheckValues(const dax::cont::ArrayPtr<dax::Vector3> &array)
     }
 }
 
-void ConnectFilterFields()
-  {
-  std::cout << "ConnectFilterFields" << std::endl;
-  dax::cont::StructuredGrid grid;
-  CreateInputStructure(32,grid);
-  {  
+void CreateInputStructure(dax::Id dim, dax::cont::StructuredGrid &grid )
+{
+  grid.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
+  grid.Spacing = dax::make_Vector3(1.0, 1.0, 1.0),
+      grid.Extent.Min = dax::make_Id3(0, 0, 0),
+      grid.Extent.Max = dax::make_Id3(dim-1, dim-1, dim-1);
+  grid.computePointLocations();
+}
+
+void addArrays(dax::cont::StructuredGrid &grid)
+{
+  dax::cont::ArrayPtr<dax::Scalar> testPData(
+        new dax::cont::Array<dax::Scalar>());
+  testPData->resize(grid.numPoints(),1);
+  grid.fieldsPoint().addArray("pointArray",testPData);
+
+  dax::cont::ArrayPtr<dax::Scalar> testCData(
+        new dax::cont::Array<dax::Scalar>());
+  testCData->resize(grid.numCells(),1);
+
+  grid.fieldsCell().addArray("cellArray",testCData);
+}
+
+void dumpArray(dax::cont::StructuredGrid& grid, const std::string &name)
+{
+  //TODO remove the ability to get raw array from public control API)
+  dax::cont::ArrayPtr<dax::Vector3> array = dax::cont::retrieve(grid.fieldsCell().vector3(name));
+  PrintCheckValues(array);
+}
+
+void ElevationWorklet(dax::cont::StructuredGrid& grid, const std::string &name)
+{
   dax::cont::worklets::Elevation(grid,
-                                 grid.points(),
-                                 dax::cont::pointFieldHandle<dax::Scalar>("Elevation"));
-  dax::cont::worklets::Elevation(grid,
-                                 grid.points(),
-                                 dax::cont::pointFieldHandle<dax::Scalar>("Elevation2"));
-  dax::cont::worklets::Elevation(grid,
-                                 grid.points(),
-                                 dax::cont::pointFieldHandle<dax::Scalar>("Elevation3"));
+    grid.points(),
+    dax::cont::FieldHandlePoint<dax::Scalar>(name));
+}
+
+void CellGradientWorklet(dax::cont::StructuredGrid& grid,
+                         const std::string &inputName,
+                         const std::string &resultName)
+{
+  dax::cont::worklets::CellGradient(grid,
+    grid.points(),
+    grid.fieldsPoint().scalar(inputName),
+    dax::cont::FieldHandleCell<dax::Vector3>(resultName));
+}
+
+template<typename T>
+void PointSineSquareCosWorklet(
+    T t,
+    dax::cont::StructuredGrid& grid,
+    const std::string &inputName,
+    const std::string &resultName)
+{
+  dax::cont::worklets::Sine(grid,
+                            grid.fieldsPoint().get(T(),inputName),
+                            dax::cont::FieldHandlePoint<T>(resultName));
+  dax::cont::worklets::Square(grid,
+                              grid.fieldsPoint().get(T(),resultName),
+                              dax::cont::FieldHandlePoint<T>(grid,resultName));
+  dax::cont::worklets::Cosine(grid,
+                              grid.fieldsPoint().get(T(),resultName),
+                              dax::cont::FieldHandlePoint<T>(grid,resultName));
+}
+
+template<typename T>
+void CellSineSquareCosWorklet(
+    T t,
+    dax::cont::StructuredGrid& grid,
+    const std::string &inputName,
+    const std::string &resultName)
+{
+  dax::cont::worklets::Sine(grid,
+                            grid.fieldsCell().get(T(),inputName),
+                            dax::cont::FieldHandleCell<T>(resultName));
 
   dax::cont::worklets::Square(grid,
-                              grid.getFieldsPoint().getScalar("Elevation"),
-                              dax::cont::pointFieldHandle<dax::Scalar>("Square"));
-  }
-
-  {
-  dax::cont::worklets::Square(grid,
-                              grid.getFieldsCell().getScalar("cellArray"),
-                              dax::cont::cellFieldHandle<dax::Scalar>("Square"));
-
+                              grid.fieldsCell().get(T(),resultName),
+                              dax::cont::FieldHandleCell<T>(grid,resultName));
 
   dax::cont::worklets::Cosine(grid,
-                              grid.getFieldsCell().getScalar("Square"),
-                              dax::cont::cellFieldHandle<dax::Scalar>("Sine"));
-  }
-  }
+                              grid.fieldsCell().get(T(),resultName),
+                              dax::cont::FieldHandleCell<T>(grid,resultName));
+}
 
-void ConnectCellWithPoint()
+void Pipeline1(dax::cont::StructuredGrid &grid)
   {
-  std::cout << "ConnectCellWithPoint" << std::endl;
-
-  dax::cont::StructuredGrid grid;
-  CreateInputStructure(32,grid);
-
-  dax::cont::worklets::CellGradient(grid,
-                                    grid.points(),
-                                    grid.getFieldsPoint().getScalar("pointArray"),
-                                    dax::cont::cellFieldHandle<dax::Vector3>("Gradient"));
-
-  dax::cont::worklets::Elevation(grid,
-                                 grid.getFieldsCell().getVector3("Gradient"),
-                                 dax::cont::cellFieldHandle<dax::Scalar>("Elev"));
+  ElevationWorklet(grid, "Elevation");
+  CellGradientWorklet(grid, "Elevation", "Gradient");
   }
 
-void Pipeline1Test()
+void Pipeline2(dax::cont::StructuredGrid &grid)
   {
-  std::cout << "Pipeline1" << std::endl;
-  dax::cont::StructuredGrid grid;
-  CreateInputStructure(32,grid);
-
-  dax::cont::worklets::Elevation(grid,
-                                 grid.points(),
-                                 dax::cont::pointFieldHandle<dax::Scalar>("Elevation"));
-
-  dax::cont::worklets::CellGradient(grid,
-                                    grid.points(),
-                                    grid.getFieldsPoint().getScalar("Elevation"),
-                                    dax::cont::cellFieldHandle<dax::Vector3>("Gradient"));
-
-  //you need use the retrieve function
-  //to get the propery Array, don't attempt to get the array
-  //directly ( TODO remove the ability to get raw array from public control API)
-  dax::cont::ArrayPtr<dax::Vector3> array = dax::cont::retrieve(
-                                  grid.getFieldsCell().getVector3("Gradient"));
-
-  PrintCheckValues(array);
+  Pipeline1(grid);
+  CellSineSquareCosWorklet(dax::Vector3(), grid,"Gradient","Result");
   }
+
+void Pipeline3(dax::cont::StructuredGrid &grid)
+  {
+  ElevationWorklet(grid,"Elevation");
+  PointSineSquareCosWorklet(dax::Scalar(),grid,"Elevation","Result");
+  }
+}
 
 int main(int argc, char* argv[])
   {
-  //ConnectFilterFields();
-  //ConnectCellWithPoint();
-  Pipeline1Test();
 
+  dax::cont::StructuredGrid grid;
+  CreateInputStructure(32,grid);
+
+  int pipeline = 3;
+  std::cout << "Pipeline #"<<pipeline<< std::endl;
+  switch (pipeline)
+    {
+  case 1:
+    Pipeline1(grid);
+    break;
+  case 2:
+    Pipeline2(grid);
+    break;
+  case 3:
+    Pipeline3(grid);
+    break;
+  default:
+    addArrays(grid);
+    dumpArray(grid,"cellArray");
+    }
   return 0;
   }

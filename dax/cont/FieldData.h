@@ -47,7 +47,7 @@ public:
     {return Vec4Field.add(name,array);}
 
   bool addArray(const std::string& name,
-                         const IdContainer& container)
+                const IdContainer& container)
     {return IdField.add(name,container);}
   bool addArray(const std::string& name,
                 const ScalarContainer& container)

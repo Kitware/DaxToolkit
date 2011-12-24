@@ -19,9 +19,11 @@
 
 namespace dax {
 namespace cont{
-// forward declaration of HostArray
+// forward declaration of control classes
 template<typename OtherT> class Array;
 template<typename OtherT> class ArrayPtr;
+template<typename OtherT> class FieldHandleCell;
+template<typename OtherT> class FieldHandlePoint;
 
 namespace internal {
 template<typename OtherT> class ArrayContainer;
@@ -116,7 +118,10 @@ public:
 
     DeviceArrayPtr<ValueType> tempDevice(new DeviceArray<ValueType>());
     ArrayPtr tempCont = boost::static_pointer_cast<Array>(controlArray);
-    (*tempDevice) = (*tempCont);
+    if(tempCont)
+      {
+      (*tempDevice) = (*tempCont);
+      }
     return tempDevice;
     }
 };
@@ -132,15 +137,32 @@ OutputIterator toHost(InputIterator first, InputIterator last, OutputIterator de
 template<typename T>
 inline DeviceArrayPtr<T> retrieve(const dax::cont::internal::ArrayContainer<T>& container)
   {
-  //get device arrays if they already exists, otherwise
-  //convert the control arrays to device arrays
-
+  //get device array if it already exists, otherwise
+  //convert the control array to device array.
   //need the template keyword to help out some compilers
   //figure out that execution is a templated method
   return container.template arrayExecution<
       dax::cuda::cont::internal::DeviceArray<T> >();
   }
 
+template<typename T>
+inline DeviceArrayPtr<T> retrieve(dax::cont::FieldHandleCell<T>& handle)
+{
+  //get device array if it already exists, otherwise
+  //convert the control array to device array.
+  return handle.template arrayExecution<
+      dax::cuda::cont::internal::DeviceArray<T> >();
+}
+
+template<typename T>
+inline DeviceArrayPtr<T> retrieve(dax::cont::FieldHandlePoint<T>& handle)
+{
+  //get device array if it already exists, otherwise
+  //convert the control array to device array.
+
+  return handle.template arrayExecution<
+      dax::cuda::cont::internal::DeviceArray<T> >();
+}
 
 } } } }
 
