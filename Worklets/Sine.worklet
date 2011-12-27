@@ -12,28 +12,24 @@
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
 
+#include <dax/TypeTraits.h>
+
 // TODO: Template to handle any field type, scalar or vector.
 
-template<class CellType>
+template<class CellType, class FieldType>
 DAX_WORKLET void Sine(
     DAX_IN dax::exec::WorkMapField<CellType> &work,
-    DAX_IN const dax::exec::Field<dax::Vector3> &inField,
-    DAX_OUT dax::exec::Field<dax::Vector3> &outField)
+    DAX_IN const dax::exec::Field<FieldType> &inField,
+    DAX_OUT dax::exec::Field<FieldType> &outField)
 {
-  dax::Vector3 inValue = work.GetFieldValue(inField);
-  dax::Vector3 outValue
-      = dax::make_Vector3(sinf(inValue.x), sinf(inValue.y), sinf(inValue.z));
-  work.SetFieldValue(outField, outValue);
-}
-
-template<class CellType>
-DAX_WORKLET void Sine(
-    DAX_IN dax::exec::WorkMapField<CellType> &work,
-    DAX_IN const dax::exec::Field<dax::Scalar> &inField,
-    DAX_OUT dax::exec::Field<dax::Scalar> &outField)
-{
-  dax::Scalar inValue = work.GetFieldValue(inField);
-  dax::Scalar outValue = sinf(inValue);
+  FieldType inValue = work.GetFieldValue(inField);
+  FieldType outValue;
+  for (int i = 0; i < dax::VectorTraits<FieldType>::NUM_COMPONENTS; i++)
+    {
+    typename dax::VectorTraits<FieldType>::ValueType result;
+    result = sinf(dax::VectorTraits<FieldType>::GetComponent(inValue, i));
+    dax::VectorTraits<FieldType>::SetComponent(outValue, i, result);
+    }
   work.SetFieldValue(outField, outValue);
 }
 

@@ -174,14 +174,14 @@ static void PrintCheckValues(const dax::internal::DataArray<dax::Vector3> &array
     dax::Vector3 value = array.GetValue(index);
     if (index < 20)
       {
-      cout << index << " : " << value.x << ", " << value.y << ", " << value.z
+      cout << index << " : " << value[0] << ", " << value[1] << ", " << value[2]
            << endl;
       }
-    if (   (value.x < -1) || (value .x > 1)
-        || (value.y < -1) || (value .y > 1)
-        || (value.z < -1) || (value .z > 1) )
+    if (   (value[0] < -1) || (value [0] > 1)
+        || (value[1] < -1) || (value [1] > 1)
+        || (value[2] < -1) || (value [2] > 1) )
       {
-      cout << index << " : " << value.x << ", " << value.y << ", " << value.z
+      cout << index << " : " << value[0] << ", " << value[1] << ", " << value[2]
            << endl;
       break;
       }
