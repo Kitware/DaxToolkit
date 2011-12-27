@@ -245,7 +245,7 @@ DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator-(const dax::Vector3 &a,
 DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator/(const dax::Vector3 &a,
                                                    const dax::Vector3 &b)
 {
-  dax::make_Vector3(a[0]/b[0], a[1]/b[1], a[2]/b[2]);
+  return dax::make_Vector3(a[0]/b[0], a[1]/b[1], a[2]/b[2]);
 }
 DAX_EXEC_CONT_EXPORT inline bool operator==(const dax::Vector3 &a,
                                             const dax::Vector3 &b)
@@ -272,22 +272,22 @@ DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator*(const dax::Vector3 &a,
 DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator+(const dax::Vector4 &a,
                                                    const dax::Vector4 &b)
 {
-  dax::make_Vector4(a[0]+b[0], a[1]+b[1], a[2]+b[2], a[3]+b[3]);
+  return dax::make_Vector4(a[0]+b[0], a[1]+b[1], a[2]+b[2], a[3]+b[3]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator*(const dax::Vector4 &a,
                                                    const dax::Vector4 &b)
 {
-  dax::make_Vector4(a[0]*b[0], a[1]*b[1], a[2]*b[2], a[3]*b[3]);
+  return dax::make_Vector4(a[0]*b[0], a[1]*b[1], a[2]*b[2], a[3]*b[3]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator-(const dax::Vector4 &a,
                                                    const dax::Vector4 &b)
 {
-  dax::make_Vector4(a[0]-b[0], a[1]-b[1], a[2]-b[2], a[3]-b[3]);
+  return dax::make_Vector4(a[0]-b[0], a[1]-b[1], a[2]-b[2], a[3]-b[3]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator/(const dax::Vector4 &a,
                                                    const dax::Vector4 &b)
 {
-  dax::make_Vector4(a[0]/b[0], a[1]/b[1], a[2]/b[2], a[3]/b[3]);
+  return dax::make_Vector4(a[0]/b[0], a[1]/b[1], a[2]/b[2], a[3]/b[3]);
 }
 DAX_EXEC_CONT_EXPORT inline bool operator==(const dax::Vector4 &a,
                                             const dax::Vector4 &b)
@@ -303,12 +303,12 @@ DAX_EXEC_CONT_EXPORT inline bool operator!=(const dax::Vector4 &a,
 DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator*(dax::Vector4::ValueType a,
                                                    const dax::Vector4 &b)
 {
-  dax::make_Vector4(a*b[0], a*b[1], a*b[2], a*b[3]);
+  return dax::make_Vector4(a*b[0], a*b[1], a*b[2], a*b[3]);
 }
 DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator*(const dax::Vector4 &a,
                                                    dax::Scalar &b)
 {
-  dax::make_Vector4(a[0]*b, a[1]*b, a[2]*b, a[3]*b);
+  return dax::make_Vector4(a[0]*b, a[1]*b, a[2]*b, a[3]*b);
 }
 
 #endif
