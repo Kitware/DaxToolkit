@@ -11,13 +11,13 @@
 include_directories(${Boost_INCLUDE_DIRS})
 
 #-----------------------------------------------------------------------------
-cuda_add_executable(NoPipelineTest
+cuda_add_executable(DAXCudaTest
   main.cu
   ArgumentsParser.cxx
   ArgumentsParser.h
 )
 
-target_link_libraries(NoPipelineTest
+target_link_libraries(DAXCudaTest
   daxCont
   daxCUDACont 
   ${BOOST_LIBRARIES}
@@ -25,15 +25,15 @@ target_link_libraries(NoPipelineTest
 
 
 #-----------------------------------------------------------------------------
-add_test(NoPipelineTest1-128
-  ${EXECUTABLE_OUTPUT_PATH}/NoPipelineTest --pipeline 1 --size 128)
-add_test(NoPipelineTest2-128
-  ${EXECUTABLE_OUTPUT_PATH}/NoPipelineTest --pipeline 2 --size 128)
-add_test(NoPipelineTest3-128
-  ${EXECUTABLE_OUTPUT_PATH}/NoPipelineTest --pipeline 3 --size 128)
-add_test(NoPipelineTest1-256
-  ${EXECUTABLE_OUTPUT_PATH}/NoPipelineTest --pipeline 1 --size 256)
-add_test(NoPipelineTest2-256
-  ${EXECUTABLE_OUTPUT_PATH}/NoPipelineTest --pipeline 2 --size 256)
-add_test(NoPipelineTest3-256
-  ${EXECUTABLE_OUTPUT_PATH}/NoPipelineTest --pipeline 3 --size 256)
+add_test(DAXCudaTest1-128
+  ${EXECUTABLE_OUTPUT_PATH}/DAXCudaTest --pipeline 1 --size 128)
+add_test(DAXCudaTest2-128
+  ${EXECUTABLE_OUTPUT_PATH}/DAXCudaTest --pipeline 2 --size 128)
+add_test(DAXCudaTest3-128
+  ${EXECUTABLE_OUTPUT_PATH}/DAXCudaTest --pipeline 3 --size 128)
+add_test(DAXCudaTest1-256
+  ${EXECUTABLE_OUTPUT_PATH}/DAXCudaTest --pipeline 1 --size 256)
+add_test(DAXCudaTest2-256
+  ${EXECUTABLE_OUTPUT_PATH}/DAXCudaTest --pipeline 2 --size 256)
+add_test(DAXCudaTest3-256
+  ${EXECUTABLE_OUTPUT_PATH}/DAXCudaTest --pipeline 3 --size 256)
