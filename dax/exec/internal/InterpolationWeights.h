@@ -14,7 +14,7 @@ namespace dax {
 namespace exec {
 namespace internal {
 
-DAX_EXEC_EXPORT static void interpolationWeightsVoxel(
+DAX_EXEC_EXPORT void interpolationWeightsVoxel(
   const dax::Vector3 &pcoords,
   dax::Scalar weights[8])
 {

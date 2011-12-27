@@ -17,11 +17,11 @@
 #endif
 
 #ifdef DAX_CUDA
-#define DAX_EXEC_EXPORT __device__
-#define DAX_EXEC_CONT_EXPORT __device__ __host__
+#define DAX_EXEC_EXPORT inline __device__
+#define DAX_EXEC_CONT_EXPORT inline __device__ __host__
 #else
-#define DAX_EXEC_EXPORT
-#define DAX_EXEC_CONT_EXPORT
+#define DAX_EXEC_EXPORT inline
+#define DAX_EXEC_CONT_EXPORT inline
 #endif
 
 // TODO: Do proper exports for dlls.

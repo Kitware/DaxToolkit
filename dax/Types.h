@@ -133,180 +133,180 @@ private:
 } __attribute__ ((aligned(4)));
 
 /// Initializes and returns a Vector3.
-DAX_EXEC_CONT_EXPORT inline dax::Vector3 make_Vector3(dax::Scalar x,
-                                                      dax::Scalar y,
-                                                      dax::Scalar z)
+DAX_EXEC_CONT_EXPORT dax::Vector3 make_Vector3(dax::Scalar x,
+                                               dax::Scalar y,
+                                               dax::Scalar z)
 {
   return dax::Vector3(x, y, z);
 }
 
 /// Initializes and returns a Vector4.
-DAX_EXEC_CONT_EXPORT inline dax::Vector4 make_Vector4(dax::Scalar x,
-                                                      dax::Scalar y,
-                                                      dax::Scalar z,
-                                                      dax::Scalar w)
+DAX_EXEC_CONT_EXPORT dax::Vector4 make_Vector4(dax::Scalar x,
+                                               dax::Scalar y,
+                                               dax::Scalar z,
+                                               dax::Scalar w)
 {
   return dax::Vector4(x, y, z, w);
 }
 
 /// Initializes and returns an Id3
-DAX_EXEC_CONT_EXPORT inline dax::Id3 make_Id3(dax::Id x, dax::Id y, dax::Id z)
+DAX_EXEC_CONT_EXPORT dax::Id3 make_Id3(dax::Id x, dax::Id y, dax::Id z)
 {
   return dax::Id3(x, y, z);
 }
 
-DAX_EXEC_CONT_EXPORT inline dax::Id dot(dax::Id a, dax::Id b)
+DAX_EXEC_CONT_EXPORT dax::Id dot(dax::Id a, dax::Id b)
 {
   return a * b;
 }
 
-DAX_EXEC_CONT_EXPORT inline dax::Id3::ValueType dot(const dax::Id3 &a,
-                                                    const dax::Id3 &b)
+DAX_EXEC_CONT_EXPORT dax::Id3::ValueType dot(const dax::Id3 &a,
+                                             const dax::Id3 &b)
 {
   return (a[0]*b[0]) + (a[1]*b[1]) + (a[2]*b[2]);
 }
 
-DAX_EXEC_CONT_EXPORT inline dax::Scalar dot(dax::Scalar a, dax::Scalar b)
+DAX_EXEC_CONT_EXPORT dax::Scalar dot(dax::Scalar a, dax::Scalar b)
 {
   return a * b;
 }
 
-DAX_EXEC_CONT_EXPORT inline dax::Vector3::ValueType dot(const dax::Vector3 &a,
-                                                        const dax::Vector3 &b)
+DAX_EXEC_CONT_EXPORT dax::Vector3::ValueType dot(const dax::Vector3 &a,
+                                                 const dax::Vector3 &b)
 {
   return (a[0]*b[0]) + (a[1]*b[1]) + (a[2]*b[2]);
 }
 
-DAX_EXEC_CONT_EXPORT inline dax::Vector4::ValueType dot(const dax::Vector4 &a,
-                                                        const dax::Vector4 &b)
+DAX_EXEC_CONT_EXPORT dax::Vector4::ValueType dot(const dax::Vector4 &a,
+                                                 const dax::Vector4 &b)
 {
   return (a[0]*b[0]) + (a[1]*b[1]) + (a[2]*b[2]) + (a[3]*b[3]);
 }
 
 } // End of namespace dax
 
-DAX_EXEC_CONT_EXPORT inline dax::Id3 operator+(const dax::Id3 &a,
-                                               const dax::Id3 &b)
+DAX_EXEC_CONT_EXPORT dax::Id3 operator+(const dax::Id3 &a,
+                                        const dax::Id3 &b)
 {
   return dax::make_Id3(a[0]+b[0], a[1]+b[1], a[2]+b[2]);
 }
-DAX_EXEC_CONT_EXPORT inline dax::Id3 operator*(const dax::Id3 &a,
-                                               const dax::Id3 &b)
+DAX_EXEC_CONT_EXPORT dax::Id3 operator*(const dax::Id3 &a,
+                                        const dax::Id3 &b)
 {
   return dax::make_Id3(a[0]*b[0], a[1]*b[1], a[2]*b[2]);
 }
-DAX_EXEC_CONT_EXPORT inline dax::Id3 operator-(const dax::Id3 &a,
-                                               const dax::Id3 &b)
+DAX_EXEC_CONT_EXPORT dax::Id3 operator-(const dax::Id3 &a,
+                                        const dax::Id3 &b)
 {
   return dax::make_Id3(a[0]-b[0], a[1]-b[1], a[2]-b[2]);
 }
-DAX_EXEC_CONT_EXPORT inline dax::Id3 operator/(const dax::Id3 &a,
-                                               const dax::Id3 &b)
+DAX_EXEC_CONT_EXPORT dax::Id3 operator/(const dax::Id3 &a,
+                                        const dax::Id3 &b)
 {
   return dax::make_Id3(a[0]/b[0], a[1]/b[1], a[2]/b[2]);
 }
-DAX_EXEC_CONT_EXPORT inline bool operator==(const dax::Id3 &a,
-                                            const dax::Id3 &b)
+DAX_EXEC_CONT_EXPORT bool operator==(const dax::Id3 &a,
+                                     const dax::Id3 &b)
 {
   return (a[0] == b[0]) && (a[1] == b[1]) && (a[2] == b[2]);
 }
-DAX_EXEC_CONT_EXPORT inline bool operator!=(const dax::Id3 &a,
-                                            const dax::Id3 &b)
+DAX_EXEC_CONT_EXPORT bool operator!=(const dax::Id3 &a,
+                                     const dax::Id3 &b)
 {
   return !(a == b);
 }
 
-DAX_EXEC_CONT_EXPORT inline dax::Id3 operator*(dax::Id3::ValueType a,
-                                               const dax::Id3 &b)
+DAX_EXEC_CONT_EXPORT dax::Id3 operator*(dax::Id3::ValueType a,
+                                        const dax::Id3 &b)
 {
   return dax::make_Id3(a*b[0], a*b[1], a*b[2]);
 }
-DAX_EXEC_CONT_EXPORT inline dax::Id3 operator*(const dax::Id3 &a,
-                                               dax::Id3::ValueType &b)
+DAX_EXEC_CONT_EXPORT dax::Id3 operator*(const dax::Id3 &a,
+                                        dax::Id3::ValueType &b)
 {
   return dax::make_Id3(a[0]*b, a[1]*b, a[2]*b);
 }
 
-DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator+(const dax::Vector3 &a,
-                                                   const dax::Vector3 &b)
+DAX_EXEC_CONT_EXPORT dax::Vector3 operator+(const dax::Vector3 &a,
+                                            const dax::Vector3 &b)
 {
   return dax::make_Vector3(a[0]+b[0], a[1]+b[1], a[2]+b[2]);
 }
-DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator*(const dax::Vector3 &a,
-                                                   const dax::Vector3 &b)
+DAX_EXEC_CONT_EXPORT dax::Vector3 operator*(const dax::Vector3 &a,
+                                            const dax::Vector3 &b)
 {
   return dax::make_Vector3(a[0]*b[0], a[1]*b[1], a[2]*b[2]);
 }
-DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator-(const dax::Vector3 &a,
-                                                   const dax::Vector3 &b)
+DAX_EXEC_CONT_EXPORT dax::Vector3 operator-(const dax::Vector3 &a,
+                                            const dax::Vector3 &b)
 {
   return dax::make_Vector3(a[0]-b[0], a[1]-b[1], a[2]-b[2]);
 }
-DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator/(const dax::Vector3 &a,
-                                                   const dax::Vector3 &b)
+DAX_EXEC_CONT_EXPORT dax::Vector3 operator/(const dax::Vector3 &a,
+                                            const dax::Vector3 &b)
 {
   return dax::make_Vector3(a[0]/b[0], a[1]/b[1], a[2]/b[2]);
 }
-DAX_EXEC_CONT_EXPORT inline bool operator==(const dax::Vector3 &a,
-                                            const dax::Vector3 &b)
+DAX_EXEC_CONT_EXPORT bool operator==(const dax::Vector3 &a,
+                                     const dax::Vector3 &b)
 {
   return (a[0] == b[0]) && (a[1] == b[1]) && (a[2] == b[2]);
 }
-DAX_EXEC_CONT_EXPORT inline bool operator!=(const dax::Vector3 &a,
-                                            const dax::Vector3 &b)
+DAX_EXEC_CONT_EXPORT bool operator!=(const dax::Vector3 &a,
+                                     const dax::Vector3 &b)
 {
   return !(a == b);
 }
 
-DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator*(dax::Vector3::ValueType a,
-                                                   const dax::Vector3 &b)
+DAX_EXEC_CONT_EXPORT dax::Vector3 operator*(dax::Vector3::ValueType a,
+                                            const dax::Vector3 &b)
 {
   return dax::make_Vector3(a*b[0], a*b[1], a*b[2]);
 }
-DAX_EXEC_CONT_EXPORT inline dax::Vector3 operator*(const dax::Vector3 &a,
-                                                   dax::Vector3::ValueType &b)
+DAX_EXEC_CONT_EXPORT dax::Vector3 operator*(const dax::Vector3 &a,
+                                            dax::Vector3::ValueType &b)
 {
   return dax::make_Vector3(a[0]*b, a[1]*b, a[2]*b);
 }
 
-DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator+(const dax::Vector4 &a,
-                                                   const dax::Vector4 &b)
+DAX_EXEC_CONT_EXPORT dax::Vector4 operator+(const dax::Vector4 &a,
+                                            const dax::Vector4 &b)
 {
   return dax::make_Vector4(a[0]+b[0], a[1]+b[1], a[2]+b[2], a[3]+b[3]);
 }
-DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator*(const dax::Vector4 &a,
-                                                   const dax::Vector4 &b)
+DAX_EXEC_CONT_EXPORT dax::Vector4 operator*(const dax::Vector4 &a,
+                                            const dax::Vector4 &b)
 {
   return dax::make_Vector4(a[0]*b[0], a[1]*b[1], a[2]*b[2], a[3]*b[3]);
 }
-DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator-(const dax::Vector4 &a,
-                                                   const dax::Vector4 &b)
+DAX_EXEC_CONT_EXPORT dax::Vector4 operator-(const dax::Vector4 &a,
+                                            const dax::Vector4 &b)
 {
   return dax::make_Vector4(a[0]-b[0], a[1]-b[1], a[2]-b[2], a[3]-b[3]);
 }
-DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator/(const dax::Vector4 &a,
-                                                   const dax::Vector4 &b)
+DAX_EXEC_CONT_EXPORT dax::Vector4 operator/(const dax::Vector4 &a,
+                                            const dax::Vector4 &b)
 {
   return dax::make_Vector4(a[0]/b[0], a[1]/b[1], a[2]/b[2], a[3]/b[3]);
 }
-DAX_EXEC_CONT_EXPORT inline bool operator==(const dax::Vector4 &a,
-                                            const dax::Vector4 &b)
+DAX_EXEC_CONT_EXPORT bool operator==(const dax::Vector4 &a,
+                                     const dax::Vector4 &b)
 {
   return (a[0] == b[0]) && (a[1] == b[1]) && (a[2] == b[2]) && (a[3] == b[3]);
 }
-DAX_EXEC_CONT_EXPORT inline bool operator!=(const dax::Vector4 &a,
-                                            const dax::Vector4 &b)
+DAX_EXEC_CONT_EXPORT bool operator!=(const dax::Vector4 &a,
+                                     const dax::Vector4 &b)
 {
   return !(a == b);
 }
 
-DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator*(dax::Vector4::ValueType a,
-                                                   const dax::Vector4 &b)
+DAX_EXEC_CONT_EXPORT dax::Vector4 operator*(dax::Vector4::ValueType a,
+                                            const dax::Vector4 &b)
 {
   return dax::make_Vector4(a*b[0], a*b[1], a*b[2], a*b[3]);
 }
-DAX_EXEC_CONT_EXPORT inline dax::Vector4 operator*(const dax::Vector4 &a,
-                                                   dax::Scalar &b)
+DAX_EXEC_CONT_EXPORT dax::Vector4 operator*(const dax::Vector4 &a,
+                                            dax::Scalar &b)
 {
   return dax::make_Vector4(a[0]*b, a[1]*b, a[2]*b, a[3]*b);
 }
