@@ -39,21 +39,21 @@ static void TestWeightOnVertex(dax::Vector3 weight,
     {
     AssertDerivativeWeight(weight == signs);
     }
-  else if (   (vertexPCoord.x != derivativePCoord.x)
-           && (vertexPCoord.y == derivativePCoord.y)
-           && (vertexPCoord.z == derivativePCoord.z) )
+  else if (   (vertexPCoord[0] != derivativePCoord[0])
+           && (vertexPCoord[1] == derivativePCoord[1])
+           && (vertexPCoord[2] == derivativePCoord[2]) )
     {
     AssertDerivativeWeight(weight == signs*dax::make_Vector3(1.0, 0.0, 0.0));
     }
-  else if (   (vertexPCoord.x == derivativePCoord.x)
-           && (vertexPCoord.y != derivativePCoord.y)
-           && (vertexPCoord.z == derivativePCoord.z) )
+  else if (   (vertexPCoord[0] == derivativePCoord[0])
+           && (vertexPCoord[1] != derivativePCoord[1])
+           && (vertexPCoord[2] == derivativePCoord[2]) )
     {
     AssertDerivativeWeight(weight == signs*dax::make_Vector3(0.0, 1.0, 0.0));
     }
-  else if (   (vertexPCoord.x == derivativePCoord.x)
-           && (vertexPCoord.y == derivativePCoord.y)
-           && (vertexPCoord.z != derivativePCoord.z) )
+  else if (   (vertexPCoord[0] == derivativePCoord[0])
+           && (vertexPCoord[1] == derivativePCoord[1])
+           && (vertexPCoord[2] != derivativePCoord[2]) )
     {
     AssertDerivativeWeight(weight == signs*dax::make_Vector3(0.0, 0.0, 1.0));
     }
@@ -87,14 +87,14 @@ static void TestDerivativeWeightsVoxel()
   std::cout << "In TestDerivativeWeightsVoxel" << std::endl;
 
   const dax::Vector3 cellVertexToParametricCoords[8] = {
-    { 0, 0, 0 },
-    { 1, 0, 0 },
-    { 1, 1, 0 },
-    { 0, 1, 0 },
-    { 0, 0, 1 },
-    { 1, 0, 1 },
-    { 1, 1, 1 },
-    { 0, 1, 1 }
+    dax::make_Vector3(0, 0, 0),
+    dax::make_Vector3(1, 0, 0),
+    dax::make_Vector3(1, 1, 0),
+    dax::make_Vector3(0, 1, 0),
+    dax::make_Vector3(0, 0, 1),
+    dax::make_Vector3(1, 0, 1),
+    dax::make_Vector3(1, 1, 1),
+    dax::make_Vector3(0, 1, 1)
   };
 
   // Check Derivative at each corner.
@@ -121,9 +121,9 @@ static void TestDerivativeWeightsVoxel()
     {
     dax::Vector3 vertexPCoords = cellVertexToParametricCoords[weightIndex];
 
-    TestWeightInMiddle(weights[weightIndex].x, vertexPCoords.x);
-    TestWeightInMiddle(weights[weightIndex].y, vertexPCoords.y);
-    TestWeightInMiddle(weights[weightIndex].z, vertexPCoords.z);
+    TestWeightInMiddle(weights[weightIndex][0], vertexPCoords[0]);
+    TestWeightInMiddle(weights[weightIndex][1], vertexPCoords[1]);
+    TestWeightInMiddle(weights[weightIndex][2], vertexPCoords[2]);
     }
 }
 

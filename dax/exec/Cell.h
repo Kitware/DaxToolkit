@@ -50,14 +50,14 @@ public:
           this->GetGridStructure().Extent);
 
     const dax::Id3 cellVertexToPointIndex[8] = {
-      { 0, 0, 0 },
-      { 1, 0, 0 },
-      { 1, 1, 0 },
-      { 0, 1, 0 },
-      { 0, 0, 1 },
-      { 1, 0, 1 },
-      { 1, 1, 1 },
-      { 0, 1, 1 }
+      dax::make_Id3(0, 0, 0),
+      dax::make_Id3(1, 0, 0),
+      dax::make_Id3(1, 1, 0),
+      dax::make_Id3(0, 1, 0),
+      dax::make_Id3(0, 0, 1),
+      dax::make_Id3(1, 0, 1),
+      dax::make_Id3(1, 1, 1),
+      dax::make_Id3(0, 1, 1)
     };
 
     dax::Id3 ijkPoint = ijkCell + cellVertexToPointIndex[vertexIndex];

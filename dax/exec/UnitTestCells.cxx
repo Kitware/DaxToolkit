@@ -27,9 +27,7 @@ static void CheckPointIndex(dax::Id pointFlatIndex,
   dax::Id3 compareIndex = dax::internal::flatIndexToIndex3(pointFlatIndex,
                                                            extent);
 
-  if (   (compareIndex.x != pointIjkIndex.x)
-      || (compareIndex.y != pointIjkIndex.y)
-      || (compareIndex.z != pointIjkIndex.z) )
+  if (compareIndex != pointIjkIndex)
     {
     TEST_FAIL(<<"Bad point index.");
     }

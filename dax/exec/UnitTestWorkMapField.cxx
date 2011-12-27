@@ -37,7 +37,7 @@ static void TestMapFieldVoxel(
                                                             gridstruct.Extent);
 
   dax::Id3 dim = dax::internal::extentDimensions(gridstruct.Extent);
-  dax::Id numPoints = dim.x*dim.y*dim.z;
+  dax::Id numPoints = dim[0]*dim[1]*dim[2];
 
   std::vector<dax::Scalar> fieldData(numPoints);
   std::fill(fieldData.begin(), fieldData.end(), -1.0);
@@ -60,9 +60,9 @@ static void TestMapFieldVoxel(
     }
 
   dax::Vector3 expectedCoords
-      = dax::make_Vector3(static_cast<dax::Scalar>(pointIjkIndex.x),
-                          static_cast<dax::Scalar>(pointIjkIndex.y),
-                          static_cast<dax::Scalar>(pointIjkIndex.z));
+      = dax::make_Vector3(static_cast<dax::Scalar>(pointIjkIndex[0]),
+                          static_cast<dax::Scalar>(pointIjkIndex[1]),
+                          static_cast<dax::Scalar>(pointIjkIndex[2]));
   expectedCoords = gridstruct.Origin + expectedCoords * gridstruct.Spacing;
 
   dax::internal::DataArray<dax::Vector3> dummyArray;

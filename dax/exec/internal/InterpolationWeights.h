@@ -20,14 +20,14 @@ DAX_EXEC_EXPORT static void interpolationWeightsVoxel(
 {
   dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
 
-  weights[0] = rcoords.x * rcoords.y * rcoords.z;
-  weights[1] = pcoords.x * rcoords.y * rcoords.z;
-  weights[2] = pcoords.x * pcoords.y * rcoords.z;
-  weights[3] = rcoords.x * pcoords.y * rcoords.z;
-  weights[4] = rcoords.x * rcoords.y * pcoords.z;
-  weights[5] = pcoords.x * rcoords.y * pcoords.z;
-  weights[6] = pcoords.x * pcoords.y * pcoords.z;
-  weights[7] = rcoords.x * pcoords.y * pcoords.z;
+  weights[0] = rcoords[0] * rcoords[1] * rcoords[2];
+  weights[1] = pcoords[0] * rcoords[1] * rcoords[2];
+  weights[2] = pcoords[0] * pcoords[1] * rcoords[2];
+  weights[3] = rcoords[0] * pcoords[1] * rcoords[2];
+  weights[4] = rcoords[0] * rcoords[1] * pcoords[2];
+  weights[5] = pcoords[0] * rcoords[1] * pcoords[2];
+  weights[6] = pcoords[0] * pcoords[1] * pcoords[2];
+  weights[7] = rcoords[0] * pcoords[1] * pcoords[2];
 }
 
 }}}

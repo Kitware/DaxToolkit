@@ -39,7 +39,7 @@ static void TestMapCellVoxel(
     }
 
   dax::Id3 dim = dax::internal::extentDimensions(gridstruct.Extent);
-  dax::Id numCells = dim.x*dim.y*dim.z;
+  dax::Id numCells = dim[0]*dim[1]*dim[2];
 
   std::vector<dax::Scalar> fieldData(numCells);
   std::fill(fieldData.begin(), fieldData.end(), -1.0);

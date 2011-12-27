@@ -82,11 +82,11 @@ static void TestDerivativeCell(
   CellType cell = work.GetCell();
 
   dax::Vector3 pcoords;
-  for (pcoords.z = 0.0; pcoords.z <= 1.0; pcoords.z += 0.25)
+  for (pcoords[2] = 0.0; pcoords[2] <= 1.0; pcoords[2] += 0.25)
     {
-    for (pcoords.y = 0.0; pcoords.y <= 1.0; pcoords.y += 0.25)
+    for (pcoords[1] = 0.0; pcoords[1] <= 1.0; pcoords[1] += 0.25)
       {
-      for (pcoords.x = 0.0; pcoords.x <= 1.0; pcoords.x += 0.25)
+      for (pcoords[0] = 0.0; pcoords[0] <= 1.0; pcoords[0] += 0.25)
         {
         dax::Vector3 computedDerivative
             = dax::exec::cellDerivative(work,

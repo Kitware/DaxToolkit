@@ -38,9 +38,9 @@ DAX_EXEC_EXPORT inline dax::Vector3 fieldAccessUniformCoordinatesGet(
 {
   dax::Id3 ijk = flatIndexToIndex3(index, gridStructure.Extent);
   dax::Vector3 coords;
-  coords.x = gridStructure.Origin.x + ijk.x * gridStructure.Spacing.x;
-  coords.y = gridStructure.Origin.y + ijk.y * gridStructure.Spacing.y;
-  coords.z = gridStructure.Origin.z + ijk.z * gridStructure.Spacing.z;
+  coords[0] = gridStructure.Origin[0] + ijk[0] * gridStructure.Spacing[0];
+  coords[1] = gridStructure.Origin[1] + ijk[1] * gridStructure.Spacing[1];
+  coords[2] = gridStructure.Origin[2] + ijk[2] * gridStructure.Spacing[2];
   return coords;
 }
 

@@ -59,14 +59,14 @@ static void TestPCoordsVoxel(
   const dax::exec::FieldCoordinates &coordField)
 {
   const dax::Vector3 cellVertexToParametricCoords[8] = {
-    { 0, 0, 0 },
-    { 1, 0, 0 },
-    { 1, 1, 0 },
-    { 0, 1, 0 },
-    { 0, 0, 1 },
-    { 1, 0, 1 },
-    { 1, 1, 1 },
-    { 0, 1, 1 }
+    dax::make_Vector3(0, 0, 0),
+    dax::make_Vector3(1, 0, 0),
+    dax::make_Vector3(1, 1, 0),
+    dax::make_Vector3(0, 1, 0),
+    dax::make_Vector3(0, 0, 1),
+    dax::make_Vector3(1, 0, 1),
+    dax::make_Vector3(1, 1, 1),
+    dax::make_Vector3(0, 1, 1)
   };
   const dax::exec::CellVoxel &cell = work.GetCell();
 

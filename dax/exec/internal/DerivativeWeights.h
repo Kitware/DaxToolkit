@@ -19,37 +19,37 @@ DAX_EXEC_EXPORT static void derivativeWeightsVoxel(const dax::Vector3 &pcoords,
 {
   dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
 
-  weights[0].x = -rcoords.y*rcoords.z;
-  weights[0].y = -rcoords.x*rcoords.z;
-  weights[0].z = -rcoords.x*rcoords.y;
+  weights[0][0] = -rcoords[1]*rcoords[2];
+  weights[0][1] = -rcoords[0]*rcoords[2];
+  weights[0][2] = -rcoords[0]*rcoords[1];
 
-  weights[1].x = rcoords.y*rcoords.z;
-  weights[1].y = -pcoords.x*rcoords.z;
-  weights[1].z = -pcoords.x*rcoords.y;
+  weights[1][0] = rcoords[1]*rcoords[2];
+  weights[1][1] = -pcoords[0]*rcoords[2];
+  weights[1][2] = -pcoords[0]*rcoords[1];
 
-  weights[2].x = pcoords.y*rcoords.z;
-  weights[2].y = pcoords.x*rcoords.z;
-  weights[2].z = -pcoords.x*pcoords.y;
+  weights[2][0] = pcoords[1]*rcoords[2];
+  weights[2][1] = pcoords[0]*rcoords[2];
+  weights[2][2] = -pcoords[0]*pcoords[1];
 
-  weights[3].x = -pcoords.y*rcoords.z;
-  weights[3].y = rcoords.x*rcoords.z;
-  weights[3].z = -rcoords.x*pcoords.y;
+  weights[3][0] = -pcoords[1]*rcoords[2];
+  weights[3][1] = rcoords[0]*rcoords[2];
+  weights[3][2] = -rcoords[0]*pcoords[1];
 
-  weights[4].x = -rcoords.y*pcoords.z;
-  weights[4].y = -rcoords.x*pcoords.z;
-  weights[4].z = rcoords.x*rcoords.y;
+  weights[4][0] = -rcoords[1]*pcoords[2];
+  weights[4][1] = -rcoords[0]*pcoords[2];
+  weights[4][2] = rcoords[0]*rcoords[1];
 
-  weights[5].x = rcoords.y*pcoords.z;
-  weights[5].y = -pcoords.x*pcoords.z;
-  weights[5].z = pcoords.x*rcoords.y;
+  weights[5][0] = rcoords[1]*pcoords[2];
+  weights[5][1] = -pcoords[0]*pcoords[2];
+  weights[5][2] = pcoords[0]*rcoords[1];
 
-  weights[6].x = pcoords.y*pcoords.z;
-  weights[6].y = pcoords.x*pcoords.z;
-  weights[6].z = pcoords.x*pcoords.y;
+  weights[6][0] = pcoords[1]*pcoords[2];
+  weights[6][1] = pcoords[0]*pcoords[2];
+  weights[6][2] = pcoords[0]*pcoords[1];
 
-  weights[7].x = -pcoords.y*pcoords.z;
-  weights[7].y = rcoords.x*pcoords.z;
-  weights[7].z = rcoords.x*pcoords.y;
+  weights[7][0] = -pcoords[1]*pcoords[2];
+  weights[7][1] = rcoords[0]*pcoords[2];
+  weights[7][2] = rcoords[0]*pcoords[1];
 }
 
 }}}
