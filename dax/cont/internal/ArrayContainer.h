@@ -23,6 +23,12 @@ class ArrayContainer
 public:
   typedef Type ValueType;
 
+  ArrayContainer();
+
+  ArrayContainer(const ArrayContainer&);
+  ArrayContainer(ArrayContainer&);
+  void operator=(const ArrayContainer&);
+
   bool hasControlArray() const;
   bool hasExecutionArray() const;
 
@@ -49,6 +55,41 @@ private:
 
 //------------------------------------------------------------------------------
 template<typename Type>
+ArrayContainer<Type>::ArrayContainer():
+  ControlArray(),ExecutionArray()
+{
+
+}
+
+//------------------------------------------------------------------------------
+template<typename Type>
+ArrayContainer<Type>::ArrayContainer(const ArrayContainer& copy_from_me):
+    ControlArray(copy_from_me.ControlArray),
+    ExecutionArray(copy_from_me.ExecutionArray)
+{
+
+}
+
+//------------------------------------------------------------------------------
+template<typename Type>
+ArrayContainer<Type>::ArrayContainer(ArrayContainer& copy_from_me):
+  ControlArray(copy_from_me.ControlArray),
+  ExecutionArray(copy_from_me.ExecutionArray)
+{
+
+}
+
+
+//------------------------------------------------------------------------------
+template<typename Type>
+void ArrayContainer<Type>::operator=(const ArrayContainer& copy_from_me)
+{
+  this->ControlArray = copy_from_me.ControlArray;
+  this->ExecutionArray = copy_from_me.ExecutionArray;
+}
+
+//------------------------------------------------------------------------------
+template<typename Type>
 inline bool ArrayContainer<Type>::hasControlArray() const
 {
   return (this->ControlArray != NULL);
@@ -65,7 +106,6 @@ return (this->ExecutionArray != NULL);
 template<typename Type> template<typename T>
 inline void ArrayContainer<Type>::setArrayControl(boost::shared_ptr<T> array)
 {
-  std::cout << "setArrayControl" << std::endl;
   this->ControlArray = array;
 }
 
@@ -104,11 +144,9 @@ boost::shared_ptr<T> ArrayContainer<Type>::arrayExecution( ) const
     {
     return boost::static_pointer_cast<T>(this->ExecutionArray);
     }
-  std::cout << "creating a new execution array!" <<std::endl;
   boost::shared_ptr<T> executionArray(new T());
   if(this->ControlArray)
     {
-    std::cout << "assigning new array from control!" <<std::endl;
     //copy the array from control to execution
     //this is a trick to get around the type erasure on control array
     executionArray = executionArray->convert(this->ControlArray);

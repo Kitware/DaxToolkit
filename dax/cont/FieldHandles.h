@@ -118,10 +118,8 @@ FieldHandlePoint<T>::FieldHandlePoint(const std::string &name):
 template<typename T> template<typename D>
 FieldHandlePoint<T>::FieldHandlePoint(D& dataSet, const std::string &name):
   Name(name),
-  Container(dataSet.fieldsCell().get(T(),name))
+  Container(dataSet.fieldsPoint().get(T(),name))
 {
-  assert(dataSet.fieldsCell().get(T(),name).hasControlArray()==false);
-  assert(Container.hasControlArray()==false);
   //populate Container from the dataset
 }
 
