@@ -15,8 +15,8 @@ dax::cont::ImageData::ImageData()
 {
   this->Extent[0] = this->Extent[2] = this->Extent[4] = 0;
   this->Extent[1] = this->Extent[3] = this->Extent[5] = -1;
-  this->Origin.x = this->Origin.y = this->Origin.z = 0;
-  this->Spacing.x = this->Spacing.y = this->Spacing.z = 1;
+  this->Origin[0] = this->Origin[1] = this->Origin[2] = 0;
+  this->Spacing[0] = this->Spacing[1] = this->Spacing[2] = 1;
   this->PointCoordinates = dax::cont::DataArrayStructuredPointsPtr(
     new dax::cont::DataArrayStructuredPoints());
   this->CellArray = dax::cont::DataArrayStructuredConnectivityPtr(
@@ -36,7 +36,7 @@ dax::cont::DataArrayPtr dax::cont::ImageData::GetPointCoordinates() const
   this->PointCoordinates->SetExtents(
     this->Extent[0], this->Extent[1], this->Extent[2],
     this->Extent[3], this->Extent[4], this->Extent[5]);
-  return this->PointCoordinates; 
+  return this->PointCoordinates;
 }
 
 //-----------------------------------------------------------------------------
@@ -47,5 +47,5 @@ dax::cont::DataArrayPtr dax::cont::ImageData::GetCellArray() const
   this->CellArray->SetExtents(
     this->Extent[0], this->Extent[1], this->Extent[2],
     this->Extent[3], this->Extent[4], this->Extent[5]);
-  return this->CellArray; 
+  return this->CellArray;
 }

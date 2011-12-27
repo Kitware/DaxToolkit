@@ -39,12 +39,12 @@ public:
 
   void SetExtents(int minx, int maxx, int miny, int maxy, int minz, int maxz)
     {
-    this->HeavyData.Extent.Min.x = minx;
-    this->HeavyData.Extent.Min.y = miny;
-    this->HeavyData.Extent.Min.z = minz;
-    this->HeavyData.Extent.Max.x = maxx;
-    this->HeavyData.Extent.Max.y = maxy;
-    this->HeavyData.Extent.Max.z = maxz;
+    this->HeavyData.Extent.Min[0] = minx;
+    this->HeavyData.Extent.Min[1] = miny;
+    this->HeavyData.Extent.Min[2] = minz;
+    this->HeavyData.Extent.Max[0] = maxx;
+    this->HeavyData.Extent.Max[1] = maxy;
+    this->HeavyData.Extent.Max[2] = maxz;
     }
 
   const dax::internal::StructureUniformGrid& GetHeavyData() const

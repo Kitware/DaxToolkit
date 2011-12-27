@@ -41,9 +41,9 @@ public:
     { this->Origin = origin; }
   void SetOrigin(double x, double y, double z)
     {
-    this->Origin.x = x;
-    this->Origin.y = y;
-    this->Origin.z = z;
+    this->Origin[0] = x;
+    this->Origin[1] = y;
+    this->Origin[2] = z;
     }
 
   const dax::Vector3& GetOrigin() const
@@ -51,9 +51,9 @@ public:
 
   void SetSpacing(double x, double y, double z)
     {
-    this->Spacing.x = x;
-    this->Spacing.y = y;
-    this->Spacing.z = z;
+    this->Spacing[0] = x;
+    this->Spacing[1] = y;
+    this->Spacing[2] = z;
     }
   void SetSpacing(const dax::Vector3& spacing)
     { this->Spacing = spacing; }
