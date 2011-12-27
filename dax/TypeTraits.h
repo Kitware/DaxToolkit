@@ -19,14 +19,19 @@ struct VectorTraits {
   typedef typename VectorType::ValueType ValueType;
   static const int NUM_COMPONENTS = VectorType::NUM_COMPONENTS;
 
-  static const ValueType &GetComponent(const VectorType &vector, int component){
+  DAX_EXEC_CONT_EXPORT static const ValueType &GetComponent(
+      const VectorType &vector,
+      int component) {
     return vector[component];
   }
-  static ValueType &GetComponent(VectorType &vector, int component) {
+  DAX_EXEC_CONT_EXPORT static ValueType &GetComponent(VectorType &vector,
+                                                      int component) {
     return vector[component];
   }
 
-  static void SetComponent(VectorType &vector, int component, ValueType value) {
+  DAX_EXEC_CONT_EXPORT static void SetComponent(VectorType &vector,
+                                                int component,
+                                                ValueType value) {
     vector[component] = value;
   }
 };
@@ -38,14 +43,18 @@ struct VectorTraitsBasic {
   typedef ScalarType ValueType;
   static const int NUM_COMPONENTS = 1;
 
-  static const ValueType &GetComponent(const ScalarType &vector, int) {
+  DAX_EXEC_CONT_EXPORT static const ValueType &GetComponent(
+      const ScalarType &vector,
+      int) {
     return vector;
   }
-  static ValueType &GetComponent(ScalarType &vector, int) {
+  DAX_EXEC_CONT_EXPORT static ValueType &GetComponent(ScalarType &vector, int) {
     return vector;
   }
 
-  static void SetComponent(ScalarType &vector, int, ValueType value) {
+  DAX_EXEC_CONT_EXPORT static void SetComponent(ScalarType &vector,
+                                                int,
+                                                ValueType value) {
     vector = value;
   }
 };

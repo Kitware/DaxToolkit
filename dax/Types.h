@@ -73,15 +73,19 @@ public:
   typedef dax::Scalar ValueType;
   static const int NUM_COMPONENTS = 3;
 
-  Vector3() { }
-  Vector3(ValueType x, ValueType y, ValueType z) {
+  DAX_EXEC_CONT_EXPORT Vector3() { }
+  DAX_EXEC_CONT_EXPORT Vector3(ValueType x, ValueType y, ValueType z) {
     this->Values[0] = x;
     this->Values[1] = y;
     this->Values[2] = z;
   }
 
-  const ValueType &operator[](int idx) const { return this->Values[idx]; }
-  ValueType &operator[](int idx) { return this->Values[idx]; }
+  DAX_EXEC_CONT_EXPORT const ValueType &operator[](int idx) const {
+    return this->Values[idx];
+  }
+  DAX_EXEC_CONT_EXPORT ValueType &operator[](int idx) {
+    return this->Values[idx];
+  }
 
 private:
   ValueType Values[NUM_COMPONENTS];
@@ -93,7 +97,8 @@ public:
   typedef dax::Scalar ValueType;
   static const int NUM_COMPONENTS = 4;
 
-  Vector4() { }
+  DAX_EXEC_CONT_EXPORT Vector4() { }
+  DAX_EXEC_CONT_EXPORT
   Vector4(ValueType x, ValueType y, ValueType z, ValueType w) {
     this->Values[0] = x;
     this->Values[1] = y;
@@ -101,8 +106,12 @@ public:
     this->Values[3] = w;
   }
 
-  const ValueType &operator[](int idx) const { return this->Values[idx]; }
-  ValueType &operator[](int idx) { return this->Values[idx]; }
+  DAX_EXEC_CONT_EXPORT const ValueType &operator[](int idx) const {
+    return this->Values[idx];
+  }
+  DAX_EXEC_CONT_EXPORT ValueType &operator[](int idx) {
+    return this->Values[idx];
+  }
 
 private:
   ValueType Values[NUM_COMPONENTS];
@@ -118,15 +127,19 @@ public:
   typedef dax::Id ValueType;
   static const int NUM_COMPONENTS = 3;
 
-  Id3() { }
-  Id3(ValueType x, ValueType y, ValueType z) {
+  DAX_EXEC_CONT_EXPORT Id3() { }
+  DAX_EXEC_CONT_EXPORT Id3(ValueType x, ValueType y, ValueType z) {
     this->Values[0] = x;
     this->Values[1] = y;
     this->Values[2] = z;
   }
 
-  const ValueType &operator[](int idx) const { return this->Values[idx]; }
-  ValueType &operator[](int idx) { return this->Values[idx]; }
+  DAX_EXEC_CONT_EXPORT const ValueType &operator[](int idx) const {
+    return this->Values[idx];
+  }
+  DAX_EXEC_CONT_EXPORT ValueType &operator[](int idx) {
+    return this->Values[idx];
+  }
 
 private:
   ValueType Values[NUM_COMPONENTS];
