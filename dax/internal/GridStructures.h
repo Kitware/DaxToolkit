@@ -36,9 +36,9 @@ DAX_EXEC_CONT_EXPORT inline dax::Id3 flatIndexToIndex3(dax::Id index,
   dax::Id3 dims = extentDimensions(extent);
 
   dax::Id3 ijk;
-  ijk.x = index % dims.x;
-  ijk.y = (index / dims.x) % dims.y;
-  ijk.z = (index / (dims.x * dims.y));
+  ijk[0] = index % dims[0];
+  ijk[1] = (index / dims[0]) % dims[1];
+  ijk[2] = (index / (dims[0] * dims[1]));
 
   return ijk + extent.Min;
 }
@@ -51,9 +51,9 @@ dax::Id3 flatIndexToIndex3Cell(dax::Id index, const Extent3 &pointExtent)
   dax::Id3 dims = extentDimensions(pointExtent) - dax::make_Id3(1, 1, 1);
 
   dax::Id3 ijk;
-  ijk.x = index % dims.x;
-  ijk.y = (index / dims.x) % dims.y;
-  ijk.z = (index / (dims.x * dims.y));
+  ijk[0] = index % dims[0];
+  ijk[1] = (index / dims[0]) % dims[1];
+  ijk[2] = (index / (dims[0] * dims[1]));
 
   return ijk + pointExtent.Min;
 }
@@ -68,7 +68,7 @@ DAX_EXEC_CONT_EXPORT inline dax::Id index3ToFlatIndex(dax::Id3 ijk,
   dax::Id3 dims = extentDimensions(extent);
   dax::Id3 deltas = ijk - extent.Min;
 
-  return deltas.x + dims.x*(deltas.y + dims.y*deltas.z);
+  return deltas[0] + dims[0]*(deltas[1] + dims[1]*deltas[2]);
 }
 
 /// Same as index3ToFlatIndex except performed for cells using extents for
@@ -79,7 +79,7 @@ dax::Id index3ToFlatIndexCell(dax::Id3 ijk, const Extent3 &pointExtent)
   dax::Id3 dims = extentDimensions(pointExtent) - dax::make_Id3(1, 1, 1);
   dax::Id3 deltas = ijk - pointExtent.Min;
 
-  return deltas.x + dims.x*(deltas.y + dims.y*deltas.z);
+  return deltas[0] + dims[0]*(deltas[1] + dims[1]*deltas[2]);
 }
 
 struct StructureUniformGrid {
@@ -93,7 +93,7 @@ DAX_EXEC_CONT_EXPORT inline
 dax::Id numberOfPoints(const dax::internal::StructureUniformGrid &gridstructure)
 {
   dax::Id3 dims = dax::internal::extentDimensions(gridstructure.Extent);
-  return dims.x*dims.y*dims.z;
+  return dims[0]*dims[1]*dims[2];
 }
 
 DAX_EXEC_CONT_EXPORT inline
@@ -101,7 +101,7 @@ dax::Id numberOfCells(const dax::internal::StructureUniformGrid &gridstructure)
 {
   dax::Id3 dims = dax::internal::extentDimensions(gridstructure.Extent)
                   - dax::make_Id3(1, 1, 1);
-  return dims.x*dims.y*dims.z;
+  return dims[0]*dims[1]*dims[2];
 }
 
 }  }

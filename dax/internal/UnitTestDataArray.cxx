@@ -63,9 +63,9 @@ static void TestId3Array()
   for (int i = 0; i < NUM_ENTRIES; i++)
     {
     dax::Id3 value = dataArray.GetValue(i);
-    if (   (value.x != 3*i+0)
-        || (value.y != 3*i+1)
-        || (value.z != 3*i+2) )
+    if (   (value[0] != 3*i+0)
+        || (value[1] != 3*i+1)
+        || (value[2] != 3*i+2) )
       {
       TEST_FAIL(<< "Bad data array.");
       }
@@ -102,9 +102,9 @@ static void TestVector3Array()
   for (int i = 0; i < NUM_ENTRIES; i++)
     {
     dax::Vector3 value = dataArray.GetValue(i);
-    if (   (value.x != 3*i+0)
-        || (value.y != 3*i+1)
-        || (value.z != 3*i+2) )
+    if (   (value[0] != 3*i+0)
+        || (value[1] != 3*i+1)
+        || (value[2] != 3*i+2) )
       {
       TEST_FAIL(<< "Bad data array.");
       }
@@ -123,10 +123,10 @@ static void TestVector4Array()
   for (int i = 0; i < NUM_ENTRIES; i++)
     {
     dax::Vector4 value = dataArray.GetValue(i);
-    if (   (value.x != 4*i+0)
-        || (value.y != 4*i+1)
-        || (value.z != 4*i+2)
-        || (value.w != 4*i+3) )
+    if (   (value[0] != 4*i+0)
+        || (value[1] != 4*i+1)
+        || (value[2] != 4*i+2)
+        || (value[3] != 4*i+3) )
       {
       TEST_FAIL(<< "Bad data array.");
       }

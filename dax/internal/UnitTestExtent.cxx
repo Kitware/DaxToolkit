@@ -31,7 +31,7 @@ static void TestDimensions()
   extent.Min = dax::make_Id3(0, 0, 0);
   extent.Max = dax::make_Id3(10, 10, 10);
   dims = dax::internal::extentDimensions(extent);
-  if ((dims.x != 11) || (dims.y != 11) || (dims.z != 11))
+  if ((dims[0] != 11) || (dims[1] != 11) || (dims[2] != 11))
     {
     TEST_FAIL(<< "Got incorrect dimensions for extent.");
     }
@@ -39,7 +39,7 @@ static void TestDimensions()
   extent.Min = dax::make_Id3(-5, 8, 23);
   extent.Max = dax::make_Id3(10, 25, 44);
   dims = dax::internal::extentDimensions(extent);
-  if ((dims.x != 16) || (dims.y != 18) || (dims.z != 22))
+  if ((dims[0] != 16) || (dims[1] != 18) || (dims[2] != 22))
     {
     TEST_FAIL(<< "Got incorrect dimensions for extent.");
     }
@@ -53,17 +53,17 @@ static void TestIndexConversion(dax::internal::Extent3 extent)
 
   std::cout << "Testing point index conversion" << std::endl;
   correctFlatIndex = 0;
-  for (correctIndex3.z = extent.Min.z;
-       correctIndex3.z <= extent.Max.z;
-       correctIndex3.z++)
+  for (correctIndex3[2] = extent.Min[2];
+       correctIndex3[2] <= extent.Max[2];
+       correctIndex3[2]++)
     {
-    for (correctIndex3.y = extent.Min.y;
-         correctIndex3.y <= extent.Max.y;
-         correctIndex3.y++)
+    for (correctIndex3[1] = extent.Min[1];
+         correctIndex3[1] <= extent.Max[1];
+         correctIndex3[1]++)
       {
-      for (correctIndex3.x = extent.Min.x;
-           correctIndex3.x <= extent.Max.x;
-           correctIndex3.x++)
+      for (correctIndex3[0] = extent.Min[0];
+           correctIndex3[0] <= extent.Max[0];
+           correctIndex3[0]++)
         {
         dax::Id computedFlatIndex
             = dax::internal::index3ToFlatIndex(correctIndex3, extent);
@@ -74,9 +74,9 @@ static void TestIndexConversion(dax::internal::Extent3 extent)
 
         dax::Id3 computedIndex3
             = dax::internal::flatIndexToIndex3(correctFlatIndex, extent);
-        if (   (computedIndex3.x != correctIndex3.x)
-            || (computedIndex3.y != correctIndex3.y)
-            || (computedIndex3.z != correctIndex3.z) )
+        if (   (computedIndex3[0] != correctIndex3[0])
+            || (computedIndex3[1] != correctIndex3[1])
+            || (computedIndex3[2] != correctIndex3[2]) )
           {
           TEST_FAIL(<< "Got incorrect 3d index");
           }
@@ -85,24 +85,24 @@ static void TestIndexConversion(dax::internal::Extent3 extent)
         }
       }
     }
-  if (correctFlatIndex != dims.x*dims.y*dims.z)
+  if (correctFlatIndex != dims[0]*dims[1]*dims[2])
     {
     TEST_FAIL(<< "Tested wrong number of indices.");
     }
 
   std::cout << "Testing cell index conversion" << std::endl;
   correctFlatIndex = 0;
-  for (correctIndex3.z = extent.Min.z;
-       correctIndex3.z < extent.Max.z;
-       correctIndex3.z++)
+  for (correctIndex3[2] = extent.Min[2];
+       correctIndex3[2] < extent.Max[2];
+       correctIndex3[2]++)
     {
-    for (correctIndex3.y = extent.Min.y;
-         correctIndex3.y < extent.Max.y;
-         correctIndex3.y++)
+    for (correctIndex3[1] = extent.Min[1];
+         correctIndex3[1] < extent.Max[1];
+         correctIndex3[1]++)
       {
-      for (correctIndex3.x = extent.Min.x;
-           correctIndex3.x < extent.Max.x;
-           correctIndex3.x++)
+      for (correctIndex3[0] = extent.Min[0];
+           correctIndex3[0] < extent.Max[0];
+           correctIndex3[0]++)
         {
         dax::Id computedFlatIndex
             = dax::internal::index3ToFlatIndexCell(correctIndex3, extent);
@@ -113,9 +113,9 @@ static void TestIndexConversion(dax::internal::Extent3 extent)
 
         dax::Id3 computedIndex3
             = dax::internal::flatIndexToIndex3Cell(correctFlatIndex, extent);
-        if (   (computedIndex3.x != correctIndex3.x)
-            || (computedIndex3.y != correctIndex3.y)
-            || (computedIndex3.z != correctIndex3.z) )
+        if (   (computedIndex3[0] != correctIndex3[0])
+            || (computedIndex3[1] != correctIndex3[1])
+            || (computedIndex3[2] != correctIndex3[2]) )
           {
           TEST_FAIL(<< "Got incorrect 3d index");
           }
@@ -124,7 +124,7 @@ static void TestIndexConversion(dax::internal::Extent3 extent)
         }
       }
     }
-  if (correctFlatIndex != (dims.x-1)*(dims.y-1)*(dims.z-1))
+  if (correctFlatIndex != (dims[0]-1)*(dims[1]-1)*(dims[2]-1))
     {
     TEST_FAIL(<< "Tested wrong number of indices.");
     }
