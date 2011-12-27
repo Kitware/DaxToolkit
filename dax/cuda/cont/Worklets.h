@@ -21,9 +21,9 @@
 #include <dax/cont/internal/ConvertTypes.h>
 #include <dax/cont/internal/ArrayContainer.h>
 
+#include <dax/cuda/cont/internal/CudaParameters.h>
 #include <dax/cuda/cont/internal/DeviceArray.h>
 #include <dax/cuda/cont/internal/WorkletFunctions.h>
-#include <dax/cuda/exec/CudaParameters.h>
 
 
 namespace dax { namespace cuda {  namespace cont { namespace worklet {
@@ -54,7 +54,7 @@ public:
     assert(ind->size()==outd->size());
 
     //determine the cuda parameters from the data structure
-    dax::cuda::exec::CudaParameters params(g);
+    dax::cuda::control::internal::CudaParameters params(g);
 
     //this type needs to be auto derived
     dax::internal::StructureUniformGrid grid = dax::cont::internal::convert(g);
@@ -100,7 +100,7 @@ public:
     assert(ind->size()==outd->size());
 
     //determine the cuda parameters from the data structure
-    dax::cuda::exec::CudaParameters params(g);
+    dax::cuda::control::internal::CudaParameters params(g);
 
     //this type needs to be auto derived
     dax::internal::StructureUniformGrid grid = dax::cont::internal::convert(g);
@@ -145,7 +145,7 @@ public:
     assert(ind->size()==outd->size());
 
     //determine the cuda parameters from the data structure
-    dax::cuda::exec::CudaParameters params(g);
+    dax::cuda::control::internal::CudaParameters params(g);
 
     //this type needs to be auto derived
     dax::internal::StructureUniformGrid grid = dax::cont::internal::convert(g);
@@ -190,7 +190,7 @@ public:
     assert(ind->size()==outd->size());
 
     //determine the cuda parameters from the data structure
-    dax::cuda::exec::CudaParameters params(g);
+    dax::cuda::control::internal::CudaParameters params(g);
 
     //this type needs to be auto derived
     dax::internal::StructureUniformGrid grid = dax::cont::internal::convert(g);
@@ -238,7 +238,7 @@ public:
     assert(ind->size()==ind2->size());
 
     //determine the cuda parameters from the data structure
-    dax::cuda::exec::CudaParameters params(g);
+    dax::cuda::control::internal::CudaParameters params(g);
 
     //this type needs to be auto derived
     dax::internal::StructureUniformGrid grid = dax::cont::internal::convert(g);

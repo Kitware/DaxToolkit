@@ -7,6 +7,7 @@
 ===========================================================================*/
 #include <stdio.h>
 #include <iostream>
+#include "ArgumentsParser.h"
 
 #include <dax/cont/StructuredGrid.h>
 #include <dax/cont/Array.h>
@@ -17,9 +18,13 @@
 //should we have a commoon all header for control?
 #include <dax/cont/Worklets.h>
 #include <dax/cont/FieldHandles.h>
+#include <dax/cont/internal/ArrayContainer.h>
+
+#include <boost/progress.hpp>
 
 namespace
 {
+//should array
 void PrintCheckValues(const dax::cont::ArrayPtr<dax::Vector3> &array)
 {
   for (dax::Id index = 0; index < array->size(); index++)
@@ -36,6 +41,23 @@ void PrintCheckValues(const dax::cont::ArrayPtr<dax::Vector3> &array)
       {
       std::cout << index << " : " << value.x << ", " << value.y << ", " << value.z
            << std::endl;
+      break;
+      }
+    }
+}
+
+void PrintCheckValues(const dax::cont::ArrayPtr<dax::Scalar> &array)
+{
+  for (dax::Id index = 0; index < array->size(); index++)
+    {
+    dax::Scalar value = (*array)[index];
+    if (index < 20)
+      {
+      std::cout << index << " : " << value << std::endl;
+      }
+    if ((value < -1) || (value > 1))
+      {
+      std::cout << "BAD VALUE " << index << " : " << value << std::endl;
       break;
       }
     }
@@ -62,13 +84,6 @@ void addArrays(dax::cont::StructuredGrid &grid)
   testCData->resize(grid.numCells(),1);
 
   grid.fieldsCell().addArray("cellArray",testCData);
-}
-
-void dumpArray(dax::cont::StructuredGrid& grid, const std::string &name)
-{
-  //TODO remove the ability to get raw array from public control API)
-  dax::cont::ArrayPtr<dax::Vector3> array = dax::cont::retrieve(grid.fieldsCell().vector3(name));
-  PrintCheckValues(array);
 }
 
 void ElevationWorklet(dax::cont::StructuredGrid& grid, const std::string &name)
@@ -103,7 +118,7 @@ void PointSineSquareCosWorklet(
                               dax::cont::FieldHandlePoint<T>(grid,resultName));
   dax::cont::worklets::Cosine(grid,
                               grid.fieldsPoint().get(T(),resultName),
-                              dax::cont::FieldHandlePoint<T>(grid,resultName));
+                              dax::cont::FieldHandlePoint<T>(grid,resultName));  
 }
 
 template<typename T>
@@ -126,47 +141,94 @@ void CellSineSquareCosWorklet(
                               dax::cont::FieldHandleCell<T>(grid,resultName));
 }
 
-void Pipeline1(dax::cont::StructuredGrid &grid)
+void Pipeline1(dax::cont::StructuredGrid &grid, double& execute_time)
   {
+  boost::timer timer;
+
+  timer.restart();
   ElevationWorklet(grid, "Elevation");
   CellGradientWorklet(grid, "Elevation", "Gradient");
+  execute_time = timer.elapsed();
+
+  dax::cont::ArrayPtr<dax::Vector3> result(
+        dax::cont::retrieve(grid.fieldsCell().vector3("Gradient")));
+  PrintCheckValues(result);
   }
 
-void Pipeline2(dax::cont::StructuredGrid &grid)
+void Pipeline2(dax::cont::StructuredGrid &grid, double& execute_time)
   {
-  Pipeline1(grid);
+  boost::timer timer;
+
+  //let pipeline 1 time itself
+  Pipeline1(grid,execute_time);
+
+  timer.restart();
   CellSineSquareCosWorklet(dax::Vector3(), grid,"Gradient","Result");
+  execute_time += timer.elapsed();
+
+  PrintCheckValues(dax::cont::retrieve(grid.fieldsCell().vector3("Result")));
   }
 
-void Pipeline3(dax::cont::StructuredGrid &grid)
+void Pipeline3(dax::cont::StructuredGrid &grid, double& execute_time)
   {
+  boost::timer timer;
+  timer.restart();
+
   ElevationWorklet(grid,"Elevation");
   PointSineSquareCosWorklet(dax::Scalar(),grid,"Elevation","Result");
+  execute_time = timer.elapsed();
+
+
+  PrintCheckValues(dax::cont::retrieve(grid.fieldsPoint().scalar("Result")));
   }
 }
 
 int main(int argc, char* argv[])
   {
 
-  dax::cont::StructuredGrid grid;
-  CreateInputStructure(32,grid);
+  dax::testing::ArgumentsParser parser;
+  if (!parser.parseArguments(argc, argv))
+    {
+    return 1;
+    }
 
-  int pipeline = 3;
+  //init grid vars from parser
+  const dax::Id MAX_SIZE = parser.problemSize();
+
+  //init timer vars
+  boost::timer timer;
+  double execute_time = 0;
+  double init_time = 0;
+
+  //create the grid
+  timer.restart();
+  dax::cont::StructuredGrid grid;
+  CreateInputStructure(MAX_SIZE,grid);
+  init_time = timer.elapsed();
+
+
+  int pipeline = parser.pipeline();
   std::cout << "Pipeline #"<<pipeline<< std::endl;
   switch (pipeline)
     {
-  case 1:
-    Pipeline1(grid);
+  case dax::testing::ArgumentsParser::CELL_GRADIENT:
+    Pipeline1(grid,execute_time);
     break;
-  case 2:
-    Pipeline2(grid);
+  case dax::testing::ArgumentsParser::CELL_GRADIENT_SINE_SQUARE_COS:
+    Pipeline2(grid,execute_time);
     break;
-  case 3:
-    Pipeline3(grid);
+  case dax::testing::ArgumentsParser::SINE_SQUARE_COS:
+    Pipeline3(grid,execute_time);
     break;
   default:
     addArrays(grid);
-    dumpArray(grid,"cellArray");
+    break;
     }
+
+  std::cout << std::endl << std::endl
+            << "Summary: -- " << MAX_SIZE << "^3 Dataset" << std::endl;
+  std::cout << "Initialize: " << init_time << std::endl
+            << "Execute: " << execute_time << std::endl;
+
   return 0;
   }

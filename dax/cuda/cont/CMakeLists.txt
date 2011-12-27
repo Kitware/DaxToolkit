@@ -7,6 +7,7 @@
 #=========================================================================
 
 set(headers
+  internal/CudaParameters.h
   internal/DeviceArray.h
   internal/WorkletFunctions.h
   Worklets.h
