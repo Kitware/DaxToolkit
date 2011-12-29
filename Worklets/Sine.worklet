@@ -14,6 +14,10 @@
 
 // TODO: Template to handle any field type, scalar or vector.
 
+
+namespace dax {
+namespace worklet {
+
 template<class CellType>
 DAX_WORKLET void Sine(
     DAX_IN dax::exec::WorkMapField<CellType> &work,
@@ -35,6 +39,9 @@ DAX_WORKLET void Sine(
   dax::Scalar inValue = work.GetFieldValue(inField);
   dax::Scalar outValue = sinf(inValue);
   work.SetFieldValue(outField, outValue);
+}
+
+}
 }
 
 #endif

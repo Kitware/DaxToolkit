@@ -14,6 +14,9 @@
 
 // TODO: Template to handle any field type, scalar or vector.
 
+namespace dax {
+namespace worklet {
+
 template<class CellType>
 DAX_WORKLET void Square(
     DAX_IN dax::exec::WorkMapField<CellType> &work,
@@ -34,6 +37,9 @@ DAX_WORKLET void Square(
   dax::Scalar inValue = work.GetFieldValue(inField);
   dax::Scalar outValue = inValue*inValue;
   work.SetFieldValue(outField, outValue);
+}
+
+}
 }
 
 #endif

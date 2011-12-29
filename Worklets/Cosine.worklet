@@ -14,6 +14,9 @@
 
 // TODO: Template to handle any field type, scalar or vector.
 
+namespace dax {
+namespace worklet {
+
 template<class CellType>
 DAX_WORKLET void Cosine(
     DAX_IN dax::exec::WorkMapField<CellType> &work,
@@ -35,6 +38,9 @@ DAX_WORKLET void Cosine(
   dax::Scalar inValue = work.GetFieldValue(inField);
   dax::Scalar outValue = cosf(inValue);
   work.SetFieldValue(outField, outValue);
+}
+
+}
 }
 
 #endif

@@ -13,6 +13,10 @@
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapCell.h>
 
+
+namespace dax {
+namespace worklet {
+
 template<class CellType>
 DAX_WORKLET void CellGradient(
     DAX_IN dax::exec::WorkMapCell<CellType> &work,
@@ -29,5 +33,7 @@ DAX_WORKLET void CellGradient(
                                                  points,
                                                  point_attribute);
   work.SetFieldValue(cell_attribute, value);
+}
+}
 }
 #endif
