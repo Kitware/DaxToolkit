@@ -70,7 +70,7 @@ __global__ void CellGradientFunction(dax::Id size,
     {
     //this is really bad api, should be same as work in my mind
     work.SetCellIndex(start);
-    CellGradient(work, pField, inField, outField);
+    dax::worklet::CellGradient(work, pField, inField, outField);
     }
 }
 
@@ -96,7 +96,7 @@ __global__ void ElevationFunction(dax::Id size, dax::internal::StructureUniformG
   for(;start < end; start += inc)
     {
     work.SetIndex(start);
-    Elevation(work, inField, outField);
+    dax::worklet::Elevation(work, inField, outField);
     }
 }
 
@@ -122,7 +122,7 @@ __global__ void SquareFunction(dax::Id size, dax::internal::StructureUniformGrid
   for(;start < end; start += inc)
     {
     work.SetIndex(start);
-    Square(work, inField, outField);
+    dax::worklet::Square(work, inField, outField);
     }
 }
 
@@ -148,7 +148,7 @@ __global__ void SineFunction(dax::Id size, dax::internal::StructureUniformGrid g
   for(;start < end; start += inc)
     {
     work.SetIndex(start);
-    Sine(work, inField, outField);
+    dax::worklet::dax::worklet::Sine(work, inField, outField);
     }
 }
 
@@ -174,7 +174,7 @@ __global__ void CosineFunction(dax::Id size, dax::internal::StructureUniformGrid
   for(;start < end; start += inc)
     {
     work.SetIndex(start);
-    Cosine(work, inField, outField);
+    dax::worklet::Cosine(work, inField, outField);
     }
 }
 
