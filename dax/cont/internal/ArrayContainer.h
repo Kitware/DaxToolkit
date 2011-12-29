@@ -157,4 +157,4 @@ boost::shared_ptr<T> ArrayContainer<Type>::arrayExecution( ) const
 
 } } }
 
-#endif dax_cont_internal_ArrayContainer_h
+#endif //dax_cont_internal_ArrayContainer_h
