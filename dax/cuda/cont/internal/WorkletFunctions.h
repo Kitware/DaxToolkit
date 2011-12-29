@@ -148,7 +148,7 @@ __global__ void SineFunction(dax::Id size, dax::internal::StructureUniformGrid g
   for(;start < end; start += inc)
     {
     work.SetIndex(start);
-    dax::worklet::dax::worklet::Sine(work, inField, outField);
+    dax::worklet::Sine(work, inField, outField);
     }
 }
 
