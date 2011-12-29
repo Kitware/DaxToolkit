@@ -24,4 +24,5 @@ endif (DAX_ENABLE_CUDA)
 set(unit_tests
   UnitTestTypes.cxx
   )
+
 dax_unit_tests(SOURCES ${unit_tests})
