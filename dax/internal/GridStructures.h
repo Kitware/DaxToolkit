@@ -89,15 +89,17 @@ struct StructureUniformGrid {
 } __attribute__ ((aligned(4)));
 
 /// Returns the number of points in a structured grid.
+template<typename T>
 DAX_EXEC_CONT_EXPORT
-dax::Id numberOfPoints(const dax::internal::StructureUniformGrid &gridstructure)
+dax::Id numberOfPoints(const T &gridstructure)
 {
   dax::Id3 dims = dax::internal::extentDimensions(gridstructure.Extent);
   return dims[0]*dims[1]*dims[2];
 }
 
+template<typename T>
 DAX_EXEC_CONT_EXPORT
-dax::Id numberOfCells(const dax::internal::StructureUniformGrid &gridstructure)
+dax::Id numberOfCells(const T &gridstructure)
 {
   dax::Id3 dims = dax::internal::extentDimensions(gridstructure.Extent)
                   - dax::make_Id3(1, 1, 1);

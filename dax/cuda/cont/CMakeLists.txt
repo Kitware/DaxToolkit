@@ -6,18 +6,11 @@
 #
 #=========================================================================
 
-set(sources
-#  internal/ManagedDeviceDataArray.cu
-#  internal/DataArray.cu
-#  internal/DataBridge.cu
-#  internal/KernelArgument.cu
-  )
-
 set(headers
-  internal/ManagedDeviceDataArray.h
-#  internal/DataArray.h
-#  internal/DataBridge.h
-#  internal/KernelArgument.h
+  internal/CudaParameters.h
+  internal/DeviceArray.h
+  internal/WorkletFunctions.h
+  Worklets.h
   )
 
 #-----------------------------------------------------------------------------

@@ -14,26 +14,20 @@ public:
   ArgumentsParser();
   virtual ~ArgumentsParser();
 
-  bool ParseArguments(int argc, char* argv[]);
+  bool parseArguments(int argc, char* argv[]);
 
-  unsigned int GetMaxWarpSize() const
-    { return this->MaxWarpSize; }
-  unsigned int GetMaxGridSize() const
-    { return this->MaxGridSize; }
-  unsigned int GetProblemSize() const
+  unsigned int problemSize() const
     { return this->ProblemSize; }
 
   enum PipelineMode
     {
     CELL_GRADIENT = 1,
     CELL_GRADIENT_SINE_SQUARE_COS = 2,
-    SINE_SQUARE_COS = 3,
+    SINE_SQUARE_COS = 3
     };
-  PipelineMode GetPipeline() const
+  PipelineMode pipeline() const
     { return this->Pipeline; }
 private:
-  unsigned int MaxWarpSize;
-  unsigned int MaxGridSize;
   unsigned int ProblemSize;
   PipelineMode Pipeline;
 };

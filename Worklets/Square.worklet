@@ -12,6 +12,9 @@
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
 
+namespace dax {
+namespace worklet {
+
 template<class CellType, class FieldType>
 DAX_WORKLET void Square(
     DAX_IN dax::exec::WorkMapField<CellType> &work,
@@ -21,6 +24,9 @@ DAX_WORKLET void Square(
   FieldType inValue = work.GetFieldValue(inField);
   FieldType outValue = inValue * inValue;
   work.SetFieldValue(outField, outValue);
+}
+
+}
 }
 
 #endif

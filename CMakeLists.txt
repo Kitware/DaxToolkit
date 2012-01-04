@@ -9,7 +9,11 @@ cmake_minimum_required(VERSION 2.8)
 project (Dax)
 
 # include some dax-specific cmake code.
-include (CMake/DaxMacros.cmake)
+include(CMake/DaxMacros.cmake)
+
+#-----------------------------------------------------------------------------
+# Add supplemental compiler warnings, and GCC visibility support.
+include(CMake/DaxCompilerExtras.cmake)
 
 #-----------------------------------------------------------------------------
 # Configurable Options
@@ -73,12 +77,12 @@ if (NOT DAX_DISABLE_KITS)
                                # executables
   )
 
-  #-----------------------------------------------------------------------------
-  # Add subdirectories
-  add_subdirectory(dax)
+#-----------------------------------------------------------------------------
+# Add subdirectories
+add_subdirectory(dax)
 
-  if (DAX_ENABLE_TESTING)
-    add_subdirectory(Testing)
-  endif (DAX_ENABLE_TESTING)
+if (DAX_ENABLE_TESTING)
+  add_subdirectory(Testing)
+endif (DAX_ENABLE_TESTING)
 
 endif()

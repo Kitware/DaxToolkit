@@ -11,41 +11,29 @@
 include_directories(${Boost_INCLUDE_DIRS})
 
 #-----------------------------------------------------------------------------
-cuda_add_executable(DaxCUDATest
-  DaxCUDATest.cu
+cuda_add_executable(DAXCudaTest
+  main.cu
   ArgumentsParser.cxx
   ArgumentsParser.h
 )
 
-target_link_libraries(DaxCUDATest
+target_link_libraries(DAXCudaTest
   daxCont
   daxCUDACont 
   ${BOOST_LIBRARIES}
   )
+
 
 #-----------------------------------------------------------------------------
-cuda_add_executable(SimpleCUDAKernelTest
-  SimpleCUDAKernelTest.cu
-)
-
-target_link_libraries(SimpleCUDAKernelTest
-  daxCont
-  daxCUDACont 
-  ${BOOST_LIBRARIES}
-  )
-
-add_test(SimpleCUDAKernelTest
-  ${EXECUTABLE_OUTPUT_PATH}/SimpleCUDAKernelTest)
-
-add_test(DaxCUDATest1-128
-  ${EXECUTABLE_OUTPUT_PATH}/DaxCUDATest --pipeline 1 --size 128)
-add_test(DaxCUDATest2-128
-  ${EXECUTABLE_OUTPUT_PATH}/DaxCUDATest --pipeline 2 --size 128)
-add_test(DaxCUDATest3-128
-  ${EXECUTABLE_OUTPUT_PATH}/DaxCUDATest --pipeline 3 --size 128)
-add_test(DaxCUDATest1-256
-  ${EXECUTABLE_OUTPUT_PATH}/DaxCUDATest --pipeline 1 --size 256)
-add_test(DaxCUDATest2-256
-  ${EXECUTABLE_OUTPUT_PATH}/DaxCUDATest --pipeline 2 --size 256)
-add_test(DaxCUDATest3-256
-  ${EXECUTABLE_OUTPUT_PATH}/DaxCUDATest --pipeline 3 --size 256)
+add_test(DAXCudaTest1-128
+  ${EXECUTABLE_OUTPUT_PATH}/DAXCudaTest --pipeline 1 --size 128)
+add_test(DAXCudaTest2-128
+  ${EXECUTABLE_OUTPUT_PATH}/DAXCudaTest --pipeline 2 --size 128)
+add_test(DAXCudaTest3-128
+  ${EXECUTABLE_OUTPUT_PATH}/DAXCudaTest --pipeline 3 --size 128)
+add_test(DAXCudaTest1-256
+  ${EXECUTABLE_OUTPUT_PATH}/DAXCudaTest --pipeline 1 --size 256)
+add_test(DAXCudaTest2-256
+  ${EXECUTABLE_OUTPUT_PATH}/DAXCudaTest --pipeline 2 --size 256)
+add_test(DAXCudaTest3-256
+  ${EXECUTABLE_OUTPUT_PATH}/DAXCudaTest --pipeline 3 --size 256)

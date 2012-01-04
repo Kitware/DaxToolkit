@@ -5,41 +5,58 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
+
 #ifndef __dax_cont_DataSet_h
 #define __dax_cont_DataSet_h
 
 #include <dax/cont/internal/Object.h>
-
-#include <vector>
+#include <dax/cont/internal/ArrayContainer.h>
+#include <dax/cont/FieldData.h>
 
 namespace dax { namespace cont {
-
-daxDeclareClass(DataArray);
-daxDeclareClass(DataSet);
-
-/// daxDataSet is the abstract superclass for data array object containing
-/// numeric data.
 class DataSet : public dax::cont::internal::Object
 {
 public:
+  typedef dax::cont::internal::ArrayContainer<dax::Vector3> Coordinates;
+
+  DataSet( const std::size_t& numPoints, const std::size_t& numCells);
   DataSet();
-  virtual ~DataSet();
 
-  daxTypeMacro(DataSet, dax::cont::internal::Object);
+  virtual ~DataSet(){}
 
-  std::vector<dax::cont::DataArrayPtr> PointData;
-  std::vector<dax::cont::DataArrayPtr> CellData;
+  virtual std::size_t numPoints() const { return NumPoints; }
+  virtual std::size_t numCells() const { return NumCells; }
 
-  /// Provides access to the point-coordinates array.
-  virtual dax::cont::DataArrayPtr GetPointCoordinates() const = 0;
+  virtual const Coordinates& points() const=0;
+  virtual Coordinates& points()=0;
 
-  /// Provides access to the cell-array.
-  virtual dax::cont::DataArrayPtr GetCellArray() const = 0;
+  FieldData& fieldsPoint() { return FieldPoint; }
+  const FieldData& fieldsPoint() const { return FieldPoint; }
 
-private:
-  daxDisableCopyMacro(DataSet)
+  FieldData& fieldsCell() { return FieldCell; }
+  const FieldData& fieldsCell() const { return FieldCell; }
+
+protected:
+
+  std::size_t NumPoints;
+  std::size_t NumCells;
+
+  FieldData FieldPoint;
+  FieldData FieldCell;
 };
 
-}}
+//------------------------------------------------------------------------------
+DataSet::DataSet( const std::size_t& numPoints, const std::size_t& numCells):
+  NumPoints(numPoints), NumCells(numCells)
+{
+}
 
-#endif
+//------------------------------------------------------------------------------
+DataSet::DataSet():
+  NumPoints(0), NumCells(0)
+{
+}
+
+} }
+
+#endif // __dax_cont_DataSet_h

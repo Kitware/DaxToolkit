@@ -28,4 +28,5 @@ set(unit_tests
   UnitTestTypeTraits.cxx
   UnitTestVectorOperations.cxx
   )
+
 dax_unit_tests(SOURCES ${unit_tests})

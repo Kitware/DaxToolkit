@@ -12,6 +12,10 @@
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
 
+
+namespace dax {
+namespace worklet {
+
 template<class CellType>
 DAX_WORKLET void Elevation(
     DAX_IN dax::exec::WorkMapField<CellType> &work,
@@ -27,4 +31,6 @@ DAX_WORKLET void Elevation(
   work.SetFieldValue(outField, elevation);
 }
 
+}
+}
 #endif

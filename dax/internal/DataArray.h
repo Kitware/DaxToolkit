@@ -12,6 +12,28 @@
 
 #include <dax/Types.h>
 
+
+//forward declares for implicit conversion
+//between HostArray and DataArray
+//and between DeviceArray and DataArray
+//------------------------------------------------------------------------------
+namespace dax {
+namespace cont {
+template<typename OtherT> class Array;
+} }
+
+namespace dax {
+namespace cuda {
+namespace cont {
+namespace internal {
+template<typename OtherT> class DeviceArray;
+template<typename OtherT> class DeviceArrayPtr;
+} } } }
+
+//------------------------------------------------------------------------------
+
+
+
 namespace dax { namespace internal {
 
 /// DataArary is a simple but basic data-storage device in the Dax data model.
@@ -25,11 +47,46 @@ public:
   typedef T ValueType;
 
 
+  /// Builds a DataArray with no data
+  DAX_EXEC_CONT_EXPORT DataArray()
+    : Data(0), NumEntries(0), IndexOffset(0)
+  { }
+
   /// Builds a DataArray with the given C pointer.
-  DAX_EXEC_CONT_EXPORT DataArray(ValueType *data = 0,
-                                 dax::Id numEntries = 0,
-                                 dax::Id indexOffset = 0)
+  DAX_EXEC_CONT_EXPORT DataArray(ValueType *data,
+                                 dax::Id numEntries)
+    : Data(data), NumEntries(numEntries), IndexOffset(0)
+  { }
+
+  /// Builds a DataArray with the given C pointer and an offset.
+  DAX_EXEC_CONT_EXPORT DataArray(ValueType *data,
+                                 dax::Id numEntries,
+                                 dax::Id indexOffset)
     : Data(data), NumEntries(numEntries), IndexOffset(indexOffset)
+  { }
+
+  /// Builds a DataArray from the HostArray
+  DataArray(
+      dax::cont::Array<ValueType>& hostArray)
+    : Data(&hostArray[0]),
+      NumEntries(hostArray.size()),
+      IndexOffset(0)
+  { }
+
+  /// Builds a DataArray from the DeviceArray
+  DataArray(
+      dax::cuda::cont::internal::DeviceArray<ValueType>& deviceArray)
+    : Data(deviceArray.rawPtr()),
+      NumEntries(deviceArray.size()),
+      IndexOffset(0)
+  { }
+
+  /// Builds a DataArray from the DeviceArray
+  DataArray(
+      dax::cuda::cont::internal::DeviceArrayPtr<ValueType>& deviceArray)
+    : Data(deviceArray->rawPtr()),
+      NumEntries(deviceArray->size()),
+      IndexOffset(0)
   { }
 
   /// Returns the value in the array at the given index.  The index is
