@@ -7,6 +7,9 @@
 #=========================================================================
 
 set(headers
+  ArrayContainer.h
+  ConvertTypes.h
+  FieldContainer.h
   Macros.h
   SystemIncludes.h
   )

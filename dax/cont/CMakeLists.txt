@@ -16,9 +16,6 @@ set(impl_headers
   )
 
 set(headers
-  internal/ArrayContainer.h
-  internal/ConvertTypes.h
-  internal/FieldContainer.h
   Array.h
   DataSet.h
   FieldData.h
@@ -27,7 +24,7 @@ set(headers
   Worklets.h
   )
 
-dax_declare_headers(${impl_headers})
+dax_declare_headers(${impl_headers} ${headers})
 
 add_library(daxCont SHARED ${sources} ${headers} ${impl_headers})
 

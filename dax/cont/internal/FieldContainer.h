@@ -49,7 +49,7 @@ public:
 
 //------------------------------------------------------------------------------
 template<typename T>
-FieldContainer<T>::ArrayContainer& FieldContainer<T>::get(
+typename FieldContainer<T>::ArrayContainer& FieldContainer<T>::get(
     const std::string &name)
 {
   MapIterator it = this->Container.find(name);
@@ -62,7 +62,7 @@ FieldContainer<T>::ArrayContainer& FieldContainer<T>::get(
 
 //------------------------------------------------------------------------------
 template<typename T>
-const FieldContainer<T>::ArrayContainer& FieldContainer<T>::get(
+const typename FieldContainer<T>::ArrayContainer& FieldContainer<T>::get(
     const std::string &name) const
 {
   ConstMapIterator it = this->Container.find(name);
