@@ -13,8 +13,15 @@
 #include <dax/exec/WorkMapField.h>
 
 #include <dax/TypeTraits.h>
+#include <dax/VectorOperations.h>
 
-// TODO: Template to handle any field type, scalar or vector.
+template<typename T>
+struct DoCosine {
+  DAX_EXEC_EXPORT T operator()(T x)
+  {
+    return static_cast<T>(cosf(x));
+  }
+};
 
 template<class CellType, class FieldType>
 DAX_WORKLET void Cosine(
@@ -22,14 +29,9 @@ DAX_WORKLET void Cosine(
     DAX_IN const dax::exec::Field<FieldType> &inField,
     DAX_OUT dax::exec::Field<FieldType> &outField)
 {
+  typedef typename dax::VectorTraits<FieldType>::ValueType ComponentType;
   FieldType inValue = work.GetFieldValue(inField);
-  FieldType outValue;
-  for (int i = 0; i < dax::VectorTraits<FieldType>::NUM_COMPONENTS; i++)
-    {
-    typename dax::VectorTraits<FieldType>::ValueType result;
-    result = cosf(dax::VectorTraits<FieldType>::GetComponent(inValue, i));
-    dax::VectorTraits<FieldType>::SetComponent(outValue, i, result);
-    }
+  FieldType outValue = dax::VectorMap(inValue, DoCosine<ComponentType>());
   work.SetFieldValue(outField, outValue);
 }
 

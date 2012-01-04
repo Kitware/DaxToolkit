@@ -9,6 +9,7 @@
 set(headers
   Types.h
   TypeTraits.h
+  VectorOperations.h
   )
 
 dax_declare_headers(${headers})
@@ -25,5 +26,6 @@ endif (DAX_ENABLE_CUDA)
 set(unit_tests
   UnitTestTypes.cxx
   UnitTestTypeTraits.cxx
+  UnitTestVectorOperations.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
