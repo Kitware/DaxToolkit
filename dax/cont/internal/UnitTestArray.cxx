@@ -45,11 +45,11 @@ dax::Scalar testValue()
 
 template <>
 dax::Vector3 testValue()
-  { dax::Vector3 v = {0,1,2}; return v; }
+  { return dax::make_Vector3(0,1,2); }
 
 template <>
 dax::Vector4 testValue()
-  { dax::Vector4 v = {3,2,1,0}; return v; }
+  { return dax::make_Vector4(3,2,1,0); }
 
 template <typename T>
 std::string testValueName(T)

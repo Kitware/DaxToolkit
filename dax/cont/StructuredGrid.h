@@ -115,14 +115,14 @@ dax::Id3 StructuredGrid::extentDimensions() const
 dax::Id StructuredGrid::numberOfPoints() const
 {
   dax::Id3 dims = this->extentDimensions();
-  return dims.x*dims.y*dims.z;
+  return dims[0]*dims[1]*dims[2];
 }
 
 //------------------------------------------------------------------------------
 dax::Id StructuredGrid::numberOfCells() const
 {
   dax::Id3 dims = this->extentDimensions() - dax::make_Id3(1, 1, 1);
-  return dims.x*dims.y*dims.z;
+  return dims[0]*dims[1]*dims[2];
 }
 
 } }
