@@ -10,7 +10,7 @@
 
 #include <dax/Types.h>
 
-#include <dax/cont/internal/IteratorContainerPolymorphic.h>
+#include <dax/cont/internal/IteratorContainer.h>
 
 namespace dax {
 namespace cont {

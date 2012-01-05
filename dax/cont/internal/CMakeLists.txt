@@ -10,7 +10,7 @@ set(headers
   ArrayContainer.h
   ConvertTypes.h
   FieldContainer.h
-  IteratorContainerPolymorphic.h
+  IteratorContainer.h
   IteratorPolymorphic.h
   Macros.h
   SystemIncludes.h
