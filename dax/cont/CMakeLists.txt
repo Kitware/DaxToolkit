@@ -25,6 +25,8 @@ set(headers
   Worklets.h
   )
 
+add_subdirectory(internal)
+
 dax_declare_headers(${impl_headers} ${headers})
 
 add_library(daxCont SHARED ${sources} ${headers} ${impl_headers})
@@ -37,4 +39,7 @@ target_link_libraries(daxCont
   ${Boost_LIBRARIES}
   )
 
-add_subdirectory(internal)
+set(unit_tests
+  UnitTestArrayHandle.cxx
+  )
+dax_unit_tests(SOURCES ${unit_tests} LIBRARIES daxCont)

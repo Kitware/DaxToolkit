@@ -12,10 +12,16 @@
 
 #include <iterator>
 
+#include <assert.h>
+
 namespace dax {
 namespace cont {
 namespace internal {
 
+/// A simple container class for a pair of begin/end iterators. This class
+/// provides a mechanism for holding a reference to an array (or something that
+/// looks like an array) without having to specify any container.
+///
 template<typename IterT>
 class IteratorContainer
 {
@@ -27,12 +33,36 @@ public:
   IteratorContainer(IteratorType begin, IteratorType end)
     : BeginIterator(begin), EndIterator(end), Valid(true) { }
 
+  /// Returns true if the iterators are valid.  This is not actually checked
+  /// (there is no way to do so).  Rather, the iterators are considered valid
+  /// until Invalidate is called.
+  ///
   bool IsValid() const { return this->Valid; }
+
+  /// Call this method if the iterators become invalid (such as if the memory
+  /// is freed).
+  ///
   void Invalidate() { this->Valid = false; }
 
-  IteratorType GetBeginIterator() const { return this->BeginIterator; }
-  IteratorType GetEndIterator() const { return this->EndIterator; }
+  /// Returns the begin iterator. Behavior is undefined when IsValid() returns
+  /// false.
+  ///
+  IteratorType GetBeginIterator() const {
+    assert(this->Valid);  // TODO: Better error control.
+    return this->BeginIterator;
+  }
 
+  /// Returns the end iterator. Behavior is undefined when IsValid() returns
+  /// false.
+  ///
+  IteratorType GetEndIterator() const {
+    assert(this->Valid);  // TODO: Better error control.
+    return this->EndIterator;
+  }
+
+  /// Returns the number of entries between the begin and end iterators.
+  /// Behavior is undefined when IsValid() returns false.
+  ///
   dax::Id GetNumberOfEntries() const {
     return this->GetEndIterator() - this->GetBeginIterator();
   }
