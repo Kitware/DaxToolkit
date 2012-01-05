@@ -17,6 +17,7 @@ set(impl_headers
 
 set(headers
   Array.h
+  ArrayHandle.h
   DataSet.h
   FieldData.h
   FieldHandles.h

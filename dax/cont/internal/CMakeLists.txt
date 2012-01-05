@@ -10,6 +10,8 @@ set(headers
   ArrayContainer.h
   ConvertTypes.h
   FieldContainer.h
+  IteratorContainerPolymorphic.h
+  IteratorPolymorphic.h
   Macros.h
   SystemIncludes.h
   )
@@ -23,6 +25,7 @@ add_custom_target(daxContPrivate ALL DEPENDS daxCont)
 
 set(unit_tests
   UnitTestArray.cxx
+  UnitTestIteratorPolymorphic.cxx
   #UnitTestDataSet.cxx
   #UnitTestFieldData.cxx
   #UnitTestFieldContainer.cxx
