@@ -19,6 +19,10 @@ namespace cont {
 namespace internal {
 
 //-----------------------------------------------------------------------------
+/// The class that implements the virtual functions for the polymorphic
+/// iterator. Generally speaking, this class should only be used internally in
+/// the IteartorPolymorphic class.
+///
 template<typename T>
 class IteratorPolymorphicDelegate
 {
@@ -44,6 +48,10 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+/// The basic implementation of IteratorPolymorphicDelegate. This templated
+/// class can adapt to random access iterators but hids the type behind the
+/// polymorphism.
+///
 template<class IteratorType>
 class IteratorPolymorphicDelegateImplementation
     : public IteratorPolymorphicDelegate<
@@ -92,6 +100,11 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+/// This class behaves like an iterator. However, it is actually wrapped around
+/// another iterator and hids its type. This is helpful for reducing the amount
+/// of cases generated in template code. To create a polymorphic iterator, use
+/// the make_IteratorPoyymorphic function.
+///
 template<typename T>
 class IteratorPolymorphic
     : public boost::iterator_facade<
