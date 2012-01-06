@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/internal/GridStructures.h>
+#include <dax/Extent.h>
 
 #include <fstream>
 #include <iostream>
@@ -21,16 +21,17 @@
     throw error.str();                                  \
   }
 
+//-----------------------------------------------------------------------------
 static void TestDimensions()
 {
   std::cout << "Testing Dimensions" << std::endl;
 
-  dax::internal::Extent3 extent;
+  dax::Extent3 extent;
   dax::Id3 dims;
 
   extent.Min = dax::make_Id3(0, 0, 0);
   extent.Max = dax::make_Id3(10, 10, 10);
-  dims = dax::internal::extentDimensions(extent);
+  dims = dax::extentDimensions(extent);
   if ((dims[0] != 11) || (dims[1] != 11) || (dims[2] != 11))
     {
     TEST_FAIL(<< "Got incorrect dimensions for extent.");
@@ -38,16 +39,17 @@ static void TestDimensions()
 
   extent.Min = dax::make_Id3(-5, 8, 23);
   extent.Max = dax::make_Id3(10, 25, 44);
-  dims = dax::internal::extentDimensions(extent);
+  dims = dax::extentDimensions(extent);
   if ((dims[0] != 16) || (dims[1] != 18) || (dims[2] != 22))
     {
     TEST_FAIL(<< "Got incorrect dimensions for extent.");
     }
 }
 
-static void TestIndexConversion(dax::internal::Extent3 extent)
+//-----------------------------------------------------------------------------
+static void TestIndexConversion(dax::Extent3 extent)
 {
-  dax::Id3 dims = dax::internal::extentDimensions(extent);
+  dax::Id3 dims = dax::extentDimensions(extent);
   dax::Id correctFlatIndex;
   dax::Id3 correctIndex3;
 
@@ -66,14 +68,14 @@ static void TestIndexConversion(dax::internal::Extent3 extent)
            correctIndex3[0]++)
         {
         dax::Id computedFlatIndex
-            = dax::internal::index3ToFlatIndex(correctIndex3, extent);
+            = dax::index3ToFlatIndex(correctIndex3, extent);
         if (computedFlatIndex != correctFlatIndex)
           {
           TEST_FAIL(<< "Got incorrect flat index");
           }
 
         dax::Id3 computedIndex3
-            = dax::internal::flatIndexToIndex3(correctFlatIndex, extent);
+            = dax::flatIndexToIndex3(correctFlatIndex, extent);
         if (   (computedIndex3[0] != correctIndex3[0])
             || (computedIndex3[1] != correctIndex3[1])
             || (computedIndex3[2] != correctIndex3[2]) )
@@ -105,14 +107,14 @@ static void TestIndexConversion(dax::internal::Extent3 extent)
            correctIndex3[0]++)
         {
         dax::Id computedFlatIndex
-            = dax::internal::index3ToFlatIndexCell(correctIndex3, extent);
+            = dax::index3ToFlatIndexCell(correctIndex3, extent);
         if (computedFlatIndex != correctFlatIndex)
           {
           TEST_FAIL(<< "Got incorrect flat index");
           }
 
         dax::Id3 computedIndex3
-            = dax::internal::flatIndexToIndex3Cell(correctFlatIndex, extent);
+            = dax::flatIndexToIndex3Cell(correctFlatIndex, extent);
         if (   (computedIndex3[0] != correctIndex3[0])
             || (computedIndex3[1] != correctIndex3[1])
             || (computedIndex3[2] != correctIndex3[2]) )
@@ -130,11 +132,12 @@ static void TestIndexConversion(dax::internal::Extent3 extent)
     }
 }
 
+//-----------------------------------------------------------------------------
 static void TestIndexConversion()
 {
   std::cout << "Testing index converstion." << std::endl;
 
-  dax::internal::Extent3 extent;
+  dax::Extent3 extent;
 
   extent.Min = dax::make_Id3(0, 0, 0);
   extent.Max = dax::make_Id3(10, 10, 10);
@@ -145,47 +148,13 @@ static void TestIndexConversion()
   TestIndexConversion(extent);
 }
 
-static void TestGridSize(const dax::internal::StructureUniformGrid &gridstruct,
-                         dax::Id numPoints,
-                         dax::Id numCells)
-{
-  dax::Id computedNumPoints = dax::internal::numberOfPoints(gridstruct);
-  if (computedNumPoints != numPoints)
-    {
-    TEST_FAIL(<< "Structured grid returned wrong number of points");
-    }
-
-  dax::Id computedNumCells = dax::internal::numberOfCells(gridstruct);
-  if (computedNumCells != numCells)
-    {
-    TEST_FAIL(<< "Structured grid return wrong number of cells");
-    }
-}
-
-static void TestGridSize()
-{
-  std::cout << "Testing grid size." << std::endl;
-
-  dax::internal::StructureUniformGrid gridstruct;
-  gridstruct.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
-  gridstruct.Spacing = dax::make_Vector3(1.0, 1.0, 1.0);
-
-  gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
-  gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
-  TestGridSize(gridstruct, 1331, 1000);
-
-  gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
-  gridstruct.Extent.Max = dax::make_Id3(15, 6, 13);
-  TestGridSize(gridstruct, 1936, 1500);
-}
-
+//-----------------------------------------------------------------------------
 int UnitTestExtent(int, char *[])
 {
   try
     {
     TestDimensions();
     TestIndexConversion();
-    TestGridSize();
     }
   catch (std::string error)
     {

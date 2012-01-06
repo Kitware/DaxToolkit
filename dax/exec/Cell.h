@@ -44,8 +44,7 @@ public:
   /// the index for the point in point space.
   DAX_EXEC_EXPORT dax::Id GetPointIndex(const dax::Id vertexIndex) const
   {
-    dax::Id3 ijkCell
-        = dax::internal::flatIndexToIndex3Cell(
+    dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(
           this->GetIndex(),
           this->GetGridStructure().Extent);
 
@@ -81,7 +80,7 @@ public:
   }
 
   /// Get the extent of the grid in which this cell resides.
-  DAX_EXEC_EXPORT const dax::internal::Extent3 &GetExtent() const
+  DAX_EXEC_EXPORT const dax::Extent3 &GetExtent() const
   {
     return this->GetGridStructure().Extent;
   }

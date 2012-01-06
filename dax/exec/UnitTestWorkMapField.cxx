@@ -33,10 +33,10 @@ static void TestMapFieldVoxel(
     TEST_FAIL(<< "Work object returned wrong index.");
     }
 
-  dax::Id3 pointIjkIndex = dax::internal::flatIndexToIndex3(pointFlatIndex,
-                                                            gridstruct.Extent);
+  dax::Id3 pointIjkIndex = dax::flatIndexToIndex3(pointFlatIndex,
+                                                  gridstruct.Extent);
 
-  dax::Id3 dim = dax::internal::extentDimensions(gridstruct.Extent);
+  dax::Id3 dim = dax::extentDimensions(gridstruct.Extent);
   dax::Id numPoints = dim[0]*dim[1]*dim[2];
 
   std::vector<dax::Scalar> fieldData(numPoints);

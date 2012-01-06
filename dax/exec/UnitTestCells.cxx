@@ -22,10 +22,9 @@
 
 static void CheckPointIndex(dax::Id pointFlatIndex,
                             const dax::Id3 &pointIjkIndex,
-                            const dax::internal::Extent3 &extent)
+                            const dax::Extent3 &extent)
 {
-  dax::Id3 compareIndex = dax::internal::flatIndexToIndex3(pointFlatIndex,
-                                                           extent);
+  dax::Id3 compareIndex = dax::flatIndexToIndex3(pointFlatIndex, extent);
 
   if (compareIndex != pointIjkIndex)
     {
@@ -40,7 +39,7 @@ void TestCellVoxel(const dax::exec::CellVoxel cell,
                    dax::Id cellFlatIndex)
 {
   dax::Id3 cellIjkIndex
-      = dax::internal::flatIndexToIndex3Cell(cellFlatIndex, gridstruct.Extent);
+      = dax::flatIndexToIndex3Cell(cellFlatIndex, gridstruct.Extent);
 
   if (cell.GetNumberOfPoints() != 8)
     {

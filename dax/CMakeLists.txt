@@ -7,6 +7,7 @@
 #=========================================================================
 
 set(headers
+  Extent.h
   Types.h
   TypeTraits.h
   VectorOperations.h
@@ -24,6 +25,7 @@ if (DAX_ENABLE_CUDA)
 endif (DAX_ENABLE_CUDA)
 
 set(unit_tests
+  UnitTestExtent.cxx
   UnitTestTypes.cxx
   UnitTestTypeTraits.cxx
   UnitTestVectorOperations.cxx
