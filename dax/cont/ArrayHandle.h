@@ -10,10 +10,13 @@
 
 #include <dax/Types.h>
 
+#include <dax/cont/internal/ArrayContainerExecution.h>
 #include <dax/cont/internal/IteratorContainer.h>
 #include <dax/cont/internal/IteratorPolymorphic.h>
 
 #include <boost/smart_ptr/shared_ptr.hpp>
+
+#include <assert.h>
 
 namespace dax {
 namespace cont {
@@ -50,39 +53,46 @@ public:
   /// zero-length array. It's mostly here to prevent compile errors when
   /// declaring variables.
   ///
-  ArrayHandle() : ControlArray(new ControlArrayType), NumberOfEntries(0) { }
+  ArrayHandle() : Internals(new InternalStruct) {
+    this->Internals->Synchronized = false;
+    this->Internals->NumberOfEntries = 0;
+  }
 
   /// Creates an ArrayHandle that manages data only in the execution
   /// environment. This type of ArrayHandle is good for intermediate arrays
   /// that never have to be accessed or stored outside of the execution
   /// environment.
   ///
-  ArrayHandle(dax::Id numEntries)
-    : ControlArray(new ControlArrayType), NumberOfEntries(numEntries) { }
+  ArrayHandle(dax::Id numEntries) : Internals(new InternalStruct) {
+    this->Internals->Synchronized = false;
+    this->Internals->NumberOfEntries = numEntries;
+  }
 
   /// Creates an ArrayHandle that manages the data pointed to by the iterators
   /// and any supplemental execution environment memory.
   ///
   template<class IteratorType>
   ArrayHandle(IteratorType begin, IteratorType end)
-    : ControlArray(new ControlArrayType(begin, end)) {
-    this->NumberOfEntries = this->ControlArray->GetNumberOfEntries();
+    : Internals(new InternalStruct(begin, end)) {
+    this->Internals->Synchronized = false;
+    this->Internals->NumberOfEntries
+        = this->Internals->ControlArray.GetNumberOfEntries();
   }
 
   /// Return the number of entries managed by this handle.
   ///
-  dax::Id GetNumberOfEntries() const { return this->NumberOfEntries; }
+  dax::Id GetNumberOfEntries() const {return this->Internals->NumberOfEntries;}
 
   /// True if the control array is still considered valid. When valid,
   /// operations on this array handle should move data to or from that memory
   /// depending on the nature (input or output) of the operation.
   ///
-  bool IsControlArrayValid() { return this->ControlArray->IsValid(); }
+  bool IsControlArrayValid() {return this->Internals->ControlArray.IsValid();}
 
   /// Marks the iterators passed into the constructor (if there were any) as
   /// invalid. This invalidate is propagated to any copies of the ArrayHandle.
   ///
-  void InvalidateControlArray() { this->ControlArray->Invalidate(); }
+  void InvalidateControlArray() { this->Internals->ControlArray.Invalidate(); }
 
   /// Releases any resources used for accessing this data in the execution
   /// environment (such as an array allocation on a computation device). This
@@ -90,16 +100,78 @@ public:
   /// the same data).
   ///
   void ReleaseExecutionResources() {
-    // Implement this.
+    this->Internals->ExecutionArray.ReleaseResources();
+  }
+
+  /// Returns true if the managed control and execution arrays have the same
+  /// data. If there is no control array, then returns true if an execution
+  /// result was placed in the execution array. This is not actually checked
+  /// (there is no way to do so). Rather, the ReadyAsInput, ReadyAsOutput, and
+  /// CompleteAsOutput methods manage synchronization and the synchronization
+  /// is assumed to be maintained unless MarkAsUnsynchronized is called, which
+  /// should be called if, for example, the control array is modified.
+  ///
+  bool IsSynchronized() { return this->Internals->Synchronzied; }
+
+  /// Call this method if the control and execution data becomes out of sync
+  /// (such as if the control data is modified).
+  void MarkAsUnsynchronized() { this->Internals->Synchronized = false; }
+
+  /// Allocates the execution array and copies the data in the control array as
+  /// necessary.
+  ///
+  void ReadyAsInput() {
+    if (this->IsSynchronized()) return;   // Nothing to do.
+    assert(this->IsControlArrayValid());
+    this->Internals->ExecutionArray.Allocate(this->GetNumberOfEntries());
+    this->Internals->ExecutionArray.CopyFromControlToExecution(
+          this->Internals->ControlArray);
+    this->Internals->Synchronized = true;
+  }
+
+  /// Alloates the execution array as necessary and marks as unsynchronized.
+  ///
+  void ReadyAsOutput() {
+    this->Internals->ExecutionArray.Allocate(this->GetNumberOfEntries());
+    this->Internals->Synchronized = false;
+  }
+
+  /// Completes recording the results of an operation by copying from the
+  /// execution environment to the control environment and marking as
+  /// synchronized.
+  ///
+  void CompleteAsOutput() {
+    if (this->IsControlArrayValid())
+      {
+      this->Internals->ExecutionArray.CopyFromExecutionToControl(
+            this->Internals->ControlArray);
+      }
+    else
+      {
+      // Do nothing.  There is no array because we don't need data.
+      }
+    this->Internals->Synchronized = true;
   }
 
 private:
-  typedef dax::cont::internal::IteratorContainer<
-    dax::cont::internal::IteratorPolymorphic<ValueType> > ControlArrayType;
+  struct InternalStruct {
+    dax::cont::internal::IteratorContainer<
+      dax::cont::internal::IteratorPolymorphic<ValueType> > ControlArray;
 
-  boost::shared_ptr<ControlArrayType> ControlArray;
+    dax::cont::internal::ArrayContainerExecution<ValueType> ExecutionArray;
 
-  dax::Id NumberOfEntries;
+    bool Synchronized;
+
+    dax::Id NumberOfEntries;
+
+    InternalStruct() { }
+    InternalStruct(
+        dax::cont::internal::IteratorPolymorphic<ValueType> beginControl,
+        dax::cont::internal::IteratorPolymorphic<ValueType> endControl)
+      : ControlArray(beginControl, endControl) { }
+  };
+
+  boost::shared_ptr<InternalStruct> Internals;
 };
 
 }

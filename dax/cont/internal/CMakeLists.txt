@@ -8,6 +8,7 @@
 
 set(headers
   ArrayContainer.h
+  ArrayContainerExecution.h
   ConvertTypes.h
   FieldContainer.h
   IteratorContainer.h
