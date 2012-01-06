@@ -22,6 +22,7 @@ set(headers
   FieldData.h
   FieldHandles.h
   StructuredGrid.h
+  UniformGrid.h
   Worklets.h
   )
 
