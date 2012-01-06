@@ -6,6 +6,14 @@
 #
 #=========================================================================
 
+set(headers
+  CudaParameters.h
+  DeviceArray.h
+  WorkletFunctions.h
+  )
+
+dax_declare_headers(CUDA ${headers})
+
 set(unit_tests
   UnitTestCudaDeviceArray.cu
   )
