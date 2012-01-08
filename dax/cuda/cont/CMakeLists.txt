@@ -28,3 +28,5 @@ set_source_files_properties(${headers}
 target_link_libraries(daxCUDACont
   daxCont
   )
+
+add_subdirectory(worklet)

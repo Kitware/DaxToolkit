@@ -19,6 +19,7 @@ namespace cont {
 ///
 class UniformGrid
 {
+public:
   UniformGrid() {
     this->SetOrigin(dax::make_Vector3(0.0, 0.0, 0.0));
     this->SetSpacing(dax::make_Vector3(1.0, 1.0, 1.0));
@@ -65,6 +66,13 @@ class UniformGrid
   ///
   dax::Id GetNumberOfCells() const {
     return dax::internal::numberOfCells(this->GridStructure);
+  }
+
+  /// Used internally to get a structure that can be passed to the execution
+  /// environment.
+  ///
+  dax::internal::StructureUniformGrid GetStructureForExecution() {
+    return this->GridStructure;
   }
 
 private:

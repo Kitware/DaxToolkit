@@ -27,6 +27,7 @@ class ArrayContainerExecution
 }
 #else
 
+#include <dax/internal/DataArray.h>
 #include <dax/cont/internal/IteratorContainer.h>
 
 #include <assert.h>
@@ -78,6 +79,12 @@ public:
   ///
   void ReleaseResources() {
     assert("Unsupported execution array");
+  }
+
+  /// Gets a DataArray that is valid in the execution environment.
+  dax::internal::DataArray<ValueType> GetExecutionArray() {
+    assert("Unsupported execution array");
+    return dax::internal::DataArray<ValueType>();
   }
 
 private:

@@ -10,6 +10,7 @@
 
 #include <dax/Types.h>
 
+#include <dax/internal/DataArray.h>
 #include <dax/cont/internal/ArrayContainerExecution.h>
 #include <dax/cont/internal/IteratorContainer.h>
 #include <dax/cont/internal/IteratorPolymorphic.h>
@@ -118,22 +119,27 @@ public:
   void MarkAsUnsynchronized() { this->Internals->Synchronized = false; }
 
   /// Allocates the execution array and copies the data in the control array as
-  /// necessary.
+  /// necessary.  Returns the array to use in the execution environment.
   ///
-  void ReadyAsInput() {
-    if (this->IsSynchronized()) return;   // Nothing to do.
-    assert(this->IsControlArrayValid());
-    this->Internals->ExecutionArray.Allocate(this->GetNumberOfEntries());
-    this->Internals->ExecutionArray.CopyFromControlToExecution(
-          this->Internals->ControlArray);
-    this->Internals->Synchronized = true;
+  dax::internal::DataArray<ValueType> ReadyAsInput() {
+    if (!this->IsSynchronized())
+      {
+      assert(this->IsControlArrayValid());
+      this->Internals->ExecutionArray.Allocate(this->GetNumberOfEntries());
+      this->Internals->ExecutionArray.CopyFromControlToExecution(
+            this->Internals->ControlArray);
+      this->Internals->Synchronized = true;
+      }
+    return this->Internals->ExecutionArray.GetExecutionArray();
   }
 
   /// Alloates the execution array as necessary and marks as unsynchronized.
+  /// Returns the array to use in the execution environment.
   ///
-  void ReadyAsOutput() {
+  dax::internal::DataArray<ValueType> ReadyAsOutput() {
     this->Internals->ExecutionArray.Allocate(this->GetNumberOfEntries());
     this->Internals->Synchronized = false;
+    return this->Internals->ExecutionArray.GetExecutionArray();
   }
 
   /// Completes recording the results of an operation by copying from the

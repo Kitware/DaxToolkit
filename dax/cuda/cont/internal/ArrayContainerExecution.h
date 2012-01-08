@@ -11,6 +11,8 @@
 
 #include <dax/Types.h>
 
+#include <dax/internal/DataArray.h>
+
 #include <dax/cont/internal/IteratorContainer.h>
 
 #include <thrust/device_vector.h>
@@ -71,6 +73,11 @@ public:
     return this->DeviceArray.end();
   }
 
+  /// Returns a DataArray structure for the array on the device.  This array
+  /// can be passed to a CUDA kernel.
+  ///
+  dax::internal::DataArray<ValueType> GetExecutionArray();
+
 private:
   ArrayContainerExecution(const ArrayContainerExecution &); // Not implemented
   void operator=(const ArrayContainerExecution &);          // Not implemented
@@ -104,6 +111,15 @@ inline void ArrayContainerExecution<T>::CopyFromExecutionToControl(
   thrust::copy(this->DeviceArray.begin(),
                this->DeviceArray.end(),
                iterators.GetBeginIterator());
+}
+
+//-----------------------------------------------------------------------------
+template<class T>
+dax::internal::DataArray<T> ArrayContainerExecution<T>::GetExecutionArray()
+{
+  ValueType *rawPointer = thrust::raw_pointer_cast(&this->DeviceArray[0]);
+  dax::Id numEntries = this->DeviceArray.size();
+  return dax::internal::DataArray<ValueType>(rawPointer, numEntries);
 }
 
 }

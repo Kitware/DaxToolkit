@@ -96,7 +96,7 @@ public:
     return this->Data[index-this->IndexOffset];
   }
 
-  /// Sets the value in teh array at the given index.  The index is
+  /// Sets the value in the array at the given index.  The index is
   /// adjusted by the IndexOffset.
   DAX_EXEC_CONT_EXPORT void SetValue(dax::Id index, const ValueType &value)
   {
