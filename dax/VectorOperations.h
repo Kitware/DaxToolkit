@@ -26,7 +26,7 @@ namespace dax {
 ///
 template<class VectorType, class FunctorType>
 DAX_EXEC_CONT_EXPORT VectorType VectorMap(const VectorType &vector,
-                                          FunctorType functor)
+                                          FunctorType &functor)
 {
   typedef dax::VectorTraits<VectorType> Traits;
   VectorType result;
@@ -39,6 +39,29 @@ DAX_EXEC_CONT_EXPORT VectorType VectorMap(const VectorType &vector,
   return result;
 }
 
+/// Applies a function to each entry in a vector. VectorForEach is essentially
+/// the same as VectorMap except that no new vector with results is formed. Any
+/// value returned from the supplied functor is ignored. Also, the vector
+/// passed in is not necessary const, so the functor may perform in place
+/// modification of the vector.
+///
+/// \param vector is an input vector of some ambiguous type
+///
+/// \param functor is a function or functor class that accepts one argument of
+/// the scalar type contained in the vector (specifically
+/// <tt>dax::VectorTraits<VectorType>::ValueType</tt>).
+///
+template<class VectorType, class FunctorType>
+DAX_EXEC_CONT_EXPORT void VectorForEach(VectorType &vector,
+                                        FunctorType &functor)
+{
+  typedef dax::VectorTraits<VectorType> Traits;
+  for (int component = 0; component < Traits::NUM_COMPONENTS; component++)
+    {
+    functor(Traits::GetComponent(vector, component));
+    }
+}
+
 namespace internal {
 
 /// This hidden implementation allows us to specialize VectorReduce for single
@@ -47,7 +70,7 @@ namespace internal {
 template<class VectorType, class FunctorType>
 DAX_EXEC_CONT_EXPORT typename dax::VectorTraits<VectorType>::ValueType
 VectorReduceImpl(const VectorType &vector,
-                 FunctorType functor,
+                 FunctorType &functor,
                  dax::VectorTraitsTagMultipleComponents)
 {
   typedef dax::VectorTraits<VectorType> Traits;
@@ -64,7 +87,7 @@ VectorReduceImpl(const VectorType &vector,
 template<class VectorType, class FunctorType>
 DAX_EXEC_CONT_EXPORT typename dax::VectorTraits<VectorType>::ValueType
 VectorReduceImpl(const VectorType &vector,
-                 FunctorType,
+                 FunctorType &,
                  dax::VectorTraitsTagSingleComponent)
 {
   return dax::VectorTraits<VectorType>::GetComponent(vector, 0);
@@ -86,7 +109,7 @@ VectorReduceImpl(const VectorType &vector,
 ///
 template<class VectorType, class FunctorType>
 DAX_EXEC_CONT_EXPORT typename dax::VectorTraits<VectorType>::ValueType
-VectorReduce(const VectorType &vector, FunctorType functor)
+VectorReduce(const VectorType &vector, FunctorType &functor)
 {
   typedef typename dax::VectorTraits<VectorType>::HasMultipleComponents
       MultipleComponentsTag;

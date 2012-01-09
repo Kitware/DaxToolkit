@@ -28,6 +28,13 @@ static T Square(T x) { return x*x; }
 template <class T>
 static T Add(T x, T y) { return x + y; }
 
+template<class T>
+struct Summation {
+  T Sum;
+  Summation() : Sum(0) { }
+  void operator()(T x) { Sum += x; }
+};
+
 /// Compares operations through generic vector operations with some other
 /// overloaded operations that should be tested separately in UnitTestTypes.
 ///
@@ -48,6 +55,26 @@ static void TestVectorType(const VectorType &value)
     {
     TEST_FAIL(<< "Got bad result for summing vector components");
     }
+
+  {
+  Summation<ValueType> sum;
+  dax::VectorForEach(squaredVector, sum);
+  if (sum.Sum != magSquared)
+    {
+    TEST_FAIL(<< "Got bad result for summing with VectorForEach");
+    }
+  }
+
+  {
+  // Repeat the last test with a const reference.
+  Summation<ValueType> sum;
+  const VectorType &constSquaredVector = squaredVector;
+  dax::VectorForEach(constSquaredVector, sum);
+  if (sum.Sum != magSquared)
+    {
+    TEST_FAIL(<< "Got bad result for summing with VectorForEach");
+    }
+  }
 }
 
 int UnitTestVectorOperations(int, char *[])

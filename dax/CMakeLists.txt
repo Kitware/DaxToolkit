@@ -5,6 +5,7 @@
 #  PURPOSE.  See the above copyright notice for more information.
 #
 #=========================================================================
+include_directories(${Boost_INCLUDE_DIRS})
 
 set(headers
   Extent.h
