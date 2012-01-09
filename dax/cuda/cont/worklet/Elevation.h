@@ -70,9 +70,11 @@ inline void Elevation(const dax::cont::UniformGrid &grid,
                                                       grid.GetNumberOfCells());
 
   dax::cuda::exec::kernel::Elevation
-      <<<params.numPointBlocks(), params.numCellBlocks()>>>
+      <<<params.numPointBlocks(), params.numPointThreads()>>>
         (grid.GetStructureForExecution(),
          outHandle.ReadyAsOutput());
+
+  outHandle.CompleteAsOutput();
 }
 
 }

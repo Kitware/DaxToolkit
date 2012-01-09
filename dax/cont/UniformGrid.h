@@ -71,7 +71,7 @@ public:
   /// Used internally to get a structure that can be passed to the execution
   /// environment.
   ///
-  dax::internal::StructureUniformGrid GetStructureForExecution() {
+  const dax::internal::StructureUniformGrid &GetStructureForExecution() const {
     return this->GridStructure;
   }
 
