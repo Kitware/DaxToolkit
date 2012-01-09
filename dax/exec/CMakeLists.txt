@@ -21,6 +21,7 @@ set(headers
 dax_declare_headers(${headers})
 
 #-----------------------------------------------------------------------------
+set(DAX_VECTOR_OPERATIONS_NAMESPACE_NAME "dax_exec")
 set(DAX_VECTOR_OPERATIONS_NAMESPACE_START "namespace dax { namespace exec {")
 set(DAX_VECTOR_OPERATIONS_NAMESPACE_END   "} }")
 set(DAX_VECTOR_OPERATIONS_EXPORT "DAX_EXEC_EXPORT")

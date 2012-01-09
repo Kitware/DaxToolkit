@@ -5,8 +5,8 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __dax_VectorOperations_h
-#define __dax_VectorOperations_h
+#ifndef __@DAX_VECTOR_OPERATIONS_NAMESPACE_NAME@_VectorOperations_h
+#define __@DAX_VECTOR_OPERATIONS_NAMESPACE_NAME@_VectorOperations_h
 
 #include <dax/TypeTraits.h>
 
@@ -123,4 +123,4 @@ VectorReduce(const VectorType &vector, FunctorType &functor)
 
 @DAX_VECTOR_OPERATIONS_NAMESPACE_END@
 
-#endif //__dax_VectorOperations_h
+#endif //__@DAX_VECTOR_OPERATIONS_NAMESPACE_NAME@_VectorOperations_h
