@@ -61,7 +61,7 @@ namespace cont {
 namespace worklet {
 
 // Should be templated on grid type.
-inline void Elevation(dax::cont::UniformGrid &grid,
+inline void Elevation(const dax::cont::UniformGrid &grid,
                       // TODO: make a pointCoord field thing,
                       dax::cont::ArrayHandle<dax::Scalar> &outHandle)
 {

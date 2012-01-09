@@ -14,10 +14,23 @@ set(headers
   ParametricCoordinates.h
   WorkMapCell.h
   WorkMapField.h
+
+  ${Dax_BINARY_DIR}/dax/exec/VectorOperations.h
 )
 
 dax_declare_headers(${headers})
 
+#-----------------------------------------------------------------------------
+set(DAX_VECTOR_OPERATIONS_NAMESPACE_START "namespace dax { namespace exec {")
+set(DAX_VECTOR_OPERATIONS_NAMESPACE_END   "} }")
+set(DAX_VECTOR_OPERATIONS_EXPORT "DAX_EXEC_EXPORT")
+configure_file(
+  ${Dax_SOURCE_DIR}/dax/internal/VectorOperations.h.in
+  ${Dax_BINARY_DIR}/dax/exec/VectorOperations.h
+  @ONLY
+  )
+
+#-----------------------------------------------------------------------------
 add_subdirectory(internal)
 
 set(unit_tests

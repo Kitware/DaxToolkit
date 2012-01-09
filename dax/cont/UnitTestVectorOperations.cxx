@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/VectorOperations.h>
+#include <dax/cont/VectorOperations.h>
 
 #include <fstream>
 #include <iostream>
@@ -44,13 +44,13 @@ static void TestVectorType(const VectorType &value)
   typedef typename dax::VectorTraits<VectorType> Traits;
   typedef typename Traits::ValueType ValueType;
 
-  VectorType squaredVector = dax::VectorMap(value, Square<ValueType>);
+  VectorType squaredVector = dax::cont::VectorMap(value, Square<ValueType>);
   if (squaredVector != value*value)
     {
     TEST_FAIL(<< "Got bad result for squaring vector components");
     }
 
-  ValueType magSquared = dax::VectorReduce(squaredVector, Add<ValueType>);
+  ValueType magSquared = dax::cont::VectorReduce(squaredVector, Add<ValueType>);
   if (magSquared != dax::dot(value, value))
     {
     TEST_FAIL(<< "Got bad result for summing vector components");
@@ -58,7 +58,7 @@ static void TestVectorType(const VectorType &value)
 
   {
   Summation<ValueType> sum;
-  dax::VectorForEach(squaredVector, sum);
+  dax::cont::VectorForEach(squaredVector, sum);
   if (sum.Sum != magSquared)
     {
     TEST_FAIL(<< "Got bad result for summing with VectorForEach");
@@ -69,7 +69,7 @@ static void TestVectorType(const VectorType &value)
   // Repeat the last test with a const reference.
   Summation<ValueType> sum;
   const VectorType &constSquaredVector = squaredVector;
-  dax::VectorForEach(constSquaredVector, sum);
+  dax::cont::VectorForEach(constSquaredVector, sum);
   if (sum.Sum != magSquared)
     {
     TEST_FAIL(<< "Got bad result for summing with VectorForEach");
