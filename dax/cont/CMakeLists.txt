@@ -16,14 +16,8 @@ set(impl_headers
   )
 
 set(headers
-  Array.h
   ArrayHandle.h
-  DataSet.h
-  FieldData.h
-  FieldHandles.h
-  StructuredGrid.h
   UniformGrid.h
-  Worklets.h
 
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
   )

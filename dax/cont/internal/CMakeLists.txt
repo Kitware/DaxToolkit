@@ -7,10 +7,7 @@
 #=========================================================================
 
 set(headers
-  ArrayContainer.h
   ArrayContainerExecution.h
-  ConvertTypes.h
-  FieldContainer.h
   IteratorContainer.h
   IteratorPolymorphic.h
   Macros.h
@@ -25,11 +22,6 @@ dax_declare_headers(${headers})
 add_custom_target(daxContPrivate ALL DEPENDS daxCont)
 
 set(unit_tests
-  UnitTestArray.cxx
   UnitTestIteratorPolymorphic.cxx
-  #UnitTestDataSet.cxx
-  #UnitTestFieldData.cxx
-  #UnitTestFieldContainer.cxx
-  #UnitTestFieldHandles.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests} LIBRARIES daxCont)

@@ -9,14 +9,11 @@
 set(headers
   ArrayContainerExecution.h
   CudaParameters.h
-  DeviceArray.h
-  WorkletFunctions.h
   )
 
 dax_declare_headers(CUDA ${headers})
 
 set(unit_tests
   UnitTestCudaArrayContainerExecution.cu
-  UnitTestCudaDeviceArray.cu
   )
 dax_unit_tests(CUDA SOURCES ${unit_tests} LIBRARIES daxCont)
