@@ -148,10 +148,11 @@ void Pipeline1(dax::cont::StructuredGrid &grid, double& execute_time)
   timer.restart();
   ElevationWorklet(grid, "Elevation");
   CellGradientWorklet(grid, "Elevation", "Gradient");
-  execute_time = timer.elapsed();
 
   dax::cont::ArrayPtr<dax::Vector3> result(
         dax::cont::retrieve(grid.fieldsCell().vector3("Gradient")));
+  execute_time = timer.elapsed();
+
   PrintCheckValues(result);
   }
 
@@ -164,9 +165,12 @@ void Pipeline2(dax::cont::StructuredGrid &grid, double& execute_time)
 
   timer.restart();
   CellSineSquareCosWorklet(dax::Vector3(), grid,"Gradient","Result");
+
+  dax::cont::ArrayPtr<dax::Vector3> result(
+        dax::cont::retrieve(grid.fieldsCell().vector3("Result")));
   execute_time += timer.elapsed();
 
-  PrintCheckValues(dax::cont::retrieve(grid.fieldsCell().vector3("Result")));
+  PrintCheckValues(result);
   }
 
 void Pipeline3(dax::cont::StructuredGrid &grid, double& execute_time)
@@ -176,10 +180,12 @@ void Pipeline3(dax::cont::StructuredGrid &grid, double& execute_time)
 
   ElevationWorklet(grid,"Elevation");
   PointSineSquareCosWorklet(dax::Scalar(),grid,"Elevation","Result");
+
+  dax::cont::ArrayPtr<dax::Scalar> result(
+        dax::cont::retrieve(grid.fieldsCell().scalar("Result")));
   execute_time = timer.elapsed();
 
-
-  PrintCheckValues(dax::cont::retrieve(grid.fieldsPoint().scalar("Result")));
+  PrintCheckValues(result);
   }
 }
 
