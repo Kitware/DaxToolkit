@@ -7,6 +7,7 @@
 #=========================================================================
 
 set(headers
+  CellGradient.h
   Cosine.h
   Elevation.h
   Sine.h
