@@ -112,7 +112,7 @@ public:
   /// is assumed to be maintained unless MarkAsUnsynchronized is called, which
   /// should be called if, for example, the control array is modified.
   ///
-  bool IsSynchronized() { return this->Internals->Synchronzied; }
+  bool IsSynchronized() { return this->Internals->Synchronized; }
 
   /// Call this method if the control and execution data becomes out of sync
   /// (such as if the control data is modified).

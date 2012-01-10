@@ -7,7 +7,10 @@
 #=========================================================================
 
 set(headers
+  Cosine.h
   Elevation.h
+  Sine.h
+  Square.h
   )
 
 dax_declare_headers(CUDA ${headers})

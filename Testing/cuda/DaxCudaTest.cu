@@ -13,7 +13,10 @@
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/VectorOperations.h>
 
+#include <dax/cuda/cont/worklet/Cosine.h>
 #include <dax/cuda/cont/worklet/Elevation.h>
+#include <dax/cuda/cont/worklet/Sine.h>
+#include <dax/cuda/cont/worklet/Square.h>
 
 #include <vector>
 
@@ -78,10 +81,25 @@ dax::cont::UniformGrid CreateInputStructure(dax::Id dim)
   return grid;
 }
 
-void RunElevationWorklet(const dax::cont::UniformGrid &grid,
-                         dax::cont::ArrayHandle<dax::Scalar> elevationArray)
+void RunPipeline3(const dax::cont::UniformGrid &grid)
 {
-  dax::cuda::cont::worklet::Elevation(grid, elevationArray);
+  std::cout << "Running pipeline 3: Elevation -> Sine -> Square -> Cosine"
+            << std::endl;
+
+  dax::cont::ArrayHandle<dax::Scalar> intermediate1(grid.GetNumberOfPoints());
+  dax::cont::ArrayHandle<dax::Scalar> intermediate2(grid.GetNumberOfPoints());
+
+  std::vector<dax::Scalar> resultsBuffer(grid.GetNumberOfPoints());
+  dax::cont::ArrayHandle<dax::Scalar> results(resultsBuffer.begin(),
+                                              resultsBuffer.end());
+
+  dax::cuda::cont::worklet::Elevation(grid, intermediate1);
+  dax::cuda::cont::worklet::Sine(grid, intermediate1, intermediate2);
+  dax::cuda::cont::worklet::Square(grid, intermediate2, intermediate1);
+  intermediate2.ReleaseExecutionResources();
+  dax::cuda::cont::worklet::Cosine(grid, intermediate1, results);
+
+  PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
 }
 
 } // Anonymous namespace
@@ -100,13 +118,7 @@ int main(int argc, char* argv[])
 
   dax::cont::UniformGrid grid = CreateInputStructure(MAX_SIZE);
 
-  std::vector<dax::Scalar> elevationResult(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar> elevationResultHandle(
-        elevationResult.begin(), elevationResult.end());
-
-  RunElevationWorklet(grid, elevationResultHandle);
-
-  PrintCheckValues(elevationResult.begin(), elevationResult.end());
+  RunPipeline3(grid);
 
   return 0;
 }
