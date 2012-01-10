@@ -35,17 +35,17 @@ __global__ void Cosine(dax::internal::StructureUniformGrid grid,
   typedef dax::exec::WorkMapField<dax::exec::CellVoxel> WorkType;
 
   WorkType work(grid, 0);
-  dax::exec::FieldPoint<FieldType> inField(inArray);
-  dax::exec::FieldPoint<FieldType> outField(outArray);
+  dax::exec::Field<FieldType> inField(inArray);
+  dax::exec::Field<FieldType> outField(outArray);
 
   // TODO: Consolidate this into function
   dax::Id start = (blockIdx.x * blockDim.x) + threadIdx.x;
   dax::Id increment = gridDim.x;
-  dax::Id end = dax::internal::numberOfPoints(grid);
+  dax::Id end = inArray.GetNumberOfEntries();
 
-  for (dax::Id pointIndex = start; pointIndex < end; pointIndex += increment)
+  for (dax::Id fieldIndex = start; fieldIndex < end; fieldIndex += increment)
     {
-    work.SetIndex(pointIndex);
+    work.SetIndex(fieldIndex);
     dax::worklet::Cosine(work, inField, outField);
     }
 }
@@ -70,8 +70,25 @@ inline void Cosine(const dax::cont::UniformGrid &grid,
   dax::cuda::control::internal::CudaParameters params(grid.GetNumberOfPoints(),
                                                       grid.GetNumberOfCells());
 
-  dax::cuda::exec::kernel::Cosine
-      <<<params.numPointBlocks(), params.numPointThreads()>>>
+  assert(inHandle.GetNumberOfEntries() == outHandle.GetNumberOfEntries());
+
+  dax::Id numBlocks, numThreads;
+  if (inHandle.GetNumberOfEntries() == grid.GetNumberOfPoints())
+    {
+    numBlocks = params.numPointBlocks();
+    numThreads = params.numPointThreads();
+    }
+  else if (inHandle.GetNumberOfEntries() == grid.GetNumberOfCells())
+    {
+    numBlocks = params.numCellBlocks();
+    numThreads = params.numCellThreads();
+    }
+  else
+    {
+    assert("Number of array entries neither cells nor points.");
+    }
+
+  dax::cuda::exec::kernel::Cosine<<<numBlocks, numThreads>>>
         (grid.GetStructureForExecution(),
          inHandle.ReadyAsInput(),
          outHandle.ReadyAsOutput());
