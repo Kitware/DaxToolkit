@@ -67,21 +67,20 @@ inline void Square(const dax::cont::UniformGrid &grid,
                    dax::cont::ArrayHandle<FieldType> &outHandle)
 {
   // Determine the cuda parameters from the data structure
-  dax::cuda::control::internal::CudaParameters params(grid.GetNumberOfPoints(),
-                                                      grid.GetNumberOfCells());
+  dax::cuda::control::internal::CudaParameters params(grid);
 
   assert(inHandle.GetNumberOfEntries() == outHandle.GetNumberOfEntries());
 
   dax::Id numBlocks, numThreads;
   if (inHandle.GetNumberOfEntries() == grid.GetNumberOfPoints())
     {
-    numBlocks = params.numPointBlocks();
-    numThreads = params.numPointThreads();
+    numBlocks = params.GetNumberOfPointBlocks();
+    numThreads = params.GetNumberOfPointThreads();
     }
   else if (inHandle.GetNumberOfEntries() == grid.GetNumberOfCells())
     {
-    numBlocks = params.numCellBlocks();
-    numThreads = params.numCellThreads();
+    numBlocks = params.GetNumberOfCellBlocks();
+    numThreads = params.GetNumberOfCellThreads();
     }
   else
     {
