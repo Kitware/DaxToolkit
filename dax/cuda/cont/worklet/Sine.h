@@ -85,6 +85,7 @@ inline void Sine(const dax::cont::UniformGrid &grid,
   else
     {
     assert("Number of array entries neither cells nor points.");
+    return;
     }
 
   dax::cuda::exec::kernel::Sine<<<numBlocks, numThreads>>>

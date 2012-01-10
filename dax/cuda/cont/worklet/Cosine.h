@@ -85,6 +85,7 @@ inline void Cosine(const dax::cont::UniformGrid &grid,
   else
     {
     assert("Number of array entries neither cells nor points.");
+    return;
     }
 
   dax::cuda::exec::kernel::Cosine<<<numBlocks, numThreads>>>
