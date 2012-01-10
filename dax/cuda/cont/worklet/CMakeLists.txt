@@ -18,4 +18,4 @@ dax_declare_headers(CUDA ${headers})
 
 set(unit_tests
   )
-#dax_unit_tests(CUDA SOURCES ${unit_tests} LIBRARIES daxCont)
+#dax_unit_tests(CUDA SOURCES ${unit_tests})

@@ -10,8 +10,6 @@ set(headers
   ArrayContainerExecution.h
   IteratorContainer.h
   IteratorPolymorphic.h
-  Macros.h
-  SystemIncludes.h
   )
 
 dax_declare_headers(${headers})
@@ -19,9 +17,9 @@ dax_declare_headers(${headers})
 # These source files are actually compiled in the parent directory.
 # They are in a seperate directory to highlight which objects are
 # internal and which are part of the external interface.
-add_custom_target(daxContPrivate ALL DEPENDS daxCont)
+#add_custom_target(daxContInternal ALL DEPENDS daxCont)
 
 set(unit_tests
   UnitTestIteratorPolymorphic.cxx
   )
-dax_unit_tests(SOURCES ${unit_tests} LIBRARIES daxCont)
+dax_unit_tests(SOURCES ${unit_tests})

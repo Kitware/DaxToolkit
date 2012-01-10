@@ -19,8 +19,7 @@ cuda_add_executable(DaxCudaTest
 )
 
 target_link_libraries(DaxCudaTest
-  daxCont
-  ${BOOST_LIBRARIES}
+  ${Boost_LIBRARIES}
   )
 
 #-----------------------------------------------------------------------------
