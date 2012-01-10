@@ -101,6 +101,7 @@ void RunPipeline1(const dax::cont::UniformGrid &grid)
   PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
 
   std::cout << "Elapsed time: " << time << " seconds." << std::endl;
+  std::cout << "CSV,1," << time << std::endl;
 }
 
 void RunPipeline2(const dax::cont::UniformGrid &grid)
@@ -129,6 +130,7 @@ void RunPipeline2(const dax::cont::UniformGrid &grid)
   PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
 
   std::cout << "Elapsed time: " << time << " seconds." << std::endl;
+  std::cout << "CSV,2," << time << std::endl;
 }
 
 void RunPipeline3(const dax::cont::UniformGrid &grid)
@@ -154,6 +156,7 @@ void RunPipeline3(const dax::cont::UniformGrid &grid)
   PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
 
   std::cout << "Elapsed time: " << time << " seconds." << std::endl;
+  std::cout << "CSV,3," << time << std::endl;
 }
 
 } // Anonymous namespace
