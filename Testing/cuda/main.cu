@@ -235,6 +235,10 @@ int main(int argc, char* argv[])
             << "Summary: -- " << MAX_SIZE << "^3 Dataset" << std::endl;
   std::cout << "Initialize: " << init_time << std::endl
             << "Execute: " << execute_time << std::endl;
+  std::cout << "CSV,"
+            << pipeline << ","
+            << init_time << ","
+            << execute_time << std::endl;
 
   return 0;
   }
