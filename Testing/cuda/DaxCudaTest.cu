@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <iostream>
 #include "ArgumentsParser.h"
+#include "Timer.h"
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
@@ -93,13 +94,17 @@ void RunPipeline3(const dax::cont::UniformGrid &grid)
   dax::cont::ArrayHandle<dax::Scalar> results(resultsBuffer.begin(),
                                               resultsBuffer.end());
 
+  Timer timer;
   dax::cuda::cont::worklet::Elevation(grid, intermediate1);
   dax::cuda::cont::worklet::Sine(grid, intermediate1, intermediate2);
   dax::cuda::cont::worklet::Square(grid, intermediate2, intermediate1);
   intermediate2.ReleaseExecutionResources();
   dax::cuda::cont::worklet::Cosine(grid, intermediate1, results);
+  double time = timer.elapsed();
 
   PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
+
+  std::cout << "Elapsed time: " << time << " seconds." << std::endl;
 }
 
 } // Anonymous namespace

@@ -15,7 +15,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 cuda_add_executable(DaxCudaTest
   DaxCudaTest.cu
   ArgumentsParser.cxx
-  ArgumentsParser.h
+  Timer.cxx
 )
 
 target_link_libraries(DaxCudaTest
