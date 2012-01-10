@@ -14,6 +14,7 @@
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/VectorOperations.h>
 
+#include <dax/cuda/cont/worklet/CellGradient.h>
 #include <dax/cuda/cont/worklet/Cosine.h>
 #include <dax/cuda/cont/worklet/Elevation.h>
 #include <dax/cuda/cont/worklet/Sine.h>
@@ -82,6 +83,54 @@ dax::cont::UniformGrid CreateInputStructure(dax::Id dim)
   return grid;
 }
 
+void RunPipeline1(const dax::cont::UniformGrid &grid)
+{
+  std::cout << "Running pipeline 1: Elevation -> Gradient" << std::endl;
+
+  dax::cont::ArrayHandle<dax::Scalar> intermediate1(grid.GetNumberOfPoints());
+
+  std::vector<dax::Vector3> resultsBuffer(grid.GetNumberOfCells());
+  dax::cont::ArrayHandle<dax::Vector3> results(resultsBuffer.begin(),
+                                               resultsBuffer.end());
+
+  Timer timer;
+  dax::cuda::cont::worklet::Elevation(grid, intermediate1);
+  dax::cuda::cont::worklet::CellGradient(grid, intermediate1, results);
+  double time = timer.elapsed();
+
+  PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
+
+  std::cout << "Elapsed time: " << time << " seconds." << std::endl;
+}
+
+void RunPipeline2(const dax::cont::UniformGrid &grid)
+{
+  std::cout << "Running pipeline 2: Elevation->Gradient->Sine->Square->Cosine"
+            << std::endl;
+
+  dax::cont::ArrayHandle<dax::Scalar> intermediate1(grid.GetNumberOfPoints());
+  dax::cont::ArrayHandle<dax::Vector3> intermediate2(grid.GetNumberOfCells());
+  dax::cont::ArrayHandle<dax::Vector3> intermediate3(grid.GetNumberOfCells());
+
+  std::vector<dax::Vector3> resultsBuffer(grid.GetNumberOfCells());
+  dax::cont::ArrayHandle<dax::Vector3> results(resultsBuffer.begin(),
+                                               resultsBuffer.end());
+
+  Timer timer;
+  dax::cuda::cont::worklet::Elevation(grid, intermediate1);
+  dax::cuda::cont::worklet::CellGradient(grid, intermediate1, intermediate2);
+  intermediate1.ReleaseExecutionResources();
+  dax::cuda::cont::worklet::Sine(grid, intermediate2, intermediate3);
+  dax::cuda::cont::worklet::Square(grid, intermediate3, intermediate2);
+  intermediate3.ReleaseExecutionResources();
+  dax::cuda::cont::worklet::Cosine(grid, intermediate2, results);
+  double time = timer.elapsed();
+
+  PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
+
+  std::cout << "Elapsed time: " << time << " seconds." << std::endl;
+}
+
 void RunPipeline3(const dax::cont::UniformGrid &grid)
 {
   std::cout << "Running pipeline 3: Elevation -> Sine -> Square -> Cosine"
@@ -123,172 +172,23 @@ int main(int argc, char* argv[])
 
   dax::cont::UniformGrid grid = CreateInputStructure(MAX_SIZE);
 
-  RunPipeline3(grid);
-
-  return 0;
-}
-
-#if 0
-
-void addArrays(dax::cont::StructuredGrid &grid)
-{
-  dax::cont::ArrayPtr<dax::Scalar> testPData(
-        new dax::cont::Array<dax::Scalar>());
-  testPData->resize(grid.numPoints(),1);
-  grid.fieldsPoint().addArray("pointArray",testPData);
-
-  dax::cont::ArrayPtr<dax::Scalar> testCData(
-        new dax::cont::Array<dax::Scalar>());
-  testCData->resize(grid.numCells(),1);
-
-  grid.fieldsCell().addArray("cellArray",testCData);
-}
-
-void ElevationWorklet(dax::cont::StructuredGrid& grid, const std::string &name)
-{
-  dax::cont::worklets::Elevation(grid,
-    grid.points(),
-    dax::cont::FieldHandlePoint<dax::Scalar>(name));
-}
-
-void CellGradientWorklet(dax::cont::StructuredGrid& grid,
-                         const std::string &inputName,
-                         const std::string &resultName)
-{
-  dax::cont::worklets::CellGradient(grid,
-    grid.points(),
-    grid.fieldsPoint().scalar(inputName),
-    dax::cont::FieldHandleCell<dax::Vector3>(resultName));
-}
-
-template<typename T>
-void PointSineSquareCosWorklet(
-    T t,
-    dax::cont::StructuredGrid& grid,
-    const std::string &inputName,
-    const std::string &resultName)
-{
-  dax::cont::worklets::Sine(grid,
-                            grid.fieldsPoint().get(T(),inputName),
-                            dax::cont::FieldHandlePoint<T>(resultName));
-  dax::cont::worklets::Square(grid,
-                              grid.fieldsPoint().get(T(),resultName),
-                              dax::cont::FieldHandlePoint<T>(grid,resultName));
-  dax::cont::worklets::Cosine(grid,
-                              grid.fieldsPoint().get(T(),resultName),
-                              dax::cont::FieldHandlePoint<T>(grid,resultName));  
-}
-
-template<typename T>
-void CellSineSquareCosWorklet(
-    T t,
-    dax::cont::StructuredGrid& grid,
-    const std::string &inputName,
-    const std::string &resultName)
-{
-  dax::cont::worklets::Sine(grid,
-                            grid.fieldsCell().get(T(),inputName),
-                            dax::cont::FieldHandleCell<T>(resultName));
-
-  dax::cont::worklets::Square(grid,
-                              grid.fieldsCell().get(T(),resultName),
-                              dax::cont::FieldHandleCell<T>(grid,resultName));
-
-  dax::cont::worklets::Cosine(grid,
-                              grid.fieldsCell().get(T(),resultName),
-                              dax::cont::FieldHandleCell<T>(grid,resultName));
-}
-
-void Pipeline1(dax::cont::StructuredGrid &grid, double& execute_time)
-  {
-  boost::timer timer;
-
-  timer.restart();
-  ElevationWorklet(grid, "Elevation");
-  CellGradientWorklet(grid, "Elevation", "Gradient");
-  execute_time = timer.elapsed();
-
-  dax::cont::ArrayPtr<dax::Vector3> result(
-        dax::cont::retrieve(grid.fieldsCell().vector3("Gradient")));
-  PrintCheckValues(result);
-  }
-
-void Pipeline2(dax::cont::StructuredGrid &grid, double& execute_time)
-  {
-  boost::timer timer;
-
-  //let pipeline 1 time itself
-  Pipeline1(grid,execute_time);
-
-  timer.restart();
-  CellSineSquareCosWorklet(dax::Vector3(), grid,"Gradient","Result");
-  execute_time += timer.elapsed();
-
-  PrintCheckValues(dax::cont::retrieve(grid.fieldsCell().vector3("Result")));
-  }
-
-void Pipeline3(dax::cont::StructuredGrid &grid, double& execute_time)
-  {
-  boost::timer timer;
-  timer.restart();
-
-  ElevationWorklet(grid,"Elevation");
-  PointSineSquareCosWorklet(dax::Scalar(),grid,"Elevation","Result");
-  execute_time = timer.elapsed();
-
-
-  PrintCheckValues(dax::cont::retrieve(grid.fieldsPoint().scalar("Result")));
-  }
-}
-
-int main(int argc, char* argv[])
-  {
-
-  dax::testing::ArgumentsParser parser;
-  if (!parser.parseArguments(argc, argv))
-    {
-    return 1;
-    }
-
-  //init grid vars from parser
-  const dax::Id MAX_SIZE = parser.problemSize();
-
-  //init timer vars
-  boost::timer timer;
-  double execute_time = 0;
-  double init_time = 0;
-
-  //create the grid
-  timer.restart();
-  dax::cont::StructuredGrid grid;
-  CreateInputStructure(MAX_SIZE,grid);
-  init_time = timer.elapsed();
-
-
   int pipeline = parser.pipeline();
-  std::cout << "Pipeline #"<<pipeline<< std::endl;
+  std::cout << "Pipeline #" << pipeline << std::endl;
   switch (pipeline)
     {
-  case dax::testing::ArgumentsParser::CELL_GRADIENT:
-    Pipeline1(grid,execute_time);
-    break;
-  case dax::testing::ArgumentsParser::CELL_GRADIENT_SINE_SQUARE_COS:
-    Pipeline2(grid,execute_time);
-    break;
-  case dax::testing::ArgumentsParser::SINE_SQUARE_COS:
-    Pipeline3(grid,execute_time);
-    break;
-  default:
-    addArrays(grid);
-    break;
+    case dax::testing::ArgumentsParser::CELL_GRADIENT:
+      RunPipeline1(grid);
+      break;
+    case dax::testing::ArgumentsParser::CELL_GRADIENT_SINE_SQUARE_COS:
+      RunPipeline2(grid);
+      break;
+    case dax::testing::ArgumentsParser::SINE_SQUARE_COS:
+      RunPipeline3(grid);
+      break;
+    default:
+      std::cout << "No pipeline selected." << std::endl;
+      break;
     }
 
-  std::cout << std::endl << std::endl
-            << "Summary: -- " << MAX_SIZE << "^3 Dataset" << std::endl;
-  std::cout << "Initialize: " << init_time << std::endl
-            << "Execute: " << execute_time << std::endl;
-
   return 0;
-  }
-
-#endif
+}
