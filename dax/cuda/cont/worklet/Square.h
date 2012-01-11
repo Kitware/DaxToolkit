@@ -15,6 +15,7 @@
 #include <dax/internal/GridStructures.h>
 #include <dax/exec/WorkMapField.h>
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 #include <dax/cuda/cont/internal/CudaParameters.h>
 
@@ -26,14 +27,12 @@ namespace cuda {
 namespace exec {
 namespace kernel {
 
-template<class GridType, typename FieldType>
+template<class CellType, class GridType, typename FieldType>
 __global__ void Square(
-    dax::cont::internal::ExecutionPackageGrid<GridType> grid,
+    const GridType grid,
     const dax::exec::Field<FieldType> inField,
     dax::exec::Field<FieldType> outField)
 {
-  typedef dax::cont::internal::ExecutionPackageGrid<GridType> PackageGrid;
-  typedef typename PackageGrid::ExecutionCellType CellType;
   typedef dax::exec::WorkMapField<CellType> WorkType;
 
   WorkType work(grid, 0);
@@ -70,16 +69,18 @@ inline void Square(const GridType &grid,
 
   assert(inHandle.GetNumberOfEntries() == outHandle.GetNumberOfEntries());
 
-  dax::Id numBlocks, numThreads;
+  dax::Id numBlocks, numThreads, fieldSize;
   if (inHandle.GetNumberOfEntries() == grid.GetNumberOfPoints())
     {
     numBlocks = params.GetNumberOfPointBlocks();
     numThreads = params.GetNumberOfPointThreads();
+    fieldSize = grid.GetNumberOfPoints();
     }
   else if (inHandle.GetNumberOfEntries() == grid.GetNumberOfCells())
     {
     numBlocks = params.GetNumberOfCellBlocks();
     numThreads = params.GetNumberOfCellThreads();
+    fieldSize = grid.GetNumberOfCells();
     }
   else
     {
@@ -87,17 +88,19 @@ inline void Square(const GridType &grid,
     return;
     }
 
-  dax::cont::internal::ExecutionPackageGrid<GridType> gridPackage(grid);
-  dax::internal::DataArray<FieldType> inArray = inHandle.ReadyAsInput();
-  dax::exec::Field<FieldType> inField(inArray);
-  dax::internal::DataArray<FieldType> outArray = outHandle.ReadyAsOutput();
-  dax::exec::Field<FieldType> outField(outArray);
+  typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
+  GridPackageType gridPackage(grid);
 
-  dax::cuda::exec::kernel::Square<<<numBlocks, numThreads>>>(gridPackage,
-                                                             inField,
-                                                             outField);
+  dax::cont::internal::ExecutionPackageFieldInput<FieldType>
+      inField(inHandle, fieldSize);
 
-  outHandle.CompleteAsOutput();
+  dax::cont::internal::ExecutionPackageFieldOutput<FieldType>
+      outField(outHandle, fieldSize);
+
+  dax::cuda::exec::kernel::Square<typename GridPackageType::ExecutionCellType>
+      <<<numBlocks, numThreads>>>(gridPackage.GetExecutionObject(),
+                                  inField.GetExecutionObject(),
+                                  outField.GetExecutionObject());
 }
 
 }

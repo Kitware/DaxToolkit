@@ -16,6 +16,7 @@
 #include <dax/exec/WorkMapField.h>
 #include <dax/exec/internal/FieldBuild.h>
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 #include <dax/cuda/cont/internal/CudaParameters.h>
 
@@ -27,14 +28,11 @@ namespace cuda {
 namespace exec {
 namespace kernel {
 
-template<class GridType>
-__global__ void Elevation(
-    dax::cont::internal::ExecutionPackageGrid<GridType> grid,
-    const dax::exec::FieldCoordinates inCoordinates,
-    dax::exec::FieldPoint<dax::Scalar> outField)
+template<class CellType, class GridType>
+__global__ void Elevation(const GridType grid,
+                          const dax::exec::FieldCoordinates inCoordinates,
+                          dax::exec::FieldPoint<dax::Scalar> outField)
 {
-  typedef dax::cont::internal::ExecutionPackageGrid<GridType> PackageGrid;
-  typedef typename PackageGrid::ExecutionCellType CellType;
   typedef dax::exec::WorkMapField<CellType> WorkType;
 
   WorkType work(grid, 0);
@@ -72,19 +70,19 @@ inline void Elevation(const GridType &grid,
   dax::Id numBlocks = params.GetNumberOfPointBlocks();
   dax::Id numThreads = params.GetNumberOfPointThreads();
 
-  dax::cont::internal::ExecutionPackageGrid<GridType> gridPackage(grid);
+  typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
+  GridPackageType gridPackage(grid);
 
-  dax::exec::FieldCoordinates fieldCoordinates
-      = dax::exec::internal::fieldCoordinatesBuild(points.GetStructureForExecution());
+  dax::cont::internal::ExecutionPackageFieldCoordinatesInput<GridType>
+      fieldCoordinates(points);
 
-  dax::internal::DataArray<dax::Scalar> outArray = outHandle.ReadyAsOutput();
-  dax::exec::FieldPoint<dax::Scalar> outField(outArray);
+  dax::cont::internal::ExecutionPackageFieldPointOutput<dax::Scalar>
+      outField(outHandle, grid);
 
-  dax::cuda::exec::kernel::Elevation<<<numBlocks, numThreads>>>(gridPackage,
-                                                                fieldCoordinates,
-                                                                outField);
-
-  outHandle.CompleteAsOutput();
+  dax::cuda::exec::kernel::Elevation<typename GridPackageType::ExecutionCellType>
+      <<<numBlocks, numThreads>>>(gridPackage.GetExecutionObject(),
+                                  fieldCoordinates.GetExecutionObject(),
+                                  outField.GetExecutionObject());
 }
 
 }

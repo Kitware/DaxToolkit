@@ -28,8 +28,7 @@ public:
 
   ExecutionPackageGrid(const ExecutionGridType &grid) : GridStructure(grid) { }
 
-  DAX_EXEC_EXPORT operator ExecutionGridType() { return this->GridStructure; }
-  DAX_EXEC_EXPORT operator const ExecutionGridType() const {
+  const ExecutionGridType &GetExecutionObject() const {
     return this->GridStructure;
   }
 private:
