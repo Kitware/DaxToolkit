@@ -38,7 +38,7 @@ DAX_EXEC_CONT_EXPORT void computeIteration(dax::Id size, dax::Id &start,
                                  dax::Id &end, dax::Id &inc)
 {
   start = (blockIdx.x * blockDim.x) + threadIdx.x;
-  inc = gridDim.x;
+  inc = gridDim.x * blockDim.x;
   end = size;
 
 }
