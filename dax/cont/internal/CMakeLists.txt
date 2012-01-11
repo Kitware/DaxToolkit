@@ -8,6 +8,7 @@
 
 set(headers
   ArrayContainerExecution.h
+  ExecutionPackageGrid.h
   IteratorContainer.h
   IteratorPolymorphic.h
   )

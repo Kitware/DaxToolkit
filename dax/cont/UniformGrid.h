@@ -10,6 +10,14 @@
 
 #include <dax/internal/GridStructures.h>
 
+namespace dax { namespace cont { namespace internal {
+template<class Grid> class ExecutionPackageGrid;
+} } }
+
+namespace dax { namespace exec {
+class CellVoxel;
+} }
+
 namespace dax {
 namespace cont {
 
@@ -59,15 +67,15 @@ public:
   class Points
   {
   public:
-    Points(const UniformGrid &grid) : Grid(grid.GetStructureForExecution()) { }
+    Points(const UniformGrid &grid) : GridStructure(grid.GridStructure) { }
     dax::Vector3 GetCoordinates(dax::Id pointIndex) const {
-      return dax::internal::pointCoordiantes(this->Grid, pointIndex);
+      return dax::internal::pointCoordiantes(this->GridStructure, pointIndex);
     }
     const dax::internal::StructureUniformGrid &GetStructureForExecution() const {
-      return this->Grid;
+      return this->GridStructure;
     }
   private:
-    dax::internal::StructureUniformGrid Grid;
+    dax::internal::StructureUniformGrid GridStructure;
   };
 
   /// Returns an object representing the points in a uniform grid. Most helpful
@@ -107,15 +115,14 @@ public:
     return dax::internal::pointCoordiantes(this->GridStructure, pointIndex);
   }
 
-  /// Used internally to get a structure that can be passed to the execution
-  /// environment.
-  ///
-  const dax::internal::StructureUniformGrid &GetStructureForExecution() const {
-    return this->GridStructure;
-  }
-
 private:
-  dax::internal::StructureUniformGrid GridStructure;
+  friend class Points;
+  friend class dax::cont::internal::ExecutionPackageGrid<UniformGrid>;
+
+  typedef dax::internal::StructureUniformGrid StructureType;
+  StructureType GridStructure;
+
+  typedef dax::exec::CellVoxel CellType;
 };
 
 }

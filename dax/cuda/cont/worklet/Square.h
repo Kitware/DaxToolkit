@@ -15,7 +15,7 @@
 #include <dax/internal/GridStructures.h>
 #include <dax/exec/WorkMapField.h>
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/UniformGrid.h>
+#include <dax/cont/internal/ExecutionPackageGrid.h>
 #include <dax/cuda/cont/internal/CudaParameters.h>
 
 #include <dax/cuda/exec/ExecutionEnvironment.h>
@@ -26,13 +26,15 @@ namespace cuda {
 namespace exec {
 namespace kernel {
 
-template<typename FieldType>
-__global__ void Square(dax::internal::StructureUniformGrid grid,
-                       const dax::exec::Field<FieldType> inField,
-                       dax::exec::Field<FieldType> outField)
+template<class GridType, typename FieldType>
+__global__ void Square(
+    dax::cont::internal::ExecutionPackageGrid<GridType> grid,
+    const dax::exec::Field<FieldType> inField,
+    dax::exec::Field<FieldType> outField)
 {
-  // TODO: Autoderive this
-  typedef dax::exec::WorkMapField<dax::exec::CellVoxel> WorkType;
+  typedef dax::cont::internal::ExecutionPackageGrid<GridType> PackageGrid;
+  typedef typename PackageGrid::ExecutionCellType CellType;
+  typedef dax::exec::WorkMapField<CellType> WorkType;
 
   WorkType work(grid, 0);
 
@@ -58,9 +60,8 @@ namespace cuda {
 namespace cont {
 namespace worklet {
 
-// Should be templated on grid type too.
-template<typename FieldType>
-inline void Square(const dax::cont::UniformGrid &grid,
+template<class GridType, typename FieldType>
+inline void Square(const GridType &grid,
                    dax::cont::ArrayHandle<FieldType> &inHandle,
                    dax::cont::ArrayHandle<FieldType> &outHandle)
 {
@@ -86,14 +87,13 @@ inline void Square(const dax::cont::UniformGrid &grid,
     return;
     }
 
-  const dax::internal::StructureUniformGrid &structure
-      = grid.GetStructureForExecution();
+  dax::cont::internal::ExecutionPackageGrid<GridType> gridPackage(grid);
   dax::internal::DataArray<FieldType> inArray = inHandle.ReadyAsInput();
   dax::exec::Field<FieldType> inField(inArray);
   dax::internal::DataArray<FieldType> outArray = outHandle.ReadyAsOutput();
   dax::exec::Field<FieldType> outField(outArray);
 
-  dax::cuda::exec::kernel::Square<<<numBlocks, numThreads>>>(structure,
+  dax::cuda::exec::kernel::Square<<<numBlocks, numThreads>>>(gridPackage,
                                                              inField,
                                                              outField);
 

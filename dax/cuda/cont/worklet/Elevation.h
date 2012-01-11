@@ -16,7 +16,7 @@
 #include <dax/exec/WorkMapField.h>
 #include <dax/exec/internal/FieldBuild.h>
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/UniformGrid.h>
+#include <dax/cont/internal/ExecutionPackageGrid.h>
 #include <dax/cuda/cont/internal/CudaParameters.h>
 
 #include <dax/cuda/exec/ExecutionEnvironment.h>
@@ -27,19 +27,22 @@ namespace cuda {
 namespace exec {
 namespace kernel {
 
-__global__ void Elevation(dax::internal::StructureUniformGrid grid,
-                          const dax::exec::FieldCoordinates inCoordinates,
-                          dax::exec::FieldPoint<dax::Scalar> outField)
+template<class GridType>
+__global__ void Elevation(
+    dax::cont::internal::ExecutionPackageGrid<GridType> grid,
+    const dax::exec::FieldCoordinates inCoordinates,
+    dax::exec::FieldPoint<dax::Scalar> outField)
 {
-  // TODO: Autoderive this
-  typedef dax::exec::WorkMapField<dax::exec::CellVoxel> WorkType;
+  typedef dax::cont::internal::ExecutionPackageGrid<GridType> PackageGrid;
+  typedef typename PackageGrid::ExecutionCellType CellType;
+  typedef dax::exec::WorkMapField<CellType> WorkType;
 
   WorkType work(grid, 0);
 
   // TODO: Consolidate this into function
   dax::Id start = (blockIdx.x * blockDim.x) + threadIdx.x;
   dax::Id increment = gridDim.x * blockDim.x;
-  dax::Id end = dax::internal::numberOfPoints(grid);
+  dax::Id end = outField.GetArray().GetNumberOfEntries();
 
   for (dax::Id pointIndex = start; pointIndex < end; pointIndex += increment)
     {
@@ -58,9 +61,9 @@ namespace cuda {
 namespace cont {
 namespace worklet {
 
-// Should be templated on grid type.
-inline void Elevation(const dax::cont::UniformGrid &grid,
-                      const dax::cont::UniformGrid::Points &points,
+template<class GridType>
+inline void Elevation(const GridType &grid,
+                      const typename GridType::Points &points,
                       dax::cont::ArrayHandle<dax::Scalar> &outHandle)
 {
   // Determine the cuda parameters from the data structure
@@ -69,8 +72,7 @@ inline void Elevation(const dax::cont::UniformGrid &grid,
   dax::Id numBlocks = params.GetNumberOfPointBlocks();
   dax::Id numThreads = params.GetNumberOfPointThreads();
 
-  const dax::internal::StructureUniformGrid &structure
-      = grid.GetStructureForExecution();
+  dax::cont::internal::ExecutionPackageGrid<GridType> gridPackage(grid);
 
   dax::exec::FieldCoordinates fieldCoordinates
       = dax::exec::internal::fieldCoordinatesBuild(points.GetStructureForExecution());
@@ -78,7 +80,7 @@ inline void Elevation(const dax::cont::UniformGrid &grid,
   dax::internal::DataArray<dax::Scalar> outArray = outHandle.ReadyAsOutput();
   dax::exec::FieldPoint<dax::Scalar> outField(outArray);
 
-  dax::cuda::exec::kernel::Elevation<<<numBlocks, numThreads>>>(structure,
+  dax::cuda::exec::kernel::Elevation<<<numBlocks, numThreads>>>(gridPackage,
                                                                 fieldCoordinates,
                                                                 outField);
 
