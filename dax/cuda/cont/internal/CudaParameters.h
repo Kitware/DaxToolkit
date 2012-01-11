@@ -58,16 +58,13 @@ private:
   dax::Id NumCellBlocks;
   dax::Id NumCellThreads;
 
-  static bool CardQueryed;
-  static CudaInfo CardInfo;
-
   /// Set the internal fields.
   void InitializeParameters(dax::Id numPoints, dax::Id numCells)
   {
-    this->QueryDevice();
+    const CudaInfo &cardInfo = this->QueryDevice();
 
-    this->NumPointThreads = this->CardInfo.NumThreadsPerBlock;
-    this->NumCellThreads = this->CardInfo.NumThreadsPerBlock;
+    this->NumPointThreads = cardInfo.NumThreadsPerBlock;
+    this->NumCellThreads = cardInfo.NumThreadsPerBlock;
 
     //determine the max number of blocks that we can have
     this->NumPointBlocks
@@ -76,16 +73,18 @@ private:
         = (numCells+this->NumPointThreads-1)/this->NumPointThreads;
 
     //make sure we don't request too many blocks for the card
-    this->NumPointBlocks = std::min(this->CardInfo.MaxGridSize, NumPointBlocks);
-    this->NumCellBlocks = std::min(this->CardInfo.MaxGridSize, NumCellBlocks);
+    this->NumPointBlocks = std::min(cardInfo.MaxGridSize, this->NumPointBlocks);
+    this->NumCellBlocks = std::min(cardInfo.MaxGridSize, this->NumCellBlocks);
   }
 
   /// Queries the machine for cuda devices. Currently always selects the first
   /// device as the one to use for computation.
   ///
-  void QueryDevice()
+  const CudaInfo &QueryDevice()
     {
-    if(!CudaParameters::CardQueryed)
+    static bool cardQueried = false;
+    static CudaInfo cardInfo;
+    if(!cardQueried)
       {
       int devCount=0;
       cudaGetDeviceCount(&devCount);
@@ -100,19 +99,18 @@ private:
 
       //get the numThreadsPerBlock
       //we want 128 threads but will take what we can get
-      CudaParameters::CardInfo.NumThreadsPerBlock =
+      cardInfo.NumThreadsPerBlock =
           std::min(devProp.maxThreadsPerBlock,128);
 
       //figure out the max grid size
-      CudaParameters::CardInfo.MaxGridSize = devProp.maxGridSize[0];
+      cardInfo.MaxGridSize = devProp.maxGridSize[0];
 
-      this->CardQueryed = true;
+      cardQueried = true;
       }
+    return cardInfo;
     }
 };
 
-bool CudaParameters::CardQueryed = false;
-CudaInfo CudaParameters::CardInfo;
 }}}}
 
 #endif
