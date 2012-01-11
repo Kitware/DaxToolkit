@@ -17,5 +17,10 @@ set(headers
 dax_declare_headers(CUDA ${headers})
 
 set(unit_tests
+  UnitTestCudaWorkletCellGradient.cu
+  UnitTestCudaWorkletCosine.cu
+  UnitTestCudaWorkletElevation.cu
+  UnitTestCudaWorkletSine.cu
+  UnitTestCudaWorkletSquare.cu
   )
-#dax_unit_tests(CUDA SOURCES ${unit_tests})
+dax_unit_tests(CUDA SOURCES ${unit_tests})

@@ -68,6 +68,29 @@ public:
     return dax::internal::numberOfCells(this->GridStructure);
   }
 
+  /// Converts an i, j, k point location to a point index.
+  ///
+  dax::Id ComputePointIndex(const dax::Id3 &ijk) const {
+    return dax::index3ToFlatIndex(ijk, this->GridStructure.Extent);
+  }
+
+  /// Converts an i, j, k point location to a cell index.
+  ///
+  dax::Id ComputeCellIndex(const dax::Id3 &ijk) const {
+    return dax::index3ToFlatIndexCell(ijk, this->GridStructure.Extent);
+  }
+
+  /// Gets the coordinates for a given point.
+  ///
+  dax::Vector3 GetPointCoordinates(dax::Id pointIndex) const {
+    dax::Id3 ijk = flatIndexToIndex3(pointIndex, this->GridStructure.Extent);
+    dax::Vector3 origin = this->GetOrigin();
+    dax::Vector3 spacing = this->GetSpacing();
+    return dax::make_Vector3(origin[0] + ijk[0] * spacing[0],
+                             origin[1] + ijk[1] * spacing[1],
+                             origin[2] + ijk[2] * spacing[2]);
+  }
+
   /// Used internally to get a structure that can be passed to the execution
   /// environment.
   ///
