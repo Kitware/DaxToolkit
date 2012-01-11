@@ -40,7 +40,7 @@ __global__ void Sine(dax::internal::StructureUniformGrid grid,
 
   // TODO: Consolidate this into function
   dax::Id start = (blockIdx.x * blockDim.x) + threadIdx.x;
-  dax::Id increment = gridDim.x;
+  dax::Id increment = gridDim.x * blockDim.x;
   dax::Id end = inArray.GetNumberOfEntries();
 
   for (dax::Id fieldIndex = start; fieldIndex < end; fieldIndex += increment)

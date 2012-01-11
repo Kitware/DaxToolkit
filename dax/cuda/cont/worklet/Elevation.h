@@ -40,7 +40,7 @@ __global__ void Elevation(dax::internal::StructureUniformGrid grid,
 
   // TODO: Consolidate this into function
   dax::Id start = (blockIdx.x * blockDim.x) + threadIdx.x;
-  dax::Id increment = gridDim.x;
+  dax::Id increment = gridDim.x * blockDim.x;
   dax::Id end = dax::internal::numberOfPoints(grid);
 
   for (dax::Id pointIndex = start; pointIndex < end; pointIndex += increment)

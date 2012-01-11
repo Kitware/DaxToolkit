@@ -43,7 +43,7 @@ __global__ void CellGradient(
 
   // TODO: Consolidate this into function
   dax::Id start = (blockIdx.x * blockDim.x) + threadIdx.x;
-  dax::Id increment = gridDim.x;
+  dax::Id increment = gridDim.x * blockDim.x;
   dax::Id end = dax::internal::numberOfCells(grid);
 
   for (dax::Id cellIndex = start; cellIndex < end; cellIndex += increment)
