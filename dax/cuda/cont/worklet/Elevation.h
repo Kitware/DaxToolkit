@@ -14,6 +14,7 @@
 #include <dax/internal/DataArray.h>
 #include <dax/internal/GridStructures.h>
 #include <dax/exec/WorkMapField.h>
+#include <dax/exec/internal/FieldBuild.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cuda/cont/internal/CudaParameters.h>
@@ -27,16 +28,13 @@ namespace exec {
 namespace kernel {
 
 __global__ void Elevation(dax::internal::StructureUniformGrid grid,
-                          // TODO: make a pointCoord field thing,
-                          dax::internal::DataArray<dax::Scalar> outArray)
+                          const dax::exec::FieldCoordinates inCoordinates,
+                          dax::exec::FieldPoint<dax::Scalar> outField)
 {
   // TODO: Autoderive this
   typedef dax::exec::WorkMapField<dax::exec::CellVoxel> WorkType;
 
   WorkType work(grid, 0);
-  dax::exec::FieldCoordinates inCoordinates(
-        dax::internal::make_DataArrayVector3(NULL, 0));
-  dax::exec::FieldPoint<dax::Scalar> outField(outArray);
 
   // TODO: Consolidate this into function
   dax::Id start = (blockIdx.x * blockDim.x) + threadIdx.x;
@@ -62,7 +60,7 @@ namespace worklet {
 
 // Should be templated on grid type.
 inline void Elevation(const dax::cont::UniformGrid &grid,
-                      // TODO: make a pointCoord field thing,
+                      const dax::cont::UniformGrid::Points &points,
                       dax::cont::ArrayHandle<dax::Scalar> &outHandle)
 {
   // Determine the cuda parameters from the data structure
@@ -73,10 +71,16 @@ inline void Elevation(const dax::cont::UniformGrid &grid,
 
   const dax::internal::StructureUniformGrid &structure
       = grid.GetStructureForExecution();
+
+  dax::exec::FieldCoordinates fieldCoordinates
+      = dax::exec::internal::fieldCoordinatesBuild(points.GetStructureForExecution());
+
   dax::internal::DataArray<dax::Scalar> outArray = outHandle.ReadyAsOutput();
+  dax::exec::FieldPoint<dax::Scalar> outField(outArray);
 
   dax::cuda::exec::kernel::Elevation<<<numBlocks, numThreads>>>(structure,
-                                                                outArray);
+                                                                fieldCoordinates,
+                                                                outField);
 
   outHandle.CompleteAsOutput();
 }

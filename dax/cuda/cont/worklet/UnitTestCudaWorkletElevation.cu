@@ -74,7 +74,7 @@ static void TestElevation()
                                                       elevation.end());
 
   std::cout << "Running Elevation worklet" << std::endl;
-  dax::cuda::cont::worklet::Elevation(grid, elevationHandle);
+  dax::cuda::cont::worklet::Elevation(grid, grid.GetPoints(), elevationHandle);
 
   std::cout << "Checking result" << std::endl;
   dax::Id3 ijk;

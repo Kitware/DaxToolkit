@@ -28,20 +28,18 @@ namespace kernel {
 
 template<typename FieldType>
 __global__ void Cosine(dax::internal::StructureUniformGrid grid,
-                       const dax::internal::DataArray<FieldType> inArray,
-                       dax::internal::DataArray<FieldType> outArray)
+                       const dax::exec::Field<FieldType> inField,
+                       dax::exec::Field<FieldType> outField)
 {
   // TODO: Autoderive this
   typedef dax::exec::WorkMapField<dax::exec::CellVoxel> WorkType;
 
   WorkType work(grid, 0);
-  dax::exec::Field<FieldType> inField(inArray);
-  dax::exec::Field<FieldType> outField(outArray);
 
   // TODO: Consolidate this into function
   dax::Id start = (blockIdx.x * blockDim.x) + threadIdx.x;
   dax::Id increment = gridDim.x * blockDim.x;
-  dax::Id end = inArray.GetNumberOfEntries();
+  dax::Id end = inField.GetArray().GetNumberOfEntries();
 
   for (dax::Id fieldIndex = start; fieldIndex < end; fieldIndex += increment)
     {
@@ -90,12 +88,16 @@ inline void Cosine(const dax::cont::UniformGrid &grid,
 
   const dax::internal::StructureUniformGrid &structure
       = grid.GetStructureForExecution();
+
   dax::internal::DataArray<FieldType> inArray = inHandle.ReadyAsInput();
+  dax::exec::Field<FieldType> inField(inArray);
+
   dax::internal::DataArray<FieldType> outArray = outHandle.ReadyAsOutput();
+  dax::exec::Field<FieldType> outField(outArray);
 
   dax::cuda::exec::kernel::Cosine<<<numBlocks, numThreads>>>(structure,
-                                                             inArray,
-                                                             outArray);
+                                                             inField,
+                                                             outField);
 
   outHandle.CompleteAsOutput();
 }

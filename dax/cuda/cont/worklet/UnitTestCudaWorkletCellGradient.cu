@@ -86,7 +86,10 @@ static void TestCellGradient()
                                                       gradient.end());
 
   std::cout << "Running CellGradient worklet" << std::endl;
-  dax::cuda::cont::worklet::CellGradient(grid, fieldHandle, gradientHandle);
+  dax::cuda::cont::worklet::CellGradient(grid,
+                                         grid.GetPoints(),
+                                         fieldHandle,
+                                         gradientHandle);
 
   std::cout << "Checking result" << std::endl;
   for (dax::Id cellIndex = 0;

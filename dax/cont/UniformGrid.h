@@ -54,6 +54,27 @@ public:
     this->GridStructure.Spacing = distances;
   }
 
+  /// A simple class representing the points in a uniform grid.
+  ///
+  class Points
+  {
+  public:
+    Points(const UniformGrid &grid) : Grid(grid.GetStructureForExecution()) { }
+    dax::Vector3 GetCoordinates(dax::Id pointIndex) const {
+      return dax::internal::pointCoordiantes(this->Grid, pointIndex);
+    }
+    const dax::internal::StructureUniformGrid &GetStructureForExecution() const {
+      return this->Grid;
+    }
+  private:
+    dax::internal::StructureUniformGrid Grid;
+  };
+
+  /// Returns an object representing the points in a uniform grid. Most helpful
+  /// in passing point fields to worklets.
+  ///
+  Points GetPoints() const { return Points(*this); }
+
   // Helper functions
 
   /// Get the number of points.
@@ -83,12 +104,7 @@ public:
   /// Gets the coordinates for a given point.
   ///
   dax::Vector3 GetPointCoordinates(dax::Id pointIndex) const {
-    dax::Id3 ijk = flatIndexToIndex3(pointIndex, this->GridStructure.Extent);
-    dax::Vector3 origin = this->GetOrigin();
-    dax::Vector3 spacing = this->GetSpacing();
-    return dax::make_Vector3(origin[0] + ijk[0] * spacing[0],
-                             origin[1] + ijk[1] * spacing[1],
-                             origin[2] + ijk[2] * spacing[2]);
+    return dax::internal::pointCoordiantes(this->GridStructure, pointIndex);
   }
 
   /// Used internally to get a structure that can be passed to the execution

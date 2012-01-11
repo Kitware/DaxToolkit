@@ -14,6 +14,7 @@
 #include <dax/internal/DataArray.h>
 #include <dax/internal/GridStructures.h>
 #include <dax/exec/WorkMapCell.h>
+#include <dax/exec/internal/FieldBuild.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cuda/cont/internal/CudaParameters.h>
@@ -28,18 +29,14 @@ namespace kernel {
 
 __global__ void CellGradient(
     dax::internal::StructureUniformGrid grid,
-    // TODO: make a pointCoord field thing,
-    const dax::internal::DataArray<dax::Scalar> inArray,
-    dax::internal::DataArray<dax::Vector3> outArray)
+    const dax::exec::FieldCoordinates inCoordinates,
+    const dax::exec::FieldPoint<dax::Scalar> inField,
+    dax::exec::FieldCell<dax::Vector3> outField)
 {
   // TODO: Autoderive this
   typedef dax::exec::WorkMapCell<dax::exec::CellVoxel> WorkType;
 
   WorkType work(grid, 0);
-  dax::exec::FieldCoordinates inCoordinates(
-        dax::internal::make_DataArrayVector3(NULL, 0));
-  dax::exec::FieldPoint<dax::Scalar> inField(inArray);
-  dax::exec::FieldCell<dax::Vector3> outField(outArray);
 
   // TODO: Consolidate this into function
   dax::Id start = (blockIdx.x * blockDim.x) + threadIdx.x;
@@ -65,7 +62,7 @@ namespace worklet {
 
 // Should be templated on grid type.
 inline void CellGradient(const dax::cont::UniformGrid &grid,
-                         // TODO: make a pointCoord field thing,
+                         const dax::cont::UniformGrid::Points &points,
                          dax::cont::ArrayHandle<dax::Scalar> &inHandle,
                          dax::cont::ArrayHandle<dax::Vector3> &outHandle)
 {
@@ -77,12 +74,20 @@ inline void CellGradient(const dax::cont::UniformGrid &grid,
 
   const dax::internal::StructureUniformGrid &structure
       = grid.GetStructureForExecution();
+
+  dax::exec::FieldCoordinates fieldCoordinates
+      = dax::exec::internal::fieldCoordinatesBuild(points.GetStructureForExecution());
+
   dax::internal::DataArray<dax::Scalar> inArray = inHandle.ReadyAsInput();
+  dax::exec::FieldPoint<dax::Scalar> inField(inArray);
+
   dax::internal::DataArray<dax::Vector3> outArray = outHandle.ReadyAsOutput();
+  dax::exec::FieldCell<dax::Vector3> outField(outArray);
 
   dax::cuda::exec::kernel::CellGradient<<<numBlocks, numThreads>>>(structure,
-                                                                   inArray,
-                                                                   outArray);
+                                                                   fieldCoordinates,
+                                                                   inField,
+                                                                   outField);
 
   outHandle.CompleteAsOutput();
 }
