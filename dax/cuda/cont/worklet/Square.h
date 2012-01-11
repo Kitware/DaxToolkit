@@ -88,10 +88,14 @@ inline void Square(const dax::cont::UniformGrid &grid,
     return;
     }
 
-  dax::cuda::exec::kernel::Square<<<numBlocks, numThreads>>>
-        (grid.GetStructureForExecution(),
-         inHandle.ReadyAsInput(),
-         outHandle.ReadyAsOutput());
+  const dax::internal::StructureUniformGrid &structure
+      = grid.GetStructureForExecution();
+  dax::internal::DataArray<FieldType> inArray = inHandle.ReadyAsInput();
+  dax::internal::DataArray<FieldType> outArray = outHandle.ReadyAsOutput();
+
+  dax::cuda::exec::kernel::Square<<<numBlocks, numThreads>>>(structure,
+                                                             inArray,
+                                                             outArray);
 
   outHandle.CompleteAsOutput();
 }

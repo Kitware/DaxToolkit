@@ -88,10 +88,14 @@ inline void Sine(const dax::cont::UniformGrid &grid,
     return;
     }
 
-  dax::cuda::exec::kernel::Sine<<<numBlocks, numThreads>>>
-        (grid.GetStructureForExecution(),
-         inHandle.ReadyAsInput(),
-         outHandle.ReadyAsOutput());
+  const dax::internal::StructureUniformGrid &structure
+      = grid.GetStructureForExecution();
+  dax::internal::DataArray<FieldType> inArray = inHandle.ReadyAsInput();
+  dax::internal::DataArray<FieldType> outArray = outHandle.ReadyAsOutput();
+
+  dax::cuda::exec::kernel::Sine<<<numBlocks, numThreads>>>(structure,
+                                                           inArray,
+                                                           outArray);
 
   outHandle.CompleteAsOutput();
 }
