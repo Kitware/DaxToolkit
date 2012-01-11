@@ -73,7 +73,7 @@ if (NOT DAX_DISABLE_KITS)
   # * Smart Ptr
   # * program options
   # * timer
-  find_package(Boost REQUIRED
+  find_package(Boost 1.48.0 REQUIRED
     COMPONENTS
       program_options # only needed for the testing executables
       timer # only needed for the testing executables
