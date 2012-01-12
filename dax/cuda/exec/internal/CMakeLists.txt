@@ -6,10 +6,13 @@
 #
 #=========================================================================
 
-add_subdirectory(internal)
-
 set(headers
-  ExecutionEnvironment.h
+  CudaThreadIterator.h
   )
 
-dax_declare_headers(${headers})
+dax_declare_headers(CUDA ${headers})
+
+set(unit_tests
+  UnitTestCudaThreadIterator.cu
+  )
+dax_unit_tests(CUDA SOURCES ${unit_tests})
