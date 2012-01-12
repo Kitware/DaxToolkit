@@ -7,7 +7,7 @@
 #=========================================================================
 
 set(headers
-  Schedule.h
+  ScheduleCuda.h
   )
 
 #-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ dax_declare_headers(CUDA ${headers})
 
 #-----------------------------------------------------------------------------
 set(unit_tests
-  UnitTestCudaSchedule.cu
+  UnitTestScheduleCuda.cu
   )
 dax_unit_tests(CUDA SOURCES ${unit_tests})
 

@@ -6,8 +6,8 @@
 
 =========================================================================*/
 
-#ifndef __dax_cuda_cont_Schedule_h
-#define __dax_cuda_cont_Schedule_h
+#ifndef __dax_cuda_cont_ScheduleCuda_h
+#define __dax_cuda_cont_ScheduleCuda_h
 
 #include <dax/Types.h>
 
@@ -21,9 +21,9 @@ namespace internal {
 namespace kernel {
 
 template<typename Functor, class Parameters>
-__global__ void scheduleKernel(Functor functor,
-                               Parameters parameters,
-                               dax::Id numInstances)
+__global__ void scheduleCudaKernel(Functor functor,
+                                   Parameters parameters,
+                                   dax::Id numInstances)
 {
   for (dax::cuda::exec::internal::CudaThreadIterator iter(numInstances);
        !iter.IsDone();
@@ -44,20 +44,22 @@ namespace cuda {
 namespace cont {
 
 template<class Functor, class Parameters>
-DAX_CONT_EXPORT void schedule(Functor functor,
-                              Parameters parameters,
-                              dax::Id numInstances)
+DAX_CONT_EXPORT void scheduleCuda(Functor functor,
+                                  Parameters parameters,
+                                  dax::Id numInstances)
 {
   dax::cuda::cont::internal::CudaParameters cudaParam(numInstances);
   dax::Id numBlocks = cudaParam.GetNumberOfBlocks();
   dax::Id numThreads = cudaParam.GetNumberOfThreads();
 
-  using dax::cuda::exec::internal::kernel::scheduleKernel;
-  scheduleKernel<<<numBlocks, numThreads>>>(functor, parameters, numInstances);
+  using dax::cuda::exec::internal::kernel::scheduleCudaKernel;
+  scheduleCudaKernel<<<numBlocks, numThreads>>>(functor,
+                                                parameters,
+                                                numInstances);
 }
 
 }
 }
 } // namespace dax::cuda::cont
 
-#endif //__dax_cuda_cont_Schedule_h
+#endif //__dax_cuda_cont_ScheduleCuda_h
