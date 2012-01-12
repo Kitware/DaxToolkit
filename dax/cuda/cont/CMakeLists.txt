@@ -20,6 +20,8 @@ dax_declare_headers(CUDA ${headers})
 
 #-----------------------------------------------------------------------------
 set(unit_tests
+  UnitTestCudaWorkletMapCell.cu
+  UnitTestCudaWorkletMapField.cu
   UnitTestScheduleCuda.cu
   )
 dax_unit_tests(CUDA SOURCES ${unit_tests})
