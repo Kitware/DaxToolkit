@@ -22,6 +22,7 @@ dax_declare_headers(${headers})
 #add_custom_target(daxContInternal ALL DEPENDS daxCont)
 
 set(unit_tests
+  UnitTestExecutionPackage.cxx
   UnitTestIteratorPolymorphic.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
