@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/cuda/cont/worklet/CellGradient.h>
+#include <dax/cont/worklet/CellGradient.h>
 
 #include <math.h>
 #include <fstream>
@@ -86,10 +86,10 @@ static void TestCellGradient()
                                                       gradient.end());
 
   std::cout << "Running CellGradient worklet" << std::endl;
-  dax::cuda::cont::worklet::CellGradient(grid,
-                                         grid.GetPoints(),
-                                         fieldHandle,
-                                         gradientHandle);
+  dax::cont::worklet::CellGradient(grid,
+                                   grid.GetPoints(),
+                                   fieldHandle,
+                                   gradientHandle);
 
   std::cout << "Checking result" << std::endl;
   for (dax::Id cellIndex = 0;

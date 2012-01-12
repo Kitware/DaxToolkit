@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/cuda/cont/worklet/Sine.h>
+#include <dax/cont/worklet/Square.h>
 
 #include <math.h>
 #include <fstream>
@@ -64,7 +64,7 @@ static inline bool test_equal(VectorType vector1, VectorType vector2)
 }
 
 //-----------------------------------------------------------------------------
-static void TestSine()
+static void TestSquare()
 {
   dax::cont::UniformGrid grid;
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
@@ -81,33 +81,33 @@ static void TestSine()
     }
   dax::cont::ArrayHandle<dax::Scalar> fieldHandle(field.begin(), field.end());
 
-  std::vector<dax::Scalar> sine(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar> sineHandle(sine.begin(),
-                                                 sine.end());
+  std::vector<dax::Scalar> square(grid.GetNumberOfPoints());
+  dax::cont::ArrayHandle<dax::Scalar> squareHandle(square.begin(),
+                                                   square.end());
 
-  std::cout << "Running Sine worklet" << std::endl;
-  dax::cuda::cont::worklet::Sine(grid, fieldHandle, sineHandle);
+  std::cout << "Running Square worklet" << std::endl;
+  dax::cont::worklet::Square(grid, fieldHandle, squareHandle);
 
   std::cout << "Checking result" << std::endl;
   for (dax::Id pointIndex = 0;
        pointIndex < grid.GetNumberOfPoints();
        pointIndex++)
     {
-    dax::Scalar sineValue = sine[pointIndex];
-    dax::Scalar sineTrue = sinf(field[pointIndex]);
-    test_assert(test_equal(sineValue, sineTrue),
-                "Got bad sine");
+    dax::Scalar squareValue = square[pointIndex];
+    dax::Scalar squareTrue = field[pointIndex]*field[pointIndex];
+    test_assert(test_equal(squareValue, squareTrue),
+                "Got bad square");
     }
 }
 
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
-int UnitTestCudaWorkletSine(int, char *[])
+int UnitTestWorkletSquare(int, char *[])
 {
   try
     {
-    TestSine();
+    TestSquare();
     }
   catch (std::string error)
     {

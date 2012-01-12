@@ -9,6 +9,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 set(headers
   ArrayHandle.h
+  Schedule.h
   ScheduleDebug.h
   UniformGrid.h
 
@@ -37,3 +38,5 @@ set(unit_tests
   UnitTestVectorOperations.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
+
+add_subdirectory(worklet)

@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/cuda/cont/worklet/Square.h>
+#include <dax/cont/worklet/Square.h>
 
 #include <math.h>
 #include <fstream>
@@ -86,7 +86,7 @@ static void TestSquare()
                                                    square.end());
 
   std::cout << "Running Square worklet" << std::endl;
-  dax::cuda::cont::worklet::Square(grid, fieldHandle, squareHandle);
+  dax::cont::worklet::Square(grid, fieldHandle, squareHandle);
 
   std::cout << "Checking result" << std::endl;
   for (dax::Id pointIndex = 0;

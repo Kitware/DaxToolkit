@@ -25,5 +25,3 @@ set(unit_tests
   UnitTestScheduleCuda.cu
   )
 dax_unit_tests(CUDA SOURCES ${unit_tests})
-
-add_subdirectory(worklet)

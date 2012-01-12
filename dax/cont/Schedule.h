@@ -14,12 +14,12 @@
 
 #include <dax/Types.h>
 
-namespace dax {
-namespace cont {
-
 #ifdef DAX_CUDA
 
 #include <dax/cuda/cont/ScheduleCuda.h>
+
+namespace dax {
+namespace cont {
 
 template<class Functor, class Parameters>
 DAX_CONT_EXPORT void schedule(Functor functor,
@@ -29,9 +29,15 @@ DAX_CONT_EXPORT void schedule(Functor functor,
   dax::cuda::cont::scheduleCuda(functor, parameters, numInstances);
 }
 
+}
+}
+
 #else // DAX_CUDA
 
 #include <dax/cont/ScheduleDebug.h>
+
+namespace dax {
+namespace cont {
 
 template<class Functor, class Parameters>
 DAX_CONT_EXPORT void schedule(Functor functor,
@@ -41,9 +47,9 @@ DAX_CONT_EXPORT void schedule(Functor functor,
   dax::cont::scheduleDebug(functor, parameters, numInstances);
 }
 
-#endif // DAX_CUDA
+}
+}
 
-}
-}
+#endif // DAX_CUDA
 
 #endif //__dax_cont_Schedule_h

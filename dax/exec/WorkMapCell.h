@@ -36,7 +36,7 @@ public:
 
   DAX_EXEC_EXPORT WorkMapCell(
     const dax::internal::StructureUniformGrid &gridStructure,
-    dax::Id cellIndex)
+    dax::Id cellIndex = 0)
     : Cell(gridStructure, cellIndex) { }
 
   DAX_EXEC_EXPORT const dax::exec::CellVoxel GetCell() const
