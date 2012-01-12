@@ -67,10 +67,10 @@ inline void CellGradient(const GridType &grid,
                          dax::cont::ArrayHandle<dax::Vector3> &outHandle)
 {
   // Determine the cuda parameters from the data structure
-  dax::cuda::control::internal::CudaParameters params(grid);
+  dax::cuda::control::internal::CudaParameters params(grid.GetNumberOfCells());
 
-  dax::Id numBlocks = params.GetNumberOfPointBlocks();
-  dax::Id numThreads = params.GetNumberOfPointThreads();
+  dax::Id numBlocks = params.GetNumberOfBlocks();
+  dax::Id numThreads = params.GetNumberOfThreads();
 
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   GridPackageType gridPackage(grid);

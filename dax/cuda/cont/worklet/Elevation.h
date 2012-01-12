@@ -65,10 +65,10 @@ inline void Elevation(const GridType &grid,
                       dax::cont::ArrayHandle<dax::Scalar> &outHandle)
 {
   // Determine the cuda parameters from the data structure
-  dax::cuda::control::internal::CudaParameters params(grid);
+  dax::cuda::control::internal::CudaParameters params(grid.GetNumberOfPoints());
 
-  dax::Id numBlocks = params.GetNumberOfPointBlocks();
-  dax::Id numThreads = params.GetNumberOfPointThreads();
+  dax::Id numBlocks = params.GetNumberOfBlocks();
+  dax::Id numThreads = params.GetNumberOfThreads();
 
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   GridPackageType gridPackage(grid);

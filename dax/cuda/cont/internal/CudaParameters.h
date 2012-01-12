@@ -26,55 +26,33 @@ struct CudaInfo
 class CudaParameters
 {
 public:
-  /// Construct a CudaParameters using a grid (or grid-like) structure.
-  /// The class is expected to have const methods named GetNumberOfPoints
-  /// and GetNumberOfCells.
-  ///
-  template< typename T>
-  CudaParameters(const T& source)
-  {
-    dax::Id numPoints = source.GetNumberOfPoints();
-    dax::Id numCells = source.GetNumberOfCells();
-
-    this->InitializeParameters(numPoints, numCells);
-  }
-
   /// Constructs a CudaParameters using an unspecified grid of the given number
   /// of points and cells.
   ///
-  CudaParameters(dax::Id numPoints, dax::Id numCells)
+  CudaParameters(dax::Id numInstances)
   {
-    this->InitializeParameters(numPoints, numCells);
+    this->InitializeParameters(numInstances);
   }
 
-  dax::Id GetNumberOfPointBlocks() const { return NumPointBlocks; }
-  dax::Id GetNumberOfPointThreads() const { return NumPointThreads; }
+  dax::Id GetNumberOfBlocks() const { return this->NumBlocks; }
+  dax::Id GetNumberOfThreads() const { return this->NumThreads; }
 
-  dax::Id GetNumberOfCellBlocks() const { return NumCellBlocks; }
-  dax::Id GetNumberOfCellThreads() const { return NumCellThreads; }
 private:
-  dax::Id NumPointBlocks;
-  dax::Id NumPointThreads;
-  dax::Id NumCellBlocks;
-  dax::Id NumCellThreads;
+  dax::Id NumBlocks;
+  dax::Id NumThreads;
 
   /// Set the internal fields.
-  void InitializeParameters(dax::Id numPoints, dax::Id numCells)
+  void InitializeParameters(dax::Id numInstances)
   {
     const CudaInfo &cardInfo = this->QueryDevice();
 
-    this->NumPointThreads = cardInfo.NumThreadsPerBlock;
-    this->NumCellThreads = cardInfo.NumThreadsPerBlock;
+    this->NumThreads = cardInfo.NumThreadsPerBlock;
 
     //determine the max number of blocks that we can have
-    this->NumPointBlocks
-        = (numPoints+this->NumPointThreads-1)/this->NumPointThreads;
-    this->NumCellBlocks
-        = (numCells+this->NumPointThreads-1)/this->NumPointThreads;
+    this->NumBlocks = (numInstances+this->NumThreads-1)/this->NumThreads;
 
     //make sure we don't request too many blocks for the card
-    this->NumPointBlocks = std::min(cardInfo.MaxGridSize, this->NumPointBlocks);
-    this->NumCellBlocks = std::min(cardInfo.MaxGridSize, this->NumCellBlocks);
+    this->NumBlocks = std::min(cardInfo.MaxGridSize, this->NumBlocks);
   }
 
   /// Queries the machine for cuda devices. Currently always selects the first

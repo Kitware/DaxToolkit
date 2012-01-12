@@ -64,22 +64,15 @@ inline void Cosine(const GridType &grid,
                    dax::cont::ArrayHandle<FieldType> &inHandle,
                    dax::cont::ArrayHandle<FieldType> &outHandle)
 {
-  // Determine the cuda parameters from the data structure
-  dax::cuda::control::internal::CudaParameters params(grid);
-
   assert(inHandle.GetNumberOfEntries() == outHandle.GetNumberOfEntries());
 
-  dax::Id numBlocks, numThreads, fieldSize;
+  dax::Id fieldSize;
   if (inHandle.GetNumberOfEntries() == grid.GetNumberOfPoints())
     {
-    numBlocks = params.GetNumberOfPointBlocks();
-    numThreads = params.GetNumberOfPointThreads();
     fieldSize = grid.GetNumberOfPoints();
     }
   else if (inHandle.GetNumberOfEntries() == grid.GetNumberOfCells())
     {
-    numBlocks = params.GetNumberOfCellBlocks();
-    numThreads = params.GetNumberOfCellThreads();
     fieldSize = grid.GetNumberOfCells();
     }
   else
@@ -87,6 +80,11 @@ inline void Cosine(const GridType &grid,
     assert("Number of array entries neither cells nor points.");
     return;
     }
+
+  // Determine the cuda parameters from the data structure
+  dax::cuda::control::internal::CudaParameters params(fieldSize);
+  dax::Id numBlocks = params.GetNumberOfBlocks();
+  dax::Id numThreads = params.GetNumberOfThreads();
 
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   GridPackageType gridPackage(grid);
