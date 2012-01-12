@@ -7,7 +7,7 @@
 
 #include <dax/Types.h>
 
-namespace dax { namespace cuda { namespace control { namespace internal {
+namespace dax { namespace cuda { namespace cont { namespace internal {
 
 struct exception_base: virtual std::exception, virtual boost::exception { };
 struct no_cuda_device: virtual exception_base { };

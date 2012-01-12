@@ -7,6 +7,7 @@
 #=========================================================================
 
 set(headers
+  Schedule.h
   )
 
 #-----------------------------------------------------------------------------
@@ -15,8 +16,12 @@ CUDA_INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 add_subdirectory(internal)
 
 #-----------------------------------------------------------------------------
-#dax_declare_headers(CUDA ${headers})
+dax_declare_headers(CUDA ${headers})
 
 #-----------------------------------------------------------------------------
+set(unit_tests
+  UnitTestCudaSchedule.cu
+  )
+dax_unit_tests(CUDA SOURCES ${unit_tests})
 
 add_subdirectory(worklet)

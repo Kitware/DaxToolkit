@@ -82,7 +82,7 @@ inline void Square(const GridType &grid,
     }
 
   // Determine the cuda parameters from the data structure
-  dax::cuda::control::internal::CudaParameters params(fieldSize);
+  dax::cuda::cont::internal::CudaParameters params(fieldSize);
   dax::Id numBlocks = params.GetNumberOfBlocks();
   dax::Id numThreads = params.GetNumberOfThreads();
 
