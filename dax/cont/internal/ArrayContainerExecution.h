@@ -28,7 +28,10 @@ class ArrayContainerExecution
 #else
 
 #include <dax/internal/DataArray.h>
+
 #include <dax/cont/internal/IteratorContainer.h>
+
+#include <vector>
 
 #include <assert.h>
 
@@ -51,9 +54,7 @@ public:
   /// Allocates an array on the device large enough to hold the given number of
   /// entries.
   ///
-  void Allocate(dax::Id) {
-    assert("Unsupported execution array");
-  }
+  void Allocate(dax::Id numEntries) { this->DeviceArray.resize(numEntries); }
 
   /// Copies the data pointed to by the passed in \c iterators (assumed to be
   /// in the control environment), into the array in the execution environment
@@ -61,9 +62,7 @@ public:
   ///
   template<class IteratorType>
   void CopyFromControlToExecution(
-      const dax::cont::internal::IteratorContainer<IteratorType> &) {
-    assert("Unsupported execution array");
-  }
+      const dax::cont::internal::IteratorContainer<IteratorType> &);
 
   /// Copies the data from the array in the execution environment managed by
   /// this class into the memory passed in the \c iterators (assumed to be in
@@ -71,26 +70,59 @@ public:
   ///
   template<class IteratorType>
   void CopyFromExecutionToControl(
-      const dax::cont::internal::IteratorContainer<IteratorType> &) {
-    assert("Unsupported execution array");
-  }
+      const dax::cont::internal::IteratorContainer<IteratorType> &);
 
   /// Frees any resources (i.e. memory) on the device.
   ///
-  void ReleaseResources() {
-    assert("Unsupported execution array");
-  }
+  void ReleaseResources() { this->Allocate(0); }
 
   /// Gets a DataArray that is valid in the execution environment.
-  dax::internal::DataArray<ValueType> GetExecutionArray() {
-    assert("Unsupported execution array");
-    return dax::internal::DataArray<ValueType>();
-  }
+  dax::internal::DataArray<ValueType> GetExecutionArray();
 
 private:
   ArrayContainerExecution(const ArrayContainerExecution &); // Not implemented
   void operator=(const ArrayContainerExecution &);          // Not implemented
+
+  std::vector<ValueType> DeviceArray;
 };
+
+//-----------------------------------------------------------------------------
+template<class T>
+template<class IteratorType>
+inline void ArrayContainerExecution<T>::CopyFromControlToExecution(
+    const dax::cont::internal::IteratorContainer<IteratorType> &iterators)
+{
+  assert(iterators.IsValid());
+  assert(iterators.GetNumberOfEntries()
+         == static_cast<dax::Id>(this->DeviceArray.size()));
+  std::copy(iterators.GetBeginIterator(),
+            iterators.GetEndIterator(),
+            this->DeviceArray.begin());
+}
+
+//-----------------------------------------------------------------------------
+template<class T>
+template<class IteratorType>
+inline void ArrayContainerExecution<T>::CopyFromExecutionToControl(
+    const dax::cont::internal::IteratorContainer<IteratorType> &iterators)
+{
+  assert(iterators.IsValid());
+  assert(iterators.GetNumberOfEntries()
+         == static_cast<dax::Id>(this->DeviceArray.size()));
+  std::copy(this->DeviceArray.begin(),
+            this->DeviceArray.end(),
+            iterators.GetBeginIterator());
+}
+
+//-----------------------------------------------------------------------------
+template<class T>
+inline dax::internal::DataArray<T>
+ArrayContainerExecution<T>::GetExecutionArray()
+{
+  ValueType *rawPointer = &this->DeviceArray[0];
+  dax::Id numEntries = this->DeviceArray.size();
+  return dax::internal::DataArray<ValueType>(rawPointer, numEntries);
+}
 
 }
 }

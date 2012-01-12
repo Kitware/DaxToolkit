@@ -115,7 +115,8 @@ inline void ArrayContainerExecution<T>::CopyFromExecutionToControl(
 
 //-----------------------------------------------------------------------------
 template<class T>
-dax::internal::DataArray<T> ArrayContainerExecution<T>::GetExecutionArray()
+inline dax::internal::DataArray<T>
+ArrayContainerExecution<T>::GetExecutionArray()
 {
   ValueType *rawPointer = thrust::raw_pointer_cast(&this->DeviceArray[0]);
   dax::Id numEntries = this->DeviceArray.size();
