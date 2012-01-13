@@ -9,7 +9,8 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 set(headers
   ArrayHandle.h
-  Schedule.h
+  DeviceAdapter.h
+  DeviceAdapterDebug.h
   ScheduleDebug.h
   UniformGrid.h
 

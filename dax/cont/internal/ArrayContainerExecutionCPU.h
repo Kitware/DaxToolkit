@@ -6,26 +6,10 @@
 
 =========================================================================*/
 
-#ifndef __dax_cont_internal_ArrayContainerExecution_h
-#define __dax_cont_internal_ArrayContainerExecution_h
+#ifndef __dax_cont_internal_ArrayContainerExecutionCPU_h
+#define __dax_cont_internal_ArrayContainerExecutionCPU_h
 
 #include <dax/Types.h>
-
-// TODO: Come up with a better way to choose the appropriate implementation
-// for ArrayContainerExecution.
-#ifdef DAX_CUDA
-#include <dax/cuda/cont/internal/ArrayContainerExecution.h>
-namespace dax {
-namespace cont {
-namespace internal {
-template<typename T>
-class ArrayContainerExecution
-    : public dax::cuda::cont::internal::ArrayContainerExecution<T>
-{ };
-}
-}
-}
-#else
 
 #include <dax/internal/DataArray.h>
 
@@ -39,17 +23,18 @@ namespace dax {
 namespace cont {
 namespace internal {
 
-/// Manages an execution environment array, which may need to be allocated
-/// on seperate device memory.
+/// Manages an execution environment array. In the case of this class, the
+/// execution uses the same memory heap as the control.
+///
 template<typename T>
-class ArrayContainerExecution
+class ArrayContainerExecutionCPU
 {
 public:
   typedef T ValueType;
 
   /// On inital creation, no memory is allocated on the device.
   ///
-  ArrayContainerExecution() { }
+  ArrayContainerExecutionCPU() { }
 
   /// Allocates an array on the device large enough to hold the given number of
   /// entries.
@@ -80,8 +65,8 @@ public:
   dax::internal::DataArray<ValueType> GetExecutionArray();
 
 private:
-  ArrayContainerExecution(const ArrayContainerExecution &); // Not implemented
-  void operator=(const ArrayContainerExecution &);          // Not implemented
+  ArrayContainerExecutionCPU(const ArrayContainerExecutionCPU &); // Not implemented
+  void operator=(const ArrayContainerExecutionCPU &);        // Not implemented
 
   std::vector<ValueType> DeviceArray;
 };
@@ -89,7 +74,7 @@ private:
 //-----------------------------------------------------------------------------
 template<class T>
 template<class IteratorType>
-inline void ArrayContainerExecution<T>::CopyFromControlToExecution(
+inline void ArrayContainerExecutionCPU<T>::CopyFromControlToExecution(
     const dax::cont::internal::IteratorContainer<IteratorType> &iterators)
 {
   assert(iterators.IsValid());
@@ -103,7 +88,7 @@ inline void ArrayContainerExecution<T>::CopyFromControlToExecution(
 //-----------------------------------------------------------------------------
 template<class T>
 template<class IteratorType>
-inline void ArrayContainerExecution<T>::CopyFromExecutionToControl(
+inline void ArrayContainerExecutionCPU<T>::CopyFromExecutionToControl(
     const dax::cont::internal::IteratorContainer<IteratorType> &iterators)
 {
   assert(iterators.IsValid());
@@ -117,7 +102,7 @@ inline void ArrayContainerExecution<T>::CopyFromExecutionToControl(
 //-----------------------------------------------------------------------------
 template<class T>
 inline dax::internal::DataArray<T>
-ArrayContainerExecution<T>::GetExecutionArray()
+ArrayContainerExecutionCPU<T>::GetExecutionArray()
 {
   ValueType *rawPointer = &this->DeviceArray[0];
   dax::Id numEntries = this->DeviceArray.size();
@@ -128,6 +113,4 @@ ArrayContainerExecution<T>::GetExecutionArray()
 }
 }
 
-#endif // DAX_CUDA
-
-#endif //__dax_cont_internal_ArrayContainerExecution_h
+#endif //__dax_cont_internal_ArrayContainerExecutionCPU_h

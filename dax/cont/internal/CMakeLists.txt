@@ -7,7 +7,7 @@
 #=========================================================================
 
 set(headers
-  ArrayContainerExecution.h
+  ArrayContainerExecutionCPU.h
   ExecutionPackageField.h
   ExecutionPackageGrid.h
   IteratorContainer.h
@@ -22,7 +22,7 @@ dax_declare_headers(${headers})
 #add_custom_target(daxContInternal ALL DEPENDS daxCont)
 
 set(unit_tests
-  UnitTestArrayContainerExecution.cxx
+  UnitTestArrayContainerExecutionCPU.cxx
   UnitTestExecutionPackage.cxx
   UnitTestIteratorPolymorphic.cxx
   )

@@ -11,7 +11,7 @@
 #include <dax/Types.h>
 
 #include <dax/internal/DataArray.h>
-#include <dax/cont/internal/ArrayContainerExecution.h>
+#include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/IteratorContainer.h>
 #include <dax/cont/internal/IteratorPolymorphic.h>
 
@@ -44,7 +44,7 @@ namespace cont {
 /// Any memory created for the execution environment will remain around in case
 /// it is needed again.
 ///
-template<typename T>
+template<typename T, template<typename> class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER>
 class ArrayHandle
 {
 public:
@@ -164,7 +164,7 @@ private:
     dax::cont::internal::IteratorContainer<
       dax::cont::internal::IteratorPolymorphic<ValueType> > ControlArray;
 
-    dax::cont::internal::ArrayContainerExecution<ValueType> ExecutionArray;
+    typename DeviceAdapter<ValueType>::ArrayContainerExecution ExecutionArray;
 
     bool Synchronized;
 

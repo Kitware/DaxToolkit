@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/cont/internal/ArrayContainerExecution.h>
+#include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 
 #include <fstream>
 #include <iostream>
@@ -59,7 +59,8 @@ static void TestBasicTransfers()
       inputContainer(&inputArray[0], &inputArray[ARRAY_SIZE]);
 
   // Create the managed container for the array in the execution environment.
-  dax::cont::internal::ArrayContainerExecution<dax::Scalar> executionContainer;
+  dax::cont::internal::ArrayContainerExecutionCPU<dax::Scalar>
+      executionContainer;
   executionContainer.Allocate(ARRAY_SIZE);
 
   // Copy the data to the execution environment.
@@ -91,7 +92,7 @@ static void TestBasicTransfers()
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
-int UnitTestArrayContainerExecution(int, char *[])
+int UnitTestArrayContainerExecutionCPU(int, char *[])
 {
   try
     {
