@@ -19,5 +19,16 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS_DEBUG
       "${CMAKE_CXX_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS_WARN_EXTRA}")
   endif()
+
+  #add in support for debugging Thrust when building in debug mode
+  set(CMAKE_CXX_FLAGS_DEBUG_THRUST "-DTHRUST_DEBUG")
+  option(DAX_DEBUG_THRUST "Add in support for thrust debugging" OFF)
+  if(DAX_DEBUG_THRUST)
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
+      "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${CMAKE_CXX_FLAGS_DEBUG_THRUST}")
+    set(CMAKE_CXX_FLAGS_DEBUG
+      "${CMAKE_CXX_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS_DEBUG_THRUST}")
+  endif()
+
 endif()
 
