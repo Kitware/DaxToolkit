@@ -16,7 +16,7 @@
 #include <dax/exec/WorkMapField.h>
 #include <dax/exec/internal/FieldBuild.h>
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
@@ -60,10 +60,11 @@ namespace dax {
 namespace cont {
 namespace worklet {
 
-template<class GridType>
-inline void Elevation(const GridType &grid,
-                      const typename GridType::Points &points,
-                      dax::cont::ArrayHandle<dax::Scalar> &outHandle)
+template<class GridType, DAX_DeviceAdapter_TP>
+inline void Elevation(
+    const GridType &grid,
+    const typename GridType::Points &points,
+    dax::cont::ArrayHandle<dax::Scalar, DeviceAdapter> &outHandle)
 {
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   GridPackageType gridPackage(grid);
@@ -84,9 +85,9 @@ inline void Elevation(const GridType &grid,
     outField.GetExecutionObject()
   };
 
-  dax::cont::schedule(dax::exec::kernel::Elevation<Parameters>(),
-                      parameters,
-                      grid.GetNumberOfPoints());
+  DeviceAdapter<void>::Schedule(dax::exec::kernel::Elevation<Parameters>(),
+                                parameters,
+                                grid.GetNumberOfPoints());
 }
 
 }

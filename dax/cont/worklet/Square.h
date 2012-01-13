@@ -15,7 +15,7 @@
 #include <dax/internal/GridStructures.h>
 #include <dax/exec/WorkMapField.h>
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
@@ -54,10 +54,10 @@ namespace dax {
 namespace cont {
 namespace worklet {
 
-template<class GridType, typename FieldType>
+template<class GridType, typename FieldType, DAX_DeviceAdapter_TP>
 inline void Square(const GridType &grid,
-                   dax::cont::ArrayHandle<FieldType> &inHandle,
-                   dax::cont::ArrayHandle<FieldType> &outHandle)
+                   dax::cont::ArrayHandle<FieldType,DeviceAdapter> &inHandle,
+                   dax::cont::ArrayHandle<FieldType,DeviceAdapter> &outHandle)
 {
   assert(inHandle.GetNumberOfEntries() == outHandle.GetNumberOfEntries());
 
@@ -95,9 +95,9 @@ inline void Square(const GridType &grid,
     outField.GetExecutionObject()
   };
 
-  dax::cont::schedule(dax::exec::kernel::Square<Parameters>(),
-                      parameters,
-                      fieldSize);
+  DeviceAdapter<void>::Schedule(dax::exec::kernel::Square<Parameters>(),
+                                parameters,
+                                fieldSize);
 }
 
 }

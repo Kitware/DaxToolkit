@@ -16,7 +16,7 @@
 #include <dax/exec/WorkMapCell.h>
 #include <dax/exec/internal/FieldBuild.h>
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
@@ -56,11 +56,12 @@ namespace dax {
 namespace cont {
 namespace worklet {
 
-template<class GridType>
-inline void CellGradient(const GridType &grid,
-                         const typename GridType::Points &points,
-                         dax::cont::ArrayHandle<dax::Scalar> &inHandle,
-                         dax::cont::ArrayHandle<dax::Vector3> &outHandle)
+template<class GridType, DAX_DeviceAdapter_TP>
+inline void CellGradient(
+    const GridType &grid,
+    const typename GridType::Points &points,
+    dax::cont::ArrayHandle<dax::Scalar, DeviceAdapter> &inHandle,
+    dax::cont::ArrayHandle<dax::Vector3, DeviceAdapter> &outHandle)
 {
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   GridPackageType gridPackage(grid);
@@ -86,9 +87,9 @@ inline void CellGradient(const GridType &grid,
     outField.GetExecutionObject()
   };
 
-  dax::cont::schedule(dax::exec::kernel::CellGradient<Parameters>(),
-                      parameters,
-                      grid.GetNumberOfCells());
+  DeviceAdapter<void>::Schedule(dax::exec::kernel::CellGradient<Parameters>(),
+                                parameters,
+                                grid.GetNumberOfCells());
 }
 
 }

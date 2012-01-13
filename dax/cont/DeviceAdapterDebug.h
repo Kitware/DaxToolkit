@@ -25,12 +25,13 @@ namespace cont {
 /// The scheduling will simply run everything in a serial loop, which is easy
 /// to track in a debugger.
 ///
-template<typename T = void *>
+template<typename T = void>
 struct DeviceAdapterDebug
 {
-  template<class Functor, class Parameters> void Schedule(Functor functor,
-                                                          Parameters parameters,
-                                                          dax::Id numInstances)
+  template<class Functor, class Parameters>
+  static void Schedule(Functor functor,
+                       Parameters parameters,
+                       dax::Id numInstances)
   {
     dax::cont::scheduleDebug(functor, parameters, numInstances);
   }
