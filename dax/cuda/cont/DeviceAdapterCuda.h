@@ -6,41 +6,40 @@
 
 =========================================================================*/
 
-#ifndef __dax_cont_DeviceAdapterDebug_h
-#define __dax_cont_DeviceAdapterDebug_h
+#ifndef __dax_cont_DeviceAdapterCuda_h
+#define __dax_cont_DeviceAdapterCuda_h
 
 #ifdef DAX_DEFAULT_DEVICE_ADAPTER
 #undef DAX_DEFAULT_DEVICE_ADAPTER
 #endif
 
-#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterDebug
+#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterCuda
 
-#include <dax/cont/ScheduleDebug.h>
-#include <dax/cont/internal/ArrayContainerExecutionCPU.h>
+#include <dax/cuda/cont/ScheduleCuda.h>
+#include <dax/cuda/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
 namespace cont {
 
-/// A simple implementation of a DeviceAdapter that can be used for debuging.
-/// The scheduling will simply run everything in a serial loop, which is easy
-/// to track in a debugger.
+/// An implementation of DeviceAdapter that will schedule execution on a GPU
+/// using CUDA.
 ///
 template<typename T = void>
-struct DeviceAdapterDebug
+struct DeviceAdapterCuda
 {
   template<class Functor, class Parameters>
   static void Schedule(Functor functor,
                        Parameters parameters,
                        dax::Id numInstances)
   {
-    dax::cont::scheduleDebug(functor, parameters, numInstances);
+    dax::cuda::cont::scheduleCuda(functor, parameters, numInstances);
   }
 
-  typedef dax::cont::internal::ArrayContainerExecutionCPU<T>
+  typedef dax::cuda::cont::internal::ArrayContainerExecutionThrust<T>
       ArrayContainerExecution;
 };
 
 }
 } // namespace dax::cont
 
-#endif //__dax_cont_DeviceAdapterDebug_h
+#endif //__dax_cont_DeviceAdapterCuda_h

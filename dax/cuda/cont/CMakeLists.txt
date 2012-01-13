@@ -7,6 +7,7 @@
 #=========================================================================
 
 set(headers
+  DeviceAdapterCuda.h
   ScheduleCuda.h
   )
 

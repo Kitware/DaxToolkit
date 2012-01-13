@@ -7,13 +7,13 @@
 #=========================================================================
 
 set(headers
-  ArrayContainerExecution.h
+  ArrayContainerExecutionThrust.h
   CudaParameters.h
   )
 
 dax_declare_headers(CUDA ${headers})
 
 set(unit_tests
-  UnitTestCudaArrayContainerExecution.cu
+  UnitTestCudaArrayContainerExecutionThrust.cu
   )
 dax_unit_tests(CUDA SOURCES ${unit_tests})

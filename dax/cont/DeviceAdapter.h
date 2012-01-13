@@ -10,8 +10,12 @@
 #define __dax_cont_DeviceAdapter_h
 
 #ifndef DAX_DEFAULT_DEVICE_ADAPTER
-// TODO: make better device adapters
+#ifdef DAX_CUDA
+#include <dax/cuda/cont/DeviceAdapterCuda.h>
+#else // DAX_CUDA
+// TODO: make better device adapter
 #include <dax/cont/DeviceAdapterDebug.h>
+#endif // DAX_CUDA
 #endif // DAX_DEFAULT_DEVICE_ADAPTER
 
 // Appropriate template parameter for the device adapter

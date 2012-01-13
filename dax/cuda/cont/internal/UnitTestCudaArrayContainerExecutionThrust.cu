@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/cuda/cont/internal/ArrayContainerExecution.h>
+#include <dax/cuda/cont/internal/ArrayContainerExecutionThrust.h>
 
 #include <fstream>
 #include <iostream>
@@ -61,7 +61,7 @@ static void TestBasicTransfers()
       inputContainer(&inputArray[0], &inputArray[ARRAY_SIZE]);
 
   // Create the managed container for the array in the execution environment.
-  dax::cuda::cont::internal::ArrayContainerExecution<dax::Scalar>
+  dax::cuda::cont::internal::ArrayContainerExecutionThrust<dax::Scalar>
       executionContainer;
   executionContainer.Allocate(ARRAY_SIZE);
 
@@ -96,7 +96,7 @@ static void TestBasicTransfers()
 }
 
 //-----------------------------------------------------------------------------
-int UnitTestCudaArrayContainerExecution(int, char *[])
+int UnitTestCudaArrayContainerExecutionThrust(int, char *[])
 {
   try
     {
