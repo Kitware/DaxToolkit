@@ -6,14 +6,14 @@
 
 =========================================================================*/
 
-#ifndef __dax_cont_DeviceAdapterCuda_h
-#define __dax_cont_DeviceAdapterCuda_h
+#ifndef __dax_cuda_cont_DeviceAdapterCuda_h
+#define __dax_cuda_cont_DeviceAdapterCuda_h
 
 #ifdef DAX_DEFAULT_DEVICE_ADAPTER
 #undef DAX_DEFAULT_DEVICE_ADAPTER
 #endif
 
-#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterCuda
+#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cuda::cont::DeviceAdapterCuda
 
 //#define DAX_CUDA_NATIVE_SCHEDULE
 
@@ -26,6 +26,7 @@
 #include <dax/cuda/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
+namespace cuda {
 namespace cont {
 
 /// An implementation of DeviceAdapter that will schedule execution on a GPU
@@ -51,6 +52,7 @@ struct DeviceAdapterCuda
 };
 
 }
-} // namespace dax::cont
+}
+} // namespace dax::cuda::cont
 
-#endif //__dax_cont_DeviceAdapterCuda_h
+#endif //__dax_cuda_cont_DeviceAdapterCuda_h
