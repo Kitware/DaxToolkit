@@ -20,6 +20,10 @@ add_subdirectory(internal)
 add_subdirectory(cont)
 add_subdirectory(exec)
 
+if (DAX_ENABLE_THRUST)
+  add_subdirectory(thrust)
+endif (DAX_ENABLE_THRUST)
+
 if (DAX_ENABLE_CUDA)
   add_subdirectory(cuda)
 endif (DAX_ENABLE_CUDA)

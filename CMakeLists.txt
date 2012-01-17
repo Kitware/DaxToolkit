@@ -11,6 +11,8 @@ project (Dax)
 # include some dax-specific cmake code.
 include(CMake/DaxMacros.cmake)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Dax_SOURCE_DIR}/CMake)
+
 #-----------------------------------------------------------------------------
 # Add supplemental compiler warnings, and GCC visibility support.
 include(CMake/DaxCompilerExtras.cmake)
@@ -25,6 +27,10 @@ option(DAX_DISABLE_KITS
   "Internal option useful on machines generating documentation alone"
   OFF)
 mark_as_advanced(DAX_DISABLE_KITS)
+
+if (DAX_ENABLE_CUDA)
+  set(DAX_ENABLE_THRUST ON)
+endif (DAX_ENABLE_CUDA)
 
 if (DAX_ENABLE_TESTING)
   enable_testing()
