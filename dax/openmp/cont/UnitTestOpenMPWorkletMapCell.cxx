@@ -18,6 +18,8 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 
+#include <typeinfo>
+
 #include <vector>
 
 namespace {
@@ -109,6 +111,11 @@ int UnitTestOpenMPWorkletMapCell(int, char *[])
 {
   try
     {
+    // This might be a compile error if OpenMP DeviceAdapter is not selected.
+    test_assert(typeid(DAX_DEFAULT_DEVICE_ADAPTER<void>)
+                == typeid(dax::openmp::cont::DeviceAdapterOpenMP<void>),
+                "Wrong device adapter automatically selected.");
+
     TestCellGradient();
     }
   catch (std::string error)
