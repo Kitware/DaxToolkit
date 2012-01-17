@@ -16,7 +16,4 @@ endif (DAX_ENABLE_CUDA)
 
 find_package(Thrust REQUIRED)
 
-#add_subdirectory(internal)
-
-#add_subdirectory(exec)
-#add_subdirectory(cont)
+add_subdirectory(cont)

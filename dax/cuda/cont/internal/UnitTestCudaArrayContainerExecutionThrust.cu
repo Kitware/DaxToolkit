@@ -56,7 +56,7 @@ static void TestBasicTransfers()
 {
   // Create original input array.
   dax::Scalar inputArray[ARRAY_SIZE];
-  thrust::sequence(&inputArray[0], &inputArray[ARRAY_SIZE]);
+  ::thrust::sequence(&inputArray[0], &inputArray[ARRAY_SIZE]);
   dax::cont::internal::IteratorContainer<dax::Scalar*>
       inputContainer(&inputArray[0], &inputArray[ARRAY_SIZE]);
 
@@ -69,9 +69,9 @@ static void TestBasicTransfers()
   executionContainer.CopyFromControlToExecution(inputContainer);
 
   // Do something with the array on the device.
-  thrust::for_each(executionContainer.GetBeginThrustIterator(),
-                   executionContainer.GetEndThrustIterator(),
-                   AddOne());
+  ::thrust::for_each(executionContainer.GetBeginThrustIterator(),
+                     executionContainer.GetEndThrustIterator(),
+                     AddOne());
 
   // Make a destination to check results.
   dax::Scalar outputArray[ARRAY_SIZE];
