@@ -15,7 +15,14 @@
 
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterCuda
 
+//#define DAX_CUDA_NATIVE_SCHEDULE
+
+#ifdef DAX_CUDA_NATIVE_SCHEDULE
 #include <dax/cuda/cont/ScheduleCuda.h>
+#else
+#include <dax/cuda/cont/ScheduleThrust.h>
+#endif
+
 #include <dax/cuda/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
@@ -32,7 +39,11 @@ struct DeviceAdapterCuda
                        Parameters parameters,
                        dax::Id numInstances)
   {
+#ifdef DAX_CUDA_NATIVE_SCHEDULE
     dax::cuda::cont::scheduleCuda(functor, parameters, numInstances);
+#else
+    dax::cuda::cont::scheduleThrust(functor, parameters, numInstances);
+#endif
   }
 
   typedef dax::cuda::cont::internal::ArrayContainerExecutionThrust<T>

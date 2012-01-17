@@ -21,7 +21,7 @@ const dax::Id OFFSET = 1000;
 
 }
 
-namespace ut_CudaSchedule {
+namespace ut_CudaScheduleNative {
 
 struct ClearArray
 {
@@ -41,9 +41,9 @@ struct AddArray
 
 } // namespace ut_CuadSchedule
 
-int UnitTestScheduleCuda(int, char *[])
+int UnitTestCudaScheduleNative(int, char *[])
 {
-  using namespace ut_CudaSchedule;
+  using namespace ut_CudaScheduleNative;
 
   thrust::device_vector<dax::Id> deviceArray(ARRAY_SIZE);
   dax::Id *rawDeviceArray = thrust::raw_pointer_cast(&deviceArray[0]);
