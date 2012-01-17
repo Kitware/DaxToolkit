@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/cuda/cont/worklet/Square.h>
+#include <dax/cont/worklet/Sine.h>
 
 #include <math.h>
 #include <fstream>
@@ -64,7 +64,7 @@ static inline bool test_equal(VectorType vector1, VectorType vector2)
 }
 
 //-----------------------------------------------------------------------------
-static void TestSquare()
+static void TestSine()
 {
   dax::cont::UniformGrid grid;
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
@@ -81,33 +81,33 @@ static void TestSquare()
     }
   dax::cont::ArrayHandle<dax::Scalar> fieldHandle(field.begin(), field.end());
 
-  std::vector<dax::Scalar> square(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar> squareHandle(square.begin(),
-                                                   square.end());
+  std::vector<dax::Scalar> sine(grid.GetNumberOfPoints());
+  dax::cont::ArrayHandle<dax::Scalar> sineHandle(sine.begin(),
+                                                 sine.end());
 
-  std::cout << "Running Square worklet" << std::endl;
-  dax::cuda::cont::worklet::Square(grid, fieldHandle, squareHandle);
+  std::cout << "Running Sine worklet" << std::endl;
+  dax::cont::worklet::Sine(grid, fieldHandle, sineHandle);
 
   std::cout << "Checking result" << std::endl;
   for (dax::Id pointIndex = 0;
        pointIndex < grid.GetNumberOfPoints();
        pointIndex++)
     {
-    dax::Scalar squareValue = square[pointIndex];
-    dax::Scalar squareTrue = field[pointIndex]*field[pointIndex];
-    test_assert(test_equal(squareValue, squareTrue),
-                "Got bad square");
+    dax::Scalar sineValue = sine[pointIndex];
+    dax::Scalar sineTrue = sinf(field[pointIndex]);
+    test_assert(test_equal(sineValue, sineTrue),
+                "Got bad sine");
     }
 }
 
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
-int UnitTestCudaWorkletSquare(int, char *[])
+int UnitTestWorkletSine(int, char *[])
 {
   try
     {
-    TestSquare();
+    TestSine();
     }
   catch (std::string error)
     {

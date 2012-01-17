@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/cuda/cont/worklet/Sine.h>
+#include <dax/cont/worklet/CellGradient.h>
 
 #include <math.h>
 #include <fstream>
@@ -64,7 +64,7 @@ static inline bool test_equal(VectorType vector1, VectorType vector2)
 }
 
 //-----------------------------------------------------------------------------
-static void TestSine()
+static void TestCellGradient()
 {
   dax::cont::UniformGrid grid;
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
@@ -81,33 +81,35 @@ static void TestSine()
     }
   dax::cont::ArrayHandle<dax::Scalar> fieldHandle(field.begin(), field.end());
 
-  std::vector<dax::Scalar> sine(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar> sineHandle(sine.begin(),
-                                                 sine.end());
+  std::vector<dax::Vector3> gradient(grid.GetNumberOfCells());
+  dax::cont::ArrayHandle<dax::Vector3> gradientHandle(gradient.begin(),
+                                                      gradient.end());
 
-  std::cout << "Running Sine worklet" << std::endl;
-  dax::cuda::cont::worklet::Sine(grid, fieldHandle, sineHandle);
+  std::cout << "Running CellGradient worklet" << std::endl;
+  dax::cont::worklet::CellGradient(grid,
+                                   grid.GetPoints(),
+                                   fieldHandle,
+                                   gradientHandle);
 
   std::cout << "Checking result" << std::endl;
-  for (dax::Id pointIndex = 0;
-       pointIndex < grid.GetNumberOfPoints();
-       pointIndex++)
+  for (dax::Id cellIndex = 0;
+       cellIndex < grid.GetNumberOfCells();
+       cellIndex++)
     {
-    dax::Scalar sineValue = sine[pointIndex];
-    dax::Scalar sineTrue = sinf(field[pointIndex]);
-    test_assert(test_equal(sineValue, sineTrue),
-                "Got bad sine");
+    dax::Vector3 gradientValue = gradient[cellIndex];
+    test_assert(test_equal(gradientValue, trueGradient),
+                "Got bad cosine");
     }
 }
 
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
-int UnitTestCudaWorkletSine(int, char *[])
+int UnitTestWorkletCellGradient(int, char *[])
 {
   try
     {
-    TestSine();
+    TestCellGradient();
     }
   catch (std::string error)
     {

@@ -6,8 +6,8 @@
 
 =========================================================================*/
 
-#ifndef __dax_cuda_cont_internal_ArrayContainerExecution_h
-#define __dax_cuda_cont_internal_ArrayContainerExecution_h
+#ifndef __dax_cuda_cont_internal_ArrayContainerExecutionThrust_h
+#define __dax_cuda_cont_internal_ArrayContainerExecutionThrust_h
 
 #include <dax/Types.h>
 
@@ -29,14 +29,14 @@ namespace internal {
 /// also released when this object goes out of scope.
 ///
 template<typename T>
-class ArrayContainerExecution
+class ArrayContainerExecutionThrust
 {
 public:
   typedef T ValueType;
 
   /// On inital creation, no memory is allocated on the device.
   ///
-  ArrayContainerExecution() { }
+  ArrayContainerExecutionThrust() { }
 
   /// Allocates an array on the device large enough to hold the given number of
   /// entries.
@@ -79,8 +79,8 @@ public:
   dax::internal::DataArray<ValueType> GetExecutionArray();
 
 private:
-  ArrayContainerExecution(const ArrayContainerExecution &); // Not implemented
-  void operator=(const ArrayContainerExecution &);          // Not implemented
+  ArrayContainerExecutionThrust(const ArrayContainerExecutionThrust &); // Not implemented
+  void operator=(const ArrayContainerExecutionThrust &);     // Not implemented
 
   thrust::device_vector<ValueType> DeviceArray;
 };
@@ -88,7 +88,7 @@ private:
 //-----------------------------------------------------------------------------
 template<class T>
 template<class IteratorType>
-inline void ArrayContainerExecution<T>::CopyFromControlToExecution(
+inline void ArrayContainerExecutionThrust<T>::CopyFromControlToExecution(
     const dax::cont::internal::IteratorContainer<IteratorType> &iterators)
 {
   assert(iterators.IsValid());
@@ -102,7 +102,7 @@ inline void ArrayContainerExecution<T>::CopyFromControlToExecution(
 //-----------------------------------------------------------------------------
 template<class T>
 template<class IteratorType>
-inline void ArrayContainerExecution<T>::CopyFromExecutionToControl(
+inline void ArrayContainerExecutionThrust<T>::CopyFromExecutionToControl(
     const dax::cont::internal::IteratorContainer<IteratorType> &iterators)
 {
   assert(iterators.IsValid());
@@ -115,7 +115,8 @@ inline void ArrayContainerExecution<T>::CopyFromExecutionToControl(
 
 //-----------------------------------------------------------------------------
 template<class T>
-dax::internal::DataArray<T> ArrayContainerExecution<T>::GetExecutionArray()
+inline dax::internal::DataArray<T>
+ArrayContainerExecutionThrust<T>::GetExecutionArray()
 {
   ValueType *rawPointer = thrust::raw_pointer_cast(&this->DeviceArray[0]);
   dax::Id numEntries = this->DeviceArray.size();
@@ -127,4 +128,4 @@ dax::internal::DataArray<T> ArrayContainerExecution<T>::GetExecutionArray()
 }
 }
 
-#endif // __dax_cuda_cont_internal_ArrayContainerExecution_h
+#endif // __dax_cuda_cont_internal_ArrayContainerExecutionThrust_h

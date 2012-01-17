@@ -30,8 +30,8 @@ private:
 
 public:
   /// Create a cell for the given work.
-  DAX_EXEC_EXPORT CellVoxel(const dax::internal::StructureUniformGrid &gs,
-                            dax::Id index)
+  DAX_EXEC_CONT_EXPORT CellVoxel(const dax::internal::StructureUniformGrid &gs,
+                                 dax::Id index)
     : GridStructure(gs), CellIndex(index) { }
 
   /// Get the number of points in the cell.

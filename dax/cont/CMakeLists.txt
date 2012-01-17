@@ -9,6 +9,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 set(headers
   ArrayHandle.h
+  DeviceAdapter.h
+  DeviceAdapterDebug.h
+  ScheduleDebug.h
   UniformGrid.h
 
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
@@ -32,6 +35,9 @@ configure_file(
 #-----------------------------------------------------------------------------
 set(unit_tests
   UnitTestArrayHandle.cxx
+  UnitTestScheduleDebug.cxx
   UnitTestVectorOperations.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
+
+add_subdirectory(worklet)

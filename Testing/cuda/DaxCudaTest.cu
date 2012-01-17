@@ -14,11 +14,11 @@
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cuda/cont/worklet/CellGradient.h>
-#include <dax/cuda/cont/worklet/Cosine.h>
-#include <dax/cuda/cont/worklet/Elevation.h>
-#include <dax/cuda/cont/worklet/Sine.h>
-#include <dax/cuda/cont/worklet/Square.h>
+#include <dax/cont/worklet/CellGradient.h>
+#include <dax/cont/worklet/Cosine.h>
+#include <dax/cont/worklet/Elevation.h>
+#include <dax/cont/worklet/Sine.h>
+#include <dax/cont/worklet/Square.h>
 
 #include <vector>
 
@@ -94,8 +94,8 @@ void RunPipeline1(const dax::cont::UniformGrid &grid)
                                                resultsBuffer.end());
 
   Timer timer;
-  dax::cuda::cont::worklet::Elevation(grid, grid.GetPoints(), intermediate1);
-  dax::cuda::cont::worklet::CellGradient(grid,
+  dax::cont::worklet::Elevation(grid, grid.GetPoints(), intermediate1);
+  dax::cont::worklet::CellGradient(grid,
                                          grid.GetPoints(),
                                          intermediate1,
                                          results);
@@ -121,16 +121,16 @@ void RunPipeline2(const dax::cont::UniformGrid &grid)
                                                resultsBuffer.end());
 
   Timer timer;
-  dax::cuda::cont::worklet::Elevation(grid, grid.GetPoints(), intermediate1);
-  dax::cuda::cont::worklet::CellGradient(grid,
+  dax::cont::worklet::Elevation(grid, grid.GetPoints(), intermediate1);
+  dax::cont::worklet::CellGradient(grid,
                                          grid.GetPoints(),
                                          intermediate1,
                                          intermediate2);
   intermediate1.ReleaseExecutionResources();
-  dax::cuda::cont::worklet::Sine(grid, intermediate2, intermediate3);
-  dax::cuda::cont::worklet::Square(grid, intermediate3, intermediate2);
+  dax::cont::worklet::Sine(grid, intermediate2, intermediate3);
+  dax::cont::worklet::Square(grid, intermediate3, intermediate2);
   intermediate3.ReleaseExecutionResources();
-  dax::cuda::cont::worklet::Cosine(grid, intermediate2, results);
+  dax::cont::worklet::Cosine(grid, intermediate2, results);
   double time = timer.elapsed();
 
   PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
@@ -152,11 +152,11 @@ void RunPipeline3(const dax::cont::UniformGrid &grid)
                                               resultsBuffer.end());
 
   Timer timer;
-  dax::cuda::cont::worklet::Elevation(grid, grid.GetPoints(), intermediate1);
-  dax::cuda::cont::worklet::Sine(grid, intermediate1, intermediate2);
-  dax::cuda::cont::worklet::Square(grid, intermediate2, intermediate1);
+  dax::cont::worklet::Elevation(grid, grid.GetPoints(), intermediate1);
+  dax::cont::worklet::Sine(grid, intermediate1, intermediate2);
+  dax::cont::worklet::Square(grid, intermediate2, intermediate1);
   intermediate2.ReleaseExecutionResources();
-  dax::cuda::cont::worklet::Cosine(grid, intermediate1, results);
+  dax::cont::worklet::Cosine(grid, intermediate1, results);
   double time = timer.elapsed();
 
   PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());

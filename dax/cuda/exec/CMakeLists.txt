@@ -6,8 +6,9 @@
 #
 #=========================================================================
 
+add_subdirectory(internal)
+
 set(headers
-  ExecutionEnvironment.h
   )
 
-dax_declare_headers(${headers})
+#dax_declare_headers(${headers})

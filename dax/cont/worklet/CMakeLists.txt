@@ -14,13 +14,13 @@ set(headers
   Square.h
   )
 
-dax_declare_headers(CUDA ${headers})
+dax_declare_headers(${headers})
 
 set(unit_tests
-  UnitTestCudaWorkletCellGradient.cu
-  UnitTestCudaWorkletCosine.cu
-  UnitTestCudaWorkletElevation.cu
-  UnitTestCudaWorkletSine.cu
-  UnitTestCudaWorkletSquare.cu
+  UnitTestWorkletCellGradient.cxx
+  UnitTestWorkletCosine.cxx
+  UnitTestWorkletElevation.cxx
+  UnitTestWorkletSine.cxx
+  UnitTestWorkletSquare.cxx
   )
-dax_unit_tests(CUDA SOURCES ${unit_tests})
+dax_unit_tests(SOURCES ${unit_tests})

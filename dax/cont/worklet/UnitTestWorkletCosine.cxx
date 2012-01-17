@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/cuda/cont/worklet/Elevation.h>
+#include <dax/cont/worklet/Cosine.h>
 
 #include <math.h>
 #include <fstream>
@@ -64,47 +64,50 @@ static inline bool test_equal(VectorType vector1, VectorType vector2)
 }
 
 //-----------------------------------------------------------------------------
-static void TestElevation()
+static void TestCosine()
 {
   dax::cont::UniformGrid grid;
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
 
-  std::vector<dax::Scalar> elevation(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar> elevationHandle(elevation.begin(),
-                                                      elevation.end());
+  dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
-  std::cout << "Running Elevation worklet" << std::endl;
-  dax::cuda::cont::worklet::Elevation(grid, grid.GetPoints(), elevationHandle);
+  std::vector<dax::Scalar> field(grid.GetNumberOfPoints());
+  for (dax::Id pointIndex = 0;
+       pointIndex < grid.GetNumberOfPoints();
+       pointIndex++)
+    {
+    field[pointIndex]
+        = dax::dot(grid.GetPointCoordinates(pointIndex), trueGradient);
+    }
+  dax::cont::ArrayHandle<dax::Scalar> fieldHandle(field.begin(), field.end());
+
+  std::vector<dax::Scalar> cosine(grid.GetNumberOfPoints());
+  dax::cont::ArrayHandle<dax::Scalar> cosineHandle(cosine.begin(),
+                                                   cosine.end());
+
+  std::cout << "Running Cosine worklet" << std::endl;
+  dax::cont::worklet::Cosine(grid, fieldHandle, cosineHandle);
 
   std::cout << "Checking result" << std::endl;
-  dax::Id3 ijk;
-  for (ijk[2] = 0; ijk[2] < DIM; ijk[2]++)
+  for (dax::Id pointIndex = 0;
+       pointIndex < grid.GetNumberOfPoints();
+       pointIndex++)
     {
-    for (ijk[1] = 0; ijk[1] < DIM; ijk[1]++)
-      {
-      for (ijk[0] = 0; ijk[0] < DIM; ijk[0]++)
-        {
-        dax::Id pointIndex = grid.ComputePointIndex(ijk);
-        dax::Scalar elevationValue = elevation[pointIndex];
-        dax::Vector3 pointCoordinates = grid.GetPointCoordinates(pointIndex);
-        // Wrong, but what is currently computed.
-        dax::Scalar elevationExpected
-            = sqrt(dax::dot(pointCoordinates, pointCoordinates));
-        test_assert(test_equal(elevationValue, elevationExpected),
-                    "Got bad elevation.");
-        }
-      }
+    dax::Scalar cosineValue = cosine[pointIndex];
+    dax::Scalar cosineTrue = cosf(field[pointIndex]);
+    test_assert(test_equal(cosineValue, cosineTrue),
+                "Got bad gradient");
     }
 }
 
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
-int UnitTestCudaWorkletElevation(int, char *[])
+int UnitTestWorkletCosine(int, char *[])
 {
   try
     {
-    TestElevation();
+    TestCosine();
     }
   catch (std::string error)
     {

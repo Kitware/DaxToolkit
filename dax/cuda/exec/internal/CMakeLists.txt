@@ -7,22 +7,12 @@
 #=========================================================================
 
 set(headers
-  DeviceAdapterCuda.h
-  ScheduleCuda.h
+  CudaThreadIterator.h
   )
 
-#-----------------------------------------------------------------------------
-CUDA_INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-
-add_subdirectory(internal)
-
-#-----------------------------------------------------------------------------
 dax_declare_headers(CUDA ${headers})
 
-#-----------------------------------------------------------------------------
 set(unit_tests
-  UnitTestCudaWorkletMapCell.cu
-  UnitTestCudaWorkletMapField.cu
-  UnitTestScheduleCuda.cu
+  UnitTestCudaThreadIterator.cu
   )
 dax_unit_tests(CUDA SOURCES ${unit_tests})
