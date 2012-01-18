@@ -80,10 +80,10 @@ inline void Sine(const GridType &grid,
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   GridPackageType gridPackage(grid);
 
-  dax::cont::internal::ExecutionPackageFieldInput<FieldType>
+  dax::cont::internal::ExecutionPackageFieldInput<FieldType, DeviceAdapter>
       inField(inHandle, fieldSize);
 
-  dax::cont::internal::ExecutionPackageFieldOutput<FieldType>
+  dax::cont::internal::ExecutionPackageFieldOutput<FieldType, DeviceAdapter>
       outField(outHandle, fieldSize);
 
   typedef typename GridPackageType::ExecutionCellType CellType;

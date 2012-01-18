@@ -21,7 +21,7 @@ namespace internal {
 
 #define DAX_EXECUTION_PACKAGE_FIELD_SUPERTYPE(super, type) \
   private: \
-    typedef super< type > Superclass; \
+    typedef super< type, DeviceAdapter > Superclass; \
   public: \
     typedef typename Superclass::ValueType ValueType; \
     typedef typename Superclass::ControlArrayType ControlArrayType; \
@@ -29,13 +29,13 @@ namespace internal {
 
 namespace details {
 
-template<class FieldT>
+template<class FieldT, DAX_DeviceAdapter_TP>
 class ExecutionPackageField
 {
 public:
   typedef FieldT ExecutionFieldType;
   typedef typename ExecutionFieldType::ValueType ValueType;
-  typedef dax::cont::ArrayHandle<ValueType> ControlArrayType;
+  typedef dax::cont::ArrayHandle<ValueType, DeviceAdapter> ControlArrayType;
 
   ExecutionPackageField(const dax::internal::DataArray<ValueType> &array,
                         dax::Id expectedSize)
@@ -50,9 +50,9 @@ private:
   ExecutionFieldType Field;
 };
 
-template<class FieldT>
+template<class FieldT, DAX_DeviceAdapter_TP>
 class ExecutionPackageFieldInput
-    : public dax::cont::internal::details::ExecutionPackageField<FieldT>
+    : public dax::cont::internal::details::ExecutionPackageField<FieldT, DeviceAdapter>
 {
   DAX_EXECUTION_PACKAGE_FIELD_SUPERTYPE(ExecutionPackageField, FieldT);
 public:
@@ -67,9 +67,9 @@ private:
   ControlArrayType Array;
 };
 
-template<class FieldT>
+template<class FieldT, DAX_DeviceAdapter_TP>
 class ExecutionPackageFieldOutput
-    : public dax::cont::internal::details::ExecutionPackageField<FieldT>
+    : public dax::cont::internal::details::ExecutionPackageField<FieldT, DeviceAdapter>
 {
   DAX_EXECUTION_PACKAGE_FIELD_SUPERTYPE(ExecutionPackageField, FieldT);
 public:
@@ -89,83 +89,83 @@ private:
 
 } // namespace details
 
-template<typename T>
+template<typename T, DAX_DeviceAdapter_TP>
 class ExecutionPackageFieldPointInput
-    : public dax::cont::internal::details::ExecutionPackageFieldInput<dax::exec::FieldPoint<T> >
+    : public dax::cont::internal::details::ExecutionPackageFieldInput<dax::exec::FieldPoint<T>, DeviceAdapter >
 {
   DAX_EXECUTION_PACKAGE_FIELD_SUPERTYPE(details::ExecutionPackageFieldInput,
                                         dax::exec::FieldPoint<T>);
 public:
   template<class GridT>
-  ExecutionPackageFieldPointInput(dax::cont::ArrayHandle<T> &array,
+  ExecutionPackageFieldPointInput(dax::cont::ArrayHandle<T, DeviceAdapter> &array,
                                   const GridT &grid)
     : Superclass(array, grid.GetNumberOfPoints()) { }
 };
 
-template<typename T>
+template<typename T, DAX_DeviceAdapter_TP>
 class ExecutionPackageFieldPointOutput
-    : public dax::cont::internal::details::ExecutionPackageFieldOutput<dax::exec::FieldPoint<T> >
+    : public dax::cont::internal::details::ExecutionPackageFieldOutput<dax::exec::FieldPoint<T>, DeviceAdapter >
 {
   DAX_EXECUTION_PACKAGE_FIELD_SUPERTYPE(details::ExecutionPackageFieldOutput,
                                         dax::exec::FieldPoint<T>);
 public:
   template<class GridT>
-  ExecutionPackageFieldPointOutput(dax::cont::ArrayHandle<T> &array,
+  ExecutionPackageFieldPointOutput(dax::cont::ArrayHandle<T, DeviceAdapter> &array,
                                    const GridT &grid)
     : Superclass(array, grid.GetNumberOfPoints()) { }
 };
 
-template<typename T>
+template<typename T, DAX_DeviceAdapter_TP>
 class ExecutionPackageFieldCellInput
-    : public dax::cont::internal::details::ExecutionPackageFieldInput<dax::exec::FieldCell<T> >
+    : public dax::cont::internal::details::ExecutionPackageFieldInput<dax::exec::FieldCell<T>, DeviceAdapter >
 {
   DAX_EXECUTION_PACKAGE_FIELD_SUPERTYPE(details::ExecutionPackageFieldInput,
                                         dax::exec::FieldCell<T>);
 public:
   template<class GridT>
-  ExecutionPackageFieldCellInput(dax::cont::ArrayHandle<T> &array,
+  ExecutionPackageFieldCellInput(dax::cont::ArrayHandle<T, DeviceAdapter> &array,
                                  const GridT &grid)
     : Superclass(array, grid.GetNumberOfCells()) { }
 };
 
-template<typename T>
+template<typename T, DAX_DeviceAdapter_TP>
 class ExecutionPackageFieldCellOutput
-    : public dax::cont::internal::details::ExecutionPackageFieldOutput<dax::exec::FieldCell<T> >
+    : public dax::cont::internal::details::ExecutionPackageFieldOutput<dax::exec::FieldCell<T>, DeviceAdapter >
 {
   DAX_EXECUTION_PACKAGE_FIELD_SUPERTYPE(details::ExecutionPackageFieldOutput,
                                         dax::exec::FieldCell<T>);
 public:
   template<class GridT>
-  ExecutionPackageFieldCellOutput(dax::cont::ArrayHandle<T> &array,
+  ExecutionPackageFieldCellOutput(dax::cont::ArrayHandle<T, DeviceAdapter> &array,
                                   const GridT &grid)
     : Superclass(array, grid.GetNumberOfCells()) { }
 };
 
-template<typename T>
+template<typename T, DAX_DeviceAdapter_TP>
 class ExecutionPackageFieldInput
-    : public dax::cont::internal::details::ExecutionPackageFieldInput<dax::exec::Field<T> >
+    : public dax::cont::internal::details::ExecutionPackageFieldInput<dax::exec::Field<T>, DeviceAdapter >
 {
   DAX_EXECUTION_PACKAGE_FIELD_SUPERTYPE(details::ExecutionPackageFieldInput,
                                         dax::exec::Field<T>);
 public:
-  ExecutionPackageFieldInput(dax::cont::ArrayHandle<T> &array,
+  ExecutionPackageFieldInput(dax::cont::ArrayHandle<T, DeviceAdapter> &array,
                              dax::Id expectedSize)
     : Superclass(array, expectedSize) { }
 };
 
-template<typename T>
+template<typename T, DAX_DeviceAdapter_TP>
 class ExecutionPackageFieldOutput
-    : public dax::cont::internal::details::ExecutionPackageFieldOutput<dax::exec::Field<T> >
+    : public dax::cont::internal::details::ExecutionPackageFieldOutput<dax::exec::Field<T>, DeviceAdapter >
 {
   DAX_EXECUTION_PACKAGE_FIELD_SUPERTYPE(details::ExecutionPackageFieldOutput,
                                         dax::exec::Field<T>);
 public:
-  ExecutionPackageFieldOutput(dax::cont::ArrayHandle<T> &array,
+  ExecutionPackageFieldOutput(dax::cont::ArrayHandle<T, DeviceAdapter> &array,
                              dax::Id expectedSize)
     : Superclass(array, expectedSize) { }
 };
 
-template<class GridT>
+template<class GridT, DAX_DeviceAdapter_TP>
 class ExecutionPackageFieldCoordinatesInput
 {
 public:
@@ -180,6 +180,8 @@ public:
     return field;
   }
 };
+
+#undef DAX_EXECUTION_PACKAGE_FIELD_SUPERTYPE
 
 }
 }

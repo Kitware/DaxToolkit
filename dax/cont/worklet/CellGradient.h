@@ -66,13 +66,16 @@ inline void CellGradient(
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   GridPackageType gridPackage(grid);
 
-  dax::cont::internal::ExecutionPackageFieldCoordinatesInput<GridType>
+  dax::cont::internal::ExecutionPackageFieldCoordinatesInput
+      <GridType, DeviceAdapter>
       fieldCoordinates(points);
 
-  dax::cont::internal::ExecutionPackageFieldPointInput<dax::Scalar>
+  dax::cont::internal::ExecutionPackageFieldPointInput
+      <dax::Scalar, DeviceAdapter>
       inField(inHandle, grid);
 
-  dax::cont::internal::ExecutionPackageFieldCellOutput<dax::Vector3>
+  dax::cont::internal::ExecutionPackageFieldCellOutput
+      <dax::Vector3, DeviceAdapter>
       outField(outHandle, grid);
 
   typedef typename GridPackageType::ExecutionCellType CellType;

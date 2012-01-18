@@ -69,10 +69,12 @@ inline void Elevation(
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   GridPackageType gridPackage(grid);
 
-  dax::cont::internal::ExecutionPackageFieldCoordinatesInput<GridType>
+  dax::cont::internal::ExecutionPackageFieldCoordinatesInput
+      <GridType, DeviceAdapter>
       fieldCoordinates(points);
 
-  dax::cont::internal::ExecutionPackageFieldPointOutput<dax::Scalar>
+  dax::cont::internal::ExecutionPackageFieldPointOutput
+      <dax::Scalar, DeviceAdapter>
       outField(outHandle, grid);
 
   typedef typename GridPackageType::ExecutionCellType CellType;
