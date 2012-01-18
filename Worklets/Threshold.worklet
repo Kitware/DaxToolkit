@@ -1,0 +1,77 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+===========================================================================*/
+#ifndef __Threshold_worklet_
+#define __Threshold_worklet_
+
+#include <dax/exec/Cell.h>
+#include <dax/exec/Field.h>
+#include <dax/exec/WorkMapReduceCell.h>
+#include <dax/exec/mapreduce/Functions.h>
+
+namespace dax {
+namespace worklet {
+
+template<typename GridType>
+dax::Id ClassifySizeStep(const GridType& grid)
+{
+  return dax::exec::mapreduce::num_cells(grid);
+}
+
+template<typename T>
+struct DoThreshold {
+  DAX_EXEC_EXPORT dax::Id operator()(T min, T max, T x) const
+  {
+    return static_cast<dax::Id>((x > min) && (x <= max));
+  }
+};
+
+template<typename CellType, typename FieldType>
+DAX_WORKLET void ClassifyStep(
+    DAX_IN dax::exec::WorkMapReduceCell<CellType> &work,
+    DAX_IN FieldType thresholdMin,
+    DAX_IN FieldType thresholdMax,
+    DAX_IN dax::exec::FieldPoint<FieldType> &inField,
+    DAX_OUT dax::exec::Field<dax::Id> &outField)
+{
+  //compare the value at each point with the threshold min/max
+  CellType cell = work.GetCell();
+  dax::Id number_of_points = cell.GetNumberOfPoints();
+  dax::Id valid = 1;
+  for (dax::Id vertexId = 0; vertexId < number_of_points; vertexId++)
+    {
+    FieldType inValue = work.GetFieldValue(inField, vertexId);
+    dax::Id outValue = DoThreshold<FieldType>(thresholdMin,thresholdMax,inValue);
+    valid &= outValue;
+    }
+  work.SetMappedFieldValue(outField,0,valid);
+}
+
+//template<typename InputType, typename MapResult>
+//void ScanStep(InputType &input, MapResult &handle)
+//{
+//  //remove all cells that have a value of zero
+//  dax::exec::mapreduce::removeCells(handle,0);
+//}
+
+//template<typename CellType, typename FieldType>
+//DAX_WORKLET void GenerateStep(
+//    DAX_IN dax::exec::WorkGenerateCell<CellType> &work,
+//    DAX_IN const dax::exec::FieldCoordinates points,
+//    DAX_OUT dax::exec::FieldCoordinates outPoints)
+//{
+//  dax::Id number_of_points = cell.GetNumberOfPoints();
+//  for (dax::Id vertexId = 0; vertexId < number_of_points; vertexId++)
+//    {
+//    work.SetFieldValue(outPoints,work.GetFieldValue(points,vertexId));
+//    }
+//}
+
+}
+} //dax::worklet
+
+#endif

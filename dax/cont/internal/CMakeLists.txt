@@ -8,6 +8,7 @@
 
 set(headers
   ArrayContainerExecutionCPU.h
+  Classify.h
   ExecutionPackageField.h
   ExecutionPackageGrid.h
   IteratorContainer.h

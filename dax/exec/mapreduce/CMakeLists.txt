@@ -7,21 +7,7 @@
 #=========================================================================
 
 set(headers
-  CellGradient.h
-  Cosine.h
-  Elevation.h
-  Sine.h
-  Square.h
-  Threshold.h
-  )
+  Functions.h
+)
 
 dax_declare_headers(${headers})
-
-set(unit_tests
-  UnitTestWorkletCellGradient.cxx
-  UnitTestWorkletCosine.cxx
-  UnitTestWorkletElevation.cxx
-  UnitTestWorkletSine.cxx
-  UnitTestWorkletSquare.cxx
-  )
-dax_unit_tests(SOURCES ${unit_tests})

@@ -14,6 +14,7 @@ set(headers
   ParametricCoordinates.h
   WorkMapCell.h
   WorkMapField.h
+  WorkMapReduceCell.h
 
   ${Dax_BINARY_DIR}/dax/exec/VectorOperations.h
 )
@@ -32,6 +33,7 @@ configure_file(
   )
 
 #-----------------------------------------------------------------------------
+add_subdirectory(mapreduce)
 add_subdirectory(internal)
 
 set(unit_tests
