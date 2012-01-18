@@ -8,6 +8,7 @@
 
 set(headers
   ArrayContainerExecutionCPU.h
+  DeviceAdapterError.h
   ExecutionPackageField.h
   ExecutionPackageGrid.h
   IteratorContainer.h
