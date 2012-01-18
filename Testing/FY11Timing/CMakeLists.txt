@@ -14,7 +14,9 @@ if (DAX_ENABLE_OPENMP)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 endif (DAX_ENABLE_OPENMP)
 
-#find_package(CUDA REQUIRED)
+if (DAX_ENABLE_CUDA)
+  find_package(CUDA REQUIRED)
+endif (DAX_ENABLE_CUDA)
 
 include_directories(${Boost_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -45,9 +47,18 @@ if (DAX_ENABLE_OPENMP)
   set(sources ${sources} PipelineOpenMP.cxx)
 endif (DAX_ENABLE_OPENMP)
 
-add_executable(FY11Timing ${sources} ${headers})
+if (DAX_ENABLE_CUDA)
+  set(headers ${headers} PipelineCuda.h)
+  set(sources ${sources} PipelineCuda.cu)
+endif (DAX_ENABLE_CUDA)
 
-set_source_files_properties(Pipeline.h PROPERTIES HEADER_FILE_ONLY TRUE)
+if (DAX_ENABLE_CUDA)
+  cuda_add_executable(FY11Timing ${sources} ${headers})
+else (DAX_ENABLE_CUDA)
+  add_executable(FY11Timing ${sources} ${headers})
+endif (DAX_ENABLE_CUDA)
+
+set_source_files_properties(${headers} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 target_link_libraries(FY11Timing
   ${Boost_LIBRARIES}

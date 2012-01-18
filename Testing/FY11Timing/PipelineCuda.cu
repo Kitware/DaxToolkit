@@ -6,13 +6,13 @@
 
 ===========================================================================*/
 
-#include <dax/openmp/cont/DeviceAdapterOpenMP.h>
+#include <dax/cuda/cont/DeviceAdapterCuda.h>
 
-#include "PipelineOpenMP.h"
+#include "PipelineCuda.h"
 
 #include "Pipeline.h"
 
-void RunPipelineOpenMP(int pipeline, const dax::cont::UniformGrid &grid)
+void RunPipelineCuda(int pipeline, const dax::cont::UniformGrid &grid)
 {
   switch (pipeline)
     {

@@ -16,6 +16,10 @@
 #include "PipelineOpenMP.h"
 #endif
 
+#ifdef DAX_ENABLE_CUDA
+#include "PipelineCuda.h"
+#endif
+
 #include <iostream>
 
 namespace {
@@ -51,7 +55,12 @@ int main(int argc, char* argv[])
     {
     case dax::testing::ArgumentsParser::DEVICE_ALL:
       RunPipelineDebug(pipeline, grid);
+#ifdef DAX_ENABLE_OPENMP
       RunPipelineOpenMP(pipeline, grid);
+#endif
+#ifdef DAX_ENABLE_CUDA
+      RunPipelineCuda(pipeline, grid);
+#endif
       break;
     case dax::testing::ArgumentsParser::DEVICE_DEBUG:
       RunPipelineDebug(pipeline, grid);
@@ -65,7 +74,13 @@ int main(int argc, char* argv[])
       return 1;
 #endif
     case dax::testing::ArgumentsParser::DEVICE_CUDA:
+#ifdef DAX_ENABLE_CUDA
+      RunPipelineCuda(pipeline, grid);
       break;
+#else
+      std::cout << "Cuda device not available." << std::endl;
+      return 1;
+#endif
     }
 
   return 0;
