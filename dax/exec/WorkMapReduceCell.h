@@ -40,7 +40,7 @@ public:
 
   DAX_EXEC_EXPORT WorkMapReduceCell(
     const dax::internal::StructureUniformGrid &gridStructure,
-    dax::Id cellIndex)
+    dax::Id cellIndex = 0)
     : Cell(gridStructure, cellIndex),
       ArrayLength(dax::internal::numberOfCells(gridStructure))
     { }

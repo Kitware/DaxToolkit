@@ -53,6 +53,23 @@ public:
   typedef dax::cont::internal::Classify<ClassifyThreshold<Parameters,DeviceAdapter>,Parameters,DeviceAdapter> Parent;
   typedef typename Parent::ValueType ValueType;
 
+  //internal functor that calls the actual worklet
+  struct Functor
+  {
+    DAX_EXEC_EXPORT void operator()(Parameters &parameters,
+                                    dax::Id index)
+    {
+    parameters.work.SetCellIndex(index);
+    dax::worklet::ClassifyStep(parameters.work,
+                               parameters.min,
+                               parameters.max,
+                               parameters.inField,
+                               parameters.outField);
+    }
+  };
+
+  //constructor that is passed all constant values that are needed
+  //for the worklet
   ClassifyThreshold(const ValueType& min, const ValueType& max):
     Min(min),
     Max(max)
@@ -60,23 +77,28 @@ public:
 
     }
 
+  //calls the worklets definition for the size of the resulting grid
   template<typename GridType>
-  dax::Id Size(GridType& grid)
+  dax::Id Size(const GridType& grid)
     {
     dax::worklet::ClassifySizeStep(grid);
     }
 
+  //call the actual classify step worklet for the Threshold algorithm
   template<typename GridType, typename HandleType>
-  void Classify(GridType& grid, HandleType &handle)
+  void Classify(const GridType& grid, HandleType &handle)
     {
     typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
+    typedef typename GridPackageType::ExecutionCellType CellType;
+    typedef dax::exec::WorkMapReduceCell<CellType> WorkType;
+
     GridPackageType gridPackage(grid);
 
     dax::cont::internal::ExecutionPackageFieldPointInput<typename HandleType::ValueType>
         inField(handle, grid);
 
     dax::cont::internal::ExecutionPackageFieldOutput<ValueType>
-        outField(this->GetResult(), grid);
+        outField(this->GetResult(), this->GetResultSize());
 
     Parameters parameters = {
       WorkType(gridPackage.GetExecutionObject()),
@@ -86,21 +108,9 @@ public:
       outField.GetExecutionObject()
       };
 
-    DeviceAdapter<void>::Schedule(this->Worklet(),
+    DeviceAdapter<void>::Schedule(ClassifyThreshold::Functor(),
                                   parameters,
                                   this->GetResultSize());
-    }
-
-
-  DAX_EXEC_EXPORT void Worklet(Parameters &parameters,
-                                  dax::Id index)
-    {
-    parameters.work.SetCellIndex(index);
-    dax::worklet::ClassifyStep(parameters.work,
-                               parameters.min,
-                               parameters.max,
-                               parameters.inField,
-                               this->GetResult());
     }
 private:
   ValueType Min;
@@ -127,7 +137,6 @@ inline void Threshold(
 {
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   typedef typename GridPackageType::ExecutionCellType CellType;
-  typedef dax::exec::WorkMapReduceCell<CellType> WorkType;
   typedef dax::exec::kernel::ClassifyThresholdParameters<CellType,dax::Scalar> Parameters;
 
   dax::exec::kernel::ClassifyThreshold<Parameters,DeviceAdapter>

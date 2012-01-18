@@ -55,7 +55,7 @@ public:
     { return Result; }
 
 
-  dax::Id GetResultSze()
+  dax::Id GetResultSize()
     { return ResultSize; }
 
   template<typename InputType>

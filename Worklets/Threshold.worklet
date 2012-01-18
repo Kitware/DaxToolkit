@@ -45,7 +45,7 @@ DAX_WORKLET void ClassifyStep(
   for (dax::Id vertexId = 0; vertexId < number_of_points; vertexId++)
     {
     FieldType inValue = work.GetFieldValue(inField, vertexId);
-    dax::Id outValue = DoThreshold<FieldType>(thresholdMin,thresholdMax,inValue);
+    dax::Id outValue = DoThreshold<FieldType>()(thresholdMin,thresholdMax,inValue);
     valid &= outValue;
     }
   work.SetMappedFieldValue(outField,0,valid);
