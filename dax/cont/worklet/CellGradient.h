@@ -35,13 +35,14 @@ struct CellGradientParameters
   dax::exec::FieldCell<dax::Vector3> outField;
 };
 
-template<class Parameters>
+template<class CellType>
 struct CellGradient {
-  DAX_EXEC_EXPORT void operator()(Parameters &parameters,
+  DAX_EXEC_EXPORT void operator()(CellGradientParameters<CellType> &parameters,
                                   dax::Id index)
   {
-    parameters.work.SetCellIndex(index);
-    dax::worklet::CellGradient(parameters.work,
+    dax::exec::WorkMapCell<CellType> work = parameters.work;
+    work.SetCellIndex(index);
+    dax::worklet::CellGradient(work,
                                parameters.inCoordinates,
                                parameters.inField,
                                parameters.outField);
@@ -66,13 +67,16 @@ inline void CellGradient(
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   GridPackageType gridPackage(grid);
 
-  dax::cont::internal::ExecutionPackageFieldCoordinatesInput<GridType>
+  dax::cont::internal::ExecutionPackageFieldCoordinatesInput
+      <GridType, DeviceAdapter>
       fieldCoordinates(points);
 
-  dax::cont::internal::ExecutionPackageFieldPointInput<dax::Scalar>
+  dax::cont::internal::ExecutionPackageFieldPointInput
+      <dax::Scalar, DeviceAdapter>
       inField(inHandle, grid);
 
-  dax::cont::internal::ExecutionPackageFieldCellOutput<dax::Vector3>
+  dax::cont::internal::ExecutionPackageFieldCellOutput
+      <dax::Vector3, DeviceAdapter>
       outField(outHandle, grid);
 
   typedef typename GridPackageType::ExecutionCellType CellType;
@@ -87,7 +91,7 @@ inline void CellGradient(
     outField.GetExecutionObject()
   };
 
-  DeviceAdapter<void>::Schedule(dax::exec::kernel::CellGradient<Parameters>(),
+  DeviceAdapter<void>::Schedule(dax::exec::kernel::CellGradient<CellType>(),
                                 parameters,
                                 grid.GetNumberOfCells());
 }

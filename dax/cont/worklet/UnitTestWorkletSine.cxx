@@ -6,6 +6,9 @@
 
 =========================================================================*/
 
+#include <dax/cont/DeviceAdapterDebug.h>
+#include <dax/cont/internal/DeviceAdapterError.h>
+
 #include <dax/cont/worklet/Sine.h>
 
 #include <math.h>
@@ -79,11 +82,12 @@ static void TestSine()
     field[pointIndex]
         = dax::dot(grid.GetPointCoordinates(pointIndex), trueGradient);
     }
-  dax::cont::ArrayHandle<dax::Scalar> fieldHandle(field.begin(), field.end());
+  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterDebug>
+      fieldHandle(field.begin(), field.end());
 
   std::vector<dax::Scalar> sine(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar> sineHandle(sine.begin(),
-                                                 sine.end());
+  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterDebug>
+      sineHandle(sine.begin(), sine.end());
 
   std::cout << "Running Sine worklet" << std::endl;
   dax::cont::worklet::Sine(grid, fieldHandle, sineHandle);

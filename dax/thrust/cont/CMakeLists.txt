@@ -7,14 +7,16 @@
 #=========================================================================
 
 set(headers
-  ArrayContainerExecutionThrust.h
-  CudaParameters.h
-  SetThrustForCuda.h
+  ScheduleThrust.h
   )
 
-dax_declare_headers(CUDA ${headers})
+#-----------------------------------------------------------------------------
+add_subdirectory(internal)
 
+#-----------------------------------------------------------------------------
+dax_declare_headers(${headers})
+
+#-----------------------------------------------------------------------------
 set(unit_tests
-  UnitTestCudaArrayContainerExecutionThrust.cu
   )
-dax_unit_tests(CUDA SOURCES ${unit_tests})
+#dax_unit_tests(SOURCES ${unit_tests})

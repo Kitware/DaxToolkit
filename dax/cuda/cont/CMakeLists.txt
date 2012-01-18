@@ -9,6 +9,7 @@
 set(headers
   DeviceAdapterCuda.h
   ScheduleCuda.h
+  ScheduleThrust.h
   )
 
 #-----------------------------------------------------------------------------
@@ -21,8 +22,9 @@ dax_declare_headers(CUDA ${headers})
 
 #-----------------------------------------------------------------------------
 set(unit_tests
+  UnitTestCudaScheduleNative.cu
+  UnitTestCudaScheduleThrust.cu
   UnitTestCudaWorkletMapCell.cu
   UnitTestCudaWorkletMapField.cu
-  UnitTestScheduleCuda.cu
   )
 dax_unit_tests(CUDA SOURCES ${unit_tests})

@@ -44,7 +44,7 @@ namespace cont {
 /// Any memory created for the execution environment will remain around in case
 /// it is needed again.
 ///
-template<typename T, template<typename> class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER>
+template<typename T, DAX_DeviceAdapter_TP = DAX_DEFAULT_DEVICE_ADAPTER>
 class ArrayHandle
 {
 public:

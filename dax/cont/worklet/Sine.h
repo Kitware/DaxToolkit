@@ -33,14 +33,16 @@ struct SineParameters
   dax::exec::Field<FieldType> outField;
 };
 
-template<class Parameters>
+template<class CellType, typename FieldType>
 struct Sine
 {
-  DAX_EXEC_EXPORT void operator()(Parameters &parameters,
-                                  dax::Id index)
+  DAX_EXEC_EXPORT void operator()(
+      SineParameters<CellType, FieldType> &parameters,
+      dax::Id index)
   {
-    parameters.work.SetIndex(index);
-    dax::worklet::Sine(parameters.work,
+    dax::exec::WorkMapField<CellType> work = parameters.work;
+    work.SetIndex(index);
+    dax::worklet::Sine(work,
                        parameters.inField,
                        parameters.outField);
   }
@@ -80,10 +82,10 @@ inline void Sine(const GridType &grid,
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   GridPackageType gridPackage(grid);
 
-  dax::cont::internal::ExecutionPackageFieldInput<FieldType>
+  dax::cont::internal::ExecutionPackageFieldInput<FieldType, DeviceAdapter>
       inField(inHandle, fieldSize);
 
-  dax::cont::internal::ExecutionPackageFieldOutput<FieldType>
+  dax::cont::internal::ExecutionPackageFieldOutput<FieldType, DeviceAdapter>
       outField(outHandle, fieldSize);
 
   typedef typename GridPackageType::ExecutionCellType CellType;
@@ -96,7 +98,7 @@ inline void Sine(const GridType &grid,
     outField.GetExecutionObject()
   };
 
-  DeviceAdapter<void>::Schedule(dax::exec::kernel::Sine<Parameters>(),
+  DeviceAdapter<void>::Schedule(dax::exec::kernel::Sine<CellType, FieldType>(),
                                 parameters,
                                 fieldSize);
 }

@@ -6,9 +6,6 @@
 
 =========================================================================*/
 
-#include <dax/cont/DeviceAdapterDebug.h>
-#include <dax/cont/internal/DeviceAdapterError.h>
-
 #include <dax/cont/worklet/Square.h>
 
 #include <math.h>
@@ -20,6 +17,8 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
+
+#include <typeinfo>
 
 #include <vector>
 
@@ -82,12 +81,11 @@ static void TestSquare()
     field[pointIndex]
         = dax::dot(grid.GetPointCoordinates(pointIndex), trueGradient);
     }
-  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterDebug>
-      fieldHandle(field.begin(), field.end());
+  dax::cont::ArrayHandle<dax::Scalar> fieldHandle(field.begin(), field.end());
 
   std::vector<dax::Scalar> square(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterDebug>
-      squareHandle(square.begin(), square.end());
+  dax::cont::ArrayHandle<dax::Scalar> squareHandle(square.begin(),
+                                                   square.end());
 
   std::cout << "Running Square worklet" << std::endl;
   dax::cont::worklet::Square(grid, fieldHandle, squareHandle);
@@ -107,10 +105,15 @@ static void TestSquare()
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
-int UnitTestWorkletSquare(int, char *[])
+int UnitTestOpenMPWorkletMapField(int, char *[])
 {
   try
     {
+    // This might be a compile error if OpenMP DeviceAdapter is not selected.
+    test_assert(typeid(DAX_DEFAULT_DEVICE_ADAPTER<void>)
+                == typeid(dax::openmp::cont::DeviceAdapterOpenMP<void>),
+                "Wrong device adapter automatically selected.");
+
     TestSquare();
     }
   catch (std::string error)

@@ -6,6 +6,9 @@
 
 =========================================================================*/
 
+#include <dax/cont/DeviceAdapterDebug.h>
+#include <dax/cont/internal/DeviceAdapterError.h>
+
 #include <dax/cont/worklet/Cosine.h>
 
 #include <math.h>
@@ -79,11 +82,12 @@ static void TestCosine()
     field[pointIndex]
         = dax::dot(grid.GetPointCoordinates(pointIndex), trueGradient);
     }
-  dax::cont::ArrayHandle<dax::Scalar> fieldHandle(field.begin(), field.end());
+  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterDebug>
+      fieldHandle(field.begin(), field.end());
 
   std::vector<dax::Scalar> cosine(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar> cosineHandle(cosine.begin(),
-                                                   cosine.end());
+  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterDebug>
+      cosineHandle(cosine.begin(), cosine.end());
 
   std::cout << "Running Cosine worklet" << std::endl;
   dax::cont::worklet::Cosine(grid, fieldHandle, cosineHandle);

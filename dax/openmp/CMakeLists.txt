@@ -6,15 +6,12 @@
 #
 #=========================================================================
 
-set(headers
-  ArrayContainerExecutionThrust.h
-  CudaParameters.h
-  SetThrustForCuda.h
-  )
+#-------------------------------------------------------------------------
+# Find OpenMP.
+find_package(OpenMP REQUIRED)
 
-dax_declare_headers(CUDA ${headers})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 
-set(unit_tests
-  UnitTestCudaArrayContainerExecutionThrust.cu
-  )
-dax_unit_tests(CUDA SOURCES ${unit_tests})
+#-------------------------------------------------------------------------
+add_subdirectory(cont)

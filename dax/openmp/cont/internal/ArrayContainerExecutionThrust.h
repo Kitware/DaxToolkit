@@ -6,21 +6,22 @@
 
 =========================================================================*/
 
-#ifndef __dax_cuda_cont_internal_ArrayContainerExecutionThrust_h
-#define __dax_cuda_cont_internal_ArrayContainerExecutionThrust_h
+#ifndef __dax_openmp_cont_internal_ArrayContainerExecutionThrust_h
+#define __dax_openmp_cont_internal_ArrayContainerExecutionThrust_h
 
-#include <dax/cuda/cont/internal/SetThrustForCuda.h>
+#include <dax/openmp/cont/internal/SetThrustForOpenMP.h>
 
 #include <dax/thrust/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
-namespace cuda {
+namespace openmp {
 namespace cont {
 namespace internal {
 
-/// Manages a CUDA device array. Can allocate the array of the given type on
+/// Manages an OpenMP device array. Can allocate the array of the given type on
 /// the device, copy data do and from it, and release the memory. The memory is
-/// also released when this object goes out of scope.
+/// also released when this object goes out of scope. This class is currently
+/// dumb about the copying. It might make unnecessary copies.
 ///
 template<typename T>
 class ArrayContainerExecutionThrust
@@ -35,4 +36,4 @@ public:
 }
 }
 
-#endif // __dax_cuda_cont_internal_ArrayContainerExecutionThrust_h
+#endif // __dax_openmp_cont_internal_ArrayContainerExecutionThrust_h

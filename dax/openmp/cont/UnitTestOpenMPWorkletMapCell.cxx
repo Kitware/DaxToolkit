@@ -6,10 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/cont/DeviceAdapterDebug.h>
-#include <dax/cont/internal/DeviceAdapterError.h>
-
-#include <dax/cont/worklet/Square.h>
+#include <dax/cont/worklet/CellGradient.h>
 
 #include <math.h>
 #include <fstream>
@@ -20,6 +17,8 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
+
+#include <typeinfo>
 
 #include <vector>
 
@@ -67,7 +66,7 @@ static inline bool test_equal(VectorType vector1, VectorType vector2)
 }
 
 //-----------------------------------------------------------------------------
-static void TestSquare()
+static void TestCellGradient()
 {
   dax::cont::UniformGrid grid;
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
@@ -82,36 +81,42 @@ static void TestSquare()
     field[pointIndex]
         = dax::dot(grid.GetPointCoordinates(pointIndex), trueGradient);
     }
-  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterDebug>
-      fieldHandle(field.begin(), field.end());
+  dax::cont::ArrayHandle<dax::Scalar> fieldHandle(field.begin(), field.end());
 
-  std::vector<dax::Scalar> square(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterDebug>
-      squareHandle(square.begin(), square.end());
+  std::vector<dax::Vector3> gradient(grid.GetNumberOfCells());
+  dax::cont::ArrayHandle<dax::Vector3> gradientHandle(gradient.begin(),
+                                                      gradient.end());
 
-  std::cout << "Running Square worklet" << std::endl;
-  dax::cont::worklet::Square(grid, fieldHandle, squareHandle);
+  std::cout << "Running CellGradient worklet" << std::endl;
+  dax::cont::worklet::CellGradient(grid,
+                                   grid.GetPoints(),
+                                   fieldHandle,
+                                   gradientHandle);
 
   std::cout << "Checking result" << std::endl;
-  for (dax::Id pointIndex = 0;
-       pointIndex < grid.GetNumberOfPoints();
-       pointIndex++)
+  for (dax::Id cellIndex = 0;
+       cellIndex < grid.GetNumberOfCells();
+       cellIndex++)
     {
-    dax::Scalar squareValue = square[pointIndex];
-    dax::Scalar squareTrue = field[pointIndex]*field[pointIndex];
-    test_assert(test_equal(squareValue, squareTrue),
-                "Got bad square");
+    dax::Vector3 gradientValue = gradient[cellIndex];
+    test_assert(test_equal(gradientValue, trueGradient),
+                "Got bad cosine");
     }
 }
 
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
-int UnitTestWorkletSquare(int, char *[])
+int UnitTestOpenMPWorkletMapCell(int, char *[])
 {
   try
     {
-    TestSquare();
+    // This might be a compile error if OpenMP DeviceAdapter is not selected.
+    test_assert(typeid(DAX_DEFAULT_DEVICE_ADAPTER<void>)
+                == typeid(dax::openmp::cont::DeviceAdapterOpenMP<void>),
+                "Wrong device adapter automatically selected.");
+
+    TestCellGradient();
     }
   catch (std::string error)
     {

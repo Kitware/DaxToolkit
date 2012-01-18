@@ -8,13 +8,12 @@
 
 set(headers
   ArrayContainerExecutionThrust.h
-  CudaParameters.h
-  SetThrustForCuda.h
+  SetThrustForOpenMP.h
   )
 
-dax_declare_headers(CUDA ${headers})
+dax_declare_headers(${headers})
 
 set(unit_tests
-  UnitTestCudaArrayContainerExecutionThrust.cu
+  UnitTestOpenMPArrayContainerExecutionThrust.cxx
   )
-dax_unit_tests(CUDA SOURCES ${unit_tests})
+dax_unit_tests(SOURCES ${unit_tests})

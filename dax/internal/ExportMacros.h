@@ -16,6 +16,10 @@
 #define DAX_CUDA
 #endif
 
+#ifdef _OPENMP
+#define DAX_OPENMP
+#endif
+
 #ifdef DAX_CUDA
 #define DAX_EXEC_EXPORT inline __device__
 #define DAX_EXEC_CONT_EXPORT inline __device__ __host__

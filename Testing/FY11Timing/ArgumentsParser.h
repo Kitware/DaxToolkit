@@ -27,9 +27,20 @@ public:
     };
   PipelineMode pipeline() const
     { return this->Pipeline; }
+
+  enum DeviceAdapterMode
+  {
+    DEVICE_ALL,
+    DEVICE_DEBUG,
+    DEVICE_OPENMP,
+    DEVICE_CUDA
+  };
+  DeviceAdapterMode device() const { return this->Device; }
+
 private:
   unsigned int ProblemSize;
   PipelineMode Pipeline;
+  DeviceAdapterMode Device;
 };
 
 }}

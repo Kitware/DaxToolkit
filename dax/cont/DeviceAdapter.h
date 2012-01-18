@@ -9,12 +9,17 @@
 #ifndef __dax_cont_DeviceAdapter_h
 #define __dax_cont_DeviceAdapter_h
 
+#include <dax/internal/ExportMacros.h>
+
 #ifndef DAX_DEFAULT_DEVICE_ADAPTER
 #ifdef DAX_CUDA
 #include <dax/cuda/cont/DeviceAdapterCuda.h>
 #else // DAX_CUDA
-// TODO: make better device adapter
+#ifdef DAX_OPENMP
+#include <dax/openmp/cont/DeviceAdapterOpenMP.h>
+#else // DAX_OPENMP
 #include <dax/cont/DeviceAdapterDebug.h>
+#endif // DAX_OPENMP
 #endif // DAX_CUDA
 #endif // DAX_DEFAULT_DEVICE_ADAPTER
 
