@@ -33,14 +33,16 @@ struct CosineParameters
   dax::exec::Field<FieldType> outField;
 };
 
-template<class Parameters>
+template<class CellType, typename FieldType>
 struct Cosine
 {
-  DAX_EXEC_EXPORT void operator()(Parameters &parameters,
-                                  dax::Id index)
+  DAX_EXEC_EXPORT void operator()(
+      CosineParameters<CellType, FieldType> &parameters,
+      dax::Id index)
   {
-    parameters.work.SetIndex(index);
-    dax::worklet::Cosine(parameters.work,
+    dax::exec::WorkMapField<CellType> work = parameters.work;
+    work.SetIndex(index);
+    dax::worklet::Cosine(work,
                          parameters.inField,
                          parameters.outField);
   }
@@ -95,7 +97,7 @@ inline void Cosine(const GridType &grid,
     outField.GetExecutionObject()
   };
 
-  DeviceAdapter<void>::Schedule(dax::exec::kernel::Cosine<Parameters>(),
+  DeviceAdapter<void>::Schedule(dax::exec::kernel::Cosine<CellType,FieldType>(),
                                 parameters,
                                 fieldSize);
 }

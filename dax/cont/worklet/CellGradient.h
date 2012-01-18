@@ -35,13 +35,14 @@ struct CellGradientParameters
   dax::exec::FieldCell<dax::Vector3> outField;
 };
 
-template<class Parameters>
+template<class CellType>
 struct CellGradient {
-  DAX_EXEC_EXPORT void operator()(Parameters &parameters,
+  DAX_EXEC_EXPORT void operator()(CellGradientParameters<CellType> &parameters,
                                   dax::Id index)
   {
-    parameters.work.SetCellIndex(index);
-    dax::worklet::CellGradient(parameters.work,
+    dax::exec::WorkMapCell<CellType> work = parameters.work;
+    work.SetCellIndex(index);
+    dax::worklet::CellGradient(work,
                                parameters.inCoordinates,
                                parameters.inField,
                                parameters.outField);
@@ -90,7 +91,7 @@ inline void CellGradient(
     outField.GetExecutionObject()
   };
 
-  DeviceAdapter<void>::Schedule(dax::exec::kernel::CellGradient<Parameters>(),
+  DeviceAdapter<void>::Schedule(dax::exec::kernel::CellGradient<CellType>(),
                                 parameters,
                                 grid.GetNumberOfCells());
 }

@@ -33,14 +33,16 @@ struct SquareParameters
   dax::exec::Field<FieldType> outField;
 };
 
-template<class Parameters>
+template<class CellType, typename FieldType>
 struct Square
 {
-  DAX_EXEC_EXPORT void operator()(Parameters &parameters,
-                                  dax::Id index)
+  DAX_EXEC_EXPORT void operator()(
+      SquareParameters<CellType, FieldType> parameters,
+      dax::Id index)
   {
-    parameters.work.SetIndex(index);
-    dax::worklet::Square(parameters.work,
+    dax::exec::WorkMapField<CellType> work = parameters.work;
+    work.SetIndex(index);
+    dax::worklet::Square(work,
                          parameters.inField,
                          parameters.outField);
   }
@@ -95,9 +97,10 @@ inline void Square(const GridType &grid,
     outField.GetExecutionObject()
   };
 
-  DeviceAdapter<void>::Schedule(dax::exec::kernel::Square<Parameters>(),
-                                parameters,
-                                fieldSize);
+  DeviceAdapter<void>::Schedule(
+        dax::exec::kernel::Square<CellType, FieldType>(),
+        parameters,
+        fieldSize);
 }
 
 }
