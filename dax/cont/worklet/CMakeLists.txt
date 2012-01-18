@@ -23,5 +23,6 @@ set(unit_tests
   UnitTestWorkletElevation.cxx
   UnitTestWorkletSine.cxx
   UnitTestWorkletSquare.cxx
+  UnitTestWorkletThreshold.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

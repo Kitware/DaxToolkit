@@ -119,7 +119,7 @@ namespace worklet {
 
 template<class GridType, DAX_DeviceAdapter_TP>
 inline void Threshold(
-    const dax::cont::UniformGrid &inGrid,
+    const GridType &inGrid,
     dax::Scalar thresholdMin,
     dax::Scalar thresholdMax,
     dax::cont::ArrayHandle<dax::Scalar, DeviceAdapter> &thresholdHandle,
