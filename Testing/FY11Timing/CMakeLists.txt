@@ -37,40 +37,61 @@ set(headers
   )
 
 set(sources
-  PipelineDebug.cxx
-  FY11Timing.cxx
+  #PipelineDebug.cxx
+  #FY11Timing.cxx
   ArgumentsParser.cxx
   Timer.cxx
   )
 
-if (DAX_ENABLE_OPENMP)
-  set(sources ${sources} PipelineOpenMP.cxx)
-endif (DAX_ENABLE_OPENMP)
-
-if (DAX_ENABLE_CUDA)
-  set(headers ${headers} PipelineCuda.h)
-  set(sources ${sources} PipelineCuda.cu)
-endif (DAX_ENABLE_CUDA)
-
-if (DAX_ENABLE_CUDA)
-  cuda_add_executable(FY11Timing ${sources} ${headers})
-else (DAX_ENABLE_CUDA)
-  add_executable(FY11Timing ${sources} ${headers})
-endif (DAX_ENABLE_CUDA)
-
+#-----------------------------------------------------------------------------
+add_executable(FY11TimingDebug ${sources} ${headers} PipelineDebug.cxx)
 set_source_files_properties(${headers} PROPERTIES HEADER_FILE_ONLY TRUE)
-
-target_link_libraries(FY11Timing
+target_link_libraries(FY11TimingDebug
   ${Boost_LIBRARIES}
   )
 
+add_test(FY11TimingDebug1-128
+  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingDebug --pipeline 1 --size 128)
+add_test(FY11TimingDebug2-128
+  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingDebug --pipeline 2 --size 128)
+add_test(FY11TimingDebug3-128
+  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingDebug --pipeline 3 --size 128)
+
 #-----------------------------------------------------------------------------
-add_test(FY11Timing1-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11Timing --pipeline 1 --size 128)
-add_test(FY11Timing2-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11Timing --pipeline 2 --size 128)
-add_test(FY11Timing3-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11Timing --pipeline 3 --size 128)
+if (DAX_ENABLE_OPENMP)
+  add_executable(FY11TimingOpenMP ${sources} ${headers} PipelineOpenMP.cxx)
+  target_link_libraries(FY11TimingOpenMP
+    ${Boost_LIBRARIES}
+    )
+endif (DAX_ENABLE_OPENMP)
+
+add_test(FY11TimingOpenMP1-128
+  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingOpenMP --pipeline 1 --size 128)
+add_test(FY11TimingOpenMP2-128
+  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingOpenMP --pipeline 2 --size 128)
+add_test(FY11TimingOpenMP3-128
+  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingOpenMP --pipeline 3 --size 128)
+
+#-----------------------------------------------------------------------------
+if (DAX_ENABLE_CUDA)
+  cuda_add_executable(FY11TimingCuda
+    ${sources} ${headers} PipelineCuda.h PipelineCuda.cu
+    )
+  set_source_files_properties(PipelineCuda.h PROPERTIES HEADER_FILE_ONLY TRUE)
+  target_link_libraries(FY11TimingCuda
+    ${Boost_LIBRARIES}
+    )
+endif (DAX_ENABLE_CUDA)
+
+add_test(FY11TimingCuda1-128
+  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingCuda --pipeline 1 --size 128)
+add_test(FY11TimingCuda2-128
+  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingCuda --pipeline 2 --size 128)
+add_test(FY11TimingCuda3-128
+  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingCuda --pipeline 3 --size 128)
+
+
+#-----------------------------------------------------------------------------
 #add_test(FY11Timing1-256
 #  ${EXECUTABLE_OUTPUT_PATH}/FY11Timing --pipeline 1 --size 256)
 #add_test(FY11Timing2-256

@@ -6,6 +6,14 @@
 
 ===========================================================================*/
 
+// This is how I really want the test to behave. I want one program that
+// switches between devices. Unfortunately, that is not currently possible
+// because both the OpenMP and CUDA devices use thrust as part of its
+// implementation. The compiling of thrust with different flags causes
+// confusing with the linker and I don't see an easy way to isolate the
+// instances. Thus, this file currently languishes.
+
+
 #include "ArgumentsParser.h"
 
 #include "FY11TimingConfig.h"
