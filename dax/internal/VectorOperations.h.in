@@ -1,0 +1,179 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+=========================================================================*/
+#ifndef __@DAX_VECTOR_OPERATIONS_NAMESPACE_NAME@_VectorOperations_h
+#define __@DAX_VECTOR_OPERATIONS_NAMESPACE_NAME@_VectorOperations_h
+
+#include <dax/TypeTraits.h>
+
+@DAX_VECTOR_OPERATIONS_NAMESPACE_START@
+
+/// Applies a function to each entry in a vector and returns a vector of the
+/// results.
+///
+/// \param vector is an input vector of some ambiguous type
+///
+/// \param functor is a function or functor class that accepts one argument of
+/// the scalar type contained in the vector (specifically
+/// <tt>dax::VectorTraits<VectorType>::ValueType</tt>) and returns a value of
+/// the same type.
+///
+/// \return A vector with \c functor applied to all components of \c vector.
+///
+template<class VectorType, class FunctorType>
+@DAX_VECTOR_OPERATIONS_EXPORT@
+VectorType VectorMap(const VectorType &vector, FunctorType &functor)
+{
+  typedef dax::VectorTraits<VectorType> Traits;
+  VectorType result;
+  for (int component = 0; component < Traits::NUM_COMPONENTS; component++)
+    {
+    Traits::SetComponent(result,
+                         component,
+                         functor(Traits::GetComponent(vector, component)));
+    }
+  return result;
+}
+template<class VectorType, class FunctorType>
+@DAX_VECTOR_OPERATIONS_EXPORT@
+VectorType VectorMap(const VectorType &vector, const FunctorType &functor)
+{
+  typedef dax::VectorTraits<VectorType> Traits;
+  VectorType result;
+  for (int component = 0; component < Traits::NUM_COMPONENTS; component++)
+    {
+    Traits::SetComponent(result,
+                         component,
+                         functor(Traits::GetComponent(vector, component)));
+    }
+  return result;
+}
+
+/// Applies a function to each entry in a vector. VectorForEach is essentially
+/// the same as VectorMap except that no new vector with results is formed. Any
+/// value returned from the supplied functor is ignored. Also, the vector
+/// passed in is not necessary const, so the functor may perform in place
+/// modification of the vector.
+///
+/// \param vector is an input vector of some ambiguous type
+///
+/// \param functor is a function or functor class that accepts one argument of
+/// the scalar type contained in the vector (specifically
+/// <tt>dax::VectorTraits<VectorType>::ValueType</tt>).
+///
+template<class VectorType, class FunctorType>
+@DAX_VECTOR_OPERATIONS_EXPORT@
+void VectorForEach(VectorType &vector, FunctorType &functor)
+{
+  typedef dax::VectorTraits<VectorType> Traits;
+  for (int component = 0; component < Traits::NUM_COMPONENTS; component++)
+    {
+    functor(Traits::GetComponent(vector, component));
+    }
+}
+template<class VectorType, class FunctorType>
+@DAX_VECTOR_OPERATIONS_EXPORT@
+void VectorForEach(VectorType &vector, const FunctorType &functor)
+{
+  typedef dax::VectorTraits<VectorType> Traits;
+  for (int component = 0; component < Traits::NUM_COMPONENTS; component++)
+    {
+    functor(Traits::GetComponent(vector, component));
+    }
+}
+
+namespace internal {
+
+/// This hidden implementation allows us to specialize VectorReduce for single
+/// component vectors.
+///
+template<class VectorType, class FunctorType>
+@DAX_VECTOR_OPERATIONS_EXPORT@
+typename dax::VectorTraits<VectorType>::ValueType
+VectorReduceImpl(const VectorType &vector,
+                 FunctorType &functor,
+                 dax::VectorTraitsTagMultipleComponents)
+{
+  typedef dax::VectorTraits<VectorType> Traits;
+  typedef typename Traits::ValueType ValueType;
+  ValueType result = functor(Traits::GetComponent(vector, 0),
+                             Traits::GetComponent(vector, 1));
+  for (int component = 2; component < Traits::NUM_COMPONENTS; component++)
+    {
+    result = functor(result, Traits::GetComponent(vector, component));
+    }
+  return result;
+}
+
+template<class VectorType, class FunctorType>
+@DAX_VECTOR_OPERATIONS_EXPORT@
+typename dax::VectorTraits<VectorType>::ValueType
+VectorReduceImpl(const VectorType &vector,
+                 const FunctorType &functor,
+                 dax::VectorTraitsTagMultipleComponents)
+{
+  typedef dax::VectorTraits<VectorType> Traits;
+  typedef typename Traits::ValueType ValueType;
+  ValueType result = functor(Traits::GetComponent(vector, 0),
+                             Traits::GetComponent(vector, 1));
+  for (int component = 2; component < Traits::NUM_COMPONENTS; component++)
+    {
+    result = functor(result, Traits::GetComponent(vector, component));
+    }
+  return result;
+}
+
+template<class VectorType, class FunctorType>
+@DAX_VECTOR_OPERATIONS_EXPORT@
+typename dax::VectorTraits<VectorType>::ValueType
+VectorReduceImpl(const VectorType &vector,
+                 const FunctorType &,
+                 dax::VectorTraitsTagSingleComponent)
+{
+  return dax::VectorTraits<VectorType>::GetComponent(vector, 0);
+}
+
+}
+
+/// Reduces the components in a vector to a single value.
+///
+/// \param vector is an input vector of some ambiguous type.
+///
+/// \param functor is a function or functor class that accepts two arguments of
+/// the scalar type contained in the vector (specifically
+/// <tt>dax::VectorTraits<VectorType>::ValueType</tt>) and returns a value of
+/// the same type.  The operation should be associative.
+///
+/// \return The reduced value of the vector. If the vector contains only one
+/// component, that component is returned.
+///
+template<class VectorType, class FunctorType>
+@DAX_VECTOR_OPERATIONS_EXPORT@
+typename dax::VectorTraits<VectorType>::ValueType
+VectorReduce(const VectorType &vector, FunctorType &functor)
+{
+  typedef typename dax::VectorTraits<VectorType>::HasMultipleComponents
+      MultipleComponentsTag;
+  return internal::VectorReduceImpl(vector,
+                                    functor,
+                                    MultipleComponentsTag());
+}
+template<class VectorType, class FunctorType>
+@DAX_VECTOR_OPERATIONS_EXPORT@
+typename dax::VectorTraits<VectorType>::ValueType
+VectorReduce(const VectorType &vector, const FunctorType &functor)
+{
+  typedef typename dax::VectorTraits<VectorType>::HasMultipleComponents
+      MultipleComponentsTag;
+  return internal::VectorReduceImpl(vector,
+                                    functor,
+                                    MultipleComponentsTag());
+}
+
+@DAX_VECTOR_OPERATIONS_NAMESPACE_END@
+
+#endif //__@DAX_VECTOR_OPERATIONS_NAMESPACE_NAME@_VectorOperations_h

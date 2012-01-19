@@ -29,7 +29,7 @@ class WorkMapField
 public:
   typedef CellT CellType;
 
-  DAX_EXEC_EXPORT WorkMapField(dax::Id index) : Index(index) { }
+  DAX_EXEC_CONT_EXPORT WorkMapField(dax::Id index = 0) : Index(index) { }
 
   template<typename T>
   DAX_EXEC_EXPORT const T &GetFieldValue(const dax::exec::Field<T> &field) const
@@ -57,8 +57,9 @@ class WorkMapField<dax::exec::CellVoxel>
 public:
   typedef CellVoxel CellType;
 
-  DAX_EXEC_EXPORT WorkMapField(const dax::internal::StructureUniformGrid &gs,
-                               dax::Id index)
+  DAX_EXEC_CONT_EXPORT WorkMapField(
+      const dax::internal::StructureUniformGrid &gs,
+      dax::Id index = 0)
     : GridStructure(gs), Index(index) { }
 
   template<typename T>

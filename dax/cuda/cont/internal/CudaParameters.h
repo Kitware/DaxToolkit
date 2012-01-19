@@ -6,54 +6,63 @@
 #include <algorithm>
 
 #include <dax/Types.h>
-#include <dax/internal/GridStructures.h>
 
-namespace dax { namespace cuda { namespace control { namespace internal {
+namespace dax { namespace cuda { namespace cont { namespace internal {
 
 struct exception_base: virtual std::exception, virtual boost::exception { };
 struct no_cuda_device: virtual exception_base { };
 
-struct cudaInfo
+struct CudaInfo
 {
-  int numThreadsPerBlock;
-  int maxGridSize;
+  int NumThreadsPerBlock;
+  int MaxGridSize;
 };
 
+/// Holds the basic information needed to determine the number of threads and
+/// blocks to run on the current cuda card. The first time this class is
+/// constructed it fills a static struct of information queired from the
+/// device.
+///
 class CudaParameters
 {
-  //holds the basic information needed to determine the
-  //number of threads and blocks to run on the current cuda card
-  //the first time this class is constructed it fills a static
-  //struct of information queired from the device.
 public:
-  template< typename T>
-  CudaParameters(const T& source)
+  /// Constructs a CudaParameters using an unspecified grid of the given number
+  /// of points and cells.
+  ///
+  CudaParameters(dax::Id numInstances)
   {
-    if(!CardQueryed)
-      {
-      queryDevice();
-      }
-    NumPointThreads = this->CardInfo.numThreadsPerBlock;
-    NumCellThreads = this->CardInfo.numThreadsPerBlock;
-
-    dax::Id numPts = source.numPoints();
-    dax::Id numCells = source.numCells();
-
-    //determine the max number of blocks that we can have
-    NumPointBlocks = (numPts+NumPointThreads-1)/NumPointThreads;
-    NumCellBlocks = (numCells+NumPointThreads-1)/NumPointThreads;
-
-    //make sure we don't request too many blocks for the card
-    NumPointBlocks = std::min(this->CardInfo.maxGridSize,NumPointBlocks);
-    NumCellBlocks = std::min(this->CardInfo.maxGridSize,NumCellBlocks);
+    this->InitializeParameters(numInstances);
   }
 
-  //queries the machine for cuda devices
-  //currently always selects the first device as the one
-  //to use for computation
-  void queryDevice()
+  dax::Id GetNumberOfBlocks() const { return this->NumBlocks; }
+  dax::Id GetNumberOfThreads() const { return this->NumThreads; }
+
+private:
+  dax::Id NumBlocks;
+  dax::Id NumThreads;
+
+  /// Set the internal fields.
+  void InitializeParameters(dax::Id numInstances)
+  {
+    const CudaInfo &cardInfo = this->QueryDevice();
+
+    this->NumThreads = cardInfo.NumThreadsPerBlock;
+
+    //determine the max number of blocks that we can have
+    this->NumBlocks = (numInstances+this->NumThreads-1)/this->NumThreads;
+
+    //make sure we don't request too many blocks for the card
+    this->NumBlocks = std::min(cardInfo.MaxGridSize, this->NumBlocks);
+  }
+
+  /// Queries the machine for cuda devices. Currently always selects the first
+  /// device as the one to use for computation.
+  ///
+  const CudaInfo &QueryDevice()
     {
-    if(!CardQueryed)
+    static bool cardQueried = false;
+    static CudaInfo cardInfo;
+    if(!cardQueried)
       {
       int devCount=0;
       cudaGetDeviceCount(&devCount);
@@ -68,31 +77,18 @@ public:
 
       //get the numThreadsPerBlock
       //we want 128 threads but will take what we can get
-      CudaParameters::CardInfo.numThreadsPerBlock =
+      cardInfo.NumThreadsPerBlock =
           std::min(devProp.maxThreadsPerBlock,128);
 
       //figure out the max grid size
-      CudaParameters::CardInfo.maxGridSize = devProp.maxGridSize[0];
+      cardInfo.MaxGridSize = devProp.maxGridSize[0];
+
+      cardQueried = true;
       }
+    return cardInfo;
     }
-
-  dax::Id numPointBlocks() const { return NumPointBlocks; }
-  dax::Id numPointThreads() const { return NumPointThreads; }
-
-  dax::Id numCellBlocks() const { return NumCellBlocks; }
-  dax::Id numCellThreads() const { return NumCellThreads; }
-protected:
-  dax::Id NumPointBlocks;
-  dax::Id NumPointThreads;
-  dax::Id NumCellBlocks;
-  dax::Id NumCellThreads;
-
-  static bool CardQueryed;
-  static cudaInfo CardInfo;
 };
 
-bool CudaParameters::CardQueryed = false;
-cudaInfo CudaParameters::CardInfo;
 }}}}
 
 #endif

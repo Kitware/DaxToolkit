@@ -11,6 +11,8 @@ project (Dax)
 # include some dax-specific cmake code.
 include(CMake/DaxMacros.cmake)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Dax_SOURCE_DIR}/CMake)
+
 #-----------------------------------------------------------------------------
 # Add supplemental compiler warnings, and GCC visibility support.
 include(CMake/DaxCompilerExtras.cmake)
@@ -18,6 +20,7 @@ include(CMake/DaxCompilerExtras.cmake)
 #-----------------------------------------------------------------------------
 # Configurable Options
 option(DAX_ENABLE_CUDA "Enable Cuda support" ON)
+option(DAX_ENABLE_OPENMP "Enable OpenMP support" ON)
 option(DAX_ENABLE_TESTING "Enable DAX Testing" ON)
 option(DAX_ENABLE_DOXYGEN
   "Enable DAX Documentation Generation (Needs Doxygen)" OFF)
@@ -25,6 +28,10 @@ option(DAX_DISABLE_KITS
   "Internal option useful on machines generating documentation alone"
   OFF)
 mark_as_advanced(DAX_DISABLE_KITS)
+
+if (DAX_ENABLE_CUDA OR DAX_ENABLE_OPENMP)
+  set(DAX_ENABLE_THRUST ON)
+endif (DAX_ENABLE_CUDA OR DAX_ENABLE_OPENMP)
 
 if (DAX_ENABLE_TESTING)
   enable_testing()
@@ -72,9 +79,12 @@ if (NOT DAX_DISABLE_KITS)
   # List of Boost features used:
   # * Smart Ptr
   # * program options
-  find_package(Boost REQUIRED
-    COMPONENTS program_options # program_options is only needed for the testing
-                               # executables
+  # * timer
+  find_package(Boost 1.48.0 REQUIRED
+    COMPONENTS
+      program_options # only needed for the testing executables
+      timer # only needed for the testing executables
+      system # only need for timer for testing executables
   )
 
 #-----------------------------------------------------------------------------

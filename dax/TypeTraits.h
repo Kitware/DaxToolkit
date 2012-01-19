@@ -10,6 +10,8 @@
 
 #include <dax/Types.h>
 
+#include <boost/type_traits/remove_const.hpp>
+
 namespace dax {
 
 /// A tag for vectors that are "true" vectors (i.e. have more than one
@@ -46,12 +48,13 @@ struct VectorTraits {
   /// Returns the value in a given component of the vector.
   ///
   DAX_EXEC_CONT_EXPORT static const ValueType &GetComponent(
-      const VectorType &vector,
+      const typename boost::remove_const<VectorType>::type &vector,
       int component) {
     return vector[component];
   }
-  DAX_EXEC_CONT_EXPORT static ValueType &GetComponent(VectorType &vector,
-                                                      int component) {
+  DAX_EXEC_CONT_EXPORT static ValueType &GetComponent(
+      typename boost::remove_const<VectorType>::type &vector,
+      int component) {
     return vector[component];
   }
 
@@ -97,11 +100,21 @@ struct VectorTraits<dax::Scalar>
     : public dax::internal::VectorTraitsBasic<dax::Scalar>
 {
 };
+template<>
+struct VectorTraits<const dax::Scalar>
+    : public dax::internal::VectorTraitsBasic<dax::Scalar>
+{
+};
 
 /// Allows you to treat a dax::Id as if it were a vector.
 ///
 template<>
 struct VectorTraits<dax::Id>
+    : public dax::internal::VectorTraitsBasic<dax::Id>
+{
+};
+template<>
+struct VectorTraits<const dax::Id>
     : public dax::internal::VectorTraitsBasic<dax::Id>
 {
 };

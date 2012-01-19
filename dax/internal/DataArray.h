@@ -12,28 +12,7 @@
 
 #include <dax/Types.h>
 
-
-//forward declares for implicit conversion
-//between HostArray and DataArray
-//and between DeviceArray and DataArray
 //------------------------------------------------------------------------------
-namespace dax {
-namespace cont {
-template<typename OtherT> class Array;
-} }
-
-namespace dax {
-namespace cuda {
-namespace cont {
-namespace internal {
-template<typename OtherT> class DeviceArray;
-template<typename OtherT> class DeviceArrayPtr;
-} } } }
-
-//------------------------------------------------------------------------------
-
-
-
 namespace dax { namespace internal {
 
 /// DataArary is a simple but basic data-storage device in the Dax data model.
@@ -65,30 +44,6 @@ public:
     : Data(data), NumEntries(numEntries), IndexOffset(indexOffset)
   { }
 
-  /// Builds a DataArray from the HostArray
-  DataArray(
-      dax::cont::Array<ValueType>& hostArray)
-    : Data(&hostArray[0]),
-      NumEntries(hostArray.size()),
-      IndexOffset(0)
-  { }
-
-  /// Builds a DataArray from the DeviceArray
-  DataArray(
-      dax::cuda::cont::internal::DeviceArray<ValueType>& deviceArray)
-    : Data(deviceArray.rawPtr()),
-      NumEntries(deviceArray.size()),
-      IndexOffset(0)
-  { }
-
-  /// Builds a DataArray from the DeviceArray
-  DataArray(
-      dax::cuda::cont::internal::DeviceArrayPtr<ValueType>& deviceArray)
-    : Data(deviceArray->rawPtr()),
-      NumEntries(deviceArray->size()),
-      IndexOffset(0)
-  { }
-
   /// Returns the value in the array at the given index.  The index is
   /// adjusted by the IndexOffset.
   DAX_EXEC_CONT_EXPORT const ValueType &GetValue(dax::Id index) const
@@ -96,7 +51,7 @@ public:
     return this->Data[index-this->IndexOffset];
   }
 
-  /// Sets the value in teh array at the given index.  The index is
+  /// Sets the value in the array at the given index.  The index is
   /// adjusted by the IndexOffset.
   DAX_EXEC_CONT_EXPORT void SetValue(dax::Id index, const ValueType &value)
   {

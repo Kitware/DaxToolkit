@@ -36,12 +36,7 @@ DAX_EXEC_EXPORT dax::Vector3 fieldAccessUniformCoordinatesGet(
   const dax::internal::StructureUniformGrid &gridStructure,
   dax::Id index)
 {
-  dax::Id3 ijk = flatIndexToIndex3(index, gridStructure.Extent);
-  dax::Vector3 coords;
-  coords[0] = gridStructure.Origin[0] + ijk[0] * gridStructure.Spacing[0];
-  coords[1] = gridStructure.Origin[1] + ijk[1] * gridStructure.Spacing[1];
-  coords[2] = gridStructure.Origin[2] + ijk[2] * gridStructure.Spacing[2];
-  return coords;
+  return dax::internal::pointCoordiantes(gridStructure, index);
 }
 
 }}}

@@ -13,14 +13,14 @@
 #include <dax/exec/WorkMapField.h>
 
 #include <dax/TypeTraits.h>
-#include <dax/VectorOperations.h>
+#include <dax/exec/VectorOperations.h>
 
 namespace dax {
 namespace worklet {
 
 template<typename T>
 struct DoCosine {
-  DAX_EXEC_EXPORT T operator()(T x)
+  DAX_EXEC_EXPORT T operator()(T x) const
   {
     return static_cast<T>(cosf(x));
   }
@@ -34,7 +34,7 @@ DAX_WORKLET void Cosine(
 {
   typedef typename dax::VectorTraits<FieldType>::ValueType ComponentType;
   FieldType inValue = work.GetFieldValue(inField);
-  FieldType outValue = dax::VectorMap(inValue, DoCosine<ComponentType>());
+  FieldType outValue = dax::exec::VectorMap(inValue, DoCosine<ComponentType>());
   work.SetFieldValue(outField, outValue);
 }
 

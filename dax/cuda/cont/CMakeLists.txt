@@ -7,24 +7,24 @@
 #=========================================================================
 
 set(headers
-  internal/CudaParameters.h
-  internal/DeviceArray.h
-  internal/WorkletFunctions.h
-  Worklets.h
+  DeviceAdapterCuda.h
+  ScheduleCuda.h
+  ScheduleThrust.h
   )
 
 #-----------------------------------------------------------------------------
 CUDA_INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 
-#-----------------------------------------------------------------------------
-cuda_add_library(daxCUDACont SHARED ${sources} ${headers})
-
-set_source_files_properties(${headers}
-  PROPERTIES HEADER_FILE_ONLY TRUE
-  )
-
-target_link_libraries(daxCUDACont
-  daxCont
-  )
-
 add_subdirectory(internal)
+
+#-----------------------------------------------------------------------------
+dax_declare_headers(CUDA ${headers})
+
+#-----------------------------------------------------------------------------
+set(unit_tests
+  UnitTestCudaScheduleNative.cu
+  UnitTestCudaScheduleThrust.cu
+  UnitTestCudaWorkletMapCell.cu
+  UnitTestCudaWorkletMapField.cu
+  )
+dax_unit_tests(CUDA SOURCES ${unit_tests})
