@@ -42,10 +42,6 @@ namespace cont {
 /// adapter (for example, DeviceAdapterDebug.h). This overloading should be
 /// done \em before loading in any other Dax header files. Failing to do so
 /// could create inconsistencies in the default adapter used amongst classes.
-///
-/// Note that the DeviceAdapter is actually a templated function.  The single
-/// template parameter T is used to type the ArrayContainerExecution template
-/// class.
 
 /// \fn template<class Functor, class Parameters> void DeviceAdapter::Schedule(Functor functor, Parameters parameters, dax::Id numInstances)
 /// \brief Schedule many instances of a function to run on concurrent threads.
@@ -58,7 +54,7 @@ namespace cont {
 /// uniquely identifies the thread or instance of the invocation. There should
 /// be one invocation for each index in the range [0, \c numInstances].
 
-/// \class DeviceAdapter::ArrayContainerExecution
+/// \class template<class T> DeviceAdapter::ArrayContainerExecution<T>
 /// \brief Class that manages data in the execution environment.
 ///
 /// This is a class that is responsible for allocating data in the execution
