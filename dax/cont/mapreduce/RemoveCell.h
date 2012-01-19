@@ -15,8 +15,6 @@
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
-#include <boost/static_assert.hpp>
-
 namespace dax {
 namespace cont {
 namespace mapreduce {
@@ -53,7 +51,7 @@ public:
     this->ScheduleScan();
     //call generateSize
     //call Generate
-    this->ScheduleGenerate();
+    this->ScheduleGenerate(inGrid,outGrid);
     }
 
 /// \fn template <typename GridType, typename WorkType> Parameters GenerateParameters(const GridType& grid, WorkType &work)
@@ -85,12 +83,28 @@ protected:
 
   void ScheduleScan()
   {
-
+    this->CellCount = dax::cont::ArrayHandle<dax::Id>(
+                        this->ResultHandle.GetNumberOfEntries());
+    //count the number of cells say that past the threshold
+    this->NewCellCount = dax::cont::mapreduce::inclusive_scan(
+                           this->ResultHandle,
+                           this->CellCount);
   }
 
-  void ScheduleGenerate()
+  template<typename InGridType, typename OutGridType>
+  void ScheduleGenerate(const InGridType &inGrid, OutGridType& outGrid)
   {
+    dax::cont::ArrayHandle<dax::Id> resultCells(this->NewCellCount);
 
+    dax::cont::mapreduce::upper_bound(this->CellCount,
+                                      0,
+                                      this->NewCellCount,
+                                      resultCells
+                                      );
+
+    //result cells now holds the ids of all the cells that go into
+    //the thresholded geometery
+    outGrid = OutGridType(inGrid,resultCells);
   }
 
   //Connstructor the WorkType of the Functor based on the grid
@@ -100,17 +114,22 @@ protected:
     typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
     GridPackageType gridPackage(grid);
 
-    this->Result = dax::cont::ArrayHandle<dax::Id>(grid.GetNumberOfCells());
-    dax::cont::internal::ExecutionPackageFieldCellOutput<dax::Id>
-        outField(this->Result, grid);
+    this->ResultHandle = dax::cont::ArrayHandle<dax::Id>(grid.GetNumberOfCells());
+    this->Result  = dax::cont::internal::ExecutionPackageFieldCellOutput<dax::Id>(
+                      this->ResultHandle, grid);
 
     WorkType work(gridPackage.GetExecutionObject(),
-                  outField.GetExecutionObject());
+                  this->Result.GetExecutionObject());
     return work;
     }
 
 private:
-  dax::cont::ArrayHandle<dax::Id> Result;
+  dax::cont::ArrayHandle<dax::Id> ResultHandle;
+  dax::cont::internal::ExecutionPackageFieldCellOutput<dax::Id> Result;
+
+  dax::cont::ArrayHandle<dax::Id> CellCount;
+
+  dax::Id NewCellCount;
 };
 
 
