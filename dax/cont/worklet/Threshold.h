@@ -22,11 +22,6 @@
 #include <dax/exec/WorkRemoveCell.h>
 #include <dax/cont/mapreduce/RemoveCell.h>
 
-// TODO: Make generic math functions.
-#ifndef DAX_CUDA
-#include <math.h>
-#endif
-
 #include <Worklets/Threshold.worklet>
 
 namespace dax {
@@ -39,6 +34,7 @@ struct ThresholdParameters
   typedef CT CellType;
   typedef FT FieldType;
   typedef dax::exec::WorkRemoveCell<CellType> WorkType;
+
   WorkType work;
   FieldType min;
   FieldType max;
@@ -59,16 +55,12 @@ struct Functor
   }
 };
 
-template<typename T,
-         class GridPackageType,
-         class Parameters,
+template<class Parameters,
          class Functor,
          template<typename> class DeviceAdapter>
 class Threshold : public dax::cont::mapreduce::RemoveCell
     <
-    Threshold<T,
-              GridPackageType,
-              Parameters,
+    Threshold<Parameters,
               Functor,
               DeviceAdapter>,
     Parameters,
@@ -76,11 +68,11 @@ class Threshold : public dax::cont::mapreduce::RemoveCell
     DeviceAdapter>
 {
 public:
-    typedef T ValueType;    
+    typedef typename Parameters::FieldType ValueType;
 
     //constructor that is passed all the user decided parts of the worklet too
     Threshold(const ValueType& min, const ValueType& max,
-              dax::cont::ArrayHandle<T,DeviceAdapter>& thresholdField):
+              dax::cont::ArrayHandle<ValueType,DeviceAdapter>& thresholdField):
       Min(min),
       Max(max),
       Field(thresholdField)
@@ -105,7 +97,7 @@ public:
 private:
   ValueType Min;
   ValueType Max;
-  dax::cont::ArrayHandle<T,DeviceAdapter> Field;
+  dax::cont::ArrayHandle<ValueType,DeviceAdapter> Field;
 };
 }
 }
@@ -130,11 +122,11 @@ inline void Threshold(
   typedef dax::exec::kernel::ThresholdParameters<CellType,dax::Scalar> Parameters;
   typedef dax::exec::kernel::Functor<Parameters> Functor;
 
-  dax::exec::kernel::Threshold<dax::Scalar,
-                              GridPackageType,
+  dax::exec::kernel::Threshold<
                               Parameters,
                               Functor,
-                              DeviceAdapter>
+                              DeviceAdapter
+                              >
     threshold(thresholdMin,thresholdMax,thresholdHandle);
 
   threshold.run(inGrid,outGeom);
