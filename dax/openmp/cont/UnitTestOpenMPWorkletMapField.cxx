@@ -110,8 +110,8 @@ int UnitTestOpenMPWorkletMapField(int, char *[])
   try
     {
     // This might be a compile error if OpenMP DeviceAdapter is not selected.
-    test_assert(typeid(DAX_DEFAULT_DEVICE_ADAPTER<void>)
-                == typeid(dax::openmp::cont::DeviceAdapterOpenMP<void>),
+    test_assert(typeid(DAX_DEFAULT_DEVICE_ADAPTER)
+                == typeid(dax::openmp::cont::DeviceAdapterOpenMP),
                 "Wrong device adapter automatically selected.");
 
     TestSquare();

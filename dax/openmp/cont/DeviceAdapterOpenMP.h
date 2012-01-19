@@ -25,7 +25,6 @@ namespace cont {
 /// An implementation of DeviceAdapter that will schedule execution on multiple
 /// CPUs using OpenMP.
 ///
-template<typename T = void>
 struct DeviceAdapterOpenMP
 {
   template<class Functor, class Parameters>
@@ -36,8 +35,10 @@ struct DeviceAdapterOpenMP
     dax::openmp::cont::scheduleThrust(functor, parameters, numInstances);
   }
 
-  typedef dax::openmp::cont::internal::ArrayContainerExecutionThrust<T>
-      ArrayContainerExecution;
+  template<typename T>
+  class ArrayContainerExecution
+      : public dax::openmp::cont::internal::ArrayContainerExecutionThrust<T>
+  { };
 };
 
 }

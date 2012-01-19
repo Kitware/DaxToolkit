@@ -44,7 +44,7 @@ namespace cont {
 /// Any memory created for the execution environment will remain around in case
 /// it is needed again.
 ///
-template<typename T, DAX_DeviceAdapter_TP = DAX_DEFAULT_DEVICE_ADAPTER>
+template<typename T, class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER>
 class ArrayHandle
 {
 public:
@@ -164,7 +164,8 @@ private:
     dax::cont::internal::IteratorContainer<
       dax::cont::internal::IteratorPolymorphic<ValueType> > ControlArray;
 
-    typename DeviceAdapter<ValueType>::ArrayContainerExecution ExecutionArray;
+    typename DeviceAdapter::template ArrayContainerExecution<ValueType>
+        ExecutionArray;
 
     bool Synchronized;
 

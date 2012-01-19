@@ -24,7 +24,7 @@
 #endif // DAX_DEFAULT_DEVICE_ADAPTER
 
 // Appropriate template parameter for the device adapter
-#define DAX_DeviceAdapter_TP template <typename> class DeviceAdapter
+//#define DAX_DeviceAdapter_TP template <typename> class DeviceAdapter
 
 namespace dax {
 namespace cont {

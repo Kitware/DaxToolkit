@@ -57,7 +57,7 @@ namespace cont {
 namespace worklet {
 
 // Should be templated on grid type too.
-template<class GridType, typename FieldType, DAX_DeviceAdapter_TP>
+template<class GridType, typename FieldType, class DeviceAdapter>
 inline void Sine(const GridType &grid,
                  dax::cont::ArrayHandle<FieldType,DeviceAdapter> &inHandle,
                  dax::cont::ArrayHandle<FieldType,DeviceAdapter> &outHandle)
@@ -98,9 +98,9 @@ inline void Sine(const GridType &grid,
     outField.GetExecutionObject()
   };
 
-  DeviceAdapter<void>::Schedule(dax::exec::kernel::Sine<CellType, FieldType>(),
-                                parameters,
-                                fieldSize);
+  DeviceAdapter::Schedule(dax::exec::kernel::Sine<CellType, FieldType>(),
+                          parameters,
+                          fieldSize);
 }
 
 }

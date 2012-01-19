@@ -29,7 +29,7 @@ namespace internal {
 
 namespace details {
 
-template<class FieldT, DAX_DeviceAdapter_TP>
+template<class FieldT, class DeviceAdapter>
 class ExecutionPackageField
 {
 public:
@@ -50,7 +50,7 @@ private:
   ExecutionFieldType Field;
 };
 
-template<class FieldT, DAX_DeviceAdapter_TP>
+template<class FieldT, class DeviceAdapter>
 class ExecutionPackageFieldInput
     : public dax::cont::internal::details::ExecutionPackageField<FieldT, DeviceAdapter>
 {
@@ -67,7 +67,7 @@ private:
   ControlArrayType Array;
 };
 
-template<class FieldT, DAX_DeviceAdapter_TP>
+template<class FieldT, class DeviceAdapter>
 class ExecutionPackageFieldOutput
     : public dax::cont::internal::details::ExecutionPackageField<FieldT, DeviceAdapter>
 {
@@ -89,7 +89,7 @@ private:
 
 } // namespace details
 
-template<typename T, DAX_DeviceAdapter_TP>
+template<typename T, class DeviceAdapter>
 class ExecutionPackageFieldPointInput
     : public dax::cont::internal::details::ExecutionPackageFieldInput<dax::exec::FieldPoint<T>, DeviceAdapter >
 {
@@ -102,7 +102,7 @@ public:
     : Superclass(array, grid.GetNumberOfPoints()) { }
 };
 
-template<typename T, DAX_DeviceAdapter_TP>
+template<typename T, class DeviceAdapter>
 class ExecutionPackageFieldPointOutput
     : public dax::cont::internal::details::ExecutionPackageFieldOutput<dax::exec::FieldPoint<T>, DeviceAdapter >
 {
@@ -115,7 +115,7 @@ public:
     : Superclass(array, grid.GetNumberOfPoints()) { }
 };
 
-template<typename T, DAX_DeviceAdapter_TP>
+template<typename T, class DeviceAdapter>
 class ExecutionPackageFieldCellInput
     : public dax::cont::internal::details::ExecutionPackageFieldInput<dax::exec::FieldCell<T>, DeviceAdapter >
 {
@@ -128,7 +128,7 @@ public:
     : Superclass(array, grid.GetNumberOfCells()) { }
 };
 
-template<typename T, DAX_DeviceAdapter_TP>
+template<typename T, class DeviceAdapter>
 class ExecutionPackageFieldCellOutput
     : public dax::cont::internal::details::ExecutionPackageFieldOutput<dax::exec::FieldCell<T>, DeviceAdapter >
 {
@@ -141,7 +141,7 @@ public:
     : Superclass(array, grid.GetNumberOfCells()) { }
 };
 
-template<typename T, DAX_DeviceAdapter_TP>
+template<typename T, class DeviceAdapter>
 class ExecutionPackageFieldInput
     : public dax::cont::internal::details::ExecutionPackageFieldInput<dax::exec::Field<T>, DeviceAdapter >
 {
@@ -153,7 +153,7 @@ public:
     : Superclass(array, expectedSize) { }
 };
 
-template<typename T, DAX_DeviceAdapter_TP>
+template<typename T, class DeviceAdapter>
 class ExecutionPackageFieldOutput
     : public dax::cont::internal::details::ExecutionPackageFieldOutput<dax::exec::Field<T>, DeviceAdapter >
 {
@@ -165,7 +165,7 @@ public:
     : Superclass(array, expectedSize) { }
 };
 
-template<class GridT, DAX_DeviceAdapter_TP>
+template<class GridT, class DeviceAdapter>
 class ExecutionPackageFieldCoordinatesInput
 {
 public:

@@ -61,7 +61,7 @@ namespace dax {
 namespace cont {
 namespace worklet {
 
-template<class GridType, DAX_DeviceAdapter_TP>
+template<class GridType, class DeviceAdapter>
 inline void Elevation(
     const GridType &grid,
     const typename GridType::Points &points,
@@ -88,9 +88,9 @@ inline void Elevation(
     outField.GetExecutionObject()
   };
 
-  DeviceAdapter<void>::Schedule(dax::exec::kernel::Elevation<CellType>(),
-                                parameters,
-                                grid.GetNumberOfPoints());
+  DeviceAdapter::Schedule(dax::exec::kernel::Elevation<CellType>(),
+                          parameters,
+                          grid.GetNumberOfPoints());
 }
 
 }

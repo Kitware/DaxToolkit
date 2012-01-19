@@ -23,7 +23,6 @@ namespace internal {
 /// point, you have to specify an appropriate DeviceAdapter or else get a
 /// compile error.
 ///
-template<typename T = void>
 struct DeviceAdapterError
 {
   // Not implemented.

@@ -32,7 +32,6 @@ namespace cont {
 /// An implementation of DeviceAdapter that will schedule execution on a GPU
 /// using CUDA.
 ///
-template<typename T = void>
 struct DeviceAdapterCuda
 {
   template<class Functor, class Parameters>
@@ -47,8 +46,10 @@ struct DeviceAdapterCuda
 #endif
   }
 
-  typedef dax::cuda::cont::internal::ArrayContainerExecutionThrust<T>
-      ArrayContainerExecution;
+  template<typename T>
+  class ArrayContainerExecution
+      : public dax::cuda::cont::internal::ArrayContainerExecutionThrust<T>
+  { };
 };
 
 }

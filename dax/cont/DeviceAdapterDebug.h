@@ -25,7 +25,6 @@ namespace cont {
 /// The scheduling will simply run everything in a serial loop, which is easy
 /// to track in a debugger.
 ///
-template<typename T = void>
 struct DeviceAdapterDebug
 {
   template<class Functor, class Parameters>
@@ -36,8 +35,9 @@ struct DeviceAdapterDebug
     dax::cont::scheduleDebug(functor, parameters, numInstances);
   }
 
-  typedef dax::cont::internal::ArrayContainerExecutionCPU<T>
-      ArrayContainerExecution;
+  template<typename T>
+  class ArrayContainerExecution
+      : public dax::cont::internal::ArrayContainerExecutionCPU<T> { };
 };
 
 }
