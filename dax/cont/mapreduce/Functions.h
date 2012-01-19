@@ -7,7 +7,7 @@
 #include <iostream>
 
 namespace dax {
-namespace exec {
+namespace cont {
 namespace mapreduce {
 
 /// Returns the number of cells in the grid type passed in
@@ -58,4 +58,4 @@ void count_occurances(T &t, U &u);
 } //dax
 
 
-#endif // __dax_exec_mapreduce_Functions_h
+#endif // __dax_cont_mapreduce_Functions_h

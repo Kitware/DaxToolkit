@@ -1,5 +1,5 @@
-#ifndef __dax_cont_internal_Classify_h
-#define __dax_cont_internal_Classify_h
+#ifndef __dax_cont_mapreduce_Classify_h
+#define __dax_cont_mapreduce_Classify_h
 
 #include <dax/internal/ExportMacros.h>
 #include <dax/internal/DataArray.h>
@@ -9,7 +9,7 @@
 
 namespace dax {
 namespace cont {
-namespace internal {
+namespace mapreduce {
 
 /// Base Classify Object. The Classify class uses the CRTP to allow inhertiance.
 /// All children classes need to define the following methods:
@@ -76,9 +76,9 @@ private:
 
 };
 
-} //internal
+} //mapreduce
 } //cont
 } //dax
 
 
-#endif // __dax_cont_internal_Classify_h
+#endif // __dax_cont_mapreduce_Classify_h

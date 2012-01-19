@@ -7,7 +7,9 @@
 #=========================================================================
 
 set(headers
+  Classify.h
   Functions.h
+  RemoveCell.h
 )
 
 dax_declare_headers(${headers})
