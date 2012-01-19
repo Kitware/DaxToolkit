@@ -33,47 +33,79 @@ namespace dax {
 namespace exec {
 namespace kernel {
 
-template<class CellType, class FieldType>
+template<class CT, class FT>
 struct ThresholdParameters
 {
-  dax::exec::WorkRemoveCell<CellType> work;
+  typedef CT CellType;
+  typedef FT FieldType;
+  typedef dax::exec::WorkRemoveCell<CellType> WorkType;
+  WorkType work;
   FieldType min;
   FieldType max;
   dax::exec::FieldPoint<FieldType> inField;
 };
 
+template <typename Parameters>
+struct Functor
+{
+  DAX_EXEC_EXPORT void operator()(Parameters &parameters,
+                                  dax::Id index)
+  {
+  parameters.work.SetCellIndex(index);
+  dax::worklet::Threshold(parameters.work,
+                             parameters.min,
+                             parameters.max,
+                             parameters.inField);
+  }
+};
 
-
-template<typename T, class Parameters, template<typename> class DeviceAdapter>
-class Threshold : public dax::cont::mapreduce::RemoveCell<
-          Threshold<T,Parameters,DeviceAdapter>,Parameters,DeviceAdapter>
+template<typename T,
+         class GridPackageType,
+         class Parameters,
+         class Functor,
+         template<typename> class DeviceAdapter>
+class Threshold : public dax::cont::mapreduce::RemoveCell
+    <
+    Threshold<T,
+              GridPackageType,
+              Parameters,
+              Functor,
+              DeviceAdapter>,
+    Parameters,
+    Functor,
+    DeviceAdapter>
 {
 public:
-    typedef T ValueType;
-    //internal functor that calls the actual worklet
-    struct Functor
-    {
-      DAX_EXEC_EXPORT void operator()(Parameters &parameters,
-                                      dax::Id index)
-      {
-      parameters.work.SetCellIndex(index);
-      dax::worklet::ThresholdParameters(parameters.work,
-                                 parameters.min,
-                                 parameters.max,
-                                 parameters.inField);
-      }
-    };
+    typedef T ValueType;    
 
-    //constructor that is passed all constant values that are needed
-    //for the worklet
-    Threshold(const ValueType& min, const ValueType& max):
+    //constructor that is passed all the user decided parts of the worklet too
+    Threshold(const ValueType& min, const ValueType& max,
+              dax::cont::ArrayHandle<T,DeviceAdapter>& thresholdField):
       Min(min),
-      Max(max)
+      Max(max),
+      Field(thresholdField)
     {
+
     }
+
+    //generate the parameters for the worklet
+    template <typename GridType, typename WorkType>
+    Parameters GenerateParameters(const GridType& grid, WorkType &work)
+    {
+      dax::cont::internal::ExecutionPackageFieldPointInput<ValueType>
+          inField(this->Field, grid);
+
+      Parameters parameters = {work,
+                               this->Min,
+                               this->Max,
+                               inField.GetExecutionObject()};
+      return parameters;
+    }
+
 private:
   ValueType Min;
   ValueType Max;
+  dax::cont::ArrayHandle<T,DeviceAdapter> Field;
 };
 }
 }
@@ -95,11 +127,17 @@ inline void Threshold(
 {
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   typedef typename GridPackageType::ExecutionCellType CellType;
-  typedef dax::exec::kernel::ClassifyThresholdParameters<CellType,dax::Scalar> Parameters;
+  typedef dax::exec::kernel::ThresholdParameters<CellType,dax::Scalar> Parameters;
+  typedef dax::exec::kernel::Functor<Parameters> Functor;
 
-  dax::exec::kernel::Threshold<dax::Scalar,Parameters,DeviceAdapter>
-      threshold(thresholdMin,thresholdMax);
-  threshold.run(inGrid,thresholdHandle,outGeom);
+  dax::exec::kernel::Threshold<dax::Scalar,
+                              GridPackageType,
+                              Parameters,
+                              Functor,
+                              DeviceAdapter>
+    threshold(thresholdMin,thresholdMax,thresholdHandle);
+
+  threshold.run(inGrid,outGeom);
 }
 
 }
@@ -107,61 +145,3 @@ inline void Threshold(
 } //dax::cuda::cont::worklet
 
 #endif //__dax_cuda_cont_worklet_CountPointUsage_h
-
-
-//template<class Parameters, template<typename> class DeviceAdapter>
-//class ClassifyThreshold
-//    : public dax::cont::internal::Classify<
-//          ClassifyThreshold<Parameters,DeviceAdapter>,Parameters,DeviceAdapter>
-//{
-//public:
-//  typedef dax::cont::internal::Classify<ClassifyThreshold<Parameters,DeviceAdapter>,Parameters,DeviceAdapter> Parent;
-//  typedef typename Parent::ValueType ValueType;
-
-//  //constructor that is passed all constant values that are needed
-//  //for the worklet
-//  ClassifyThreshold(const ValueType& min, const ValueType& max):
-//    Min(min),
-//    Max(max)
-//    {
-
-//    }
-
-//  //calls the worklets definition for the size of the resulting grid
-//  template<typename GridType>
-//  dax::Id Size(const GridType& grid)
-//    {
-//    dax::worklet::ClassifySizeStep(grid);
-//    }
-
-//  //call the actual classify step worklet for the Threshold algorithm
-//  template<typename GridType, typename HandleType>
-//  void Worklet(const GridType& grid, HandleType &handle)
-//    {
-//    typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
-//    typedef typename GridPackageType::ExecutionCellType CellType;
-//    typedef dax::exec::WorkMapReduceCell<CellType> WorkType;
-
-//    GridPackageType gridPackage(grid);
-
-//    dax::cont::internal::ExecutionPackageFieldPointInput<typename HandleType::ValueType>
-//        inField(handle, grid);
-
-//    dax::cont::internal::ExecutionPackageFieldOutput<ValueType>
-//        outField(this->GetResult(), this->GetResultSize());
-
-//    Parameters parameters = {
-//      WorkType(gridPackage.GetExecutionObject()),
-//      this->Min,
-//      this->Max,
-//      inField.GetExecutionObject(),
-//      outField.GetExecutionObject()
-//      };
-
-//    DeviceAdapter<void>::Schedule(ClassifyThreshold::Functor(),
-//                                  parameters,
-//                                  this->GetResultSize());
-//    }
-
-//};
-

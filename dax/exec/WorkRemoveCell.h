@@ -34,14 +34,14 @@ class WorkRemoveCell<dax::exec::CellVoxel>
 {
 private:
   dax::exec::CellVoxel Cell;
-  dax::exec::FieldCell<bool> RemoveCell;
+  dax::exec::FieldCell<dax::Id> RemoveCell;
 
 public:
   typedef CellVoxel CellType;
 
   DAX_EXEC_EXPORT WorkRemoveCell(
     const dax::internal::StructureUniformGrid &gridStructure,
-    dax::exec::FieldCell<bool> &removeCell,
+    const dax::exec::FieldCell<dax::Id> &removeCell,
     dax::Id cellIndex = 0)
     : Cell(gridStructure, cellIndex),
       RemoveCell(removeCell)
@@ -53,7 +53,7 @@ public:
   }
 
   //set this to true if you want to remove this cell
-  DAX_EXEC_EXPORT void SetRemoveCell(bool value)
+  DAX_EXEC_EXPORT void SetRemoveCell(dax::Id value)
   {
     dax::exec::internal::fieldAccessNormalSet(this->RemoveCell,
                                               this->GetCellIndex(),
@@ -61,7 +61,7 @@ public:
   }
 
   //set this to true if you want to remove this cell
-  DAX_EXEC_EXPORT bool IsCellRemoved()
+  DAX_EXEC_EXPORT dax::Id IsCellRemoved()
   {
     return dax::exec::internal::fieldAccessNormalGet(this->RemoveCell,
                                               this->GetCellIndex());

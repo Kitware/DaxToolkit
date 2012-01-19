@@ -26,6 +26,13 @@ dax::Id num_points(const T& t)
   return t.GetNumberOfPoints();
   }
 
+/// returns 0
+template <typename T>
+dax::Id no_size(const T& t)
+  {
+  return 0;
+  }
+
 /// Returns the total topology size, which is number of points per cell
 /// times the number of cells.
 /// Expects that template parameter T is a control data structure.

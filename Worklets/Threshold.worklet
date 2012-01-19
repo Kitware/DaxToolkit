@@ -17,9 +17,9 @@ namespace worklet {
 
 template<typename T>
 struct DoThreshold {
-  DAX_EXEC_EXPORT bool operator()(T min, T max, T x) const
+  DAX_EXEC_EXPORT dax::Id operator()(T min, T max, T x) const
   {
-    return ((x > min) && (x <= max));
+    return static_cast<dax::Id>((x > min) && (x <= max));
   }
 };
 
@@ -28,13 +28,12 @@ DAX_WORKLET void Threshold(
     DAX_IN dax::exec::WorkRemoveCell<CellType> &work,
     DAX_IN FieldType thresholdMin,
     DAX_IN FieldType thresholdMax,
-    DAX_IN dax::exec::FieldPoint<FieldType> &inField,
-    DAX_OUT dax::exec::Field<dax::Id> &outField)
+    DAX_IN dax::exec::FieldPoint<FieldType> &inField)
 {
   //compare the value at each point with the threshold min/max
   CellType cell = work.GetCell();
   dax::Id number_of_points = cell.GetNumberOfPoints();
-  bool valid = 1;
+  dax::Id valid = 1;
   for (dax::Id vertexId = 0; vertexId < number_of_points; vertexId++)
     {
     FieldType inValue = work.GetFieldValue(inField, vertexId);
