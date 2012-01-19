@@ -10,7 +10,6 @@
 #include <dax/exec/WorkRemoveCell.h>
 
 #include <dax/cont/mapreduce/Functions.h>
-#include <dax/cont/mapreduce/Classify.h>
 
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
@@ -77,6 +76,7 @@ public:
     typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
     GridPackageType gridPackage(grid);
 
+    this->Result = dax::cont::ArrayHandle<dax::Id>(grid.GetNumberOfCells());
     dax::cont::internal::ExecutionPackageFieldCellOutput<dax::Id>
         outField(this->Result, grid);
 
