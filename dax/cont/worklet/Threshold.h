@@ -115,7 +115,7 @@ inline void Threshold(
     dax::Scalar thresholdMin,
     dax::Scalar thresholdMax,
     dax::cont::ArrayHandle<dax::Scalar, DeviceAdapter> &thresholdHandle,
-    dax::cont::UniformGrid &outGeom)
+    GridType &outGeom)
 {
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   typedef typename GridPackageType::ExecutionCellType CellType;

@@ -9,8 +9,6 @@
 #include <dax/exec/internal/FieldAccess.h>
 #include <dax/exec/WorkRemoveCell.h>
 
-#include <dax/cont/mapreduce/Functions.h>
-
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
@@ -44,14 +42,8 @@ public:
   void run(const InGridType& inGrid,
            OutGridType& outGrid)
     {
-    //call size
-    //call worklet
     this->ScheduleWorklet(inGrid);
-    //call scan
-    this->ScheduleScan();
-    //call generateSize
-    //call Generate
-    this->ScheduleGenerate(inGrid,outGrid);
+    this->GenerateOutput(inGrid,outGrid);
     }
 
 /// \fn template <typename GridType, typename WorkType> Parameters GenerateParameters(const GridType& grid, WorkType &work)
@@ -79,32 +71,20 @@ protected:
     DeviceAdapter<void>::Schedule(Functor(),
                                   params,
                                   grid.GetNumberOfCells());
-  }  
-
-  void ScheduleScan()
-  {
-    this->CellCount = dax::cont::ArrayHandle<dax::Id>(
-                        this->ResultHandle.GetNumberOfEntries());
-    //count the number of cells say that past the threshold
-    this->NewCellCount = dax::cont::mapreduce::inclusive_scan(
-                           this->ResultHandle,
-                           this->CellCount);
   }
 
   template<typename InGridType, typename OutGridType>
-  void ScheduleGenerate(const InGridType &inGrid, OutGridType& outGrid)
+  void GenerateOutput(const InGridType &inGrid, OutGridType& outGrid)
   {
-    dax::cont::ArrayHandle<dax::Id> resultCells(this->NewCellCount);
+    //does stream compaction
+    dax::cont::ArrayHandle<dax::Id> newCells;
+    DeviceAdapter<void>::Scatter(this->ResultHandle,newCells);
 
-    dax::cont::mapreduce::upper_bound(this->CellCount,
-                                      0,
-                                      this->NewCellCount,
-                                      resultCells
-                                      );
 
-    //result cells now holds the ids of all the cells that go into
-    //the thresholded geometery
-    outGrid = OutGridType(inGrid,resultCells);
+//    //result cells now holds the ids of all the cells that go into
+//    //the thresholded geometery, the points of the geometery will be copied
+//    //from the input grid
+//    outGrid = OutGridType(inGrid,resultCells);
   }
 
   //Connstructor the WorkType of the Functor based on the grid
@@ -115,20 +95,16 @@ protected:
     GridPackageType gridPackage(grid);
 
     this->ResultHandle = dax::cont::ArrayHandle<dax::Id>(grid.GetNumberOfCells());
-    this->Result  = dax::cont::internal::ExecutionPackageFieldCellOutput<dax::Id>(
+    dax::cont::internal::ExecutionPackageFieldCellOutput<dax::Id> result(
                       this->ResultHandle, grid);
 
     WorkType work(gridPackage.GetExecutionObject(),
-                  this->Result.GetExecutionObject());
+                  result.GetExecutionObject());
     return work;
     }
 
 private:
   dax::cont::ArrayHandle<dax::Id> ResultHandle;
-  dax::cont::internal::ExecutionPackageFieldCellOutput<dax::Id> Result;
-
-  dax::cont::ArrayHandle<dax::Id> CellCount;
-
   dax::Id NewCellCount;
 };
 
