@@ -12,6 +12,7 @@ set(headers
   DeviceAdapter.h
   DeviceAdapterDebug.h
   ScheduleDebug.h
+  StreamCompactDebug.h
   UniformGrid.h
 
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
@@ -38,6 +39,7 @@ configure_file(
 set(unit_tests
   UnitTestArrayHandle.cxx
   UnitTestScheduleDebug.cxx
+  UnitTestStreamCompactDebug.cxx
   UnitTestVectorOperations.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
