@@ -25,10 +25,10 @@ namespace mapreduce {
 /// Since RemoveCell uses CRTP, every worklet needs to construct a class
 /// that inherits from this class and define GenerateParameters.
 ///
-template<typename Derived,
-         typename Parameters,
-         typename Functor,
-         DAX_DeviceAdapter_TP
+template<class Derived,
+         class Parameters,
+         class Functor,
+         class DeviceAdapter
          >
 class RemoveCell
 {
@@ -68,7 +68,7 @@ protected:
     Parameters params = static_cast<Derived*>(this)->GenerateParameters(grid,work);
 
     //Actually run the Functor which is the user worklet with the correct parameters
-    DeviceAdapter<void>::Schedule(Functor(),
+    DeviceAdapter::Schedule(Functor(),
                                   params,
                                   grid.GetNumberOfCells());
   }
@@ -78,7 +78,7 @@ protected:
   {
     //does stream compaction
     dax::cont::ArrayHandle<dax::Id> newCells;
-    DeviceAdapter<void>::Scatter(this->ResultHandle,newCells);
+    DeviceAdapter::Scatter(this->ResultHandle,newCells);
 
 
 //    //result cells now holds the ids of all the cells that go into
@@ -95,7 +95,7 @@ protected:
     GridPackageType gridPackage(grid);
 
     this->ResultHandle = dax::cont::ArrayHandle<dax::Id>(grid.GetNumberOfCells());
-    dax::cont::internal::ExecutionPackageFieldCellOutput<dax::Id> result(
+    dax::cont::internal::ExecutionPackageFieldCellOutput<dax::Id,DeviceAdapter> result(
                       this->ResultHandle, grid);
 
     WorkType work(gridPackage.GetExecutionObject(),

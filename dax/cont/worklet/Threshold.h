@@ -57,7 +57,7 @@ struct Functor
 
 template<class Parameters,
          class Functor,
-         template<typename> class DeviceAdapter>
+         class DeviceAdapter>
 class Threshold : public dax::cont::mapreduce::RemoveCell
     <
     Threshold<Parameters,
@@ -84,7 +84,7 @@ public:
     template <typename GridType, typename WorkType>
     Parameters GenerateParameters(const GridType& grid, WorkType &work)
     {
-      dax::cont::internal::ExecutionPackageFieldPointInput<ValueType>
+      dax::cont::internal::ExecutionPackageFieldPointInput<ValueType,DeviceAdapter>
           inField(this->Field, grid);
 
       Parameters parameters = {work,
@@ -109,7 +109,7 @@ namespace dax {
 namespace cont {
 namespace worklet {
 
-template<class GridType, DAX_DeviceAdapter_TP>
+template<class GridType, class DeviceAdapter>
 inline void Threshold(
     const GridType &inGrid,
     dax::Scalar thresholdMin,
