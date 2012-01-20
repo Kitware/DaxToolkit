@@ -6,8 +6,8 @@
 
 =========================================================================*/
 
-#ifndef __dax_cuda_cont_Schedule_h
-#define __dax_cuda_cont_Schedule_h
+#ifndef __dax_cont_Schedule_h
+#define __dax_cont_Schedule_h
 
 #include <dax/Types.h>
 
@@ -28,4 +28,4 @@ DAX_CONT_EXPORT void scheduleDebug(Functor functor,
 }
 } // namespace dax::cont
 
-#endif //__dax_cuda_cont_Schedule_h
+#endif //__dax_cont_Schedule_h
