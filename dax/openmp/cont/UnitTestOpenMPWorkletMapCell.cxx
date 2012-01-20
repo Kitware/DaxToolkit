@@ -107,13 +107,13 @@ static void TestCellGradient()
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
-int UnitTestCudaWorkletMapCell(int, char *[])
+int UnitTestOpenMPWorkletMapCell(int, char *[])
 {
   try
     {
-    // This might be a compile error if Cuda DeviceAdapter is not selected.
+    // This might be a compile error if OpenMP DeviceAdapter is not selected.
     test_assert(typeid(DAX_DEFAULT_DEVICE_ADAPTER)
-                == typeid(dax::cuda::cont::DeviceAdapterCuda),
+                == typeid(dax::openmp::cont::DeviceAdapterOpenMP),
                 "Wrong device adapter automatically selected.");
 
     TestCellGradient();

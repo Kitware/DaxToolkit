@@ -9,17 +9,22 @@
 #ifndef __dax_cont_DeviceAdapter_h
 #define __dax_cont_DeviceAdapter_h
 
+#include <dax/internal/ExportMacros.h>
+
 #ifndef DAX_DEFAULT_DEVICE_ADAPTER
 #ifdef DAX_CUDA
 #include <dax/cuda/cont/DeviceAdapterCuda.h>
 #else // DAX_CUDA
-// TODO: make better device adapter
+#ifdef DAX_OPENMP
+#include <dax/openmp/cont/DeviceAdapterOpenMP.h>
+#else // DAX_OPENMP
 #include <dax/cont/DeviceAdapterDebug.h>
+#endif // DAX_OPENMP
 #endif // DAX_CUDA
 #endif // DAX_DEFAULT_DEVICE_ADAPTER
 
 // Appropriate template parameter for the device adapter
-#define DAX_DeviceAdapter_TP template <typename> class DeviceAdapter
+//#define DAX_DeviceAdapter_TP template <typename> class DeviceAdapter
 
 namespace dax {
 namespace cont {
@@ -37,10 +42,6 @@ namespace cont {
 /// adapter (for example, DeviceAdapterDebug.h). This overloading should be
 /// done \em before loading in any other Dax header files. Failing to do so
 /// could create inconsistencies in the default adapter used amongst classes.
-///
-/// Note that the DeviceAdapter is actually a templated function.  The single
-/// template parameter T is used to type the ArrayContainerExecution template
-/// class.
 
 /// \fn template<class Functor, class Parameters> void DeviceAdapter::Schedule(Functor functor, Parameters parameters, dax::Id numInstances)
 /// \brief Schedule many instances of a function to run on concurrent threads.
@@ -53,7 +54,7 @@ namespace cont {
 /// uniquely identifies the thread or instance of the invocation. There should
 /// be one invocation for each index in the range [0, \c numInstances].
 
-/// \class DeviceAdapter::ArrayContainerExecution
+/// \class template<class T> DeviceAdapter::ArrayContainerExecution<T>
 /// \brief Class that manages data in the execution environment.
 ///
 /// This is a class that is responsible for allocating data in the execution

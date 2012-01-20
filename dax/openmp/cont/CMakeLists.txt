@@ -5,37 +5,24 @@
 #  PURPOSE.  See the above copyright notice for more information.
 #
 #=========================================================================
-include_directories(${Boost_INCLUDE_DIRS})
 
 set(headers
-  Extent.h
-  Types.h
-  TypeTraits.h
+  DeviceAdapterOpenMP.h
+  ScheduleThrust.h
   )
 
-dax_declare_headers(${headers})
+#-----------------------------------------------------------------------------
+include_directories(${THRUST_INCLUDE_DIR})
 
 add_subdirectory(internal)
 
-add_subdirectory(cont)
-add_subdirectory(exec)
+#-----------------------------------------------------------------------------
+dax_declare_headers(${headers})
 
-if (DAX_ENABLE_THRUST)
-  add_subdirectory(thrust)
-endif (DAX_ENABLE_THRUST)
-
-if (DAX_ENABLE_CUDA)
-  add_subdirectory(cuda)
-endif (DAX_ENABLE_CUDA)
-
-if (DAX_ENABLE_OPENMP)
-  add_subdirectory(openmp)
-endif (DAX_ENABLE_OPENMP)
-
+#-----------------------------------------------------------------------------
 set(unit_tests
-  UnitTestExtent.cxx
-  UnitTestTypes.cxx
-  UnitTestTypeTraits.cxx
+  UnitTestOpenMPScheduleThrust.cxx
+  UnitTestOpenMPWorkletMapCell.cxx
+  UnitTestOpenMPWorkletMapField.cxx
   )
-
 dax_unit_tests(SOURCES ${unit_tests})

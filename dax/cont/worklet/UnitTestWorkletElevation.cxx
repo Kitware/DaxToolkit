@@ -6,6 +6,9 @@
 
 =========================================================================*/
 
+#include <dax/cont/DeviceAdapterDebug.h>
+#include <dax/cont/internal/DeviceAdapterError.h>
+
 #include <dax/cont/worklet/Elevation.h>
 
 #include <math.h>
@@ -70,8 +73,8 @@ static void TestElevation()
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
 
   std::vector<dax::Scalar> elevation(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar> elevationHandle(elevation.begin(),
-                                                      elevation.end());
+  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterDebug>
+      elevationHandle(elevation.begin(), elevation.end());
 
   std::cout << "Running Elevation worklet" << std::endl;
   dax::cont::worklet::Elevation(grid, grid.GetPoints(), elevationHandle);

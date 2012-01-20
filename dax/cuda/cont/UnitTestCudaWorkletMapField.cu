@@ -18,6 +18,8 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 
+#include <typeinfo>
+
 #include <vector>
 
 namespace {
@@ -107,6 +109,11 @@ int UnitTestCudaWorkletMapField(int, char *[])
 {
   try
     {
+    // This might be a compile error if Cuda DeviceAdapter is not selected.
+    test_assert(typeid(DAX_DEFAULT_DEVICE_ADAPTER)
+                == typeid(dax::cuda::cont::DeviceAdapterCuda),
+                "Wrong device adapter automatically selected.");
+
     TestSquare();
     }
   catch (std::string error)

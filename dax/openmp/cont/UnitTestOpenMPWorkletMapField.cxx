@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/cont/worklet/CellGradient.h>
+#include <dax/cont/worklet/Square.h>
 
 #include <math.h>
 #include <fstream>
@@ -66,7 +66,7 @@ static inline bool test_equal(VectorType vector1, VectorType vector2)
 }
 
 //-----------------------------------------------------------------------------
-static void TestCellGradient()
+static void TestSquare()
 {
   dax::cont::UniformGrid grid;
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
@@ -83,40 +83,38 @@ static void TestCellGradient()
     }
   dax::cont::ArrayHandle<dax::Scalar> fieldHandle(field.begin(), field.end());
 
-  std::vector<dax::Vector3> gradient(grid.GetNumberOfCells());
-  dax::cont::ArrayHandle<dax::Vector3> gradientHandle(gradient.begin(),
-                                                      gradient.end());
+  std::vector<dax::Scalar> square(grid.GetNumberOfPoints());
+  dax::cont::ArrayHandle<dax::Scalar> squareHandle(square.begin(),
+                                                   square.end());
 
-  std::cout << "Running CellGradient worklet" << std::endl;
-  dax::cont::worklet::CellGradient(grid,
-                                   grid.GetPoints(),
-                                   fieldHandle,
-                                   gradientHandle);
+  std::cout << "Running Square worklet" << std::endl;
+  dax::cont::worklet::Square(grid, fieldHandle, squareHandle);
 
   std::cout << "Checking result" << std::endl;
-  for (dax::Id cellIndex = 0;
-       cellIndex < grid.GetNumberOfCells();
-       cellIndex++)
+  for (dax::Id pointIndex = 0;
+       pointIndex < grid.GetNumberOfPoints();
+       pointIndex++)
     {
-    dax::Vector3 gradientValue = gradient[cellIndex];
-    test_assert(test_equal(gradientValue, trueGradient),
-                "Got bad cosine");
+    dax::Scalar squareValue = square[pointIndex];
+    dax::Scalar squareTrue = field[pointIndex]*field[pointIndex];
+    test_assert(test_equal(squareValue, squareTrue),
+                "Got bad square");
     }
 }
 
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
-int UnitTestCudaWorkletMapCell(int, char *[])
+int UnitTestOpenMPWorkletMapField(int, char *[])
 {
   try
     {
-    // This might be a compile error if Cuda DeviceAdapter is not selected.
+    // This might be a compile error if OpenMP DeviceAdapter is not selected.
     test_assert(typeid(DAX_DEFAULT_DEVICE_ADAPTER)
-                == typeid(dax::cuda::cont::DeviceAdapterCuda),
+                == typeid(dax::openmp::cont::DeviceAdapterOpenMP),
                 "Wrong device adapter automatically selected.");
 
-    TestCellGradient();
+    TestSquare();
     }
   catch (std::string error)
     {

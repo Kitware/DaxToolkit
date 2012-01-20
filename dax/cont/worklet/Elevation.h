@@ -39,14 +39,15 @@ struct ElevationParameters
   dax::exec::FieldPoint<dax::Scalar> outField;
 };
 
-template<class Parameters>
+template<class CellType>
 struct Elevation
 {
-  DAX_EXEC_EXPORT void operator()(Parameters &parameters,
+  DAX_EXEC_EXPORT void operator()(ElevationParameters<CellType> &parameters,
                                   dax::Id index)
   {
-    parameters.work.SetIndex(index);
-    dax::worklet::Elevation(parameters.work,
+    dax::exec::WorkMapField<CellType> work = parameters.work;
+    work.SetIndex(index);
+    dax::worklet::Elevation(work,
                             parameters.inCoordinates,
                             parameters.outField);
   }
@@ -60,7 +61,7 @@ namespace dax {
 namespace cont {
 namespace worklet {
 
-template<class GridType, DAX_DeviceAdapter_TP>
+template<class GridType, class DeviceAdapter>
 inline void Elevation(
     const GridType &grid,
     const typename GridType::Points &points,
@@ -69,10 +70,12 @@ inline void Elevation(
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   GridPackageType gridPackage(grid);
 
-  dax::cont::internal::ExecutionPackageFieldCoordinatesInput<GridType>
+  dax::cont::internal::ExecutionPackageFieldCoordinatesInput
+      <GridType, DeviceAdapter>
       fieldCoordinates(points);
 
-  dax::cont::internal::ExecutionPackageFieldPointOutput<dax::Scalar>
+  dax::cont::internal::ExecutionPackageFieldPointOutput
+      <dax::Scalar, DeviceAdapter>
       outField(outHandle, grid);
 
   typedef typename GridPackageType::ExecutionCellType CellType;
@@ -85,9 +88,9 @@ inline void Elevation(
     outField.GetExecutionObject()
   };
 
-  DeviceAdapter<void>::Schedule(dax::exec::kernel::Elevation<Parameters>(),
-                                parameters,
-                                grid.GetNumberOfPoints());
+  DeviceAdapter::Schedule(dax::exec::kernel::Elevation<CellType>(),
+                          parameters,
+                          grid.GetNumberOfPoints());
 }
 
 }

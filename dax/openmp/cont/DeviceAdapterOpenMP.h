@@ -6,41 +6,43 @@
 
 =========================================================================*/
 
-#ifndef __dax_cont_DeviceAdapterDebug_h
-#define __dax_cont_DeviceAdapterDebug_h
+#ifndef __dax_openmp_cont_DeviceAdapterOpenMP_h
+#define __dax_openmp_cont_DeviceAdapterOpenMP_h
 
 #ifdef DAX_DEFAULT_DEVICE_ADAPTER
 #undef DAX_DEFAULT_DEVICE_ADAPTER
 #endif
 
-#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterDebug
+#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::openmp::cont::DeviceAdapterOpenMP
 
-#include <dax/cont/ScheduleDebug.h>
-#include <dax/cont/internal/ArrayContainerExecutionCPU.h>
+#include <dax/openmp/cont/ScheduleThrust.h>
+#include <dax/openmp/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
+namespace openmp {
 namespace cont {
 
-/// A simple implementation of a DeviceAdapter that can be used for debuging.
-/// The scheduling will simply run everything in a serial loop, which is easy
-/// to track in a debugger.
+/// An implementation of DeviceAdapter that will schedule execution on multiple
+/// CPUs using OpenMP.
 ///
-struct DeviceAdapterDebug
+struct DeviceAdapterOpenMP
 {
   template<class Functor, class Parameters>
   static void Schedule(Functor functor,
                        Parameters parameters,
                        dax::Id numInstances)
   {
-    dax::cont::scheduleDebug(functor, parameters, numInstances);
+    dax::openmp::cont::scheduleThrust(functor, parameters, numInstances);
   }
 
   template<typename T>
   class ArrayContainerExecution
-      : public dax::cont::internal::ArrayContainerExecutionCPU<T> { };
+      : public dax::openmp::cont::internal::ArrayContainerExecutionThrust<T>
+  { };
 };
 
 }
-} // namespace dax::cont
+}
+} // namespace dax::openmp::cont
 
-#endif //__dax_cont_DeviceAdapterDebug_h
+#endif //__dax_openmp_cont_DeviceAdapterOpenMP_h

@@ -7,7 +7,6 @@
 ===========================================================================*/
 #include <stdio.h>
 #include <iostream>
-#include "ArgumentsParser.h"
 #include "Timer.h"
 
 #include <dax/cont/ArrayHandle.h>
@@ -21,6 +20,10 @@
 #include <dax/cont/worklet/Square.h>
 
 #include <vector>
+
+#define MAKE_STRING2(x) #x
+#define MAKE_STRING1(x) MAKE_STRING2(x)
+#define DEVICE_ADAPTER MAKE_STRING1(DAX_DEFAULT_DEVICE_ADAPTER)
 
 namespace
 {
@@ -74,13 +77,11 @@ void PrintCheckValues(IteratorType begin, IteratorType end)
     }
 }
 
-dax::cont::UniformGrid CreateInputStructure(dax::Id dim)
+void PrintResults(int pipeline, double time)
 {
-  dax::cont::UniformGrid grid;
-  grid.SetOrigin(dax::make_Vector3(0.0, 0.0, 0.0));
-  grid.SetSpacing(dax::make_Vector3(1.0, 1.0, 1.0));
-  grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(dim-1, dim-1, dim-1));
-  return grid;
+  std::cout << "Elapsed time: " << time << " seconds." << std::endl;
+  std::cout << "CSV," DEVICE_ADAPTER ","
+            << pipeline << "," << time << std::endl;
 }
 
 void RunPipeline1(const dax::cont::UniformGrid &grid)
@@ -102,9 +103,7 @@ void RunPipeline1(const dax::cont::UniformGrid &grid)
   double time = timer.elapsed();
 
   PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
-
-  std::cout << "Elapsed time: " << time << " seconds." << std::endl;
-  std::cout << "CSV,1," << time << std::endl;
+  PrintResults(1, time);
 }
 
 void RunPipeline2(const dax::cont::UniformGrid &grid)
@@ -135,8 +134,7 @@ void RunPipeline2(const dax::cont::UniformGrid &grid)
 
   PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
 
-  std::cout << "Elapsed time: " << time << " seconds." << std::endl;
-  std::cout << "CSV,2," << time << std::endl;
+  PrintResults(2, time);
 }
 
 void RunPipeline3(const dax::cont::UniformGrid &grid)
@@ -161,43 +159,8 @@ void RunPipeline3(const dax::cont::UniformGrid &grid)
 
   PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
 
-  std::cout << "Elapsed time: " << time << " seconds." << std::endl;
-  std::cout << "CSV,3," << time << std::endl;
+  PrintResults(3, time);
 }
 
 } // Anonymous namespace
 
-
-int main(int argc, char* argv[])
-  {
-  dax::testing::ArgumentsParser parser;
-  if (!parser.parseArguments(argc, argv))
-    {
-    return 1;
-    }
-
-  //init grid vars from parser
-  const dax::Id MAX_SIZE = parser.problemSize();
-
-  dax::cont::UniformGrid grid = CreateInputStructure(MAX_SIZE);
-
-  int pipeline = parser.pipeline();
-  std::cout << "Pipeline #" << pipeline << std::endl;
-  switch (pipeline)
-    {
-    case dax::testing::ArgumentsParser::CELL_GRADIENT:
-      RunPipeline1(grid);
-      break;
-    case dax::testing::ArgumentsParser::CELL_GRADIENT_SINE_SQUARE_COS:
-      RunPipeline2(grid);
-      break;
-    case dax::testing::ArgumentsParser::SINE_SQUARE_COS:
-      RunPipeline3(grid);
-      break;
-    default:
-      std::cout << "No pipeline selected." << std::endl;
-      break;
-    }
-
-  return 0;
-}

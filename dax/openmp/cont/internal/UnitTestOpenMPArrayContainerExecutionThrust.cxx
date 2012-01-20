@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/cuda/cont/internal/ArrayContainerExecutionThrust.h>
+#include <dax/openmp/cont/internal/ArrayContainerExecutionThrust.h>
 
 #include <fstream>
 #include <iostream>
@@ -19,7 +19,7 @@
 #include <thrust/sequence.h>
 
 namespace dax {
-namespace cuda {
+namespace openmp {
 namespace cont {
 namespace internal {
 namespace ut_arraycontainer {
@@ -61,7 +61,7 @@ static void TestBasicTransfers()
       inputContainer(&inputArray[0], &inputArray[ARRAY_SIZE]);
 
   // Create the managed container for the array in the execution environment.
-  dax::cuda::cont::internal::ArrayContainerExecutionThrust<dax::Scalar>
+  dax::openmp::cont::internal::ArrayContainerExecutionThrust<dax::Scalar>
       executionContainer;
   executionContainer.Allocate(ARRAY_SIZE);
 
@@ -96,11 +96,11 @@ static void TestBasicTransfers()
 }
 
 //-----------------------------------------------------------------------------
-int UnitTestCudaArrayContainerExecutionThrust(int, char *[])
+int UnitTestOpenMPArrayContainerExecutionThrust(int, char *[])
 {
   try
     {
-    using namespace dax::cuda::cont::internal::ut_arraycontainer;
+    using namespace dax::openmp::cont::internal::ut_arraycontainer;
     TestBasicTransfers();
     }
   catch (std::string error)
