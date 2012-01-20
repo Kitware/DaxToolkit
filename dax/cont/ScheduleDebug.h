@@ -16,7 +16,7 @@ namespace cont {
 
 template<class Functor, class Parameters>
 DAX_CONT_EXPORT void scheduleDebug(Functor functor,
-                                   Parameters parameters,
+                                   Parameters &parameters,
                                    dax::Id numInstances)
 {
   for (dax::Id index = 0; index < numInstances; index++)

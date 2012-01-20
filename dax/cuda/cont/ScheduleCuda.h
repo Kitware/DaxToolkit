@@ -45,7 +45,7 @@ namespace cont {
 
 template<class Functor, class Parameters>
 DAX_CONT_EXPORT void scheduleCuda(Functor functor,
-                                  Parameters parameters,
+                                  Parameters& parameters,
                                   dax::Id numInstances)
 {
   dax::cuda::cont::internal::CudaParameters cudaParam(numInstances);
