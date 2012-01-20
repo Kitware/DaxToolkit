@@ -45,7 +45,7 @@ struct InitArray
   }
 };
 
-struct MakeMask
+struct MarkOddNumbers
 {
   DAX_EXEC_EXPORT void operator()(std::vector<dax::Id> &array, dax::Id index)
   {
@@ -53,45 +53,93 @@ struct MakeMask
   }
 };
 
-}
-
-int TestCompact()
+bool TestCompact()
   {
   //test the version of compact that takes in input and uses it as a stencil
+  //and uses the index of each item as the value to place in the result vector
   std::vector<dax::Id> array(ARRAY_SIZE);
   std::vector<dax::Id> result;
 
+  array.resize(ARRAY_SIZE,dax::Id());
+
   //construct the index array
-  dax::cont::scheduleDebug(MakeMask(), array, ARRAY_SIZE);
+  dax::cont::scheduleDebug(MarkOddNumbers(), array, ARRAY_SIZE);
   dax::cont::streamCompactDebug(array,result);
 
   test_assert(result.size() == array.size()/2,
-              "result of compacation is an incorrect size.");
+              "result of compacation has an incorrect size.");
 
-  std::cout << "Checking results." << std::endl;
   for (dax::Id index = 0; index < result.size(); index++)
     {
     dax::Id value = result[index];
-    test_assert(value == (index*2),
+    test_assert(value == (index*2+1),
                 "Incorrect value in compaction result.");
     }
-
+  return true;
   }
 
 bool TestCompactWithStencil()
   {
+  //test the version of compact that takes in input and a stencil
+  std::vector<dax::Id> array(ARRAY_SIZE);
+  std::vector<dax::Id> stencil(ARRAY_SIZE);
+  std::vector<dax::Id> result;
 
+  array.resize(ARRAY_SIZE,dax::Id());
+  stencil.resize(ARRAY_SIZE,dax::Id());
+
+  //construct the index array
+  dax::cont::scheduleDebug(InitArray(), array, ARRAY_SIZE);
+  dax::cont::scheduleDebug(MarkOddNumbers(), stencil, ARRAY_SIZE);
+  dax::cont::streamCompactDebug(array,stencil,result);
+
+  test_assert(result.size() == array.size()/2,
+              "result of compacation has an incorrect size.");
+
+  for (dax::Id index = 0; index < result.size(); index++)
+    {
+    dax::Id value = result[index];
+    test_assert(value == (OFFSET + (index*2)+1),
+                "Incorrect value in compaction result.");
+    }
+  return true;
   }
+
+}
 
 int UnitTestStreamCompactDebug(int, char *[])
 {
-
-  if(!TestCompact())
+  bool valid = false;
+  try
+    {
+    valid = TestCompact();
+    }
+  catch (std::string error)
+    {
+    std::cout
+        << "Encountered error: " << std::endl
+        << error << std::endl;
+    return 1;
+    }
+  if(!valid)
     {
     std::cout << "Stream Compact without a stencil array failed" << std::endl;
     return 1;
     }
-  if(!TestCompactWithStencil())
+
+  valid = false;
+  try
+    {
+    valid = TestCompactWithStencil();
+    }
+  catch (std::string error)
+    {
+    std::cout
+        << "Encountered error: " << std::endl
+        << error << std::endl;
+    return 1;
+    }
+  if(!valid)
     {
     std::cout << "Stream Compact with a stencil array failed" << std::endl;
     return 1;
