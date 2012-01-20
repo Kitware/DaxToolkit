@@ -15,7 +15,9 @@
 
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterDebug
 
+#include <dax/internal/DataArray.h>
 #include <dax/cont/ScheduleDebug.h>
+#include <dax/cont/StreamCompactDebug.h>
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 
 namespace dax {
@@ -38,6 +40,21 @@ struct DeviceAdapterDebug
   template<typename T>
   class ArrayContainerExecution
       : public dax::cont::internal::ArrayContainerExecutionCPU<T> { };
+
+  template<typename HandleType>
+  static HandleType StreamCompact(const HandleType& input)
+    {
+    //the input array is both the input and the stencil output for the scan
+    //step. In this case the index position is the input and the value at
+    //each index is the stencil value
+    HandleType output;
+//    dax::cont::streamCompactDebug(
+//          dax::cont::internal::DeviceArray(input),
+//          dax::cont::internal::DeviceArray(output)
+//          );
+//    dax::cont::internal::UpdateArrayHandleSize(output);
+    return output;
+    }
 };
 
 }

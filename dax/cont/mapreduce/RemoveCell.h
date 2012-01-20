@@ -77,14 +77,12 @@ protected:
   void GenerateOutput(const InGridType &inGrid, OutGridType& outGrid)
   {
     //does stream compaction
-    dax::cont::ArrayHandle<dax::Id> newCells;
-    DeviceAdapter::Scatter(this->ResultHandle,newCells);
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> newCells;
+    //result cells now holds the ids of thresholded geometeries cells.
+    newCells = DeviceAdapter::StreamCompact(this->ResultHandle);
 
-
-//    //result cells now holds the ids of all the cells that go into
-//    //the thresholded geometery, the points of the geometery will be copied
-//    //from the input grid
 //    outGrid = OutGridType(inGrid,resultCells);
+
   }
 
   //Connstructor the WorkType of the Functor based on the grid
@@ -105,7 +103,6 @@ protected:
 
 private:
   dax::cont::ArrayHandle<dax::Id> ResultHandle;
-  dax::Id NewCellCount;
 };
 
 
