@@ -16,9 +16,9 @@ namespace dax {
 namespace cont {
 
 template<typename T>
-DAX_CONT_EXPORT void streamCompactDebug(const std::vector<T>& input,
-                                        const std::vector<dax::Id>& stencil,
-                                        std::vector<T>& output)
+static void streamCompactDebug(const std::vector<T>& input,
+                        const std::vector<dax::Id>& stencil,
+                        std::vector<T>& output)
 {
   typedef typename std::vector<T>::const_iterator Iterator;
   typedef std::vector<dax::Id>::const_iterator StencilIterator;
@@ -36,10 +36,10 @@ DAX_CONT_EXPORT void streamCompactDebug(const std::vector<T>& input,
     }
   //reduce the allocation request
   output.reserve(output.size());
-
 }
 
-DAX_CONT_EXPORT void streamCompactDebug(const std::vector<dax::Id>& input,
+
+static void streamCompactDebug(const std::vector<dax::Id>& input,
                                         std::vector<dax::Id>& output)
 {
   typedef std::vector<dax::Id>::const_iterator Iterator;

@@ -10,6 +10,8 @@
 #include <dax/cont/StreamCompactDebug.h>
 
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <vector>
 
 namespace {
@@ -18,9 +20,22 @@ const dax::Id ARRAY_SIZE = 500;
 
 const dax::Id OFFSET = 1000;
 
-}
+#define test_assert(condition, message) \
+  test_assert_impl(condition, message, __FILE__, __LINE__);
 
-namespace {
+static inline void test_assert_impl(bool condition,
+                                    const std::string& message,
+                                    const char *file,
+                                    int line)
+{
+  if(!condition)
+    {
+    std::stringstream error;
+    error << file << ":" << line << std::endl;
+    error << message << std::endl;
+    throw error.str();
+    }
+}
 
 struct InitArray
 {
@@ -50,21 +65,15 @@ int TestCompact()
   dax::cont::scheduleDebug(MakeMask(), array, ARRAY_SIZE);
   dax::cont::streamCompactDebug(array,result);
 
-  if(result.size() != array.size()/2)
-    {
-    std::cout << "Compacted array was of invalid length" << std::endl;
-    return 1;
-    }
+  test_assert(result.size() == array.size()/2,
+              "result of compacation is an incorrect size.");
 
   std::cout << "Checking results." << std::endl;
   for (dax::Id index = 0; index < result.size(); index++)
     {
     dax::Id value = result[index];
-    if (value != index + OFFSET)
-      {
-      std::cout << "Got bad value." << std::endl;
-      return 1;
-      }
+    test_assert(value == (index*2),
+                "Incorrect value in compaction result.");
     }
 
   }
