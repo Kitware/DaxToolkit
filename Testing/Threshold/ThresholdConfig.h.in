@@ -1,0 +1,16 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+===========================================================================*/
+
+#ifndef __ThresholdConfig_h
+#define __ThresholdConfig_h
+
+#cmakedefine DAX_ENABLE_OPENMP
+
+#cmakedefine DAX_ENABLE_CUDA
+
+#endif __ThresholdConfig_h
