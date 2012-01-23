@@ -13,6 +13,7 @@
 #include <dax/exec/Field.h>
 
 #include <dax/internal/GridStructures.h>
+#include <dax/exec/internal/ErrorHandler.h>
 #include <dax/exec/internal/FieldAccess.h>
 
 namespace dax {
@@ -30,14 +31,15 @@ class WorkMapCell<dax::exec::CellVoxel>
 {
 private:
   dax::exec::CellVoxel Cell;
+  dax::exec::internal::ErrorHandler ErrorHandler;
 
 public:
   typedef CellVoxel CellType;
 
   DAX_EXEC_EXPORT WorkMapCell(
-    const dax::internal::StructureUniformGrid &gridStructure,
-    dax::Id cellIndex = 0)
-    : Cell(gridStructure, cellIndex) { }
+      const dax::internal::StructureUniformGrid &gridStructure,
+      const dax::exec::internal::ErrorHandler &errorHandler)
+    : Cell(gridStructure, 0), ErrorHandler(errorHandler) { }
 
   DAX_EXEC_EXPORT const dax::exec::CellVoxel GetCell() const
   {
@@ -85,6 +87,11 @@ public:
   DAX_EXEC_EXPORT void SetCellIndex(dax::Id cellIndex)
   {
     this->Cell.SetIndex(cellIndex);
+  }
+
+  DAX_EXEC_EXPORT void RaiseError(const char *message)
+  {
+    this->ErrorHandler.RaiseError(message);
   }
 };
 

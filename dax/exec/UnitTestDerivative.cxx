@@ -9,6 +9,7 @@
 
 #include <dax/exec/WorkMapCell.h>
 #include <dax/exec/WorkMapField.h>
+#include <dax/exec/internal/ErrorHandler.h>
 #include <dax/internal/GridStructures.h>
 
 #include <fstream>
@@ -29,6 +30,7 @@
 
 namespace
 {
+
 /// Simple structure describing a linear field.  Has a convienience class
 /// for getting values.
 struct LinearField {
@@ -39,7 +41,12 @@ struct LinearField {
     return dax::dot(coordinates, this->Gradient) + this->OriginValue;
   }
 };
-}
+
+/// An (invalid) error handler to pass to work constructors.
+dax::exec::internal::ErrorHandler ErrorHandler
+  = dax::exec::internal::ErrorHandler(dax::internal::DataArray<char>());
+
+} // Anonymous namespace
 
 const dax::Id bufferSize = 1024*1024;
 static dax::Scalar fieldBuffer[bufferSize];
@@ -107,7 +114,8 @@ static void TestDerivativeVoxel(
     const dax::internal::StructureUniformGrid &gridstruct,
     const LinearField &fieldValues)
 {
-  dax::exec::WorkMapField<dax::exec::CellVoxel> workField(gridstruct, 0);
+  dax::exec::WorkMapField<dax::exec::CellVoxel> workField(gridstruct,
+                                                          ErrorHandler);
   dax::exec::FieldCoordinates coordField
       = dax::exec::FieldCoordinates(
           dax::internal::DataArray<dax::Vector3>());
@@ -115,10 +123,12 @@ static void TestDerivativeVoxel(
   dax::exec::FieldPoint<dax::Scalar> scalarField
       = CreatePointField(workField, coordField, fieldValues, numPoints);
 
+  dax::exec::WorkMapCell<dax::exec::CellVoxel> workCell(gridstruct,
+                                                        ErrorHandler);
   dax::Id numCells = dax::internal::numberOfCells(gridstruct);
   for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
     {
-    dax::exec::WorkMapCell<dax::exec::CellVoxel> workCell(gridstruct,cellIndex);
+    workCell.SetCellIndex(cellIndex);
     TestDerivativeCell(workCell, coordField, scalarField, fieldValues);
     }
 }

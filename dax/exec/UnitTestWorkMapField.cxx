@@ -23,6 +23,14 @@
     throw error.str();                                  \
   }
 
+namespace {
+
+/// An (invalid) error handler to pass to work constructors.
+dax::exec::internal::ErrorHandler ErrorHandler
+  = dax::exec::internal::ErrorHandler(dax::internal::DataArray<char>());
+
+}  // Anonymous namespace
+
 static void TestMapFieldVoxel(
   dax::exec::WorkMapField<dax::exec::CellVoxel> work,
   const dax::internal::StructureUniformGrid &gridstruct,
@@ -79,28 +87,33 @@ static void TestMapFieldVoxel()
 {
   std::cout << "Testing WorkMapField<CellVoxel>" << std::endl;
 
+  {
   dax::internal::StructureUniformGrid gridstruct;
-
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
   gridstruct.Extent.Max = dax::make_Id3(9, 9, 9);
+  dax::exec::WorkMapField<dax::exec::CellVoxel> work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0; flatIndex < 1000; flatIndex++)
     {
-    dax::exec::WorkMapField<dax::exec::CellVoxel> work(gridstruct, flatIndex);
+    work.SetIndex(flatIndex);
     TestMapFieldVoxel(work, gridstruct, flatIndex);
     }
+  }
 
+  {
+  dax::internal::StructureUniformGrid gridstruct;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
   gridstruct.Extent.Max = dax::make_Id3(14, 5, 12);
-  dax::exec::WorkMapField<dax::exec::CellVoxel> work(gridstruct, 0);
+  dax::exec::WorkMapField<dax::exec::CellVoxel> work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0; flatIndex < 1500; flatIndex++)
     {
     work.SetIndex(flatIndex);
     TestMapFieldVoxel(work, gridstruct, flatIndex);
     }
+  }
 }
 
 int UnitTestWorkMapField(int, char *[])
