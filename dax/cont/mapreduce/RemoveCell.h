@@ -80,7 +80,6 @@ protected:
     //does the stream compaction
 
     //make a temporary result  vector of the correct container type
-    //ToDo: make this nicer syntax
     dax::cont::ArrayHandle<dax::Id> newCells;
 
     //result cells now holds the ids of thresholded geometeries cells.

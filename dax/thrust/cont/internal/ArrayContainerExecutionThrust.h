@@ -43,6 +43,10 @@ public:
   ///
   void Allocate(dax::Id numEntries) { this->DeviceArray.resize(numEntries); }
 
+  /// Returns the length of the array
+  ///
+  dax::Id GetNumberOfEntries() const { return this->DeviceArray.size(); }
+
   /// Copies the data pointed to by the passed in \c iterators (assumed to be
   /// in the control environment), into the array in the execution environment
   /// managed by this class.
