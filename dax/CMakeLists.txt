@@ -17,8 +17,8 @@ dax_declare_headers(${headers})
 
 add_subdirectory(internal)
 
-add_subdirectory(cont)
 add_subdirectory(exec)
+add_subdirectory(cont)
 
 if (DAX_ENABLE_THRUST)
   add_subdirectory(thrust)
