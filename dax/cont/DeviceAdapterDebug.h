@@ -29,6 +29,10 @@ namespace cont {
 ///
 struct DeviceAdapterDebug
 {
+  template<typename T>
+  class ArrayContainerExecution
+      : public dax::cont::internal::ArrayContainerExecutionCPU<T> { };
+
   template<class Functor, class Parameters>
   static void Schedule(Functor functor,
                        Parameters& parameters,
@@ -38,22 +42,15 @@ struct DeviceAdapterDebug
   }
 
   template<typename T>
-  class ArrayContainerExecution
-      : public dax::cont::internal::ArrayContainerExecutionCPU<T> { };
-
-  template<typename HandleType>
-  static HandleType StreamCompact(const HandleType& input)
+  static void StreamCompact(const ArrayContainerExecution<T>& input,
+                                  ArrayContainerExecution<T>& output)
     {
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
     //each index is the stencil value
-    HandleType output;
-//    dax::cont::streamCompactDebug(
-//          dax::cont::internal::DeviceArray(input),
-//          dax::cont::internal::DeviceArray(output)
-//          );
-//    dax::cont::internal::UpdateArrayHandleSize(output);
-    return output;
+    dax::cont::streamCompactDebug(
+          input.GetDeviceArray(),
+          output.GetDeviceArray());
     }
 };
 
