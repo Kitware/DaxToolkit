@@ -15,6 +15,19 @@ public:
     return handle.GetExecutionArray();
     }
 
+  template<typename T, class DeviceAdapter>
+  inline static typename DeviceAdapter::template ArrayContainerExecution<T>& ExecutionArray(
+      dax::cont::ArrayHandle<T,DeviceAdapter>& handle)
+    {
+    return handle.GetExecutionArray();
+    }
+
+  template<typename T, class DeviceAdapter>
+  inline static void UpdateArraySize(dax::cont::ArrayHandle<T,DeviceAdapter>& handle)
+    {
+    handle.UpdateArraySize();
+    }
+
   };
 
 

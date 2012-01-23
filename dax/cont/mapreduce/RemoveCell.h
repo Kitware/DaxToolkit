@@ -81,12 +81,14 @@ protected:
 
     //make a temporary result  vector of the correct container type
     //ToDo: make this nicer syntax
-    typename DeviceAdapter::template ArrayContainerExecution<dax::Id> result;
+    dax::cont::ArrayHandle<dax::Id> newCells;
 
     //result cells now holds the ids of thresholded geometeries cells.
     DeviceAdapter::StreamCompact(
       dax::cont::internal::ArrayHandleHelper::ExecutionArray(this->ResultHandle),
-      result);
+      dax::cont::internal::ArrayHandleHelper::ExecutionArray(newCells));
+
+    dax::cont::internal::ArrayHandleHelper::UpdateArraySize(newCells);
 
     //outGrid = OutGridType(inGrid,resultCells);
 

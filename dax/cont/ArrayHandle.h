@@ -199,6 +199,28 @@ private:
     {
     return this->Internals->ExecutionArray;
     }
+
+  /// Returns the raw execution array. This doesn't verify
+  /// any level of synchronization, so the caller must first
+  /// make sure the array is of the correct size and is allocated
+  typename DeviceAdapter::template ArrayContainerExecution<ValueType>&
+    GetExecutionArray()
+    {
+    this->Internals->Synchronized = false;
+    return this->Internals->ExecutionArray;
+    }
+
+  /// Queries the internal execution array to determine the updated
+  /// size of the array. This is used in conjuction with GetExecutionArray
+  /// by algorithms that don't know the size of an array intill execution
+  void UpdateArraySize()
+    {
+    this->Internals->Synchronized = false;
+    this->Internals->NumberOfEntries =
+        this->Internals->ExecutionArray.GetNumberOfEntries();
+    }
+
+
 };
 
 }
