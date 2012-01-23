@@ -28,11 +28,11 @@ namespace cont {
 struct DeviceAdapterDebug
 {
   template<class Functor, class Parameters>
-  static void Schedule(Functor functor,
-                       Parameters parameters,
-                       dax::Id numInstances)
+  static char *Schedule(Functor functor,
+                        Parameters parameters,
+                        dax::Id numInstances)
   {
-    dax::cont::scheduleDebug(functor, parameters, numInstances);
+    return dax::cont::scheduleDebug(functor, parameters, numInstances);
   }
 
   template<typename T>
