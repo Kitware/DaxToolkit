@@ -12,6 +12,7 @@
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
+#include <dax/cont/internal/ArrayHandleHelper.h>
 
 namespace dax {
 namespace cont {
@@ -76,12 +77,18 @@ protected:
   template<typename InGridType, typename OutGridType>
   void GenerateOutput(const InGridType &inGrid, OutGridType& outGrid)
   {
-    //does stream compaction
-    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> newCells;
-    //result cells now holds the ids of thresholded geometeries cells.
-    newCells = DeviceAdapter::StreamCompact(this->ResultHandle);
+    //does the stream compaction
 
-//    outGrid = OutGridType(inGrid,resultCells);
+    //make a temporary result  vector of the correct container type
+    //ToDo: make this nicer syntax
+    typename DeviceAdapter::template ArrayContainerExecution<dax::Id> result;
+
+    //result cells now holds the ids of thresholded geometeries cells.
+    DeviceAdapter::StreamCompact(
+      dax::cont::internal::ArrayHandleHelper::ExecutionArray(this->ResultHandle),
+      result);
+
+    //outGrid = OutGridType(inGrid,resultCells);
 
   }
 
