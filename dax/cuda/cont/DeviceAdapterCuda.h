@@ -23,6 +23,8 @@
 #include <dax/cuda/cont/ScheduleThrust.h>
 #endif
 
+#include <dax/cuda/cont/StreamCompact.h>
+
 #include <dax/cuda/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
@@ -34,6 +36,11 @@ namespace cont {
 ///
 struct DeviceAdapterCuda
 {
+  template<typename T>
+  class ArrayContainerExecution
+      : public dax::cuda::cont::internal::ArrayContainerExecutionThrust<T>
+  { };
+
   template<class Functor, class Parameters>
   static void Schedule(Functor functor,
                        Parameters& parameters,
@@ -47,9 +54,15 @@ struct DeviceAdapterCuda
   }
 
   template<typename T>
-  class ArrayContainerExecution
-      : public dax::cuda::cont::internal::ArrayContainerExecutionThrust<T>
-  { };
+  static void StreamCompact(const ArrayContainerExecution<T>& input,
+                                  ArrayContainerExecution<T>& output)
+    {
+    //the input array is both the input and the stencil output for the scan
+    //step. In this case the index position is the input and the value at
+    //each index is the stencil value
+    dax::cuda::cont::streamCompact(input.GetDeviceArray(),
+                                   output.GetDeviceArray());
+    }
 };
 
 }
