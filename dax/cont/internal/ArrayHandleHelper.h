@@ -9,7 +9,7 @@ class ArrayHandleHelper
   {
 public:
   template<typename T, class DeviceAdapter>
-  static const typename DeviceAdapter::template ArrayContainerExecution<T>& ExecutionArray(
+  inline static const typename DeviceAdapter::template ArrayContainerExecution<T>& ExecutionArray(
       const dax::cont::ArrayHandle<T,DeviceAdapter>& handle)
     {
     return handle.GetExecutionArray();

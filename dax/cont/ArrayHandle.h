@@ -22,8 +22,12 @@
 namespace dax {
 namespace cont {
 namespace internal {
-class ArrayHandleHelper;
-} //internal
+  //forward declare the handle helper so the
+  //friend relationship will work
+  class ArrayHandleHelper;
+}
+
+
 
 /// Manages an array-worth of data. Typically this data holds field data. The
 /// array handle optionally contains a reference to user managed data, with
@@ -162,15 +166,6 @@ public:
     this->Internals->Synchronized = true;
   }
 
-  /// Returns the raw execution array. This doesn't verify
-  /// any level of synchronization, so the caller must first
-  /// make sure the array is of the correct size and is allocated
-  const typename DeviceAdapter::template ArrayContainerExecution<ValueType>&
-    GetExecutionArray() const
-    {
-    return this->Internals->ExecutionArray;
-    }
-
 private:
   struct InternalStruct {
     dax::cont::internal::IteratorContainer<
@@ -192,8 +187,18 @@ private:
 
   boost::shared_ptr<InternalStruct> Internals;
 
-  //make the converter class a friend class
-  friend class ArrayHandleHelper;
+  //make the converter class a friend class,
+  //so that it can access GetExecutionArray.
+  friend class dax::cont::internal::ArrayHandleHelper;
+
+  /// Returns the raw execution array. This doesn't verify
+  /// any level of synchronization, so the caller must first
+  /// make sure the array is of the correct size and is allocated
+  const typename DeviceAdapter::template ArrayContainerExecution<ValueType>&
+    GetExecutionArray() const
+    {
+    return this->Internals->ExecutionArray;
+    }
 };
 
 }
