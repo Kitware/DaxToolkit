@@ -61,8 +61,40 @@ public:
   ///
   void ReleaseResources() { this->Allocate(0); }
 
+  /// Gets the vector iterators for the contained array. May be too low level
+  /// to expose to everyone
+  ///
+  typename ::std::vector<ValueType>::iterator begin()
+  {
+    return this->DeviceArray.begin();
+  }
+  typename ::std::vector<ValueType>::const_iterator begin() const
+  {
+    return this->DeviceArray.begin();
+  }
+  typename ::std::vector<ValueType>::iterator end()
+  {
+    return this->DeviceArray.end();
+  }
+  typename ::std::vector<ValueType>::const_iterator end() const
+  {
+    return this->DeviceArray.end();
+  }
+
   /// Gets a DataArray that is valid in the execution environment.
   dax::internal::DataArray<ValueType> GetExecutionArray();
+
+  /// Gets the thrust devce_vector for the contained array. May be too low level
+  /// to expose to everyone
+  ///
+  const ::std::vector<ValueType>& GetDeviceArray() const
+    {
+    return this->DeviceArray;
+    }
+  ::std::vector<ValueType>& GetDeviceArray()
+    {
+    return this->DeviceArray;
+    }
 
 private:
   ArrayContainerExecutionCPU(const ArrayContainerExecutionCPU &); // Not implemented

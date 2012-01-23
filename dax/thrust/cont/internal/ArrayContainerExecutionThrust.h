@@ -70,7 +70,17 @@ public:
   {
     return this->DeviceArray.begin();
   }
+  typename ::thrust::device_vector<ValueType>::const_iterator
+    GetBeginThrustIterator() const
+  {
+    return this->DeviceArray.begin();
+  }
   typename ::thrust::device_vector<ValueType>::iterator GetEndThrustIterator()
+  {
+    return this->DeviceArray.end();
+  }
+  typename ::thrust::device_vector<ValueType>::const_iterator
+    GetEndThrustIterator() const
   {
     return this->DeviceArray.end();
   }
@@ -79,6 +89,18 @@ public:
   /// can be passed to a device backend kernel.
   ///
   dax::internal::DataArray<ValueType> GetExecutionArray();
+
+  /// Gets the thrust devce_vector for the contained array. May be too low level
+  /// to expose to everyone
+  ///
+  const ::thrust::device_vector<ValueType>& GetDeviceArray() const
+    {
+    return this->DeviceArray;
+    }
+  ::thrust::device_vector<ValueType>& GetDeviceArray()
+    {
+    return this->DeviceArray;
+    }
 
 private:
   ArrayContainerExecutionThrust(const ArrayContainerExecutionThrust &); // Not implemented
