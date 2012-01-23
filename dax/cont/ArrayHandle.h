@@ -21,6 +21,10 @@
 
 namespace dax {
 namespace cont {
+namespace internal {
+class Converter;
+} //internal
+
 
 /// Manages an array-worth of data. Typically this data holds field data. The
 /// array handle optionally contains a reference to user managed data, with
@@ -167,6 +171,20 @@ private:
     typename DeviceAdapter::template ArrayContainerExecution<ValueType>
         ExecutionArray;
 
+    const typename DeviceAdapter::template ArrayContainerExecution<ValueType>&
+      GetExecutionArray()
+      {
+      if (!this->IsSynchronized())
+        {
+        assert(this->IsControlArrayValid());
+        this->Internals->ExecutionArray.Allocate(this->GetNumberOfEntries());
+        this->Internals->ExecutionArray.CopyFromControlToExecution(
+              this->Internals->ControlArray);
+        this->Internals->Synchronized = true;
+        }
+        return this->Internals->ExecutionArray;
+      }
+
     bool Synchronized;
 
     dax::Id NumberOfEntries;
@@ -179,6 +197,9 @@ private:
   };
 
   boost::shared_ptr<InternalStruct> Internals;
+
+  //make the converter class a friend class
+  friend class Converter;
 };
 
 }
