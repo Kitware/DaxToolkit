@@ -11,6 +11,8 @@ set(headers
   ArrayHandle.h
   DeviceAdapter.h
   DeviceAdapterDebug.h
+  Error.h
+  ErrorExecution.h
   ScheduleDebug.h
   UniformGrid.h
 

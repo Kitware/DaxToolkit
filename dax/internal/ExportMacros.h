@@ -28,8 +28,7 @@
 #define DAX_EXEC_CONT_EXPORT inline
 #endif
 
-// TODO: Do proper exports for dlls.
-#define DAX_CONT_EXPORT
+#define DAX_CONT_EXPORT inline
 
 // Worklet macros.
 #define DAX_WORKLET DAX_EXEC_EXPORT

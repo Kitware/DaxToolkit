@@ -23,9 +23,6 @@
 #endif // DAX_CUDA
 #endif // DAX_DEFAULT_DEVICE_ADAPTER
 
-// Appropriate template parameter for the device adapter
-//#define DAX_DeviceAdapter_TP template <typename> class DeviceAdapter
-
 namespace dax {
 namespace cont {
 
@@ -43,16 +40,20 @@ namespace cont {
 /// done \em before loading in any other Dax header files. Failing to do so
 /// could create inconsistencies in the default adapter used amongst classes.
 
-/// \fn template<class Functor, class Parameters> void DeviceAdapter::Schedule(Functor functor, Parameters parameters, dax::Id numInstances)
+/// \fn template<class Functor, class Parameters> const char *DeviceAdapter::Schedule(Functor functor, Parameters parameters, dax::Id numInstances)
 /// \brief Schedule many instances of a function to run on concurrent threads.
 ///
 /// Calls the \c functor on several threads. This is the function used in the
 /// control environment to spawn activity in the execution environment.
 /// \c functor is a function-like object that can be invoked with the calling
-/// specification <tt>functor(Parameters parameters, dax::Id index)</tt>. The
-/// first argument is the \c parameters passed through. The second argument
-/// uniquely identifies the thread or instance of the invocation. There should
-/// be one invocation for each index in the range [0, \c numInstances].
+/// specification <tt>functor(Parameters parameters, dax::Id index,
+/// dax::exec::internal::ErrorHandler errorHandler)</tt>. The first argument is
+/// the \c parameters passed through. The second argument uniquely identifies
+/// the thread or instance of the invocation. There should be one invocation
+/// for each index in the range [0, \c numInstances]. The third argment
+/// contains an ErrorHandler that can be used to raise an error in the functor.
+/// If an error is raised, the string that was raised is returned. Otherwise,
+/// NULL or a zero-length string is returned.
 
 /// \class template<class T> DeviceAdapter::ArrayContainerExecution<T>
 /// \brief Class that manages data in the execution environment.
