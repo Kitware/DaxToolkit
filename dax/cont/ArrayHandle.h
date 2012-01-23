@@ -22,9 +22,8 @@
 namespace dax {
 namespace cont {
 namespace internal {
-class Converter;
+class ArrayHandleHelper;
 } //internal
-
 
 /// Manages an array-worth of data. Typically this data holds field data. The
 /// array handle optionally contains a reference to user managed data, with
@@ -163,6 +162,15 @@ public:
     this->Internals->Synchronized = true;
   }
 
+  /// Returns the raw execution array. This doesn't verify
+  /// any level of synchronization, so the caller must first
+  /// make sure the array is of the correct size and is allocated
+  const typename DeviceAdapter::template ArrayContainerExecution<ValueType>&
+    GetExecutionArray() const
+    {
+    return this->Internals->ExecutionArray;
+    }
+
 private:
   struct InternalStruct {
     dax::cont::internal::IteratorContainer<
@@ -170,20 +178,6 @@ private:
 
     typename DeviceAdapter::template ArrayContainerExecution<ValueType>
         ExecutionArray;
-
-    const typename DeviceAdapter::template ArrayContainerExecution<ValueType>&
-      GetExecutionArray()
-      {
-      if (!this->IsSynchronized())
-        {
-        assert(this->IsControlArrayValid());
-        this->Internals->ExecutionArray.Allocate(this->GetNumberOfEntries());
-        this->Internals->ExecutionArray.CopyFromControlToExecution(
-              this->Internals->ControlArray);
-        this->Internals->Synchronized = true;
-        }
-        return this->Internals->ExecutionArray;
-      }
 
     bool Synchronized;
 
@@ -199,7 +193,7 @@ private:
   boost::shared_ptr<InternalStruct> Internals;
 
   //make the converter class a friend class
-  friend class Converter;
+  friend class ArrayHandleHelper;
 };
 
 }
