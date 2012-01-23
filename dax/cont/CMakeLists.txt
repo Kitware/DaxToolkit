@@ -18,8 +18,6 @@ set(headers
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
   )
 #-----------------------------------------------------------------------------
-add_subdirectory(mapreduce)
-
 add_subdirectory(internal)
 
 dax_declare_headers(${impl_headers} ${headers})

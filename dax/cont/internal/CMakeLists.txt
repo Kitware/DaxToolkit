@@ -13,6 +13,7 @@ set(headers
   ExecutionPackageGrid.h
   IteratorContainer.h
   IteratorPolymorphic.h
+  ScheduleRemoveCell.h
   )
 
 dax_declare_headers(${headers})

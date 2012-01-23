@@ -1,5 +1,5 @@
-#ifndef __dax_exec_mapreduce_RemoveCell_h
-#define __dax_exec_mapreduce_RemoveCell_h
+#ifndef __dax_exec_mapreduce_ScheduleRemoveCell_h
+#define __dax_exec_mapreduce_ScheduleRemoveCell_h
 
 #include <dax/Types.h>
 #include <dax/exec/Cell.h>
@@ -16,14 +16,14 @@
 
 namespace dax {
 namespace cont {
-namespace mapreduce {
+namespace internal {
 
 
-/// RemoveCell is the control enviorment representation of a worklet
+/// ScheduleRemoveCell is the control enviorment representation of a worklet
 /// of the type WorkRemoveCell. This class handles properly calling the worklet
 /// that the user has defined has being of type WorkRemoveCell.
 ///
-/// Since RemoveCell uses CRTP, every worklet needs to construct a class
+/// Since ScheduleRemoveCell uses CRTP, every worklet needs to construct a class
 /// that inherits from this class and define GenerateParameters.
 ///
 template<class Derived,
@@ -31,13 +31,13 @@ template<class Derived,
          class Functor,
          class DeviceAdapter
          >
-class RemoveCell
+class ScheduleRemoveCell
 {
 public:
   typedef typename Parameters::CellType CellType;
   typedef dax::exec::WorkRemoveCell<CellType> WorkType;
 
-  /// Executes the RemoveCell algorithm on the inputGrid and places
+  /// Executes the ScheduleRemoveCell algorithm on the inputGrid and places
   /// the resulting unstructured grid in outGrid
   template<typename InGridType, typename OutGridType>
   void run(const InGridType& inGrid,
@@ -51,7 +51,7 @@ public:
 /// \brief Abstract method that inherited classes must implement.
 ///
 /// The method must return the populated parameters struct with all the information
-/// needed for the RemoveCell class to execute the \c Functor.
+/// needed for the ScheduleRemoveCell class to execute the \c Functor.
 
 protected:
   //constructs everything needed to call the user defined worklet
@@ -115,9 +115,9 @@ private:
 
 
 
-} //mapreduce
+} //internal
 } //exec
 } //dax
 
 
-#endif // __dax_exec_mapreduce_RemoveCell_h
+#endif // __dax_exec_mapreduce_ScheduleRemoveCell_h

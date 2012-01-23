@@ -20,7 +20,7 @@
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
 #include <dax/exec/WorkRemoveCell.h>
-#include <dax/cont/mapreduce/RemoveCell.h>
+#include <dax/cont/internal/ScheduleRemoveCell.h>
 
 #include <Worklets/Threshold.worklet>
 
@@ -58,7 +58,7 @@ struct Functor
 template<class Parameters,
          class Functor,
          class DeviceAdapter>
-class Threshold : public dax::cont::mapreduce::RemoveCell
+class Threshold : public dax::cont::internal::ScheduleRemoveCell
     <
     Threshold<Parameters,
               Functor,
