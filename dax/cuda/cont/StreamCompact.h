@@ -15,10 +15,18 @@ namespace dax {
 namespace cuda {
 namespace cont {
 
-template<typename T, typename U>
-DAX_CONT_EXPORT void streamCompact(const T& t, U& u)
+template<typename T>
+DAX_CONT_EXPORT void streamCompact(const T& input, T& output)
 {
-  dax::thrust::cont::streamCompact(t,u);
+  dax::thrust::cont::streamCompact(input,output);
+}
+
+template<typename T, typename U>
+DAX_CONT_EXPORT void streamCompact(const T& input,
+                                   const U& stencil,
+                                   T& output)
+{
+  dax::thrust::cont::streamCompact(input,stencil,output);
 }
 
 }
