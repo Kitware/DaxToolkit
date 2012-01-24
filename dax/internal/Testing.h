@@ -54,15 +54,15 @@ public:
   class TestFailure
   {
   public:
-    DAX_EXEC_CONT_EXPORT TestFailure(const std::string &file,
-                                     dax::Id line,
-                                     const std::string &message)
+    DAX_CONT_EXPORT TestFailure(const std::string &file,
+                                dax::Id line,
+                                const std::string &message)
       : File(file), Line(line), Message(message) { }
 
-    DAX_EXEC_CONT_EXPORT TestFailure(const std::string &file,
-                                     dax::Id line,
-                                     const std::string &message,
-                                     const std::string &condition)
+    DAX_CONT_EXPORT TestFailure(const std::string &file,
+                                dax::Id line,
+                                const std::string &message,
+                                const std::string &condition)
       : File(file), Line(line)
     {
       this->Message.append(message);
@@ -71,11 +71,9 @@ public:
       this->Message.append(")");
     }
 
-    DAX_EXEC_CONT_EXPORT const std::string &GetFile() const {
-      return this->File;
-    }
-    DAX_EXEC_CONT_EXPORT dax::Id GetLine() const { return this->Line; }
-    DAX_EXEC_CONT_EXPORT const std::string &GetMessage() const {
+    DAX_CONT_EXPORT const std::string &GetFile() const { return this->File; }
+    DAX_CONT_EXPORT dax::Id GetLine() const { return this->Line; }
+    DAX_CONT_EXPORT const std::string &GetMessage() const {
       return this->Message;
     }
   private:
@@ -84,11 +82,11 @@ public:
     std::string Message;
   };
 
-  static DAX_EXEC_CONT_EXPORT void Assert(bool condition,
-                                          const std::string &file,
-                                          dax::Id line,
-                                          const std::string &message,
-                                          const std::string &conditionString)
+  static DAX_CONT_EXPORT void Assert(bool condition,
+                                     const std::string &file,
+                                     dax::Id line,
+                                     const std::string &message,
+                                     const std::string &conditionString)
   {
     if (condition)
       {
@@ -128,7 +126,7 @@ public:
   /// }
   ///
   template<class Func>
-  static DAX_EXEC_CONT_EXPORT int Run(Func function)
+  static DAX_CONT_EXPORT int Run(Func function)
   {
     try
       {

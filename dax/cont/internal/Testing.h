@@ -20,7 +20,7 @@ struct Testing
 {
 public:
   template<class Func>
-  static DAX_EXEC_CONT_EXPORT int Run(Func function)
+  static DAX_CONT_EXPORT int Run(Func function)
   {
     try
       {

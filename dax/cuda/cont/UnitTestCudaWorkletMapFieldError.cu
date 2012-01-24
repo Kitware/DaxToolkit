@@ -10,38 +10,14 @@
 
 #include <dax/cont/worklet/testing/FieldMapError.h>
 
-#include <math.h>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <dax/TypeTraits.h>
-
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <vector>
+#include <dax/cont/internal/Testing.h>
 
 namespace {
 
 const dax::Id DIM = 64;
-
-#define test_assert(condition, message) \
-  test_assert_impl(condition, message, __FILE__, __LINE__);
-
-static inline void test_assert_impl(bool condition,
-                                    const std::string& message,
-                                    const char *file,
-                                    int line)
-{
-  if(!condition)
-    {
-    std::stringstream error;
-    error << file << ":" << line << std::endl;
-    error << message << std::endl;
-    throw error.str();
-    }
-}
 
 //-----------------------------------------------------------------------------
 static void TestFieldMapError()
@@ -59,12 +35,12 @@ static void TestFieldMapError()
   catch (dax::cont::ErrorExecution error)
     {
     std::cout << "Got expected ErrorExecution object." << std::endl;
-    test_assert(error.GetWorkletName() == "FieldMapError",
-                "Got wrong worklet name.");
+    DAX_TEST_ASSERT(error.GetWorkletName() == "FieldMapError",
+                    "Got wrong worklet name.");
     gotError = true;
     }
 
-  test_assert(gotError, "Never got the error thrown.");
+  DAX_TEST_ASSERT(gotError, "Never got the error thrown.");
 }
 
 } // Anonymous namespace
@@ -72,17 +48,5 @@ static void TestFieldMapError()
 //-----------------------------------------------------------------------------
 int UnitTestCudaWorkletMapFieldError(int, char *[])
 {
-  try
-    {
-    TestFieldMapError();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::cont::internal::Testing::Run(TestFieldMapError);
 }
