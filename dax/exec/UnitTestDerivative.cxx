@@ -12,21 +12,7 @@
 #include <dax/exec/internal/ErrorHandler.h>
 #include <dax/internal/GridStructures.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
-
-#include <vector>
-
-
-#define TEST_FAIL(msg)                                  \
-  {                                                     \
-    std::stringstream error;                            \
-    error << __FILE__ << ":" << __LINE__ << std::endl;  \
-    error msg;                                          \
-    throw error.str();                                  \
-  }
+#include <dax/internal/Testing.h>
 
 namespace
 {
@@ -58,10 +44,8 @@ static dax::exec::FieldPoint<dax::Scalar> CreatePointField(
     const LinearField &fieldValues,
     dax::Id numPoints)
 {
-  if (bufferSize < numPoints)
-    {
-    TEST_FAIL(<< "Internal test error.  Buffer not large enough");
-    }
+  DAX_TEST_ASSERT(bufferSize >= numPoints,
+                  "Internal test error.  Buffer not large enough");
 
   // Create field.
   dax::internal::DataArray<dax::Scalar> fieldData(fieldBuffer, numPoints);
@@ -101,10 +85,8 @@ static void TestDerivativeCell(
                                         pcoords,
                                         coordField,
                                         scalarField);
-        if (computedDerivative != fieldValues.Gradient)
-          {
-          TEST_FAIL(<< "Bad derivative");
-          }
+        DAX_TEST_ASSERT(computedDerivative == fieldValues.Gradient,
+                        "Bad derivative");
         }
       }
     }
@@ -166,19 +148,12 @@ static void TestDerivativeVoxel()
   TestDerivativeVoxel(gridstruct, fieldValues);
 }
 
+static void TestDerivatives()
+{
+  TestDerivativeVoxel();
+}
+
 int UnitTestDerivative(int, char *[])
 {
-  try
-    {
-    TestDerivativeVoxel();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::internal::Testing::Run(TestDerivatives);
 }

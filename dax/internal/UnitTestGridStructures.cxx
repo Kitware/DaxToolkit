@@ -8,37 +8,24 @@
 
 #include <dax/internal/GridStructures.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include <dax/internal/Testing.h>
 
-#define TEST_FAIL(msg)                                  \
-  {                                                     \
-    std::stringstream error;                            \
-    error << __FILE__ << ":" << __LINE__ << std::endl;  \
-    error msg;                                          \
-    throw error.str();                                  \
-  }
+namespace {
 
 static void TestGridSize(const dax::internal::StructureUniformGrid &gridstruct,
                          dax::Id numPoints,
                          dax::Id numCells)
 {
   dax::Id computedNumPoints = dax::internal::numberOfPoints(gridstruct);
-  if (computedNumPoints != numPoints)
-    {
-    TEST_FAIL(<< "Structured grid returned wrong number of points");
-    }
+  DAX_TEST_ASSERT(computedNumPoints == numPoints,
+                  "Structured grid returned wrong number of points");
 
   dax::Id computedNumCells = dax::internal::numberOfCells(gridstruct);
-  if (computedNumCells != numCells)
-    {
-    TEST_FAIL(<< "Structured grid return wrong number of cells");
-    }
+  DAX_TEST_ASSERT(computedNumCells == numCells,
+                  "Structured grid return wrong number of cells");
 }
 
-static void TestGridSize()
+static void TestGridSizes()
 {
   std::cout << "Testing grid size." << std::endl;
 
@@ -55,19 +42,9 @@ static void TestGridSize()
   TestGridSize(gridstruct, 1936, 1500);
 }
 
+} // anonymous namespace
+
 int UnitTestGridStructures(int, char *[])
 {
-  try
-    {
-    TestGridSize();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::internal::Testing::Run(TestGridSizes);
 }

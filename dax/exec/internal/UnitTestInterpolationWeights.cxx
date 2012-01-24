@@ -8,18 +8,9 @@
 
 #include <dax/exec/internal/InterpolationWeights.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include <dax/internal/Testing.h>
 
-#define TEST_FAIL(msg)                                  \
-  {                                                     \
-    std::stringstream error;                            \
-    error << __FILE__ << ":" << __LINE__ << std::endl;  \
-    error msg;                                          \
-    throw error.str();                                  \
-  }
+namespace {
 
 static void TestInterpolationWeightsVoxel()
 {
@@ -48,17 +39,13 @@ static void TestInterpolationWeightsVoxel()
       {
       if (weightIndex == vertexIndex)
         {
-        if (weights[weightIndex] != 1.0)
-          {
-          TEST_FAIL(<< "Got bad interpolation weight");
-          }
+        DAX_TEST_ASSERT(weights[weightIndex] == 1.0,
+                        "Got bad interpolation weight");
         }
       else
         {
-        if (weights[weightIndex] != 0.0)
-          {
-          TEST_FAIL(<< "Got bad interpolation weight");
-          }
+        DAX_TEST_ASSERT(weights[weightIndex] == 0.0,
+                        "Got bad interpolation weight");
         }
       }
     }
@@ -69,26 +56,19 @@ static void TestInterpolationWeightsVoxel()
                                                  weights);
   for (dax::Id weightIndex = 0; weightIndex < 8; weightIndex++)
     {
-    if (weights[weightIndex] != 0.125)
-      {
-      TEST_FAIL(<< "Got bad interpolation weight");
-      }
+    DAX_TEST_ASSERT(weights[weightIndex] == 0.125,
+                    "Got bad interpolation weight");
     }
+}
+
+void TestInterpolationWeights()
+{
+  TestInterpolationWeightsVoxel();
+}
+
 }
 
 int UnitTestInterpolationWeights(int, char *[])
 {
-  try
-    {
-    TestInterpolationWeightsVoxel();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::internal::Testing::Run(TestInterpolationWeights);
 }

@@ -7,21 +7,10 @@
 ===========================================================================*/
 #include <dax/exec/WorkMapField.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include <dax/internal/Testing.h>
 
 #include <algorithm>
 #include <vector>
-
-#define TEST_FAIL(msg)                                  \
-  {                                                     \
-    std::stringstream error;                            \
-    error << __FILE__ << ":" << __LINE__ << std::endl;  \
-    error msg;                                          \
-    throw error.str();                                  \
-  }
 
 namespace {
 
@@ -36,10 +25,8 @@ static void TestMapFieldVoxel(
   const dax::internal::StructureUniformGrid &gridstruct,
   dax::Id pointFlatIndex)
 {
-  if (work.GetIndex() != pointFlatIndex)
-    {
-    TEST_FAIL(<< "Work object returned wrong index.");
-    }
+  DAX_TEST_ASSERT(work.GetIndex() == pointFlatIndex,
+                  "Work object returned wrong index.");
 
   dax::Id3 pointIjkIndex = dax::flatIndexToIndex3(pointFlatIndex,
                                                   gridstruct.Extent);
@@ -56,16 +43,12 @@ static void TestMapFieldVoxel(
   dax::exec::FieldPoint<dax::Scalar> field(fieldArray);
 
   dax::Scalar scalarValue = work.GetFieldValue(field);
-  if (scalarValue != pointFlatIndex)
-    {
-    TEST_FAIL(<< "Did not get expected data value.");
-    }
+  DAX_TEST_ASSERT(scalarValue == pointFlatIndex,
+                  "Did not get expected data value.");
 
   work.SetFieldValue(field, static_cast<dax::Scalar>(-2));
-  if (fieldData[pointFlatIndex] != -2)
-    {
-    TEST_FAIL(<< "Field value did not set as expected.");
-    }
+  DAX_TEST_ASSERT(fieldData[pointFlatIndex] == -2,
+                  "Field value did not set as expected.");
 
   dax::Vector3 expectedCoords
       = dax::make_Vector3(static_cast<dax::Scalar>(pointIjkIndex[0]),
@@ -77,10 +60,8 @@ static void TestMapFieldVoxel(
   dax::exec::FieldCoordinates fieldCoords(dummyArray);
   dax::Vector3 coords = work.GetFieldValue(fieldCoords);
 
-  if (expectedCoords != coords)
-    {
-    TEST_FAIL(<< "Did not get expected point coordinates.");
-    }
+  DAX_TEST_ASSERT(expectedCoords == coords,
+                  "Did not get expected point coordinates.");
 }
 
 static void TestMapFieldVoxel()
@@ -116,19 +97,12 @@ static void TestMapFieldVoxel()
   }
 }
 
+static void TestMapField()
+{
+  TestMapFieldVoxel();
+}
+
 int UnitTestWorkMapField(int, char *[])
 {
-  try
-    {
-    TestMapFieldVoxel();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::internal::Testing::Run(TestMapField);
 }

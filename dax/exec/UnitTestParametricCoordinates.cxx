@@ -9,22 +9,7 @@
 
 #include <dax/exec/WorkMapCell.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
-
-#include <algorithm>
-#include <vector>
-
-
-#define TEST_FAIL(msg)                                  \
-  {                                                     \
-    std::stringstream error;                            \
-    error << __FILE__ << ":" << __LINE__ << std::endl;  \
-    error msg;                                          \
-    throw error.str();                                  \
-  }
+#include <dax/internal/Testing.h>
 
 namespace {
 
@@ -46,20 +31,16 @@ static void CompareCoordinates(const WorkType &work,
                                                            cell,
                                                            coordField,
                                                            truePCoords);
-  if (computedWCoords != trueWCoords)
-    {
-    TEST_FAIL(<< "Computed wrong world coords from parametric coords.");
-    }
+  DAX_TEST_ASSERT(computedWCoords == trueWCoords,
+                  "Computed wrong world coords from parametric coords.");
 
   dax::Vector3 computedPCoords
       = dax::exec::worldCoordinatesToParametricCoordinates(work,
                                                            cell,
                                                            coordField,
                                                            trueWCoords);
-  if (computedPCoords != truePCoords)
-    {
-    TEST_FAIL(<< "Computed wrong parametric coords from world coords.");
-    }
+  DAX_TEST_ASSERT(computedPCoords == truePCoords,
+                  "Computed wrong parametric coords from world coords.");
 }
 
 static void TestPCoordsVoxel(
@@ -132,19 +113,12 @@ static void TestPCoordsVoxel()
   }
 }
 
+static void TestPCoords()
+{
+  TestPCoordsVoxel();
+}
+
 int UnitTestParametricCoordinates(int, char *[])
 {
-  try
-    {
-    TestPCoordsVoxel();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::internal::Testing::Run(TestPCoords);
 }

@@ -7,10 +7,7 @@
 ===========================================================================*/
 #include <dax/exec/WorkMapCell.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include <dax/internal/Testing.h>
 
 #include <algorithm>
 #include <vector>
@@ -19,14 +16,6 @@ extern void TestCellVoxel(const dax::exec::CellVoxel cell,
                           const dax::internal::StructureUniformGrid &gridstruct,
                           dax::Id cellFlatIndex);
 
-
-#define TEST_FAIL(msg)                                  \
-  {                                                     \
-    std::stringstream error;                            \
-    error << __FILE__ << ":" << __LINE__ << std::endl;  \
-    error msg;                                          \
-    throw error.str();                                  \
-  }
 
 namespace {
 
@@ -41,10 +30,8 @@ static void TestMapCellVoxel(
   const dax::internal::StructureUniformGrid &gridstruct,
   dax::Id cellFlatIndex)
 {
-  if (work.GetCellIndex() != cellFlatIndex)
-    {
-    TEST_FAIL(<< "Work object returned wrong cell index.");
-    }
+  DAX_TEST_ASSERT(work.GetCellIndex() == cellFlatIndex,
+                  "Work object returned wrong cell index.");
 
   dax::Id3 dim = dax::extentDimensions(gridstruct.Extent);
   dax::Id numCells = dim[0]*dim[1]*dim[2];
@@ -58,16 +45,12 @@ static void TestMapCellVoxel(
   dax::exec::FieldCell<dax::Scalar> field(fieldArray);
 
   dax::Scalar scalarValue = work.GetFieldValue(field);
-  if (scalarValue != cellFlatIndex)
-    {
-    TEST_FAIL(<< "Did not get expected data value.");
-    }
+  DAX_TEST_ASSERT(scalarValue == cellFlatIndex,
+                  "Did not get expected data value.");
 
   work.SetFieldValue(field, static_cast<dax::Scalar>(-2));
-  if (fieldData[cellFlatIndex] != -2)
-    {
-    TEST_FAIL(<< "Field value did not set as expected.");
-    }
+  DAX_TEST_ASSERT(fieldData[cellFlatIndex] == -2,
+                  "Field value did not set as expected.");
 
   TestCellVoxel(work.GetCell(), gridstruct, cellFlatIndex);
 }
@@ -109,19 +92,12 @@ static void TestMapCellVoxel()
   }
 }
 
+static void TestMapCell()
+{
+  TestMapCellVoxel();
+}
+
 int UnitTestWorkMapCell(int, char *[])
 {
-  try
-    {
-    TestMapCellVoxel();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::internal::Testing::Run(TestMapCell);
 }

@@ -7,18 +7,7 @@
 ===========================================================================*/
 #include <dax/exec/Cell.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
-
-#define TEST_FAIL(msg)                                  \
-  {                                                     \
-    std::stringstream error;                            \
-    error << __FILE__ << ":" << __LINE__ << std::endl;  \
-    error msg;                                          \
-    throw error.str();                                  \
-  }
+#include <dax/internal/Testing.h>
 
 static void CheckPointIndex(dax::Id pointFlatIndex,
                             const dax::Id3 &pointIjkIndex,
@@ -26,10 +15,8 @@ static void CheckPointIndex(dax::Id pointFlatIndex,
 {
   dax::Id3 compareIndex = dax::flatIndexToIndex3(pointFlatIndex, extent);
 
-  if (compareIndex != pointIjkIndex)
-    {
-    TEST_FAIL(<<"Bad point index.");
-    }
+  DAX_TEST_ASSERT(compareIndex == pointIjkIndex,
+                  "Bad point index.");
 }
 
 // This function is available in the global scope so that it can be used
@@ -41,10 +28,8 @@ void TestCellVoxel(const dax::exec::CellVoxel cell,
   dax::Id3 cellIjkIndex
       = dax::flatIndexToIndex3Cell(cellFlatIndex, gridstruct.Extent);
 
-  if (cell.GetNumberOfPoints() != 8)
-    {
-    TEST_FAIL(<< "CellVoxel has wrong number of points");
-    }
+  DAX_TEST_ASSERT(cell.GetNumberOfPoints() == 8,
+                  "CellVoxel has wrong number of points");
 
   CheckPointIndex(cell.GetPointIndex(0), cellIjkIndex, gridstruct.Extent);
   CheckPointIndex(cell.GetPointIndex(1),
@@ -69,26 +54,19 @@ void TestCellVoxel(const dax::exec::CellVoxel cell,
                   cellIjkIndex + dax::make_Id3(0,1,1),
                   gridstruct.Extent);
 
-  if (cell.GetOrigin() != gridstruct.Origin)
-    {
-    TEST_FAIL(<< "CellVoxel has wrong origin");
-    }
+  DAX_TEST_ASSERT(cell.GetOrigin() == gridstruct.Origin,
+                  "CellVoxel has wrong origin");
 
-  if (cell.GetSpacing() != gridstruct.Spacing)
-    {
-    TEST_FAIL(<< "CellVoxel has wrong spacing");
-    }
+  DAX_TEST_ASSERT(cell.GetSpacing() == gridstruct.Spacing,
+                  "CellVoxel has wrong spacing");
 
-  if (   (cell.GetExtent().Min != gridstruct.Extent.Min)
-      || (cell.GetExtent().Max != gridstruct.Extent.Max) )
-    {
-    TEST_FAIL(<< "CellVoxel has wrong extent");
-    }
+  DAX_TEST_ASSERT(cell.GetExtent().Min == gridstruct.Extent.Min,
+                  "CellVoxel has wrong extent");
+  DAX_TEST_ASSERT(cell.GetExtent().Max == gridstruct.Extent.Max,
+                  "CellVoxel has wrong extent");
 
-  if (cell.GetIndex() != cellFlatIndex)
-    {
-    TEST_FAIL(<< "CellVoxel has wrong index");
-    }
+  DAX_TEST_ASSERT(cell.GetIndex() == cellFlatIndex,
+                  "CellVoxel has wrong index");
 }
 
 static void TestCellVoxel()
@@ -117,19 +95,12 @@ static void TestCellVoxel()
     }
 }
 
+static void TestCells()
+{
+  TestCellVoxel();
+}
+
 int UnitTestCells(int, char *[])
 {
-  try
-    {
-    TestCellVoxel();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::internal::Testing::Run(TestCells);
 }

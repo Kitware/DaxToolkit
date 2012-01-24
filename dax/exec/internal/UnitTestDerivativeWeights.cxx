@@ -8,26 +8,9 @@
 
 #include <dax/exec/internal/DerivativeWeights.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include <dax/internal/Testing.h>
 
-#define TEST_FAIL(msg)                                  \
-  {                                                     \
-    std::stringstream error;                            \
-    error << __FILE__ << ":" << __LINE__ << std::endl;  \
-    error msg;                                          \
-    throw error.str();                                  \
-  }
-
-static void AssertDerivativeWeight(bool check)
-{
-  if (!check)
-    {
-    TEST_FAIL(<< "Got bad derivative weight");
-    }
-}
+namespace {
 
 static void TestWeightOnVertex(dax::Vector3 weight,
                                dax::Vector3 derivativePCoord,
@@ -37,29 +20,33 @@ static void TestWeightOnVertex(dax::Vector3 weight,
 
   if (vertexPCoord == derivativePCoord)
     {
-    AssertDerivativeWeight(weight == signs);
+    DAX_TEST_ASSERT(weight == signs, "Bad Vertex Weight");
     }
   else if (   (vertexPCoord[0] != derivativePCoord[0])
            && (vertexPCoord[1] == derivativePCoord[1])
            && (vertexPCoord[2] == derivativePCoord[2]) )
     {
-    AssertDerivativeWeight(weight == signs*dax::make_Vector3(1.0, 0.0, 0.0));
+    DAX_TEST_ASSERT(weight == signs*dax::make_Vector3(1.0, 0.0, 0.0),
+                    "Bad Vertex Weight");
     }
   else if (   (vertexPCoord[0] == derivativePCoord[0])
            && (vertexPCoord[1] != derivativePCoord[1])
            && (vertexPCoord[2] == derivativePCoord[2]) )
     {
-    AssertDerivativeWeight(weight == signs*dax::make_Vector3(0.0, 1.0, 0.0));
+    DAX_TEST_ASSERT(weight == signs*dax::make_Vector3(0.0, 1.0, 0.0),
+                    "Bad Vertex Weight");
     }
   else if (   (vertexPCoord[0] == derivativePCoord[0])
            && (vertexPCoord[1] == derivativePCoord[1])
            && (vertexPCoord[2] != derivativePCoord[2]) )
     {
-    AssertDerivativeWeight(weight == signs*dax::make_Vector3(0.0, 0.0, 1.0));
+    DAX_TEST_ASSERT(weight == signs*dax::make_Vector3(0.0, 0.0, 1.0),
+                    "Bad Vertex Weight");
     }
   else
     {
-    AssertDerivativeWeight(weight == dax::make_Vector3(0.0, 0.0, 0.0));
+    DAX_TEST_ASSERT(weight == dax::make_Vector3(0.0, 0.0, 0.0),
+                    "Bad Vertex Weight");
     }
 }
 
@@ -68,17 +55,11 @@ static void TestWeightInMiddle(dax::Scalar weight,
 {
   if (vertexPCoord < 0.5)
     {
-    if (weight != -0.25)
-      {
-      TEST_FAIL(<< "Got bad derivative weight");
-      }
+    DAX_TEST_ASSERT(weight == -0.25, "Bad middle weight");
     }
   else
     {
-    if (weight != 0.25)
-      {
-      TEST_FAIL(<< "Got bad derivative weight");
-      }
+    DAX_TEST_ASSERT(weight == 0.25, "Bad middle weight");
     }
 }
 
@@ -127,19 +108,14 @@ static void TestDerivativeWeightsVoxel()
     }
 }
 
+void TestDerivativeWeights()
+{
+  TestDerivativeWeightsVoxel();
+}
+
+} // Anonymous namespace
+
 int UnitTestDerivativeWeights(int, char *[])
 {
-  try
-    {
-    TestDerivativeWeightsVoxel();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::internal::Testing::Run(TestDerivativeWeights);
 }
