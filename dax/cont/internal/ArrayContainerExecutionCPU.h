@@ -89,7 +89,7 @@ inline void ArrayContainerExecutionCPU<T>::CopyFromControlToExecution(
 {
   DAX_ASSERT_CONT(iterators.IsValid());
   DAX_ASSERT_CONT(iterators.GetNumberOfEntries()
-         == static_cast<dax::Id>(this->DeviceArray.size()));
+                  == static_cast<dax::Id>(this->DeviceArray.size()));
   std::copy(iterators.GetBeginIterator(),
             iterators.GetEndIterator(),
             this->DeviceArray.begin());
@@ -103,7 +103,7 @@ inline void ArrayContainerExecutionCPU<T>::CopyFromExecutionToControl(
 {
   DAX_ASSERT_CONT(iterators.IsValid());
   DAX_ASSERT_CONT(iterators.GetNumberOfEntries()
-         == static_cast<dax::Id>(this->DeviceArray.size()));
+                  == static_cast<dax::Id>(this->DeviceArray.size()));
   std::copy(this->DeviceArray.begin(),
             this->DeviceArray.end(),
             iterators.GetBeginIterator());

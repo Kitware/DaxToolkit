@@ -105,7 +105,7 @@ inline void ArrayContainerExecutionThrust<T>::CopyFromControlToExecution(
 {
   DAX_ASSERT_CONT(iterators.IsValid());
   DAX_ASSERT_CONT(iterators.GetNumberOfEntries()
-         <= static_cast<dax::Id>(this->DeviceArray.size()));
+                  <= static_cast<dax::Id>(this->DeviceArray.size()));
   ::thrust::copy(iterators.GetBeginIterator(),
                  iterators.GetEndIterator(),
                  this->DeviceArray.begin());
@@ -119,7 +119,7 @@ inline void ArrayContainerExecutionThrust<T>::CopyFromExecutionToControl(
 {
   DAX_ASSERT_CONT(iterators.IsValid());
   DAX_ASSERT_CONT(iterators.GetNumberOfEntries()
-         <= static_cast<dax::Id>(this->DeviceArray.size()));
+                  <= static_cast<dax::Id>(this->DeviceArray.size()));
   ::thrust::copy(this->DeviceArray.begin(),
                  this->DeviceArray.end(),
                  iterators.GetBeginIterator());

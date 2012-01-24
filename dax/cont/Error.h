@@ -22,12 +22,12 @@ namespace cont {
 class Error
 {
 public:
-  Error() { }
-  Error(const std::string message) : Message(message) { }
-
   const std::string &GetMessage() const { return this->Message; }
 
 protected:
+  Error() { }
+  Error(const std::string message) : Message(message) { }
+
   void SetMessage(const std::string &message) {
     this->Message = message;
   }

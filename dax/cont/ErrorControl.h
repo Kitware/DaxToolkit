@@ -18,7 +18,7 @@ namespace cont {
 ///
 class ErrorControl : public dax::cont::Error
 {
-public:
+protected:
   ErrorControl() { }
   ErrorControl(const std::string message) : Error(message) { }
 };
