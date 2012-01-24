@@ -22,11 +22,6 @@
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
-// TODO: Make generic math functions.
-#ifndef DAX_CUDA
-#include <math.h>
-#endif
-
 #include <Worklets/Testing/FieldMapError.worklet>
 
 namespace dax {

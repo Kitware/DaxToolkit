@@ -31,6 +31,15 @@ public:
 
   DAX_EXEC_EXPORT void RaiseError(const char *message)
   {
+    // Only raise the error if one has not been raised yet. This check is not
+    // guaranteed to work across threads. However, chances are that if two or
+    // more threads simultaneously pass this test, they will be writing the
+    // same error, which is fine. Even in the much less likely case that two
+    // threads simultaneously write different error messages, the worst case is
+    // that you get a mangled message. That's not good (and it's what we are
+    // trying to avoid), but it's not critical.
+    if (this->IsErrorRaised()) { return; }
+
     // Safely copy message into array.
     dax::Id index;
     for (index = 0; index < this->Message.GetNumberOfEntries(); index++)

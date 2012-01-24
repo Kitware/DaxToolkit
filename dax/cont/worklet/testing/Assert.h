@@ -5,8 +5,8 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __dax_cont_worklet_testing_CellMapError_h
-#define __dax_cont_worklet_testing_CellMapError_h
+#ifndef __dax_cont_worklet_testing_Assert_h
+#define __dax_cont_worklet_testing_Assert_h
 
 // TODO: This should be auto-generated.
 
@@ -22,29 +22,29 @@
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
-#include <Worklets/Testing/CellMapError.worklet>
+#include <Worklets/Testing/Assert.worklet>
 
 namespace dax {
 namespace exec {
 namespace kernel {
 
 template<class CellType>
-struct CellMapErrorParameters
+struct AssertParameters
 {
   typename CellType::GridStructureType grid;
 };
 
 template<class CellType>
-struct CellMapError
+struct Assert
 {
   DAX_EXEC_EXPORT void operator()(
-      CellMapErrorParameters<CellType> &parameters,
+      AssertParameters<CellType> &parameters,
       dax::Id index,
       const dax::exec::internal::ErrorHandler &errorHandler)
   {
-    dax::exec::WorkMapCell<CellType> work(parameters.grid, errorHandler);
-    work.SetCellIndex(index);
-    dax::worklet::testing::CellMapError(work);
+    dax::exec::WorkMapField<CellType> work(parameters.grid, errorHandler);
+    work.SetIndex(index);
+    dax::worklet::testing::Assert(work);
   }
 };
 
@@ -58,26 +58,26 @@ namespace worklet {
 namespace testing {
 
 template<class GridType, class DeviceAdapter>
-inline void CellMapError(const GridType &grid)
+inline void Assert(const GridType &grid)
 {
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   GridPackageType gridPackage(grid);
 
   typedef typename GridPackageType::ExecutionCellType CellType;
 
-  typedef dax::exec::kernel::CellMapErrorParameters<CellType> Parameters;
+  typedef dax::exec::kernel::AssertParameters<CellType> Parameters;
   Parameters parameters = {
     gridPackage.GetExecutionObject()
   };
 
   char *error = DeviceAdapter::Schedule(
-        dax::exec::kernel::CellMapError<CellType>(),
+        dax::exec::kernel::Assert<CellType>(),
         parameters,
-        grid.GetNumberOfCells());
+        grid.GetNumberOfPoints());
 
   if ((error != NULL) && (error[0] != '\0'))
     {
-    throw dax::cont::ErrorExecution(error, "CellMapError");
+    throw dax::cont::ErrorExecution(error, "Assert");
     }
 }
 
@@ -86,4 +86,4 @@ inline void CellMapError(const GridType &grid)
 }
 } //dax::cont::worklet::testing
 
-#endif //__dax_cont_worklet_testing_CellMapError_h
+#endif //__dax_cont_worklet_testing_Assert_h
