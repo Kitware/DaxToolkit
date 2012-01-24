@@ -22,6 +22,7 @@ dax_declare_headers(${headers})
 #-----------------------------------------------------------------------------
 set(unit_tests
   UnitTestOpenMPScheduleThrust.cxx
+  UnitTestOpenMPStreamCompact.cxx
   UnitTestOpenMPWorkletMapCell.cxx
   UnitTestOpenMPWorkletMapField.cxx
   )

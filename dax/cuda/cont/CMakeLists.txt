@@ -24,6 +24,7 @@ dax_declare_headers(CUDA ${headers})
 set(unit_tests
   UnitTestCudaScheduleNative.cu
   UnitTestCudaScheduleThrust.cu
+  UnitTestCudaStreamCompact.cu
   UnitTestCudaWorkletMapCell.cu
   UnitTestCudaWorkletMapField.cu
   )
