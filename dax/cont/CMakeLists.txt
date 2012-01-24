@@ -16,6 +16,7 @@ set(headers
   ErrorControl.h
   ErrorControlAssert.h
   ErrorControlBadValue.h
+  ErrorControlOutOfMemory.h
   ErrorExecution.h
   ScheduleDebug.h
   UniformGrid.h

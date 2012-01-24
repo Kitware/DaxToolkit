@@ -69,10 +69,39 @@ static void TestBasicTransfers()
     }
 }
 
+
+//-----------------------------------------------------------------------------
+static void TestOutOfMemory()
+{
+  try
+    {
+    std::cout << "Do array allocation that should fail." << std::endl;
+    dax::cont::internal::ArrayContainerExecutionCPU<dax::Vector4> bigArray;
+    bigArray.Allocate(-1);
+    // It does not seem reasonable to get here.  The previous call should fail.
+    DAX_TEST_FAIL("A ridiculously sized allocation succeeded.  Either there "
+                  "was a failure that was not reported but should have been "
+                  "or the width of dax::Id is not large enough to express all "
+                  "array sizes.");
+    }
+  catch (dax::cont::ErrorControlOutOfMemory error)
+    {
+    std::cout << "Got the expected error: " << error.GetMessage() << std::endl;
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+static void TestArrayContainer()
+{
+  TestBasicTransfers();
+  TestOutOfMemory();
+}
+
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
 int UnitTestArrayContainerExecutionCPU(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestBasicTransfers);
+  return dax::cont::internal::Testing::Run(TestArrayContainer);
 }

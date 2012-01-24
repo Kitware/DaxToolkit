@@ -14,6 +14,7 @@
 #include <dax/internal/DataArray.h>
 
 #include <dax/cont/Assert.h>
+#include <dax/cont/ErrorControlOutOfMemory.h>
 #include <dax/cont/internal/IteratorContainer.h>
 
 #include <thrust/device_vector.h>
@@ -40,7 +41,17 @@ public:
   /// Allocates an array on the device large enough to hold the given number of
   /// entries.
   ///
-  void Allocate(dax::Id numEntries) { this->DeviceArray.resize(numEntries); }
+  void Allocate(dax::Id numEntries) {
+    try
+      {
+      this->DeviceArray.resize(numEntries);
+      }
+    catch (...)
+      {
+      throw dax::cont::ErrorControlOutOfMemory(
+          "Failed to allocate execution array with thrust.");
+      }
+  }
 
   /// Copies the data pointed to by the passed in \c iterators (assumed to be
   /// in the control environment), into the array in the execution environment
