@@ -17,6 +17,7 @@
 #include <dax/exec/internal/ErrorHandler.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/ErrorControlBadValue.h>
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
@@ -76,8 +77,8 @@ inline void Sine(const GridType &grid,
     }
   else
     {
-    assert("Number of array entries neither cells nor points.");
-    return;
+    throw dax::cont::ErrorControlBadValue(
+          "Number of array entries neither cells nor points.");
     }
 
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
