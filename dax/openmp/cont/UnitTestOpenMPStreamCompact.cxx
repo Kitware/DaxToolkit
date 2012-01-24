@@ -6,8 +6,8 @@
 
 =========================================================================*/
 
-#include <dax/cont/ScheduleDebug.h>
-#include <dax/cont/StreamCompactDebug.h>
+#include <dax/openmp/cont/ScheduleThrust.h>
+#include <dax/openmp/cont/StreamCompact.h>
 
 #include <iostream>
 #include <sstream>
@@ -63,8 +63,8 @@ bool TestCompact()
   array.resize(ARRAY_SIZE,dax::Id());
 
   //construct the index array
-  dax::cont::scheduleDebug(MarkOddNumbers(), array, ARRAY_SIZE);
-  dax::cont::streamCompactDebug(array,result);
+  dax::openmp::cont::scheduleThrust(MarkOddNumbers(), array, ARRAY_SIZE);
+  dax::openmp::cont::streamCompact(array,result);
 
   test_assert(result.size() == array.size()/2,
               "result of compacation has an incorrect size.");
@@ -89,9 +89,9 @@ bool TestCompactWithStencil()
   stencil.resize(ARRAY_SIZE,dax::Id());
 
   //construct the index array
-  dax::cont::scheduleDebug(InitArray(), array, ARRAY_SIZE);
-  dax::cont::scheduleDebug(MarkOddNumbers(), stencil, ARRAY_SIZE);
-  dax::cont::streamCompactDebug(array,stencil,result);
+  dax::openmp::cont::scheduleThrust(InitArray(), array, ARRAY_SIZE);
+  dax::openmp::cont::scheduleThrust(MarkOddNumbers(), stencil, ARRAY_SIZE);
+  dax::openmp::cont::streamCompact(array,stencil,result);
 
   test_assert(result.size() == array.size()/2,
               "result of compacation has an incorrect size.");
