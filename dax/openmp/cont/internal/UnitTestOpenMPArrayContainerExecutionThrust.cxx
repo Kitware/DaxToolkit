@@ -8,12 +8,9 @@
 
 #include <dax/openmp/cont/internal/ArrayContainerExecutionThrust.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
-
 #include <dax/cont/internal/IteratorContainer.h>
+
+#include <dax/cont/internal/Testing.h>
 
 #include <thrust/for_each.h>
 #include <thrust/sequence.h>
@@ -25,23 +22,6 @@ namespace internal {
 namespace ut_arraycontainer {
 
 const dax::Id ARRAY_SIZE = 10;
-
-#define test_assert(condition, message) \
-  test_assert_impl(condition, message, __FILE__, __LINE__);
-
-static inline void test_assert_impl(bool condition,
-                                    const std::string& message,
-                                    const char *file,
-                                    int line)
-{
-  if(!condition)
-    {
-    std::stringstream error;
-    error << file << ":" << line << std::endl;
-    error << message << std::endl;
-    throw error.str();
-    }
-}
 
 //-----------------------------------------------------------------------------
 struct AddOne
@@ -85,7 +65,7 @@ static void TestBasicTransfers()
   for (dax::Id index = 0; index < ARRAY_SIZE; index++)
     {
     std::cout << inputArray[index] << ", " << outputArray[index] << std::endl;
-    test_assert(outputArray[index] == index+1, "Bad result.");
+    DAX_TEST_ASSERT(outputArray[index] == index+1, "Bad result.");
     }
 }
 
@@ -98,18 +78,6 @@ static void TestBasicTransfers()
 //-----------------------------------------------------------------------------
 int UnitTestOpenMPArrayContainerExecutionThrust(int, char *[])
 {
-  try
-    {
-    using namespace dax::openmp::cont::internal::ut_arraycontainer;
-    TestBasicTransfers();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  using namespace dax::openmp::cont::internal::ut_arraycontainer;
+  return dax::cont::internal::Testing::Run(TestBasicTransfers);
 }
