@@ -54,6 +54,26 @@ namespace cont {
 /// uniquely identifies the thread or instance of the invocation. There should
 /// be one invocation for each index in the range [0, \c numInstances].
 
+/// \fn template<class T> void DeviceAdapter::StreamCompact(const ArrayContainerExecution<T>&input, ArrayContainerExecution<T>& output)
+/// \brief Performs stream compaction to remove unwanted elements in the input array.
+///
+/// Calls the parallel primitive function of stream compaction on the \c input
+/// to remove unwanted elements. The result of the stream compaction is placed
+/// in \c output. The \c input values are used as the stream compaction stencil
+/// while \c input indices are used as the values to place into \c ouput.
+/// The size of \c output will be modified after this call as we can't know
+/// the number of elements that will be removed by the stream compaction algorithm.
+
+/// \fn template<class T> void DeviceAdapter::StreamCompact(const ArrayContainerExecution<T>&input, const ArrayContainerExecution<dax::Id>& stencil, ArrayContainerExecution<T>& output)
+/// \brief Performs stream compaction to remove unwanted elements in the input array.
+///
+/// Calls the parallel primitive function of stream compaction on the \c input
+/// to remove unwanted elements. The result of the stream compaction is placed
+/// in \c output. The values in \c stencil are used as the stream compaction stencil
+/// while \c input values are placed into \c ouput.
+/// The size of \c output will be modified after this call as we can't know
+/// the number of elements that will be removed by the stream compaction algorithm.
+
 /// \class template<class T> DeviceAdapter::ArrayContainerExecution<T>
 /// \brief Class that manages data in the execution environment.
 ///
