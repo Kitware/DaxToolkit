@@ -47,7 +47,7 @@ public:
   /// false.
   ///
   IteratorType GetBeginIterator() const {
-    DAX_ASSERT_CONT(this->Valid);  // TODO: Better error control.
+    DAX_ASSERT_CONT(this->Valid);
     return this->BeginIterator;
   }
 
@@ -55,7 +55,7 @@ public:
   /// false.
   ///
   IteratorType GetEndIterator() const {
-    DAX_ASSERT_CONT(this->Valid);  // TODO: Better error control.
+    DAX_ASSERT_CONT(this->Valid);
     return this->EndIterator;
   }
 

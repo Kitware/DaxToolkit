@@ -9,6 +9,7 @@ set(headers
   DataArray.h
   ExportMacros.h
   GridStructures.h
+  Testing.h
   )
 
 dax_declare_headers(${headers})
@@ -16,5 +17,6 @@ dax_declare_headers(${headers})
 set(unit_tests
   UnitTestDataArray.cxx
   UnitTestGridStructures.cxx
+  UnitTestTesting.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

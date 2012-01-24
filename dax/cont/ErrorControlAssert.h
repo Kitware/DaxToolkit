@@ -11,7 +11,7 @@
 #include <dax/Types.h>
 #include <dax/cont/ErrorControl.h>
 
-#include <stdio.h>
+#include <sstream>
 
 namespace dax {
 namespace cont {
@@ -26,17 +26,10 @@ public:
                      const std::string &condition)
     : ErrorControl(), File(file), Line(line), Condition(condition)
   {
-    char lineString[32];
-    sprintf(lineString, "%d", this->Line);
-
-    std::string message;
-    message.append(this->File);
-    message.append(":");
-    message.append(lineString);
-    message.append(": Assert Failed (");
-    message.append(this->Condition);
-    message.append(")");
-    this->SetMessage(message);
+    std::stringstream message;
+    message << this->File << ":" << this->Line
+            << ": Assert Failed (" << this->Condition << ")";
+    this->SetMessage(message.str());
   }
 
 private:
