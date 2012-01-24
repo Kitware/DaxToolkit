@@ -26,7 +26,7 @@ set(unit_tests
   UnitTestWorkletSine.cxx
   UnitTestWorkletSquare.cxx
 
-  UnitTestWorkletCellMapError.cxx
-  UnitTestWorkletFieldMapError.cxx
+  UnitTestWorkletMapCellError.cxx
+  UnitTestWorkletMapFieldError.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

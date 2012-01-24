@@ -6,7 +6,9 @@
 
 =========================================================================*/
 
-#include <dax/cont/worklet/testing/CellMapError.h>
+#include <dax/openmp/cont/DeviceAdapterOpenMP.h>
+
+#include <dax/cont/worklet/testing/FieldMapError.h>
 
 #include <math.h>
 #include <fstream>
@@ -42,7 +44,7 @@ static inline void test_assert_impl(bool condition,
 }
 
 //-----------------------------------------------------------------------------
-static void TestCellMapError()
+static void TestFieldMapError()
 {
   dax::cont::UniformGrid grid;
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
@@ -51,13 +53,13 @@ static void TestCellMapError()
   bool gotError = false;
   try
     {
-    dax::cont::worklet::testing::CellMapError
-        <dax::cont::UniformGrid, dax::cont::DeviceAdapterDebug>(grid);
+    dax::cont::worklet::testing::FieldMapError
+        <dax::cont::UniformGrid, dax::openmp::cont::DeviceAdapterOpenMP>(grid);
     }
   catch (dax::cont::ErrorExecution error)
     {
     std::cout << "Got expected ErrorExecution object." << std::endl;
-    test_assert(error.GetWorkletName() == "CellMapError",
+    test_assert(error.GetWorkletName() == "FieldMapError",
                 "Got wrong worklet name.");
     gotError = true;
     }
@@ -68,11 +70,11 @@ static void TestCellMapError()
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
-int UnitTestWorkletCellMapError(int, char *[])
+int UnitTestOpenMPWorkletMapFieldError(int, char *[])
 {
   try
     {
-    TestCellMapError();
+    TestFieldMapError();
     }
   catch (std::string error)
     {
