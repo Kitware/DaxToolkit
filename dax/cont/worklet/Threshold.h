@@ -10,6 +10,8 @@
 
 // TODO: This should be auto-generated.
 
+#include <boost/shared_ptr.hpp>
+
 #include <dax/Types.h>
 #include <dax/internal/DataArray.h>
 #include <dax/internal/GridStructures.h>
@@ -76,27 +78,32 @@ public:
       Min(min),
       Max(max),
       Field(thresholdField)
-    {
+      {
 
-    }
+      }
 
     //generate the parameters for the worklet
     template <typename GridType, typename WorkType>
     Parameters GenerateParameters(const GridType& grid, WorkType &work)
-    {
-      dax::cont::internal::ExecutionPackageFieldPointInput<ValueType,DeviceAdapter>
-          inField(this->Field, grid);
-
+      {
+      this->PackageField = PackageFieldInputPtr(new PackageFieldInput(
+                                                  this->Field, grid));
       Parameters parameters = {work,
                                this->Min,
                                this->Max,
-                               inField.GetExecutionObject()};
+                               this->PackageField->GetExecutionObject()};
       return parameters;
-    }
+      }
 
 private:
   ValueType Min;
   ValueType Max;
+
+  typedef dax::cont::internal::ExecutionPackageFieldPointInput<
+                                ValueType,DeviceAdapter> PackageFieldInput;
+  typedef  boost::shared_ptr< PackageFieldInput > PackageFieldInputPtr;
+
+  PackageFieldInputPtr PackageField;
   dax::cont::ArrayHandle<ValueType,DeviceAdapter> Field;
 };
 }

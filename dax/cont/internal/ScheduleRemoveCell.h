@@ -1,6 +1,8 @@
 #ifndef __dax_exec_mapreduce_ScheduleRemoveCell_h
 #define __dax_exec_mapreduce_ScheduleRemoveCell_h
 
+#include <boost/shared_ptr.hpp>
+
 #include <dax/Types.h>
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
@@ -57,7 +59,7 @@ protected:
   //constructs everything needed to call the user defined worklet
   template<typename GridType>
   void ScheduleWorklet(const GridType &grid)
-  {
+    {
     //construct the work object needed by the parameter struct
     WorkType work = this->GenerateWork(grid);
 
@@ -72,11 +74,11 @@ protected:
     DeviceAdapter::Schedule(Functor(),
                                   params,
                                   grid.GetNumberOfCells());
-  }
+    }
 
   template<typename InGridType, typename OutGridType>
   void GenerateOutput(const InGridType &inGrid, OutGridType& outGrid)
-  {
+    {
     //does the stream compaction
 
     //make a temporary result  vector of the correct container type
@@ -90,8 +92,7 @@ protected:
     dax::cont::internal::ArrayHandleHelper::UpdateArraySize(newCells);
 
     //outGrid = OutGridType(inGrid,resultCells);
-
-  }
+    }
 
   //Connstructor the WorkType of the Functor based on the grid
   template<typename GridType>
@@ -101,6 +102,10 @@ protected:
     GridPackageType gridPackage(grid);
 
     this->ResultHandle = dax::cont::ArrayHandle<dax::Id>(grid.GetNumberOfCells());
+    this->PackageResult = ExecutionPackageFieldCellOutputPtr(
+                             new ExecPackFieldCellOutput(this->ResultHandle,
+                                                         grid));
+
     dax::cont::internal::ExecutionPackageFieldCellOutput<dax::Id,DeviceAdapter> result(
                       this->ResultHandle, grid);
 
@@ -110,6 +115,12 @@ protected:
     }
 
 private:
+  typedef dax::cont::internal::ExecutionPackageFieldCellOutput<
+                                dax::Id,DeviceAdapter> ExecPackFieldCellOutput;
+  typedef  boost::shared_ptr< ExecPackFieldCellOutput >
+            ExecutionPackageFieldCellOutputPtr;
+
+  ExecutionPackageFieldCellOutputPtr PackageResult;
   dax::cont::ArrayHandle<dax::Id> ResultHandle;
 };
 
