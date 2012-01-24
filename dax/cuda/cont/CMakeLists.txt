@@ -10,6 +10,7 @@ set(headers
   DeviceAdapterCuda.h
   ScheduleCuda.h
   ScheduleThrust.h
+  StreamCompact.h
   )
 
 #-----------------------------------------------------------------------------
