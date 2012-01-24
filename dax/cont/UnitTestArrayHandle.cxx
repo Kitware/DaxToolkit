@@ -8,31 +8,11 @@
 
 #include <dax/cont/ArrayHandle.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include <dax/cont/internal/Testing.h>
 
 namespace
 {
 const dax::Id ARRAY_SIZE = 10;
-
-#define test_assert(condition, message) \
-  test_assert_impl(condition, message, __FILE__, __LINE__);
-
-static inline void test_assert_impl(bool condition,
-                                    const std::string& message,
-                                    const char *file,
-                                    int line)
-{
-  if(!condition)
-    {
-    std::stringstream error;
-    error << file << ":" << line << std::endl;
-    error << message << std::endl;
-    throw error.str();
-    }
-}
 
 void TestArrayHandle()
 {
@@ -42,18 +22,18 @@ void TestArrayHandle()
   dax::cont::ArrayHandle<dax::Scalar>
       arrayHandle(&array[0], &array[ARRAY_SIZE]);
 
-  test_assert(arrayHandle.GetNumberOfEntries() == ARRAY_SIZE,
-              "ArrayHandle has wrong number of entries.");
+  DAX_TEST_ASSERT(arrayHandle.GetNumberOfEntries() == ARRAY_SIZE,
+                  "ArrayHandle has wrong number of entries.");
 
-  test_assert(arrayHandle.IsControlArrayValid(),
-              "Control data not valid.");
+  DAX_TEST_ASSERT(arrayHandle.IsControlArrayValid(),
+                  "Control data not valid.");
 
   // Make sure that invalidating any copy will invalidate all copies.
   dax::cont::ArrayHandle<dax::Scalar> arrayHandleCopy;
   arrayHandleCopy = arrayHandle;
   arrayHandleCopy.InvalidateControlArray();
-  test_assert(!arrayHandle.IsControlArrayValid(),
-              "Invalidate did not propagate to copies.");
+  DAX_TEST_ASSERT(!arrayHandle.IsControlArrayValid(),
+                  "Invalidate did not propagate to copies.");
 }
 
 }
@@ -61,17 +41,5 @@ void TestArrayHandle()
 
 int UnitTestArrayHandle(int, char *[])
 {
-  try
-    {
-    TestArrayHandle();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::cont::internal::Testing::Run(TestArrayHandle);
 }

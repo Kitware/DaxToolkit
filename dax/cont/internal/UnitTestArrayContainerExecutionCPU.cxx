@@ -8,35 +8,15 @@
 
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
-
 #include <dax/cont/internal/IteratorContainer.h>
+
+#include <dax/cont/internal/Testing.h>
 
 #include <algorithm>
 
 namespace {
 
 const dax::Id ARRAY_SIZE = 10;
-
-#define test_assert(condition, message) \
-  test_assert_impl(condition, message, __FILE__, __LINE__);
-
-static inline void test_assert_impl(bool condition,
-                                    const std::string& message,
-                                    const char *file,
-                                    int line)
-{
-  if(!condition)
-    {
-    std::stringstream error;
-    error << file << ":" << line << std::endl;
-    error << message << std::endl;
-    throw error.str();
-    }
-}
 
 //-----------------------------------------------------------------------------
 struct AddOne
@@ -85,7 +65,7 @@ static void TestBasicTransfers()
   for (dax::Id index = 0; index < ARRAY_SIZE; index++)
     {
     std::cout << inputArray[index] << ", " << outputArray[index] << std::endl;
-    test_assert(outputArray[index] == index+1, "Bad result.");
+    DAX_TEST_ASSERT(outputArray[index] == index+1, "Bad result.");
     }
 }
 
@@ -94,17 +74,5 @@ static void TestBasicTransfers()
 //-----------------------------------------------------------------------------
 int UnitTestArrayContainerExecutionCPU(int, char *[])
 {
-  try
-    {
-    TestBasicTransfers();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::cont::internal::Testing::Run(TestBasicTransfers);
 }

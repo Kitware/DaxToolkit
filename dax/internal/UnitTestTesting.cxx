@@ -28,6 +28,21 @@ void GoodAssert()
   DAX_TEST_ASSERT(1 == 1, "Always true.");
 }
 
+void TestTestEqual()
+{
+  DAX_TEST_ASSERT(test_equal(dax::Scalar(2.0), dax::Scalar(1.9999999)),
+                  "These should be close enough.");
+  DAX_TEST_ASSERT(!test_equal(dax::Scalar(2.0), dax::Scalar(1.999)),
+                  "These should not be close enough.");
+}
+
+// All tests that should not raise a failure.
+void CleanTests()
+{
+  GoodAssert();
+  TestTestEqual();
+}
+
 } // anonymous namespace
 
 int UnitTestTesting(int, char *[])
@@ -47,5 +62,5 @@ int UnitTestTesting(int, char *[])
 
   std::cout << "This call should pass." << std::endl;
   // This is what your main function typically looks like.
-  return dax::internal::Testing::Run(GoodAssert);
+  return dax::internal::Testing::Run(CleanTests);
 }

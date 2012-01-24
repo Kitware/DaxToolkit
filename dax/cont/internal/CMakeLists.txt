@@ -13,6 +13,7 @@ set(headers
   ExecutionPackageGrid.h
   IteratorContainer.h
   IteratorPolymorphic.h
+  Testing.h
   )
 
 dax_declare_headers(${headers})
@@ -24,6 +25,7 @@ dax_declare_headers(${headers})
 
 set(unit_tests
   UnitTestArrayContainerExecutionCPU.cxx
+  UnitTestContTesting.cxx
   UnitTestExecutionPackage.cxx
   UnitTestIteratorPolymorphic.cxx
   )
