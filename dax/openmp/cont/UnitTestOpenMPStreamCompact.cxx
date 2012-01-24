@@ -16,7 +16,7 @@
 
 namespace {
 
-const dax::Id ARRAY_SIZE = 500;
+const dax::Id ARRAY_SIZE = 50000;
 
 const dax::Id OFFSET = 1000;
 
