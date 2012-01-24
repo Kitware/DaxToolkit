@@ -8,6 +8,8 @@
 
 #include <dax/cuda/cont/ScheduleThrust.h>
 
+#include <dax/exec/internal/ErrorHandler.h>
+
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 
@@ -25,7 +27,9 @@ namespace ut_CudaScheduleThrust {
 
 struct ClearArray
 {
-  DAX_EXEC_EXPORT void operator()(dax::Id *array, dax::Id index)
+  DAX_EXEC_EXPORT void operator()(dax::Id *array,
+                                  dax::Id index,
+                                  dax::exec::internal::ErrorHandler &)
   {
     array[index] = OFFSET;
   }
@@ -33,13 +37,38 @@ struct ClearArray
 
 struct AddArray
 {
-  DAX_EXEC_EXPORT void operator()(dax::Id *array, dax::Id index)
+  DAX_EXEC_EXPORT void operator()(dax::Id *array,
+                                  dax::Id index,
+                                  dax::exec::internal::ErrorHandler &)
   {
     array[index] += index;
   }
 };
 
-} // namespace ut_CuadSchedule
+#define ERROR_MESSAGE "Got an error."
+
+struct OneError
+{
+  DAX_EXEC_EXPORT void operator()(
+      dax::Id *, dax::Id index, dax::exec::internal::ErrorHandler &errorHandler)
+  {
+    if (index == ARRAY_SIZE/2)
+      {
+      errorHandler.RaiseError(ERROR_MESSAGE);
+      }
+  }
+};
+
+struct AllError
+{
+  DAX_EXEC_EXPORT void operator()(
+      dax::Id *, dax::Id, dax::exec::internal::ErrorHandler &errorHandler)
+  {
+    errorHandler.RaiseError(ERROR_MESSAGE);
+  }
+};
+
+} // namespace ut_CudaSchedule
 
 int UnitTestCudaScheduleThrust(int, char *[])
 {
@@ -66,6 +95,25 @@ int UnitTestCudaScheduleThrust(int, char *[])
       std::cout << "Got bad value." << std::endl;
       return 1;
       }
+    }
+
+  std::cout << "Generating one error." << std::endl;
+  char *message;
+  message = dax::cuda::cont::scheduleThrust(OneError(),
+                                            rawDeviceArray,
+                                            ARRAY_SIZE);
+  if (strcmp(message, ERROR_MESSAGE) != 0)
+    {
+    std::cout << "Did not get expected error message." << std::endl;
+    }
+
+  std::cout << "Generating lots of errors." << std::endl;
+  message = dax::cuda::cont::scheduleThrust(AllError(),
+                                            rawDeviceArray,
+                                            ARRAY_SIZE);
+  if (strcmp(message, ERROR_MESSAGE) != 0)
+    {
+    std::cout << "Did not get expected error message." << std::endl;
     }
 
   return 0;

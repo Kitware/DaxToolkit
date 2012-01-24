@@ -18,11 +18,11 @@ namespace cuda {
 namespace cont {
 
 template<class Functor, class Parameters>
-DAX_CONT_EXPORT void scheduleThrust(Functor functor,
-                                  Parameters parameters,
-                                  dax::Id numInstances)
+DAX_CONT_EXPORT char *scheduleThrust(Functor functor,
+                                     Parameters parameters,
+                                     dax::Id numInstances)
 {
-  dax::thrust::cont::scheduleThrust(functor, parameters, numInstances);
+  return dax::thrust::cont::scheduleThrust(functor, parameters, numInstances);
 }
 
 }
