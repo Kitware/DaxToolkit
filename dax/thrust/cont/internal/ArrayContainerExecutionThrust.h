@@ -13,11 +13,10 @@
 
 #include <dax/internal/DataArray.h>
 
+#include <dax/cont/Assert.h>
 #include <dax/cont/internal/IteratorContainer.h>
 
 #include <thrust/device_vector.h>
-
-#include <assert.h>
 
 namespace dax {
 namespace thrust {
@@ -93,8 +92,8 @@ template<class IteratorType>
 inline void ArrayContainerExecutionThrust<T>::CopyFromControlToExecution(
     const dax::cont::internal::IteratorContainer<IteratorType> &iterators)
 {
-  assert(iterators.IsValid());
-  assert(iterators.GetNumberOfEntries()
+  DAX_ASSERT_CONT(iterators.IsValid());
+  DAX_ASSERT_CONT(iterators.GetNumberOfEntries()
          <= static_cast<dax::Id>(this->DeviceArray.size()));
   ::thrust::copy(iterators.GetBeginIterator(),
                  iterators.GetEndIterator(),
@@ -107,8 +106,8 @@ template<class IteratorType>
 inline void ArrayContainerExecutionThrust<T>::CopyFromExecutionToControl(
     const dax::cont::internal::IteratorContainer<IteratorType> &iterators)
 {
-  assert(iterators.IsValid());
-  assert(iterators.GetNumberOfEntries()
+  DAX_ASSERT_CONT(iterators.IsValid());
+  DAX_ASSERT_CONT(iterators.GetNumberOfEntries()
          <= static_cast<dax::Id>(this->DeviceArray.size()));
   ::thrust::copy(this->DeviceArray.begin(),
                  this->DeviceArray.end(),

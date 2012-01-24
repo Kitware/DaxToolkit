@@ -65,8 +65,6 @@ inline void Sine(const GridType &grid,
                  dax::cont::ArrayHandle<FieldType,DeviceAdapter> &inHandle,
                  dax::cont::ArrayHandle<FieldType,DeviceAdapter> &outHandle)
 {
-  assert(inHandle.GetNumberOfEntries() == outHandle.GetNumberOfEntries());
-
   dax::Id fieldSize;
   if (inHandle.GetNumberOfEntries() == grid.GetNumberOfPoints())
     {
