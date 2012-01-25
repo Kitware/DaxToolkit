@@ -98,8 +98,8 @@ bool TestCompactWithStencil()
   array.resize(ARRAY_SIZE,dax::Id());
   stencil.resize(ARRAY_SIZE,dax::Id());
 
-  dax::Id *rawArray = thrust::raw_pointer_cast(&array[0]);
-  dax::Id *rawStencil = thrust::raw_pointer_cast(&stencil[0]);
+  dax::Id *rawArray = ::thrust::raw_pointer_cast(&array[0]);
+  dax::Id *rawStencil = ::thrust::raw_pointer_cast(&stencil[0]);
 
   //construct the index array
   dax::cuda::cont::scheduleThrust(InitArray(), rawArray, ARRAY_SIZE);
@@ -109,7 +109,9 @@ bool TestCompactWithStencil()
   test_assert(result.size() == array.size()/2,
               "result of compacation has an incorrect size.");
 
-  ::thrust::host_vector<dax::Id> hresult(ARRAY_SIZE);
+  ::thrust::host_vector<dax::Id> hresult(result.size());
+  ::thrust::host_vector<dax::Id> harray(array);
+  ::thrust::host_vector<dax::Id> hstencil(stencil);
   hresult = result;
   for (dax::Id index = 0; index < static_cast<dax::Id>(hresult.size()); index++)
     {

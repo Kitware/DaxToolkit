@@ -109,7 +109,7 @@ bool TestCompactWithStencil()
   test_assert(result.size() == array.size()/2,
               "result of compacation has an incorrect size.");
 
-  ::thrust::host_vector<dax::Id> hresult(ARRAY_SIZE);
+  ::thrust::host_vector<dax::Id> hresult(result.size());
   hresult = result;
   for (dax::Id index = 0; index < static_cast<dax::Id>(hresult.size()); index++)
     {
