@@ -9,6 +9,7 @@
 #ifndef __dax_openmp_cont_StreamCompact_h
 #define __dax_openmp_cont_StreamCompact_h
 
+#include <dax/openmp/cont/internal/SetThrustForOpenMP.h>
 #include <dax/thrust/cont/StreamCompact.h>
 
 namespace dax {

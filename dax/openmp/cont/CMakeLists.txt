@@ -9,6 +9,7 @@
 set(headers
   DeviceAdapterOpenMP.h
   ScheduleThrust.h
+  StreamCompact.h
   )
 
 #-----------------------------------------------------------------------------
