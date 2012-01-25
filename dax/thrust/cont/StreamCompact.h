@@ -12,9 +12,13 @@
 #include <dax/Types.h>
 
 #include <thrust/binary_search.h>
+#include <thrust/copy.h>
 #include <thrust/device_vector.h>
-#include <thrust/scan.h>
 #include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/iterator_traits.h>
+#include <thrust/logical.h>
+#include <thrust/scan.h>
+
 
 
 namespace dax {
@@ -22,22 +26,43 @@ namespace thrust {
 namespace cont {
 
 
+template<typename InputIterator,
+         typename StencilVector,
+         typename OutputVector,
+         typename Predicate>
+DAX_CONT_EXPORT static void CopyIf(InputIterator valuesFirst,
+                                    InputIterator valuesEnd,
+                                    const StencilVector& stencil,
+                                    OutputVector& output,
+                                    Predicate pred)
+{
+  //we need to do some profiling on what way of doing stream compaction
+  //is the fastest. PISTON uses an inclusive scan and then upper_bound.
+  //first get the correct size for output
+
+  //first get the correct size for output
+  int numLeft = ::thrust::reduce(stencil.begin(),stencil.end());
+  output.resize(numLeft);
+
+  ::thrust::copy_if(valuesFirst,
+                    valuesEnd,
+                    stencil.begin(),
+                    output.begin(),
+                    pred);
+}
+
+
 template<typename T>
 DAX_CONT_EXPORT static void streamCompact(const ::thrust::device_vector<T>& input,
                           const ::thrust::device_vector<dax::Id>& stencil,
                           ::thrust::device_vector<T>& output)
 {
-  ::thrust::device_vector<dax::Id> temp(input.size());
-  //use the stencil to find the new index value for each item
-  ::thrust::inclusive_scan(stencil.begin(), stencil.end(),
-                         temp.begin());
-  int numLeft = temp.back();
-  output.resize(numLeft);
-
-  // generate the value for each item in the scatter
-  ::thrust::upper_bound(temp.begin(), temp.end(),
-                        input.begin(),input.end(),
-                        output.begin());
+  //do the copy step, remember the input is the stencil
+  dax::thrust::cont::CopyIf(input.begin(),
+                            input.end(),
+                            stencil,
+                            output,
+                            ::thrust::identity<dax::Id>());
 }
 
 
@@ -45,18 +70,12 @@ DAX_CONT_EXPORT static void streamCompact(
     const ::thrust::device_vector<dax::Id>& input,
     ::thrust::device_vector<dax::Id>& output)
 {
-  ::thrust::device_vector<dax::Id> temp(input.size());
-  //use the values in input to find the new index value for each item
-  ::thrust::inclusive_scan(input.begin(), input.end(),
-                         temp.begin());
-  int numLeft = temp.back();
-  output.resize(numLeft);
-
-  // generate the value for each item in the scatter
-  ::thrust::upper_bound(temp.begin(), temp.end(),
-                        ::thrust::make_counting_iterator<dax::Id>(0),
-                        ::thrust::make_counting_iterator<dax::Id>(numLeft),
-                        output.begin());
+  //do the copy step, remember the input is the stencil
+  dax::thrust::cont::CopyIf(::thrust::make_counting_iterator<dax::Id>(0),
+                            ::thrust::make_counting_iterator<dax::Id>(input.size()),
+                            input,
+                            output,
+                            ::thrust::identity<dax::Id>());
 }
 
 }
