@@ -6,8 +6,8 @@
 
 =========================================================================*/
 
-#include <dax/cuda/cont/ScheduleThrust.h>
-#include <dax/cuda/cont/StreamCompact.h>
+#include <dax/openmp/cont/ScheduleThrust.h>
+#include <dax/openmp/cont/StreamCompact.h>
 
 #include <iostream>
 #include <sstream>
@@ -71,8 +71,8 @@ bool TestCompact()
   dax::Id *rawArray = thrust::raw_pointer_cast(&array[0]);
 
   //construct the index array
-  dax::cuda::cont::scheduleThrust(MarkOddNumbers(),rawArray, ARRAY_SIZE);
-  dax::cuda::cont::streamCompact(array,result);
+  dax::openmp::cont::scheduleThrust(MarkOddNumbers(),rawArray, ARRAY_SIZE);
+  dax::openmp::cont::streamCompact(array,result);
 
   test_assert(result.size() == array.size()/2,
               "result of compacation has an incorrect size.");
@@ -102,9 +102,9 @@ bool TestCompactWithStencil()
   dax::Id *rawStencil = thrust::raw_pointer_cast(&stencil[0]);
 
   //construct the index array
-  dax::cuda::cont::scheduleThrust(InitArray(), rawArray, ARRAY_SIZE);
-  dax::cuda::cont::scheduleThrust(MarkOddNumbers(), rawStencil, ARRAY_SIZE);
-  dax::cuda::cont::streamCompact(array,stencil,result);
+  dax::openmp::cont::scheduleThrust(InitArray(), rawArray, ARRAY_SIZE);
+  dax::openmp::cont::scheduleThrust(MarkOddNumbers(), rawStencil, ARRAY_SIZE);
+  dax::openmp::cont::streamCompact(array,stencil,result);
 
   test_assert(result.size() == array.size()/2,
               "result of compacation has an incorrect size.");
