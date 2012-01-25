@@ -9,6 +9,7 @@
 #ifndef __dax_cuda_cont_StreamCompact_h
 #define __dax_cuda_cont_StreamCompact_h
 
+#include <dax/cuda/cont/internal/SetThrustForCuda.h>
 #include <dax/thrust/cont/StreamCompact.h>
 
 namespace dax {
