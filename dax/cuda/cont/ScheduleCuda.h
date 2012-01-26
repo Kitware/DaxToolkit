@@ -14,6 +14,7 @@
 #include <dax/cuda/cont/internal/ArrayContainerExecutionThrust.h>
 #include <dax/cuda/cont/internal/CudaParameters.h>
 #include <dax/cuda/exec/internal/CudaThreadIterator.h>
+#include <dax/cont/ErrorExecution.h>
 #include <dax/exec/internal/ErrorHandler.h>
 #include <dax/internal/DataArray.h>
 
@@ -65,9 +66,9 @@ getScheduleCudaErrorArray()
 }
 
 template<class Functor, class Parameters>
-DAX_CONT_EXPORT char *scheduleCuda(Functor functor,
-                                   Parameters parameters,
-                                   dax::Id numInstances)
+DAX_CONT_EXPORT void scheduleCuda(Functor functor,
+                                  Parameters parameters,
+                                  dax::Id numInstances)
 {
   const dax::Id ERROR_ARRAY_SIZE = 1024;
   dax::cuda::cont::internal::ArrayContainerExecutionThrust<char> &errorArray
@@ -87,14 +88,12 @@ DAX_CONT_EXPORT char *scheduleCuda(Functor functor,
 
   if (*errorArray.GetBeginThrustIterator() != '\0')
     {
-    static char errorString[ERROR_ARRAY_SIZE];
+    char errorString[ERROR_ARRAY_SIZE];
     ::thrust::copy(errorArray.GetBeginThrustIterator(),
                    errorArray.GetEndThrustIterator(),
                    errorString);
-    return errorString;
+    throw dax::cont::ErrorExecution(errorString);
     }
-
-  return NULL;
 }
 
 }

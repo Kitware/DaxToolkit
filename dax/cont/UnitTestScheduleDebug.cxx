@@ -8,6 +8,7 @@
 
 #include <dax/cont/ScheduleDebug.h>
 
+#include <dax/cont/ErrorExecution.h>
 #include <dax/exec/internal/ErrorHandler.h>
 
 #include <iostream>
@@ -89,18 +90,37 @@ int UnitTestScheduleDebug(int, char *[])
     }
 
   std::cout << "Generating one error." << std::endl;
-  char *message;
-  message = dax::cont::scheduleDebug(OneError(), array, ARRAY_SIZE);
-  if (strcmp(message, ERROR_MESSAGE) != 0)
+  std::string message;
+  try
+    {
+    dax::cont::scheduleDebug(OneError(), array, ARRAY_SIZE);
+    }
+  catch (dax::cont::ErrorExecution error)
+    {
+    std::cout << "Got expected error: " << error.GetMessage() << std::endl;
+    message = error.GetMessage();
+    }
+  if (message != ERROR_MESSAGE)
     {
     std::cout << "Did not get expected error message." << std::endl;
+    return 1;
     }
 
   std::cout << "Generating lots of errors." << std::endl;
-  message = dax::cont::scheduleDebug(AllError(), array, ARRAY_SIZE);
-  if (strcmp(message, ERROR_MESSAGE) != 0)
+  message = "";
+  try
+    {
+    dax::cont::scheduleDebug(AllError(), array, ARRAY_SIZE);
+    }
+  catch (dax::cont::ErrorExecution error)
+    {
+    std::cout << "Got expected error: " << error.GetMessage() << std::endl;
+    message = error.GetMessage();
+    }
+  if (message != ERROR_MESSAGE)
     {
     std::cout << "Did not get expected error message." << std::endl;
+    return 1;
     }
 
   return 0;

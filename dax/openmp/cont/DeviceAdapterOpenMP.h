@@ -28,11 +28,11 @@ namespace cont {
 struct DeviceAdapterOpenMP
 {
   template<class Functor, class Parameters>
-  static char *Schedule(Functor functor,
-                        Parameters parameters,
-                        dax::Id numInstances)
+  static void Schedule(Functor functor,
+                       Parameters parameters,
+                       dax::Id numInstances)
   {
-    return dax::openmp::cont::scheduleThrust(functor, parameters, numInstances);
+    dax::openmp::cont::scheduleThrust(functor, parameters, numInstances);
   }
 
   template<typename T>

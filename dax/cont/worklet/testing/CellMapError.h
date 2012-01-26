@@ -18,7 +18,6 @@
 #include <dax/exec/internal/FieldBuild.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/ErrorExecution.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
@@ -70,15 +69,10 @@ inline void CellMapError(const GridType &grid)
     gridPackage.GetExecutionObject()
   };
 
-  char *error = DeviceAdapter::Schedule(
+  DeviceAdapter::Schedule(
         dax::exec::kernel::CellMapError<CellType>(),
         parameters,
         grid.GetNumberOfCells());
-
-  if ((error != NULL) && (error[0] != '\0'))
-    {
-    throw dax::cont::ErrorExecution(error, "CellMapError");
-    }
 }
 
 }

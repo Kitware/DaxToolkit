@@ -11,6 +11,7 @@
 
 #include <dax/Types.h>
 
+#include <dax/cont/ErrorExecution.h>
 #include <dax/exec/internal/ErrorHandler.h>
 #include <dax/thrust/cont/internal/ArrayContainerExecutionThrust.h>
 
@@ -70,9 +71,9 @@ getScheduleThrustErrorArray()
 }
 
 template<class Functor, class Parameters>
-DAX_CONT_EXPORT char *scheduleThrust(Functor functor,
-                                     Parameters parameters,
-                                     dax::Id numInstances)
+DAX_CONT_EXPORT void scheduleThrust(Functor functor,
+                                    Parameters parameters,
+                                    dax::Id numInstances)
 {
   const dax::Id ERROR_ARRAY_SIZE = 1024;
   dax::thrust::cont::internal::ArrayContainerExecutionThrust<char> &errorArray
@@ -89,14 +90,12 @@ DAX_CONT_EXPORT char *scheduleThrust(Functor functor,
 
   if (*errorArray.GetBeginThrustIterator() != '\0')
     {
-    static char errorString[ERROR_ARRAY_SIZE];
+    char errorString[ERROR_ARRAY_SIZE];
     ::thrust::copy(errorArray.GetBeginThrustIterator(),
                    errorArray.GetEndThrustIterator(),
                    errorString);
-    return errorString;
+    throw dax::cont::ErrorExecution(errorString);
     }
-
-  return NULL;
 }
 
 }

@@ -11,6 +11,7 @@
 
 #include <dax/Types.h>
 #include <dax/internal/DataArray.h>
+#include <dax/cont/ErrorExecution.h>
 #include <dax/exec/internal/ErrorHandler.h>
 
 namespace dax {
@@ -29,9 +30,9 @@ DAX_CONT_EXPORT dax::internal::DataArray<char> getScheduleDebugErrorArray()
 }
 
 template<class Functor, class Parameters>
-DAX_CONT_EXPORT char * scheduleDebug(Functor functor,
-                                     Parameters parameters,
-                                     dax::Id numInstances)
+DAX_CONT_EXPORT void scheduleDebug(Functor functor,
+                                   Parameters parameters,
+                                   dax::Id numInstances)
 {
   dax::internal::DataArray<char> errorArray
       = internal::getScheduleDebugErrorArray();
@@ -46,11 +47,9 @@ DAX_CONT_EXPORT char * scheduleDebug(Functor functor,
     functor(parameters, index, errorHandler);
     if (errorHandler.IsErrorRaised())
       {
-      return errorArray.GetPointer();
+      throw dax::cont::ErrorExecution(errorArray.GetPointer());
       }
     }
-
-  return 0;
 }
 
 }

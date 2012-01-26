@@ -8,6 +8,7 @@
 
 #include <dax/cuda/cont/ScheduleThrust.h>
 
+#include <dax/cont/ErrorExecution.h>
 #include <dax/exec/internal/ErrorHandler.h>
 
 #include <thrust/device_vector.h>
@@ -98,22 +99,37 @@ int UnitTestCudaScheduleThrust(int, char *[])
     }
 
   std::cout << "Generating one error." << std::endl;
-  char *message;
-  message = dax::cuda::cont::scheduleThrust(OneError(),
-                                            rawDeviceArray,
-                                            ARRAY_SIZE);
-  if (strcmp(message, ERROR_MESSAGE) != 0)
+  std::string message;
+  try
+    {
+    dax::cuda::cont::scheduleThrust(OneError(), rawDeviceArray, ARRAY_SIZE);
+    }
+  catch (dax::cont::ErrorExecution error)
+    {
+    std::cout << "Got expected error: " << error.GetMessage() << std::endl;
+    message = error.GetMessage();
+    }
+  if (message != ERROR_MESSAGE)
     {
     std::cout << "Did not get expected error message." << std::endl;
+    return 1;
     }
 
   std::cout << "Generating lots of errors." << std::endl;
-  message = dax::cuda::cont::scheduleThrust(AllError(),
-                                            rawDeviceArray,
-                                            ARRAY_SIZE);
-  if (strcmp(message, ERROR_MESSAGE) != 0)
+  message = "";
+  try
+    {
+    dax::cuda::cont::scheduleThrust(AllError(), rawDeviceArray, ARRAY_SIZE);
+    }
+  catch (dax::cont::ErrorExecution error)
+    {
+    std::cout << "Got expected error: " << error.GetMessage() << std::endl;
+    message = error.GetMessage();
+    }
+  if (message != ERROR_MESSAGE)
     {
     std::cout << "Did not get expected error message." << std::endl;
+    return 1;
     }
 
   return 0;

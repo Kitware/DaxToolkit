@@ -18,7 +18,6 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ErrorControlBadValue.h>
-#include <dax/cont/ErrorExecution.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
@@ -98,15 +97,10 @@ inline void Square(const GridType &grid,
     outField.GetExecutionObject()
   };
 
-  char *error = DeviceAdapter::Schedule(
+  DeviceAdapter::Schedule(
         dax::exec::kernel::Square<CellType, FieldType>(),
         parameters,
         fieldSize);
-
-  if ((error != NULL) && (error[0] != '\0'))
-    {
-    throw dax::cont::ErrorExecution(error, "Square");
-    }
 }
 
 }

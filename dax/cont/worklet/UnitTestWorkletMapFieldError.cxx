@@ -34,8 +34,6 @@ static void TestFieldMapError()
   catch (dax::cont::ErrorExecution error)
     {
     std::cout << "Got expected ErrorExecution object." << std::endl;
-    DAX_TEST_ASSERT(error.GetWorkletName() == "FieldMapError",
-                    "Got wrong worklet name.");
     gotError = true;
     }
 

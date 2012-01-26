@@ -35,8 +35,6 @@ static void TestAssert()
     {
     std::cout << "Got expected ErrorExecution object." << std::endl;
     std::cout << error.GetMessage() << std::endl;
-    DAX_TEST_ASSERT(error.GetWorkletName() == "Assert",
-                    "Got wrong worklet name.");
     gotError = true;
     }
 

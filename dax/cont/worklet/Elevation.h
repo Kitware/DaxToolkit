@@ -18,7 +18,6 @@
 #include <dax/exec/internal/FieldBuild.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/ErrorExecution.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
@@ -91,15 +90,10 @@ inline void Elevation(
     outField.GetExecutionObject()
   };
 
-  char *error = DeviceAdapter::Schedule(
+  DeviceAdapter::Schedule(
         dax::exec::kernel::Elevation<CellType>(),
         parameters,
         grid.GetNumberOfPoints());
-
-  if ((error != NULL) && (error[0] != '\0'))
-    {
-    throw dax::cont::ErrorExecution(error, "Elevation");
-    }
 }
 
 }

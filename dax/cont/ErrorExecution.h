@@ -19,12 +19,8 @@ namespace cont {
 class ErrorExecution : public dax::cont::Error
 {
 public:
-  ErrorExecution(const std::string message, const std::string workletname)
-    : Error(message), WorkletName(workletname) { }
-
-  const std::string &GetWorkletName() const { return this->WorkletName; }
-private:
-  std::string WorkletName;
+  ErrorExecution(const std::string message)
+    : Error(message) { }
 };
 
 }

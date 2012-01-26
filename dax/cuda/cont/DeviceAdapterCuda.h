@@ -35,14 +35,14 @@ namespace cont {
 struct DeviceAdapterCuda
 {
   template<class Functor, class Parameters>
-  static char *Schedule(Functor functor,
-                        Parameters parameters,
-                        dax::Id numInstances)
+  static void Schedule(Functor functor,
+                       Parameters parameters,
+                       dax::Id numInstances)
   {
 #ifdef DAX_CUDA_NATIVE_SCHEDULE
-    return dax::cuda::cont::scheduleCuda(functor, parameters, numInstances);
+    dax::cuda::cont::scheduleCuda(functor, parameters, numInstances);
 #else
-    return dax::cuda::cont::scheduleThrust(functor, parameters, numInstances);
+    dax::cuda::cont::scheduleThrust(functor, parameters, numInstances);
 #endif
   }
 

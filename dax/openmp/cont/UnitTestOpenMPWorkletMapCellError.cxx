@@ -35,8 +35,6 @@ static void TestCellMapError()
   catch (dax::cont::ErrorExecution error)
     {
     std::cout << "Got expected ErrorExecution object." << std::endl;
-    DAX_TEST_ASSERT(error.GetWorkletName() == "CellMapError",
-                    "Got wrong worklet name.");
     gotError = true;
     }
 
