@@ -196,6 +196,12 @@ DAX_EXEC_CONT_EXPORT dax::Vector4::ValueType dot(const dax::Vector4 &a,
   return (a[0]*b[0]) + (a[1]*b[1]) + (a[2]*b[2]) + (a[3]*b[3]);
 }
 
+template<typename T>
+struct identity
+{
+  DAX_EXEC_CONT_EXPORT const T &operator()(const T &x) const {return x;}
+};
+
 } // End of namespace dax
 
 DAX_EXEC_CONT_EXPORT dax::Id3 operator+(const dax::Id3 &a,

@@ -10,13 +10,13 @@
 #define __dax_thrust_cont_StreamCompact_h
 
 #include <dax/Types.h>
+#include <dax/Functional.h>
 
 #include <thrust/binary_search.h>
 #include <thrust/copy.h>
 #include <thrust/device_vector.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/iterator_traits.h>
-#include <thrust/logical.h>
 #include <thrust/scan.h>
 
 
@@ -30,7 +30,7 @@ template<typename InputIterator,
          typename StencilVector,
          typename OutputVector,
          typename Predicate>
-DAX_CONT_EXPORT static void CopyIf(InputIterator valuesFirst,
+DAX_EXEC_CONT_EXPORT void RemoveIf(InputIterator valuesFirst,
                                     InputIterator valuesEnd,
                                     const StencilVector& stencil,
                                     OutputVector& output,
@@ -38,44 +38,50 @@ DAX_CONT_EXPORT static void CopyIf(InputIterator valuesFirst,
 {
   //we need to do some profiling on what way of doing stream compaction
   //is the fastest. PISTON uses an inclusive scan and then upper_bound.
-  //first get the correct size for output
+  //first get the correct size for output. What about the speed
+  //between remove_copy_if and copy_if
 
   //first get the correct size for output
   int numLeft = ::thrust::reduce(stencil.begin(),stencil.end());
   output.resize(numLeft);
 
+  //remove any item that matches the predicate
   ::thrust::copy_if(valuesFirst,
-                    valuesEnd,
-                    stencil.begin(),
-                    output.begin(),
-                    pred);
+                     valuesEnd,
+                     stencil.begin(),
+                     output.begin(),
+                     pred);
 }
 
 
-template<typename T>
-DAX_CONT_EXPORT static void streamCompact(const ::thrust::device_vector<T>& input,
-                          const ::thrust::device_vector<dax::Id>& stencil,
+template<typename T, typename U>
+DAX_EXEC_CONT_EXPORT void streamCompact(const ::thrust::device_vector<T>& input,
+                          const ::thrust::device_vector<U>& stencil,
                           ::thrust::device_vector<T>& output)
 {
   //do the copy step, remember the input is the stencil
-  dax::thrust::cont::CopyIf(input.begin(),
+  //set the predicate to be the identity of type U so we get rid of anything
+  //that matches the default constructor
+  dax::thrust::cont::RemoveIf(input.begin(),
                             input.end(),
                             stencil,
                             output,
-                            ::thrust::identity<dax::Id>());
+                            dax::not_identity<U>());
 }
 
-
-DAX_CONT_EXPORT static void streamCompact(
-    const ::thrust::device_vector<dax::Id>& input,
-    ::thrust::device_vector<dax::Id>& output)
+template<typename T>
+DAX_EXEC_CONT_EXPORT void streamCompact(
+    const ::thrust::device_vector<T>& input,
+    ::thrust::device_vector<T>& output)
 {
   //do the copy step, remember the input is the stencil
-  dax::thrust::cont::CopyIf(::thrust::make_counting_iterator<dax::Id>(0),
-                            ::thrust::make_counting_iterator<dax::Id>(input.size()),
-                            input,
-                            output,
-                            ::thrust::identity<dax::Id>());
+  //set the predicate to be the identity of type T so we get rid of anything
+  //that matches the default constructor
+  dax::thrust::cont::RemoveIf(::thrust::make_counting_iterator<T>(0),
+                              ::thrust::make_counting_iterator<T>(input.size()),
+                              input,
+                              output,
+                              dax::not_identity<T>());
 }
 
 }
