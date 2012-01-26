@@ -53,6 +53,7 @@ public:
   }
 
   //set this to true if you want to remove this cell
+  //Any cell with the value of zero is removed.
   DAX_EXEC_EXPORT void SetRemoveCell(dax::Id value)
   {
     dax::exec::internal::fieldAccessNormalSet(this->RemoveCell,
