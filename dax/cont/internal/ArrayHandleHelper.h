@@ -1,6 +1,8 @@
 #ifndef __dax_cont_internal_ArrayHandleHelper_h
 #define __dax_cont_internal_ArrayHandleHelper_h
 
+#include <dax/cont/ArrayHandle.h>
+
 namespace dax {
 namespace cont {
 namespace internal {
