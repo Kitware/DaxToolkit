@@ -9,20 +9,11 @@
 #include <dax/internal/DataArray.h>
 #include <dax/Types.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include <dax/internal/Testing.h>
+
+namespace {
 
 const dax::Id NUM_ENTRIES = 10;
-
-#define TEST_FAIL(msg)                                  \
-  {                                                     \
-    std::stringstream error;                            \
-    error << __FILE__ << ":" << __LINE__ << std::endl;  \
-    error msg;                                          \
-    throw error.str();                                  \
-  }
 
 template<typename T>
 static void FillRawData(T *rawData, dax::Id num)
@@ -44,10 +35,8 @@ static void TestIdArray()
   std::cout << "Checking DataArray<dax::Id>" << std::endl;
   for (int i = 0; i < NUM_ENTRIES; i++)
     {
-    if (dataArray.GetValue(i) != i)
-      {
-      TEST_FAIL(<< "Bad data array.");
-      }
+    DAX_TEST_ASSERT(dataArray.GetValue(i) == i,
+                    "Bad data array.");
     }
 }
 
@@ -67,7 +56,7 @@ static void TestId3Array()
         || (value[1] != 3*i+1)
         || (value[2] != 3*i+2) )
       {
-      TEST_FAIL(<< "Bad data array.");
+      DAX_TEST_FAIL("Bad data array.");
       }
     }
 }
@@ -83,10 +72,8 @@ static void TestScalarArray()
   std::cout << "Checking DataArray<dax::Scalar>" << std::endl;
   for (int i = 0; i < NUM_ENTRIES; i++)
     {
-    if (dataArray.GetValue(i) != i)
-      {
-      TEST_FAIL(<< "Bad data array.");
-      }
+    DAX_TEST_ASSERT(dataArray.GetValue(i) == i,
+                    "Bad data array.");
     }
 }
 
@@ -106,7 +93,7 @@ static void TestVector3Array()
         || (value[1] != 3*i+1)
         || (value[2] != 3*i+2) )
       {
-      TEST_FAIL(<< "Bad data array.");
+      DAX_TEST_FAIL("Bad data array.");
       }
     }
 }
@@ -128,28 +115,23 @@ static void TestVector4Array()
         || (value[2] != 4*i+2)
         || (value[3] != 4*i+3) )
       {
-      TEST_FAIL(<< "Bad data array.");
+      DAX_TEST_FAIL("Bad data array.");
       }
     }
 }
 
+void DataArrayTests()
+{
+  TestIdArray();
+  TestId3Array();
+  TestScalarArray();
+  TestVector3Array();
+  TestVector4Array();
+}
+
+} // anonymous namespace
+
 int UnitTestDataArray(int, char *[])
 {
-  try
-    {
-    TestIdArray();
-    TestId3Array();
-    TestScalarArray();
-    TestVector3Array();
-    TestVector4Array();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::internal::Testing::Run(DataArrayTests);
 }

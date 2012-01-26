@@ -8,38 +8,15 @@
 
 #include <dax/cont/internal/IteratorPolymorphic.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include <dax/cont/internal/Testing.h>
 
 #include <algorithm>
 
 #include <boost/iterator/counting_iterator.hpp>
-#include <boost/iterator/iterator_facade.hpp>
-#include <boost/iterator/zip_iterator.hpp>
-#include <boost/tuple/tuple.hpp>
 
 namespace
 {
 const dax::Id ARRAY_SIZE = 10;
-
-#define test_assert(condition, message) \
-  test_assert_impl(condition, message, __FILE__, __LINE__);
-
-static inline void test_assert_impl(bool condition,
-                                    const std::string& message,
-                                    const char *file,
-                                    int line)
-{
-  if(!condition)
-    {
-    std::stringstream error;
-    error << file << ":" << line << std::endl;
-    error << message << std::endl;
-    throw error.str();
-    }
-}
 
 void TestBasicIteration()
 {
@@ -55,19 +32,19 @@ void TestBasicIteration()
       = dax::cont::internal::make_IteratorPolymorphic(&array[0]);
 
   std::cout << "Checking basic polymorphic access." << std::endl;
-  test_assert(*polyIterBegin == 10, "Cannot dereference.");
+  DAX_TEST_ASSERT(*polyIterBegin == 10, "Cannot dereference.");
   IteratorType polyIterMiddle = polyIterBegin + 5;
-  test_assert(*polyIterMiddle == 15, "Cannot advance.");
+  DAX_TEST_ASSERT(*polyIterMiddle == 15, "Cannot advance.");
   polyIterMiddle--;
-  test_assert(*polyIterMiddle == 14, "Cannot decrement.");
+  DAX_TEST_ASSERT(*polyIterMiddle == 14, "Cannot decrement.");
   polyIterMiddle++;
-  test_assert(*polyIterMiddle == 15, "Cannot increment.");
-  test_assert((polyIterMiddle - polyIterBegin) == 5, "Cannot take distance.");
+  DAX_TEST_ASSERT(*polyIterMiddle == 15, "Cannot increment.");
+  DAX_TEST_ASSERT((polyIterMiddle - polyIterBegin) == 5, "Cannot take distance.");
   *polyIterMiddle = 432;
-  test_assert(array[5] == 432, "Cannot set dereference.");
-  test_assert(polyIterBegin != polyIterMiddle, "Inequality wrong.");
+  DAX_TEST_ASSERT(array[5] == 432, "Cannot set dereference.");
+  DAX_TEST_ASSERT(polyIterBegin != polyIterMiddle, "Inequality wrong.");
   polyIterMiddle -= 5;
-  test_assert(polyIterBegin == polyIterMiddle, "Equality wrong.");
+  DAX_TEST_ASSERT(polyIterBegin == polyIterMiddle, "Equality wrong.");
 
   std::cout << "Basic copy into polymorphic iterator." << std::endl;
   std::copy(boost::counting_iterator<dax::Scalar>(0),
@@ -77,7 +54,7 @@ void TestBasicIteration()
   // Check results.
   for (dax::Id i = 0; i < ARRAY_SIZE; i++)
     {
-    test_assert(array[i] == i, "Array has incorrect value copied.");
+    DAX_TEST_ASSERT(array[i] == i, "Array has incorrect value copied.");
     }
 
   std::cout << "Basic copy from polymorphic iterator." << std::endl;
@@ -89,7 +66,7 @@ void TestBasicIteration()
   // Check results.
   for (dax::Id i = 0; i < ARRAY_SIZE; i++)
     {
-    test_assert(array2[i] == i, "Array has incorrect value copied.");
+    DAX_TEST_ASSERT(array2[i] == i, "Array has incorrect value copied.");
     }
 }
 
@@ -97,17 +74,5 @@ void TestBasicIteration()
 
 int UnitTestIteratorPolymorphic(int, char *[])
 {
-  try
-    {
-    TestBasicIteration();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::cont::internal::Testing::Run(TestBasicIteration);
 }

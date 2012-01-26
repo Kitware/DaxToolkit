@@ -9,26 +9,14 @@
 
 #include <dax/exec/WorkMapCell.h>
 #include <dax/exec/WorkMapField.h>
+#include <dax/exec/internal/ErrorHandler.h>
 #include <dax/internal/GridStructures.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
-
-#include <vector>
-
-
-#define TEST_FAIL(msg)                                  \
-  {                                                     \
-    std::stringstream error;                            \
-    error << __FILE__ << ":" << __LINE__ << std::endl;  \
-    error msg;                                          \
-    throw error.str();                                  \
-  }
+#include <dax/internal/Testing.h>
 
 namespace
 {
+
 /// Simple structure describing a linear field.  Has a convienience class
 /// for getting values.
 struct LinearField {
@@ -39,7 +27,12 @@ struct LinearField {
     return dax::dot(coordinates, this->Gradient) + this->OriginValue;
   }
 };
-}
+
+/// An (invalid) error handler to pass to work constructors.
+dax::exec::internal::ErrorHandler ErrorHandler
+  = dax::exec::internal::ErrorHandler(dax::internal::DataArray<char>());
+
+} // Anonymous namespace
 
 const dax::Id bufferSize = 1024*1024;
 static dax::Scalar fieldBuffer[bufferSize];
@@ -51,10 +44,8 @@ static dax::exec::FieldPoint<dax::Scalar> CreatePointField(
     const LinearField &fieldValues,
     dax::Id numPoints)
 {
-  if (bufferSize < numPoints)
-    {
-    TEST_FAIL(<< "Internal test error.  Buffer not large enough");
-    }
+  DAX_TEST_ASSERT(bufferSize >= numPoints,
+                  "Internal test error.  Buffer not large enough");
 
   // Create field.
   dax::internal::DataArray<dax::Scalar> fieldData(fieldBuffer, numPoints);
@@ -94,10 +85,8 @@ static void TestDerivativeCell(
                                         pcoords,
                                         coordField,
                                         scalarField);
-        if (computedDerivative != fieldValues.Gradient)
-          {
-          TEST_FAIL(<< "Bad derivative");
-          }
+        DAX_TEST_ASSERT(computedDerivative == fieldValues.Gradient,
+                        "Bad derivative");
         }
       }
     }
@@ -107,7 +96,8 @@ static void TestDerivativeVoxel(
     const dax::internal::StructureUniformGrid &gridstruct,
     const LinearField &fieldValues)
 {
-  dax::exec::WorkMapField<dax::exec::CellVoxel> workField(gridstruct, 0);
+  dax::exec::WorkMapField<dax::exec::CellVoxel> workField(gridstruct,
+                                                          ErrorHandler);
   dax::exec::FieldCoordinates coordField
       = dax::exec::FieldCoordinates(
           dax::internal::DataArray<dax::Vector3>());
@@ -115,10 +105,12 @@ static void TestDerivativeVoxel(
   dax::exec::FieldPoint<dax::Scalar> scalarField
       = CreatePointField(workField, coordField, fieldValues, numPoints);
 
+  dax::exec::WorkMapCell<dax::exec::CellVoxel> workCell(gridstruct,
+                                                        ErrorHandler);
   dax::Id numCells = dax::internal::numberOfCells(gridstruct);
   for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
     {
-    dax::exec::WorkMapCell<dax::exec::CellVoxel> workCell(gridstruct,cellIndex);
+    workCell.SetCellIndex(cellIndex);
     TestDerivativeCell(workCell, coordField, scalarField, fieldValues);
     }
 }
@@ -156,19 +148,12 @@ static void TestDerivativeVoxel()
   TestDerivativeVoxel(gridstruct, fieldValues);
 }
 
+static void TestDerivatives()
+{
+  TestDerivativeVoxel();
+}
+
 int UnitTestDerivative(int, char *[])
 {
-  try
-    {
-    TestDerivativeVoxel();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::internal::Testing::Run(TestDerivatives);
 }

@@ -9,10 +9,9 @@
 #define __dax_cont_internal_IteratorContainer_h
 
 #include <dax/Types.h>
+#include <dax/cont/Assert.h>
 
 #include <iterator>
-
-#include <assert.h>
 
 namespace dax {
 namespace cont {
@@ -48,7 +47,7 @@ public:
   /// false.
   ///
   IteratorType GetBeginIterator() const {
-    assert(this->Valid);  // TODO: Better error control.
+    DAX_ASSERT_CONT(this->Valid);
     return this->BeginIterator;
   }
 
@@ -56,7 +55,7 @@ public:
   /// false.
   ///
   IteratorType GetEndIterator() const {
-    assert(this->Valid);  // TODO: Better error control.
+    DAX_ASSERT_CONT(this->Valid);
     return this->EndIterator;
   }
 

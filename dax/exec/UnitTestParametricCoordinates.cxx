@@ -9,22 +9,15 @@
 
 #include <dax/exec/WorkMapCell.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include <dax/internal/Testing.h>
 
-#include <algorithm>
-#include <vector>
+namespace {
 
+/// An (invalid) error handler to pass to work constructors.
+dax::exec::internal::ErrorHandler ErrorHandler
+  = dax::exec::internal::ErrorHandler(dax::internal::DataArray<char>());
 
-#define TEST_FAIL(msg)                                  \
-  {                                                     \
-    std::stringstream error;                            \
-    error << __FILE__ << ":" << __LINE__ << std::endl;  \
-    error msg;                                          \
-    throw error.str();                                  \
-  }
+}  // Anonymous namespace
 
 template<class WorkType, class CellType>
 static void CompareCoordinates(const WorkType &work,
@@ -38,20 +31,16 @@ static void CompareCoordinates(const WorkType &work,
                                                            cell,
                                                            coordField,
                                                            truePCoords);
-  if (computedWCoords != trueWCoords)
-    {
-    TEST_FAIL(<< "Computed wrong world coords from parametric coords.");
-    }
+  DAX_TEST_ASSERT(computedWCoords == trueWCoords,
+                  "Computed wrong world coords from parametric coords.");
 
   dax::Vector3 computedPCoords
       = dax::exec::worldCoordinatesToParametricCoordinates(work,
                                                            cell,
                                                            coordField,
                                                            trueWCoords);
-  if (computedPCoords != truePCoords)
-    {
-    TEST_FAIL(<< "Computed wrong parametric coords from world coords.");
-    }
+  DAX_TEST_ASSERT(computedPCoords == truePCoords,
+                  "Computed wrong parametric coords from world coords.");
 }
 
 static void TestPCoordsVoxel(
@@ -92,46 +81,44 @@ static void TestPCoordsVoxel()
 {
   std::cout << "Testing TestPCoords<CellVoxel>" << std::endl;
 
-  dax::internal::StructureUniformGrid gridstruct;
-
   dax::internal::DataArray<dax::Vector3> dummyArray;
   dax::exec::FieldCoordinates coordField(dummyArray);
 
+  {
+  dax::internal::StructureUniformGrid gridstruct;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
   gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
+  dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0; flatIndex < 1000; flatIndex++)
     {
-    dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, flatIndex);
+    work.SetCellIndex(flatIndex);
     TestPCoordsVoxel(work, coordField);
     }
+  }
 
+  {
+  dax::internal::StructureUniformGrid gridstruct;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
   gridstruct.Extent.Max = dax::make_Id3(15, 6, 13);
-  dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, 0);
+  dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0; flatIndex < 1500; flatIndex++)
     {
     work.SetCellIndex(flatIndex);
     TestPCoordsVoxel(work, coordField);
     }
+  }
+}
+
+static void TestPCoords()
+{
+  TestPCoordsVoxel();
 }
 
 int UnitTestParametricCoordinates(int, char *[])
 {
-  try
-    {
-    TestPCoordsVoxel();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::internal::Testing::Run(TestPCoords);
 }

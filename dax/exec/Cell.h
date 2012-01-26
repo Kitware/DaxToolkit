@@ -24,13 +24,16 @@ namespace dax { namespace exec {
 /// A cell in a regular structured grid.
 class CellVoxel
 {
+public:
+  typedef dax::internal::StructureUniformGrid GridStructureType;
+
 private:
-  const dax::internal::StructureUniformGrid GridStructure;
+  const GridStructureType GridStructure;
   dax::Id CellIndex;
 
 public:
   /// Create a cell for the given work.
-  DAX_EXEC_CONT_EXPORT CellVoxel(const dax::internal::StructureUniformGrid &gs,
+  DAX_EXEC_CONT_EXPORT CellVoxel(const GridStructureType &gs,
                                  dax::Id index)
     : GridStructure(gs), CellIndex(index) { }
 
@@ -95,8 +98,7 @@ public:
   }
 
   /// Get the grid structure details.  Only useful internally.
-  DAX_EXEC_EXPORT
-  const dax::internal::StructureUniformGrid &GetGridStructure() const
+  DAX_EXEC_EXPORT const GridStructureType &GetGridStructure() const
   {
     return this->GridStructure;
   }

@@ -14,8 +14,10 @@
 #include <dax/internal/DataArray.h>
 #include <dax/internal/GridStructures.h>
 #include <dax/exec/WorkMapField.h>
+#include <dax/exec/internal/ErrorHandler.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/ErrorControlBadValue.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
@@ -28,7 +30,7 @@ namespace kernel {
 template<class CellType, typename FieldType>
 struct CosineParameters
 {
-  dax::exec::WorkMapField<CellType> work;
+  typename CellType::GridStructureType grid;
   dax::exec::Field<FieldType> inField;
   dax::exec::Field<FieldType> outField;
 };
@@ -38,9 +40,10 @@ struct Cosine
 {
   DAX_EXEC_EXPORT void operator()(
       CosineParameters<CellType, FieldType> &parameters,
-      dax::Id index)
+      dax::Id index,
+      const dax::exec::internal::ErrorHandler &errorHandler)
   {
-    dax::exec::WorkMapField<CellType> work = parameters.work;
+    dax::exec::WorkMapField<CellType> work(parameters.grid, errorHandler);
     work.SetIndex(index);
     dax::worklet::Cosine(work,
                          parameters.inField,
@@ -61,8 +64,6 @@ inline void Cosine(const GridType &grid,
                    dax::cont::ArrayHandle<FieldType, DeviceAdapter> &inHandle,
                    dax::cont::ArrayHandle<FieldType, DeviceAdapter> &outHandle)
 {
-  assert(inHandle.GetNumberOfEntries() == outHandle.GetNumberOfEntries());
-
   dax::Id fieldSize;
   if (inHandle.GetNumberOfEntries() == grid.GetNumberOfPoints())
     {
@@ -74,8 +75,8 @@ inline void Cosine(const GridType &grid,
     }
   else
     {
-    assert("Number of array entries neither cells nor points.");
-    return;
+    throw dax::cont::ErrorControlBadValue(
+          "Number of array entries neither cells nor points.");
     }
 
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
@@ -88,18 +89,18 @@ inline void Cosine(const GridType &grid,
       outField(outHandle, fieldSize);
 
   typedef typename GridPackageType::ExecutionCellType CellType;
-  typedef dax::exec::WorkMapField<CellType> WorkType;
 
   typedef dax::exec::kernel::CosineParameters<CellType, FieldType> Parameters;
   Parameters parameters = {
-    WorkType(gridPackage.GetExecutionObject()),
+    gridPackage.GetExecutionObject(),
     inField.GetExecutionObject(),
     outField.GetExecutionObject()
   };
 
-  DeviceAdapter::Schedule(dax::exec::kernel::Cosine<CellType,FieldType>(),
-                          parameters,
-                          fieldSize);
+  DeviceAdapter::Schedule(
+        dax::exec::kernel::Cosine<CellType,FieldType>(),
+        parameters,
+        fieldSize);
 }
 
 }

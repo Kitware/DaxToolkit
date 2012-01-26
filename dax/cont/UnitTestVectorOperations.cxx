@@ -8,18 +8,9 @@
 
 #include <dax/cont/VectorOperations.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include <dax/cont/internal/Testing.h>
 
-#define TEST_FAIL(msg)                                  \
-  {                                                     \
-    std::stringstream error;                            \
-    error << __FILE__ << ":" << __LINE__ << std::endl;  \
-    error msg;                                          \
-    throw error.str();                                  \
-  }
+namespace {
 
 /// Simple functions to be used in conjunction with the vector operations.
 ///
@@ -45,24 +36,18 @@ static void TestVectorType(const VectorType &value)
   typedef typename Traits::ValueType ValueType;
 
   VectorType squaredVector = dax::cont::VectorMap(value, Square<ValueType>);
-  if (squaredVector != value*value)
-    {
-    TEST_FAIL(<< "Got bad result for squaring vector components");
-    }
+  DAX_TEST_ASSERT(squaredVector == value*value,
+                  "Got bad result for squaring vector components");
 
   ValueType magSquared = dax::cont::VectorReduce(squaredVector, Add<ValueType>);
-  if (magSquared != dax::dot(value, value))
-    {
-    TEST_FAIL(<< "Got bad result for summing vector components");
-    }
+  DAX_TEST_ASSERT(magSquared == dax::dot(value, value),
+                  "Got bad result for summing vector components");
 
   {
   Summation<ValueType> sum;
   dax::cont::VectorForEach(squaredVector, sum);
-  if (sum.Sum != magSquared)
-    {
-    TEST_FAIL(<< "Got bad result for summing with VectorForEach");
-    }
+  DAX_TEST_ASSERT(sum.Sum == magSquared,
+                  "Got bad result for summing with VectorForEach");
   }
 
   {
@@ -70,35 +55,28 @@ static void TestVectorType(const VectorType &value)
   Summation<ValueType> sum;
   const VectorType &constSquaredVector = squaredVector;
   dax::cont::VectorForEach(constSquaredVector, sum);
-  if (sum.Sum != magSquared)
-    {
-    TEST_FAIL(<< "Got bad result for summing with VectorForEach");
-    }
+  DAX_TEST_ASSERT(sum.Sum == magSquared,
+                  "Got bad result for summing with VectorForEach");
   }
 }
 
+static void TestVectorTypes()
+{
+  std::cout << "Testing Id3" << std::endl;
+  TestVectorType(dax::make_Id3(42, 54, 67));
+  std::cout << "Testing Vector3" << std::endl;
+  TestVectorType(dax::make_Vector3(42, 54, 67));
+  std::cout << "Testing Vector4" << std::endl;
+  TestVectorType(dax::make_Vector4(42, 54, 67, 12));
+  std::cout << "Testing Id" << std::endl;
+  TestVectorType(static_cast<dax::Id>(42));
+  std::cout << "Testing Scalar" << std::endl;
+  TestVectorType(static_cast<dax::Scalar>(42));
+}
+
+} // anonymous namespace
+
 int UnitTestVectorOperations(int, char *[])
 {
-  try
-    {
-    std::cout << "Testing Id3" << std::endl;
-    TestVectorType(dax::make_Id3(42, 54, 67));
-    std::cout << "Testing Vector3" << std::endl;
-    TestVectorType(dax::make_Vector3(42, 54, 67));
-    std::cout << "Testing Vector4" << std::endl;
-    TestVectorType(dax::make_Vector4(42, 54, 67, 12));
-    std::cout << "Testing Id" << std::endl;
-    TestVectorType(static_cast<dax::Id>(42));
-    std::cout << "Testing Scalar" << std::endl;
-    TestVectorType(static_cast<dax::Scalar>(42));
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::cont::internal::Testing::Run(TestVectorTypes);
 }

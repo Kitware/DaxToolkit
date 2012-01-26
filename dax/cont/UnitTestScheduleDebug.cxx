@@ -8,6 +8,9 @@
 
 #include <dax/cont/ScheduleDebug.h>
 
+#include <dax/cont/ErrorExecution.h>
+#include <dax/exec/internal/ErrorHandler.h>
+
 #include <iostream>
 
 namespace {
@@ -22,7 +25,9 @@ namespace {
 
 struct ClearArray
 {
-  DAX_EXEC_EXPORT void operator()(dax::Id *array, dax::Id index)
+  DAX_EXEC_EXPORT void operator()(dax::Id *array,
+                                  dax::Id index,
+                                  dax::exec::internal::ErrorHandler &)
   {
     array[index] = OFFSET;
   }
@@ -30,9 +35,34 @@ struct ClearArray
 
 struct AddArray
 {
-  DAX_EXEC_EXPORT void operator()(dax::Id *array, dax::Id index)
+  DAX_EXEC_EXPORT void operator()(dax::Id *array,
+                                  dax::Id index,
+                                  dax::exec::internal::ErrorHandler &)
   {
     array[index] += index;
+  }
+};
+
+const char ERROR_MESSAGE[] = "Got an error.";
+
+struct OneError
+{
+  DAX_EXEC_EXPORT void operator()(
+      dax::Id *, dax::Id index, dax::exec::internal::ErrorHandler &errorHandler)
+  {
+    if (index == ARRAY_SIZE/2)
+      {
+      errorHandler.RaiseError(ERROR_MESSAGE);
+      }
+  }
+};
+
+struct AllError
+{
+  DAX_EXEC_EXPORT void operator()(
+      dax::Id *, dax::Id, dax::exec::internal::ErrorHandler &errorHandler)
+  {
+    errorHandler.RaiseError(ERROR_MESSAGE);
   }
 };
 
@@ -57,6 +87,40 @@ int UnitTestScheduleDebug(int, char *[])
       std::cout << "Got bad value." << std::endl;
       return 1;
       }
+    }
+
+  std::cout << "Generating one error." << std::endl;
+  std::string message;
+  try
+    {
+    dax::cont::scheduleDebug(OneError(), array, ARRAY_SIZE);
+    }
+  catch (dax::cont::ErrorExecution error)
+    {
+    std::cout << "Got expected error: " << error.GetMessage() << std::endl;
+    message = error.GetMessage();
+    }
+  if (message != ERROR_MESSAGE)
+    {
+    std::cout << "Did not get expected error message." << std::endl;
+    return 1;
+    }
+
+  std::cout << "Generating lots of errors." << std::endl;
+  message = "";
+  try
+    {
+    dax::cont::scheduleDebug(AllError(), array, ARRAY_SIZE);
+    }
+  catch (dax::cont::ErrorExecution error)
+    {
+    std::cout << "Got expected error: " << error.GetMessage() << std::endl;
+    message = error.GetMessage();
+    }
+  if (message != ERROR_MESSAGE)
+    {
+    std::cout << "Did not get expected error message." << std::endl;
+    return 1;
     }
 
   return 0;

@@ -14,6 +14,7 @@
 #include <dax/internal/DataArray.h>
 #include <dax/internal/GridStructures.h>
 #include <dax/exec/WorkMapField.h>
+#include <dax/exec/internal/ErrorHandler.h>
 #include <dax/exec/internal/FieldBuild.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
@@ -34,7 +35,7 @@ namespace kernel {
 template<class CellType>
 struct ElevationParameters
 {
-  dax::exec::WorkMapField<CellType> work;
+  typename CellType::GridStructureType grid;
   dax::exec::FieldCoordinates inCoordinates;
   dax::exec::FieldPoint<dax::Scalar> outField;
 };
@@ -42,10 +43,12 @@ struct ElevationParameters
 template<class CellType>
 struct Elevation
 {
-  DAX_EXEC_EXPORT void operator()(ElevationParameters<CellType> &parameters,
-                                  dax::Id index)
+  DAX_EXEC_EXPORT void operator()(
+      ElevationParameters<CellType> &parameters,
+      dax::Id index,
+      const dax::exec::internal::ErrorHandler &errorHandler)
   {
-    dax::exec::WorkMapField<CellType> work = parameters.work;
+    dax::exec::WorkMapField<CellType> work(parameters.grid, errorHandler);
     work.SetIndex(index);
     dax::worklet::Elevation(work,
                             parameters.inCoordinates,
@@ -79,18 +82,18 @@ inline void Elevation(
       outField(outHandle, grid);
 
   typedef typename GridPackageType::ExecutionCellType CellType;
-  typedef dax::exec::WorkMapField<CellType> WorkType;
 
   typedef dax::exec::kernel::ElevationParameters<CellType> Parameters;
   Parameters parameters = {
-    WorkType(gridPackage.GetExecutionObject()),
+    gridPackage.GetExecutionObject(),
     fieldCoordinates.GetExecutionObject(),
     outField.GetExecutionObject()
   };
 
-  DeviceAdapter::Schedule(dax::exec::kernel::Elevation<CellType>(),
-                          parameters,
-                          grid.GetNumberOfPoints());
+  DeviceAdapter::Schedule(
+        dax::exec::kernel::Elevation<CellType>(),
+        parameters,
+        grid.GetNumberOfPoints());
 }
 
 }
