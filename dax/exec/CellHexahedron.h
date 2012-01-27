@@ -28,21 +28,22 @@ private:
   const dax::internal::UnstructuredGrid<CellHexahedron> GridStructure;
   dax::Id CellIndex;
   dax::Id TopologyPosition;
-
 public:
+  /// static variable that returns the number of points per cell
+  const static dax::Id NUM_POINTS = 8; //needed by unstructured grid
   /// Create a cell for the given work.
   DAX_EXEC_CONT_EXPORT CellHexahedron(
       const dax::internal::UnstructuredGrid<CellHexahedron>  &gs,
       dax::Id index)
     : GridStructure(gs),
       CellIndex(index),
-      TopologyPosition(8*index)
+      TopologyPosition(NUM_POINTS*index)
     { }
 
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
   {
-    return 8;
+    return NUM_POINTS;
   }
 
   /// Given a vertex index for a point (0 to GetNumberOfPoints() - 1), returns
@@ -59,9 +60,8 @@ public:
   DAX_EXEC_EXPORT void SetIndex(dax::Id cellIndex)
   {
     this->CellIndex = cellIndex;
-    this->TopologyPosition = 8*cellIndex;
+    this->TopologyPosition = NUM_POINTS*cellIndex;
   }
-
 
   /// Get the grid structure details.  Only useful internally.
   DAX_EXEC_EXPORT
