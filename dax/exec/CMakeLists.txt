@@ -8,6 +8,8 @@
 
 set(headers
   Cell.h
+  CellHexahedron.h
+  CellVoxel.h
   Derivative.h
   Field.h
   Interpolate.h
