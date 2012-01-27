@@ -6,6 +6,7 @@
 
 =========================================================================*/
 
+#include <dax/openmp/cont/internal/ArrayContainerExecutionThrust.h>
 #include <dax/openmp/cont/ScheduleThrust.h>
 #include <dax/openmp/cont/StreamCompact.h>
 
@@ -46,17 +47,19 @@ namespace ut_OpenMPStreamCompact
 
 struct InitArray
 {
-  DAX_EXEC_EXPORT void operator()(dax::Id *array, dax::Id index)
+  DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id>& array,
+                                  dax::Id index)
   {
-    array[index] = OFFSET + index;
+    array.SetValue(index,OFFSET + index);
   }
 };
 
 struct MarkOddNumbers
 {
-  DAX_EXEC_EXPORT void operator()(dax::Id *array, dax::Id index)
+  DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id>& array,
+                                  dax::Id index)
   {
-    array[index] = index%2;
+    array.SetValue(index,index%2);
   }
 };
 
@@ -64,25 +67,32 @@ bool TestCompact()
   {
   //test the version of compact that takes in input and uses it as a stencil
   //and uses the index of each item as the value to place in the result vector
-  ::thrust::device_vector<dax::Id> array(ARRAY_SIZE);
-  ::thrust::device_vector<dax::Id> result;
+  dax::openmp::cont::internal::ArrayContainerExecutionThrust<dax::Id> array;
+  dax::openmp::cont::internal::ArrayContainerExecutionThrust<dax::Id> result;
+  typedef dax::openmp::cont::internal::ArrayContainerExecutionThrust<dax::Id>::const_iterator
+      iterator;
 
-  array.resize(ARRAY_SIZE,dax::Id());
-  dax::Id *rawArray = thrust::raw_pointer_cast(&array[0]);
+  array.Allocate(ARRAY_SIZE);
+  dax::internal::DataArray<dax::Id> rawArray = array.GetExecutionArray();
+
 
   //construct the index array
   dax::openmp::cont::scheduleThrust(MarkOddNumbers(),rawArray, ARRAY_SIZE);
   dax::openmp::cont::streamCompact(array,result);
 
-  test_assert(result.size() == array.size()/2,
-              "result of compacation has an incorrect size.");
+  std::stringstream buffer;
+  buffer << "result of compacation has an incorrect size of:";
+  buffer << result.GetNumberOfEntries();
+  test_assert(result.GetNumberOfEntries() == array.GetNumberOfEntries()/2,
+              buffer.str());
 
-  ::thrust::host_vector<dax::Id> hresult(ARRAY_SIZE);
-  hresult = result;
-  for (dax::Id index = 0; index < static_cast<dax::Id>(hresult.size()); index++)
+  dax::Id index=0;
+  for(iterator i = result.GetBeginThrustIterator();
+      i != result.GetEndThrustIterator();
+      ++i,++index)
     {
-    dax::Id value = hresult[index];
-    test_assert(value == (index*2+1),
+    const dax::Id value = *i;
+    test_assert(value == (index*2)+1,
                 "Incorrect value in compaction result.");
     }
   return true;
@@ -91,29 +101,36 @@ bool TestCompact()
 bool TestCompactWithStencil()
   {
   //test the version of compact that takes in input and a stencil
-  ::thrust::device_vector<dax::Id> array(ARRAY_SIZE);
-  ::thrust::device_vector<dax::Id> stencil(ARRAY_SIZE);
-  ::thrust::device_vector<dax::Id> result;
+  dax::openmp::cont::internal::ArrayContainerExecutionThrust<dax::Id> array;
+  dax::openmp::cont::internal::ArrayContainerExecutionThrust<dax::Id> stencil;
+  dax::openmp::cont::internal::ArrayContainerExecutionThrust<dax::Id> result;
+  typedef dax::openmp::cont::internal::ArrayContainerExecutionThrust<dax::Id>::const_iterator
+      iterator;
 
-  array.resize(ARRAY_SIZE,dax::Id());
-  stencil.resize(ARRAY_SIZE,dax::Id());
+  array.Allocate(ARRAY_SIZE);
+  stencil.Allocate(ARRAY_SIZE);
 
-  dax::Id *rawArray = thrust::raw_pointer_cast(&array[0]);
-  dax::Id *rawStencil = thrust::raw_pointer_cast(&stencil[0]);
+
+  dax::internal::DataArray<dax::Id> rawArray = array.GetExecutionArray();
+  dax::internal::DataArray<dax::Id> rawStencil = stencil.GetExecutionArray();
 
   //construct the index array
   dax::openmp::cont::scheduleThrust(InitArray(), rawArray, ARRAY_SIZE);
   dax::openmp::cont::scheduleThrust(MarkOddNumbers(), rawStencil, ARRAY_SIZE);
   dax::openmp::cont::streamCompact(array,stencil,result);
 
-  test_assert(result.size() == array.size()/2,
-              "result of compacation has an incorrect size.");
+  std::stringstream buffer;
+  buffer << "result of compacation has an incorrect size of:";
+  buffer << result.GetNumberOfEntries();
+  test_assert(result.GetNumberOfEntries() == array.GetNumberOfEntries()/2,
+              buffer.str());
 
-  ::thrust::host_vector<dax::Id> hresult(result.size());
-  hresult = result;
-  for (dax::Id index = 0; index < static_cast<dax::Id>(hresult.size()); index++)
+  dax::Id index=0;
+  for(iterator i = result.GetBeginThrustIterator();
+      i != result.GetEndThrustIterator();
+      ++i,++index)
     {
-    dax::Id value = hresult[index];
+    const dax::Id value = *i;
     test_assert(value == (OFFSET + (index*2)+1),
                 "Incorrect value in compaction result.");
     }
