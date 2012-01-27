@@ -31,6 +31,8 @@ class ArrayContainerExecutionCPU
 {
 public:
   typedef T ValueType;
+  typedef typename std::vector<ValueType>::const_iterator const_iterator;
+  typedef typename std::vector<ValueType>::iterator iterator;
 
   /// On inital creation, no memory is allocated on the device.
   ///
@@ -87,18 +89,6 @@ public:
 
   /// Gets a DataArray that is valid in the execution environment.
   dax::internal::DataArray<ValueType> GetExecutionArray();
-
-  /// Gets the thrust devce_vector for the contained array. May be too low level
-  /// to expose to everyone
-  ///
-  const ::std::vector<ValueType>& GetDeviceArray() const
-    {
-    return this->DeviceArray;
-    }
-  ::std::vector<ValueType>& GetDeviceArray()
-    {
-    return this->DeviceArray;
-    }
 
 private:
   ArrayContainerExecutionCPU(const ArrayContainerExecutionCPU &); // Not implemented

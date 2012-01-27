@@ -19,15 +19,6 @@
 
 #include <assert.h>
 
-namespace dax {
-namespace cont {
-namespace internal {
-  //forward declare the handle helper so the
-  //friend relationship will work
-  class ArrayHandleHelper;
-}
-
-
 /// Manages an array-worth of data. Typically this data holds field data. The
 /// array handle optionally contains a reference to user managed data, with
 /// which it can read input data or write results data. The array handle also
@@ -50,6 +41,8 @@ namespace internal {
 /// Any memory created for the execution environment will remain around in case
 /// it is needed again.
 ///
+namespace dax {
+namespace cont {
 template<typename T, class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER>
 class ArrayHandle
 {
@@ -188,7 +181,9 @@ private:
 
   //make the converter class a friend class,
   //so that it can access GetExecutionArray.
-  friend class dax::cont::internal::ArrayHandleHelper;
+  friend class dax::cont::DeviceAdapterDebug;
+  friend class dax::cuda::cont::DeviceAdapterCuda;
+  friend class dax::openmp::cont::DeviceAdapterOpenMP;
 
   /// Returns the raw execution array. This doesn't verify
   /// any level of synchronization, so the caller must first

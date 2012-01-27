@@ -51,11 +51,9 @@ struct DeviceAdapterDebug
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
     //each index is the stencil value
-//    dax::cont::streamCompactDebug(
-//      dax::cont::internal::ArrayHandleHelper::ExecutionArray(input),
-//      dax::cont::internal::ArrayHandleHelper::ExecutionArray(output)
-//      );
-//    dax::cont::internal::ArrayHandleHelper::UpdateArraySize(output);
+    dax::cont::streamCompactDebug(input.GetExecutionArray(),
+                                  output.GetExecutionArray());
+    output.UpdateArraySize();
     }
 };
 

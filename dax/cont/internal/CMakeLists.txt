@@ -8,7 +8,6 @@
 
 set(headers
   ArrayContainerExecutionCPU.h
-  ArrayHandleHelper.h
   DeviceAdapterError.h
   ExecutionPackageField.h
   ExecutionPackageGrid.h

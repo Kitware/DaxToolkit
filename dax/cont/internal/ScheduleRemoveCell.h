@@ -14,7 +14,6 @@
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
-#include <dax/cont/internal/ArrayHandleHelper.h>
 
 namespace dax {
 namespace cont {
