@@ -31,6 +31,8 @@ class ArrayContainerExecutionCPU
 {
 public:
   typedef T ValueType;
+  typedef typename std::vector<ValueType>::const_iterator const_iterator;
+  typedef typename std::vector<ValueType>::iterator iterator;
 
   /// On inital creation, no memory is allocated on the device.
   ///

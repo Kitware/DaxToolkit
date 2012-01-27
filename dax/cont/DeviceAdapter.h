@@ -92,4 +92,10 @@ namespace cont {
 }
 }
 
+//forward declare all the different device adapters so that
+//ArrayHandle can be use them as a friend class
+namespace dax { namespace cont { struct DeviceAdapterDebug; }}
+namespace dax { namespace cuda { namespace cont { struct DeviceAdapterCuda; }}}
+namespace dax { namespace openmp {  namespace cont { struct DeviceAdapterOpenMP; }}}
+
 #endif //__dax_cont_DeviceAdapter_h

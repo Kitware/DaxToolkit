@@ -18,9 +18,6 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-namespace dax {
-namespace cont {
-
 /// Manages an array-worth of data. Typically this data holds field data. The
 /// array handle optionally contains a reference to user managed data, with
 /// which it can read input data or write results data. The array handle also
@@ -43,6 +40,8 @@ namespace cont {
 /// Any memory created for the execution environment will remain around in case
 /// it is needed again.
 ///
+namespace dax {
+namespace cont {
 template<typename T, class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER>
 class ArrayHandle
 {
@@ -185,6 +184,42 @@ private:
   };
 
   boost::shared_ptr<InternalStruct> Internals;
+
+  //make the converter class a friend class,
+  //so that it can access GetExecutionArray.
+  friend class dax::cont::DeviceAdapterDebug;
+  friend class dax::cuda::cont::DeviceAdapterCuda;
+  friend class dax::openmp::cont::DeviceAdapterOpenMP;
+
+  /// Returns the raw execution array. This doesn't verify
+  /// any level of synchronization, so the caller must first
+  /// make sure the array is of the correct size and is allocated
+  const typename DeviceAdapter::template ArrayContainerExecution<ValueType>&
+    GetExecutionArray() const
+    {
+    return this->Internals->ExecutionArray;
+    }
+
+  /// Returns the raw execution array. This doesn't verify
+  /// any level of synchronization, so the caller must first
+  /// make sure the array is of the correct size and is allocated
+  typename DeviceAdapter::template ArrayContainerExecution<ValueType>&
+    GetExecutionArray()
+    {
+    this->Internals->Synchronized = false;
+    return this->Internals->ExecutionArray;
+    }
+
+  /// Queries the internal execution array to determine the updated
+  /// size of the array. This is used in conjuction with GetExecutionArray
+  /// by algorithms that don't know the size of an array intill execution
+  void UpdateArraySize()
+    {
+    this->Internals->Synchronized = false;
+    this->Internals->NumberOfEntries =
+        this->Internals->ExecutionArray.GetNumberOfEntries();
+    }
+
 };
 
 }
