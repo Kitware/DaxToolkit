@@ -28,7 +28,6 @@ namespace internal {
 }
 
 
-
 /// Manages an array-worth of data. Typically this data holds field data. The
 /// array handle optionally contains a reference to user managed data, with
 /// which it can read input data or write results data. The array handle also

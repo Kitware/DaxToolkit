@@ -82,14 +82,10 @@ protected:
     //does the stream compaction
 
     //make a temporary result  vector of the correct container type
-    dax::cont::ArrayHandle<dax::Id> newCells;
+    dax::cont::ArrayHandle<dax::Id> newCellIds;
 
     //result cells now holds the ids of thresholded geometeries cells.
-    DeviceAdapter::StreamCompact(
-      dax::cont::internal::ArrayHandleHelper::ExecutionArray(this->ResultHandle),
-      dax::cont::internal::ArrayHandleHelper::ExecutionArray(newCells));
-
-    dax::cont::internal::ArrayHandleHelper::UpdateArraySize(newCells);
+    DeviceAdapter::StreamCompact(this->ResultHandle,newCellIds);
 
     //outGrid = OutGridType(inGrid,resultCells);
     }

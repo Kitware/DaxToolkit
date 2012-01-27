@@ -20,6 +20,13 @@
 #include <dax/openmp/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
+namespace cont {
+  //forward declare the ArrayHandle before we use it.
+template< typename OtherT, class OtherDeviceAdapter > class ArrayHandle;
+}
+}
+
+namespace dax {
 namespace openmp {
 namespace cont {
 
@@ -43,14 +50,15 @@ struct DeviceAdapterOpenMP
 
 
   template<typename T>
-  static void StreamCompact(const ArrayContainerExecution<T>& input,
-                                  ArrayContainerExecution<T>& output)
+  static void StreamCompact(
+      const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& input,
+      dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& output)
     {
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
     //each index is the stencil value
-    dax::openmp::cont::streamCompact(input.GetDeviceArray(),
-                                   output.GetDeviceArray());
+//    dax::openmp::cont::streamCompact(input.GetDeviceArray(),
+//                                   output.GetDeviceArray());
     }
 };
 

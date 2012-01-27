@@ -12,7 +12,6 @@
 #ifdef DAX_DEFAULT_DEVICE_ADAPTER
 #undef DAX_DEFAULT_DEVICE_ADAPTER
 #endif
-
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cuda::cont::DeviceAdapterCuda
 
 //#define DAX_CUDA_NATIVE_SCHEDULE
@@ -26,6 +25,14 @@
 #include <dax/cuda/cont/StreamCompact.h>
 
 #include <dax/cuda/cont/internal/ArrayContainerExecutionThrust.h>
+
+namespace dax {
+namespace cont {
+  //forward declare the ArrayHandle before we use it.
+template< typename OtherT, class OtherDeviceAdapter > class ArrayHandle;
+}
+}
+
 
 namespace dax {
 namespace cuda {
@@ -54,14 +61,15 @@ struct DeviceAdapterCuda
   }
 
   template<typename T>
-  static void StreamCompact(const ArrayContainerExecution<T>& input,
-                                  ArrayContainerExecution<T>& output)
+  static void StreamCompact(
+      const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& input,
+      dax::cont::ArrayHandle<T,DeviceAdapterCuda>& output)
     {
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
     //each index is the stencil value
-    dax::cuda::cont::streamCompact(input.GetDeviceArray(),
-                                   output.GetDeviceArray());
+//    dax::cuda::cont::streamCompact(input.GetDeviceArray(),
+//                                   output.GetDeviceArray());
     }
 };
 

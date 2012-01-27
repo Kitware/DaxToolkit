@@ -22,6 +22,8 @@
 
 namespace dax {
 namespace cont {
+  //forward declare the ArrayHandle before we use it.
+template< typename OtherT, class OtherDeviceAdapter > class ArrayHandle;
 
 /// A simple implementation of a DeviceAdapter that can be used for debuging.
 /// The scheduling will simply run everything in a serial loop, which is easy
@@ -42,15 +44,18 @@ struct DeviceAdapterDebug
   }
 
   template<typename T>
-  static void StreamCompact(const ArrayContainerExecution<T>& input,
-                                  ArrayContainerExecution<T>& output)
+  static void StreamCompact(
+      const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& input,
+      dax::cont::ArrayHandle<T,DeviceAdapterDebug>& output)
     {
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
     //each index is the stencil value
-    dax::cont::streamCompactDebug(
-          input.GetDeviceArray(),
-          output.GetDeviceArray());
+//    dax::cont::streamCompactDebug(
+//      dax::cont::internal::ArrayHandleHelper::ExecutionArray(input),
+//      dax::cont::internal::ArrayHandleHelper::ExecutionArray(output)
+//      );
+//    dax::cont::internal::ArrayHandleHelper::UpdateArraySize(output);
     }
 };
 
