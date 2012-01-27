@@ -11,15 +11,11 @@
 
 #include <dax/Types.h>
 #include <dax/Functional.h>
+#include <dax/thrust/cont/internal/ArrayContainerExecutionThrust.h>
 
-#include <thrust/binary_search.h>
 #include <thrust/copy.h>
-#include <thrust/device_vector.h>
 #include <thrust/iterator/counting_iterator.h>
-#include <thrust/iterator/iterator_traits.h>
-#include <thrust/scan.h>
-
-
+#include <thrust/reduce.h>
 
 namespace dax {
 namespace thrust {
@@ -30,7 +26,7 @@ template<typename InputIterator,
          typename StencilVector,
          typename OutputVector,
          typename Predicate>
-DAX_EXEC_CONT_EXPORT void RemoveIf(InputIterator valuesFirst,
+inline void RemoveIf(InputIterator valuesFirst,
                                     InputIterator valuesEnd,
                                     const StencilVector& stencil,
                                     OutputVector& output,
@@ -42,43 +38,44 @@ DAX_EXEC_CONT_EXPORT void RemoveIf(InputIterator valuesFirst,
   //between remove_copy_if and copy_if
 
   //first get the correct size for output
-  int numLeft = ::thrust::reduce(stencil.begin(),stencil.end());
-  output.resize(numLeft);
+  int numLeft = ::thrust::reduce(stencil.GetBeginThrustIterator(),
+                                 stencil.GetEndThrustIterator());
+  output.Allocate(numLeft);
 
   //remove any item that matches the predicate
   ::thrust::copy_if(valuesFirst,
                      valuesEnd,
-                     stencil.begin(),
-                     output.begin(),
+                     stencil.GetBeginThrustIterator(),
+                     output.GetBeginThrustIterator(),
                      pred);
 }
 
-
 template<typename T, typename U>
-DAX_EXEC_CONT_EXPORT void streamCompact(const ::thrust::device_vector<T>& input,
-                          const ::thrust::device_vector<U>& stencil,
-                          ::thrust::device_vector<T>& output)
+inline void streamCompact(
+    const dax::thrust::cont::internal::ArrayContainerExecutionThrust<T>& input,
+    const dax::thrust::cont::internal::ArrayContainerExecutionThrust<U>& stencil,
+    dax::thrust::cont::internal::ArrayContainerExecutionThrust<T>& output)
 {
   //do the copy step, remember the input is the stencil
   //set the predicate to be the identity of type U so we get rid of anything
   //that matches the default constructor
-  dax::thrust::cont::RemoveIf(input.begin(),
-                            input.end(),
+  dax::thrust::cont::RemoveIf(input.GetBeginThrustIterator(),
+                            input.GetEndThrustIterator(),
                             stencil,
                             output,
                             dax::not_identity<U>());
 }
 
 template<typename T>
-DAX_EXEC_CONT_EXPORT void streamCompact(
-    const ::thrust::device_vector<T>& input,
-    ::thrust::device_vector<T>& output)
+inline void streamCompact(
+    const dax::thrust::cont::internal::ArrayContainerExecutionThrust<T>& input,
+    dax::thrust::cont::internal::ArrayContainerExecutionThrust<T>& output)
 {
   //do the copy step, remember the input is the stencil
   //set the predicate to be the identity of type T so we get rid of anything
   //that matches the default constructor
   dax::thrust::cont::RemoveIf(::thrust::make_counting_iterator<T>(0),
-                              ::thrust::make_counting_iterator<T>(input.size()),
+                              ::thrust::make_counting_iterator<T>(input.GetNumberOfEntries()),
                               input,
                               output,
                               dax::not_identity<T>());

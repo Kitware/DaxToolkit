@@ -68,8 +68,9 @@ struct DeviceAdapterCuda
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
     //each index is the stencil value
-//    dax::cuda::cont::streamCompact(input.GetDeviceArray(),
-//                                   output.GetDeviceArray());
+    dax::cuda::cont::streamCompact(input.GetExecutionArray(),
+                                  output.GetExecutionArray());
+    output.UpdateArraySize();
     }
 };
 

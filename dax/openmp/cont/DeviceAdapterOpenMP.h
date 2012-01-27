@@ -57,8 +57,9 @@ struct DeviceAdapterOpenMP
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
     //each index is the stencil value
-//    dax::openmp::cont::streamCompact(input.GetDeviceArray(),
-//                                   output.GetDeviceArray());
+    dax::openmp::cont::streamCompact(input.GetExecutionArray(),
+                                  output.GetExecutionArray());
+    output.UpdateArraySize();
     }
 };
 
