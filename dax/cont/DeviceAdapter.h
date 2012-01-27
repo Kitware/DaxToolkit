@@ -54,7 +54,7 @@ namespace cont {
 /// uniquely identifies the thread or instance of the invocation. There should
 /// be one invocation for each index in the range [0, \c numInstances].
 
-/// \fn template<class T> void DeviceAdapter::StreamCompact(const ArrayContainerExecution<T>&input, ArrayContainerExecution<T>& output)
+/// \fn template<class T> void DeviceAdapter::StreamCompact(const dax::cont::ArrayHandle<T>&input, dax::cont::ArrayHandle<T>& output)
 /// \brief Performs stream compaction to remove unwanted elements in the input array.
 ///
 /// Calls the parallel primitive function of stream compaction on the \c input
@@ -64,7 +64,7 @@ namespace cont {
 /// The size of \c output will be modified after this call as we can't know
 /// the number of elements that will be removed by the stream compaction algorithm.
 
-/// \fn template<class T> void DeviceAdapter::StreamCompact(const ArrayContainerExecution<T>&input, const ArrayContainerExecution<dax::Id>& stencil, ArrayContainerExecution<T>& output)
+/// \fn template<class T> void DeviceAdapter::StreamCompact(const dax::cont::ArrayHandle<T>&input, const dax::cont::ArrayHandle<dax::Id>& stencil, dax::cont::ArrayHandle<T>& output)
 /// \brief Performs stream compaction to remove unwanted elements in the input array.
 ///
 /// Calls the parallel primitive function of stream compaction on the \c input
