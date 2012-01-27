@@ -14,35 +14,16 @@ struct UnstructuredGrid
 {
   typedef T CellType;
 
-  UnstructuredGrid():
-    NumberOfPoints(0),
-    NumberOfCells(0),
-    Points(),
-    Topology()
+  UnstructuredGrid()
     {
     }
 
   UnstructuredGrid(dax::internal::DataArray<dax::Vector3>&points,
-                   dax::internal::DataArray<dax::Id>& topology):
-    NumberOfPoints(points.GetNumberOfEntries()),
-    NumberOfCells(topology/CellType().GetNumberOfPoints()),
+                   dax::internal::DataArray<dax::Id>& topology):    
     Points(points),
     Topology(topology)
     {
     }
-
-  dax::Vector3 GetPointCoordinate(dax::Id index) const
-    {
-    return this->Points.GetValue(index);
-    }
-
-  dax::Id GetNumberOfPoints() const { return NumberOfPoints; }
-  dax::Id GetNumberOfCells() const { return NumberOfCells; }
-
-
-private:
-  dax::Id NumberOfPoints;
-  dax::Id NumberOfCells;
 
   dax::internal::DataArray<dax::Vector3> Points;
   dax::internal::DataArray<dax::Id> Topology;
@@ -53,7 +34,8 @@ template<typename T>
 DAX_EXEC_CONT_EXPORT
 dax::Id numberOfCells(const UnstructuredGrid<T> &gridstructure)
 {
-  return gridstructure.GetNumberOfCells();
+  typedef typename UnstructuredGrid<T>::CellType CellType;
+  return gridstructure.Topology.GetNumberOfEntries()/CellType::NUM_POINTS;
 }
 
 /// Returns the number of points in a unstructured grid.
@@ -61,7 +43,7 @@ template<typename T>
 DAX_EXEC_CONT_EXPORT
 dax::Id numberOfPoints(const UnstructuredGrid<T> &gridstructure)
 {
-  return gridstructure.GetNumberOfPoints();
+  return gridstructure.Points.GetNumberOfEntries();
 }
 
 /// Returns the point position in a structured grid for a given index
@@ -71,7 +53,7 @@ DAX_EXEC_CONT_EXPORT
 dax::Vector3 pointCoordiantes(const UnstructuredGrid<T> &grid,
                               dax::Id pointIndex)
 {
-  return grid.GetPointCoordinate(pointIndex);
+  return grid.Points.GetValue(pointIndex);
 }
 
 
