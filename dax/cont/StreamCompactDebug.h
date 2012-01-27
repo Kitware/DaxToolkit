@@ -12,53 +12,70 @@
 #include <dax/Types.h>
 #include <dax/Functional.h>
 
-#include <vector>
+#include <dax/cont/internal/ArrayContainerExecutionCPU.h>
+#include <algorithm>
 
 namespace dax {
 namespace cont {
 
 template<typename T, typename U>
-DAX_EXEC_CONT_EXPORT void streamCompactDebug(const std::vector<T>& input,
-                        const std::vector<U>& stencil,
-                        std::vector<T>& output)
+DAX_EXEC_CONT_EXPORT void streamCompactDebug(
+    const dax::cont::internal::ArrayContainerExecutionCPU<T>& input,
+    const dax::cont::internal::ArrayContainerExecutionCPU<U>& stencil,
+    dax::cont::internal::ArrayContainerExecutionCPU<T>& output)
 {
-  typedef typename std::vector<T>::const_iterator Iterator;
-  typedef typename std::vector<U>::const_iterator StencilIterator;
+  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::const_iterator CIter;
+  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::iterator Iter;
 
-  output.reserve(input.size());
-  StencilIterator si=stencil.begin();
-  for(Iterator i=input.begin();
-      i!=input.end();
-      ++i,++si)
+  //first count the number of values to go into the output array.
+  dax::Id size = std::count_if(stencil.begin(),
+                               stencil.end(),
+                               dax::not_identity<U>());
+  output.Allocate(size);
+  Iter out = output.begin();
+  Iter outEnd = output.end();
+  CIter in=input.begin();
+  CIter sten = stencil.begin();
+  for(;out!=outEnd;++in,++sten)
     {
-    //only remove cell that match the identity ( aka default constructor ) of U
-    if(dax::not_identity<U>()(*si))
+    //check the output so we loop over the smaller sized array
+    if(dax::not_identity<U>()(*sten))
       {
-      output.push_back(*i);
+      //only remove cell that match the identity ( aka default constructor ) of T
+      *out = *in;
+      ++out;
       }
     }
-  //reduce the allocation request
-  output.reserve(output.size());
 }
 
 template<typename T>
-DAX_EXEC_CONT_EXPORT void streamCompactDebug(const std::vector<T>& input,
-                        std::vector<T>& output)
+DAX_EXEC_CONT_EXPORT void streamCompactDebug(
+    const dax::cont::internal::ArrayContainerExecutionCPU<T>& input,
+    dax::cont::internal::ArrayContainerExecutionCPU<T>& output)
 {
-  typedef typename std::vector<T>::const_iterator Iterator;
+  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::const_iterator CIter;
+  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::iterator Iter;
 
-  output.reserve(input.size());
-  dax::Id index = 0;
-  for(Iterator i=input.begin();i!=input.end();++i,++index)
+  //first count the number of values to go into the output array.
+  dax::Id size = std::count_if(input.begin(),
+                               input.end(),
+                               dax::not_identity<T>());
+
+  output.Allocate(size);
+  Iter out = output.begin();
+  Iter outEnd = output.end();
+  CIter in=input.begin();
+  T index = T();
+  for(;out!=outEnd;++in,++index)
     {
-    //only remove cell that match the identity ( aka default constructor ) of T
-    if(dax::not_identity<T>()(*i))
+    //check the output so we loop over the smaller sized array
+    if(dax::not_identity<T>()(*in))
       {
-      output.push_back(index);
+      //only remove cell that match the identity ( aka default constructor ) of T
+      *out = index;
+      ++out;
       }
     }
-  //reduce the allocation request
-  output.reserve(output.size());
 }
 
 
