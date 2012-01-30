@@ -46,6 +46,8 @@ static void CheckPointIndex(const dax::Id &hexPointIndex,
     }
 }
 
+// This function is available in the global scope so that it can be used
+// in other tests such as UnitTestWorkMapCellHexahedron.
 dax::internal::UnstructuredGrid<dax::exec::CellHexahedron>
   make_ugrid(const dax::internal::StructureUniformGrid& uniform,
              std::vector<dax::Vector3>& points,
@@ -79,7 +81,7 @@ dax::internal::UnstructuredGrid<dax::exec::CellHexahedron>
 
 }
 // This function is available in the global scope so that it can be used
-// in other tests such as UnitTestWorkMapCell.
+// in other tests such as UnitTestWorkMapCellVoxel.
 void TestCellVoxel(const dax::exec::CellVoxel cell,
                    const dax::internal::StructureUniformGrid &gridstruct,
                    dax::Id cellFlatIndex)
@@ -165,7 +167,7 @@ static void TestCellVoxel()
 
 
 // This function is available in the global scope so that it can be used
-// in other tests such as UnitTestWorkMapCell.
+// in other tests such as UnitTestWorkMapCellHexahedron.
 void TestCellHexahedron(const dax::exec::CellHexahedron cell,
                         const dax::exec::CellVoxel voxel)
 {

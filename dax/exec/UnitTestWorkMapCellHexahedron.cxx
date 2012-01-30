@@ -15,9 +15,13 @@
 #include <algorithm>
 #include <vector>
 
-extern void TestCellVoxel(const dax::exec::CellVoxel cell,
-                          const dax::internal::StructureUniformGrid &gridstruct,
-                          dax::Id cellFlatIndex);
+extern void TestCellHexahedron(const dax::exec::CellHexahedron cell,
+                               const dax::exec::CellHexahedron Hexahedron);
+
+extern dax::internal::UnstructuredGrid<dax::exec::CellHexahedron> make_ugrid(
+    const dax::internal::StructureUniformGrid& uniform,
+    std::vector<dax::Vector3>& points,
+    std::vector<dax::Id>& topology);
 
 
 #define TEST_FAIL(msg)                                  \
@@ -28,8 +32,8 @@ extern void TestCellVoxel(const dax::exec::CellVoxel cell,
     throw error.str();                                  \
   }
 
-static void TestMapCellVoxel(
-  dax::exec::WorkMapCell<dax::exec::CellVoxel> &work,
+static void TestMapCellHexahedron(
+  dax::exec::WorkMapCell<dax::exec::CellHexahedron> &work,
   const dax::internal::StructureUniformGrid &gridstruct,
   dax::Id cellFlatIndex)
 {
@@ -61,12 +65,12 @@ static void TestMapCellVoxel(
     TEST_FAIL(<< "Field value did not set as expected.");
     }
 
-  TestCellVoxel(work.GetCell(), gridstruct, cellFlatIndex);
+  TestCellHexahedron(work.GetCell(), gridstruct, cellFlatIndex);
 }
 
-static void TestMapCellVoxel()
+static void TestMapCellHexahedron()
 {
-  std::cout << "Testing WorkMapCell<CellVoxel>" << std::endl;
+  std::cout << "Testing WorkMapCell<CellHexahedron>" << std::endl;
 
   dax::internal::StructureUniformGrid gridstruct;
 
@@ -78,29 +82,29 @@ static void TestMapCellVoxel()
        flatIndex < dax::internal::numberOfCells(gridstruct);
        flatIndex++)
     {
-    dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, flatIndex);
-    TestMapCellVoxel(work, gridstruct, flatIndex);
+    dax::exec::WorkMapCell<dax::exec::CellHexahedron> work(gridstruct, flatIndex);
+    TestMapCellHexahedron(work, gridstruct, flatIndex);
     }
 
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
   gridstruct.Extent.Max = dax::make_Id3(15, 6, 13);
-  dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, 0);
+  dax::exec::WorkMapCell<dax::exec::CellHexahedron> work(gridstruct, 0);
   for (dax::Id flatIndex = 0;
        flatIndex < dax::internal::numberOfPoints(gridstruct);
        flatIndex++)
     {
     work.SetCellIndex(flatIndex);
-    TestMapCellVoxel(work, gridstruct, flatIndex);
+    TestMapCellHexahedron(work, gridstruct, flatIndex);
     }
 }
 
-int UnitTestWorkMapCell(int, char *[])
+int UnitTestWorkMapCellHexahedron(int, char *[])
 {
   try
     {
-    TestMapCellVoxel();
+    TestMapCellHexahedron();
     }
   catch (std::string error)
     {

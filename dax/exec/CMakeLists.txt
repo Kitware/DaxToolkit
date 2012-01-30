@@ -41,7 +41,8 @@ set(unit_tests
   UnitTestDerivative.cxx
   UnitTestInterpolate.cxx
   UnitTestParametricCoordinates.cxx
-  UnitTestWorkMapCell.cxx
+  #UnitTestWorkMapCellHexahedron.cxx
+  UnitTestWorkMapCellVoxel.cxx
   UnitTestWorkMapField.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
