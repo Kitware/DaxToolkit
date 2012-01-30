@@ -50,7 +50,8 @@ public:
   /// the index for the point in point space.
   DAX_EXEC_EXPORT dax::Id GetPointIndex(const dax::Id vertexIndex) const
   {    
-    return this->TopologyPosition+vertexIndex;
+    return this->GridStructure.Topology.GetValue(
+          this->TopologyPosition+vertexIndex);
   }
 
   /// Get the cell index.  Probably only useful internally.
