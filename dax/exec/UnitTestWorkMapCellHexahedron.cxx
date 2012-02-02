@@ -16,7 +16,7 @@
 #include <vector>
 
 extern void TestCellHexahedron(const dax::exec::CellHexahedron cell,
-                               const dax::exec::CellHexahedron Hexahedron);
+                               const dax::exec::CellVoxel Hexahedron);
 
 extern dax::internal::UnstructuredGrid<dax::exec::CellHexahedron> make_ugrid(
     const dax::internal::StructureUniformGrid& uniform,
@@ -65,7 +65,8 @@ static void TestMapCellHexahedron(
     TEST_FAIL(<< "Field value did not set as expected.");
     }
 
-  TestCellHexahedron(work.GetCell(), gridstruct, cellFlatIndex);
+  dax::exec::CellVoxel vox(gridstruct,cellFlatIndex);
+  TestCellHexahedron(work.GetCell(), vox);
 }
 
 static void TestMapCellHexahedron()
@@ -74,15 +75,21 @@ static void TestMapCellHexahedron()
 
   dax::internal::StructureUniformGrid gridstruct;
 
+  std::vector<dax::Id> topo;
+  std::vector<dax::Vector3> points;
+  dax::internal::UnstructuredGrid<dax::exec::CellHexahedron> ugrid;
+
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
   gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
+  ugrid = make_ugrid(gridstruct,points,topo);
+
   for (dax::Id flatIndex = 0;
        flatIndex < dax::internal::numberOfCells(gridstruct);
        flatIndex++)
     {
-    dax::exec::WorkMapCell<dax::exec::CellHexahedron> work(gridstruct, flatIndex);
+    dax::exec::WorkMapCell<dax::exec::CellHexahedron> work(ugrid, flatIndex);
     TestMapCellHexahedron(work, gridstruct, flatIndex);
     }
 
@@ -90,7 +97,9 @@ static void TestMapCellHexahedron()
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
   gridstruct.Extent.Max = dax::make_Id3(15, 6, 13);
-  dax::exec::WorkMapCell<dax::exec::CellHexahedron> work(gridstruct, 0);
+  ugrid = make_ugrid(gridstruct,points,topo);
+
+  dax::exec::WorkMapCell<dax::exec::CellHexahedron> work(ugrid, 0);
   for (dax::Id flatIndex = 0;
        flatIndex < dax::internal::numberOfPoints(gridstruct);
        flatIndex++)
