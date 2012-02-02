@@ -41,7 +41,7 @@ set(unit_tests
   UnitTestDerivative.cxx
   UnitTestInterpolate.cxx
   UnitTestParametricCoordinates.cxx
-  #UnitTestWorkMapCellHexahedron.cxx
+  UnitTestWorkMapCellHexahedron.cxx
   UnitTestWorkMapCellVoxel.cxx
   UnitTestWorkMapField.cxx
   )
