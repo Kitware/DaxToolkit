@@ -10,52 +10,7 @@
 
 #include <dax/Extent.h>
 
-namespace dax {
-namespace internal {
-
-struct StructureUniformGrid {
-  Vector3 Origin;
-  Vector3 Spacing;
-  Extent3 Extent;
-} __attribute__ ((aligned(4)));
-
-/// Returns the number of points in a structured grid.
-template<typename T>
-DAX_EXEC_CONT_EXPORT
-dax::Id numberOfPoints(const T &gridstructure)
-{
-  dax::Id3 dims = dax::extentDimensions(gridstructure.Extent);
-  return dims[0]*dims[1]*dims[2];
-}
-
-template<typename T>
-DAX_EXEC_CONT_EXPORT
-dax::Id numberOfCells(const T &gridstructure)
-{
-  dax::Id3 dims = dax::extentDimensions(gridstructure.Extent)
-                  - dax::make_Id3(1, 1, 1);
-  return dims[0]*dims[1]*dims[2];
-}
-
-DAX_EXEC_CONT_EXPORT
-dax::Vector3 pointCoordiantes(const StructureUniformGrid &grid,
-                              dax::Id3 ijk)
-{
-  dax::Vector3 origin = grid.Origin;
-  dax::Vector3 spacing = grid.Spacing;
-  return dax::make_Vector3(origin[0] + ijk[0] * spacing[0],
-                           origin[1] + ijk[1] * spacing[1],
-                           origin[2] + ijk[2] * spacing[2]);
-}
-
-DAX_EXEC_CONT_EXPORT
-dax::Vector3 pointCoordiantes(const StructureUniformGrid &grid,
-                              dax::Id pointIndex)
-{
-  dax::Id3 ijk = flatIndexToIndex3(pointIndex, grid.Extent);
-  return pointCoordiantes(grid, ijk);
-}
-
-}  }
+#include <dax/internal/StructuredGrid.h>
+#include <dax/internal/UnstructuredGrid.h>
 
 #endif //__dax__internal__GridStructures_h

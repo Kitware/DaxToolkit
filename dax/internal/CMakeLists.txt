@@ -9,7 +9,9 @@ set(headers
   DataArray.h
   ExportMacros.h
   GridStructures.h
+  StructuredGrid.h
   Testing.h
+  UnstructuredGrid.h
   )
 
 dax_declare_headers(${headers})

@@ -97,7 +97,7 @@ static void TestMapCell()
   TestMapCellVoxel();
 }
 
-int UnitTestWorkMapCell(int, char *[])
+int UnitTestWorkMapCellVoxel(int, char *[])
 {
   return dax::internal::Testing::Run(TestMapCell);
 }
