@@ -65,7 +65,7 @@ static void TestMapCellHexahedron(
     TEST_FAIL(<< "Field value did not set as expected.");
     }
 
-  dax::exec::CellVoxel vox(gridstruct,cellFlatIndex);
+  dax::exec::CellVoxel vox(gridstruct,work.GetCellIndex());
   TestCellHexahedron(work.GetCell(), vox);
 }
 
@@ -101,7 +101,7 @@ static void TestMapCellHexahedron()
 
   dax::exec::WorkMapCell<dax::exec::CellHexahedron> work(ugrid, 0);
   for (dax::Id flatIndex = 0;
-       flatIndex < dax::internal::numberOfPoints(gridstruct);
+       flatIndex < dax::internal::numberOfCells(gridstruct);
        flatIndex++)
     {
     work.SetCellIndex(flatIndex);
