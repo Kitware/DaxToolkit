@@ -34,6 +34,7 @@ static void TestCellMapError()
   catch (dax::cont::ErrorExecution error)
     {
     std::cout << "Got expected ErrorExecution object." << std::endl;
+    std::cout << error.GetMessage() << std::endl;
     gotError = true;
     }
 
