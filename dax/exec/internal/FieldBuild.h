@@ -16,7 +16,7 @@
 namespace dax { namespace exec { namespace internal {
 
 DAX_EXEC_CONT_EXPORT dax::exec::FieldCoordinates fieldCoordinatesBuild(
-    const dax::internal::StructureUniformGrid &)
+    const dax::internal::TopologyUniformGrid &)
 {
   dax::internal::DataArray<dax::Vector3> dummyArray;
   dax::exec::FieldCoordinates field(dummyArray);

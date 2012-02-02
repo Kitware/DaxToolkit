@@ -37,7 +37,7 @@ public:
   typedef CellVoxel CellType;
 
   DAX_EXEC_EXPORT WorkMapCell(
-      const dax::internal::StructureUniformGrid &gridStructure,
+      const dax::internal::TopologyUniformGrid &gridStructure,
       const dax::exec::internal::ErrorHandler &errorHandler)
     : Cell(gridStructure, 0), ErrorHandler(errorHandler) { }
 
@@ -75,7 +75,7 @@ public:
     const dax::exec::FieldCoordinates &, dax::Id vertexIndex) const
   {
     dax::Id pointIndex = this->GetCell().GetPointIndex(vertexIndex);
-    const dax::internal::StructureUniformGrid &gridStructure
+    const dax::internal::TopologyUniformGrid &gridStructure
         = this->GetCell().GetGridStructure();
     return
         dax::exec::internal::fieldAccessUniformCoordinatesGet(gridStructure,

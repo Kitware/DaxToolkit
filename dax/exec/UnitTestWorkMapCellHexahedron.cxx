@@ -16,7 +16,7 @@ extern void TestCellHexahedron(const dax::exec::CellHexahedron cell,
                                const dax::exec::CellVoxel Hexahedron);
 
 extern dax::internal::UnstructuredGrid<dax::exec::CellHexahedron> make_ugrid(
-    const dax::internal::StructureUniformGrid& uniform,
+    const dax::internal::TopologyUniformGrid& uniform,
     std::vector<dax::Vector3>& points,
     std::vector<dax::Id>& topology);
 
@@ -31,7 +31,7 @@ dax::exec::internal::ErrorHandler ErrorHandler
 
 static void TestMapCellHexahedron(
   dax::exec::WorkMapCell<dax::exec::CellHexahedron> &work,
-  const dax::internal::StructureUniformGrid &gridstruct,
+  const dax::internal::TopologyUniformGrid &gridstruct,
   dax::Id cellFlatIndex)
 {
   DAX_TEST_ASSERT(work.GetCellIndex() == cellFlatIndex,
@@ -64,7 +64,7 @@ static void TestMapCellHexahedron()
 {
   std::cout << "Testing WorkMapCell<CellHexahedron>" << std::endl;
 
-  dax::internal::StructureUniformGrid gridstruct;
+  dax::internal::TopologyUniformGrid gridstruct;
 
   std::vector<dax::Id> topo;
   std::vector<dax::Vector3> points;

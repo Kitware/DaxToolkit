@@ -71,11 +71,11 @@ public:
     dax::Vector3 GetCoordinates(dax::Id pointIndex) const {
       return dax::internal::pointCoordiantes(this->GridStructure, pointIndex);
     }
-    const dax::internal::StructureUniformGrid &GetStructureForExecution() const {
+    const dax::internal::TopologyUniformGrid &GetStructureForExecution() const {
       return this->GridStructure;
     }
   private:
-    dax::internal::StructureUniformGrid GridStructure;
+    dax::internal::TopologyUniformGrid GridStructure;
   };
 
   /// Returns an object representing the points in a uniform grid. Most helpful
@@ -119,7 +119,7 @@ private:
   friend class Points;
   friend class dax::cont::internal::ExecutionPackageGrid<UniformGrid>;
 
-  typedef dax::internal::StructureUniformGrid StructureType;
+  typedef dax::internal::TopologyUniformGrid StructureType;
   StructureType GridStructure;
 
   typedef dax::exec::CellVoxel CellType;

@@ -10,7 +10,7 @@
 
 #include <dax/Extent.h>
 
-#include <dax/internal/StructuredGrid.h>
-#include <dax/internal/UnstructuredGrid.h>
+#include <dax/internal/TopologyStructuredGrid.h>
+#include <dax/internal/TopologyUnstructuredGrid.h>
 
 #endif //__dax__internal__GridStructures_h

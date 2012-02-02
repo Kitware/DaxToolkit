@@ -60,7 +60,7 @@ public:
 template<>
 class WorkMapField<dax::exec::CellVoxel>
 {
-  const dax::internal::StructureUniformGrid GridStructure;
+  const dax::internal::TopologyUniformGrid GridStructure;
   dax::Id Index;
   dax::exec::internal::ErrorHandler ErrorHandler;
 
@@ -68,7 +68,7 @@ public:
   typedef CellVoxel CellType;
 
   DAX_EXEC_CONT_EXPORT WorkMapField(
-      const dax::internal::StructureUniformGrid &gs,
+      const dax::internal::TopologyUniformGrid &gs,
       const dax::exec::internal::ErrorHandler &errorHandler)
     : GridStructure(gs), ErrorHandler(errorHandler) { }
 

@@ -32,7 +32,7 @@ static void TestUniformGrid()
 {
   std::cout << "Testing Structured grid size." << std::endl;
 
-  dax::internal::StructureUniformGrid gridstruct;
+  dax::internal::TopologyUniformGrid gridstruct;
   gridstruct.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
   gridstruct.Spacing = dax::make_Vector3(1.0, 1.0, 1.0);
 
@@ -56,7 +56,7 @@ static void TestUnstructuredGrid()
 
   //to simplify the process of creating a hexahedron unstrucutured
   //grid I am going to copy the ids and points from a uniform grid.
-  dax::internal::StructureUniformGrid uniform;
+  dax::internal::TopologyUniformGrid uniform;
   uniform.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
   uniform.Spacing = dax::make_Vector3(1.0, 1.0, 0.0);
 

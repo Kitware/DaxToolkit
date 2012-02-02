@@ -13,7 +13,7 @@
 namespace dax {
 namespace internal {
 
-struct StructureUniformGrid {
+struct TopologyUniformGrid {
   Vector3 Origin;
   Vector3 Spacing;
   Extent3 Extent;
@@ -21,7 +21,7 @@ struct StructureUniformGrid {
 
 /// Returns the number of points in a structured grid.
 DAX_EXEC_CONT_EXPORT
-dax::Id numberOfPoints(const StructureUniformGrid &gridstructure)
+dax::Id numberOfPoints(const TopologyUniformGrid &gridstructure)
 {
   dax::Id3 dims = dax::extentDimensions(gridstructure.Extent);
   return dims[0]*dims[1]*dims[2];
@@ -40,7 +40,7 @@ dax::Id numberOfCells(const T &gridstructure)
 /// Returns the point position in a structured grid for a given i, j, and k
 /// value stored in /c ijk
 DAX_EXEC_CONT_EXPORT
-dax::Vector3 pointCoordiantes(const StructureUniformGrid &grid,
+dax::Vector3 pointCoordiantes(const TopologyUniformGrid &grid,
                               dax::Id3 ijk)
 {
   dax::Vector3 origin = grid.Origin;
@@ -53,7 +53,7 @@ dax::Vector3 pointCoordiantes(const StructureUniformGrid &grid,
 /// Returns the point position in a structured grid for a given index
 /// which is represented by /c pointIndex
 DAX_EXEC_CONT_EXPORT
-dax::Vector3 pointCoordiantes(const StructureUniformGrid &grid,
+dax::Vector3 pointCoordiantes(const TopologyUniformGrid &grid,
                               dax::Id pointIndex)
 {
   dax::Id3 ijk = flatIndexToIndex3(pointIndex, grid.Extent);

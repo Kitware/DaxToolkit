@@ -25,7 +25,7 @@ namespace dax { namespace exec {
 class CellVoxel
 {
 public:
-  typedef dax::internal::StructureUniformGrid GridStructureType;
+  typedef dax::internal::TopologyUniformGrid GridStructureType;
 
 private:
   const GridStructureType GridStructure;

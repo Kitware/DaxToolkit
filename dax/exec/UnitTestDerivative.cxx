@@ -93,7 +93,7 @@ static void TestDerivativeCell(
 }
 
 static void TestDerivativeVoxel(
-    const dax::internal::StructureUniformGrid &gridstruct,
+    const dax::internal::TopologyUniformGrid &gridstruct,
     const LinearField &fieldValues)
 {
   dax::exec::WorkMapField<dax::exec::CellVoxel> workField(gridstruct,
@@ -117,7 +117,7 @@ static void TestDerivativeVoxel(
 
 static void TestDerivativeVoxel()
 {
-  dax::internal::StructureUniformGrid gridstruct;
+  dax::internal::TopologyUniformGrid gridstruct;
   LinearField fieldValues;
 
   std::cout << "Very simple field." << std::endl;

@@ -97,7 +97,7 @@ static void TestInterpolateCell(
 }
 
 static void TestInterpolateVoxel(
-    const dax::internal::StructureUniformGrid &gridstruct,
+    const dax::internal::TopologyUniformGrid &gridstruct,
     const LinearField &fieldValues)
 {
   dax::exec::WorkMapField<dax::exec::CellVoxel> workField(gridstruct,
@@ -121,7 +121,7 @@ static void TestInterpolateVoxel(
 
 static void TestInterpolateVoxel()
 {
-  dax::internal::StructureUniformGrid gridstruct;
+  dax::internal::TopologyUniformGrid gridstruct;
   LinearField fieldValues;
 
   std::cout << "Very simple field." << std::endl;

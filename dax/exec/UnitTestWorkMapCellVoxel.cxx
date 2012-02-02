@@ -13,7 +13,7 @@
 #include <vector>
 
 extern void TestCellVoxel(const dax::exec::CellVoxel cell,
-                          const dax::internal::StructureUniformGrid &gridstruct,
+                          const dax::internal::TopologyUniformGrid &gridstruct,
                           dax::Id cellFlatIndex);
 
 
@@ -27,7 +27,7 @@ dax::exec::internal::ErrorHandler ErrorHandler
 
 static void TestMapCellVoxel(
   dax::exec::WorkMapCell<dax::exec::CellVoxel> &work,
-  const dax::internal::StructureUniformGrid &gridstruct,
+  const dax::internal::TopologyUniformGrid &gridstruct,
   dax::Id cellFlatIndex)
 {
   DAX_TEST_ASSERT(work.GetCellIndex() == cellFlatIndex,
@@ -60,7 +60,7 @@ static void TestMapCellVoxel()
   std::cout << "Testing WorkMapCell<CellVoxel>" << std::endl;
 
   {
-  dax::internal::StructureUniformGrid gridstruct;
+  dax::internal::TopologyUniformGrid gridstruct;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
@@ -76,7 +76,7 @@ static void TestMapCellVoxel()
   }
 
   {
-  dax::internal::StructureUniformGrid gridstruct;
+  dax::internal::TopologyUniformGrid gridstruct;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
