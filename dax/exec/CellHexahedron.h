@@ -25,10 +25,10 @@ namespace dax { namespace exec {
 class CellHexahedron
 {
 public:
-  typedef dax::internal::UnstructuredGrid<CellHexahedron> GridStructureType;
+  typedef dax::internal::TopologyUnstructuredGrid<CellHexahedron> GridStructureType;
 
 private:
-  const dax::internal::UnstructuredGrid<CellHexahedron> GridStructure;
+  const dax::internal::TopologyUnstructuredGrid<CellHexahedron> GridStructure;
   dax::Id CellIndex;
   dax::Id TopologyPosition;
 public:

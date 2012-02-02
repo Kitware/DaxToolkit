@@ -10,15 +10,15 @@ namespace internal {
 
 
 template< typename T>
-struct UnstructuredGrid
+struct TopologyUnstructuredGrid
 {
   typedef T CellType;
 
-  UnstructuredGrid()
+  TopologyUnstructuredGrid()
     {
     }
 
-  UnstructuredGrid(dax::internal::DataArray<dax::Vector3>&points,
+  TopologyUnstructuredGrid(dax::internal::DataArray<dax::Vector3>&points,
                    dax::internal::DataArray<dax::Id>& topology):    
     Points(points),
     Topology(topology)
@@ -32,16 +32,16 @@ struct UnstructuredGrid
 /// Returns the number of cells in a unstructured grid.
 template<typename T>
 DAX_EXEC_CONT_EXPORT
-dax::Id numberOfCells(const UnstructuredGrid<T> &gridstructure)
+dax::Id numberOfCells(const TopologyUnstructuredGrid<T> &gridstructure)
 {
-  typedef typename UnstructuredGrid<T>::CellType CellType;
+  typedef typename TopologyUnstructuredGrid<T>::CellType CellType;
   return gridstructure.Topology.GetNumberOfEntries()/CellType::NUM_POINTS;
 }
 
 /// Returns the number of points in a unstructured grid.
 template<typename T>
 DAX_EXEC_CONT_EXPORT
-dax::Id numberOfPoints(const UnstructuredGrid<T> &gridstructure)
+dax::Id numberOfPoints(const TopologyUnstructuredGrid<T> &gridstructure)
 {
   return gridstructure.Points.GetNumberOfEntries();
 }
@@ -50,7 +50,7 @@ dax::Id numberOfPoints(const UnstructuredGrid<T> &gridstructure)
 /// which is represented by /c pointIndex
 template<typename T>
 DAX_EXEC_CONT_EXPORT
-dax::Vector3 pointCoordiantes(const UnstructuredGrid<T> &grid,
+dax::Vector3 pointCoordiantes(const TopologyUnstructuredGrid<T> &grid,
                               dax::Id pointIndex)
 {
   return grid.Points.GetValue(pointIndex);

@@ -15,7 +15,7 @@
 extern void TestCellHexahedron(const dax::exec::CellHexahedron cell,
                                const dax::exec::CellVoxel Hexahedron);
 
-extern dax::internal::UnstructuredGrid<dax::exec::CellHexahedron> make_ugrid(
+extern dax::internal::TopologyUnstructuredGrid<dax::exec::CellHexahedron> make_ugrid(
     const dax::internal::TopologyUniformGrid& uniform,
     std::vector<dax::Vector3>& points,
     std::vector<dax::Id>& topology);
@@ -68,7 +68,7 @@ static void TestMapCellHexahedron()
 
   std::vector<dax::Id> topo;
   std::vector<dax::Vector3> points;
-  dax::internal::UnstructuredGrid<dax::exec::CellHexahedron> ugrid;
+  dax::internal::TopologyUnstructuredGrid<dax::exec::CellHexahedron> ugrid;
 
   {
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);

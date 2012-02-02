@@ -109,7 +109,7 @@ public:
   typedef CellHexahedron CellType;
 
   DAX_EXEC_EXPORT WorkMapCell(
-    const dax::internal::UnstructuredGrid<CellType> &gridStructure,
+    const dax::internal::TopologyUnstructuredGrid<CellType> &gridStructure,
     const dax::exec::internal::ErrorHandler &errorHandler)
     : Cell(gridStructure, 0),
       ErrorHandler(errorHandler) { }
@@ -148,7 +148,7 @@ public:
     const dax::exec::FieldCoordinates &, dax::Id vertexIndex) const
   {
     dax::Id pointIndex = this->GetCell().GetPointIndex(vertexIndex);
-    const dax::internal::UnstructuredGrid<CellType> &gridStructure
+    const dax::internal::TopologyUnstructuredGrid<CellType> &gridStructure
         = this->GetCell().GetGridStructure();
     return
         dax::exec::internal::fieldAccessUniformCoordinatesGet(gridStructure,

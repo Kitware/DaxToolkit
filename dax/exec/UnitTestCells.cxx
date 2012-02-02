@@ -32,7 +32,7 @@ static void CheckPointIndex(const dax::Id &hexPointIndex,
 
 // This function is available in the global scope so that it can be used
 // in other tests such as UnitTestWorkMapCellHexahedron.
-dax::internal::UnstructuredGrid<dax::exec::CellHexahedron>
+dax::internal::TopologyUnstructuredGrid<dax::exec::CellHexahedron>
   make_ugrid(const dax::internal::TopologyUniformGrid& uniform,
              std::vector<dax::Vector3>& points,
              std::vector<dax::Id>& topology
@@ -58,7 +58,7 @@ dax::internal::UnstructuredGrid<dax::exec::CellHexahedron>
 
   dax::internal::DataArray<dax::Vector3> rawPoints(&points[0],points.size());
   dax::internal::DataArray<dax::Id> rawTopo(&topology[0],topology.size());
-  dax::internal::UnstructuredGrid<dax::exec::CellHexahedron> ugrid(rawPoints,
+  dax::internal::TopologyUnstructuredGrid<dax::exec::CellHexahedron> ugrid(rawPoints,
                                                                    rawTopo);
   return ugrid;
 }
@@ -165,7 +165,7 @@ static void TestCellHexahedron()
   std::vector<dax::Id> topo;
   std::vector<dax::Vector3> points;
   dax::internal::TopologyUniformGrid gridstruct;
-  dax::internal::UnstructuredGrid<dax::exec::CellHexahedron> ugrid;
+  dax::internal::TopologyUnstructuredGrid<dax::exec::CellHexahedron> ugrid;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);

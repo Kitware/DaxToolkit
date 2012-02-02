@@ -49,7 +49,7 @@ static void TestUnstructuredGrid()
 {
   std::cout << "Testing Unstructured grid size." << std::endl;
   {
-    dax::internal::UnstructuredGrid<dax::exec::CellHexahedron> ugrid;
+    dax::internal::TopologyUnstructuredGrid<dax::exec::CellHexahedron> ugrid;
     TestGridSize(ugrid,0,0);
   }
 
@@ -85,7 +85,7 @@ static void TestUnstructuredGrid()
 
   dax::internal::DataArray<dax::Vector3> rawPoints(&points[0],points.size());
   dax::internal::DataArray<dax::Id> rawTopo(&topology[0],topology.size());
-  dax::internal::UnstructuredGrid<dax::exec::CellHexahedron> ugrid(
+  dax::internal::TopologyUnstructuredGrid<dax::exec::CellHexahedron> ugrid(
         rawPoints,rawTopo);
   TestGridSize(ugrid,18,4);
 }
