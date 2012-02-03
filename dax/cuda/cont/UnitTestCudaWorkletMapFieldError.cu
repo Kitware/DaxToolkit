@@ -13,7 +13,7 @@
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <dax/cont/internal/Testing.h>
+#include <dax/cuda/cont/internal/Testing.h>
 
 namespace {
 
@@ -47,5 +47,5 @@ static void TestFieldMapError()
 //-----------------------------------------------------------------------------
 int UnitTestCudaWorkletMapFieldError(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestFieldMapError);
+  return dax::cuda::cont::internal::Testing::Run(TestFieldMapError);
 }

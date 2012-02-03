@@ -11,7 +11,7 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <dax/cont/internal/Testing.h>
+#include <dax/cuda/cont/internal/Testing.h>
 
 #include <typeinfo>
 
@@ -68,5 +68,5 @@ static void TestCellGradient()
 //-----------------------------------------------------------------------------
 int UnitTestCudaWorkletMapCell(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestCellGradient);
+  return dax::cuda::cont::internal::Testing::Run(TestCellGradient);
 }
