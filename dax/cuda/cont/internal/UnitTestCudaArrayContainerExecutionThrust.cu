@@ -11,7 +11,7 @@
 #include <dax/cont/ErrorControlOutOfMemory.h>
 #include <dax/cont/internal/IteratorContainer.h>
 
-#include <dax/cont/internal/Testing.h>
+#include <dax/cuda/cont/internal/Testing.h>
 
 #include <thrust/for_each.h>
 #include <thrust/sequence.h>
@@ -107,5 +107,5 @@ static void TestArrayContainer()
 int UnitTestCudaArrayContainerExecutionThrust(int, char *[])
 {
   using namespace dax::cuda::cont::internal::ut_arraycontainer;
-  return dax::cont::internal::Testing::Run(TestArrayContainer);
+  return dax::cuda::cont::internal::Testing::Run(TestArrayContainer);
 }

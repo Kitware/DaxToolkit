@@ -67,13 +67,33 @@ public:
   }
 
 private:
-  IteratorContainer(const IteratorContainer &); // Not implemented
-  void operator=(const IteratorContainer &);    // Not implemented
-
   IteratorType BeginIterator;
   IteratorType EndIterator;
   bool Valid;
 };
+
+/// A convenience function to build an interator container. Helpful to
+/// automatically type the necessary function.
+///
+template<class IteratorType>
+IteratorContainer<IteratorType> make_IteratorContainer(IteratorType begin,
+                                                       IteratorType end)
+{
+  return IteratorContainer<IteratorType>(begin, end);
+}
+
+/// A convenience function to build an interator container. Helpful to
+/// automatically type the necessary function. Also helpful when you have the
+/// begin random iterator and a size.
+///
+template<class IteratorType>
+IteratorContainer<IteratorType> make_IteratorContainer(IteratorType begin,
+                                                       dax::Id size)
+{
+  IteratorType end = begin;
+  std::advance(end, size);
+  return IteratorContainer<IteratorType>(begin, end);
+}
 
 }
 }

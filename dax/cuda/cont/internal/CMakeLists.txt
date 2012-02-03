@@ -10,6 +10,7 @@ set(headers
   ArrayContainerExecutionThrust.h
   CudaParameters.h
   SetThrustForCuda.h
+  Testing.h
   )
 
 dax_declare_headers(CUDA ${headers})
