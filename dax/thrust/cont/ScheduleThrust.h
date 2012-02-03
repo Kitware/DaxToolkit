@@ -58,27 +58,13 @@ namespace dax {
 namespace thrust {
 namespace cont {
 
-namespace internal {
-
-DAX_CONT_EXPORT
-dax::thrust::cont::internal::ArrayContainerExecutionThrust<char> &
-getScheduleThrustErrorArray()
-{
-  static dax::thrust::cont::internal::ArrayContainerExecutionThrust<char>
-      ErrorArray;
-  return ErrorArray;
-}
-
-}
-
 template<class Functor, class Parameters>
 DAX_CONT_EXPORT void scheduleThrust(Functor functor,
                                     Parameters parameters,
                                     dax::Id numInstances)
 {
   const dax::Id ERROR_ARRAY_SIZE = 1024;
-  dax::thrust::cont::internal::ArrayContainerExecutionThrust<char> &errorArray
-      = internal::getScheduleThrustErrorArray();
+  dax::thrust::cont::internal::ArrayContainerExecutionThrust<char> errorArray;
   errorArray.Allocate(ERROR_ARRAY_SIZE);
   errorArray.CopyFromControlToExecution(
         dax::cont::internal::make_IteratorContainer("", 1));
