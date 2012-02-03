@@ -20,10 +20,8 @@ namespace internal {
 struct Testing
 {
 public:
-  template<class Func>
-  static DAX_CONT_EXPORT int Run(Func function)
+  static DAX_CONT_EXPORT int CheckCudaBeforeExit(int result)
   {
-    int result = dax::cont::internal::Testing::Run(function);
     cudaError_t cudaError = cudaPeekAtLastError();
     if (cudaError != cudaSuccess)
       {
@@ -36,6 +34,13 @@ public:
       std::cout << "No Cuda error detected." << std::endl;
       }
     return result;
+  }
+
+  template<class Func>
+  static DAX_CONT_EXPORT int Run(Func function)
+  {
+    int result = dax::cont::internal::Testing::Run(function);
+    return CheckCudaBeforeExit(result);
   }
 };
 

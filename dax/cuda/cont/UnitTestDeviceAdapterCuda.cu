@@ -9,9 +9,11 @@
 #include <dax/cuda/cont/DeviceAdapterCuda.h>
 
 #include <dax/cont/internal/TestingDeviceAdapter.h>
+#include <dax/cuda/cont/internal/Testing.h>
 
 int UnitTestDeviceAdapterCuda(int, char *[])
 {
-  return dax::cont::internal::TestingDeviceAdapter
+  int result =  dax::cont::internal::TestingDeviceAdapter
       <dax::cuda::cont::DeviceAdapterCuda>::Run();
+  return dax::cuda::cont::internal::Testing::CheckCudaBeforeExit(result);
 }
