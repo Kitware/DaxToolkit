@@ -9,6 +9,7 @@
 #define __dax_cont_internal_TestingDeviceAdapter_h
 
 #include <dax/cont/ErrorExecution.h>
+#include <dax/cont/ErrorControlOutOfMemory.h>
 
 #include <dax/cont/internal/IteratorContainer.h>
 #include <dax/cont/internal/Testing.h>
@@ -113,6 +114,28 @@ private:
       }
   }
 
+  static DAX_CONT_EXPORT void TestOutOfMemory()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing Out of Memory" << std::endl;
+    try
+      {
+      std::cout << "Do array allocation that should fail." << std::endl;
+      typename DeviceAdapter::template ArrayContainerExecution<dax::Vector4>
+          bigArray;
+      bigArray.Allocate(-1);
+      // It does not seem reasonable to get here.  The previous call should fail.
+      DAX_TEST_FAIL("A ridiculously sized allocation succeeded.  Either there "
+                    "was a failure that was not reported but should have been "
+                    "or the width of dax::Id is not large enough to express all "
+                    "array sizes.");
+      }
+    catch (dax::cont::ErrorControlOutOfMemory error)
+      {
+      std::cout << "Got the expected error: " << error.GetMessage() << std::endl;
+      }
+  }
+
   static DAX_CONT_EXPORT void TestSchedule()
   {
     std::cout << "-------------------------------------------" << std::endl;
@@ -186,6 +209,7 @@ private:
     {
       std::cout << "Doing DeviceAdapter tests" << std::endl;
       TestArrayContainerExecution();
+      TestOutOfMemory();
       TestSchedule();
       TestErrorExecution();
     }
