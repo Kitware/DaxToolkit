@@ -63,14 +63,14 @@ if (DAX_ENABLE_OPENMP)
   target_link_libraries(FY11TimingOpenMP
     ${Boost_LIBRARIES}
     )
-endif (DAX_ENABLE_OPENMP)
 
-add_test(FY11TimingOpenMP1-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingOpenMP --pipeline 1 --size 128)
-add_test(FY11TimingOpenMP2-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingOpenMP --pipeline 2 --size 128)
-add_test(FY11TimingOpenMP3-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingOpenMP --pipeline 3 --size 128)
+  add_test(FY11TimingOpenMP1-128
+    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingOpenMP --pipeline 1 --size 128)
+  add_test(FY11TimingOpenMP2-128
+    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingOpenMP --pipeline 2 --size 128)
+  add_test(FY11TimingOpenMP3-128
+    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingOpenMP --pipeline 3 --size 128)
+endif (DAX_ENABLE_OPENMP)
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_CUDA)
@@ -81,14 +81,14 @@ if (DAX_ENABLE_CUDA)
   target_link_libraries(FY11TimingCuda
     ${Boost_LIBRARIES}
     )
-endif (DAX_ENABLE_CUDA)
 
-add_test(FY11TimingCuda1-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingCuda --pipeline 1 --size 128)
-add_test(FY11TimingCuda2-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingCuda --pipeline 2 --size 128)
-add_test(FY11TimingCuda3-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingCuda --pipeline 3 --size 128)
+  add_test(FY11TimingCuda1-128
+    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingCuda --pipeline 1 --size 128)
+  add_test(FY11TimingCuda2-128
+    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingCuda --pipeline 2 --size 128)
+  add_test(FY11TimingCuda3-128
+    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingCuda --pipeline 3 --size 128)
+endif (DAX_ENABLE_CUDA)
 
 
 #-----------------------------------------------------------------------------
