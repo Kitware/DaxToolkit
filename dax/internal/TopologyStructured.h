@@ -5,15 +5,15 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __dax__internal__StructuredGrid_h
-#define __dax__internal__StructuredGrid_h
+#ifndef __dax__internal__Structured_h
+#define __dax__internal__Structured_h
 
 #include <dax/Extent.h>
 
 namespace dax {
 namespace internal {
 
-struct TopologyUniformGrid {
+struct TopologyUniform {
   Vector3 Origin;
   Vector3 Spacing;
   Extent3 Extent;
@@ -21,18 +21,18 @@ struct TopologyUniformGrid {
 
 /// Returns the number of points in a structured grid.
 DAX_EXEC_CONT_EXPORT
-dax::Id numberOfPoints(const TopologyUniformGrid &gridstructure)
+dax::Id numberOfPoints(const TopologyUniform &GridTopology)
 {
-  dax::Id3 dims = dax::extentDimensions(gridstructure.Extent);
+  dax::Id3 dims = dax::extentDimensions(GridTopology.Extent);
   return dims[0]*dims[1]*dims[2];
 }
 
 /// Returns the number of cells in a structured grid.
 template<typename T>
 DAX_EXEC_CONT_EXPORT
-dax::Id numberOfCells(const T &gridstructure)
+dax::Id numberOfCells(const T &GridTopology)
 {
-  dax::Id3 dims = dax::extentDimensions(gridstructure.Extent)
+  dax::Id3 dims = dax::extentDimensions(GridTopology.Extent)
                   - dax::make_Id3(1, 1, 1);
   return dims[0]*dims[1]*dims[2];
 }
@@ -40,7 +40,7 @@ dax::Id numberOfCells(const T &gridstructure)
 /// Returns the point position in a structured grid for a given i, j, and k
 /// value stored in /c ijk
 DAX_EXEC_CONT_EXPORT
-dax::Vector3 pointCoordiantes(const TopologyUniformGrid &grid,
+dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
                               dax::Id3 ijk)
 {
   dax::Vector3 origin = grid.Origin;
@@ -53,7 +53,7 @@ dax::Vector3 pointCoordiantes(const TopologyUniformGrid &grid,
 /// Returns the point position in a structured grid for a given index
 /// which is represented by /c pointIndex
 DAX_EXEC_CONT_EXPORT
-dax::Vector3 pointCoordiantes(const TopologyUniformGrid &grid,
+dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
                               dax::Id pointIndex)
 {
   dax::Id3 ijk = flatIndexToIndex3(pointIndex, grid.Extent);
@@ -62,4 +62,4 @@ dax::Vector3 pointCoordiantes(const TopologyUniformGrid &grid,
 
 }  }
 
-#endif //__dax__internal__StructuredGrid_h
+#endif //__dax__internal__Structured_h

@@ -8,7 +8,7 @@
 #ifndef __dax__cont__UniformGrid_h
 #define __dax__cont__UniformGrid_h
 
-#include <dax/internal/GridStructures.h>
+#include <dax/internal/GridTopologys.h>
 
 namespace dax { namespace cont { namespace internal {
 template<class Grid> class ExecutionPackageGrid;
@@ -37,29 +37,29 @@ public:
   /// The extent defines the minimum and maximum (inclusive) indices in each
   /// dimension.
   ///
-  const dax::Extent3 &GetExtent() const { return this->GridStructure.Extent; }
+  const dax::Extent3 &GetExtent() const { return this->GridTopology.Extent; }
   void SetExtent(const dax::Extent3 &extent) {
-    this->GridStructure.Extent = extent;
+    this->GridTopology.Extent = extent;
   }
   void SetExtent(const dax::Id3 &min, const dax::Id3 &max) {
-    this->GridStructure.Extent.Min = min;
-    this->GridStructure.Extent.Max = max;
+    this->GridTopology.Extent.Min = min;
+    this->GridTopology.Extent.Max = max;
   }
 
   /// The origin is the location in space of the point at grid position
   /// (0, 0, 0).  This position may or may not actually be in the extent.
   ///
-  const dax::Vector3 &GetOrigin() const { return this->GridStructure.Origin; }
+  const dax::Vector3 &GetOrigin() const { return this->GridTopology.Origin; }
   void SetOrigin(const dax::Vector3 &coords) {
-    this->GridStructure.Origin = coords;
+    this->GridTopology.Origin = coords;
   }
 
   /// The spacing is the distance between grid points. Each component in the
   /// vector refers to a spacing along the associated axis, which can vary.
   ///
-  const dax::Vector3 &GetSpacing() const { return this->GridStructure.Spacing; }
+  const dax::Vector3 &GetSpacing() const { return this->GridTopology.Spacing; }
   void SetSpacing(const dax::Vector3 &distances) {
-    this->GridStructure.Spacing = distances;
+    this->GridTopology.Spacing = distances;
   }
 
   /// A simple class representing the points in a uniform grid.
@@ -67,15 +67,15 @@ public:
   class Points
   {
   public:
-    Points(const UniformGrid &grid) : GridStructure(grid.GridStructure) { }
+    Points(const UniformGrid &grid) : GridTopology(grid.GridTopology) { }
     dax::Vector3 GetCoordinates(dax::Id pointIndex) const {
-      return dax::internal::pointCoordiantes(this->GridStructure, pointIndex);
+      return dax::internal::pointCoordiantes(this->GridTopology, pointIndex);
     }
-    const dax::internal::TopologyUniformGrid &GetStructureForExecution() const {
-      return this->GridStructure;
+    const dax::internal::TopologyUniform &GetStructureForExecution() const {
+      return this->GridTopology;
     }
   private:
-    dax::internal::TopologyUniformGrid GridStructure;
+    dax::internal::TopologyUniform GridTopology;
   };
 
   /// Returns an object representing the points in a uniform grid. Most helpful
@@ -88,39 +88,39 @@ public:
   /// Get the number of points.
   ///
   dax::Id GetNumberOfPoints() const {
-    return dax::internal::numberOfPoints(this->GridStructure);
+    return dax::internal::numberOfPoints(this->GridTopology);
   }
 
   /// Get the number of cells.
   ///
   dax::Id GetNumberOfCells() const {
-    return dax::internal::numberOfCells(this->GridStructure);
+    return dax::internal::numberOfCells(this->GridTopology);
   }
 
   /// Converts an i, j, k point location to a point index.
   ///
   dax::Id ComputePointIndex(const dax::Id3 &ijk) const {
-    return dax::index3ToFlatIndex(ijk, this->GridStructure.Extent);
+    return dax::index3ToFlatIndex(ijk, this->GridTopology.Extent);
   }
 
   /// Converts an i, j, k point location to a cell index.
   ///
   dax::Id ComputeCellIndex(const dax::Id3 &ijk) const {
-    return dax::index3ToFlatIndexCell(ijk, this->GridStructure.Extent);
+    return dax::index3ToFlatIndexCell(ijk, this->GridTopology.Extent);
   }
 
   /// Gets the coordinates for a given point.
   ///
   dax::Vector3 GetPointCoordinates(dax::Id pointIndex) const {
-    return dax::internal::pointCoordiantes(this->GridStructure, pointIndex);
+    return dax::internal::pointCoordiantes(this->GridTopology, pointIndex);
   }
 
 private:
   friend class Points;
   friend class dax::cont::internal::ExecutionPackageGrid<UniformGrid>;
 
-  typedef dax::internal::TopologyUniformGrid StructureType;
-  StructureType GridStructure;
+  typedef dax::internal::TopologyUniform TopologyType;
+  TopologyType GridTopology;
 
   typedef dax::exec::CellVoxel CellType;
 };

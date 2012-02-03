@@ -9,7 +9,7 @@
 #define __dax_exec_CellHexahedron_h
 
 #include <dax/Types.h>
-#include <dax/internal/GridStructures.h>
+#include <dax/internal/GridTopologys.h>
 
 #include <dax/exec/Field.h>
 
@@ -25,10 +25,10 @@ namespace dax { namespace exec {
 class CellHexahedron
 {
 public:
-  typedef dax::internal::TopologyUnstructuredGrid<CellHexahedron> GridStructureType;
+  typedef dax::internal::TopologyUnstructured<CellHexahedron> TopologyType;
 
 private:
-  const dax::internal::TopologyUnstructuredGrid<CellHexahedron> GridStructure;
+  const TopologyType GridTopology;
   dax::Id CellIndex;
   dax::Id TopologyPosition;
 public:
@@ -36,9 +36,9 @@ public:
   const static dax::Id NUM_POINTS = 8; //needed by unstructured grid
   /// Create a cell for the given work.
   DAX_EXEC_CONT_EXPORT CellHexahedron(
-      const GridStructureType  &gs,
+      const TopologyType  &gs,
       dax::Id index)
-    : GridStructure(gs),
+    : GridTopology(gs),
       CellIndex(index),
       TopologyPosition(NUM_POINTS*index)
     { }
@@ -53,7 +53,7 @@ public:
   /// the index for the point in point space.
   DAX_EXEC_EXPORT dax::Id GetPointIndex(const dax::Id vertexIndex) const
   {    
-    return this->GridStructure.Topology.GetValue(
+    return this->GridTopology.Topology.GetValue(
           this->TopologyPosition+vertexIndex);
   }
 
@@ -69,9 +69,9 @@ public:
 
   /// Get the grid structure details.  Only useful internally.
   DAX_EXEC_EXPORT
-  const GridStructureType& GetGridStructure() const
+  const TopologyType& GetGridTopology() const
   {
-    return this->GridStructure;
+    return this->GridTopology;
   }
 };
 

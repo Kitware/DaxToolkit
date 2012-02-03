@@ -12,7 +12,7 @@
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 
-#include <dax/internal/GridStructures.h>
+#include <dax/internal/GridTopologys.h>
 #include <dax/exec/internal/ErrorHandler.h>
 #include <dax/exec/internal/FieldAccess.h>
 
@@ -60,7 +60,7 @@ public:
 template<>
 class WorkMapField<dax::exec::CellVoxel>
 {
-  const dax::internal::TopologyUniformGrid GridStructure;
+  const dax::internal::TopologyUniform GridTopology;
   dax::Id Index;
   dax::exec::internal::ErrorHandler ErrorHandler;
 
@@ -68,9 +68,9 @@ public:
   typedef CellVoxel CellType;
 
   DAX_EXEC_CONT_EXPORT WorkMapField(
-      const dax::internal::TopologyUniformGrid &gs,
+      const dax::internal::TopologyUniform &gs,
       const dax::exec::internal::ErrorHandler &errorHandler)
-    : GridStructure(gs), ErrorHandler(errorHandler) { }
+    : GridTopology(gs), ErrorHandler(errorHandler) { }
 
   template<typename T>
   DAX_EXEC_EXPORT const T &GetFieldValue(const dax::exec::Field<T> &field) const
@@ -89,7 +89,7 @@ public:
   {
     // Special case.  Point coordiantes are determined implicitly by index.
     return dax::exec::internal::fieldAccessUniformCoordinatesGet(
-          this->GridStructure,
+          this->GridTopology,
           this->GetIndex());
   }
 

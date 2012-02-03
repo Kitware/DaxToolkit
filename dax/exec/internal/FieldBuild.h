@@ -11,12 +11,12 @@
 #include <dax/exec/Field.h>
 
 #include <dax/internal/DataArray.h>
-#include <dax/internal/GridStructures.h>
+#include <dax/internal/GridTopologys.h>
 
 namespace dax { namespace exec { namespace internal {
 
 DAX_EXEC_CONT_EXPORT dax::exec::FieldCoordinates fieldCoordinatesBuild(
-    const dax::internal::TopologyUniformGrid &)
+    const dax::internal::TopologyUniform &)
 {
   dax::internal::DataArray<dax::Vector3> dummyArray;
   dax::exec::FieldCoordinates field(dummyArray);

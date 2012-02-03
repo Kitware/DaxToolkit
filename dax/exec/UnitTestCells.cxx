@@ -32,8 +32,8 @@ static void CheckPointIndex(const dax::Id &hexPointIndex,
 
 // This function is available in the global scope so that it can be used
 // in other tests such as UnitTestWorkMapCellHexahedron.
-dax::internal::TopologyUnstructuredGrid<dax::exec::CellHexahedron>
-  make_ugrid(const dax::internal::TopologyUniformGrid& uniform,
+dax::internal::TopologyUnstructured<dax::exec::CellHexahedron>
+  make_ugrid(const dax::internal::TopologyUniform& uniform,
              std::vector<dax::Vector3>& points,
              std::vector<dax::Id>& topology
              )
@@ -58,7 +58,7 @@ dax::internal::TopologyUnstructuredGrid<dax::exec::CellHexahedron>
 
   dax::internal::DataArray<dax::Vector3> rawPoints(&points[0],points.size());
   dax::internal::DataArray<dax::Id> rawTopo(&topology[0],topology.size());
-  dax::internal::TopologyUnstructuredGrid<dax::exec::CellHexahedron> ugrid(rawPoints,
+  dax::internal::TopologyUnstructured<dax::exec::CellHexahedron> ugrid(rawPoints,
                                                                    rawTopo);
   return ugrid;
 }
@@ -66,7 +66,7 @@ dax::internal::TopologyUnstructuredGrid<dax::exec::CellHexahedron>
 // This function is available in the global scope so that it can be used
 // in other tests such as UnitTestWorkMapCellVoxel.
 void TestCellVoxel(const dax::exec::CellVoxel cell,
-                   const dax::internal::TopologyUniformGrid &gridstruct,
+                   const dax::internal::TopologyUniform &gridstruct,
                    dax::Id cellFlatIndex)
 {
   dax::Id3 cellIjkIndex
@@ -136,7 +136,7 @@ void TestCellHexahedron(const dax::exec::CellHexahedron cell,
 
 static void TestCellVoxel()
 {
-  dax::internal::TopologyUniformGrid gridstruct;
+  dax::internal::TopologyUniform gridstruct;
 
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
@@ -164,8 +164,8 @@ static void TestCellHexahedron()
 {
   std::vector<dax::Id> topo;
   std::vector<dax::Vector3> points;
-  dax::internal::TopologyUniformGrid gridstruct;
-  dax::internal::TopologyUnstructuredGrid<dax::exec::CellHexahedron> ugrid;
+  dax::internal::TopologyUniform gridstruct;
+  dax::internal::TopologyUnstructured<dax::exec::CellHexahedron> ugrid;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);

@@ -12,7 +12,7 @@
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 
-#include <dax/internal/GridStructures.h>
+#include <dax/internal/GridTopologys.h>
 #include <dax/exec/internal/ErrorHandler.h>
 #include <dax/exec/internal/FieldAccess.h>
 
@@ -37,9 +37,9 @@ public:
   typedef CellVoxel CellType;
 
   DAX_EXEC_EXPORT WorkMapCell(
-      const dax::internal::TopologyUniformGrid &gridStructure,
+      const dax::internal::TopologyUniform &GridTopology,
       const dax::exec::internal::ErrorHandler &errorHandler)
-    : Cell(gridStructure, 0), ErrorHandler(errorHandler) { }
+    : Cell(GridTopology, 0), ErrorHandler(errorHandler) { }
 
   DAX_EXEC_EXPORT const dax::exec::CellVoxel GetCell() const
   {
@@ -75,10 +75,10 @@ public:
     const dax::exec::FieldCoordinates &, dax::Id vertexIndex) const
   {
     dax::Id pointIndex = this->GetCell().GetPointIndex(vertexIndex);
-    const dax::internal::TopologyUniformGrid &gridStructure
-        = this->GetCell().GetGridStructure();
+    const dax::internal::TopologyUniform &GridTopology
+        = this->GetCell().GetGridTopology();
     return
-        dax::exec::internal::fieldAccessUniformCoordinatesGet(gridStructure,
+        dax::exec::internal::fieldAccessUniformCoordinatesGet(GridTopology,
                                                               pointIndex);
   }
 
@@ -109,9 +109,9 @@ public:
   typedef CellHexahedron CellType;
 
   DAX_EXEC_EXPORT WorkMapCell(
-    const dax::internal::TopologyUnstructuredGrid<CellType> &gridStructure,
+    const dax::internal::TopologyUnstructured<CellType> &GridTopology,
     const dax::exec::internal::ErrorHandler &errorHandler)
-    : Cell(gridStructure, 0),
+    : Cell(GridTopology, 0),
       ErrorHandler(errorHandler) { }
 
   DAX_EXEC_EXPORT const dax::exec::CellHexahedron GetCell() const
@@ -148,10 +148,10 @@ public:
     const dax::exec::FieldCoordinates &, dax::Id vertexIndex) const
   {
     dax::Id pointIndex = this->GetCell().GetPointIndex(vertexIndex);
-    const dax::internal::TopologyUnstructuredGrid<CellType> &gridStructure
-        = this->GetCell().GetGridStructure();
+    const dax::internal::TopologyUnstructured<CellType> &GridTopology
+        = this->GetCell().GetGridTopology();
     return
-        dax::exec::internal::fieldAccessUniformCoordinatesGet(gridStructure,
+        dax::exec::internal::fieldAccessUniformCoordinatesGet(GridTopology,
                                                               pointIndex);
   }
 

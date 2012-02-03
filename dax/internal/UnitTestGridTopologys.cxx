@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/internal/GridStructures.h>
+#include <dax/internal/GridTopologys.h>
 #include <dax/exec/Cell.h>
 
 #include <dax/internal/Testing.h>
@@ -32,7 +32,7 @@ static void TestUniformGrid()
 {
   std::cout << "Testing Structured grid size." << std::endl;
 
-  dax::internal::TopologyUniformGrid gridstruct;
+  dax::internal::TopologyUniform gridstruct;
   gridstruct.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
   gridstruct.Spacing = dax::make_Vector3(1.0, 1.0, 1.0);
 
@@ -49,14 +49,14 @@ static void TestUnstructuredGrid()
 {
   std::cout << "Testing Unstructured grid size." << std::endl;
   {
-    dax::internal::TopologyUnstructuredGrid<dax::exec::CellHexahedron> ugrid;
+    dax::internal::TopologyUnstructured<dax::exec::CellHexahedron> ugrid;
     TestGridSize(ugrid,0,0);
   }
 
 
   //to simplify the process of creating a hexahedron unstrucutured
   //grid I am going to copy the ids and points from a uniform grid.
-  dax::internal::TopologyUniformGrid uniform;
+  dax::internal::TopologyUniform uniform;
   uniform.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
   uniform.Spacing = dax::make_Vector3(1.0, 1.0, 0.0);
 
@@ -85,7 +85,7 @@ static void TestUnstructuredGrid()
 
   dax::internal::DataArray<dax::Vector3> rawPoints(&points[0],points.size());
   dax::internal::DataArray<dax::Id> rawTopo(&topology[0],topology.size());
-  dax::internal::TopologyUnstructuredGrid<dax::exec::CellHexahedron> ugrid(
+  dax::internal::TopologyUnstructured<dax::exec::CellHexahedron> ugrid(
         rawPoints,rawTopo);
   TestGridSize(ugrid,18,4);
 }
@@ -98,7 +98,7 @@ static void TestGridSizes()
 
 }
 
-int UnitTestGridStructures(int, char *[])
+int UnitTestGridTopologys(int, char *[])
 {
   return dax::internal::Testing::Run(TestGridSizes);
 }
