@@ -8,8 +8,15 @@
 #ifndef __dax_cont_internal_TestingDeviceAdapter_h
 #define __dax_cont_internal_TestingDeviceAdapter_h
 
+#include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
+#include <dax/cont/UniformGrid.h>
+
+#include <dax/cont/worklet/CellGradient.h>
+#include <dax/cont/worklet/Square.h>
+#include <dax/cont/worklet/testing/CellMapError.h>
+#include <dax/cont/worklet/testing/FieldMapError.h>
 
 #include <dax/cont/internal/IteratorContainer.h>
 #include <dax/cont/internal/Testing.h>
@@ -18,6 +25,8 @@
 
 #include <dax/exec/internal/ErrorHandler.h>
 
+#include <vector>
+
 namespace dax {
 namespace cont {
 namespace internal {
@@ -25,6 +34,7 @@ namespace internal {
 #define ERROR_MESSAGE "Got an error."
 #define ARRAY_SIZE 500
 #define OFFSET 1000
+#define DIM 64
 
 template<class DeviceAdapter>
 struct TestingDeviceAdapter
@@ -206,6 +216,139 @@ private:
                     "Did not get expected error message.");
   }
 
+  static DAX_CONT_EXPORT void TestWorkletMapField()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing basic map field worklet" << std::endl;
+
+    dax::cont::UniformGrid grid;
+    grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+
+    dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
+
+    std::vector<dax::Scalar> field(grid.GetNumberOfPoints());
+    for (dax::Id pointIndex = 0;
+         pointIndex < grid.GetNumberOfPoints();
+         pointIndex++)
+      {
+      field[pointIndex]
+          = dax::dot(grid.GetPointCoordinates(pointIndex), trueGradient);
+      }
+    dax::cont::ArrayHandle<dax::Scalar, DeviceAdapter>
+        fieldHandle(field.begin(), field.end());
+
+    std::vector<dax::Scalar> square(grid.GetNumberOfPoints());
+    dax::cont::ArrayHandle<dax::Scalar, DeviceAdapter>
+        squareHandle(square.begin(), square.end());
+
+    std::cout << "Running Square worklet" << std::endl;
+    dax::cont::worklet::Square(grid, fieldHandle, squareHandle);
+
+    std::cout << "Checking result" << std::endl;
+    for (dax::Id pointIndex = 0;
+         pointIndex < grid.GetNumberOfPoints();
+         pointIndex++)
+      {
+      dax::Scalar squareValue = square[pointIndex];
+      dax::Scalar squareTrue = field[pointIndex]*field[pointIndex];
+      DAX_TEST_ASSERT(test_equal(squareValue, squareTrue),
+                      "Got bad square");
+      }
+  }
+
+  static DAX_CONT_EXPORT void TestWorkletFieldMapError()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing map field worklet error" << std::endl;
+
+    dax::cont::UniformGrid grid;
+    grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+
+    std::cout << "Running field map worklet that errors" << std::endl;
+    bool gotError = false;
+    try
+      {
+      dax::cont::worklet::testing::FieldMapError
+          <dax::cont::UniformGrid, DeviceAdapter>(grid);
+      }
+    catch (dax::cont::ErrorExecution error)
+      {
+      std::cout << "Got expected ErrorExecution object." << std::endl;
+      std::cout << error.GetMessage() << std::endl;
+      gotError = true;
+      }
+
+    DAX_TEST_ASSERT(gotError, "Never got the error thrown.");
+  }
+
+
+  static DAX_CONT_EXPORT void TestWorkletMapCell()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing basic map cell worklet" << std::endl;
+
+    dax::cont::UniformGrid grid;
+    grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+
+    dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
+
+    std::vector<dax::Scalar> field(grid.GetNumberOfPoints());
+    for (dax::Id pointIndex = 0;
+         pointIndex < grid.GetNumberOfPoints();
+         pointIndex++)
+      {
+      field[pointIndex]
+          = dax::dot(grid.GetPointCoordinates(pointIndex), trueGradient);
+      }
+    dax::cont::ArrayHandle<dax::Scalar, DeviceAdapter>
+        fieldHandle(field.begin(), field.end());
+
+    std::vector<dax::Vector3> gradient(grid.GetNumberOfCells());
+    dax::cont::ArrayHandle<dax::Vector3, DeviceAdapter>
+        gradientHandle(gradient.begin(), gradient.end());
+
+    std::cout << "Running CellGradient worklet" << std::endl;
+    dax::cont::worklet::CellGradient(grid,
+                                     grid.GetPoints(),
+                                     fieldHandle,
+                                     gradientHandle);
+
+    std::cout << "Checking result" << std::endl;
+    for (dax::Id cellIndex = 0;
+         cellIndex < grid.GetNumberOfCells();
+         cellIndex++)
+      {
+      dax::Vector3 gradientValue = gradient[cellIndex];
+      DAX_TEST_ASSERT(test_equal(gradientValue, trueGradient),
+                      "Got bad gradient");
+      }
+  }
+
+  static DAX_CONT_EXPORT void TestWorkletCellMapError()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing map cell worklet error" << std::endl;
+
+    dax::cont::UniformGrid grid;
+    grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+
+    std::cout << "Running cell map worklet that errors" << std::endl;
+    bool gotError = false;
+    try
+      {
+      dax::cont::worklet::testing::CellMapError
+          <dax::cont::UniformGrid, DeviceAdapter>(grid);
+      }
+    catch (dax::cont::ErrorExecution error)
+      {
+      std::cout << "Got expected ErrorExecution object." << std::endl;
+      std::cout << error.GetMessage() << std::endl;
+      gotError = true;
+      }
+
+    DAX_TEST_ASSERT(gotError, "Never got the error thrown.");
+  }
+
   struct TestAll
   {
     DAX_CONT_EXPORT void operator()()
@@ -215,6 +358,10 @@ private:
       TestOutOfMemory();
       TestSchedule();
       TestErrorExecution();
+      TestWorkletMapField();
+      TestWorkletFieldMapError();
+      TestWorkletMapCell();
+      TestWorkletCellMapError();
     }
   };
 
@@ -228,6 +375,7 @@ public:
 #undef ERROR_MESSAGE
 #undef ARRAY_SIZE
 #undef OFFSET
+#undef DIM
 
 }
 }

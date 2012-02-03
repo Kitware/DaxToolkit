@@ -22,9 +22,5 @@ dax_declare_headers(${headers})
 #-----------------------------------------------------------------------------
 set(unit_tests
   UnitTestDeviceAdapterOpenMP.cxx
-  UnitTestOpenMPWorkletMapCell.cxx
-  UnitTestOpenMPWorkletMapCellError.cxx
-  UnitTestOpenMPWorkletMapField.cxx
-  UnitTestOpenMPWorkletMapFieldError.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
