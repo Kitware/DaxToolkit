@@ -23,13 +23,14 @@ namespace cont {
 namespace internal {
 
 #define ERROR_MESSAGE "Got an error."
+#define ARRAY_SIZE 500
+#define OFFSET 1000
 
 template<class DeviceAdapter>
 struct TestingDeviceAdapter
 {
-private:
-  static const dax::Id ARRAY_SIZE = 500;
-  static const dax::Id OFFSET = 1000;
+public:
+  // Cuda kernels have to be public (in Cuda 4.0).
 
   struct ClearArrayKernel
   {
@@ -71,6 +72,8 @@ private:
       errorHandler.RaiseError(ERROR_MESSAGE);
     }
   };
+
+private:
 
   // Note: this test does not actually test to make sure the data is available
   // in the execution environment. It tests to make sure data gets to the array
@@ -223,6 +226,8 @@ public:
 };
 
 #undef ERROR_MESSAGE
+#undef ARRAY_SIZE
+#undef OFFSET
 
 }
 }

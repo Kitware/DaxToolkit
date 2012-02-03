@@ -28,5 +28,6 @@ set(unit_tests
   UnitTestCudaWorkletMapCellError.cu
   UnitTestCudaWorkletMapField.cu
   UnitTestCudaWorkletMapFieldError.cu
+  UnitTestDeviceAdapterCuda.cu
   )
 dax_unit_tests(CUDA SOURCES ${unit_tests})
