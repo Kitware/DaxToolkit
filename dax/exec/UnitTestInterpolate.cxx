@@ -10,7 +10,7 @@
 #include <dax/exec/ParametricCoordinates.h>
 #include <dax/exec/WorkMapCell.h>
 #include <dax/exec/WorkMapField.h>
-#include <dax/internal/GridStructures.h>
+#include <dax/internal/GridTopologys.h>
 
 #include <dax/internal/Testing.h>
 
@@ -97,7 +97,7 @@ static void TestInterpolateCell(
 }
 
 static void TestInterpolateVoxel(
-    const dax::internal::StructureUniformGrid &gridstruct,
+    const dax::internal::TopologyUniform &gridstruct,
     const LinearField &fieldValues)
 {
   dax::exec::WorkMapField<dax::exec::CellVoxel> workField(gridstruct,
@@ -121,7 +121,7 @@ static void TestInterpolateVoxel(
 
 static void TestInterpolateVoxel()
 {
-  dax::internal::StructureUniformGrid gridstruct;
+  dax::internal::TopologyUniform gridstruct;
   LinearField fieldValues;
 
   std::cout << "Very simple field." << std::endl;

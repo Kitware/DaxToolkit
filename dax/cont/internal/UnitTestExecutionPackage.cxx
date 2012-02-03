@@ -29,7 +29,7 @@ void TestExecutionPackageGrid()
   dax::cont::internal::ExecutionPackageGrid<dax::cont::UniformGrid>
       uniformGridPackage(uniformGrid);
 
-  dax::internal::StructureUniformGrid uniformStructure
+  dax::internal::TopologyUniform uniformStructure
       = uniformGridPackage.GetExecutionObject();
   DAX_TEST_ASSERT(uniformStructure.Extent.Min == minExtent,
               "Bad uniform grid structure");

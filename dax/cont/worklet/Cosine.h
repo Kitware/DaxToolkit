@@ -12,7 +12,7 @@
 
 #include <dax/Types.h>
 #include <dax/internal/DataArray.h>
-#include <dax/internal/GridStructures.h>
+#include <dax/internal/GridTopologys.h>
 #include <dax/exec/WorkMapField.h>
 #include <dax/exec/internal/ErrorHandler.h>
 #include <dax/cont/ArrayHandle.h>
@@ -30,7 +30,7 @@ namespace kernel {
 template<class CellType, typename FieldType>
 struct CosineParameters
 {
-  typename CellType::GridStructureType grid;
+  typename CellType::TopologyType grid;
   dax::exec::Field<FieldType> inField;
   dax::exec::Field<FieldType> outField;
 };

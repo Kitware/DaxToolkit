@@ -8,15 +8,17 @@
 set(headers
   DataArray.h
   ExportMacros.h
-  GridStructures.h
+  GridTopologys.h
   Testing.h
+  TopologyStructured.h
+  TopologyUnstructured.h
   )
 
 dax_declare_headers(${headers})
 
 set(unit_tests
   UnitTestDataArray.cxx
-  UnitTestGridStructures.cxx
+  UnitTestGridTopologys.cxx
   UnitTestTesting.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

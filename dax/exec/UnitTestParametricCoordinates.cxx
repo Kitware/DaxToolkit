@@ -85,7 +85,7 @@ static void TestPCoordsVoxel()
   dax::exec::FieldCoordinates coordField(dummyArray);
 
   {
-  dax::internal::StructureUniformGrid gridstruct;
+  dax::internal::TopologyUniform gridstruct;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
@@ -99,7 +99,7 @@ static void TestPCoordsVoxel()
   }
 
   {
-  dax::internal::StructureUniformGrid gridstruct;
+  dax::internal::TopologyUniform gridstruct;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
