@@ -14,6 +14,7 @@ set(headers
   IteratorContainer.h
   IteratorPolymorphic.h
   Testing.h
+  TestingDeviceAdapter.h
   )
 
 dax_declare_headers(${headers})
