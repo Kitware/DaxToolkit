@@ -12,6 +12,7 @@
 #include <dax/Types.h>
 
 #include <dax/cont/ErrorExecution.h>
+#include <dax/cont/internal/IteratorContainer.h>
 #include <dax/exec/internal/ErrorHandler.h>
 #include <dax/thrust/cont/internal/ArrayContainerExecutionThrust.h>
 
@@ -57,29 +58,16 @@ namespace dax {
 namespace thrust {
 namespace cont {
 
-namespace internal {
-
-DAX_CONT_EXPORT
-dax::thrust::cont::internal::ArrayContainerExecutionThrust<char> &
-getScheduleThrustErrorArray()
-{
-  static dax::thrust::cont::internal::ArrayContainerExecutionThrust<char>
-      ErrorArray;
-  return ErrorArray;
-}
-
-}
-
 template<class Functor, class Parameters>
 DAX_CONT_EXPORT void scheduleThrust(Functor functor,
                                     Parameters parameters,
                                     dax::Id numInstances)
 {
   const dax::Id ERROR_ARRAY_SIZE = 1024;
-  dax::thrust::cont::internal::ArrayContainerExecutionThrust<char> &errorArray
-      = internal::getScheduleThrustErrorArray();
+  dax::thrust::cont::internal::ArrayContainerExecutionThrust<char> errorArray;
   errorArray.Allocate(ERROR_ARRAY_SIZE);
-  *errorArray.GetBeginThrustIterator() = '\0';
+  errorArray.CopyFromControlToExecution(
+        dax::cont::internal::make_IteratorContainer("", 1));
 
   dax::thrust::exec::internal::kernel::ScheduleThrustKernel<Functor, Parameters>
       kernel(functor, parameters, errorArray);
@@ -88,12 +76,15 @@ DAX_CONT_EXPORT void scheduleThrust(Functor functor,
                      ::thrust::make_counting_iterator<dax::Id>(numInstances),
                      kernel);
 
-  if (*errorArray.GetBeginThrustIterator() != '\0')
+  char errorStringFirstChar;
+  errorArray.CopyFromExecutionToControl(
+        dax::cont::internal::make_IteratorContainer(&errorStringFirstChar, 1));
+  if (errorStringFirstChar != '\0')
     {
     char errorString[ERROR_ARRAY_SIZE];
-    ::thrust::copy(errorArray.GetBeginThrustIterator(),
-                   errorArray.GetEndThrustIterator(),
-                   errorString);
+    errorArray.CopyFromExecutionToControl(
+          dax::cont::internal::make_IteratorContainer(errorString,
+                                                      ERROR_ARRAY_SIZE));
     throw dax::cont::ErrorExecution(errorString);
     }
 }

@@ -11,7 +11,7 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <dax/cont/internal/Testing.h>
+#include <dax/cuda/cont/internal/Testing.h>
 
 #include <typeinfo>
 
@@ -66,5 +66,5 @@ static void TestSquare()
 //-----------------------------------------------------------------------------
 int UnitTestCudaWorkletMapField(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestSquare);
+  return dax::cuda::cont::internal::Testing::Run(TestSquare);
 }

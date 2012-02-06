@@ -13,6 +13,10 @@
 
 #include <dax/thrust/cont/internal/ArrayContainerExecutionThrust.h>
 
+#include <dax/cont/ErrorControlOutOfMemory.h>
+
+#include <cuda.h>
+
 namespace dax {
 namespace cuda {
 namespace cont {
@@ -28,6 +32,28 @@ class ArrayContainerExecutionThrust
 {
 public:
   typedef T ValueType;
+  typedef dax::thrust::cont::internal::ArrayContainerExecutionThrust<T> Superclass;
+
+  // Fixes problem encountered with thrust where if an out-of-memory error
+  // is thrown, it leaves the CUDA error hanging around.
+  void Allocate(dax::Id numEntries)
+  {
+    try
+      {
+      this->Superclass::Allocate(numEntries);
+      }
+    catch (...)
+      {
+      // Clear CUDA memory allocation error.
+      cudaError cError = cudaPeekAtLastError();
+      if (cError == cudaErrorMemoryAllocation)
+        {
+        cudaGetLastError();
+        }
+      // Continue to throw error.
+      throw;
+      }
+  }
 };
 
 }
