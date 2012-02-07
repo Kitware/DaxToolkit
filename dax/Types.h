@@ -8,6 +8,7 @@
 #ifndef __dax_Types_h
 #define __dax_Types_h
 
+#include <dax/internal/Configure.h>
 #include <dax/internal/ExportMacros.h>
 
 /*!
@@ -64,8 +65,21 @@ namespace dax
 /// Alignment requirements are prescribed by CUDA on device (Table B-1 in NVIDIA
 /// CUDA C Programming Guide 4.0)
 
-/// Scalar corresponds to a single-valued floating point number.
-typedef float Scalar __attribute__ ((aligned (4)));
+#ifdef DAX_USE_DOUBLE_PRECISION
+
+#define DAX_SIZE_SCALAR DAX_SIZE_DOUBLE
+
+/// Scalar corresponds to a floating point number.
+typedef float Scalar __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+
+#else //DAX_USE_DOUBLE_PRECISION
+
+#define DAX_SIZE_SCALAR DAX_SIZE_FLOAT
+
+/// Scalar corresponds to a floating point number.
+typedef float Scalar __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+
+#endif //DAX_USE_DOUBLE_PRECISION
 
 /// Vector3 corresponds to a 3-tuple
 class Vector3 {
@@ -89,7 +103,7 @@ public:
 
 private:
   ValueType Values[NUM_COMPONENTS];
-} __attribute__ ((aligned(4)));
+} __attribute__ ((aligned(DAX_SIZE_SCALAR)));
 
 /// Vector4 corresponds to a 3-tuple
 class Vector4 {
@@ -115,10 +129,34 @@ public:
 
 private:
   ValueType Values[NUM_COMPONENTS];
-} __attribute__ ((aligned(4)));
+} __attribute__ ((aligned(DAX_SIZE_SCALAR)));
 
+#ifdef DAX_USE_64BIT_IDS
+
+#define DAX_SIZE_ID 8
+
+#if DAX_SIZE_LONG == 8
 /// Represents an ID.
-typedef int Id __attribute__ ((aligned(4)));
+typedef long Id __attribute__ ((aligned(DAX_SIZE_ID)));
+#elif DAX_SIZE_LONG_LONG == 8
+/// Represents an ID.
+typedef long Id __attribute__ ((aligned(DAX_SIZE_ID)));
+#else
+#error Could not find a 64-bit integer.
+#endif
+
+#else //DAX_USE_64BIT_IDS
+
+#define DAX_SIZE_ID 4
+
+#if DAX_SIZE_INT == 4
+/// Represents an ID.
+typedef int Id __attribute__ ((aligned(DAX_SIZE_ID)));
+#else
+#error Could not find a 32-bit integer.
+#endif
+
+#endif //DAX_USE_64BIT_IDS
 
 /// Id3 corresponds to a 3-dimensional index for 3d arrays.  Note that
 /// the precision of each index may be less than dax::Id.
@@ -143,7 +181,7 @@ public:
 
 private:
   ValueType Values[NUM_COMPONENTS];
-} __attribute__ ((aligned(4)));
+} __attribute__ ((aligned(DAX_SIZE_ID)));
 
 /// Initializes and returns a Vector3.
 DAX_EXEC_CONT_EXPORT dax::Vector3 make_Vector3(dax::Scalar x,

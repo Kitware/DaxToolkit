@@ -29,6 +29,12 @@ option(DAX_DISABLE_KITS
   OFF)
 mark_as_advanced(DAX_DISABLE_KITS)
 
+option(DAX_USE_DOUBLE_PRECISION
+  "Use double precision for floating point calculations"
+  OFF
+  )
+option(DAX_USE_64BIT_IDS "Use 64-bit indices." OFF)
+
 if (DAX_ENABLE_CUDA OR DAX_ENABLE_OPENMP)
   set(DAX_ENABLE_THRUST ON)
 endif (DAX_ENABLE_CUDA OR DAX_ENABLE_OPENMP)
@@ -67,10 +73,19 @@ include_directories(
   )
 
 #-----------------------------------------------------------------------------
-# Configure the options file. There should be nothing more in this file besides
-# #defines based on the CMake settings, if any.
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/daxOptions.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/daxOptions.h
+# Check basic type sizes.
+include(CheckTypeSize)
+
+check_type_size(float DAX_SIZE_FLOAT BUILTIN_TYPES_ONLY)
+check_type_size(double DAX_SIZE_DOUBLE BUILTIN_TYPES_ONLY)
+check_type_size(int DAX_SIZE_INT BUILTIN_TYPES_ONLY)
+check_type_size(long DAX_SIZE_LONG BUILTIN_TYPES_ONLY)
+check_type_size("long long" DAX_SIZE_LONG_LONG BUILTIN_TYPES_ONLY)
+
+#-----------------------------------------------------------------------------
+# Build the configure file.
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dax/internal/Configure.h.in
+  ${CMAKE_CURRENT_BINARY_DIR}/dax/internal/Configure.h
   @ONLY)
 
 
