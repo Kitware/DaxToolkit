@@ -58,6 +58,17 @@ static void TestVectorType(const VectorType &value)
   DAX_TEST_ASSERT(sum.Sum == magSquared,
                   "Got bad result for summing with VectorForEach");
   }
+
+  {
+  // Test the VectorFill function.
+  ValueType fillValue = Traits::GetComponent(value, 0);
+  VectorType fillVector;
+  dax::cont::VectorFill(fillVector, fillValue);
+  Summation<ValueType> sum;
+  dax::cont::VectorForEach(fillVector, sum);
+  DAX_TEST_ASSERT(sum.Sum == fillValue * Traits::NUM_COMPONENTS,
+                  "Got bad result filling vector");
+  }
 }
 
 static void TestVectorTypes()
