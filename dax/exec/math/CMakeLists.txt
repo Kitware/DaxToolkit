@@ -14,5 +14,6 @@ dax_declare_headers(${headers})
 
 #-----------------------------------------------------------------------------
 set(unit_tests
+  UnitTestMathExp.cxx
   )
-#dax_unit_tests(SOURCES ${unit_tests})
+dax_unit_tests(SOURCES ${unit_tests})

@@ -30,12 +30,18 @@ namespace math {
 #define DAX_SYS_MATH_FUNCTOR(func) \
   namespace internal { \
   struct func ## _functor { \
-    DAX_EXEC_EXPORT dax::Scalar operator()(dax::Scalar x) { \
+    DAX_EXEC_EXPORT dax::Scalar operator()(dax::Scalar x) const { \
       return DAX_SYS_MATH_FUNCTION(func)(x); \
     } \
   }; \
   }
 
+namespace internal {
+struct Inverse
+{
+  DAX_EXEC_EXPORT dax::Scalar operator()(dax::Scalar x) const { return 1/x; }
+};
+}
 
 //-----------------------------------------------------------------------------
 /// Computes \p x raised to the power of \p y.
@@ -75,7 +81,9 @@ template<typename T> DAX_EXEC_EXPORT T RSqrt(T x)
 /// compute the reciprocal square root than the regular square root. Thus, you
 /// should use this function whenever dividing by the square root.
 ///
-template<typename T> DAX_EXEC_EXPORT T RSqrt(T x) { return 1/Sqrt(x); }
+template<typename T> DAX_EXEC_EXPORT T RSqrt(T x) {
+  return dax::exec::VectorMap(Sqrt(x), internal::Inverse());
+}
 #endif // !DAX_CUDA
 
 //-----------------------------------------------------------------------------
@@ -108,7 +116,9 @@ template<typename T> DAX_EXEC_EXPORT T RCbrt(T x)
 /// compute the reciprocal cube root than the regular cube root. Thus, you
 /// should use this function whenever dividing by the cube root.
 ///
-template<typename T> DAX_EXEC_EXPORT T RCbrt(T x) { return 1/Cbrt(x); }
+template<typename T> DAX_EXEC_EXPORT T RCbrt(T x) {
+  return dax::exec::VectorMap(Cbrt(x), internal::Inverse());
+}
 #endif // !DAX_CUDA
 
 //-----------------------------------------------------------------------------
@@ -130,7 +140,7 @@ template<typename T> DAX_EXEC_EXPORT T Exp2(T x)
   return dax::exec::VectorMap(x, internal::exp2_functor());
 }
 
-/// Computes e**(\p x - 1), the base-e exponental of \p x minutes 1. The
+/// Computes (e**\p x) - 1, the of base-e exponental of \p x then minus 1. The
 /// accuracy of this function is good even for very small values of x.
 ///
 template<typename T> DAX_EXEC_EXPORT T ExpM1(T x)
@@ -144,7 +154,7 @@ DAX_SYS_MATH_FUNCTOR(exp10)
 #else // ! DAX_CUDA
 namespace internal {
 struct exp10_functor {
-  DAX_EXEC_EXPORT dax::Scalar operator()(dax::Scalar x) {
+  DAX_EXEC_EXPORT dax::Scalar operator()(dax::Scalar x) const {
     return dax::exec::math::Pow(10, x);
   }
 };
