@@ -12,8 +12,9 @@
 
 #include <dax/Types.h>
 #include <dax/internal/DataArray.h>
-#include <dax/internal/GridStructures.h>
+#include <dax/internal/GridTopologys.h>
 #include <dax/exec/WorkMapCell.h>
+#include <dax/exec/internal/ErrorHandler.h>
 #include <dax/exec/internal/FieldBuild.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
@@ -29,7 +30,7 @@ namespace kernel {
 template<class CellType>
 struct CellGradientParameters
 {
-  dax::exec::WorkMapCell<CellType> work;
+  typename CellType::TopologyType grid;
   dax::exec::FieldCoordinates inCoordinates;
   dax::exec::FieldPoint<dax::Scalar> inField;
   dax::exec::FieldCell<dax::Vector3> outField;
@@ -37,10 +38,12 @@ struct CellGradientParameters
 
 template<class CellType>
 struct CellGradient {
-  DAX_EXEC_EXPORT void operator()(CellGradientParameters<CellType> &parameters,
-                                  dax::Id index)
+  DAX_EXEC_EXPORT void operator()(
+      CellGradientParameters<CellType> &parameters,
+      dax::Id index,
+      const dax::exec::internal::ErrorHandler &errorHandler)
   {
-    dax::exec::WorkMapCell<CellType> work = parameters.work;
+    dax::exec::WorkMapCell<CellType> work(parameters.grid, errorHandler);
     work.SetCellIndex(index);
     dax::worklet::CellGradient(work,
                                parameters.inCoordinates,
@@ -80,20 +83,20 @@ inline void CellGradient(
       outField(outHandle, grid);
 
   typedef typename GridPackageType::ExecutionCellType CellType;
-  typedef dax::exec::WorkMapCell<CellType> WorkType;
 
   typedef dax::exec::kernel::CellGradientParameters<CellType> Parameters;
 
   Parameters parameters = {
-    WorkType(gridPackage.GetExecutionObject()),
+    gridPackage.GetExecutionObject(),
     fieldCoordinates.GetExecutionObject(),
     inField.GetExecutionObject(),
     outField.GetExecutionObject()
   };
 
-  DeviceAdapter::Schedule(dax::exec::kernel::CellGradient<CellType>(),
-                          parameters,
-                          grid.GetNumberOfCells());
+  DeviceAdapter::Schedule(
+        dax::exec::kernel::CellGradient<CellType>(),
+        parameters,
+        grid.GetNumberOfCells());
 }
 
 }

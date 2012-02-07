@@ -7,7 +7,7 @@
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 
-#include <dax/internal/GridStructures.h>
+#include <dax/internal/GridTopologys.h>
 #include <dax/exec/internal/FieldAccess.h>
 #include <dax/exec/WorkRemoveCell.h>
 

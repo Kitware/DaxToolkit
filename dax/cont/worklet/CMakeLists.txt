@@ -13,6 +13,9 @@ set(headers
   Sine.h
   Square.h
   Threshold.h
+  testing/Assert.h
+  testing/CellMapError.h
+  testing/FieldMapError.h
   )
 
 dax_declare_headers(${headers})
@@ -24,5 +27,8 @@ set(unit_tests
   UnitTestWorkletSine.cxx
   UnitTestWorkletSquare.cxx
   UnitTestWorkletThreshold.cxx
+  UnitTestWorkletAssert.cxx
+  UnitTestWorkletMapCellError.cxx
+  UnitTestWorkletMapFieldError.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

@@ -7,14 +7,16 @@
 #=========================================================================
 
 set(headers
+  Assert.h
   Cell.h
+  CellHexahedron.h
+  CellVoxel.h
   Derivative.h
   Field.h
   Interpolate.h
   ParametricCoordinates.h
   WorkMapCell.h
   WorkMapField.h
-  WorkMapReduceCell.h
   WorkRemoveCell.h
 
   ${Dax_BINARY_DIR}/dax/exec/VectorOperations.h
@@ -41,7 +43,8 @@ set(unit_tests
   UnitTestDerivative.cxx
   UnitTestInterpolate.cxx
   UnitTestParametricCoordinates.cxx
-  UnitTestWorkMapCell.cxx
+  UnitTestWorkMapCellHexahedron.cxx
+  UnitTestWorkMapCellVoxel.cxx
   UnitTestWorkMapField.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

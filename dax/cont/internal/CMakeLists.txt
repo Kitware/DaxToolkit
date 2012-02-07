@@ -14,6 +14,8 @@ set(headers
   IteratorContainer.h
   IteratorPolymorphic.h
   ScheduleRemoveCell.h
+  Testing.h
+  TestingDeviceAdapter.h
   )
 
 dax_declare_headers(${headers})
@@ -25,6 +27,7 @@ dax_declare_headers(${headers})
 
 set(unit_tests
   UnitTestArrayContainerExecutionCPU.cxx
+  UnitTestContTesting.cxx
   UnitTestExecutionPackage.cxx
   UnitTestIteratorPolymorphic.cxx
   )

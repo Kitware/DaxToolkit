@@ -12,6 +12,7 @@
 #include <dax/Types.h>
 
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/ErrorControlBadValue.h>
 
 #include <dax/exec/Field.h>
 
@@ -40,7 +41,12 @@ public:
   ExecutionPackageField(const dax::internal::DataArray<ValueType> &array,
                         dax::Id expectedSize)
     : Field(array) {
-    assert(array.GetNumberOfEntries() == expectedSize);
+    if (array.GetNumberOfEntries() != expectedSize)
+      {
+      throw dax::cont::ErrorControlBadValue(
+            "Received an array that is the wrong size "
+            "for the field it is intended for.");
+      }
   }
 
   const ExecutionFieldType &GetExecutionObject() const {

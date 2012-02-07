@@ -10,7 +10,7 @@
 
 #include <dax/exec/Field.h>
 
-#include <dax/internal/GridStructures.h>
+#include <dax/internal/GridTopologys.h>
 
 namespace dax { namespace exec { class CellVoxel; }}
 
@@ -32,11 +32,12 @@ DAX_EXEC_EXPORT void fieldAccessNormalSet(dax::exec::Field<T> &field,
   field.GetArray().SetValue(index, value);
 }
 
+template<typename Grid>
 DAX_EXEC_EXPORT dax::Vector3 fieldAccessUniformCoordinatesGet(
-  const dax::internal::StructureUniformGrid &gridStructure,
+  const Grid &GridTopology,
   dax::Id index)
 {
-  return dax::internal::pointCoordiantes(gridStructure, index);
+  return dax::internal::pointCoordiantes(GridTopology, index);
 }
 
 }}}

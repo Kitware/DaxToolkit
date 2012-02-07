@@ -8,18 +8,9 @@
 
 #include <dax/Types.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include <dax/internal/Testing.h>
 
-#define TEST_FAIL(msg)                                  \
-  {                                                     \
-    std::stringstream error;                            \
-    error << __FILE__ << ":" << __LINE__ << std::endl;  \
-    error msg;                                          \
-    throw error.str();                                  \
-  }
+namespace {
 
 static void TestVector3()
 {
@@ -30,51 +21,51 @@ static void TestVector3()
   dax::Vector3 plus = a + b;
   if ((plus[0] != 3) || (plus[1] != 6) || (plus[2] != 9))
     {
-    TEST_FAIL(<< "Vectors do not add correctly.");
+    DAX_TEST_FAIL("Vectors do not add correctly.");
     }
 
   dax::Vector3 minus = a - b;
   if ((minus[0] != 1) || (minus[1] != 2) || (minus[2] != 3))
     {
-    TEST_FAIL(<< "Vectors to not subtract correctly.");
+    DAX_TEST_FAIL("Vectors to not subtract correctly.");
     }
 
   dax::Vector3 mult = a * b;
   if ((mult[0] != 2) || (mult[1] != 8) || (mult[2] != 18))
     {
-    TEST_FAIL(<< "Vectors to not multiply correctly.");
+    DAX_TEST_FAIL("Vectors to not multiply correctly.");
     }
 
   dax::Vector3 div = a / b;
   if ((div[0] != 2) || (div[1] != 2) || (div[2] != 2))
     {
-    TEST_FAIL(<< "Vectors to not divide correctly.");
+    DAX_TEST_FAIL("Vectors to not divide correctly.");
     }
 
   mult = s * a;
   if ((mult[0] != 10) || (mult[1] != 20) || (mult[2] != 30))
     {
-    TEST_FAIL(<< "Vector and scalar to not multiply correctly.");
+    DAX_TEST_FAIL("Vector and scalar to not multiply correctly.");
     }
 
   mult = a * s;
   if ((mult[0] != 10) || (mult[1] != 20) || (mult[2] != 30))
     {
-    TEST_FAIL(<< "Vector and scalar to not multiply correctly.");
+    DAX_TEST_FAIL("Vector and scalar to not multiply correctly.");
     }
 
   if (a == b)
     {
-    TEST_FAIL(<< "operator== wrong");
+    DAX_TEST_FAIL("operator== wrong");
     }
   if (!(a != b))
     {
-    TEST_FAIL(<< "operator!= wrong");
+    DAX_TEST_FAIL("operator!= wrong");
     }
 
   if (dax::dot(a, b) != 28)
     {
-    TEST_FAIL(<< "dot(Vector3) wrong");
+    DAX_TEST_FAIL("dot(Vector3) wrong");
     }
 }
 
@@ -87,51 +78,51 @@ static void TestVector4()
   dax::Vector4 plus = a + b;
   if ((plus[0] != 3) || (plus[1] != 6) || (plus[2] != 9) || (plus[3] != 12))
     {
-    TEST_FAIL(<< "Vectors do not add correctly.");
+    DAX_TEST_FAIL("Vectors do not add correctly.");
     }
 
   dax::Vector4 minus = a - b;
   if ((minus[0] != 1) || (minus[1] != 2) || (minus[2] != 3) || (minus[3] != 4))
     {
-    TEST_FAIL(<< "Vectors to not subtract correctly.");
+    DAX_TEST_FAIL("Vectors to not subtract correctly.");
     }
 
   dax::Vector4 mult = a * b;
   if ((mult[0] != 2) || (mult[1] != 8) || (mult[2] != 18) || (mult[3] != 32))
     {
-    TEST_FAIL(<< "Vectors to not multiply correctly.");
+    DAX_TEST_FAIL("Vectors to not multiply correctly.");
     }
 
   dax::Vector4 div = a / b;
   if ((div[0] != 2) || (div[1] != 2) || (div[2] != 2) || (div[3] != 2))
     {
-    TEST_FAIL(<< "Vectors to not divide correctly.");
+    DAX_TEST_FAIL("Vectors to not divide correctly.");
     }
 
   mult = s * a;
   if ((mult[0] != 10) || (mult[1] != 20) || (mult[2] != 30) || (mult[3] != 40))
     {
-    TEST_FAIL(<< "Vector and scalar to not multiply correctly.");
+    DAX_TEST_FAIL("Vector and scalar to not multiply correctly.");
     }
 
   mult = a * s;
   if ((mult[0] != 10) || (mult[1] != 20) || (mult[2] != 30) || (mult[3] != 40))
     {
-    TEST_FAIL(<< "Vector and scalar to not multiply correctly.");
+    DAX_TEST_FAIL("Vector and scalar to not multiply correctly.");
     }
 
   if (a == b)
     {
-    TEST_FAIL(<< "operator== wrong");
+    DAX_TEST_FAIL("operator== wrong");
     }
   if (!(a != b))
     {
-    TEST_FAIL(<< "operator!= wrong");
+    DAX_TEST_FAIL("operator!= wrong");
     }
 
   if (dax::dot(a, b) != 60)
     {
-    TEST_FAIL(<< "dot(Vector4) wrong");
+    DAX_TEST_FAIL("dot(Vector4) wrong");
     }
 }
 
@@ -144,69 +135,64 @@ static void TestId3()
   dax::Id3 plus = a + b;
   if ((plus[0] != 3) || (plus[1] != 6) || (plus[2] != 9))
     {
-    TEST_FAIL(<< "Vectors do not add correctly.");
+    DAX_TEST_FAIL("Vectors do not add correctly.");
     }
 
   dax::Id3 minus = a - b;
   if ((minus[0] != 1) || (minus[1] != 2) || (minus[2] != 3))
     {
-    TEST_FAIL(<< "Vectors to not subtract correctly.");
+    DAX_TEST_FAIL("Vectors to not subtract correctly.");
     }
 
   dax::Id3 mult = a * b;
   if ((mult[0] != 2) || (mult[1] != 8) || (mult[2] != 18))
     {
-    TEST_FAIL(<< "Vectors to not multiply correctly.");
+    DAX_TEST_FAIL("Vectors to not multiply correctly.");
     }
 
   dax::Id3 div = a / b;
   if ((div[0] != 2) || (div[1] != 2) || (div[2] != 2))
     {
-    TEST_FAIL(<< "Vectors to not divide correctly.");
+    DAX_TEST_FAIL("Vectors to not divide correctly.");
     }
 
   mult = s * a;
   if ((mult[0] != 10) || (mult[1] != 20) || (mult[2] != 30))
     {
-    TEST_FAIL(<< "Vector and scalar to not multiply correctly.");
+    DAX_TEST_FAIL("Vector and scalar to not multiply correctly.");
     }
 
   mult = a * s;
   if ((mult[0] != 10) || (mult[1] != 20) || (mult[2] != 30))
     {
-    TEST_FAIL(<< "Vector and scalar to not multiply correctly.");
+    DAX_TEST_FAIL("Vector and scalar to not multiply correctly.");
     }
 
   if (a == b)
     {
-    TEST_FAIL(<< "operator== wrong");
+    DAX_TEST_FAIL("operator== wrong");
     }
   if (!(a != b))
     {
-    TEST_FAIL(<< "operator!= wrong");
+    DAX_TEST_FAIL("operator!= wrong");
     }
 
   if (dax::dot(a, b) != 28)
     {
-    TEST_FAIL(<< "dot(Id3) wrong");
+    DAX_TEST_FAIL("dot(Id3) wrong");
     }
 }
 
+void TestTypes()
+{
+  TestVector3();
+  TestVector4();
+  TestId3();
+}
+
+} // anonymous namespace
+
 int UnitTestTypes(int, char *[])
 {
-  try
-    {
-    TestVector3();
-    TestVector4();
-    TestId3();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::internal::Testing::Run(TestTypes);
 }

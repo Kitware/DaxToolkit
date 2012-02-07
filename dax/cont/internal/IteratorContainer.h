@@ -9,10 +9,9 @@
 #define __dax_cont_internal_IteratorContainer_h
 
 #include <dax/Types.h>
+#include <dax/cont/Assert.h>
 
 #include <iterator>
-
-#include <assert.h>
 
 namespace dax {
 namespace cont {
@@ -48,7 +47,7 @@ public:
   /// false.
   ///
   IteratorType GetBeginIterator() const {
-    assert(this->Valid);  // TODO: Better error control.
+    DAX_ASSERT_CONT(this->Valid);
     return this->BeginIterator;
   }
 
@@ -56,7 +55,7 @@ public:
   /// false.
   ///
   IteratorType GetEndIterator() const {
-    assert(this->Valid);  // TODO: Better error control.
+    DAX_ASSERT_CONT(this->Valid);
     return this->EndIterator;
   }
 
@@ -68,13 +67,33 @@ public:
   }
 
 private:
-  IteratorContainer(const IteratorContainer &); // Not implemented
-  void operator=(const IteratorContainer &);    // Not implemented
-
   IteratorType BeginIterator;
   IteratorType EndIterator;
   bool Valid;
 };
+
+/// A convenience function to build an interator container. Helpful to
+/// automatically type the necessary function.
+///
+template<class IteratorType>
+IteratorContainer<IteratorType> make_IteratorContainer(IteratorType begin,
+                                                       IteratorType end)
+{
+  return IteratorContainer<IteratorType>(begin, end);
+}
+
+/// A convenience function to build an interator container. Helpful to
+/// automatically type the necessary function. Also helpful when you have the
+/// begin random iterator and a size.
+///
+template<class IteratorType>
+IteratorContainer<IteratorType> make_IteratorContainer(IteratorType begin,
+                                                       dax::Id size)
+{
+  IteratorType end = begin;
+  std::advance(end, size);
+  return IteratorContainer<IteratorType>(begin, end);
+}
 
 }
 }

@@ -50,7 +50,7 @@ struct DeviceAdapterCuda
 
   template<class Functor, class Parameters>
   static void Schedule(Functor functor,
-                       Parameters& parameters,
+                       Parameters parameters,
                        dax::Id numInstances)
   {
 #ifdef DAX_CUDA_NATIVE_SCHEDULE

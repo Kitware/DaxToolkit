@@ -26,7 +26,6 @@ set(unit_tests
   UnitTestCudaScheduleNative.cu
   UnitTestCudaScheduleThrust.cu
   UnitTestCudaStreamCompact.cu
-  UnitTestCudaWorkletMapCell.cu
-  UnitTestCudaWorkletMapField.cu
+  UnitTestDeviceAdapterCuda.cu
   )
 dax_unit_tests(CUDA SOURCES ${unit_tests})

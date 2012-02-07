@@ -11,60 +11,14 @@
 
 #include <dax/cont/worklet/Elevation.h>
 
-#include <math.h>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <dax/TypeTraits.h>
-
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <vector>
+#include <dax/cont/internal/Testing.h>
 
 namespace {
 
 const dax::Id DIM = 64;
-const dax::Scalar TOLERANCE = 0.0001;
-
-#define test_assert(condition, message) \
-  test_assert_impl(condition, message, __FILE__, __LINE__);
-
-static inline void test_assert_impl(bool condition,
-                                    const std::string& message,
-                                    const char *file,
-                                    int line)
-{
-  if(!condition)
-    {
-    std::stringstream error;
-    error << file << ":" << line << std::endl;
-    error << message << std::endl;
-    throw error.str();
-    }
-}
-
-template<typename VectorType>
-static inline bool test_equal(VectorType vector1, VectorType vector2)
-{
-  typedef typename dax::VectorTraits<VectorType> Traits;
-  for (int component = 0; component < Traits::NUM_COMPONENTS; component++)
-    {
-    dax::Scalar value1 = Traits::GetComponent(vector1, component);
-    dax::Scalar value2 = Traits::GetComponent(vector2, component);
-    if ((fabs(value1) < 2*TOLERANCE) && (fabs(value2) < 2*TOLERANCE))
-      {
-      continue;
-      }
-    dax::Scalar ratio = value1/value2;
-    if ((ratio < 1.0 - TOLERANCE) || (ratio > 1.0 + TOLERANCE))
-      {
-      return false;
-      }
-    }
-  return true;
-}
 
 //-----------------------------------------------------------------------------
 static void TestElevation()
@@ -93,8 +47,8 @@ static void TestElevation()
         // Wrong, but what is currently computed.
         dax::Scalar elevationExpected
             = sqrt(dax::dot(pointCoordinates, pointCoordinates));
-        test_assert(test_equal(elevationValue, elevationExpected),
-                    "Got bad elevation.");
+        DAX_TEST_ASSERT(test_equal(elevationValue, elevationExpected),
+                        "Got bad elevation.");
         }
       }
     }
@@ -105,17 +59,5 @@ static void TestElevation()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletElevation(int, char *[])
 {
-  try
-    {
-    TestElevation();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::cont::internal::Testing::Run(TestElevation);
 }

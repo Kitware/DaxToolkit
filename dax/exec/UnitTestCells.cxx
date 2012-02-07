@@ -7,44 +7,73 @@
 ===========================================================================*/
 #include <dax/exec/Cell.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include <dax/internal/Testing.h>
+#include <vector>
 
-#define TEST_FAIL(msg)                                  \
-  {                                                     \
-    std::stringstream error;                            \
-    error << __FILE__ << ":" << __LINE__ << std::endl;  \
-    error msg;                                          \
-    throw error.str();                                  \
-  }
-
+namespace
+{
 static void CheckPointIndex(dax::Id pointFlatIndex,
                             const dax::Id3 &pointIjkIndex,
                             const dax::Extent3 &extent)
 {
   dax::Id3 compareIndex = dax::flatIndexToIndex3(pointFlatIndex, extent);
 
-  if (compareIndex != pointIjkIndex)
-    {
-    TEST_FAIL(<<"Bad point index.");
-    }
+  DAX_TEST_ASSERT(compareIndex == pointIjkIndex,
+                  "Bad point index.");
+}
+
+static void CheckPointIndex(const dax::Id &hexPointIndex,
+                            const dax::Id &voxPointIndex)
+{
+  DAX_TEST_ASSERT(hexPointIndex == voxPointIndex,
+                  "Bad point index.");
+}
 }
 
 // This function is available in the global scope so that it can be used
-// in other tests such as UnitTestWorkMapCell.
+// in other tests such as UnitTestWorkMapCellHexahedron.
+dax::internal::TopologyUnstructured<dax::exec::CellHexahedron>
+  make_ugrid(const dax::internal::TopologyUniform& uniform,
+             std::vector<dax::Vector3>& points,
+             std::vector<dax::Id>& topology
+             )
+{
+  //copy the point info over to the unstructured grid
+  points.clear();
+  for(dax::Id i=0; i <dax::internal::numberOfPoints(uniform); ++i)
+    {
+    points.push_back(dax::internal::pointCoordiantes(uniform,i));
+    }
+
+  //copy the cell topology information over
+  topology.clear();
+  for(dax::Id i=0; i <dax::internal::numberOfCells(uniform); ++i)
+    {
+    dax::exec::CellVoxel vox(uniform,i);
+    for(dax::Id j=0; j < vox.GetNumberOfPoints(); ++j)
+      {
+      topology.push_back(vox.GetPointIndex(j));
+      }
+    }
+
+  dax::internal::DataArray<dax::Vector3> rawPoints(&points[0],points.size());
+  dax::internal::DataArray<dax::Id> rawTopo(&topology[0],topology.size());
+  dax::internal::TopologyUnstructured<dax::exec::CellHexahedron> ugrid(rawPoints,
+                                                                   rawTopo);
+  return ugrid;
+}
+
+// This function is available in the global scope so that it can be used
+// in other tests such as UnitTestWorkMapCellVoxel.
 void TestCellVoxel(const dax::exec::CellVoxel cell,
-                   const dax::internal::StructureUniformGrid &gridstruct,
+                   const dax::internal::TopologyUniform &gridstruct,
                    dax::Id cellFlatIndex)
 {
   dax::Id3 cellIjkIndex
       = dax::flatIndexToIndex3Cell(cellFlatIndex, gridstruct.Extent);
 
-  if (cell.GetNumberOfPoints() != 8)
-    {
-    TEST_FAIL(<< "CellVoxel has wrong number of points");
-    }
+  DAX_TEST_ASSERT(cell.GetNumberOfPoints() == 8,
+                  "CellVoxel has wrong number of points");
 
   CheckPointIndex(cell.GetPointIndex(0), cellIjkIndex, gridstruct.Extent);
   CheckPointIndex(cell.GetPointIndex(1),
@@ -69,31 +98,45 @@ void TestCellVoxel(const dax::exec::CellVoxel cell,
                   cellIjkIndex + dax::make_Id3(0,1,1),
                   gridstruct.Extent);
 
-  if (cell.GetOrigin() != gridstruct.Origin)
-    {
-    TEST_FAIL(<< "CellVoxel has wrong origin");
-    }
+  DAX_TEST_ASSERT(cell.GetOrigin() == gridstruct.Origin,
+                  "CellVoxel has wrong origin");
 
-  if (cell.GetSpacing() != gridstruct.Spacing)
-    {
-    TEST_FAIL(<< "CellVoxel has wrong spacing");
-    }
+  DAX_TEST_ASSERT(cell.GetSpacing() == gridstruct.Spacing,
+                  "CellVoxel has wrong spacing");
 
-  if (   (cell.GetExtent().Min != gridstruct.Extent.Min)
-      || (cell.GetExtent().Max != gridstruct.Extent.Max) )
-    {
-    TEST_FAIL(<< "CellVoxel has wrong extent");
-    }
+  DAX_TEST_ASSERT(cell.GetExtent().Min == gridstruct.Extent.Min,
+                  "CellVoxel has wrong extent");
+  DAX_TEST_ASSERT(cell.GetExtent().Max == gridstruct.Extent.Max,
+                  "CellVoxel has wrong extent");
 
-  if (cell.GetIndex() != cellFlatIndex)
-    {
-    TEST_FAIL(<< "CellVoxel has wrong index");
-    }
+  DAX_TEST_ASSERT(cell.GetIndex() == cellFlatIndex,
+                  "CellVoxel has wrong index");
+}
+
+// This function is available in the global scope so that it can be used
+// in other tests such as UnitTestWorkMapCellHexahedron.
+void TestCellHexahedron(const dax::exec::CellHexahedron cell,
+                        const dax::exec::CellVoxel voxel)
+{
+  DAX_TEST_ASSERT(cell.GetNumberOfPoints() == voxel.GetNumberOfPoints(),
+                 "CellHexahedron has wrong number of points");
+
+  DAX_TEST_ASSERT(cell.GetIndex() == voxel.GetIndex(),
+                  "CellHexahedron has different index for cell");
+
+  CheckPointIndex(cell.GetPointIndex(0), voxel.GetPointIndex(0));
+  CheckPointIndex(cell.GetPointIndex(1), voxel.GetPointIndex(1));
+  CheckPointIndex(cell.GetPointIndex(2), voxel.GetPointIndex(2));
+  CheckPointIndex(cell.GetPointIndex(3), voxel.GetPointIndex(3));
+  CheckPointIndex(cell.GetPointIndex(4), voxel.GetPointIndex(4));
+  CheckPointIndex(cell.GetPointIndex(5), voxel.GetPointIndex(5));
+  CheckPointIndex(cell.GetPointIndex(6), voxel.GetPointIndex(6));
+  CheckPointIndex(cell.GetPointIndex(7), voxel.GetPointIndex(7));
 }
 
 static void TestCellVoxel()
 {
-  dax::internal::StructureUniformGrid gridstruct;
+  dax::internal::TopologyUniform gridstruct;
 
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
@@ -117,19 +160,48 @@ static void TestCellVoxel()
     }
 }
 
-int UnitTestCells(int, char *[])
+static void TestCellHexahedron()
 {
-  try
+  std::vector<dax::Id> topo;
+  std::vector<dax::Vector3> points;
+  dax::internal::TopologyUniform gridstruct;
+  dax::internal::TopologyUnstructured<dax::exec::CellHexahedron> ugrid;
+  gridstruct.Origin = dax::make_Vector3(0, 0, 0);
+  gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
+  gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
+  gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
+  ugrid = make_ugrid(gridstruct,points,topo);
+
+  for (dax::Id flatIndex = 0; flatIndex < 1000; flatIndex++)
     {
-    TestCellVoxel();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
+    dax::exec::CellHexahedron hex(ugrid, flatIndex);
+    dax::exec::CellVoxel vox(gridstruct,flatIndex);
+    TestCellHexahedron(hex,vox);
     }
 
-  return 0;
+  gridstruct.Origin = dax::make_Vector3(0, 0, 0);
+  gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
+  gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
+  gridstruct.Extent.Max = dax::make_Id3(15, 6, 13);
+  ugrid = make_ugrid(gridstruct,points,topo);
+
+  dax::exec::CellHexahedron cell(ugrid, 0);
+  dax::exec::CellVoxel vox(gridstruct,0);
+  for (dax::Id flatIndex = 0; flatIndex < 1500; flatIndex++)
+    {
+    cell.SetIndex(flatIndex);
+    vox.SetIndex(flatIndex);
+    TestCellHexahedron(cell,vox);
+    }
+}
+
+static void TestCells()
+{
+  TestCellVoxel();
+  TestCellHexahedron();
+}
+
+int UnitTestCells(int, char *[])
+{
+  return dax::internal::Testing::Run(TestCells);
 }

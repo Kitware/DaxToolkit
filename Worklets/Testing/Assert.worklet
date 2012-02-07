@@ -1,0 +1,29 @@
+/*=========================================================================
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.  See the above copyright notice for more information.
+
+===========================================================================*/
+#ifndef __Assert_worklet_
+#define __Assert_worklet_
+
+#include <dax/exec/WorkMapField.h>
+
+#include <dax/exec/Assert.h>
+
+namespace dax {
+namespace worklet {
+namespace testing {
+
+template<class CellType>
+DAX_WORKLET void Assert(
+    DAX_IN dax::exec::WorkMapField<CellType> &work)
+{
+  DAX_ASSERT_EXEC(0 == 1, work);
+}
+
+}
+}
+}
+#endif

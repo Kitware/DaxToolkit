@@ -13,7 +13,8 @@
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapCell.h>
 
-#include <dax/internal/GridStructures.h>
+#include <dax/internal/GridTopologys.h>
+#include <dax/exec/internal/ErrorHandler.h>
 #include <dax/exec/internal/FieldAccess.h>
 
 namespace dax {
@@ -32,18 +33,21 @@ template<class CellType> class WorkRemoveCell;
 template<>
 class WorkRemoveCell<dax::exec::CellVoxel>
 {
-private:
-  dax::exec::CellVoxel Cell;
-  dax::exec::FieldCell<dax::Id> RemoveCell;
-
 public:
-  typedef CellVoxel CellType;
+  typedef dax::exec::CellVoxel CellType;
 
+private:
+  CellType Cell;
+  dax::exec::internal::ErrorHandler ErrorHandler;
+  dax::exec::FieldCell<dax::Id> RemoveCell;
+  
   DAX_EXEC_EXPORT WorkRemoveCell(
-    const dax::internal::StructureUniformGrid &gridStructure,
+    const dax::internal::TopologyUniform &gridStructure,
+    const dax::exec::internal::ErrorHandler &errorHandler,
     const dax::exec::FieldCell<dax::Id> &removeCell,
     dax::Id cellIndex = 0)
     : Cell(gridStructure, cellIndex),
+      ErrorHandler(errorHandler),
       RemoveCell(removeCell)
     { }
 
@@ -88,8 +92,8 @@ public:
     const dax::exec::FieldCoordinates &, dax::Id vertexIndex) const
   {
     dax::Id pointIndex = this->GetCell().GetPointIndex(vertexIndex);
-    const dax::internal::StructureUniformGrid &gridStructure
-        = this->GetCell().GetGridStructure();
+    const dax::internal::TopologyUniform &gridStructure
+        = this->GetCell().GetGridTopology();
     return
         dax::exec::internal::fieldAccessUniformCoordinatesGet(gridStructure,
                                                               pointIndex);
@@ -101,6 +105,11 @@ public:
   {
     this->Cell.SetIndex(cellIndex);
   }
+
+  DAX_EXEC_EXPORT void RaiseError(const char *message)
+  {
+    this->ErrorHandler.RaiseError(message);
+  }  
 };
 
 

@@ -20,19 +20,19 @@ class ExecutionPackageGrid
 {
 public:
   typedef GridT ControlGridType;
-  typedef typename GridT::StructureType ExecutionGridType;
+  typedef typename GridT::TopologyType ExecutionGridType;
   typedef typename GridT::CellType ExecutionCellType;
 
   ExecutionPackageGrid(const ControlGridType &grid)
-    : GridStructure(grid.GridStructure) { }
+    : GridTopology(grid.GridTopology) { }
 
-  ExecutionPackageGrid(const ExecutionGridType &grid) : GridStructure(grid) { }
+  ExecutionPackageGrid(const ExecutionGridType &grid) : GridTopology(grid) { }
 
   const ExecutionGridType &GetExecutionObject() const {
-    return this->GridStructure;
+    return this->GridTopology;
   }
 private:
-  ExecutionGridType GridStructure;
+  ExecutionGridType GridTopology;
 };
 
 }

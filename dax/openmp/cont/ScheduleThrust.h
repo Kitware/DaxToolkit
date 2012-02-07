@@ -19,7 +19,7 @@ namespace cont {
 
 template<class Functor, class Parameters>
 DAX_CONT_EXPORT void scheduleThrust(Functor functor,
-                                  Parameters& parameters,
+                                  Parameters parameters,
                                   dax::Id numInstances)
 {
   dax::thrust::cont::scheduleThrust(functor, parameters, numInstances);

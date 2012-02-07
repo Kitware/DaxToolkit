@@ -7,6 +7,7 @@
 #=========================================================================
 set(headers
   DerivativeWeights.h
+  ErrorHandler.h
   FieldAccess.h
   FieldBuild.h
   InterpolationWeights.h

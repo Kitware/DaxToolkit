@@ -13,11 +13,11 @@
 
 #include <dax/internal/DataArray.h>
 
+#include <dax/cont/Assert.h>
+#include <dax/cont/ErrorControlOutOfMemory.h>
 #include <dax/cont/internal/IteratorContainer.h>
 
 #include <thrust/device_vector.h>
-
-#include <assert.h>
 
 namespace dax {
 namespace thrust {
@@ -43,7 +43,17 @@ public:
   /// Allocates an array on the device large enough to hold the given number of
   /// entries.
   ///
-  void Allocate(dax::Id numEntries) { this->DeviceArray.resize(numEntries); }
+  void Allocate(dax::Id numEntries) {
+    try
+      {
+      this->DeviceArray.resize(numEntries);
+      }
+    catch (...)
+      {
+      throw dax::cont::ErrorControlOutOfMemory(
+          "Failed to allocate execution array with thrust.");
+      }
+  }
 
   /// Returns the length of the array
   ///
@@ -109,9 +119,9 @@ template<class IteratorType>
 inline void ArrayContainerExecutionThrust<T>::CopyFromControlToExecution(
     const dax::cont::internal::IteratorContainer<IteratorType> &iterators)
 {
-  assert(iterators.IsValid());
-  assert(iterators.GetNumberOfEntries()
-         <= static_cast<dax::Id>(this->DeviceArray.size()));
+  DAX_ASSERT_CONT(iterators.IsValid());
+  DAX_ASSERT_CONT(iterators.GetNumberOfEntries()
+                  <= static_cast<dax::Id>(this->DeviceArray.size()));
   ::thrust::copy(iterators.GetBeginIterator(),
                  iterators.GetEndIterator(),
                  this->DeviceArray.begin());
@@ -123,9 +133,9 @@ template<class IteratorType>
 inline void ArrayContainerExecutionThrust<T>::CopyFromExecutionToControl(
     const dax::cont::internal::IteratorContainer<IteratorType> &iterators)
 {
-  assert(iterators.IsValid());
-  assert(iterators.GetNumberOfEntries()
-         <= static_cast<dax::Id>(this->DeviceArray.size()));
+  DAX_ASSERT_CONT(iterators.IsValid());
+  DAX_ASSERT_CONT(iterators.GetNumberOfEntries()
+                  <= static_cast<dax::Id>(this->DeviceArray.size()));
   ::thrust::copy(this->DeviceArray.begin(),
                  this->DeviceArray.end(),
                  iterators.GetBeginIterator());

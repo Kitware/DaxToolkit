@@ -12,12 +12,11 @@
 
 #include <dax/internal/DataArray.h>
 #include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/ErrorControlBadValue.h>
 #include <dax/cont/internal/IteratorContainer.h>
 #include <dax/cont/internal/IteratorPolymorphic.h>
 
 #include <boost/smart_ptr/shared_ptr.hpp>
-
-#include <assert.h>
 
 /// Manages an array-worth of data. Typically this data holds field data. The
 /// array handle optionally contains a reference to user managed data, with
@@ -123,7 +122,14 @@ public:
   dax::internal::DataArray<ValueType> ReadyAsInput() {
     if (!this->IsSynchronized())
       {
-      assert(this->IsControlArrayValid());
+      if (!this->IsControlArrayValid())
+        {
+        throw dax::cont::ErrorControlBadValue(
+              "Tried to use an ArrayHandle as input when it has no valid data.\n"
+              "To use as input, an ArrayHandle must either be given iterators "
+              "in its constructor or have previously been used as output."
+              );
+        }
       this->Internals->ExecutionArray.Allocate(this->GetNumberOfEntries());
       this->Internals->ExecutionArray.CopyFromControlToExecution(
             this->Internals->ControlArray);

@@ -8,35 +8,15 @@
 
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
-
 #include <dax/cont/internal/IteratorContainer.h>
+
+#include <dax/cont/internal/Testing.h>
 
 #include <algorithm>
 
 namespace {
 
 const dax::Id ARRAY_SIZE = 10;
-
-#define test_assert(condition, message) \
-  test_assert_impl(condition, message, __FILE__, __LINE__);
-
-static inline void test_assert_impl(bool condition,
-                                    const std::string& message,
-                                    const char *file,
-                                    int line)
-{
-  if(!condition)
-    {
-    std::stringstream error;
-    error << file << ":" << line << std::endl;
-    error << message << std::endl;
-    throw error.str();
-    }
-}
 
 //-----------------------------------------------------------------------------
 struct AddOne
@@ -85,8 +65,37 @@ static void TestBasicTransfers()
   for (dax::Id index = 0; index < ARRAY_SIZE; index++)
     {
     std::cout << inputArray[index] << ", " << outputArray[index] << std::endl;
-    test_assert(outputArray[index] == index+1, "Bad result.");
+    DAX_TEST_ASSERT(outputArray[index] == index+1, "Bad result.");
     }
+}
+
+
+//-----------------------------------------------------------------------------
+static void TestOutOfMemory()
+{
+  try
+    {
+    std::cout << "Do array allocation that should fail." << std::endl;
+    dax::cont::internal::ArrayContainerExecutionCPU<dax::Vector4> bigArray;
+    bigArray.Allocate(-1);
+    // It does not seem reasonable to get here.  The previous call should fail.
+    DAX_TEST_FAIL("A ridiculously sized allocation succeeded.  Either there "
+                  "was a failure that was not reported but should have been "
+                  "or the width of dax::Id is not large enough to express all "
+                  "array sizes.");
+    }
+  catch (dax::cont::ErrorControlOutOfMemory error)
+    {
+    std::cout << "Got the expected error: " << error.GetMessage() << std::endl;
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+static void TestArrayContainer()
+{
+  TestBasicTransfers();
+  TestOutOfMemory();
 }
 
 } // Anonymous namespace
@@ -94,17 +103,5 @@ static void TestBasicTransfers()
 //-----------------------------------------------------------------------------
 int UnitTestArrayContainerExecutionCPU(int, char *[])
 {
-  try
-    {
-    TestBasicTransfers();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::cont::internal::Testing::Run(TestArrayContainer);
 }

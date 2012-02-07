@@ -9,33 +9,13 @@
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
-
 #include <dax/cont/UniformGrid.h>
+
+#include <dax/cont/internal/Testing.h>
 
 namespace
 {
 const dax::Id ARRAY_SIZE = 10;
-
-#define test_assert(condition, message) \
-  test_assert_impl(condition, message, __FILE__, __LINE__);
-
-static inline void test_assert_impl(bool condition,
-                                    const std::string& message,
-                                    const char *file,
-                                    int line)
-{
-  if(!condition)
-    {
-    std::stringstream error;
-    error << file << ":" << line << std::endl;
-    error << message << std::endl;
-    throw error.str();
-    }
-}
 
 //TODO: Make tests for ExecutionPackageField* classes.
 
@@ -49,29 +29,22 @@ void TestExecutionPackageGrid()
   dax::cont::internal::ExecutionPackageGrid<dax::cont::UniformGrid>
       uniformGridPackage(uniformGrid);
 
-  dax::internal::StructureUniformGrid uniformStructure
+  dax::internal::TopologyUniform uniformStructure
       = uniformGridPackage.GetExecutionObject();
-  test_assert(uniformStructure.Extent.Min == minExtent,
+  DAX_TEST_ASSERT(uniformStructure.Extent.Min == minExtent,
               "Bad uniform grid structure");
-  test_assert(uniformStructure.Extent.Max == maxExtent,
+  DAX_TEST_ASSERT(uniformStructure.Extent.Max == maxExtent,
               "Bad uniform grid structure");
+}
+
+void TestExecutionPackages()
+{
+  TestExecutionPackageGrid();
 }
 
 } // Anonymous namespace
 
 int UnitTestExecutionPackage(int, char *[])
 {
-  try
-    {
-    TestExecutionPackageGrid();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::cont::internal::Testing::Run(TestExecutionPackages);
 }

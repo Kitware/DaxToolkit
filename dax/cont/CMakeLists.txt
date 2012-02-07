@@ -9,8 +9,15 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 set(headers
   ArrayHandle.h
+  Assert.h
   DeviceAdapter.h
   DeviceAdapterDebug.h
+  Error.h
+  ErrorControl.h
+  ErrorControlAssert.h
+  ErrorControlBadValue.h
+  ErrorControlOutOfMemory.h
+  ErrorExecution.h
   ScheduleDebug.h
   StreamCompactDebug.h
   UniformGrid.h
@@ -36,8 +43,8 @@ configure_file(
 #-----------------------------------------------------------------------------
 set(unit_tests
   UnitTestArrayHandle.cxx
-  UnitTestScheduleDebug.cxx
   UnitTestStreamCompactDebug.cxx
+  UnitTestDeviceAdapterDebug.cxx
   UnitTestVectorOperations.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
