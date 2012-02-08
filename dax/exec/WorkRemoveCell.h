@@ -38,17 +38,16 @@ public:
 
 private:
   CellType Cell;
-  dax::exec::internal::ErrorHandler ErrorHandler;
   dax::exec::FieldCell<dax::Id> RemoveCell;
-  
+  dax::exec::internal::ErrorHandler ErrorHandler;
+
   DAX_EXEC_EXPORT WorkRemoveCell(
     const dax::internal::TopologyUniform &gridStructure,
-    const dax::exec::internal::ErrorHandler &errorHandler,
     const dax::exec::FieldCell<dax::Id> &removeCell,
-    dax::Id cellIndex = 0)
-    : Cell(gridStructure, cellIndex),
-      ErrorHandler(errorHandler),
-      RemoveCell(removeCell)
+    const dax::exec::internal::ErrorHandler &errorHandler)
+    : Cell(gridStructure, 0),
+      RemoveCell(removeCell),
+      ErrorHandler(errorHandler)
     { }
 
   DAX_EXEC_EXPORT const dax::exec::CellVoxel GetCell() const
