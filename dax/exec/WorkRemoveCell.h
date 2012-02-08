@@ -40,6 +40,7 @@ private:
   CellType Cell;
   dax::exec::FieldCell<dax::Id> RemoveCell;
   dax::exec::internal::ErrorHandler ErrorHandler;
+public:
 
   DAX_EXEC_EXPORT WorkRemoveCell(
     const dax::internal::TopologyUniform &gridStructure,
