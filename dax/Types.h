@@ -67,14 +67,10 @@ namespace dax
 
 #ifdef DAX_USE_DOUBLE_PRECISION
 
-#define DAX_SIZE_SCALAR DAX_SIZE_DOUBLE
-
 /// Scalar corresponds to a floating point number.
-typedef float Scalar __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+typedef double Scalar __attribute__ ((aligned(DAX_SIZE_SCALAR)));
 
 #else //DAX_USE_DOUBLE_PRECISION
-
-#define DAX_SIZE_SCALAR DAX_SIZE_FLOAT
 
 /// Scalar corresponds to a floating point number.
 typedef float Scalar __attribute__ ((aligned(DAX_SIZE_SCALAR)));
@@ -131,32 +127,40 @@ private:
   ValueType Values[NUM_COMPONENTS];
 } __attribute__ ((aligned(DAX_SIZE_SCALAR)));
 
-#ifdef DAX_USE_64BIT_IDS
-
-#define DAX_SIZE_ID 8
-
-#if DAX_SIZE_LONG == 8
-/// Represents an ID.
-typedef long Id __attribute__ ((aligned(DAX_SIZE_ID)));
-#elif DAX_SIZE_LONG_LONG == 8
-/// Represents an ID.
-typedef long Id __attribute__ ((aligned(DAX_SIZE_ID)));
-#else
-#error Could not find a 64-bit integer.
-#endif
-
-#else //DAX_USE_64BIT_IDS
-
-#define DAX_SIZE_ID 4
+namespace internal {
 
 #if DAX_SIZE_INT == 4
-/// Represents an ID.
-typedef int Id __attribute__ ((aligned(DAX_SIZE_ID)));
+typedef int Int32Type;
+typedef unsigned int UInt32Type;
 #else
 #error Could not find a 32-bit integer.
 #endif
 
-#endif //DAX_USE_64BIT_IDS
+#if DAX_SIZE_LONG == 8
+typedef long Int64Type;
+typedef unsigned long UInt64Type;
+#elif DAX_SIZE_LONG_LONG == 8
+typedef long long Int64Type;
+typedef unsigned long long UInt64Type;
+#else
+#error Could not find a 64-bit integer.
+#endif
+
+} // namespace internal
+
+#if DAX_SIZE_ID == 4
+
+/// Represents an ID.
+typedef internal::Int32Type Id __attribute__ ((aligned(DAX_SIZE_ID)));
+
+#elif DAX_SIZE_ID == 8
+
+/// Represents an ID.
+typedef internal::Int64Type Id __attribute__ ((aligned(DAX_SIZE_ID)));
+
+#else
+#error Unknown Id Size
+#endif
 
 /// Id3 corresponds to a 3-dimensional index for 3d arrays.  Note that
 /// the precision of each index may be less than dax::Id.

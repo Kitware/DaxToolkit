@@ -18,4 +18,16 @@
 #define DAX_SIZE_LONG @DAX_SIZE_LONG@
 #define DAX_SIZE_LONG_LONG @DAX_SIZE_LONG_LONG@
 
+#ifdef DAX_USE_DOUBLE_PRECISION
+#define DAX_SIZE_SCALAR DAX_SIZE_DOUBLE
+#else
+#define DAX_SIZE_SCALAR DAX_SIZE_FLOAT
+#endif
+
+#ifdef DAX_USE_64BIT_IDS
+#define DAX_SIZE_ID 8
+#else
+#define DAX_SIZE_ID 4
+#endif
+
 #endif //__dax_internal_Configure_h
