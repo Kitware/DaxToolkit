@@ -40,9 +40,9 @@ static inline void test_assert_impl(bool condition,
 
 struct InitArray
 {
-  DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id>& array,
+  DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id> array,
                                   dax::Id index,
-                                  const dax::exec::internal::ErrorHandler &errorHandler)
+                                  dax::exec::internal::ErrorHandler &)
   {
     array.SetValue(index,OFFSET + index);
   }
@@ -50,10 +50,9 @@ struct InitArray
 
 struct MarkOddNumbers
 {
-  DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id>& array,
+  DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id> array,
                                   dax::Id index,
-                                  const dax::exec::internal::ErrorHandler &errorHandler
-                                 )
+                                  dax::exec::internal::ErrorHandler &)
   {
     array.SetValue(index,index%2);
   }
