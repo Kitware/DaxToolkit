@@ -88,7 +88,7 @@ protected:
     //outGrid = OutGridType(inGrid,resultCells);
     }
 
-private:
+protected:
   typedef dax::cont::internal::ExecutionPackageFieldCellOutput<
                                 dax::Id,DeviceAdapter> ExecPackFieldCellOutput;
 

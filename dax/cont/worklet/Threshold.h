@@ -95,7 +95,7 @@ public:
       this->PackageField = PackageFieldInputPtr(new PackageFieldInput(
                                                   this->Field, grid));
       Parameters parameters = {pgrid.GetExecutionObject(),
-                               this->PackageResult.GetExecutionObject(),
+                               this->PackageResult->GetExecutionObject(),
                                this->Min,
                                this->Max,
                                this->PackageField->GetExecutionObject()};
