@@ -9,7 +9,6 @@
 
 #include <dax/internal/GridTopologys.h>
 #include <dax/exec/internal/FieldAccess.h>
-#include <dax/exec/WorkRemoveCell.h>
 
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
@@ -28,16 +27,12 @@ namespace internal {
 /// that inherits from this class and define GenerateParameters.
 ///
 template<class Derived,
-         class Parameters,
          class Functor,
          class DeviceAdapter
          >
 class ScheduleRemoveCell
 {
 public:
-  typedef typename Parameters::CellType CellType;
-  typedef dax::exec::WorkRemoveCell<CellType> WorkType;
-
   /// Executes the ScheduleRemoveCell algorithm on the inputGrid and places
   /// the resulting unstructured grid in outGrid
   template<typename InGridType, typename OutGridType>
@@ -48,7 +43,7 @@ public:
     this->GenerateOutput(inGrid,outGrid);
     }
 
-/// \fn template <typename GridType, typename WorkType> Parameters GenerateParameters(const GridType& grid, WorkType &work)
+/// \fn template <typename WorkType> Parameters GenerateParameters(const GridType& grid)
 /// \brief Abstract method that inherited classes must implement.
 ///
 /// The method must return the populated parameters struct with all the information
@@ -56,26 +51,30 @@ public:
 
 protected:
   //constructs everything needed to call the user defined worklet
-  template<typename GridType>
-  void ScheduleWorklet(const GridType &grid)
+  template<typename InGridType>
+  void ScheduleWorklet(const InGridType &grid)
     {
-    //construct the work object needed by the parameter struct
-    WorkType work = this->GenerateWork(grid);
+    typedef dax::cont::internal::ExecutionPackageGrid<InGridType> GridPackageType;
+    //create the grid, and result packages
+    GridPackageType packagedGrid(grid);
 
-    //we need the control grid and the work object to properly create
-    //the parameters struct. So pass those objects to the derived class
-    //and let it populate the parameters struct with all the user defined information
-    //Letting the user defined class do this work allows us to easily extend this class
+    this->ResultHandle = dax::cont::ArrayHandle<dax::Id>(grid.GetNumberOfCells());
+
+    this->PackageResult = ExecutionPackageFieldCellOutputPtr(
+                          new ExecPackFieldCellOutput(this->ResultHandle,grid));
+
+    //we need the control grid to create the parameters struct.
+    //So pass those objects to the derived class and let it populate the
+    //parameters struct with all the user defined information letting the user
+    //defined class do this work allows us to easily extend this class
     //for an arbitrary number of input parameters
-    Parameters params = static_cast<Derived*>(this)->GenerateParameters(grid,work);
-
     //Actually run the Functor which is the user worklet with the correct parameters
     DeviceAdapter::Schedule(Functor(),
-                                  params,
-                                  grid.GetNumberOfCells());
+                            static_cast<Derived*>(this)->GenerateParameters(grid,packagedGrid),
+                            grid.GetNumberOfCells());
     }
 
-  template<typename InGridType, typename OutGridType>
+  template<typename InGridType,typename OutGridType>
   void GenerateOutput(const InGridType &inGrid, OutGridType& outGrid)
     {
     //does the stream compaction
@@ -89,29 +88,10 @@ protected:
     //outGrid = OutGridType(inGrid,resultCells);
     }
 
-  //Connstructor the WorkType of the Functor based on the grid
-  template<typename GridType>
-  WorkType GenerateWork(const GridType &grid)
-    {
-    typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
-    GridPackageType gridPackage(grid);
-
-    this->ResultHandle = dax::cont::ArrayHandle<dax::Id>(grid.GetNumberOfCells());
-    this->PackageResult = ExecutionPackageFieldCellOutputPtr(
-                             new ExecPackFieldCellOutput(this->ResultHandle,
-                                                         grid));
-
-    dax::cont::internal::ExecutionPackageFieldCellOutput<dax::Id,DeviceAdapter> result(
-                      this->ResultHandle, grid);
-
-    WorkType work(gridPackage.GetExecutionObject(),
-                  result.GetExecutionObject());
-    return work;
-    }
-
 private:
   typedef dax::cont::internal::ExecutionPackageFieldCellOutput<
                                 dax::Id,DeviceAdapter> ExecPackFieldCellOutput;
+
   typedef  boost::shared_ptr< ExecPackFieldCellOutput >
             ExecutionPackageFieldCellOutputPtr;
 

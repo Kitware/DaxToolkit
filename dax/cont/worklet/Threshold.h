@@ -35,25 +35,32 @@ struct ThresholdParameters
 {
   typedef CT CellType;
   typedef FT FieldType;
-  typedef dax::exec::WorkRemoveCell<CellType> WorkType;
+  typedef typename CellType::TopologyType GridType;
 
-  WorkType work;
+  GridType grid;
+  dax::exec::FieldCell<dax::Id> workCellMask;
+
   FieldType min;
   FieldType max;
   dax::exec::FieldPoint<FieldType> inField;
 };
 
-template <typename Parameters>
+template<class CT, class FT>
 struct Functor
 {
-  DAX_EXEC_EXPORT void operator()(Parameters &parameters,
-                                  dax::Id index)
+  DAX_EXEC_EXPORT void operator()(
+      dax::exec::kernel::ThresholdParameters<CT,FT> &parameters,
+      dax::Id index,
+      const dax::exec::internal::ErrorHandler &errorHandler)
   {
-  parameters.work.SetCellIndex(index);
-  dax::worklet::Threshold(parameters.work,
-                             parameters.min,
-                             parameters.max,
-                             parameters.inField);
+  dax::exec::WorkRemoveCell<CT> work(parameters.grid,
+                                     parameters.workCellMask,
+                                     errorHandler);
+  work.SetCellIndex(index);
+  dax::worklet::Threshold(work,
+                          parameters.min,
+                          parameters.max,
+                          parameters.inField);
   }
 };
 
@@ -65,7 +72,6 @@ class Threshold : public dax::cont::internal::ScheduleRemoveCell
     Threshold<Parameters,
               Functor,
               DeviceAdapter>,
-    Parameters,
     Functor,
     DeviceAdapter>
 {
@@ -83,12 +89,13 @@ public:
       }
 
     //generate the parameters for the worklet
-    template <typename GridType, typename WorkType>
-    Parameters GenerateParameters(const GridType& grid, WorkType &work)
+    template <typename GridType, typename PackagedGrid>
+    Parameters GenerateParameters(const GridType& grid, PackagedGrid& pgrid)
       {
       this->PackageField = PackageFieldInputPtr(new PackageFieldInput(
                                                   this->Field, grid));
-      Parameters parameters = {work,
+      Parameters parameters = {pgrid.GetExecutionObject(),
+                               this->PackageResult.GetExecutionObject(),
                                this->Min,
                                this->Max,
                                this->PackageField->GetExecutionObject()};
@@ -127,7 +134,7 @@ inline void Threshold(
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   typedef typename GridPackageType::ExecutionCellType CellType;
   typedef dax::exec::kernel::ThresholdParameters<CellType,dax::Scalar> Parameters;
-  typedef dax::exec::kernel::Functor<Parameters> Functor;
+  typedef dax::exec::kernel::Functor<CellType,dax::Scalar> Functor;
 
   dax::exec::kernel::Threshold<
                               Parameters,
