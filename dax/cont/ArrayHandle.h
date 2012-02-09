@@ -181,6 +181,16 @@ private:
         dax::cont::internal::IteratorPolymorphic<ValueType> beginControl,
         dax::cont::internal::IteratorPolymorphic<ValueType> endControl)
       : ControlArray(beginControl, endControl) { }
+
+
+    void SetNewControlArray(
+        dax::cont::internal::IteratorPolymorphic<ValueType> beginControl,
+        dax::cont::internal::IteratorPolymorphic<ValueType> endControl)
+      {
+      ControlArray = dax::cont::internal::IteratorContainer<
+                     dax::cont::internal::IteratorPolymorphic<ValueType> >
+                     (beginControl,endControl);
+      }
   };
 
   boost::shared_ptr<InternalStruct> Internals;
@@ -227,7 +237,7 @@ private:
   /// update the contents if the arrays are not synchronized.
   ///
   template<class IteratorType>
-  void SetNewControlData(IteratorType begin, IteratorType end)
+  void SetNewControlArray(IteratorType begin, IteratorType end)
     {
     dax::Id numEntries = this->GetNumberOfEntries();
     if (std::distance(begin,end) != numEntries)
@@ -237,11 +247,7 @@ private:
             "Make sure that the distance between the iterators matches the "
             "number of entries in the ArrayHandle");
       }
-
-    this->Internals.reset(new InternalStruct(begin,end));
-    this->Internals->Synchronized = false;
-    this->Internals->NumberOfEntries
-        = this->Internals->ControlArray.GetNumberOfEntries();
+    this->Internals->SetNewControlArray(begin,end);
     }
 };
 
