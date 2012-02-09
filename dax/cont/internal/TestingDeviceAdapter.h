@@ -219,11 +219,18 @@ private:
                     "result of compacation has an incorrect size");
 
     std::vector<dax::Id> resultHost;
-    //pull get the results from the execution env
-    DeviceAdapter::Pull(result,resultHost);
+    resultHost.resize(result.GetNumberOfEntries());
+    //set the control array after stream compact as we didn't
+    //know the size before hand
+    DeviceAdapter::SetControlArray(result,
+                                   resultHost.begin(),
+                                   resultHost.end());
+
+    //now pull the results from the execution env to the control env
+    result.CompleteAsOutput();
 
     dax::Id index=0;
-    for(std::vector<dax::Id>::const_iterator i = result.begin();
+    for(std::vector<dax::Id>::const_iterator i = resultHost.begin();
         i != resultHost.end();
         ++i,++index)
       {
@@ -255,11 +262,14 @@ private:
                     "result of compacation has an incorrect size");
 
     std::vector<dax::Id> resultHost;
-    //pull get the results from the execution env
-    DeviceAdapter::Pull(result,resultHost);
+    resultHost.resize(result.GetNumberOfEntries());
+    //get the results from the execution env
+    DeviceAdapter::SetControlArray(result,
+                                  resultHost.begin(),
+                                  resultHost.end());
 
     dax::Id index=0;
-    for(std::vector<dax::Id>::const_iterator i = result.begin();
+    for(std::vector<dax::Id>::const_iterator i = resultHost.begin();
         i != resultHost.end();
         ++i,++index)
       {

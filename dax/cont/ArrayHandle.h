@@ -220,7 +220,29 @@ private:
         this->Internals->ExecutionArray.GetNumberOfEntries();
     }
 
+  /// Sets the new control array of this ArrayHandle.
+  /// This is mainly used to create new data in the control env
+  /// as we don't know the size pre execution of the algorithm.
+  /// Note: If the ArrayHandle has control data it will not
+  /// update the contents if the arrays are not synchronized.
+  ///
+  template<class IteratorType>
+  void SetNewControlData(IteratorType begin, IteratorType end)
+    {
+    dax::Id numEntries = this->GetNumberOfEntries();
+    if (std::distance(begin,end) != numEntries)
+      {
+      throw dax::cont::ErrorControlBadValue(
+            "Tried to set new control data array, but the size is incorrect.\n"
+            "Make sure that the distance between the iterators matches the "
+            "number of entries in the ArrayHandle");
+      }
 
+    this->Internals.reset(new InternalStruct(begin,end));
+    this->Internals->Synchronized = false;
+    this->Internals->NumberOfEntries
+        = this->Internals->ControlArray.GetNumberOfEntries();
+    }
 };
 
 }
