@@ -53,7 +53,7 @@ struct DeviceAdapterCuda
       dax::cont::ArrayHandle<T,DeviceAdapterCuda>& input,
       IteratorType begin, IteratorType end)
     {
-      input.SetNewControlData(begin,end);
+      input.SetNewControlArray(begin,end);
     }
 
   template<class Functor, class Parameters>

@@ -45,7 +45,7 @@ struct DeviceAdapterOpenMP
       dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& input,
       IteratorType begin, IteratorType end)
     {
-      input.SetNewControlData(begin,end);
+      input.SetNewControlArray(begin,end);
     }
 
   template<class Functor, class Parameters>
