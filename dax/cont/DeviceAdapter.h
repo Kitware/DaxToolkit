@@ -55,7 +55,7 @@ namespace cont {
 /// If an error is raised, the string that was raised is returned. Otherwise,
 /// NULL or a zero-length string is returned.
 
-/// \fn template<class T> void DeviceAdapter::StreamCompact(const dax::cont::ArrayHandle<T>&input, dax::cont::ArrayHandle<T>& output)
+/// \fn template<typename T> void DeviceAdapter::StreamCompact(const dax::cont::ArrayHandle<T>&input, dax::cont::ArrayHandle<T>& output)
 /// \brief Performs stream compaction to remove unwanted elements in the input array.
 ///
 /// Calls the parallel primitive function of stream compaction on the \c input
@@ -65,7 +65,7 @@ namespace cont {
 /// The size of \c output will be modified after this call as we can't know
 /// the number of elements that will be removed by the stream compaction algorithm.
 
-/// \fn template<class T> void DeviceAdapter::StreamCompact(const dax::cont::ArrayHandle<T>&input, const dax::cont::ArrayHandle<dax::Id>& stencil, dax::cont::ArrayHandle<T>& output)
+/// \fn template<typename T, typename U> void DeviceAdapter::StreamCompact(const dax::cont::ArrayHandle<T>&input, const dax::cont::ArrayHandle<U>& stencil, dax::cont::ArrayHandle<T>& output)
 /// \brief Performs stream compaction to remove unwanted elements in the input array.
 ///
 /// Calls the parallel primitive function of stream compaction on the \c input

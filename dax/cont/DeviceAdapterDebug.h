@@ -55,6 +55,21 @@ struct DeviceAdapterDebug
                                   output.GetExecutionArray());
     output.UpdateArraySize();
     }
+
+  template<typename T, typename U>
+  static void StreamCompact(
+      const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& input,
+      const dax::cont::ArrayHandle<U,DeviceAdapterDebug>& stencil,
+      dax::cont::ArrayHandle<T,DeviceAdapterDebug>& output)
+    {
+    //the input array is both the input and the stencil output for the scan
+    //step. In this case the index position is the input and the value at
+    //each index is the stencil value
+    dax::cont::streamCompactDebug(input.GetExecutionArray(),
+                                  stencil.GetExecutionArray(),
+                                  output.GetExecutionArray());
+    output.UpdateArraySize();
+    }
 };
 
 }

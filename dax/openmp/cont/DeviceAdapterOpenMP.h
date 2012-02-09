@@ -61,6 +61,21 @@ struct DeviceAdapterOpenMP
                                   output.GetExecutionArray());
     output.UpdateArraySize();
     }
+
+  template<typename T, typename U>
+  static void StreamCompact(
+      const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& input,
+      const dax::cont::ArrayHandle<U,DeviceAdapterOpenMP>& stencil,
+      dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& output)
+    {
+    //the input array is both the input and the stencil output for the scan
+    //step. In this case the index position is the input and the value at
+    //each index is the stencil value
+    dax::openmp::cont::streamCompact(input.GetExecutionArray(),
+                                     stencil.GetExecutionArray(),
+                                     output.GetExecutionArray());
+    output.UpdateArraySize();
+    }
 };
 
 }
