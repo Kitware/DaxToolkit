@@ -83,6 +83,26 @@ public:
     }
   };
 
+  struct ClearArrayKernelPlusIndex
+  {
+    DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id> array,
+                                    dax::Id index,
+                                    dax::exec::internal::ErrorHandler &)
+    {
+      array.SetValue(index,OFFSET + index);
+    }
+  };
+
+  struct MarkOddNumbers
+  {
+    DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id> array,
+                                    dax::Id index,
+                                    dax::exec::internal::ErrorHandler &)
+    {
+      array.SetValue(index,index%2);
+    }
+  };
+
 private:
 
   // Note: this test does not actually test to make sure the data is available
@@ -181,6 +201,74 @@ private:
                       "Got bad value for scheduled kernels.");
       }
   }
+
+  static DAX_CONT_EXPORT void TestStreamCompact()
+  {
+    //test the version of compact that takes in input and uses it as a stencil
+    //and uses the index of each item as the value to place in the result vector
+    typedef dax::cont::ArrayHandle<dax::Id, DeviceAdapter> Handle;
+    Handle array(ARRAY_SIZE);
+    Handle result;
+
+    //construct the index array
+    DeviceAdapter::Schedule(MarkOddNumbers(),
+                             array.ReadyAsOutput(),
+                             ARRAY_SIZE);
+    DeviceAdapter::StreamCompact(array,result);
+    DAX_TEST_ASSERT(result.GetNumberOfEntries() == array.GetNumberOfEntries()/2,
+                    "result of compacation has an incorrect size");
+
+    std::vector<dax::Id> resultHost;
+    //pull get the results from the execution env
+    DeviceAdapter::Pull(result,resultHost);
+
+    dax::Id index=0;
+    for(std::vector<dax::Id>::const_iterator i = result.begin();
+        i != resultHost.end();
+        ++i,++index)
+      {
+      const dax::Id value = *i;
+      DAX_TEST_ASSERT(value == (index*2)+1,
+                  "Incorrect value in compaction result.");
+      }
+  }
+
+  static DAX_CONT_EXPORT void TestStreamCompactWithStencil()
+  {
+    //test the version of compact that takes in input and a stencil
+    typedef dax::cont::ArrayHandle<dax::Id, DeviceAdapter> Handle;
+
+    Handle array(ARRAY_SIZE);
+    Handle stencil(ARRAY_SIZE);
+    Handle result;
+
+    //construct the index array
+    DeviceAdapter::Schedule(ClearArrayKernelPlusIndex(),
+                            array.ReadyAsOutput(),
+                            ARRAY_SIZE);
+    DeviceAdapter::Schedule(MarkOddNumbers(),
+                            stencil.ReadyAsOutput(),
+                            ARRAY_SIZE);
+
+    DeviceAdapter::StreamCompact(array,stencil,result);
+    DAX_TEST_ASSERT(result.GetNumberOfEntries() == array.GetNumberOfEntries()/2,
+                    "result of compacation has an incorrect size");
+
+    std::vector<dax::Id> resultHost;
+    //pull get the results from the execution env
+    DeviceAdapter::Pull(result,resultHost);
+
+    dax::Id index=0;
+    for(std::vector<dax::Id>::const_iterator i = result.begin();
+        i != resultHost.end();
+        ++i,++index)
+      {
+      const dax::Id value = *i;
+      DAX_TEST_ASSERT(value == (OFFSET + (index*2)+1),
+                  "Incorrect value in compaction result.");
+      }
+  }
+
 
   static DAX_CONT_EXPORT void TestErrorExecution()
   {
@@ -357,6 +445,8 @@ private:
       TestArrayContainerExecution();
       TestOutOfMemory();
       TestSchedule();
+      TestStreamCompact();
+      TestStreamCompactWithStencil();
       TestErrorExecution();
       TestWorkletMapField();
       TestWorkletFieldMapError();

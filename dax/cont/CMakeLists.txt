@@ -43,7 +43,6 @@ configure_file(
 #-----------------------------------------------------------------------------
 set(unit_tests
   UnitTestArrayHandle.cxx
-  UnitTestStreamCompactDebug.cxx
   UnitTestDeviceAdapterDebug.cxx
   UnitTestVectorOperations.cxx
   )
