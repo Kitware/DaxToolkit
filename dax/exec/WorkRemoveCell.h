@@ -35,19 +35,23 @@ class WorkRemoveCell<dax::exec::CellVoxel>
 {
 public:
   typedef dax::exec::CellVoxel CellType;
+  typedef char MaskType;
 
 private:
   CellType Cell;
-  dax::exec::FieldCell<dax::Id> RemoveCell;
+  dax::exec::FieldCell<MaskType> DeadCells;
+  dax::exec::FieldPoint<MaskType> DeadPoints;
   dax::exec::internal::ErrorHandler ErrorHandler;
 public:
 
   DAX_EXEC_EXPORT WorkRemoveCell(
     const dax::internal::TopologyUniform &gridStructure,
-    const dax::exec::FieldCell<dax::Id> &removeCell,
+    const dax::exec::FieldCell<MaskType> &deadCells,
+    const dax::exec::FieldPoint<MaskType> &deadPoints,
     const dax::exec::internal::ErrorHandler &errorHandler)
     : Cell(gridStructure, 0),
-      RemoveCell(removeCell),
+      DeadCells(deadCells),
+      DeadPoints(deadPoints),
       ErrorHandler(errorHandler)
     { }
 
@@ -58,18 +62,32 @@ public:
 
   //set this to true if you want to remove this cell
   //Any cell with the value of zero is removed.
-  DAX_EXEC_EXPORT void SetRemoveCell(dax::Id value)
+  DAX_EXEC_EXPORT void SetRemoveCell(char value)
   {
-    dax::exec::internal::fieldAccessNormalSet(this->RemoveCell,
+    dax::exec::internal::fieldAccessNormalSet(this->DeadCells,
                                               this->GetCellIndex(),
                                               value);
+
+    //also set each point of that cell to be removed.
+    const dax::Id numPoints = this->GetCell().GetNumberOfPoints();
+    MaskType status;
+    for(dax::Id i=0;i<numPoints;++i)
+      {
+      //We want a point to be kept if any of the cells that it is part
+      //of is being kept. So we OR the current value with the points current value
+      dax::Id pointIndex = this->GetCell().GetPointIndex(i);
+      status = value | dax::exec::internal::fieldAccessNormalGet(
+                 this->DeadPoints,pointIndex);
+      dax::exec::internal::fieldAccessNormalSet(this->DeadPoints,pointIndex,
+                                                status);
+      }
   }
 
   //set this to true if you want to remove this cell
   DAX_EXEC_EXPORT dax::Id IsCellRemoved()
   {
-    return dax::exec::internal::fieldAccessNormalGet(this->RemoveCell,
-                                              this->GetCellIndex());
+    return dax::exec::internal::fieldAccessNormalGet(this->DeadCells,
+                                                     this->GetCellIndex());
   }
 
   template<typename T>
@@ -106,7 +124,7 @@ public:
     this->Cell.SetIndex(cellIndex);
   }
 
-  DAX_EXEC_EXPORT void RaiseError(const char *message)
+  DAX_EXEC_EXPORT void RaiseError(const char* message)
   {
     this->ErrorHandler.RaiseError(message);
   }  
