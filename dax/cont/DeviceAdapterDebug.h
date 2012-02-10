@@ -51,10 +51,10 @@ struct DeviceAdapterDebug
     dax::cont::scheduleDebug(functor, parameters, numInstances);
   }
 
-  template<typename T>
+  template<typename T,typename U>
   static void StreamCompact(
       const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& input,
-      dax::cont::ArrayHandle<T,DeviceAdapterDebug>& output)
+      dax::cont::ArrayHandle<U,DeviceAdapterDebug>& output)
     {
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at

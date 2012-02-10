@@ -66,16 +66,16 @@ inline void streamCompact(
                             dax::not_identity<U>());
 }
 
-template<typename T>
+template<typename T, typename U>
 inline void streamCompact(
     const dax::thrust::cont::internal::ArrayContainerExecutionThrust<T>& input,
-    dax::thrust::cont::internal::ArrayContainerExecutionThrust<T>& output)
+    dax::thrust::cont::internal::ArrayContainerExecutionThrust<U>& output)
 {
   //do the copy step, remember the input is the stencil
   //set the predicate to be the identity of type T so we get rid of anything
   //that matches the default constructor
-  dax::thrust::cont::RemoveIf(::thrust::make_counting_iterator<T>(0),
-                              ::thrust::make_counting_iterator<T>(input.GetNumberOfEntries()),
+  dax::thrust::cont::RemoveIf(::thrust::make_counting_iterator<U>(0),
+                              ::thrust::make_counting_iterator<U>(input.GetNumberOfEntries()),
                               input,
                               output,
                               dax::not_identity<T>());

@@ -57,10 +57,10 @@ struct DeviceAdapterOpenMP
   }
 
 
-  template<typename T>
+  template<typename T,typename U>
   static void StreamCompact(
       const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& input,
-      dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& output)
+      dax::cont::ArrayHandle<U,DeviceAdapterOpenMP>& output)
     {
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at

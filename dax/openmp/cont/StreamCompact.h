@@ -16,8 +16,8 @@ namespace dax {
 namespace openmp {
 namespace cont {
 
-template<typename T>
-DAX_CONT_EXPORT void streamCompact(const T& input, T& output)
+template<typename T, typename U>
+DAX_CONT_EXPORT void streamCompact(const T& input, U& output)
 {
   dax::thrust::cont::streamCompact(input,output);
 }

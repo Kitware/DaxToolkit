@@ -48,13 +48,13 @@ DAX_EXEC_CONT_EXPORT void streamCompactDebug(
     }
 }
 
-template<typename T>
+template<typename T,typename U>
 DAX_EXEC_CONT_EXPORT void streamCompactDebug(
     const dax::cont::internal::ArrayContainerExecutionCPU<T>& input,
-    dax::cont::internal::ArrayContainerExecutionCPU<T>& output)
+    dax::cont::internal::ArrayContainerExecutionCPU<U>& output)
 {
   typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::const_iterator CIter;
-  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::iterator Iter;
+  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<U>::iterator Iter;
 
   //first count the number of values to go into the output array.
   dax::Id size = std::count_if(input.begin(),
@@ -65,7 +65,7 @@ DAX_EXEC_CONT_EXPORT void streamCompactDebug(
   Iter out = output.begin();
   Iter outEnd = output.end();
   CIter in=input.begin();
-  T index = T();
+  U index = U();
   for(;out!=outEnd;++in,++index)
     {
     //check the output so we loop over the smaller sized array
