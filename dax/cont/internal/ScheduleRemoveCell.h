@@ -33,6 +33,8 @@ template<class Derived,
 class ScheduleRemoveCell
 {
 public:
+  typedef char MaskType;
+
   /// Executes the ScheduleRemoveCell algorithm on the inputGrid and places
   /// the resulting unstructured grid in outGrid
   template<typename InGridType, typename OutGridType>
@@ -58,10 +60,19 @@ protected:
     //create the grid, and result packages
     GridPackageType packagedGrid(grid);
 
-    this->ResultHandle = dax::cont::ArrayHandle<dax::Id>(grid.GetNumberOfCells());
+    this->MaskCellHandle =
+        dax::cont::ArrayHandle<MaskType>(grid.GetNumberOfCells());
 
-    this->PackageResult = ExecutionPackageFieldCellOutputPtr(
-                          new ExecPackFieldCellOutput(this->ResultHandle,grid));
+    this->MaskPointHandle =
+        dax::cont::ArrayHandle<MaskType>(grid.GetNumberOfPoints());
+
+    this->PackageMaskCell = ExecPackFieldCellOutputPtr(
+                          new ExecPackFieldCellOutput(
+                                this->MaskCellHandle,grid));
+
+    this->PackageMaskPoint = ExecPackFieldPointOutputPtr(
+                               new ExecPackFieldPointOutput(
+                                 this->MaskPointHandle,grid));
 
     //we need the control grid to create the parameters struct.
     //So pass those objects to the derived class and let it populate the
@@ -70,33 +81,65 @@ protected:
     //for an arbitrary number of input parameters
     //Actually run the Functor which is the user worklet with the correct parameters
     DeviceAdapter::Schedule(Functor(),
-                            static_cast<Derived*>(this)->GenerateParameters(grid,packagedGrid),
+                            static_cast<Derived*>(this)->GenerateParameters(
+                              grid,packagedGrid),
                             grid.GetNumberOfCells());
     }
 
   template<typename InGridType,typename OutGridType>
   void GenerateOutput(const InGridType &inGrid, OutGridType& outGrid)
     {
-    //does the stream compaction
+    typedef dax::cont::internal::ExecutionPackageGrid<OutGridType> GridPackageType;
+    //create the grid, and result packages
+    GridPackageType packagedGrid(outGrid);
 
-    //make a temporary result  vector of the correct container type
+    dax::cont::internal::ExecutionPackageFieldCoordinatesInput
+        <InGridType,
+        DeviceAdapter> fieldCoordinates(inGrid.GetPoints());
+
+    //does the stream compaction of the grid removing all
+    //unused grid cells and points. Do we make that a basic DeviceAdapter
+    //function?
+
+//    dax::cont::ArrayHandle<dax::Vector3> newPointCoords;
+//    DeviceAdapter::StreamCompact(fieldCoordinates.GetExecutionObject(),
+//                                 this->MaskPointHandle,
+//                                 newPointCoords);
+
+    //stream compact with two paramters the second one needs to be
+    //dax::Ids'
+    dax::cont::ArrayHandle<dax::Id> newPointIds;
+    DeviceAdapter::StreamCompact(this->MaskPointHandle,newPointIds);
+
     dax::cont::ArrayHandle<dax::Id> newCellIds;
+    DeviceAdapter::StreamCompact(this->MaskCellHandle,newCellIds);
 
-    //result cells now holds the ids of thresholded geometeries cells.
-    DeviceAdapter::StreamCompact(this->ResultHandle,newCellIds);
+//    DeviceAdapter::GenerateTopology<OutGridType::TopologyType>(
+//          newPointIds, newCellIds,packagedGrid);
 
-    //outGrid = OutGridType(inGrid,resultCells);
+
+
+    //Todo: Make DeviceAdapter::StreamCompact(A,B) only work when B is of type dax::id
+    //Todo: Make DeviceAdapter::SetControlArray a method on ArrayHandle
     }
 
 protected:
   typedef dax::cont::internal::ExecutionPackageFieldCellOutput<
-                                dax::Id,DeviceAdapter> ExecPackFieldCellOutput;
+                                MaskType,DeviceAdapter> ExecPackFieldCellOutput;
+  typedef dax::cont::internal::ExecutionPackageFieldPointOutput<
+                                MaskType,DeviceAdapter> ExecPackFieldPointOutput;
 
   typedef  boost::shared_ptr< ExecPackFieldCellOutput >
-            ExecutionPackageFieldCellOutputPtr;
+            ExecPackFieldCellOutputPtr;
 
-  ExecutionPackageFieldCellOutputPtr PackageResult;
-  dax::cont::ArrayHandle<dax::Id> ResultHandle;
+  typedef  boost::shared_ptr< ExecPackFieldPointOutput >
+            ExecPackFieldPointOutputPtr;
+
+  ExecPackFieldCellOutputPtr PackageMaskCell;
+  ExecPackFieldPointOutputPtr PackageMaskPoint;
+
+  dax::cont::ArrayHandle<MaskType> MaskCellHandle;
+  dax::cont::ArrayHandle<MaskType> MaskPointHandle;
 };
 
 

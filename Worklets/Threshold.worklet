@@ -19,7 +19,7 @@ template<typename T>
 struct DoThreshold {
   DAX_EXEC_EXPORT dax::Id operator()(T min, T max, T x) const
   {
-    return static_cast<dax::Id>((x > min) && (x <= max));
+    return static_cast<char>((x > min) && (x <= max));
   }
 };
 
@@ -33,12 +33,12 @@ DAX_WORKLET void Threshold(
   //compare the value at each point with the threshold min/max
   CellType cell = work.GetCell();
   dax::Id number_of_points = cell.GetNumberOfPoints();
-  dax::Id valid = 1;
+  char valid = 1;
   for (dax::Id vertexId = 0; vertexId < number_of_points; vertexId++)
     {
     FieldType inValue = work.GetFieldValue(inField, vertexId);
-    bool outValue = DoThreshold<FieldType>()(thresholdMin,thresholdMax,inValue);
-    valid &= outValue;
+    char value = ((inValue > thresholdMin) && (inValue <= thresholdMax));
+    valid &= value;
     }
   work.SetRemoveCell(valid);
 }
