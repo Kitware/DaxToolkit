@@ -38,7 +38,8 @@ struct ThresholdParameters
   typedef typename CellType::TopologyType GridType;
 
   GridType grid;
-  dax::exec::FieldCell<dax::Id> workCellMask;
+  dax::exec::FieldCell<char> workCellMask;
+  dax::exec::FieldPoint<char> workPointMask;
 
   FieldType min;
   FieldType max;
@@ -55,6 +56,7 @@ struct Functor
   {
   dax::exec::WorkRemoveCell<CT> work(parameters.grid,
                                      parameters.workCellMask,
+                                     parameters.workPointMask,
                                      errorHandler);
   work.SetCellIndex(index);
   dax::worklet::Threshold(work,
@@ -95,7 +97,8 @@ public:
       this->PackageField = PackageFieldInputPtr(new PackageFieldInput(
                                                   this->Field, grid));
       Parameters parameters = {pgrid.GetExecutionObject(),
-                               this->PackageResult->GetExecutionObject(),
+                               this->PackageMaskCell->GetExecutionObject(),
+                               this->PackageMaskPoint->GetExecutionObject(),
                                this->Min,
                                this->Max,
                                this->PackageField->GetExecutionObject()};
