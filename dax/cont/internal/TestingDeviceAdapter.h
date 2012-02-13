@@ -95,11 +95,56 @@ private:
       grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
       }
 
-    template<typename T>
-    void operator()(dax::cont::UnstructuredGrid<T> &grid)
+    void operator()(dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> &grid)
       {
+      //we need to make a volume grid
+      dax::cont::UniformGrid uniform;
+      uniform.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
 
+      //copy the point info over to the unstructured grid
+      points.clear();
+      for(dax::Id i=0; i <uniform.GetNumberOfPoints(); ++i)
+        {
+        points.push_back(uniform.GetPointCoordinates(i));
+        }
+
+      //copy the cell topology information over
+
+      //this only works for voxel/hexahedron
+      const dax::Id3 cellVertexToPointIndex[8] = {
+        dax::make_Id3(0, 0, 0),
+        dax::make_Id3(1, 0, 0),
+        dax::make_Id3(1, 1, 0),
+        dax::make_Id3(0, 1, 0),
+        dax::make_Id3(0, 0, 1),
+        dax::make_Id3(1, 0, 1),
+        dax::make_Id3(1, 1, 1),
+        dax::make_Id3(0, 1, 1)
+      };
+
+      topology.clear();
+      dax::Id numPointsPerCell = 8;
+      const dax::Extent3 extents = uniform.GetExtent();
+      for(dax::Id i=0; i <uniform.GetNumberOfCells(); ++i)
+        {
+        dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(i,extents);
+        for(dax::Id j=0; j < numPointsPerCell; ++j)
+          {
+          dax::Id3 ijkPoint = ijkCell + cellVertexToPointIndex[j];
+
+          dax::Id pointIndex = index3ToFlatIndex(ijkPoint,extents);
+          topology.push_back(pointIndex);
+          }
+        }
+
+      dax::cont::ArrayHandle<dax::Vector3> ahPoints(points.begin(),points.end());
+      dax::cont::ArrayHandle<dax::Id> ahTopo(topology.begin(),topology.end());
+
+      grid = dax::cont::UnstructuredGrid<dax::exec::CellHexahedron>(ahTopo,ahPoints);
       }
+
+    std::vector<dax::Id> topology;
+    std::vector<dax::Vector3> points;
   };
 
 
