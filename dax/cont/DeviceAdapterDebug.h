@@ -86,14 +86,17 @@ struct DeviceAdapterDebug
     }
 
 
-  template<typename T,typename U>
-  static void GenerateTopology(
+  template<typename T,typename U, typename V>
+  static void StreamCompactTopology(
       const dax::cont::internal::ExecutionPackageGrid<T> &inputGrid,
       dax::cont::internal::ExecutionPackageGrid<U> &outGrid,
-      const dax::cont::ArrayHandle<dax::Id,DeviceAdapterDebug> &cellIdsToUse,
-      const dax::cont::ArrayHandle<dax::Id,DeviceAdapterDebug> &pointIdsToUse)
+      const dax::cont::ArrayHandle<V,DeviceAdapterDebug> &cellIdsToUse,
+      const dax::cont::ArrayHandle<V,DeviceAdapterDebug> &pointIdsToUse)
     {
-
+    dax::cont::streamCompactTopologyDebug(inputGrid.GetExecutionObject(),
+                                          outGrid.GetExecutionObject(),
+                                          cellIdsToUse.GetExecutionArray(),
+                                          pointIdsToUse.GetExecutionArray());
     }
 };
 

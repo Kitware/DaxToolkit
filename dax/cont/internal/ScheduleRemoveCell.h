@@ -107,7 +107,7 @@ protected:
     dax::cont::ArrayHandle<dax::Id> usedCellIds;
     DeviceAdapter::StreamCompact(this->MaskCellHandle,usedCellIds);
 
-    DeviceAdapter::GenerateTopology(inPGrid,outPGrid,usedPointIds,usedCellIds);
+    DeviceAdapter::StreamCompactTopology(inPGrid,outPGrid,usedPointIds,usedCellIds);
 
     //Todo: Make DeviceAdapter::SetControlArray a method on ArrayHandle
     }

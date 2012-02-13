@@ -13,6 +13,8 @@
 #include <dax/Functional.h>
 
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
+#include <dax/internal/GridTopologys.h>
+
 #include <algorithm>
 
 namespace dax {
@@ -77,6 +79,18 @@ DAX_EXEC_CONT_EXPORT void streamCompactDebug(
       }
     }
 }
+
+
+template<typename GridType, typename T, typename U>
+DAX_EXEC_CONT_EXPORT void streamCompactTopologyDebug(
+    const GridType& inputGrid,
+    dax::internal::TopologyUnstructured<T>& output,
+    const dax::cont::internal::ArrayContainerExecutionCPU<U>& cellIds,
+    const dax::cont::internal::ArrayContainerExecutionCPU<U>& pointIds)
+{
+
+}
+
 
 
 }

@@ -88,7 +88,7 @@ struct DeviceAdapterOpenMP
     }
 
   template<typename T,typename U>
-  static void GenerateTopology(
+  static void StreamCompactTopology(
       const dax::cont::internal::ExecutionPackageGrid<T> &inputGrid,
       dax::cont::internal::ExecutionPackageGrid<U> &outGrid,
       const dax::cont::ArrayHandle<dax::Id,DeviceAdapterOpenMP> &cellIdsToUse,
