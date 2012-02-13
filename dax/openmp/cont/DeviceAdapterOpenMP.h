@@ -26,6 +26,8 @@ template< typename OtherT, class OtherDeviceAdapter > class ArrayHandle;
 }
 }
 
+#include <dax/cont/internal/ExecutionPackageGrid.h>
+
 namespace dax {
 namespace openmp {
 namespace cont {
@@ -83,6 +85,16 @@ struct DeviceAdapterOpenMP
                                      stencil.GetExecutionArray(),
                                      output.GetExecutionArray());
     output.UpdateArraySize();
+    }
+
+  template<typename T,typename U>
+  static void GenerateTopology(
+      const dax::cont::internal::ExecutionPackageGrid<T> &inputGrid,
+      dax::cont::internal::ExecutionPackageGrid<U> &outGrid,
+      const dax::cont::ArrayHandle<dax::Id,DeviceAdapterOpenMP> &cellIdsToUse,
+      const dax::cont::ArrayHandle<dax::Id,DeviceAdapterOpenMP> &pointIdsToUse)
+    {
+
     }
 };
 

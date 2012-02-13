@@ -89,37 +89,26 @@ protected:
   template<typename InGridType,typename OutGridType>
   void GenerateOutput(const InGridType &inGrid, OutGridType& outGrid)
     {
-    typedef dax::cont::internal::ExecutionPackageGrid<OutGridType> GridPackageType;
+    typedef dax::cont::internal::ExecutionPackageGrid<OutGridType> OutGridPackageType;
+    typedef dax::cont::internal::ExecutionPackageGrid<InGridType> InGridPackageType;
     //create the grid, and result packages
-    GridPackageType packagedGrid(outGrid);
-
-    dax::cont::internal::ExecutionPackageFieldCoordinatesInput
-        <InGridType,
-        DeviceAdapter> fieldCoordinates(inGrid.GetPoints());
+    OutGridPackageType outPGrid(outGrid);
+    InGridPackageType inPGrid(inGrid);
 
     //does the stream compaction of the grid removing all
     //unused grid cells and points. Do we make that a basic DeviceAdapter
     //function?
 
-//    dax::cont::ArrayHandle<dax::Vector3> newPointCoords;
-//    DeviceAdapter::StreamCompact(fieldCoordinates.GetExecutionObject(),
-//                                 this->MaskPointHandle,
-//                                 newPointCoords);
-
     //stream compact with two paramters the second one needs to be
-    //dax::Ids'
-    dax::cont::ArrayHandle<dax::Id> newPointIds;
-    DeviceAdapter::StreamCompact(this->MaskPointHandle,newPointIds);
+    //dax::Ids
+    dax::cont::ArrayHandle<dax::Id> usedPointIds;
+    DeviceAdapter::StreamCompact(this->MaskPointHandle,usedPointIds);
 
-    dax::cont::ArrayHandle<dax::Id> newCellIds;
-    DeviceAdapter::StreamCompact(this->MaskCellHandle,newCellIds);
+    dax::cont::ArrayHandle<dax::Id> usedCellIds;
+    DeviceAdapter::StreamCompact(this->MaskCellHandle,usedCellIds);
 
-//    DeviceAdapter::GenerateTopology<OutGridType::TopologyType>(
-//          newPointIds, newCellIds,packagedGrid);
+    DeviceAdapter::GenerateTopology(inPGrid,outPGrid,usedPointIds,usedCellIds);
 
-
-
-    //Todo: Make DeviceAdapter::StreamCompact(A,B) only work when B is of type dax::id
     //Todo: Make DeviceAdapter::SetControlArray a method on ArrayHandle
     }
 

@@ -24,7 +24,13 @@ namespace dax {
 namespace cont {
   //forward declare the ArrayHandle before we use it.
 template< typename OtherT, class OtherDeviceAdapter > class ArrayHandle;
+}
+}
 
+#include <dax/cont/internal/ExecutionPackageGrid.h>
+
+namespace dax {
+namespace cont {
 /// A simple implementation of a DeviceAdapter that can be used for debuging.
 /// The scheduling will simply run everything in a serial loop, which is easy
 /// to track in a debugger.
@@ -77,6 +83,17 @@ struct DeviceAdapterDebug
                                   stencil.GetExecutionArray(),
                                   output.GetExecutionArray());
     output.UpdateArraySize();
+    }
+
+
+  template<typename T,typename U>
+  static void GenerateTopology(
+      const dax::cont::internal::ExecutionPackageGrid<T> &inputGrid,
+      dax::cont::internal::ExecutionPackageGrid<U> &outGrid,
+      const dax::cont::ArrayHandle<dax::Id,DeviceAdapterDebug> &cellIdsToUse,
+      const dax::cont::ArrayHandle<dax::Id,DeviceAdapterDebug> &pointIdsToUse)
+    {
+
     }
 };
 
