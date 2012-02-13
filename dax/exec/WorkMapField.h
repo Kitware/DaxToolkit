@@ -103,6 +103,58 @@ public:
   }
 };
 
+
+
+template<>
+class WorkMapField<dax::exec::CellHexahedron>
+{
+public:
+  typedef CellHexahedron CellType;
+
+protected:
+  const dax::internal::TopologyUnstructured<CellType> GridTopology;
+  dax::Id Index;
+  dax::exec::internal::ErrorHandler ErrorHandler;
+
+public:
+
+  DAX_EXEC_CONT_EXPORT WorkMapField(
+      const dax::internal::TopologyUnstructured<CellType> &gs,
+      const dax::exec::internal::ErrorHandler &errorHandler)
+    : GridTopology(gs), ErrorHandler(errorHandler) { }
+
+  template<typename T>
+  DAX_EXEC_EXPORT const T &GetFieldValue(const dax::exec::Field<T> &field) const
+  {
+    return dax::exec::internal::fieldAccessNormalGet(field, this->GetIndex());
+  }
+
+  template<typename T>
+  DAX_EXEC_EXPORT void SetFieldValue(dax::exec::Field<T> &field, const T &value)
+  {
+    dax::exec::internal::fieldAccessNormalSet(field, this->GetIndex(), value);
+  }
+
+  DAX_EXEC_EXPORT dax::Vector3 GetFieldValue(
+    const dax::exec::FieldCoordinates &)
+  {
+    // Special case.  Point coordiantes are determined implicitly by index.
+    return dax::exec::internal::fieldAccessUniformCoordinatesGet(
+          this->GridTopology,
+          this->GetIndex());
+  }
+
+  DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->Index; }
+
+  DAX_EXEC_EXPORT void SetIndex(dax::Id index) { this->Index = index; }
+
+  DAX_EXEC_EXPORT void RaiseError(const char *message)
+  {
+    this->ErrorHandler.RaiseError(message);
+  }
+};
+
+
 }}
 
 #endif //__dax_exec_WorkMapField_h
