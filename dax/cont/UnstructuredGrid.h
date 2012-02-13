@@ -9,6 +9,7 @@
 #define __dax_cont_UnstructuredGrid_h
 
 #include <dax/internal/GridTopologys.h>
+#include <dax/cont/ArrayHandle.h>
 
 namespace dax { namespace cont { namespace internal {
 template<class Grid> class ExecutionPackageGrid;
@@ -30,9 +31,24 @@ class UnstructuredGrid
 public:
   typedef CellT CellType;
 
-  UnstructuredGrid()
+  UnstructuredGrid():
+    Topology(),
+    PointsCoordinates()
     {
+    this->GridTopology = TopologyType();
     }
+
+  UnstructuredGrid(dax::cont::ArrayHandle<dax::Id>& topo,
+                   dax::cont::ArrayHandle<dax::Vector3>& coords):
+    Topology(topo),
+    PointsCoordinates(coords)
+    {
+    //I am not happy that the unstructured grid is not placed
+    //in the execution enviornment on object creation
+    this->GridTopology = TopologyType(this->PointsCoordinates.ReadyAsInput(),
+                                      this->Topology.ReadyAsInput());
+    }
+
   /// A simple class representing the points in an unstructured grid.
   ///
   class Points
@@ -77,9 +93,14 @@ public:
 private:
   friend class Points;
   friend class dax::cont::internal::ExecutionPackageGrid<UnstructuredGrid>;
-
   typedef dax::internal::TopologyUnstructured<CellType> TopologyType;
+
   TopologyType GridTopology;
+
+
+  //control side topology
+  dax::cont::ArrayHandle<dax::Id> Topology;
+  dax::cont::ArrayHandle<dax::Vector3> PointsCoordinates;
 
 };
 
