@@ -20,6 +20,7 @@ set(headers
   ErrorExecution.h
   ScheduleDebug.h
   UniformGrid.h
+  UnstructuredGrid.h
 
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
   )
