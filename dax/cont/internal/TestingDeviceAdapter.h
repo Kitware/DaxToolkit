@@ -12,6 +12,7 @@
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
 #include <dax/cont/UniformGrid.h>
+#include <dax/cont/UnstructuredGrid.h>
 
 #include <dax/cont/worklet/CellGradient.h>
 #include <dax/cont/worklet/Square.h>
@@ -84,6 +85,24 @@ public:
   };
 
 private:
+
+  //helper structs needed to have worklet tests work
+  //on both uniform and unstructured grids
+  struct MakeGrid
+  {
+    void operator()(dax::cont::UniformGrid &grid)
+      {
+      grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+      }
+
+    template<typename T>
+    void operator()(dax::cont::UnstructuredGrid<T> &grid)
+      {
+
+      }
+  };
+
+
 
   // Note: this test does not actually test to make sure the data is available
   // in the execution environment. It tests to make sure data gets to the array
@@ -216,13 +235,14 @@ private:
                     "Did not get expected error message.");
   }
 
+  template<typename GridType>
   static DAX_CONT_EXPORT void TestWorkletMapField()
   {
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing basic map field worklet" << std::endl;
 
-    dax::cont::UniformGrid grid;
-    grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+    GridType grid;
+    MakeGrid()(grid);
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
@@ -256,20 +276,21 @@ private:
       }
   }
 
+  template<typename GridType>
   static DAX_CONT_EXPORT void TestWorkletFieldMapError()
   {
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing map field worklet error" << std::endl;
 
-    dax::cont::UniformGrid grid;
-    grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+    GridType grid;
+    MakeGrid()(grid);
 
     std::cout << "Running field map worklet that errors" << std::endl;
     bool gotError = false;
     try
       {
       dax::cont::worklet::testing::FieldMapError
-          <dax::cont::UniformGrid, DeviceAdapter>(grid);
+          <GridType, DeviceAdapter>(grid);
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -281,14 +302,14 @@ private:
     DAX_TEST_ASSERT(gotError, "Never got the error thrown.");
   }
 
-
+  template<typename GridType>
   static DAX_CONT_EXPORT void TestWorkletMapCell()
   {
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing basic map cell worklet" << std::endl;
 
-    dax::cont::UniformGrid grid;
-    grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+    GridType grid;
+    MakeGrid()(grid);
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
@@ -324,20 +345,21 @@ private:
       }
   }
 
+  template<typename GridType>
   static DAX_CONT_EXPORT void TestWorkletCellMapError()
   {
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing map cell worklet error" << std::endl;
 
-    dax::cont::UniformGrid grid;
-    grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+    GridType grid;
+    MakeGrid()(grid);
 
     std::cout << "Running cell map worklet that errors" << std::endl;
     bool gotError = false;
     try
       {
       dax::cont::worklet::testing::CellMapError
-          <dax::cont::UniformGrid, DeviceAdapter>(grid);
+          <GridType, DeviceAdapter>(grid);
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -351,6 +373,15 @@ private:
 
   struct TestAll
   {
+    template<typename GridType>
+    DAX_CONT_EXPORT void WorkletTests()
+      {
+      TestWorkletMapField<GridType>();
+      TestWorkletFieldMapError<GridType>();
+      TestWorkletMapCell<GridType>();
+      TestWorkletCellMapError<GridType>();
+      }
+
     DAX_CONT_EXPORT void operator()()
     {
       std::cout << "Doing DeviceAdapter tests" << std::endl;
@@ -358,10 +389,12 @@ private:
       TestOutOfMemory();
       TestSchedule();
       TestErrorExecution();
-      TestWorkletMapField();
-      TestWorkletFieldMapError();
-      TestWorkletMapCell();
-      TestWorkletCellMapError();
+
+      std::cout << "Doing Worklet tests with UniformGrid" << std::endl;
+      WorkletTests<dax::cont::UniformGrid>();
+
+      std::cout << "Doing Worklet tests with UnstructuredGrid" << std::endl;
+      WorkletTests<dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> >();
     }
   };
 
