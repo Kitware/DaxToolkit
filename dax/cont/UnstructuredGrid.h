@@ -38,13 +38,23 @@ public:
     this->GridTopology = TopologyType();
     }
 
-  UnstructuredGrid(dax::cont::ArrayHandle<dax::Id>& topo,
-                   dax::cont::ArrayHandle<dax::Vector3>& coords):
+  UnstructuredGrid(const dax::cont::ArrayHandle<dax::Id>& topo,
+                   const dax::cont::ArrayHandle<dax::Vector3>& coords):
     Topology(topo),
     PointsCoordinates(coords)
     {
     //I am not happy that the unstructured grid is not placed
     //in the execution enviornment on object creation
+    this->GridTopology = TopologyType(this->PointsCoordinates.ReadyAsInput(),
+                                      this->Topology.ReadyAsInput());
+    }
+
+  void UpdateHandles(dax::cont::ArrayHandle<dax::Id>& topo,
+                     dax::cont::ArrayHandle<dax::Vector3>& coords)
+    {
+    this->Topology = topo;
+    this->PointsCoordinates = coords;
+
     this->GridTopology = TopologyType(this->PointsCoordinates.ReadyAsInput(),
                                       this->Topology.ReadyAsInput());
     }
@@ -75,19 +85,23 @@ public:
   /// Get the number of points.
   ///
   dax::Id GetNumberOfPoints() const {
-    return dax::internal::numberOfPoints(this->GridTopology);
+
+    return this->PointsCoordinates.GetNumberOfEntries();
   }
 
   /// Get the number of cells.
   ///
   dax::Id GetNumberOfCells() const {
-    return dax::internal::numberOfCells(this->GridTopology);
+    return this->Topology.GetNumberOfEntries()/CellType::NUM_POINTS;
   }
 
   /// Gets the coordinates for a given point.
   ///
   dax::Vector3 GetPointCoordinates(dax::Id pointIndex) const {
-    return dax::internal::pointCoordiantes(this->GridTopology, pointIndex);
+    //this is currently impossible. we need to get access
+    //to the data in the control enviornment
+
+    return dax::Vector3();
   }
 
 private:
