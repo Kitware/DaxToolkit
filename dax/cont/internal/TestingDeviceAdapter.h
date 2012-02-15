@@ -90,12 +90,12 @@ private:
   //on both uniform and unstructured grids
   struct MakeGrid
   {
-    void operator()(dax::cont::UniformGrid &grid)
+    MakeGrid(dax::cont::UniformGrid &grid)
       {
       grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
       }
 
-    void operator()(dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> &grid)
+    MakeGrid(dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> &grid)
       {
       //we need to make a volume grid
       dax::cont::UniformGrid uniform;
@@ -123,7 +123,7 @@ private:
       };
 
       topology.clear();
-      dax::Id numPointsPerCell = 8;
+      dax::Id numPointsPerCell = dax::exec::CellHexahedron::NUM_POINTS;
       const dax::Extent3 extents = uniform.GetExtent();
       for(dax::Id i=0; i <uniform.GetNumberOfCells(); ++i)
         {
@@ -140,7 +140,7 @@ private:
       dax::cont::ArrayHandle<dax::Vector3> ahPoints(points.begin(),points.end());
       dax::cont::ArrayHandle<dax::Id> ahTopo(topology.begin(),topology.end());
 
-      grid = dax::cont::UnstructuredGrid<dax::exec::CellHexahedron>(ahTopo,ahPoints);
+      grid.UpdateHandles(ahTopo,ahPoints);
       }
 
     std::vector<dax::Id> topology;
@@ -287,11 +287,13 @@ private:
     std::cout << "Testing basic map field worklet" << std::endl;
 
     GridType grid;
-    MakeGrid()(grid);
+    MakeGrid mg(grid);(void)mg; //need mg around to use storage for unstructured grid :hack:
+
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
     std::vector<dax::Scalar> field(grid.GetNumberOfPoints());
+    std::cout << "Number of Points in the grid" <<  grid.GetNumberOfPoints() << std::endl;
     for (dax::Id pointIndex = 0;
          pointIndex < grid.GetNumberOfPoints();
          pointIndex++)
@@ -328,7 +330,7 @@ private:
     std::cout << "Testing map field worklet error" << std::endl;
 
     GridType grid;
-    MakeGrid()(grid);
+    MakeGrid mg(grid);(void)mg; //need mg around to use storage for unstructured grid :hack:
 
     std::cout << "Running field map worklet that errors" << std::endl;
     bool gotError = false;
@@ -354,7 +356,7 @@ private:
     std::cout << "Testing basic map cell worklet" << std::endl;
 
     GridType grid;
-    MakeGrid()(grid);
+    MakeGrid mg(grid);(void)mg; //need mg around to use storage for unstructured grid :hack:
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
@@ -397,7 +399,7 @@ private:
     std::cout << "Testing map cell worklet error" << std::endl;
 
     GridType grid;
-    MakeGrid()(grid);
+    MakeGrid mg(grid);(void)mg; //need mg around to use storage for unstructured grid :hack:
 
     std::cout << "Running cell map worklet that errors" << std::endl;
     bool gotError = false;
