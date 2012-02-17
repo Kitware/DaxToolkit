@@ -14,6 +14,7 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
+#include <vector>
 
 namespace dax {
 namespace cont {
@@ -25,13 +26,27 @@ struct TestGrid
   typedef T GridType;
   typedef DA DeviceAdapter;
 
+private:
+  //custom storage container that changes the size based on the grid type
+  //so that we don't have to store extra information for uniform grid
+  template<typename GridType> struct GridStorage {};
+  template<typename U> struct GridStorage<dax::cont::UnstructuredGrid<U> >
+    {
+    std::vector<dax::Id> topology;
+    std::vector<dax::Vector3> points;
+    };
+  GridStorage<GridType> Info;
+
+public:
   GridType Grid;
   const dax::Id Size;
 
   TestGrid(const dax::Id& size)
-    :Size(size),Grid()
+    :Size(size),
+     Grid(),
+     Info()
     {
-    this->gridInfo = GridBuilder(this->Grid,size);
+    this->BuildGrid(this->Grid);
     }
 
   // Description:
@@ -50,72 +65,60 @@ struct TestGrid
     }
 
 private:
-  //helper structs needed to have worklet tests work
-  //on both uniform and unstructured grids
-  struct GridBuilder
-  {
-    GridBuilder()
-      {
+  void BuildGrid(dax::cont::UniformGrid &grid)
+    {
+    grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
+    }
 
+  void BuildGrid(dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> &grid)
+    {
+    //we need to make a volume grid
+    dax::cont::UniformGrid uniform;
+    uniform.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
+
+    //copy the point info over to the unstructured grid
+    this->Info.points.clear();
+    for(dax::Id i=0; i <uniform.GetNumberOfPoints(); ++i)
+      {
+      this->Info.points.push_back(uniform.GetPointCoordinates(i));
       }
 
-    GridBuilder(dax::cont::UniformGrid &grid, const dax::Id& DIM)
-      {
-      grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
-      }
+    //copy the cell topology information over
 
-    GridBuilder(dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> &grid, const dax::Id& DIM)
-      {
-      //we need to make a volume grid
-      dax::cont::UniformGrid uniform;
-      uniform.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+    //this only works for voxel/hexahedron
+    const dax::Id3 cellVertexToPointIndex[8] = {
+      dax::make_Id3(0, 0, 0),
+      dax::make_Id3(1, 0, 0),
+      dax::make_Id3(1, 1, 0),
+      dax::make_Id3(0, 1, 0),
+      dax::make_Id3(0, 0, 1),
+      dax::make_Id3(1, 0, 1),
+      dax::make_Id3(1, 1, 1),
+      dax::make_Id3(0, 1, 1)
+    };
 
-      //copy the point info over to the unstructured grid
-      points.clear();
-      for(dax::Id i=0; i <uniform.GetNumberOfPoints(); ++i)
+    this->Info.topology.clear();
+    dax::Id numPointsPerCell = ::dax::exec::CellHexahedron::NUM_POINTS;
+    const dax::Extent3 extents = uniform.GetExtent();
+    for(dax::Id i=0; i <uniform.GetNumberOfCells(); ++i)
+      {
+      dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(i,extents);
+      for(dax::Id j=0; j < numPointsPerCell; ++j)
         {
-        points.push_back(uniform.GetPointCoordinates(i));
+        dax::Id3 ijkPoint = ijkCell + cellVertexToPointIndex[j];
+
+        dax::Id pointIndex = index3ToFlatIndex(ijkPoint,extents);
+        this->Info.topology.push_back(pointIndex);
         }
-
-      //copy the cell topology information over
-
-      //this only works for voxel/hexahedron
-      const dax::Id3 cellVertexToPointIndex[8] = {
-        dax::make_Id3(0, 0, 0),
-        dax::make_Id3(1, 0, 0),
-        dax::make_Id3(1, 1, 0),
-        dax::make_Id3(0, 1, 0),
-        dax::make_Id3(0, 0, 1),
-        dax::make_Id3(1, 0, 1),
-        dax::make_Id3(1, 1, 1),
-        dax::make_Id3(0, 1, 1)
-      };
-
-      topology.clear();
-      dax::Id numPointsPerCell = ::dax::exec::CellHexahedron::NUM_POINTS;
-      const dax::Extent3 extents = uniform.GetExtent();
-      for(dax::Id i=0; i <uniform.GetNumberOfCells(); ++i)
-        {
-        dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(i,extents);
-        for(dax::Id j=0; j < numPointsPerCell; ++j)
-          {
-          dax::Id3 ijkPoint = ijkCell + cellVertexToPointIndex[j];
-
-          dax::Id pointIndex = index3ToFlatIndex(ijkPoint,extents);
-          topology.push_back(pointIndex);
-          }
-        }
-
-      dax::cont::ArrayHandle<dax::Vector3,DeviceAdapter> ahPoints(points.begin(),points.end());
-      dax::cont::ArrayHandle<dax::Id,DeviceAdapter> ahTopo(topology.begin(),topology.end());
-
-      grid.UpdateHandles(ahTopo,ahPoints);
       }
 
-    std::vector<dax::Id> topology;
-    std::vector<dax::Vector3> points;
-  };
-  GridBuilder gridInfo;
+    dax::cont::ArrayHandle<dax::Vector3,DeviceAdapter> ahPoints(
+          this->Info.points.begin(),this->Info.points.end());
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> ahTopo(
+          this->Info.topology.begin(),this->Info.topology.end());
+
+    grid.UpdateHandles(ahTopo,ahPoints);
+    }
 };
 
 }
