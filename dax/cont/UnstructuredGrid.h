@@ -98,10 +98,7 @@ public:
   /// Gets the coordinates for a given point.
   ///
   dax::Vector3 GetPointCoordinates(dax::Id pointIndex) const {
-    //this is currently impossible. we need to get access
-    //to the data in the control enviornment
-
-    return dax::Vector3();
+    return this->PointsCoordinates.GetValue(pointIndex);
   }
 
 private:
