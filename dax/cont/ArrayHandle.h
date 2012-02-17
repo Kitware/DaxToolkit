@@ -164,6 +164,23 @@ public:
     this->Internals->Synchronized = true;
   }
 
+  /// Change the control data that this Handle points too.
+  /// This allows ArrayHandles that only point to execution data
+  /// be allowed to move data to the control enviornment.
+  template<class IteratorType>
+  void SetNewControlData(IteratorType begin, IteratorType end) {
+    dax::Id numEntries = this->GetNumberOfEntries();
+    if (std::distance(begin,end) != numEntries)
+      {
+      throw dax::cont::ErrorControlBadValue(
+              "Tried to set new control data array, but the size is incorrect.\n"
+              "Make sure that the distance between the iterators matches the "
+              "number of entries in the ArrayHandle");
+      }
+    this->Internals->SetNewControlArray(begin,end);
+    }
+
+
 private:
   struct InternalStruct {
     dax::cont::internal::IteratorContainer<
@@ -181,6 +198,15 @@ private:
         dax::cont::internal::IteratorPolymorphic<ValueType> beginControl,
         dax::cont::internal::IteratorPolymorphic<ValueType> endControl)
       : ControlArray(beginControl, endControl) { }
+
+    void SetNewControlArray(
+        dax::cont::internal::IteratorPolymorphic<ValueType> beginControl,
+        dax::cont::internal::IteratorPolymorphic<ValueType> endControl)
+      {
+      ControlArray = dax::cont::internal::IteratorContainer<
+                     dax::cont::internal::IteratorPolymorphic<ValueType> >
+                     (beginControl,endControl);
+      }
   };
 
   boost::shared_ptr<InternalStruct> Internals;
