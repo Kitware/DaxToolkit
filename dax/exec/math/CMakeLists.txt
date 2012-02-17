@@ -7,17 +7,18 @@
 #=========================================================================
 
 set(headers
+  Compare.h
   Exp.h
   Precision.h
   Sign.h
   Trig.h
   )
-# TODO: Sign.h (abs, signbit, copysign), Compare.h (min, max)
 
 dax_declare_headers(${headers})
 
 #-----------------------------------------------------------------------------
 set(unit_tests
+  UnitTestMathCompare.cxx
   UnitTestMathExp.cxx
   UnitTestMathPrecision.cxx
   UnitTestMathSign.cxx
