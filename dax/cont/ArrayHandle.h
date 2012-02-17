@@ -86,7 +86,7 @@ public:
   /// operations on this array handle should move data to or from that memory
   /// depending on the nature (input or output) of the operation.
   ///
-  bool IsControlArrayValid() {return this->Internals->ControlArray.IsValid();}
+  bool IsControlArrayValid() const {return this->Internals->ControlArray.IsValid();}
 
   /// Marks the iterators passed into the constructor (if there were any) as
   /// invalid. This invalidate is propagated to any copies of the ArrayHandle.
