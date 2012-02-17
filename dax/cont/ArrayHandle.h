@@ -180,6 +180,15 @@ public:
     this->Internals->SetNewControlArray(begin,end);
     }
 
+  /// Get a single value in the control enviornment.
+  /// Will throw an exception if the index is out of range, or if the control
+  /// array doesn't exist.
+  const ValueType& GetValue(dax::Id index) const
+    {
+    DAX_ASSERT_CONT(this->IsControlArrayValid());
+    DAX_ASSERT_CONT( (index >= 0 && index < this->GetNumberOfEntries()) );
+    return *(this->Internals->ControlArray.GetBeginIterator()+index);
+    }
 
 private:
   struct InternalStruct {
