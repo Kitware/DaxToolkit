@@ -17,6 +17,7 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
+#include <dax/cont/UnstructuredGrid.h>
 
 #include <vector>
 
@@ -48,10 +49,7 @@ static void TestThreshold()
   dax::cont::UniformGrid grid;
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
 
-  //todo should be a unstructured grid
-  dax::cont::UniformGrid grid2;
-  grid2.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
-
+  dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> grid2;
   dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
   std::vector<dax::Scalar> field(grid.GetNumberOfPoints());

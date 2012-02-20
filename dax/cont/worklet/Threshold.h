@@ -126,13 +126,13 @@ namespace dax {
 namespace cont {
 namespace worklet {
 
-template<class GridType, class DeviceAdapter>
+template<class GridType, class OutGridType, class DeviceAdapter>
 inline void Threshold(
     const GridType &inGrid,
     dax::Scalar thresholdMin,
     dax::Scalar thresholdMax,
     dax::cont::ArrayHandle<dax::Scalar, DeviceAdapter> &thresholdHandle,
-    GridType &outGeom)
+    OutGridType &outGeom)
 {
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   typedef typename GridPackageType::ExecutionCellType CellType;
