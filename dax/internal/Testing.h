@@ -9,7 +9,7 @@
 #define __dax_internal_Testing_h
 
 #include <dax/Types.h>
-#include <dax/TypeTraits.h>
+#include <dax/VectorTraits.h>
 
 #include <iostream>
 #include <sstream>

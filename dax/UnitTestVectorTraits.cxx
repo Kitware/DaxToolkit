@@ -6,7 +6,7 @@
 
 =========================================================================*/
 
-#include <dax/TypeTraits.h>
+#include <dax/VectorTraits.h>
 
 #include <dax/internal/Testing.h>
 
@@ -91,7 +91,7 @@ static void TestScalarComponentsTag()
         typename dax::VectorTraits<T>::HasMultipleComponents());
 }
 
-void TestTypeTraits()
+void TestVectorTraits()
 {
   std::cout << "Testing Id3" << std::endl;
   TestVectorType(dax::make_Id3(42, 54, 67));
@@ -112,7 +112,7 @@ void TestTypeTraits()
 
 } // anonymous namespace
 
-int UnitTestTypeTraits(int, char *[])
+int UnitTestVectorTraits(int, char *[])
 {
-  return dax::internal::Testing::Run(TestTypeTraits);
+  return dax::internal::Testing::Run(TestVectorTraits);
 }

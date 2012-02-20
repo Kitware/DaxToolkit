@@ -5,8 +5,8 @@
   PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#ifndef __dax_TypeTraits_h
-#define __dax_TypeTraits_h
+#ifndef __dax_VectorTraits_h
+#define __dax_VectorTraits_h
 
 #include <dax/Types.h>
 
@@ -121,4 +121,4 @@ struct VectorTraits<const dax::Id>
 
 }
 
-#endif //__dax_TypeTraits_h
+#endif //__dax_VectorTraits_h

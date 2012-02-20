@@ -12,7 +12,7 @@
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
 
-#include <dax/TypeTraits.h>
+#include <dax/VectorTraits.h>
 #include <dax/exec/VectorOperations.h>
 
 namespace dax {

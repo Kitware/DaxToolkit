@@ -11,7 +11,7 @@
 
 #include <dax/cont/worklet/Square.h>
 
-#include <dax/TypeTraits.h>
+#include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 
