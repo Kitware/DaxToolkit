@@ -1,5 +1,5 @@
-#ifndef __dax_exec_mapreduce_ScheduleRemoveCell_h
-#define __dax_exec_mapreduce_ScheduleRemoveCell_h
+#ifndef __dax_exec_internal_ScheduleRemoveCell_h
+#define __dax_exec_internal_ScheduleRemoveCell_h
 
 #include <boost/shared_ptr.hpp>
 
@@ -13,6 +13,7 @@
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
+#include <dax/cont/internal/ExtractTopology.h>
 
 namespace dax {
 namespace cont {
@@ -52,6 +53,7 @@ public:
 /// needed for the ScheduleRemoveCell class to execute the \c Functor.
 
 protected:
+
   //constructs everything needed to call the user defined worklet
   template<typename InGridType>
   void ScheduleWorklet(const InGridType &grid)
@@ -89,11 +91,15 @@ protected:
   template<typename InGridType,typename OutGridType>
   void GenerateOutput(const InGridType &inGrid, OutGridType& outGrid)
     {
-    typedef dax::cont::internal::ExecutionPackageGrid<OutGridType> OutGridPackageType;
-    typedef dax::cont::internal::ExecutionPackageGrid<InGridType> InGridPackageType;
-    //create the grid, and result packages
-    OutGridPackageType outPGrid(outGrid);
-    InGridPackageType inPGrid(inGrid);
+//    typedef dax::cont::internal::ExecutionPackageGrid<OutGridType> OutGridPackageType;
+//    typedef typename OutGridPackageType::ExecutionCellType OutCellType;
+
+//    typedef dax::cont::internal::ExecutionPackageGrid<InGridType> InGridPackageType;
+//    typedef typename InGridPackageType::ExecutionCellType InCellType;
+
+//    //create the grid, and result packages
+//    OutGridPackageType outPGrid(outGrid);
+//    InGridPackageType inPGrid(inGrid);
 
     //does the stream compaction of the grid removing all
     //unused grid cells and points. Do we make that a basic DeviceAdapter
@@ -107,7 +113,11 @@ protected:
     dax::cont::ArrayHandle<dax::Id> usedCellIds;
     DeviceAdapter::StreamCompact(this->MaskCellHandle,usedCellIds);
 
-    DeviceAdapter::StreamCompactTopology(inPGrid,outPGrid,usedPointIds,usedCellIds);
+    //extract from the grid the subset of topology information we
+    //need to construct the unstructured grid
+    dax::cont::internal::ExtractTopology<DeviceAdapter, InGridType>
+        extractedTopology(inGrid, usedCellIds);
+
     }
 
 protected:
@@ -136,4 +146,4 @@ protected:
 } //dax
 
 
-#endif // __dax_exec_mapreduce_ScheduleRemoveCell_h
+#endif // __dax_exec_internal_ScheduleRemoveCell_h
