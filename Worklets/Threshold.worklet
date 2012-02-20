@@ -31,10 +31,8 @@ DAX_WORKLET void Threshold(
     DAX_IN dax::exec::FieldPoint<FieldType> &inField)
 {
   //compare the value at each point with the threshold min/max
-  CellType cell = work.GetCell();
-  dax::Id number_of_points = cell.GetNumberOfPoints();
   char valid = 1;
-  for (dax::Id vertexId = 0; vertexId < number_of_points; vertexId++)
+  for (dax::Id vertexId = 0; vertexId < CellType::NUM_POINTS; vertexId++)
     {
     FieldType inValue = work.GetFieldValue(inField, vertexId);
     char value = ((inValue > thresholdMin) && (inValue <= thresholdMax));
