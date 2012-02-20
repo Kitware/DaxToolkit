@@ -11,6 +11,7 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
+#include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
 
 #include <dax/cont/worklet/Elevation.h>
@@ -85,7 +86,7 @@ void RunPipeline1(const dax::cont::UniformGrid &grid)
 {
   std::cout << "Running pipeline 1: Elevation -> Threshold" << std::endl;
 
-  dax::cont::UniformGrid grid2;
+  dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> grid2;
 
   dax::cont::ArrayHandle<dax::Scalar> intermediate1(grid.GetNumberOfPoints());
 
