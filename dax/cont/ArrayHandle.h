@@ -86,7 +86,7 @@ public:
   /// operations on this array handle should move data to or from that memory
   /// depending on the nature (input or output) of the operation.
   ///
-  bool IsControlArrayValid() {return this->Internals->ControlArray.IsValid();}
+  bool IsControlArrayValid() const {return this->Internals->ControlArray.IsValid();}
 
   /// Marks the iterators passed into the constructor (if there were any) as
   /// invalid. This invalidate is propagated to any copies of the ArrayHandle.
@@ -164,6 +164,32 @@ public:
     this->Internals->Synchronized = true;
   }
 
+  /// Change the control data that this Handle points too.
+  /// This allows ArrayHandles that only point to execution data
+  /// be allowed to move data to the control enviornment.
+  template<class IteratorType>
+  void SetNewControlData(IteratorType begin, IteratorType end) {
+    dax::Id numEntries = this->GetNumberOfEntries();
+    if (std::distance(begin,end) != numEntries)
+      {
+      throw dax::cont::ErrorControlBadValue(
+              "Tried to set new control data array, but the size is incorrect.\n"
+              "Make sure that the distance between the iterators matches the "
+              "number of entries in the ArrayHandle");
+      }
+    this->Internals->SetNewControlArray(begin,end);
+    }
+
+  /// Get a single value in the control enviornment.
+  /// Will throw an exception if the index is out of range, or if the control
+  /// array doesn't exist.
+  const ValueType& GetValue(dax::Id index) const
+    {
+    DAX_ASSERT_CONT(this->IsControlArrayValid());
+    DAX_ASSERT_CONT( (index >= 0 && index < this->GetNumberOfEntries()) );
+    return *(this->Internals->ControlArray.GetBeginIterator()+index);
+    }
+
 private:
   struct InternalStruct {
     dax::cont::internal::IteratorContainer<
@@ -181,7 +207,6 @@ private:
         dax::cont::internal::IteratorPolymorphic<ValueType> beginControl,
         dax::cont::internal::IteratorPolymorphic<ValueType> endControl)
       : ControlArray(beginControl, endControl) { }
-
 
     void SetNewControlArray(
         dax::cont::internal::IteratorPolymorphic<ValueType> beginControl,
@@ -228,26 +253,6 @@ private:
     this->Internals->Synchronized = false;
     this->Internals->NumberOfEntries =
         this->Internals->ExecutionArray.GetNumberOfEntries();
-    }
-
-  /// Sets the new control array of this ArrayHandle.
-  /// This is mainly used to create new data in the control env
-  /// as we don't know the size pre execution of the algorithm.
-  /// Note: If the ArrayHandle has control data it will not
-  /// update the contents if the arrays are not synchronized.
-  ///
-  template<class IteratorType>
-  void SetNewControlArray(IteratorType begin, IteratorType end)
-    {
-    dax::Id numEntries = this->GetNumberOfEntries();
-    if (std::distance(begin,end) != numEntries)
-      {
-      throw dax::cont::ErrorControlBadValue(
-            "Tried to set new control data array, but the size is incorrect.\n"
-            "Make sure that the distance between the iterators matches the "
-            "number of entries in the ArrayHandle");
-      }
-    this->Internals->SetNewControlArray(begin,end);
     }
 };
 

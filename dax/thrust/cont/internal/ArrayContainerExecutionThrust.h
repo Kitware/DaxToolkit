@@ -106,6 +106,12 @@ public:
   ///
   dax::internal::DataArray<ValueType> GetExecutionArray();
 
+  /// Allows you to use this class like an array. However, accessing
+  /// independent locations might not be efficient.
+  ///
+  ::thrust::device_reference<ValueType> operator[](dax::Id index);
+  const ::thrust::device_reference<ValueType> operator[](dax::Id index) const;
+
 private:
   ArrayContainerExecutionThrust(const ArrayContainerExecutionThrust &); // Not implemented
   void operator=(const ArrayContainerExecutionThrust &);     // Not implemented
@@ -121,7 +127,7 @@ inline void ArrayContainerExecutionThrust<T>::CopyFromControlToExecution(
 {
   DAX_ASSERT_CONT(iterators.IsValid());
   DAX_ASSERT_CONT(iterators.GetNumberOfEntries()
-                  <= static_cast<dax::Id>(this->DeviceArray.size()));
+                  == static_cast<dax::Id>(this->DeviceArray.size()));
   ::thrust::copy(iterators.GetBeginIterator(),
                  iterators.GetEndIterator(),
                  this->DeviceArray.begin());
@@ -135,7 +141,7 @@ inline void ArrayContainerExecutionThrust<T>::CopyFromExecutionToControl(
 {
   DAX_ASSERT_CONT(iterators.IsValid());
   DAX_ASSERT_CONT(iterators.GetNumberOfEntries()
-                  <= static_cast<dax::Id>(this->DeviceArray.size()));
+                  == static_cast<dax::Id>(this->DeviceArray.size()));
   ::thrust::copy(this->DeviceArray.begin(),
                  this->DeviceArray.end(),
                  iterators.GetBeginIterator());
@@ -149,6 +155,25 @@ ArrayContainerExecutionThrust<T>::GetExecutionArray()
   ValueType *rawPointer = ::thrust::raw_pointer_cast(&this->DeviceArray[0]);
   dax::Id numEntries = this->DeviceArray.size();
   return dax::internal::DataArray<ValueType>(rawPointer, numEntries);
+}
+
+//-----------------------------------------------------------------------------
+template<class T>
+inline ::thrust::device_reference<T>
+ArrayContainerExecutionThrust<T>::operator[](dax::Id index)
+{
+  DAX_ASSERT_CONT(index >= 0);
+  DAX_ASSERT_CONT(index < static_cast<dax::Id>(this->DeviceArray.size()));
+  return this->DeviceArray[index];
+}
+
+template<class T>
+inline const ::thrust::device_reference<T>
+ArrayContainerExecutionThrust<T>::operator[](dax::Id index) const
+{
+  DAX_ASSERT_CONT(index >= 0);
+  DAX_ASSERT_CONT(index < static_cast<dax::Id>(this->DeviceArray.size()));
+  return this->DeviceArray[index];
 }
 
 }

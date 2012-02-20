@@ -18,8 +18,8 @@ struct TopologyUnstructured
     {
     }
 
-  TopologyUnstructured(dax::internal::DataArray<dax::Vector3>&points,
-                   dax::internal::DataArray<dax::Id>& topology):    
+  TopologyUnstructured(const dax::internal::DataArray<dax::Vector3>&points,
+                       const dax::internal::DataArray<dax::Id>& topology):
     Points(points),
     Topology(topology)
     {
