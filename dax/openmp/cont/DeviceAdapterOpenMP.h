@@ -42,14 +42,6 @@ struct DeviceAdapterOpenMP
       : public dax::openmp::cont::internal::ArrayContainerExecutionThrust<T>
   { };
 
-  template<typename T, class IteratorType>
-  static void SetControlArray(
-      dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& input,
-      IteratorType begin, IteratorType end)
-    {
-      input.SetNewControlArray(begin,end);
-    }
-
   template<class Functor, class Parameters>
   static void Schedule(Functor functor,
                        Parameters parameters,

@@ -50,14 +50,6 @@ struct DeviceAdapterCuda
       : public dax::cuda::cont::internal::ArrayContainerExecutionThrust<T>
   { };
 
-  template<typename T, class IteratorType>
-  static void SetControlArray(
-      dax::cont::ArrayHandle<T,DeviceAdapterCuda>& input,
-      IteratorType begin, IteratorType end)
-    {
-      input.SetNewControlArray(begin,end);
-    }
-
   template<class Functor, class Parameters>
   static void Schedule(Functor functor,
                        Parameters parameters,

@@ -108,8 +108,6 @@ protected:
     DeviceAdapter::StreamCompact(this->MaskCellHandle,usedCellIds);
 
     DeviceAdapter::StreamCompactTopology(inPGrid,outPGrid,usedPointIds,usedCellIds);
-
-    //Todo: Make DeviceAdapter::SetControlArray a method on ArrayHandle
     }
 
 protected:

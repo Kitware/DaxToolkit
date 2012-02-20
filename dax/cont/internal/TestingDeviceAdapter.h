@@ -230,9 +230,8 @@ private:
 
     //set the control array after stream compact as we didn't
     //know the size before hand
-    DeviceAdapter::SetControlArray(result,
-                                   resultHost.begin(),
-                                   resultHost.end());
+    result.SetNewControlData(resultHost.begin(), resultHost.end());
+
     //now pull the results from the execution env to the control env
     result.CompleteAsOutput();
 
@@ -274,9 +273,7 @@ private:
     std::vector<dax::Id> resultHost;
     resultHost.resize(result.GetNumberOfEntries());
     //get the results from the execution env
-    DeviceAdapter::SetControlArray(result,
-                                  resultHost.begin(),
-                                  resultHost.end());
+    result.SetNewControlData(resultHost.begin(), resultHost.end());
 
     //copy the results from exec env to cont env
     result.CompleteAsOutput();

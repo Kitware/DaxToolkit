@@ -41,14 +41,6 @@ struct DeviceAdapterDebug
   class ArrayContainerExecution
       : public dax::cont::internal::ArrayContainerExecutionCPU<T> { };
 
-  template<typename T, class IteratorType>
-  static void SetControlArray(
-      dax::cont::ArrayHandle<T,DeviceAdapterDebug>& input,
-      IteratorType begin, IteratorType end)
-    {
-      input.SetNewControlArray(begin,end);
-    }
-
   template<class Functor, class Parameters>
   static void Schedule(Functor functor,
                        Parameters parameters,
