@@ -27,8 +27,6 @@ template< typename OtherT, class OtherDeviceAdapter > class ArrayHandle;
 }
 }
 
-#include <dax/cont/internal/ExecutionPackageGrid.h>
-
 namespace dax {
 namespace cont {
 /// A simple implementation of a DeviceAdapter that can be used for debuging.
@@ -75,20 +73,6 @@ struct DeviceAdapterDebug
                                   stencil.GetExecutionArray(),
                                   output.GetExecutionArray());
     output.UpdateArraySize();
-    }
-
-
-  template<typename T,typename U, typename V>
-  static void StreamCompactTopology(
-      const dax::cont::internal::ExecutionPackageGrid<T> &inputGrid,
-      dax::cont::internal::ExecutionPackageGrid<U> &outGrid,
-      const dax::cont::ArrayHandle<V,DeviceAdapterDebug> &cellIdsToUse,
-      const dax::cont::ArrayHandle<V,DeviceAdapterDebug> &pointIdsToUse)
-    {
-    dax::cont::streamCompactTopologyDebug(inputGrid.GetExecutionObject(),
-                                          outGrid.GetExecutionObject(),
-                                          cellIdsToUse.GetExecutionArray(),
-                                          pointIdsToUse.GetExecutionArray());
     }
 };
 

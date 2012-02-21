@@ -80,24 +80,6 @@ DAX_EXEC_CONT_EXPORT void streamCompactDebug(
     }
 }
 
-
-template<typename GridType, typename T, typename U>
-DAX_EXEC_CONT_EXPORT void streamCompactTopologyDebug(
-    const GridType& inputGrid,
-    dax::internal::TopologyUnstructured<T>& output,
-    const dax::cont::internal::ArrayContainerExecutionCPU<U>& cellIds,
-    const dax::cont::internal::ArrayContainerExecutionCPU<U>& pointIds)
-{
-
-  //cellIds is a collection of all the ids we need in the output grid,
-  //and point ids are the collection of points we need.
-  //The major isssue is that we need to construct a topology array
-  //that maps the old pointIds to the newPointIds for the cells.
-
-}
-
-
-
 }
 } // namespace dax::cont
 
