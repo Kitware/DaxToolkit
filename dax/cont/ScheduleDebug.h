@@ -56,7 +56,7 @@ DAX_CONT_EXPORT void scheduleDebug(Functor functor,
 template<class Functor, class Parameters>
 DAX_CONT_EXPORT void scheduleDebug(Functor functor,
                                    Parameters parameters,
-                                   const dax::internal::DataArray<dax::Id> &ids)
+                                   dax::internal::DataArray<dax::Id> ids)
 {
   dax::internal::DataArray<char> errorArray
       = internal::getScheduleDebugErrorArray();
@@ -66,7 +66,6 @@ DAX_CONT_EXPORT void scheduleDebug(Functor functor,
 
   dax::exec::internal::ErrorHandler errorHandler(errorArray);
   dax::Id size = ids.GetNumberOfEntries();
-
   for (dax::Id index = 0; index < size; index++)
     {
     functor(parameters, ids.GetValue(index), errorHandler);

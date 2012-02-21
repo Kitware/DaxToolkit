@@ -96,6 +96,15 @@ DAX_CONT_EXPORT void scheduleCuda(Functor functor,
     }
 }
 
+template<class Functor, class Parameters>
+DAX_CONT_EXPORT void scheduleCuda(Functor functor,
+                                  Parameters parameters,
+                                  dax::internal::DataArray<dax::Id> ids)
+{
+  throw dax::cont::ErrorExecution("Haven't implemented a cuda version yet.");
+
+}
+
 }
 }
 } // namespace dax::cuda::cont
