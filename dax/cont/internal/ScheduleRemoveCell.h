@@ -13,7 +13,6 @@
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
-#include <dax/cont/internal/ExtractTopology.h>
 
 namespace dax {
 namespace cont {
@@ -115,8 +114,8 @@ protected:
 
     //extract from the grid the subset of topology information we
     //need to construct the unstructured grid
-    dax::cont::internal::ExtractTopology<DeviceAdapter, InGridType>
-        extractedTopology(inGrid, usedCellIds);
+//    dax::cont::internal::ExtractTopology<DeviceAdapter, InGridType>
+//        extractedTopology(inGrid, usedCellIds);
 
     }
 
