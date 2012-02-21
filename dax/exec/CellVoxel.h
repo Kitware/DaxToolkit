@@ -32,6 +32,9 @@ private:
   dax::Id CellIndex;
 
 public:
+  /// static variable that returns the number of points per cell
+  const static dax::Id NUM_POINTS = 8;
+
   /// Create a cell for the given work.
   DAX_EXEC_CONT_EXPORT CellVoxel(const TopologyType &gs,
                                  dax::Id index)
