@@ -19,7 +19,7 @@ void TestMinMax(VectorType x, VectorType y)
   typedef typename Traits::ValueType ValueType;
   const dax::Id NUM_COMPONENTS = Traits::NUM_COMPONENTS;
 
-  std::cout << "Testing Min and Max: " << NUM_COMPONENTS << " components"
+  std::cout << "  Testing Min and Max: " << NUM_COMPONENTS << " components"
             << std::endl;
 
   VectorType min = dax::exec::math::Min(x, y);
@@ -44,19 +44,29 @@ void TestMinMax(VectorType x, VectorType y)
     }
 }
 
+static const dax::Id MAX_VECTOR_SIZE = 4;
+static const dax::Scalar VectorInitX[MAX_VECTOR_SIZE] = { -4, -1, 2, 0.0 };
+static const dax::Scalar VectorInitY[MAX_VECTOR_SIZE] = { 7, -6, 5, -0.001 };
+
+struct TestCompareFunctor
+{
+  template <typename T> void operator()(const T&) const {
+    typedef dax::VectorTraits<T> Traits;
+    DAX_TEST_ASSERT(Traits::NUM_COMPONENTS <= MAX_VECTOR_SIZE,
+                    "Need to update test for larger vectors.");
+    T x, y;
+    for (int index = 0; index < Traits::NUM_COMPONENTS; index++)
+      {
+      Traits::SetComponent(x, index, VectorInitX[index]);
+      Traits::SetComponent(y, index, VectorInitY[index]);
+      }
+    TestMinMax(x, y);
+  }
+};
 
 void TestCompare()
 {
-  TestMinMax<dax::Scalar>(0.0, 1.0);
-  TestMinMax<dax::Scalar>(0.0, -1.0);
-  TestMinMax<dax::Id>(0, 1);
-  TestMinMax<dax::Id>(0, -1);
-  TestMinMax(dax::make_Id3(-4, -1, 2),
-             dax::make_Id3(7, -6, 5));
-  TestMinMax(dax::make_Vector3(-4, -1, 2),
-             dax::make_Vector3(7, -6, 5));
-  TestMinMax(dax::make_Vector4(-4, -1, 2, 0.0),
-             dax::make_Vector4(7, -6, 5, -0.001));
+  dax::internal::Testing::TryAllTypes(TestCompareFunctor());
 }
 
 } // anonymous namespace

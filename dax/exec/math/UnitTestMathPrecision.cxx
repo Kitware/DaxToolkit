@@ -59,7 +59,7 @@ void TestFMod(VectorType numerator,
               VectorType denominator,
               VectorType remainder)
 {
-  std::cout << "Testing FMod "
+  std::cout << "  Testing FMod "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
 
@@ -73,7 +73,7 @@ void TestRemainder(VectorType numerator,
                    VectorType remainder,
                    VectorType quotient)
 {
-  std::cout << "Testing Remainder "
+  std::cout << "  Testing Remainder "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
 
@@ -107,7 +107,7 @@ void TestRemainder(VectorType numerator,
 template<typename VectorType>
 void TestModF(VectorType x, VectorType integral, VectorType fractional)
 {
-  std::cout << "Testing ModF "
+  std::cout << "  Testing ModF "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
 
@@ -126,7 +126,7 @@ void TestRound(VectorType x,
                VectorType xCeil,
                VectorType xRound)
 {
-  std::cout << "Testing Round "
+  std::cout << "  Testing Round "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
 
@@ -135,28 +135,54 @@ void TestRound(VectorType x,
   DAX_TEST_ASSERT(test_equal(dax::exec::math::Round(x), xRound), "Bad round");
 }
 
+const dax::Id MAX_VECTOR_SIZE = 4;
+
+const dax::Scalar NumeratorInit[MAX_VECTOR_SIZE] =   { 6.5, 5.8, 9.3, 77.0 };
+const dax::Scalar DenominatorInit[MAX_VECTOR_SIZE] = { 2.3, 1.6, 3.1, 19.0 };
+const dax::Scalar FModRemainderInit[MAX_VECTOR_SIZE]={ 1.9, 1.0, 0.0,  1.0 };
+const dax::Scalar RemainderInit[MAX_VECTOR_SIZE] =   {-0.4,-0.6, 0.0,  1.0 };
+const dax::Scalar QuotientInit[MAX_VECTOR_SIZE] =    { 3.0, 4.0, 3.0,  4.0 };
+
+const dax::Scalar XInit[MAX_VECTOR_SIZE] =           {4.6, 0.1, 73.4, 55.0 };
+const dax::Scalar FractionalInit[MAX_VECTOR_SIZE] =  {0.6, 0.1,  0.4,  0.0 };
+const dax::Scalar FloorInit[MAX_VECTOR_SIZE] =       {4.0, 0.0, 73.0, 55.0 };
+const dax::Scalar CeilInit[MAX_VECTOR_SIZE] =        {5.0, 1.0, 74.0, 55.0 };
+const dax::Scalar RoundInit[MAX_VECTOR_SIZE] =       {5.0, 0.0, 73.0, 55.0 };
+
+struct TestPrecisionFunctor
+{
+  template <typename T> void operator()(const T&) const {
+    typedef dax::VectorTraits<T> Traits;
+    DAX_TEST_ASSERT(Traits::NUM_COMPONENTS <= MAX_VECTOR_SIZE,
+                    "Need to update test for larger vectors.");
+    T numerator, denominator, fmodremainder, remainder, quotient;
+    T x, fractional, floor, ceil, round;
+    for (int index = 0; index < Traits::NUM_COMPONENTS; index++)
+      {
+      Traits::SetComponent(numerator, index, NumeratorInit[index]);
+      Traits::SetComponent(denominator, index, DenominatorInit[index]);
+      Traits::SetComponent(fmodremainder, index, FModRemainderInit[index]);
+      Traits::SetComponent(remainder, index, RemainderInit[index]);
+      Traits::SetComponent(quotient, index, QuotientInit[index]);
+
+      Traits::SetComponent(x, index, XInit[index]);
+      Traits::SetComponent(fractional, index, FractionalInit[index]);
+      Traits::SetComponent(floor, index, FloorInit[index]);
+      Traits::SetComponent(ceil, index, CeilInit[index]);
+      Traits::SetComponent(round, index, RoundInit[index]);
+      }
+    TestFMod(numerator, denominator, fmodremainder);
+    TestRemainder(numerator, denominator, remainder, quotient);
+    TestModF(x, floor, fractional);
+    TestRound(x, floor, ceil, round);
+  }
+};
 
 void TestPrecision()
 {
   TestNonFinites();
-  TestFMod<dax::Scalar>(6.5, 2.3, 1.9);
-  TestFMod(dax::make_Vector3(3.8, 5.8, 9.3),
-           dax::make_Vector3(3.0, 1.6, 3.1),
-           dax::make_Vector3(0.8, 1.0, 0.0));
-  TestRemainder<dax::Scalar>(6.5, 2.3, -0.4, 3.0);
-  TestRemainder(dax::make_Vector4(3.8, 5.8, 9.3, 77.0),
-                dax::make_Vector4(3.0, 1.6, 3.1, 19.0),
-                dax::make_Vector4(0.8,-0.6, 0.0, 1.0),
-                dax::make_Vector4(1.0, 4.0, 3.0, 4.0));
-  TestModF<dax::Scalar>(1.9, 1.0, 0.9);
-  TestModF(dax::make_Vector3(4.6, 0.1, 73.4),
-           dax::make_Vector3(4.0, 0.0, 73.0),
-           dax::make_Vector3(0.6, 0.1, 0.4));
-  TestRound<dax::Scalar>(1.9, 1.0, 2.0, 2.0);
-  TestRound(dax::make_Vector4(4.6, 0.1, 73.4, 55.0),
-            dax::make_Vector4(4.0, 0.0, 73.0, 55.0),
-            dax::make_Vector4(5.0, 1.0, 74.0, 55.0),
-            dax::make_Vector4(5.0, 0.0, 73.0, 55.0));
+  dax::internal::Testing::TryAllTypes(TestPrecisionFunctor(),
+                                      dax::internal::Testing::TypeCheckReal());
 }
 
 } // anonymous namespace

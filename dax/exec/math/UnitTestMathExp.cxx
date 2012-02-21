@@ -67,7 +67,7 @@ template<class VectorType> struct SqrtFunctor {
 template<class VectorType>
 void SqrtTest()
 {
-  std::cout << "Testing Sqrt "
+  std::cout << "  Testing Sqrt "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
   RaiseToTest<VectorType>(SqrtFunctor<VectorType>(), 0.5);
@@ -79,7 +79,7 @@ template<class VectorType> struct RSqrtFunctor {
 template<class VectorType>
 void RSqrtTest()
 {
-  std::cout << "Testing RSqrt "
+  std::cout << "  Testing RSqrt "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
   RaiseToTest<VectorType>(RSqrtFunctor<VectorType>(), -0.5);
@@ -91,7 +91,7 @@ template<class VectorType> struct CbrtFunctor {
 template<class VectorType>
 void CbrtTest()
 {
-  std::cout << "Testing Cbrt "
+  std::cout << "  Testing Cbrt "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
   RaiseToTest<VectorType>(CbrtFunctor<VectorType>(), 1.0/3.0);
@@ -103,7 +103,7 @@ template<class VectorType> struct RCbrtFunctor {
 template<class VectorType>
 void RCbrtTest()
 {
-  std::cout << "Testing RCbrt "
+  std::cout << "  Testing RCbrt "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
   RaiseToTest<VectorType>(RCbrtFunctor<VectorType>(), -1.0/3.0);
@@ -152,7 +152,7 @@ template<class VectorType> struct ExpFunctor {
 template<class VectorType>
 void ExpTest()
 {
-  std::cout << "Testing Exp "
+  std::cout << "  Testing Exp "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
   RaiseByTest<VectorType>(ExpFunctor<VectorType>(), 2.71828183);
@@ -164,7 +164,7 @@ template<class VectorType> struct Exp2Functor {
 template<class VectorType>
 void Exp2Test()
 {
-  std::cout << "Testing Exp2 "
+  std::cout << "  Testing Exp2 "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
   RaiseByTest<VectorType>(Exp2Functor<VectorType>(), 2.0);
@@ -176,7 +176,7 @@ template<class VectorType> struct ExpM1Functor {
 template<class VectorType>
 void ExpM1Test()
 {
-  std::cout << "Testing ExpM1 "
+  std::cout << "  Testing ExpM1 "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
   RaiseByTest<VectorType>(ExpM1Functor<VectorType>(), 2.71828183, 0.0, -1.0);
@@ -188,7 +188,7 @@ template<class VectorType> struct Exp10Functor {
 template<class VectorType>
 void Exp10Test()
 {
-  std::cout << "Testing Exp10 "
+  std::cout << "  Testing Exp10 "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
   RaiseByTest<VectorType>(Exp10Functor<VectorType>(), 10.0);
@@ -236,7 +236,7 @@ template<class VectorType> struct LogFunctor {
 template<class VectorType>
 void LogTest()
 {
-  std::cout << "Testing Log "
+  std::cout << "  Testing Log "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
   LogBaseTest<VectorType>(LogFunctor<VectorType>(), 2.71828183);
@@ -248,7 +248,7 @@ template<class VectorType> struct Log10Functor {
 template<class VectorType>
 void Log10Test()
 {
-  std::cout << "Testing Log10 "
+  std::cout << "  Testing Log10 "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
   LogBaseTest<VectorType>(Log10Functor<VectorType>(), 10.0);
@@ -260,33 +260,36 @@ template<class VectorType> struct Log1PFunctor {
 template<class VectorType>
 void Log1PTest()
 {
-  std::cout << "Testing Log1P "
+  std::cout << "  Testing Log1P "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
   LogBaseTest<VectorType>(Log1PFunctor<VectorType>(), 2.71828183, 1.0);
 }
 
 //-----------------------------------------------------------------------------
-#define RUN_VECTOR_TEMPLATE(func) \
-  func<dax::Scalar>(); \
-  func<dax::Vector3>(); \
-  func<dax::Vector4>()
+struct TestExpFunctor
+{
+  template <typename T> void operator()(const T&) const {
+    SqrtTest<T>();
+    RSqrtTest<T>();
+    CbrtTest<T>();
+    RCbrtTest<T>();
+    ExpTest<T>();
+    Exp2Test<T>();
+    ExpM1Test<T>();
+    Exp10Test<T>();
+    LogTest<T>();
+    Log10Test<T>();
+    Log1PTest<T>();
+  }
+};
 
 void RunExpTests()
 {
   PowTest();
-  RUN_VECTOR_TEMPLATE(SqrtTest);
-  RUN_VECTOR_TEMPLATE(RSqrtTest);
-  RUN_VECTOR_TEMPLATE(CbrtTest);
-  RUN_VECTOR_TEMPLATE(RCbrtTest);
-  RUN_VECTOR_TEMPLATE(ExpTest);
-  RUN_VECTOR_TEMPLATE(Exp2Test);
-  RUN_VECTOR_TEMPLATE(ExpM1Test);
-  RUN_VECTOR_TEMPLATE(Exp10Test);
   Log2Test();
-  RUN_VECTOR_TEMPLATE(LogTest);
-  RUN_VECTOR_TEMPLATE(Log10Test);
-  RUN_VECTOR_TEMPLATE(Log1PTest);
+  dax::internal::Testing::TryAllTypes(TestExpFunctor(),
+                                      dax::internal::Testing::TypeCheckReal());
 }
 
 } // Anonymous namespace

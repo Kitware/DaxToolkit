@@ -55,7 +55,7 @@ void TestTriangle(VectorType angle,
                   VectorType adjacent,
                   VectorType hypotenuse)
 {
-  std::cout << "Testing triangle "
+  std::cout << "  Testing triangle "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
 
@@ -77,7 +77,7 @@ void TestTriangle(VectorType angle,
 template<typename VectorType>
 void TestHyperbolic(VectorType x)
 {
-  std::cout << "Testing hyperbolic "
+  std::cout << "  Testing hyperbolic "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
 
@@ -101,21 +101,45 @@ void TestHyperbolic(VectorType x)
                   "TanH not inverting.");
 }
 
+const dax::Id MAX_VECTOR_SIZE = 4;
+
+struct TriangleInitStruct {
+  dax::Scalar Angle;
+  dax::Scalar Opposite;
+  dax::Scalar Adjacent;
+  dax::Scalar Hypotenuse;
+} TriangleInit[MAX_VECTOR_SIZE] = {
+  { 0.643501108793284, 3.0, 4.0, 5.0 },
+  { (1.0/4.0)*dax::exec::math::Pi(), 1.0, 1.0, dax::exec::math::Sqrt(2.0) },
+  { (1.0/6.0)*dax::exec::math::Pi(), 1.0, dax::exec::math::Sqrt(3.0), 2.0 },
+  { (1.0/3.0)*dax::exec::math::Pi(), dax::exec::math::Sqrt(3.0), 1.0, 2.0 }
+};
+
+struct TestTrigFunctor
+{
+  template <typename T> void operator()(const T&) const {
+    typedef dax::VectorTraits<T> Traits;
+    DAX_TEST_ASSERT(Traits::NUM_COMPONENTS <= MAX_VECTOR_SIZE,
+                    "Need to update test for larger vectors.");
+    T angle, opposite, adjacent, hypotenuse;
+    for (int index = 0; index < Traits::NUM_COMPONENTS; index++)
+      {
+      Traits::SetComponent(angle, index, TriangleInit[index].Angle);
+      Traits::SetComponent(opposite, index, TriangleInit[index].Opposite);
+      Traits::SetComponent(adjacent, index, TriangleInit[index].Adjacent);
+      Traits::SetComponent(hypotenuse, index, TriangleInit[index].Hypotenuse);
+      }
+    TestTriangle(angle, opposite, adjacent, hypotenuse);
+    TestHyperbolic(angle);
+  }
+};
+
 void TestTrig()
 {
   TestPi();
   TestArcTan2();
-  TestTriangle(dax::Scalar(0.643501108793284),
-               dax::Scalar(3.0),
-               dax::Scalar(4.0),
-               dax::Scalar(5.0));
-  const dax::Scalar pi = dax::exec::math::Pi();
-  TestTriangle(dax::make_Vector3(0.25*pi, 0.16666666667*pi, 0.33333333333*pi),
-               dax::make_Vector3(1.0, 1.0, dax::exec::math::Sqrt(3.0)),
-               dax::make_Vector3(1.0, dax::exec::math::Sqrt(3.0), 1.0),
-               dax::make_Vector3(dax::exec::math::Sqrt(2.0), 2.0, 2.0));
-  TestHyperbolic(dax::Scalar(0.5));
-  TestHyperbolic(dax::make_Vector4(0.0, 0.25, 1.0, 2.0));
+  dax::internal::Testing::TryAllTypes(TestTrigFunctor(),
+                                      dax::internal::Testing::TypeCheckReal());
 }
 
 } // anonymous namespace
