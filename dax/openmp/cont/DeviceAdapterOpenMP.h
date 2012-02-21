@@ -19,6 +19,13 @@
 #include <dax/openmp/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
+namespace cont {
+//forward declare the arrayhandle class
+template<typename OtherT, typename OtherDevice> class ArrayHandle;
+}
+}
+
+namespace dax {
 namespace openmp {
 namespace cont {
 
@@ -33,6 +40,14 @@ struct DeviceAdapterOpenMP
                        dax::Id numInstances)
   {
     dax::openmp::cont::scheduleThrust(functor, parameters, numInstances);
+  }
+
+  template<class Functor, class Parameters, typename T>
+  static void Schedule(Functor functor,
+                       Parameters parameters,
+                       dax::cont::ArrayHandle<T,DeviceAdapterOpenMP> &ids)
+  {
+    dax::openmp::cont::scheduleThrust(functor, parameters, ids.ReadyAsInput());
   }
 
   template<typename T>

@@ -32,10 +32,6 @@ template<typename OtherT, typename OtherDevice> class ArrayHandle;
 ///
 struct DeviceAdapterDebug
 {
-  template<typename T>
-  class ArrayContainerExecution
-      : public dax::cont::internal::ArrayContainerExecutionCPU<T> { };
-
   template<class Functor, class Parameters>
   static void Schedule(Functor functor,
                        Parameters parameters,
@@ -47,11 +43,14 @@ struct DeviceAdapterDebug
   template<class Functor, class Parameters, typename T>
   static void Schedule(Functor functor,
                        Parameters parameters,
-                       const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& ids)
+                       dax::cont::ArrayHandle<T,DeviceAdapterDebug>& ids)
   {
-    dax::cont::scheduleDebug(functor, parameters, ids.GetExecutionArray());
+    dax::cont::scheduleDebug(functor, parameters, ids.ReadyAsInput());
   }
 
+  template<typename T>
+  class ArrayContainerExecution
+      : public dax::cont::internal::ArrayContainerExecutionCPU<T> { };
 };
 
 }

@@ -26,6 +26,13 @@
 #include <dax/cuda/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
+namespace cont {
+//forward declare the arrayhandle class
+template<typename OtherT, typename OtherDevice> class ArrayHandle;
+}
+}
+
+namespace dax {
 namespace cuda {
 namespace cont {
 
@@ -43,6 +50,18 @@ struct DeviceAdapterCuda
     dax::cuda::cont::scheduleCuda(functor, parameters, numInstances);
 #else
     dax::cuda::cont::scheduleThrust(functor, parameters, numInstances);
+#endif
+  }
+
+  template<class Functor, class Parameters, typename T>
+  static void Schedule(Functor functor,
+                       Parameters parameters,
+                       dax::cont::ArrayHandle<T,DeviceAdapterCuda> &ids)
+  {
+#ifdef DAX_CUDA_NATIVE_SCHEDULE
+    dax::cuda::cont::scheduleCuda(functor, parameters, ids.ReadyAsInput());
+#else
+    dax::cuda::cont::scheduleThrust(functor, parameters, ids.ReadyAsInput());
 #endif
   }
 
