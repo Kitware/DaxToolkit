@@ -38,6 +38,15 @@ namespace math {
   }; \
   }
 
+#define DAX_SYS_MATH_TEMPLATE(func) \
+  DAX_SYS_MATH_FUNCTOR(func) \
+  namespace internal { \
+    template <typename T> DAX_EXEC_EXPORT T func ## _template(T x) \
+    { \
+      return dax::exec::VectorMap(x, func ## _functor()); \
+    } \
+  }
+
 //-----------------------------------------------------------------------------
 #ifdef DAX_CUDA
 #define DAX_USE_IEEE_NONFINITE
@@ -142,13 +151,9 @@ DAX_EXEC_EXPORT bool IsFinite(dax::Scalar x)
 }
 
 //-----------------------------------------------------------------------------
-/// Computes the remainder on division of 2 floating point numbers. The return
-/// value is \p numerator - n \p denominator, where n is the quotient of \p
-/// numerator divided by \p denominator rounded towards zero to an integer. For
-/// example, <tt>FMod(6.5, 2.3)</tt> returns 1.9, which is 6.5 minus 4.6.
-///
+namespace internal {
 template<typename T>
-DAX_EXEC_EXPORT T FMod(T numerator, T denominator)
+DAX_EXEC_EXPORT T fmod_template(T numerator, T denominator)
 {
   typedef dax::VectorTraits<T> Traits;
   T result;
@@ -162,16 +167,30 @@ DAX_EXEC_EXPORT T FMod(T numerator, T denominator)
     }
   return result;
 }
+}
 
-//-----------------------------------------------------------------------------
 /// Computes the remainder on division of 2 floating point numbers. The return
 /// value is \p numerator - n \p denominator, where n is the quotient of \p
-/// numerator divided by \p denominator rounded towards the nearest integer
-/// (instead of toward zero like FMod). For example, <tt>FMod(6.5, 2.3)</tt>
-/// returns -0.4, which is 6.5 minus 6.9.
+/// numerator divided by \p denominator rounded towards zero to an integer. For
+/// example, <tt>FMod(6.5, 2.3)</tt> returns 1.9, which is 6.5 minus 4.6.
 ///
+DAX_EXEC_EXPORT
+dax::Scalar FMod(dax::Scalar numerator, dax::Scalar denominator) {
+  return internal::fmod_template(numerator, denominator);
+}
+DAX_EXEC_EXPORT
+dax::Vector3 FMod(dax::Vector3 numerator, dax::Vector3 denominator) {
+  return internal::fmod_template(numerator, denominator);
+}
+DAX_EXEC_EXPORT
+dax::Vector4 FMod(dax::Vector4 numerator, dax::Vector4 denominator) {
+  return internal::fmod_template(numerator, denominator);
+}
+
+//-----------------------------------------------------------------------------
+namespace internal {
 template<typename T>
-DAX_EXEC_EXPORT T Remainder(T numerator, T denominator)
+DAX_EXEC_EXPORT T remainder_template(T numerator, T denominator)
 {
   typedef dax::VectorTraits<T> Traits;
   T result;
@@ -185,14 +204,31 @@ DAX_EXEC_EXPORT T Remainder(T numerator, T denominator)
     }
   return result;
 }
+}
+
+/// Computes the remainder on division of 2 floating point numbers. The return
+/// value is \p numerator - n \p denominator, where n is the quotient of \p
+/// numerator divided by \p denominator rounded towards the nearest integer
+/// (instead of toward zero like FMod). For example, <tt>FMod(6.5, 2.3)</tt>
+/// returns -0.4, which is 6.5 minus 6.9.
+///
+DAX_EXEC_EXPORT
+dax::Scalar Remainder(dax::Scalar numerator, dax::Scalar denominator) {
+  return internal::remainder_template(numerator, denominator);
+}
+DAX_EXEC_EXPORT
+dax::Vector3 Remainder(dax::Vector3 numerator, dax::Vector3 denominator) {
+  return internal::remainder_template(numerator, denominator);
+}
+DAX_EXEC_EXPORT
+dax::Vector4 Remainder(dax::Vector4 numerator, dax::Vector4 denominator) {
+  return internal::remainder_template(numerator, denominator);
+}
 
 //-----------------------------------------------------------------------------
-/// Returns the remainder on division of 2 floating point numbers just like
-/// Remainder. In addition, this function also returns the \c quotient used to
-/// get that remainder.
-///
+namespace internal {
 template<typename T>
-DAX_EXEC_EXPORT T RemainderQuotient(T numerator, T denominator, T &quotient)
+DAX_EXEC_EXPORT T remquo_template(T numerator, T denominator, T &quotient)
 {
   typedef dax::VectorTraits<T> Traits;
   T result;
@@ -209,20 +245,41 @@ DAX_EXEC_EXPORT T RemainderQuotient(T numerator, T denominator, T &quotient)
     }
   return result;
 }
+}
 
+/// Returns the remainder on division of 2 floating point numbers just like
+/// Remainder. In addition, this function also returns the \c quotient used to
+/// get that remainder.
+///
 DAX_EXEC_EXPORT dax::Scalar RemainderQuotient(dax::Scalar numerator,
                                               dax::Scalar denominator,
                                               int &quotient)
 {
   return DAX_SYS_MATH_FUNCTION(remquo)(numerator, denominator, &quotient);
 }
+DAX_EXEC_EXPORT dax::Scalar RemainderQuotient(dax::Scalar numerator,
+                                              dax::Scalar denominator,
+                                              dax::Scalar &quotient)
+{
+  return internal::remquo_template(numerator, denominator, quotient);
+}
+DAX_EXEC_EXPORT dax::Vector3 RemainderQuotient(dax::Vector3 numerator,
+                                               dax::Vector3 denominator,
+                                               dax::Vector3 &quotient)
+{
+  return internal::remquo_template(numerator, denominator, quotient);
+}
+DAX_EXEC_EXPORT dax::Vector4 RemainderQuotient(dax::Vector4 numerator,
+                                               dax::Vector4 denominator,
+                                               dax::Vector4 &quotient)
+{
+  return internal::remquo_template(numerator, denominator, quotient);
+}
 
 //-----------------------------------------------------------------------------
-/// Gets the integral and fractional parts of \c x. The return value is the
-/// fractional part and \c integral is set to the integral part.
-///
+namespace internal {
 template<typename T>
-DAX_EXEC_EXPORT T ModF(T x, T &integral)
+DAX_EXEC_EXPORT T modf_template(T x, T &integral)
 {
   typedef dax::VectorTraits<T> Traits;
   T result;
@@ -238,35 +295,71 @@ DAX_EXEC_EXPORT T ModF(T x, T &integral)
     }
   return result;
 }
+}
+
+/// Gets the integral and fractional parts of \c x. The return value is the
+/// fractional part and \c integral is set to the integral part.
+///
+DAX_EXEC_EXPORT dax::Scalar ModF(dax::Scalar x, dax::Scalar &integral)
+{
+  return internal::modf_template(x, integral);
+}
+DAX_EXEC_EXPORT dax::Vector3 ModF(dax::Vector3 x, dax::Vector3 &integral)
+{
+  return internal::modf_template(x, integral);
+}
+DAX_EXEC_EXPORT dax::Vector4 ModF(dax::Vector4 x, dax::Vector4 &integral)
+{
+  return internal::modf_template(x, integral);
+}
 
 //-----------------------------------------------------------------------------
-DAX_SYS_MATH_FUNCTOR(ceil)
-DAX_SYS_MATH_FUNCTOR(floor)
-DAX_SYS_MATH_FUNCTOR(round)
+DAX_SYS_MATH_TEMPLATE(ceil)
+DAX_SYS_MATH_TEMPLATE(floor)
+DAX_SYS_MATH_TEMPLATE(round)
 
 /// Round \p x to the smallest integer value not less than x.
 ///
-template<typename T> DAX_EXEC_EXPORT T Ceil(T x)
-{
-  return dax::exec::VectorMap(x, internal::ceil_functor());
+DAX_EXEC_EXPORT dax::Scalar Ceil(dax::Scalar x) {
+  return internal::ceil_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector3 Ceil(dax::Vector3 x) {
+  return internal::ceil_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector4 Ceil(dax::Vector4 x) {
+  return internal::ceil_template(x);
 }
 
 /// round \p x to the largest integer value not greater than x.
 ///
-template<typename T> DAX_EXEC_EXPORT T Floor(T x)
-{
-  return dax::exec::VectorMap(x, internal::floor_functor());
+DAX_EXEC_EXPORT dax::Scalar Floor(dax::Scalar x) {
+  return internal::floor_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector3 Floor(dax::Vector3 x) {
+  return internal::floor_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector4 Floor(dax::Vector4 x) {
+  return internal::floor_template(x);
 }
 
 /// Round \p x to the nearest integral value.
 ///
-template<typename T> DAX_EXEC_EXPORT T Round(T x)
-{
-  return dax::exec::VectorMap(x, internal::round_functor());
+DAX_EXEC_EXPORT dax::Scalar Round(dax::Scalar x) {
+  return internal::round_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector3 Round(dax::Vector3 x) {
+  return internal::round_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector4 Round(dax::Vector4 x) {
+  return internal::round_template(x);
 }
 
 }
 }
 } // namespace dax::exec::math
+
+#undef DAX_SYS_MATH_FUNCTION
+#undef DAX_SYS_MATH_FUNCTOR
+#undef DAX_SYS_MATH_TEMPLATE
 
 #endif //__dax_exec_math_Precision_h

@@ -38,18 +38,31 @@ namespace math {
   }; \
   }
 
+#define DAX_SYS_MATH_TEMPLATE(func) \
+  DAX_SYS_MATH_FUNCTOR(func) \
+  namespace internal { \
+    template <typename T> DAX_EXEC_EXPORT T func ## _template(T x) \
+    { \
+      return dax::exec::VectorMap(x, func ## _functor()); \
+    } \
+  }
+
 //-----------------------------------------------------------------------------
-DAX_SYS_MATH_FUNCTOR(fabs)
+DAX_SYS_MATH_TEMPLATE(fabs)
 
 /// Return the absolute value of \x. That is, return \p x if it is positive or
 /// \p -x if it is negative.
 ///
-template<typename T> DAX_EXEC_EXPORT T Abs(T x)
-{
-  return dax::exec::VectorMap(x, internal::fabs_functor());
+DAX_EXEC_EXPORT dax::Scalar Abs(dax::Scalar x) {
+  return internal::fabs_template(x);
 }
-
-template<> DAX_EXEC_EXPORT dax::Id Abs(dax::Id x)
+DAX_EXEC_EXPORT dax::Vector3 Abs(dax::Vector3 x) {
+  return internal::fabs_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector4 Abs(dax::Vector4 x) {
+  return internal::fabs_template(x);
+}
+DAX_EXEC_EXPORT dax::Id Abs(dax::Id x)
 {
 #if DAX_SIZE_ID == DAX_SIZE_INT
   return abs(x);
@@ -61,8 +74,7 @@ template<> DAX_EXEC_EXPORT dax::Id Abs(dax::Id x)
 #error Cannot find correct size for dax::Id.
 #endif
 }
-
-template<> DAX_EXEC_EXPORT dax::Id3 Abs(dax::Id3 x)
+DAX_EXEC_EXPORT dax::Id3 Abs(dax::Id3 x)
 {
   return dax::make_Id3(Abs(x[0]), Abs(x[1]), Abs(x[2]));
 }
@@ -87,5 +99,9 @@ DAX_EXEC_EXPORT dax::Scalar CopySign(dax::Scalar x, dax::Scalar y)
 }
 }
 } // namespace dax::exec::math
+
+#undef DAX_SYS_MATH_FUNCTION
+#undef DAX_SYS_MATH_FUNCTOR
+#undef DAX_SYS_MATH_TEMPLATE
 
 #endif //__dax_exec_math_Sign_h
