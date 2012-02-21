@@ -12,6 +12,17 @@
 
 namespace {
 
+static void CompareDimensionalityTags(dax::TypeTraitsScalarTag,
+                                      dax::VectorTraitsTagSingleComponent)
+{
+  // If we are here, everything is fine.
+}
+static void CompareDimensionalityTags(dax::TypeTraitsVectorTag,
+                                      dax::VectorTraitsTagMultipleComponents)
+{
+  // If we are here, everything is fine.
+}
+
 /// Compares some manual arithmetic through type traits to overloaded
 /// arithmetic that should be tested separately in UnitTestTypes.
 template <class T>
@@ -53,7 +64,30 @@ static void TestVectorType(const T &value)
   DAX_TEST_ASSERT(result == dax::dot(value, value),
                   "Got bad result for dot product");
   }
+
+  // This will fail to compile if the tags are wrong.
+  CompareDimensionalityTags(
+        typename dax::TypeTraits<T>::DimensionalityTag(),
+        typename dax::VectorTraits<T>::HasMultipleComponents());
 }
+
+static const dax::Id MAX_VECTOR_SIZE = 4;
+static const dax::Id VectorInit[MAX_VECTOR_SIZE] = { 42, 54, 67, 12 };
+
+struct TestVectorTypeFunctor
+{
+  template <typename T> void operator()(const T&) const {
+    typedef dax::VectorTraits<T> Traits;
+    DAX_TEST_ASSERT(Traits::NUM_COMPONENTS <= MAX_VECTOR_SIZE,
+                    "Need to update test for larger vectors.");
+    T vector;
+    for (int index = 0; index < Traits::NUM_COMPONENTS; index++)
+      {
+      Traits::SetComponent(vector, index, VectorInit[index]);
+      }
+    TestVectorType(vector);
+  }
+};
 
 static void CheckVectorComponentsTag(dax::VectorTraitsTagMultipleComponents)
 {
@@ -93,20 +127,12 @@ static void TestScalarComponentsTag()
 
 void TestVectorTraits()
 {
-  std::cout << "Testing Id3" << std::endl;
-  TestVectorType(dax::make_Id3(42, 54, 67));
+  dax::internal::Testing::TryAllTypes(TestVectorTypeFunctor());
+
   TestVectorComponentsTag<dax::Id3>();
-  std::cout << "Testing Vector3" << std::endl;
-  TestVectorType(dax::make_Vector3(42, 54, 67));
   TestVectorComponentsTag<dax::Vector3>();
-  std::cout << "Testing Vector4" << std::endl;
-  TestVectorType(dax::make_Vector4(42, 54, 67, 12));
   TestVectorComponentsTag<dax::Vector4>();
-  std::cout << "Testing Id" << std::endl;
-  TestVectorType(static_cast<dax::Id>(42));
   TestScalarComponentsTag<dax::Id>();
-  std::cout << "Testing Scalar" << std::endl;
-  TestVectorType(static_cast<dax::Scalar>(42));
   TestScalarComponentsTag<dax::Scalar>();
 }
 
