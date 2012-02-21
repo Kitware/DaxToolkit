@@ -184,10 +184,10 @@ private:
       }
 
     std::cout << "Testing Schedule on Subset" << std::endl;
-    dax::Id rawsubset[4];
+    std::vector<dax::Id> rawsubset(4);
     rawsubset[0]=0;rawsubset[1]=10;rawsubset[2]=30;rawsubset[3]=20;
-    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> subset(&rawsubset[0],
-                                                         &rawsubset[3]);
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> subset(rawsubset.begin(),
+                                                         rawsubset.end());
 
     std::cout << "Running clear on subset." << std::endl;
     DeviceAdapter::Schedule(ClearArrayKernel(),
@@ -198,7 +198,6 @@ private:
     for (dax::Id index = 0; index < 4; index++)
       {
       dax::Id value = controlArray[rawsubset[index]];
-      std::cout << "index: " << index << " rws: " << rawsubset[index] << " value: " << value << std::endl;
       DAX_TEST_ASSERT(value == OFFSET,
                       "Got bad value for subset scheduled kernel.");
       }
