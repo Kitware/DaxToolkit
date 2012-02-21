@@ -61,42 +61,48 @@ union IEEE754Bits {
   dax::internal::UInt32Type bits;
   dax::Scalar scalar;
 };
-const IEEE754Bits MathNanBits    = { 0x7FF80000 };
-const IEEE754Bits MathInfBits    = { 0x7FF00000 };
-const IEEE754Bits MathNegInfBits = { 0xFFF00000 };
+#define DAX_NAN_BITS      0x7FC00000
+#define DAX_INF_BITS      0x7F800000
+#define DAX_NEG_INF_BITS  0xFF800000
 #elif DAX_SIZE_SCALAR == 8
 union IEEE754Bits {
   dax::internal::UInt64Type bits;
   dax::Scalar scalar;
 };
-const IEEE754Bits MathNanBits    = { 0x7FF8000000000000LL };
-const IEEE754Bits MathInfBits    = { 0x7FF0000000000000LL };
-const IEEE754Bits MathNegInfBits = { 0xFFF0000000000000LL };
+#define DAX_NAN_BITS      0x7FF8000000000000LL
+#define DAX_INF_BITS      0x7FF0000000000000LL
+#define DAX_NEG_INF_BITS  0xFFF0000000000000LL
 #else
 #error Unknown scalar size
 #endif
 
 } // namespace internal
 
+#define DAX_DEFINE_BITS(name, rep) \
+  const dax::exec::math::internal::IEEE754Bits name = { rep }
+
 /// Returns the scalar representation for not-a-number (NaN).
 ///
 DAX_EXEC_EXPORT dax::Scalar Nan()
 {
-  return internal::MathNanBits.scalar;
+  DAX_DEFINE_BITS(NanBits, DAX_NAN_BITS);
+  return NanBits.scalar;
 }
 
 /// Returns the scalar reprentation for infinity.
 ///
 DAX_EXEC_EXPORT dax::Scalar Infinity()
 {
-  return internal::MathInfBits.scalar;
+  DAX_DEFINE_BITS(InfBits, DAX_INF_BITS);
+  return InfBits.scalar;
 }
 
 /// Returns the scalar representation for negitive infinity.
 ///
 DAX_EXEC_EXPORT dax::Scalar NegativeInfinity()
 {
-  return internal::MathNegInfBits.scalar;
+  DAX_DEFINE_BITS(NegInfBits, DAX_NEG_INF_BITS);
+  return NegInfBits.scalar;
 }
 
 #else // !DAX_USE_IEEE_NONFINITE
@@ -126,6 +132,10 @@ DAX_EXEC_EXPORT dax::Scalar NegativeInfinity()
 
 #ifdef DAX_USE_IEEE_NONFINITE
 #undef DAX_USE_IEEE_NONFINITE
+#undef DAX_DEFINE_BITS
+#undef DAX_NAN_BITS
+#undef DAX_INF_BITS
+#undef DAX_NEG_INF_BITS
 #endif
 
 //-----------------------------------------------------------------------------
