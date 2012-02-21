@@ -118,7 +118,7 @@ DAX_EXEC_EXPORT dax::Vector4 Cbrt(dax::Vector4 x) {
 
 //-----------------------------------------------------------------------------
 #ifdef DAX_CUDA
-DAX_SYS_MATH_FUNCTOR(rcbrt)
+DAX_SYS_MATH_TEMPLATE(rcbrt)
 #else
 namespace internal {
 template<typename T> DAX_EXEC_EXPORT T rcbrt_template(T x) {

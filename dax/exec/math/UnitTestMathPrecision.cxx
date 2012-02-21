@@ -34,7 +34,10 @@ void TestNonFinites()
   DAX_TEST_ASSERT(finite < inf, "Infinity big");
   DAX_TEST_ASSERT(zero > -inf, "-Infinity small");
   DAX_TEST_ASSERT(finite > -inf, "-Infinity small");
+  DAX_TEST_ASSERT(zero > neginf, "-Infinity small");
+  DAX_TEST_ASSERT(finite > neginf, "-Infinity small");
 
+  // Math check functions.
   DAX_TEST_ASSERT(!dax::exec::math::IsNan(zero), "Bad IsNan check.");
   DAX_TEST_ASSERT(!dax::exec::math::IsNan(finite), "Bad IsNan check.");
   DAX_TEST_ASSERT(dax::exec::math::IsNan(nan), "Bad IsNan check.");
