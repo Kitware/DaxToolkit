@@ -15,6 +15,7 @@
 #include <thrust/host_vector.h>
 
 #include <iostream>
+#include <set>
 
 namespace {
 
@@ -84,19 +85,37 @@ int UnitTestCudaScheduleThrust(int, char *[])
   std::cout << "Running add." << std::endl;
   dax::cuda::cont::scheduleThrust(AddArray(), rawDeviceArray, ARRAY_SIZE);
 
+  std::set<dax::Id> host_subset;
+  host_subset.insert(0);host_subset.insert(20);
+  host_subset.insert(10);host_subset.insert(30);
+
+  thrust::device_vector<dax::Id> device_subset(4);
+  thrust::copy(host_subset.begin(),host_subset.end(),device_subset.begin());
+
+  dax::internal::DataArray<dax::Id> dataArraySubset(thrust::raw_pointer_cast(
+                                                      &device_subset[0]),4);
+
+  std::cout << "Running clear on subset." << std::endl;
+  dax::cuda::cont::scheduleThrust(ClearArray(), rawDeviceArray, dataArraySubset);
+
   std::cout << "Checking results." << std::endl;
   thrust::host_vector<dax::Id> hostArray(ARRAY_SIZE);
   thrust::copy(deviceArray.begin(), deviceArray.end(), hostArray.begin());
 
   for (dax::Id index = 0; index < ARRAY_SIZE; index++)
     {
+    //items in the subset should be equal to OFFSET, while the
+    //the rest should be index + OFFSET
     dax::Id value = hostArray[index];
-    if (value != index + OFFSET)
+    dax::Id expectedValue = host_subset.count(index) == 1 ? OFFSET :
+                                                            index + OFFSET;
+    if (value != expectedValue)
       {
       std::cout << "Got bad value." << std::endl;
       return 1;
       }
     }
+
 
   std::cout << "Generating one error." << std::endl;
   std::string message;
