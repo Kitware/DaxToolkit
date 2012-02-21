@@ -11,20 +11,10 @@
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
-
-#include <dax/VectorTraits.h>
-#include <dax/exec/VectorOperations.h>
+#include <dax/exec/math/Trig.h>
 
 namespace dax {
 namespace worklet {
-
-template<typename T>
-struct DoSine {
-  DAX_EXEC_EXPORT T operator()(T x) const
-  {
-    return static_cast<T>(sinf(x));
-  }
-};
 
 template<class CellType, class FieldType>
 DAX_WORKLET void Sine(
@@ -32,9 +22,8 @@ DAX_WORKLET void Sine(
     DAX_IN const dax::exec::Field<FieldType> &inField,
     DAX_OUT dax::exec::Field<FieldType> &outField)
 {
-  typedef typename dax::VectorTraits<FieldType>::ValueType ComponentType;
   FieldType inValue = work.GetFieldValue(inField);
-  FieldType outValue = dax::exec::VectorMap(inValue, DoSine<ComponentType>());
+  FieldType outValue = dax::exec::math::Sin(inValue);
   work.SetFieldValue(outField, outValue);
 }
 

@@ -17,8 +17,6 @@
 
 #include <dax/cont/internal/Testing.h>
 
-#include <math.h>
-
 namespace {
 
 const dax::Id DIM = 64;
