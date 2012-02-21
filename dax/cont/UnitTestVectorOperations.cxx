@@ -69,6 +69,16 @@ static void TestVectorType(const VectorType &value)
   DAX_TEST_ASSERT(sum.Sum == fillValue * Traits::NUM_COMPONENTS,
                   "Got bad result filling vector");
   }
+
+  {
+  // Test another form of the VectorFill function.
+  ValueType fillValue = Traits::GetComponent(value, 0);
+  VectorType fillVector = dax::cont::VectorFill<VectorType>(fillValue);
+  Summation<ValueType> sum;
+  dax::cont::VectorForEach(fillVector, sum);
+  DAX_TEST_ASSERT(sum.Sum == fillValue * Traits::NUM_COMPONENTS,
+                  "Got bad result filling vector");
+  }
 }
 
 static void TestVectorTypes()
