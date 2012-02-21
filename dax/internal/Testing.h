@@ -9,6 +9,7 @@
 #define __dax_internal_Testing_h
 
 #include <dax/Types.h>
+#include <dax/TypeTraits.h>
 #include <dax/VectorTraits.h>
 
 #include <iostream>
@@ -147,6 +148,83 @@ public:
     return 0;
   }
 #endif
+
+  /// Check functors to be used with the TryAllTypes method.
+  ///
+  struct TypeCheckAlwaysTrue {
+    template <typename T> bool operator()(const T&) const { return true; }
+  };
+  struct TypeCheckInteger {
+    template <typename T> bool operator()(const T&) const {
+      return this->IsInteger(dax::TypeTraits<T>::NumericTag);
+    }
+  private:
+    template <class T> bool IsInteger(T) const { return false; }
+    bool IsInteger(dax::TypeTraitsIntegerTag) const { return true; }
+  };
+  struct TypeCheckReal {
+    template <typename T> bool operator()(const T&) const {
+      return this->IsReal(dax::TypeTraits<T>::NumericTag);
+    }
+  private:
+    template <class T> bool IsReal(T) const { return false; }
+    bool IsReal(dax::TypeTraitsRealTag) const { return true; }
+  };
+  struct TypeCheckScalar {
+    template <typename T> bool operator()(const T&) const {
+      return this->IsScalar(dax::TypeTraits<T>::DimensionalityTag);
+    }
+  private:
+    template <class T> bool IsScalar(T) const { return false; }
+    bool IsScalar(dax::TypeTraitsScalarTag) const { return true; }
+  };
+  struct TypeCheckVector {
+    template <typename T> bool operator()(const T&) const {
+      return this->IsVector(dax::TypeTraits<T>::DimensionalityTag);
+    }
+  private:
+    template <class T> bool IsVector(T) const { return false; }
+    bool IsVector(dax::TypeTraitsVectorTag) const { return true; }
+  };
+  template <class Check1Type, class Check2Type>
+  struct TypeCheckAnd {
+    template <typename T> bool operator()(const T &t) const {
+      return this->Check1(t) && this->Check2(t);
+    }
+  private:
+    Check1Type Check1;
+    Check2Type Check2;
+  };
+
+  /// Runs templated \p function on all the basic types defined in Dax. This is
+  /// helpful to test templated functions that should work on all types. If the
+  /// function is supposed to work on some subset of types, then \p check can
+  /// be set to restrict the types used. This Testing class contains several
+  /// helpful check functors.
+  ///
+  template<class FunctionType, class CheckType>
+  static void TryAllTypes(FunctionType function, CheckType check)
+  {
+    dax::Id id = 0;
+    if (check(id)) { std::cout << "Id" << std::endl; function(id); }
+
+    dax::Id3 id3 = dax::make_Id3(0, 0, 0);
+    if (check(id3)) { std::cout << "Id3" << std::endl; function(id3); }
+
+    dax::Scalar scalar = 0.0;
+    if (check(scalar)) { std::cout << "Scalar" << std::endl; function(scalar); }
+
+    dax::Vector3 vector3 = dax::make_Vector3(0.0, 0.0, 0.0);
+    if (check(vector3)) { std::cout << "Vector3" << std::endl; function(vector3); }
+
+    dax::Vector4 vector4 = dax::make_Vector4(0.0, 0.0, 0.0, 0.0);
+    if (check(vector4)) { std::cout << "Vector4" << std::endl; function(vector4); }
+  }
+  template<class FunctionType>
+  static void TryAllTypes(FunctionType function)
+  {
+    TryAllTypes(function, TypeCheckAlwaysTrue());
+  }
 };
 
 }

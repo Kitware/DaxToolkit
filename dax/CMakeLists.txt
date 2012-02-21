@@ -10,6 +10,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 set(headers
   Extent.h
   Types.h
+  TypeTraits.h
   VectorTraits.h
   )
 
@@ -35,6 +36,7 @@ endif (DAX_ENABLE_OPENMP)
 set(unit_tests
   UnitTestExtent.cxx
   UnitTestTypes.cxx
+  UnitTestTypeTraits.cxx
   UnitTestVectorTraits.cxx
   )
 
