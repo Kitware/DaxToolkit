@@ -156,7 +156,7 @@ public:
   };
   struct TypeCheckInteger {
     template <typename T> bool operator()(const T&) const {
-      return this->IsInteger(dax::TypeTraits<T>::NumericTag);
+      return this->IsInteger(typename dax::TypeTraits<T>::NumericTag());
     }
   private:
     template <class T> bool IsInteger(T) const { return false; }
@@ -164,7 +164,7 @@ public:
   };
   struct TypeCheckReal {
     template <typename T> bool operator()(const T&) const {
-      return this->IsReal(dax::TypeTraits<T>::NumericTag);
+      return this->IsReal(typename dax::TypeTraits<T>::NumericTag());
     }
   private:
     template <class T> bool IsReal(T) const { return false; }
@@ -172,7 +172,7 @@ public:
   };
   struct TypeCheckScalar {
     template <typename T> bool operator()(const T&) const {
-      return this->IsScalar(dax::TypeTraits<T>::DimensionalityTag);
+      return this->IsScalar(typename dax::TypeTraits<T>::DimensionalityTag());
     }
   private:
     template <class T> bool IsScalar(T) const { return false; }
@@ -180,7 +180,7 @@ public:
   };
   struct TypeCheckVector {
     template <typename T> bool operator()(const T&) const {
-      return this->IsVector(dax::TypeTraits<T>::DimensionalityTag);
+      return this->IsVector(typename dax::TypeTraits<T>::DimensionalityTag());
     }
   private:
     template <class T> bool IsVector(T) const { return false; }
