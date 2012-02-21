@@ -88,6 +88,32 @@ void VectorForEach(VectorType &vector, const FunctorType &functor)
 
 namespace internal {
 
+/// This hidden functor is used to implement VectorFill with VectorForEach.
+///
+template<typename ValueType>
+struct VectorFillFunctor
+{
+  VectorFillFunctor(ValueType value) : Value(value) { }
+  void operator()(ValueType &component) const { component = this->Value; }
+private:
+  ValueType Value;
+};
+
+} // namespace internal
+
+/// Fills every component in a vector with the given value.
+///
+template<class VectorType>
+@DAX_VECTOR_OPERATIONS_EXPORT@
+void VectorFill(VectorType &vector,
+                typename dax::VectorTraits<VectorType>::ValueType value)
+{
+  typedef typename dax::VectorTraits<VectorType>::ValueType ValueType;
+  VectorForEach(vector, internal::VectorFillFunctor<ValueType>(value));
+}
+
+namespace internal {
+
 /// This hidden implementation allows us to specialize VectorReduce for single
 /// component vectors.
 ///
@@ -137,7 +163,7 @@ VectorReduceImpl(const VectorType &vector,
   return dax::VectorTraits<VectorType>::GetComponent(vector, 0);
 }
 
-}
+} // namespace internal
 
 /// Reduces the components in a vector to a single value.
 ///

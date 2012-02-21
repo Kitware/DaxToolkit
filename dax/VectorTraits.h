@@ -93,31 +93,35 @@ struct VectorTraitsBasic {
 };
 }
 
-/// Allows you to treat a dax::Scalar as if it were a vector.
-///
-template<>
-struct VectorTraits<dax::Scalar>
-    : public dax::internal::VectorTraitsBasic<dax::Scalar>
-{
-};
-template<>
-struct VectorTraits<const dax::Scalar>
-    : public dax::internal::VectorTraitsBasic<dax::Scalar>
-{
-};
+#define DAX_BASIC_TYPE_VECTOR(type) \
+  template<> \
+  struct VectorTraits<type> \
+      : public dax::internal::VectorTraitsBasic<type> { }; \
+  template<> \
+  struct VectorTraits<const type> \
+      : public dax::internal::VectorTraitsBasic<type> { }
 
-/// Allows you to treat a dax::Id as if it were a vector.
-///
-template<>
-struct VectorTraits<dax::Id>
-    : public dax::internal::VectorTraitsBasic<dax::Id>
-{
-};
-template<>
-struct VectorTraits<const dax::Id>
-    : public dax::internal::VectorTraitsBasic<dax::Id>
-{
-};
+/// Allows you to treat basic types as if they were vectors.
+
+DAX_BASIC_TYPE_VECTOR(float);
+DAX_BASIC_TYPE_VECTOR(double);
+DAX_BASIC_TYPE_VECTOR(char);
+DAX_BASIC_TYPE_VECTOR(unsigned char);
+DAX_BASIC_TYPE_VECTOR(short);
+DAX_BASIC_TYPE_VECTOR(unsigned short);
+DAX_BASIC_TYPE_VECTOR(int);
+DAX_BASIC_TYPE_VECTOR(unsigned int);
+#if DAX_SIZE_LONG == 8
+DAX_BASIC_TYPE_VECTOR(long);
+DAX_BASIC_TYPE_VECTOR(unsigned long);
+#elif DAX_SIZE_LONG_LONG == 8
+DAX_BASIC_TYPE_VECTOR(long long);
+DAX_BASIC_TYPE_VECTOR(unsigned long long);
+#else
+#error No implementation for 64-bit vector traits.
+#endif
+
+#undef DAX_BASIC_TYPE_VECTOR
 
 }
 

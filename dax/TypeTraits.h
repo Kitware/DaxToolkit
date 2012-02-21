@@ -75,16 +75,15 @@ DAX_BASIC_INTEGER_TYPE(short);
 DAX_BASIC_INTEGER_TYPE(unsigned short);
 DAX_BASIC_INTEGER_TYPE(int);
 DAX_BASIC_INTEGER_TYPE(unsigned int);
-// Waiting for merge with type checking entangled with another git branch.
-//#if DAX_SIZE_LONG == 8
-//DAX_BASIC_INTEGER_TYPE(long);
-//DAX_BASIC_INTEGER_TYPE(unsigned long);
-//#elif DAX_SIZE_LONG_LONG == 8
-//DAX_BASIC_INTEGER_TYPE(long long);
-//DAX_BASIC_INTEGER_TYPE(unsigned long long);
-//#else
-//#error No implementation for 64-bit integer traits.
-//#endif
+#if DAX_SIZE_LONG == 8
+DAX_BASIC_INTEGER_TYPE(long);
+DAX_BASIC_INTEGER_TYPE(unsigned long);
+#elif DAX_SIZE_LONG_LONG == 8
+DAX_BASIC_INTEGER_TYPE(long long);
+DAX_BASIC_INTEGER_TYPE(unsigned long long);
+#else
+#error No implementation for 64-bit integer traits.
+#endif
 
 #undef DAX_BASIC_REAL_TYPE
 #undef DAX_BASIC_INTEGER_TYPE
