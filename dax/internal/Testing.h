@@ -152,48 +152,73 @@ public:
   /// Check functors to be used with the TryAllTypes method.
   ///
   struct TypeCheckAlwaysTrue {
-    template <typename T> bool operator()(const T&) const { return true; }
+    template <typename T, class Functor>
+    void operator()(T t, Functor function) const { function(t); }
   };
   struct TypeCheckInteger {
-    template <typename T> bool operator()(const T&) const {
-      return this->IsInteger(typename dax::TypeTraits<T>::NumericTag());
+    template <typename T, class Functor>
+    void operator()(T t, Functor function) const {
+      this->DoInteger(typename dax::TypeTraits<T>::NumericTag(), t, function);
     }
   private:
-    template <class T> bool IsInteger(T) const { return false; }
-    bool IsInteger(dax::TypeTraitsIntegerTag) const { return true; }
+    template <class Tag, typename T, class Functor>
+    void DoInteger(Tag, T, const Functor&) const {  }
+    template <typename T, class Functor>
+    void DoInteger(dax::TypeTraitsIntegerTag, T t, Functor function) const {
+      function(t);
+    }
   };
   struct TypeCheckReal {
-    template <typename T> bool operator()(const T&) const {
-      return this->IsReal(typename dax::TypeTraits<T>::NumericTag());
+    template <typename T, class Functor>
+    void operator()(T t, Functor function) const {
+      this->DoReal(typename dax::TypeTraits<T>::NumericTag(), t, function);
     }
   private:
-    template <class T> bool IsReal(T) const { return false; }
-    bool IsReal(dax::TypeTraitsRealTag) const { return true; }
+    template <class Tag, typename T, class Functor>
+    void DoReal(Tag, T, const Functor&) const {  }
+    template <typename T, class Functor>
+    void DoReal(dax::TypeTraitsRealTag, T t, Functor function) const {
+      function(t);
+    }
   };
   struct TypeCheckScalar {
-    template <typename T> bool operator()(const T&) const {
-      return this->IsScalar(typename dax::TypeTraits<T>::DimensionalityTag());
+    template <typename T, class Functor>
+    void operator()(T t, Functor func) const {
+      this->DoScalar(typename dax::TypeTraits<T>::DimensionalityTag(), t, func);
     }
   private:
-    template <class T> bool IsScalar(T) const { return false; }
-    bool IsScalar(dax::TypeTraitsScalarTag) const { return true; }
+    template <class Tag, typename T, class Functor>
+    void DoScalar(Tag, const T &, const Functor &) const {  }
+    template <typename T, class Functor>
+    void DoScalar(dax::TypeTraitsScalarTag, T t, Functor function) const {
+      function(t);
+    }
   };
   struct TypeCheckVector {
-    template <typename T> bool operator()(const T&) const {
-      return this->IsVector(typename dax::TypeTraits<T>::DimensionalityTag());
+    template <typename T, class Functor>
+    void operator()(T t, Functor func) const {
+      this->DoVector(typename dax::TypeTraits<T>::DimensionalityTag(), t, func);
     }
   private:
-    template <class T> bool IsVector(T) const { return false; }
-    bool IsVector(dax::TypeTraitsVectorTag) const { return true; }
+    template <class Tag, typename T, class Functor>
+    void DoVector(Tag, const T &, const Functor &) const {  }
+    template <typename T, class Functor>
+    void DoVector(dax::TypeTraitsVectorTag, T t, Functor function) const {
+      function(t);
+    }
   };
-  template <class Check1Type, class Check2Type>
-  struct TypeCheckAnd {
-    template <typename T> bool operator()(const T &t) const {
-      return this->Check1(t) && this->Check2(t);
+
+  template<class FunctionType>
+  struct InternalPrintOnInvoke {
+    InternalPrintOnInvoke(FunctionType function, std::string toprint)
+      : Function(function), ToPrint(toprint) { }
+    template <typename T> void operator()(T t) {
+      std::cout << this->ToPrint << std::endl;
+      this->Function(t);
     }
   private:
-    Check1Type Check1;
-    Check2Type Check2;
+    FunctionType Function;
+    std::string ToPrint;
   };
 
   /// Runs templated \p function on all the basic types defined in Dax. This is
@@ -206,19 +231,19 @@ public:
   static void TryAllTypes(FunctionType function, CheckType check)
   {
     dax::Id id = 0;
-    if (check(id)) { std::cout << "Id" << std::endl; function(id); }
+    check(id, InternalPrintOnInvoke<FunctionType>(function, "dax::Id"));
 
     dax::Id3 id3 = dax::make_Id3(0, 0, 0);
-    if (check(id3)) { std::cout << "Id3" << std::endl; function(id3); }
+    check(id3, InternalPrintOnInvoke<FunctionType>(function, "dax::Id3"));
 
     dax::Scalar scalar = 0.0;
-    if (check(scalar)) { std::cout << "Scalar" << std::endl; function(scalar); }
+    check(scalar, InternalPrintOnInvoke<FunctionType>(function, "dax::Scalar"));
 
     dax::Vector3 vector3 = dax::make_Vector3(0.0, 0.0, 0.0);
-    if (check(vector3)) { std::cout << "Vector3" << std::endl; function(vector3); }
+    check(vector3, InternalPrintOnInvoke<FunctionType>(function, "dax::Vector3"));
 
     dax::Vector4 vector4 = dax::make_Vector4(0.0, 0.0, 0.0, 0.0);
-    if (check(vector4)) { std::cout << "Vector4" << std::endl; function(vector4); }
+    check(vector4, InternalPrintOnInvoke<FunctionType>(function, "dax::Vector4"));
   }
   template<class FunctionType>
   static void TryAllTypes(FunctionType function)
