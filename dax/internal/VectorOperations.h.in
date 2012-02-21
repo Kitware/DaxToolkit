@@ -8,7 +8,7 @@
 #ifndef __@DAX_VECTOR_OPERATIONS_NAMESPACE_NAME@_VectorOperations_h
 #define __@DAX_VECTOR_OPERATIONS_NAMESPACE_NAME@_VectorOperations_h
 
-#include <dax/TypeTraits.h>
+#include <dax/VectorTraits.h>
 
 @DAX_VECTOR_OPERATIONS_NAMESPACE_START@
 
@@ -110,6 +110,20 @@ void VectorFill(VectorType &vector,
 {
   typedef typename dax::VectorTraits<VectorType>::ValueType ValueType;
   VectorForEach(vector, internal::VectorFillFunctor<ValueType>(value));
+}
+
+/// Fills every component in a vector with the given value. As a convenience,
+/// this version of the function returns a new vector rather than making you
+/// first declare one of your own. When using this form of the function, the
+/// template parameter must be explicitly given.
+///
+template<class VectorType>
+@DAX_VECTOR_OPERATIONS_EXPORT@
+VectorType VectorFill(typename dax::VectorTraits<VectorType>::ValueType value)
+{
+  VectorType vector;
+  VectorFill(vector, value);
+  return vector;
 }
 
 namespace internal {

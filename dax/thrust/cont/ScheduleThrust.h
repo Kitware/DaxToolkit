@@ -66,8 +66,7 @@ DAX_CONT_EXPORT void scheduleThrust(Functor functor,
   const dax::Id ERROR_ARRAY_SIZE = 1024;
   dax::thrust::cont::internal::ArrayContainerExecutionThrust<char> errorArray;
   errorArray.Allocate(ERROR_ARRAY_SIZE);
-  errorArray.CopyFromControlToExecution(
-        dax::cont::internal::make_IteratorContainer("", 1));
+  errorArray[0] = '\0';
 
   dax::thrust::exec::internal::kernel::ScheduleThrustKernel<Functor, Parameters>
       kernel(functor, parameters, errorArray);
@@ -76,10 +75,7 @@ DAX_CONT_EXPORT void scheduleThrust(Functor functor,
                      ::thrust::make_counting_iterator<dax::Id>(numInstances),
                      kernel);
 
-  char errorStringFirstChar;
-  errorArray.CopyFromExecutionToControl(
-        dax::cont::internal::make_IteratorContainer(&errorStringFirstChar, 1));
-  if (errorStringFirstChar != '\0')
+  if (errorArray[0] != '\0')
     {
     char errorString[ERROR_ARRAY_SIZE];
     errorArray.CopyFromExecutionToControl(

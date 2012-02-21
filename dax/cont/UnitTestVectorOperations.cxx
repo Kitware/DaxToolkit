@@ -69,20 +69,39 @@ static void TestVectorType(const VectorType &value)
   DAX_TEST_ASSERT(sum.Sum == fillValue * Traits::NUM_COMPONENTS,
                   "Got bad result filling vector");
   }
+
+  {
+  // Test another form of the VectorFill function.
+  ValueType fillValue = Traits::GetComponent(value, 0);
+  VectorType fillVector = dax::cont::VectorFill<VectorType>(fillValue);
+  Summation<ValueType> sum;
+  dax::cont::VectorForEach(fillVector, sum);
+  DAX_TEST_ASSERT(sum.Sum == fillValue * Traits::NUM_COMPONENTS,
+                  "Got bad result filling vector");
+  }
 }
+
+static const dax::Id MAX_VECTOR_SIZE = 4;
+static const dax::Id VectorInit[MAX_VECTOR_SIZE] = { 42, 54, 67, 12 };
+
+struct TestVectorTypeFunctor
+{
+  template <typename T> void operator()(const T&) const {
+    typedef dax::VectorTraits<T> Traits;
+    DAX_TEST_ASSERT(Traits::NUM_COMPONENTS <= MAX_VECTOR_SIZE,
+                    "Need to update test for larger vectors.");
+    T vector;
+    for (int index = 0; index < Traits::NUM_COMPONENTS; index++)
+      {
+      Traits::SetComponent(vector, index, VectorInit[index]);
+      }
+    TestVectorType(vector);
+  }
+};
 
 static void TestVectorTypes()
 {
-  std::cout << "Testing Id3" << std::endl;
-  TestVectorType(dax::make_Id3(42, 54, 67));
-  std::cout << "Testing Vector3" << std::endl;
-  TestVectorType(dax::make_Vector3(42, 54, 67));
-  std::cout << "Testing Vector4" << std::endl;
-  TestVectorType(dax::make_Vector4(42, 54, 67, 12));
-  std::cout << "Testing Id" << std::endl;
-  TestVectorType(static_cast<dax::Id>(42));
-  std::cout << "Testing Scalar" << std::endl;
-  TestVectorType(static_cast<dax::Scalar>(42));
+  dax::internal::Testing::TryAllTypes(TestVectorTypeFunctor());
 }
 
 } // anonymous namespace
