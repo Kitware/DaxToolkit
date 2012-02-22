@@ -48,6 +48,12 @@ struct DeviceAdapterDebug
     dax::cont::scheduleDebug(functor, parameters, ids.ReadyAsInput());
   }
 
+  template<class Functor, class Parameters, typename T>
+  static void ReIndex(dax::cont::ArrayHandle<T,DeviceAdapterDebug>& ids)
+  {
+    dax::cont::reindexDebug(ids.ReadyAsInput());
+  }
+
   template<typename T>
   class ArrayContainerExecution
       : public dax::cont::internal::ArrayContainerExecutionCPU<T> { };
