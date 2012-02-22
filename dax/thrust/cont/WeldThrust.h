@@ -12,38 +12,41 @@
 #include <dax/Types.h>
 #include <dax/thrust/cont/internal/ArrayContainerExecutionThrust.h>
 
-#include <dax/thrust/cont/ScheduleThrust.h>
-
 #include <thrust/binary_search.h>
 #include <thrust/copy.h>
+#include <thrust/iterator/counting_iterator.h>
 #include <thrust/device_ptr.h>
+#include <thrust/device_vector.h>
 #include <thrust/sort.h>
 #include <thrust/unique.h>
 
 namespace dax {
 namespace thrust {
 namespace cont {
-DAX_CONT_EXPORT void WeldThrust(dax::internal::DataArray<dax::Id> ids)
-{
-  typedef ::thrust::device_vector<dax::Id>::iterator uniqueResultType;
 
-  dax::Id size = ids.GetNumberOfEntries();
+template<typename T>
+DAX_CONT_EXPORT void WeldThrust(dax::internal::DataArray<T> values)
+{
+  typedef typename ::thrust::device_vector<T>::iterator uniqueResultType;
+
+  dax::Id size = values.GetNumberOfEntries();
   //create a device vector that is a copy of the ids array
-  ::thrust::device_vector<dax::Id> lookup(ids.GetNumberOfEntries());
-  ::thrust::device_ptr<dax::Id> raw_ids =
-      ::thrust::device_pointer_cast(ids.GetPointer());
-  ::thrust::copy(raw_ids,raw_ids+size,lookup.begin());
+  ::thrust::device_vector<T> uniqueValues(values.GetNumberOfEntries());
+  ::thrust::device_ptr<T> raw_values =
+      ::thrust::device_pointer_cast(values.GetPointer());
+  ::thrust::copy(raw_values,raw_values+size,uniqueValues.begin());
 
   //sort the ids
-  ::thrust::sort(lookup.begin(),lookup.end());
+  ::thrust::sort(uniqueValues.begin(),uniqueValues.end());
 
   // find unique items and erase redundancies
-  uniqueResultType newEnd = ::thrust::unique(lookup.begin(), lookup.end());
+  uniqueResultType newEnd = ::thrust::unique(uniqueValues.begin(),
+                                             uniqueValues.end());
 
   // find index of each input vertex in the list of unique vertices
-  ::thrust::lower_bound(lookup.begin(), newEnd,
-                        raw_ids,raw_ids+size,
-                        raw_ids);
+  ::thrust::lower_bound(uniqueValues.begin(), newEnd,
+                        raw_values,raw_values+size,
+                        raw_values);
 }
 
 }

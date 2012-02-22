@@ -10,6 +10,7 @@
 #define __dax_cont_WeldDebug_h
 
 #include <dax/Types.h>
+
 #include <dax/internal/DataArray.h>
 #include <dax/cont/ErrorExecution.h>
 #include <dax/exec/internal/ErrorHandler.h>
@@ -23,10 +24,11 @@
 namespace dax {
 namespace cont {
 
-DAX_CONT_EXPORT void WeldDebug(dax::internal::DataArray<dax::Id> ids)
+template<typename T>
+DAX_CONT_EXPORT void WeldDebug(dax::internal::DataArray<T> ids)
 {
   dax::Id size = ids.GetNumberOfEntries();
-  dax::Id max = 1 + *(std::max_element(ids.GetPointer(),ids.GetPointer()+size));
+  T max = 1 + *(std::max_element(ids.GetPointer(),ids.GetPointer()+size));
 
   //create a bit vector of point usage
   std::vector<bool> pointUsage(max);
@@ -36,13 +38,13 @@ DAX_CONT_EXPORT void WeldDebug(dax::internal::DataArray<dax::Id> ids)
     pointUsage[ids.GetValue(i)]=true;
     }
 
-  std::map<dax::Id,dax::Id> uniquePointMap;
-  dax::Id newId = 0;
+  std::map<T,T> uniquePointMap;
+  T newId = T();
   for(dax::Id i=0; i < max; ++i)
     {
     if(pointUsage[i])
       {
-      uniquePointMap.insert(std::pair<dax::Id,dax::Id>(i,newId++));
+      uniquePointMap.insert(std::pair<T,T>(i,newId++));
       }
     }
 

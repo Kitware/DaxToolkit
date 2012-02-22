@@ -16,9 +16,10 @@ namespace dax {
 namespace cuda {
 namespace cont {
 
-DAX_CONT_EXPORT void WeldThrust(dax::internal::DataArray<dax::Id> ids)
+template<typename T>
+DAX_CONT_EXPORT void WeldThrust(dax::internal::DataArray<T> values)
 {
-  dax::thrust::cont::Weld(ids);
+  dax::thrust::cont::WeldThrust(values);
 }
 
 }
