@@ -6,23 +6,23 @@
 
 =========================================================================*/
 
-#ifndef __dax_cuda_cont_ReIndexThrust_h
-#define __dax_cuda_cont_ReIndexThrust_h
+#ifndef __dax_openmp_cont_WeldThrust_h
+#define __dax_openmp_cont_WeldThrust_h
 
-#include <dax/cuda/cont/internal/SetThrustForCuda.h>
-#include <dax/thrust/cont/ReIndexThrust.h>
+#include <dax/openmp/cont/internal/SetThrustForOpenMP.h>
+#include <dax/thrust/cont/WeldThrust.h>
 
 namespace dax {
-namespace cuda {
+namespace openmp {
 namespace cont {
 
-DAX_CONT_EXPORT void ReIndexThrust(dax::internal::DataArray<dax::Id> ids)
+DAX_CONT_EXPORT void WeldThrust(dax::internal::DataArray<dax::Id> ids)
 {
-  dax::thrust::cont::ReIndexThrust(ids);
+  dax::thrust::cont::Weld(ids);
 }
 
 }
 }
-} // namespace dax::cuda::cont
+} // namespace dax::openmp::cont
 
-#endif //__dax_cuda_cont_ReIndexThrust_h
+#endif //__dax_openmp_cont_WeldThrust_h

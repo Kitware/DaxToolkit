@@ -78,17 +78,17 @@ public:
   /// the point ids for each cell, so to the point ids of the third
   /// cell would be in positions CellType::NUM_POINTS * 3 to (CellType::NUM_POINTS * 4) - 1.
   /// By default the extracted topology use the original point ids. If
-  /// /p reIndexIds is set to true the id's are modified to go from 0, N where
+  /// /p WeldIds is set to true the id's are modified to go from 0, N where
   /// N is the number of point Ids. This operation is stable in that the original relative
   /// ordering of the point Ids is kept intact.
   ExtractTopology(const GridType& grid,
                   const dax::cont::ArrayHandle<dax::Id> &cellsToExtract,
-                  bool reIndexIds=false)
+                  bool WeldIds=false)
     {
     this->DoExtract(grid,cellsToExtract,true);
-    if(reIndexIds)
+    if(WeldIds)
       {
-      DeviceAdapter::ReIndex(this->Topology.ReadyAsInput());
+      DeviceAdapter::Weld(this->Topology.ReadyAsInput());
       }
     }
 

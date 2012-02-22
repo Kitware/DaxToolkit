@@ -6,8 +6,8 @@
 
 =========================================================================*/
 
-#ifndef __dax_thrust_cont_ReIndexThrust_h
-#define __dax_thrust_cont_ReIndexThrust_h
+#ifndef __dax_thrust_cont_WeldThrust_h
+#define __dax_thrust_cont_WeldThrust_h
 
 #include <dax/Types.h>
 #include <dax/thrust/cont/internal/ArrayContainerExecutionThrust.h>
@@ -23,7 +23,7 @@
 namespace dax {
 namespace thrust {
 namespace cont {
-DAX_CONT_EXPORT void ReIndexThrust(dax::internal::DataArray<dax::Id> ids)
+DAX_CONT_EXPORT void WeldThrust(dax::internal::DataArray<dax::Id> ids)
 {
   typedef ::thrust::device_vector<dax::Id>::iterator uniqueResultType;
 
@@ -50,4 +50,4 @@ DAX_CONT_EXPORT void ReIndexThrust(dax::internal::DataArray<dax::Id> ids)
 }
 } // namespace dax::thrust::cont
 
-#endif //__dax_thrust_cont_ReIndexThrust_h
+#endif //__dax_thrust_cont_WeldThrust_h

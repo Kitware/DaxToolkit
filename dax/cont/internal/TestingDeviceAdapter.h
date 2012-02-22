@@ -204,10 +204,10 @@ private:
 
   }
 
-  static DAX_CONT_EXPORT void TestReIndex()
+  static DAX_CONT_EXPORT void TestWeld()
   {
     std::cout << "-------------------------------------------" << std::endl;
-    std::cout << "Testing ReIndex" << std::endl;
+    std::cout << "Testing Weld" << std::endl;
     std::vector<dax::Id> testData(ARRAY_SIZE);
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
       {
@@ -215,15 +215,34 @@ private:
       }
     dax::cont::ArrayHandle<dax::Id,DeviceAdapter> handle(testData.begin(),
                                                          testData.end());
-    DeviceAdapter::ReIndex(handle);
+    DeviceAdapter::Weld(handle);
     handle.CompleteAsOutput();
 
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
       {
       dax::Id value = testData[i];
-      std::cout << "value: " << value << std::endl;
-      DAX_TEST_ASSERT(value == i % 50, "Got bad value from the reindex");
+      DAX_TEST_ASSERT(value == i % 50, "Got bad value from the Weld");
       }
+
+    std::cout << "Testing Weld with 2" << std::endl;
+    //now test it works when the id are not incrementing
+    std::vector<dax::Id> randomData(5);
+    randomData[0]=500;  //2
+    randomData[1]=955;  //3
+    randomData[2]=120;  //0
+    randomData[3]=320;  //1
+    randomData[4]=955;  //3
+
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> rhandle(randomData.begin(),
+                                                         randomData.end());
+    DeviceAdapter::Weld(rhandle);
+    rhandle.CompleteAsOutput();
+
+    DAX_TEST_ASSERT(randomData[0] == 2, "bad value from the weld operation.");
+    DAX_TEST_ASSERT(randomData[1] == 3, "bad value from the weld operation.");
+    DAX_TEST_ASSERT(randomData[2] == 0, "bad value from the weld operation.");
+    DAX_TEST_ASSERT(randomData[3] == 1, "bad value from the weld operation.");
+    DAX_TEST_ASSERT(randomData[4] == 3, "bad value from the weld operation.");
   }
 
   static DAX_CONT_EXPORT void TestErrorExecution()
@@ -412,7 +431,7 @@ private:
       TestArrayContainerExecution();
       TestOutOfMemory();
       TestSchedule();
-      TestReIndex();
+      TestWeld();
       TestErrorExecution();
 
       std::cout << "Doing Worklet tests with UniformGrid" << std::endl;

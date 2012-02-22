@@ -19,7 +19,7 @@ set(headers
   ErrorControlOutOfMemory.h
   ErrorExecution.h
   ScheduleDebug.h
-  ReIndexDebug.h
+  WeldDebug.h
   UniformGrid.h
   UnstructuredGrid.h
 

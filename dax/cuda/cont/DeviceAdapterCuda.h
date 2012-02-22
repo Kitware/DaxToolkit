@@ -23,7 +23,7 @@
 #include <dax/cuda/cont/ScheduleThrust.h>
 #endif
 
-#include <dax/cuda/cont/ReIndexThrust.h>
+#include <dax/cuda/cont/WeldThrust.h>
 #include <dax/cuda/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
@@ -67,9 +67,9 @@ struct DeviceAdapterCuda
   }
 
   template<typename T>
-  static void ReIndex(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& ids)
+  static void Weld(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& ids)
   {
-  dax::cuda::cont::ReIndexThrust(ids.ReadyAsInput());
+  dax::cuda::cont::WeldThrust(ids.ReadyAsInput());
   }
 
   template<typename T>

@@ -6,8 +6,8 @@
 
 =========================================================================*/
 
-#ifndef __dax_cont_ReIndexDebug_h
-#define __dax_cont_ReIndexDebug_h
+#ifndef __dax_cont_WeldDebug_h
+#define __dax_cont_WeldDebug_h
 
 #include <dax/Types.h>
 #include <dax/internal/DataArray.h>
@@ -23,7 +23,7 @@
 namespace dax {
 namespace cont {
 
-DAX_CONT_EXPORT void ReIndexDebug(dax::internal::DataArray<dax::Id> ids)
+DAX_CONT_EXPORT void WeldDebug(dax::internal::DataArray<dax::Id> ids)
 {
   dax::Id size = ids.GetNumberOfEntries();
   dax::Id max = 1 + *(std::max_element(ids.GetPointer(),ids.GetPointer()+size));
@@ -46,7 +46,7 @@ DAX_CONT_EXPORT void ReIndexDebug(dax::internal::DataArray<dax::Id> ids)
       }
     }
 
-  //reindex the passed in array
+  //Weld the passed in array
   for(dax::Id i=0; i < size; ++i)
     {
     ids.SetValue(i, uniquePointMap.find(ids.GetValue(i))->second);

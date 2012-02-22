@@ -16,7 +16,7 @@
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterDebug
 
 #include <dax/cont/ScheduleDebug.h>
-#include <dax/cont/ReIndexDebug.h>
+#include <dax/cont/WeldDebug.h>
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 
 
@@ -50,9 +50,9 @@ struct DeviceAdapterDebug
   }
 
   template<typename T>
-  static void ReIndex(dax::cont::ArrayHandle<T,DeviceAdapterDebug>& ids)
+  static void Weld(dax::cont::ArrayHandle<T,DeviceAdapterDebug>& ids)
   {
-    dax::cont::ReIndexDebug(ids.ReadyAsInput());
+    dax::cont::WeldDebug(ids.ReadyAsInput());
   }
 
   template<typename T>
