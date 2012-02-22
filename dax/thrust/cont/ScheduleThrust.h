@@ -18,6 +18,7 @@
 
 #include <thrust/copy.h>
 #include <thrust/iterator/counting_iterator.h>
+#include <thrust/device_ptr.h>
 #include <thrust/for_each.h>
 
 namespace dax {
@@ -73,6 +74,39 @@ DAX_CONT_EXPORT void scheduleThrust(Functor functor,
 
   ::thrust::for_each(::thrust::make_counting_iterator<dax::Id>(0),
                      ::thrust::make_counting_iterator<dax::Id>(numInstances),
+                     kernel);
+
+  if (errorArray[0] != '\0')
+    {
+    char errorString[ERROR_ARRAY_SIZE];
+    errorArray.CopyFromExecutionToControl(
+          dax::cont::internal::make_IteratorContainer(errorString,
+                                                      ERROR_ARRAY_SIZE));
+    throw dax::cont::ErrorExecution(errorString);
+    }
+}
+
+template<class Functor, class Parameters>
+DAX_CONT_EXPORT void scheduleThrust(Functor functor,
+                                    Parameters parameters,
+                                    dax::internal::DataArray<dax::Id> ids)
+{
+  const dax::Id ERROR_ARRAY_SIZE = 1024;
+  dax::thrust::cont::internal::ArrayContainerExecutionThrust<char> errorArray;
+  errorArray.Allocate(ERROR_ARRAY_SIZE);
+  errorArray[0] = '\0';
+
+  dax::thrust::exec::internal::kernel::ScheduleThrustKernel<Functor, Parameters>
+      kernel(functor, parameters, errorArray);
+
+  ::thrust::device_ptr<dax::Id> dev_ptr_start =
+      ::thrust::device_pointer_cast(ids.GetPointer());
+  ::thrust::device_ptr<dax::Id> dev_ptr_end =
+      dev_ptr_start + ids.GetNumberOfEntries();
+
+
+  ::thrust::for_each(dev_ptr_start,
+                     dev_ptr_end,
                      kernel);
 
   if (errorArray[0] != '\0')

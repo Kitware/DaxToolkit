@@ -20,19 +20,21 @@
 #include <dax/cont/StreamCompactDebug.h>
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 
-namespace dax {
-namespace cont {
-  //forward declare the ArrayHandle before we use it.
-template< typename OtherT, class OtherDeviceAdapter > class ArrayHandle;
-}
-}
+
 
 namespace dax {
 namespace cont {
+  //forward declare the ArrayHandle before we use it.
+  template< typename OtherT, class OtherDeviceAdapter > class ArrayHandle;
+}
+}
+
 /// A simple implementation of a DeviceAdapter that can be used for debuging.
 /// The scheduling will simply run everything in a serial loop, which is easy
 /// to track in a debugger.
 ///
+namespace dax {
+namespace cont {
 struct DeviceAdapterDebug
 {
   template<typename T>
@@ -45,6 +47,14 @@ struct DeviceAdapterDebug
                        dax::Id numInstances)
   {
     dax::cont::scheduleDebug(functor, parameters, numInstances);
+  }
+
+  template<class Functor, class Parameters, typename T>
+  static void Schedule(Functor functor,
+                       Parameters parameters,
+                       dax::cont::ArrayHandle<T,DeviceAdapterDebug>& ids)
+  {
+    dax::cont::scheduleDebug(functor, parameters, ids.ReadyAsInput());
   }
 
   template<typename T,typename U>

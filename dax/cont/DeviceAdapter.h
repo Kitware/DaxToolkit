@@ -55,6 +55,21 @@ namespace cont {
 /// If an error is raised, the string that was raised is returned. Otherwise,
 /// NULL or a zero-length string is returned.
 
+/// \fn template<class Functor, class Parameters> const char *DeviceAdapter::Schedule(Functor functor, Parameters parameters, dax::cont::ArrayHandle<dax::Id>& instances)
+/// \brief Schedule many instances of a function to run on concurrent threads.
+///
+/// Calls the \c functor on several threads. This is the function used in the
+/// control environment to spawn activity in the execution environment.
+/// \c functor is a function-like object that can be invoked with the calling
+/// specification <tt>functor(Parameters parameters, dax::Id index,
+/// dax::exec::internal::ErrorHandler errorHandler)</tt>. The first argument is
+/// the \c parameters passed through. The second argument uniquely identifies
+/// the thread or instance of the invocation. There should be one invocation
+/// for each value in the array. The third argment
+/// contains an ErrorHandler that can be used to raise an error in the functor.
+/// If an error is raised, the string that was raised is returned. Otherwise,
+/// NULL or a zero-length string is returned.
+
 /// \fn template<typename T, typename U> void DeviceAdapter::StreamCompact(const dax::cont::ArrayHandle<T>&input, dax::cont::ArrayHandle<U>& output)
 /// \brief Performs stream compaction to remove unwanted elements in the input array.
 ///
