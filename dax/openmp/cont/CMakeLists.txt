@@ -8,6 +8,7 @@
 
 set(headers
   DeviceAdapterOpenMP.h
+  ReIndexThrust.h
   ScheduleThrust.h
   )
 

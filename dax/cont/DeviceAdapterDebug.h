@@ -16,6 +16,7 @@
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterDebug
 
 #include <dax/cont/ScheduleDebug.h>
+#include <dax/cont/ReIndexDebug.h>
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 
 
@@ -48,10 +49,10 @@ struct DeviceAdapterDebug
     dax::cont::scheduleDebug(functor, parameters, ids.ReadyAsInput());
   }
 
-  template<class Functor, class Parameters, typename T>
+  template<typename T>
   static void ReIndex(dax::cont::ArrayHandle<T,DeviceAdapterDebug>& ids)
   {
-    dax::cont::reindexDebug(ids.ReadyAsInput());
+    dax::cont::ReIndexDebug(ids.ReadyAsInput());
   }
 
   template<typename T>

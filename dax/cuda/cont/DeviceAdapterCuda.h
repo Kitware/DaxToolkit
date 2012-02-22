@@ -23,6 +23,7 @@
 #include <dax/cuda/cont/ScheduleThrust.h>
 #endif
 
+#include <dax/cuda/cont/ReIndexThrust.h>
 #include <dax/cuda/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
@@ -63,6 +64,12 @@ struct DeviceAdapterCuda
 #else
     dax::cuda::cont::scheduleThrust(functor, parameters, ids.ReadyAsInput());
 #endif
+  }
+
+  template<typename T>
+  static void ReIndex(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& ids)
+  {
+  dax::cuda::cont::ReIndexThrust(ids.ReadyAsInput());
   }
 
   template<typename T>

@@ -204,6 +204,28 @@ private:
 
   }
 
+  static DAX_CONT_EXPORT void TestReIndex()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing ReIndex" << std::endl;
+    std::vector<dax::Id> testData(ARRAY_SIZE);
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      testData[i]= OFFSET+(i % 50);
+      }
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> handle(testData.begin(),
+                                                         testData.end());
+    DeviceAdapter::ReIndex(handle);
+    handle.CompleteAsOutput();
+
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      dax::Id value = testData[i];
+      std::cout << "value: " << value << std::endl;
+      DAX_TEST_ASSERT(value == i % 50, "Got bad value from the reindex");
+      }
+  }
+
   static DAX_CONT_EXPORT void TestErrorExecution()
   {
     std::cout << "-------------------------------------------" << std::endl;
@@ -390,6 +412,7 @@ private:
       TestArrayContainerExecution();
       TestOutOfMemory();
       TestSchedule();
+      TestReIndex();
       TestErrorExecution();
 
       std::cout << "Doing Worklet tests with UniformGrid" << std::endl;

@@ -8,6 +8,7 @@
 
 set(headers
   DeviceAdapterCuda.h
+  ReIndexThrust.h
   ScheduleCuda.h
   ScheduleThrust.h
   )
