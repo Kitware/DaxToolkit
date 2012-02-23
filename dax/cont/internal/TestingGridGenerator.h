@@ -29,6 +29,8 @@ struct TestGrid
 private:
   //custom storage container that changes the size based on the grid type
   //so that we don't have to store extra information for uniform grid
+  const dax::Id Size;
+  GridType Grid;
   template<typename GridType> struct GridStorage {};
   template<typename U> struct GridStorage<dax::cont::UnstructuredGrid<U> >
     {
@@ -38,8 +40,6 @@ private:
   GridStorage<GridType> Info;
 
 public:
-  GridType Grid;
-  const dax::Id Size;
 
   TestGrid(const dax::Id& size)
     :Size(size),
