@@ -70,17 +70,26 @@ public:
   /// The resulting array contains the point ids for each cell.
   ExtractTopology(const GridType& grid)
     {
-    DoExtract(grid,dax::cont::ArrayHandle<dax::Id>(),false);
+    this->DoExtract(grid,dax::cont::ArrayHandle<dax::Id>(),false);
     }
 
   /// Extract a subset of the cells topology. cellsToExtract contain
   /// The cell ids to extract. The resulting array contains only
   /// the point ids for each cell, so to the point ids of the third
-  /// cell would be in positions CellType::NUM_POINTS * 3 to (CellType::NUM_POINTS * 4) - 1
+  /// cell would be in positions CellType::NUM_POINTS * 3 to (CellType::NUM_POINTS * 4) - 1.
+  /// By default the extracted topology use the original point ids. If
+  /// /p WeldIds is set to true the id's are modified to go from 0, N where
+  /// N is the number of point Ids. This operation is stable in that the original relative
+  /// ordering of the point Ids is kept intact.
   ExtractTopology(const GridType& grid,
-                  const dax::cont::ArrayHandle<dax::Id> &cellsToExtract)
+                  const dax::cont::ArrayHandle<dax::Id> &cellsToExtract,
+                  bool WeldIds=false)
     {
-    DoExtract(grid,cellsToExtract,true);
+    this->DoExtract(grid,cellsToExtract,true);
+    if(WeldIds)
+      {
+      DeviceAdapter::Weld(this->Topology.ReadyAsInput());
+      }
     }
 
   /// Returns an array handle to the execution enviornment data that
@@ -90,50 +99,58 @@ public:
 private:
   void DoExtract(const GridType& grid,
             const dax::cont::ArrayHandle<dax::Id> &cellsToExtract,
-            bool useSubSet)
-    {
-    typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
-
-    typedef typename GridPackageType::ExecutionCellType CellType;
-
-    //construct the input grid
-    GridPackageType inPGrid(grid);
-
-    //construct the topology result array
-    dax::Id numCellsToExtract=(useSubSet)? cellsToExtract.GetNumberOfEntries():
-                                           grid.GetNumberOfCells();
-    dax::Id size = numCellsToExtract * CellType::NUM_POINTS;
-
-    this->Topology = dax::cont::ArrayHandle<dax::Id>(size);
-
-    //we want the size of the points to be based on the numCells * points per cell
-    dax::cont::internal::ExecutionPackageFieldInput<dax::Id,DeviceAdapter>
-        result(this->Topology, size);
-
-    //construct the parameters list for the function
-    dax::exec::kernel::internal::ExtractTopologyParameters<CellType> etParams =
-                                        {
-                                        inPGrid.GetExecutionObject(),
-                                        result.GetExecutionObject()
-                                        };
-    if(useSubSet)
-      {
-      DeviceAdapter::Schedule(
-          dax::exec::kernel::internal::ExtractTopologyFunctor<CellType>(),
-          etParams,
-          cellsToExtract);
-      }
-    else
-      {
-      DeviceAdapter::Schedule(
-        dax::exec::kernel::internal::ExtractTopologyFunctor<CellType>(),
-        etParams,
-        numCellsToExtract);
-      }
-    }
+            bool useSubSet);
 
   dax::cont::ArrayHandle<dax::Id> Topology;
 };
+
+//-----------------------------------------------------------------------------
+template<typename DeviceAdapter, typename GridType>
+inline void ExtractTopology<DeviceAdapter,GridType>::DoExtract(
+    const GridType& grid,
+    const dax::cont::ArrayHandle<dax::Id> &cellsToExtract,
+    bool useSubSet)
+{
+  typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
+
+  typedef typename GridPackageType::ExecutionCellType CellType;
+
+  //construct the input grid
+  GridPackageType inPGrid(grid);
+
+  //construct the topology result array
+  dax::Id numCellsToExtract=(useSubSet)? cellsToExtract.GetNumberOfEntries():
+                                         grid.GetNumberOfCells();
+  dax::Id size = numCellsToExtract * CellType::NUM_POINTS;
+
+  this->Topology = dax::cont::ArrayHandle<dax::Id>(size);
+
+  //we want the size of the points to be based on the numCells * points per cell
+  dax::cont::internal::ExecutionPackageFieldInput<dax::Id,DeviceAdapter>
+      result(this->Topology, size);
+
+  //construct the parameters list for the function
+  dax::exec::kernel::internal::ExtractTopologyParameters<CellType> etParams =
+                                      {
+                                      inPGrid.GetExecutionObject(),
+                                      result.GetExecutionObject()
+                                      };
+  if(useSubSet)
+    {
+    DeviceAdapter::Schedule(
+        dax::exec::kernel::internal::ExtractTopologyFunctor<CellType>(),
+        etParams,
+        cellsToExtract);
+    }
+  else
+    {
+    DeviceAdapter::Schedule(
+      dax::exec::kernel::internal::ExtractTopologyFunctor<CellType>(),
+      etParams,
+      numCellsToExtract);
+    }
+}
+
 
 }
 }

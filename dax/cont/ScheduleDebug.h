@@ -14,6 +14,10 @@
 #include <dax/cont/ErrorExecution.h>
 #include <dax/exec/internal/ErrorHandler.h>
 
+#include <map>
+#include <algorithm>
+#include <vector>
+
 namespace dax {
 namespace cont {
 

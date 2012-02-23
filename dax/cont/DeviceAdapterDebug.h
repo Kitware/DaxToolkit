@@ -18,6 +18,7 @@
 #include <dax/internal/DataArray.h>
 #include <dax/cont/ScheduleDebug.h>
 #include <dax/cont/StreamCompactDebug.h>
+#include <dax/cont/WeldDebug.h>
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 
 
@@ -84,6 +85,13 @@ struct DeviceAdapterDebug
                                   output.GetExecutionArray());
     output.UpdateArraySize();
     }
+  
+  template<typename T>
+  static void Weld(dax::cont::ArrayHandle<T,DeviceAdapterDebug>& ids)
+  {
+    dax::cont::WeldDebug(ids.ReadyAsInput());
+  }
+
 };
 
 }

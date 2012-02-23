@@ -8,6 +8,7 @@
 
 set(headers
   DeviceAdapterCuda.h
+  WeldThrust.h
   ScheduleCuda.h
   ScheduleThrust.h
   StreamCompact.h

@@ -10,7 +10,6 @@
 #define __dax_cuda_cont_ScheduleThrust_h
 
 #include <dax/cuda/cont/internal/SetThrustForCuda.h>
-
 #include <dax/thrust/cont/ScheduleThrust.h>
 
 namespace dax {

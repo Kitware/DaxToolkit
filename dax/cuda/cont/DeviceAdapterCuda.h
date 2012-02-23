@@ -23,7 +23,7 @@
 #endif
 
 #include <dax/cuda/cont/StreamCompact.h>
-
+#include <dax/cuda/cont/WeldThrust.h>
 #include <dax/cuda/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
@@ -98,6 +98,13 @@ struct DeviceAdapterCuda
                                    output.GetExecutionArray());
     output.UpdateArraySize();
     }
+  
+  template<typename T>
+  static void Weld(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& ids)
+  {
+  dax::cuda::cont::WeldThrust(ids.ReadyAsInput());
+  }
+
 };
 
 }

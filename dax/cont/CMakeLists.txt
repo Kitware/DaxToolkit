@@ -20,6 +20,7 @@ set(headers
   ErrorExecution.h
   ScheduleDebug.h
   StreamCompactDebug.h
+  WeldDebug.h
   UniformGrid.h
   UnstructuredGrid.h
 

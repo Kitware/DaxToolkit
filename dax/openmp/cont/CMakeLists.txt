@@ -8,6 +8,7 @@
 
 set(headers
   DeviceAdapterOpenMP.h
+  WeldThrust.h
   ScheduleThrust.h
   StreamCompact.h
   )

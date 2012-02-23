@@ -309,6 +309,48 @@ private:
       }
   }
 
+  static DAX_CONT_EXPORT void TestWeld()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing Weld" << std::endl;
+    std::vector<dax::Id> testData(ARRAY_SIZE);
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      testData[i]= OFFSET+(i % 50);
+      }
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> handle(testData.begin(),
+                                                         testData.end());
+    DeviceAdapter::Weld(handle);
+    handle.CompleteAsOutput();
+
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      dax::Id value = testData[i];
+      DAX_TEST_ASSERT(value == i % 50, "Got bad value from the Weld");
+      }
+
+    std::cout << "Testing Weld with 2" << std::endl;
+    //now test it works when the id are not incrementing
+    std::vector<dax::Id> randomData(6);
+    randomData[0]=500;  //2
+    randomData[1]=955;  //3
+    randomData[2]=955;  //3
+    randomData[3]=120;  //0
+    randomData[4]=320;  //1
+    randomData[5]=955;  //3
+
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> rhandle(randomData.begin(),
+                                                         randomData.end());
+    DeviceAdapter::Weld(rhandle);
+    rhandle.CompleteAsOutput();
+
+    DAX_TEST_ASSERT(randomData[0] == 2, "bad value from the weld operation.");
+    DAX_TEST_ASSERT(randomData[1] == 3, "bad value from the weld operation.");
+    DAX_TEST_ASSERT(randomData[2] == 3, "bad value from the weld operation.");
+    DAX_TEST_ASSERT(randomData[3] == 0, "bad value from the weld operation.");
+    DAX_TEST_ASSERT(randomData[4] == 1, "bad value from the weld operation.");
+    DAX_TEST_ASSERT(randomData[5] == 3, "bad value from the weld operation.");
+  }
 
   static DAX_CONT_EXPORT void TestErrorExecution()
   {
@@ -498,6 +540,7 @@ private:
       TestSchedule();
       TestStreamCompact();
       TestStreamCompactWithStencil();
+      TestWeld();
       TestErrorExecution();
 
       std::cout << "Doing Worklet tests with UniformGrid" << std::endl;

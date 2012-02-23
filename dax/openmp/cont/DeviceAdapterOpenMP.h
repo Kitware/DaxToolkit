@@ -17,6 +17,7 @@
 
 #include <dax/openmp/cont/ScheduleThrust.h>
 #include <dax/openmp/cont/StreamCompact.h>
+#include <dax/openmp/cont/WeldThrust.h>
 #include <dax/openmp/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
@@ -83,6 +84,13 @@ struct DeviceAdapterOpenMP
                                      output.GetExecutionArray());
     output.UpdateArraySize();
     }
+
+  template<typename T>
+  static void Weld(dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& ids)
+  {
+    dax::openmp::cont::WeldThrust(ids.ReadyAsInput());
+  }
+
 };
 
 }
