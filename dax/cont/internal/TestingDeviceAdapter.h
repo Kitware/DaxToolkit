@@ -226,12 +226,13 @@ private:
 
     std::cout << "Testing Weld with 2" << std::endl;
     //now test it works when the id are not incrementing
-    std::vector<dax::Id> randomData(5);
+    std::vector<dax::Id> randomData(6);
     randomData[0]=500;  //2
     randomData[1]=955;  //3
-    randomData[2]=120;  //0
-    randomData[3]=320;  //1
-    randomData[4]=955;  //3
+    randomData[2]=955;  //3
+    randomData[3]=120;  //0
+    randomData[4]=320;  //1
+    randomData[5]=955;  //3
 
     dax::cont::ArrayHandle<dax::Id,DeviceAdapter> rhandle(randomData.begin(),
                                                          randomData.end());
@@ -240,9 +241,10 @@ private:
 
     DAX_TEST_ASSERT(randomData[0] == 2, "bad value from the weld operation.");
     DAX_TEST_ASSERT(randomData[1] == 3, "bad value from the weld operation.");
-    DAX_TEST_ASSERT(randomData[2] == 0, "bad value from the weld operation.");
-    DAX_TEST_ASSERT(randomData[3] == 1, "bad value from the weld operation.");
-    DAX_TEST_ASSERT(randomData[4] == 3, "bad value from the weld operation.");
+    DAX_TEST_ASSERT(randomData[2] == 3, "bad value from the weld operation.");
+    DAX_TEST_ASSERT(randomData[3] == 0, "bad value from the weld operation.");
+    DAX_TEST_ASSERT(randomData[4] == 1, "bad value from the weld operation.");
+    DAX_TEST_ASSERT(randomData[5] == 3, "bad value from the weld operation.");
   }
 
   static DAX_CONT_EXPORT void TestErrorExecution()
