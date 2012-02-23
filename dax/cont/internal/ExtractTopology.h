@@ -82,13 +82,13 @@ public:
   /// N is the number of point Ids. This operation is stable in that the original relative
   /// ordering of the point Ids is kept intact.
   ExtractTopology(const GridType& grid,
-                  const dax::cont::ArrayHandle<dax::Id> &cellsToExtract,
+                  dax::cont::ArrayHandle<dax::Id> &cellsToExtract,
                   bool WeldIds=false)
     {
     this->DoExtract(grid,cellsToExtract,true);
     if(WeldIds)
       {
-      DeviceAdapter::Weld(this->Topology.ReadyAsInput());
+      DeviceAdapter::Weld(this->Topology);
       }
     }
 
@@ -98,8 +98,8 @@ public:
 
 private:
   void DoExtract(const GridType& grid,
-            const dax::cont::ArrayHandle<dax::Id> &cellsToExtract,
-            bool useSubSet);
+                 dax::cont::ArrayHandle<dax::Id> &cellsToExtract,
+                 bool useSubSet);
 
   dax::cont::ArrayHandle<dax::Id> Topology;
 };
@@ -108,7 +108,7 @@ private:
 template<typename DeviceAdapter, typename GridType>
 inline void ExtractTopology<DeviceAdapter,GridType>::DoExtract(
     const GridType& grid,
-    const dax::cont::ArrayHandle<dax::Id> &cellsToExtract,
+    dax::cont::ArrayHandle<dax::Id> &cellsToExtract,
     bool useSubSet)
 {
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
