@@ -102,7 +102,7 @@ public:
 
   /// Returns an array handle to the execution enviornment data that
   /// contians the extracted topology
-  dax::cont::ArrayHandle<dax::Id> GetTopology();
+  dax::cont::ArrayHandle<dax::Id,DeviceAdapter>& GetTopology(){return Topology;}
 
 private:
   void DoExtract(const GridType& grid,
