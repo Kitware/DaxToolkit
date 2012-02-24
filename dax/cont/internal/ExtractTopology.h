@@ -18,11 +18,11 @@ namespace internal {
 
 template <typename CellType>
 DAX_WORKLET void ExtractTopology(dax::exec::WorkMapCell<CellType> work,
+                                 dax::Id newIndex,
                                  dax::exec::Field<dax::Id> &topology)
   {
   CellType cell(work.GetCell());
-  dax::Id index(work.GetCellIndex());
-  dax::Id offset(CellType::NUM_POINTS * index);
+  dax::Id offset(CellType::NUM_POINTS * newIndex);
 
   //manual unrolled in an attempt to make this faster
   dax::Id* temp = topology.GetArray().GetPointer()+offset;
@@ -41,14 +41,17 @@ struct ExtractTopologyParameters
 
 template<class CellType>
 struct ExtractTopologyFunctor {
+  static const bool REQUIRES_BOTH_IDS = true;
+
   DAX_EXEC_EXPORT void operator()(
       ExtractTopologyParameters<CellType> &parameters,
-      dax::Id index,
+      dax::Id indices[2],
       const dax::exec::internal::ErrorHandler &errorHandler)
   {
     dax::exec::WorkMapCell<CellType> work(parameters.grid, errorHandler);
-    work.SetCellIndex(index);
-    dax::exec::kernel::internal::ExtractTopology(work,parameters.outField);
+    work.SetCellIndex(indices[0]);
+    dax::exec::kernel::internal::ExtractTopology(work,indices[1],
+                                                 parameters.outField);
   }
 };
 

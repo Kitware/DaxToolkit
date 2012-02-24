@@ -20,6 +20,9 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/device_ptr.h>
 #include <thrust/for_each.h>
+#include <thrust/iterator/zip_iterator.h>
+
+#include <boost/utility/enable_if.hpp>
 
 namespace dax {
 namespace thrust {
@@ -27,7 +30,7 @@ namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class FunctorType, class ParametersType>
+template<class FunctorType, class ParametersType, class PassBothIds = void>
 class ScheduleThrustKernel
 {
 public:
@@ -37,10 +40,17 @@ public:
       dax::thrust::cont::internal::ArrayContainerExecutionThrust<char> &errorArray)
     : Functor(functor),
       Parameters(parameters),
-      ErrorHandler(errorArray.GetExecutionArray()) { }
+      ErrorHandler(errorArray.GetExecutionArray()) {}
 
-  DAX_EXEC_EXPORT void operator()(dax::Id instance) {
-    this->Functor(this->Parameters, instance, this->ErrorHandler);
+  //needed when calling schedule for a subset
+  template<typename Tuple>
+  DAX_EXEC_EXPORT void operator()(Tuple t) {
+    this->Functor(this->Parameters, ::thrust::get<0>(t),
+                  this->ErrorHandler);
+  }
+  //needed for when calling from schedule on a range
+  DAX_EXEC_EXPORT void operator()(dax::Id t) {
+    this->Functor(this->Parameters, t,this->ErrorHandler);
   }
 
 private:
@@ -48,6 +58,36 @@ private:
   ParametersType Parameters;
   dax::exec::internal::ErrorHandler ErrorHandler;
 };
+
+//If the typedef REQUIRES_BOTH_IDS exists, it means
+//that the functor needs to know the index in the for loop and the
+//value at the index in the data array. This allows some functors to do
+//proper mappings
+template<class FunctorType, class ParametersType>
+class ScheduleThrustKernel<FunctorType,ParametersType,
+      typename boost::enable_if_c<FunctorType::REQUIRES_BOTH_IDS >::type>
+{
+public:
+  ScheduleThrustKernel(
+      const FunctorType &functor,
+      const ParametersType &parameters,
+      dax::thrust::cont::internal::ArrayContainerExecutionThrust<char> &errorArray)
+    : Functor(functor),
+      Parameters(parameters),
+      ErrorHandler(errorArray.GetExecutionArray()) {}
+
+  template<typename Tuple>
+  DAX_EXEC_EXPORT void operator()(Tuple t) {
+    this->Functor(this->Parameters, ::thrust::get<0>(t), ::thrust::get<1>(t),
+                  this->ErrorHandler);
+  }
+
+private:
+  FunctorType Functor;
+  ParametersType Parameters;
+  dax::exec::internal::ErrorHandler ErrorHandler;
+};
+
 
 }
 }
@@ -99,15 +139,20 @@ DAX_CONT_EXPORT void scheduleThrust(Functor functor,
   dax::thrust::exec::internal::kernel::ScheduleThrustKernel<Functor, Parameters>
       kernel(functor, parameters, errorArray);
 
+  //we package up the real ids with the index values
+  //so that functors that need both will have it
   ::thrust::device_ptr<dax::Id> dev_ptr_start =
       ::thrust::device_pointer_cast(ids.GetPointer());
   ::thrust::device_ptr<dax::Id> dev_ptr_end =
       dev_ptr_start + ids.GetNumberOfEntries();
 
-
-  ::thrust::for_each(dev_ptr_start,
-                     dev_ptr_end,
-                     kernel);
+  ::thrust::for_each(
+    ::thrust::make_zip_iterator(::thrust::make_tuple(dev_ptr_start,
+                                          ::thrust::make_counting_iterator(0))),
+    ::thrust::make_zip_iterator(
+        ::thrust::make_tuple(dev_ptr_end,::thrust::make_counting_iterator(
+                                          ids.GetNumberOfEntries()))),
+    kernel);
 
   if (errorArray[0] != '\0')
     {
