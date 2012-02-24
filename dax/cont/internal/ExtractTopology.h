@@ -45,12 +45,12 @@ struct ExtractTopologyFunctor {
 
   DAX_EXEC_EXPORT void operator()(
       ExtractTopologyParameters<CellType> &parameters,
-      dax::Id indices[2],
+      dax::Id oldIndex, dax::Id newIndex,
       const dax::exec::internal::ErrorHandler &errorHandler)
   {
     dax::exec::WorkMapCell<CellType> work(parameters.grid, errorHandler);
-    work.SetCellIndex(indices[0]);
-    dax::exec::kernel::internal::ExtractTopology(work,indices[1],
+    work.SetCellIndex(oldIndex);
+    dax::exec::kernel::internal::ExtractTopology(work,newIndex,
                                                  parameters.outField);
   }
 };
@@ -92,12 +92,15 @@ public:
                   dax::cont::ArrayHandle<dax::Id,DeviceAdapter> &cellsToExtract,
                   bool WeldIds=false)
     {
+    typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
+    typedef typename GridPackageType::ExecutionCellType CellType;
+
     //verify the input
     DAX_ASSERT_CONT(grid.GetNumberOfCells() > 0);
     DAX_ASSERT_CONT(cellsToExtract.GetNumberOfEntries() > 0);
 
     this->DoExtract(grid,cellsToExtract,true);
-    if(WeldIds && this->Topology.GetNumberOfEntries() > 0)
+    if(WeldIds && this->Topology.GetNumberOfEntries() > CellType::NUM_POINTS)
       {
       DeviceAdapter::Weld(this->Topology);
       }
