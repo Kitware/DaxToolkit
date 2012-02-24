@@ -52,6 +52,13 @@ public:
 /// The method must return the populated parameters struct with all the information
 /// needed for the ScheduleRemoveCell class to execute the \c Functor.
 
+/// \fn template <typename WorkType> Parameters GenerateOutputFields()
+/// \brief Abstract method that inherited classes must implement.
+///
+/// The method is called after the new grids points and topology have been generated
+/// This allows dervied classes the ability to use the MaskCellHandle and MaskPointHandle
+/// To generate a new field arrays for the output grid
+
 protected:
 
   //constructs everything needed to call the user defined worklet
@@ -91,25 +98,8 @@ protected:
   template<typename InGridType,typename OutGridType>
   void GenerateOutput(const InGridType &inGrid, OutGridType& outGrid)
     {
-//    typedef dax::cont::internal::ExecutionPackageGrid<OutGridType> OutGridPackageType;
-//    typedef typename OutGridPackageType::ExecutionCellType OutCellType;
-
-//    typedef dax::cont::internal::ExecutionPackageGrid<InGridType> InGridPackageType;
-//    typedef typename InGridPackageType::ExecutionCellType InCellType;
-
-//    //create the grid, and result packages
-//    OutGridPackageType outPGrid(outGrid);
-//    InGridPackageType inPGrid(inGrid);
-
-    //does the stream compaction of the grid removing all
-    //unused grid cells and points. Do we make that a basic DeviceAdapter
-    //function?
-
     //stream compact with two paramters the second one needs to be
     //dax::Ids
-    dax::cont::ArrayHandle<dax::Id> usedPointIds;
-    DeviceAdapter::StreamCompact(this->MaskPointHandle,usedPointIds);
-
     dax::cont::ArrayHandle<dax::Id> usedCellIds;
     DeviceAdapter::StreamCompact(this->MaskCellHandle,usedCellIds);
 
@@ -118,6 +108,25 @@ protected:
     dax::cont::internal::ExtractTopology<DeviceAdapter, InGridType>
       extractedTopology(inGrid, usedCellIds,true);
 
+
+    //extract the point coordinates that we need
+    dax::cont::ArrayHandle<dax::Vector3> thresholdPointsHandle;
+
+    dax::cont::internal::ExecutionPackageFieldCoordinatesInput
+        <InGridType, DeviceAdapter> fieldCoordinates(inGrid.GetPoints());
+
+    //use the point handle to get the coordinats we need
+//    DeviceAdapter::StreamCompact(fieldCoordinates,
+//                                 this->MaskPointHandle,
+//                                 thresholdPoints);
+
+    //now that the topology has been fully thresholded,
+    //lets ask our derived class if they need to threshold anything
+    static_cast<Derived*>(this)->GenerateOutputFields();
+
+    //set the handles to the geometery
+    outGrid.UpdateHandles(extractedTopology.GetTopology(),
+                          thresholdPointsHandle);
     }
 
 protected:

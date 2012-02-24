@@ -82,10 +82,12 @@ public:
 
     //constructor that is passed all the user decided parts of the worklet too
     Threshold(const ValueType& min, const ValueType& max,
-              dax::cont::ArrayHandle<ValueType,DeviceAdapter>& thresholdField):
+              dax::cont::ArrayHandle<ValueType,DeviceAdapter>& thresholdField,
+              dax::cont::ArrayHandle<ValueType,DeviceAdapter>& outputField):
       Min(min),
       Max(max),
-      Field(thresholdField)
+      InputField(thresholdField),
+      OutputField(outputField)
       {
 
       }
@@ -95,7 +97,7 @@ public:
     Parameters GenerateParameters(const GridType& grid, PackagedGrid& pgrid)
       {
       this->PackageField = PackageFieldInputPtr(new PackageFieldInput(
-                                                  this->Field, grid));
+                                                  this->InputField, grid));
       Parameters parameters = {pgrid.GetExecutionObject(),
                                this->PackageMaskCell->GetExecutionObject(),
                                this->PackageMaskPoint->GetExecutionObject(),
@@ -103,6 +105,15 @@ public:
                                this->Max,
                                this->PackageField->GetExecutionObject()};
       return parameters;
+      }
+
+    //threshold any fields that are needed
+    void GenerateOutputFields()
+      {
+      //we know that the threshold is being done on a point field
+      DeviceAdapter::StreamCompact(this->InputField,
+                                   this->MaskPointHandle,
+                                   this->OutputField);
       }
 
 private:
@@ -114,7 +125,8 @@ private:
   typedef  boost::shared_ptr< PackageFieldInput > PackageFieldInputPtr;
 
   PackageFieldInputPtr PackageField;
-  dax::cont::ArrayHandle<ValueType,DeviceAdapter> Field;
+  dax::cont::ArrayHandle<ValueType,DeviceAdapter> InputField;
+  dax::cont::ArrayHandle<ValueType,DeviceAdapter> OutputField;
 };
 }
 }
@@ -126,25 +138,26 @@ namespace dax {
 namespace cont {
 namespace worklet {
 
-template<class GridType, class OutGridType, class DeviceAdapter>
+template<class GridType, class OutGridType, typename FieldType, class DeviceAdapter>
 inline void Threshold(
     const GridType &inGrid,
-    dax::Scalar thresholdMin,
-    dax::Scalar thresholdMax,
-    dax::cont::ArrayHandle<dax::Scalar, DeviceAdapter> &thresholdHandle,
-    OutGridType &outGeom)
+    OutGridType &outGeom,
+    FieldType thresholdMin,
+    FieldType thresholdMax,
+    dax::cont::ArrayHandle<FieldType, DeviceAdapter> &thresholdHandle,
+    dax::cont::ArrayHandle<FieldType, DeviceAdapter> &thresholdResult)
 {
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   typedef typename GridPackageType::ExecutionCellType CellType;
-  typedef dax::exec::kernel::ThresholdParameters<CellType,dax::Scalar> Parameters;
-  typedef dax::exec::kernel::Functor<CellType,dax::Scalar> Functor;
+  typedef dax::exec::kernel::ThresholdParameters<CellType,FieldType> Parameters;
+  typedef dax::exec::kernel::Functor<CellType,FieldType> Functor;
 
   dax::exec::kernel::Threshold<
                               Parameters,
                               Functor,
                               DeviceAdapter
                               >
-    threshold(thresholdMin,thresholdMax,thresholdHandle);
+  threshold(thresholdMin,thresholdMax,thresholdHandle,thresholdResult);
 
   threshold.run(inGrid,outGeom);
 }

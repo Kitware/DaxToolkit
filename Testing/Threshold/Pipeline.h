@@ -89,14 +89,14 @@ void RunPipeline1(const dax::cont::UniformGrid &grid)
   dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> grid2;
 
   dax::cont::ArrayHandle<dax::Scalar> intermediate1(grid.GetNumberOfPoints());
-
+  dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
   dax::Scalar min = 0.1;
   dax::Scalar max = 0.2;
 
   Timer timer;
   dax::cont::worklet::Elevation(grid, grid.GetPoints(), intermediate1);
-  dax::cont::worklet::Threshold(grid,min,max,intermediate1,grid2);
+  dax::cont::worklet::Threshold(grid,grid2,min,max,intermediate1,resultHandle);
   double time = timer.elapsed();
   PrintResults(1, time);
 }

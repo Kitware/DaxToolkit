@@ -62,11 +62,17 @@ static void TestThreshold()
     }
   dax::cont::ArrayHandle<dax::Scalar> fieldHandle(field.begin(), field.end());
 
+  //unkown size
+  dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
   std::cout << "Running Threshold worklet" << std::endl;
   dax::Scalar min = 0.1;
   dax::Scalar max = 0.2;
-  dax::cont::worklet::Threshold(grid,min,max,fieldHandle, grid2);
+  dax::cont::worklet::Threshold(grid,grid2,min,max,fieldHandle,resultHandle);
+
+  std::vector<dax::Scalar> result(resultHandle.GetNumberOfEntries());
+  resultHandle.SetNewControlData(result.begin(),result.end());
+  resultHandle.CompleteAsOutput(); //fetch bac to control
 }
 
 } // Anonymous namespace
