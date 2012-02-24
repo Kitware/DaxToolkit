@@ -27,6 +27,7 @@ DAX_EXEC_CONT_EXPORT void streamCompactDebug(
     dax::cont::internal::ArrayContainerExecutionCPU<T>& output)
 {
   typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::const_iterator CIter;
+  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<U>::const_iterator UCIter;
   typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::iterator Iter;
 
   //first count the number of values to go into the output array.
@@ -37,7 +38,7 @@ DAX_EXEC_CONT_EXPORT void streamCompactDebug(
   Iter out = output.begin();
   Iter outEnd = output.end();
   CIter in=input.begin();
-  CIter sten = stencil.begin();
+  UCIter sten = stencil.begin();
   for(;out!=outEnd;++in,++sten)
     {
     //check the output so we loop over the smaller sized array
