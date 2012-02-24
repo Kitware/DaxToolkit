@@ -6,7 +6,7 @@
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapCell.h>
 
-#include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/ArrayHandle.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
@@ -70,7 +70,11 @@ public:
   /// The resulting array contains the point ids for each cell.
   ExtractTopology(const GridType& grid)
     {
-    this->DoExtract(grid,dax::cont::ArrayHandle<dax::Id>(),false);
+    //verify the input
+    DAX_ASSERT_CONT(grid.GetNumberOfCells() > 0);
+
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> temp();
+    this->DoExtract(grid,temp,false);
     }
 
   /// Extract a subset of the cells topology. cellsToExtract contain
@@ -82,11 +86,15 @@ public:
   /// N is the number of point Ids. This operation is stable in that the original relative
   /// ordering of the point Ids is kept intact.
   ExtractTopology(const GridType& grid,
-                  dax::cont::ArrayHandle<dax::Id> &cellsToExtract,
+                  dax::cont::ArrayHandle<dax::Id,DeviceAdapter> &cellsToExtract,
                   bool WeldIds=false)
     {
+    //verify the input
+    DAX_ASSERT_CONT(grid.GetNumberOfCells() > 0);
+    DAX_ASSERT_CONT(cellsToExtract.GetNumberOfEntries() > 0);
+
     this->DoExtract(grid,cellsToExtract,true);
-    if(WeldIds)
+    if(WeldIds && this->Topology.GetNumberOfEntries() > 0)
       {
       DeviceAdapter::Weld(this->Topology);
       }
@@ -98,21 +106,20 @@ public:
 
 private:
   void DoExtract(const GridType& grid,
-                 dax::cont::ArrayHandle<dax::Id> &cellsToExtract,
+                 dax::cont::ArrayHandle<dax::Id,DeviceAdapter> &cellsToExtract,
                  bool useSubSet);
 
-  dax::cont::ArrayHandle<dax::Id> Topology;
+  dax::cont::ArrayHandle<dax::Id,DeviceAdapter> Topology;
 };
 
 //-----------------------------------------------------------------------------
 template<typename DeviceAdapter, typename GridType>
 inline void ExtractTopology<DeviceAdapter,GridType>::DoExtract(
     const GridType& grid,
-    dax::cont::ArrayHandle<dax::Id> &cellsToExtract,
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> &cellsToExtract,
     bool useSubSet)
 {
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
-
   typedef typename GridPackageType::ExecutionCellType CellType;
 
   //construct the input grid
@@ -123,7 +130,7 @@ inline void ExtractTopology<DeviceAdapter,GridType>::DoExtract(
                                          grid.GetNumberOfCells();
   dax::Id size = numCellsToExtract * CellType::NUM_POINTS;
 
-  this->Topology = dax::cont::ArrayHandle<dax::Id>(size);
+  this->Topology = dax::cont::ArrayHandle<dax::Id,DeviceAdapter>(size);
 
   //we want the size of the points to be based on the numCells * points per cell
   dax::cont::internal::ExecutionPackageFieldInput<dax::Id,DeviceAdapter>
