@@ -14,6 +14,7 @@
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 #include <dax/cont/internal/ExtractTopology.h>
+#include <dax/cont/internal/ExtractCoordinates.h>
 
 namespace dax {
 namespace cont {
@@ -102,23 +103,17 @@ protected:
     //dax::Ids
     dax::cont::ArrayHandle<dax::Id> usedCellIds;
     DeviceAdapter::StreamCompact(this->MaskCellHandle,usedCellIds);
+    dax::cont::ArrayHandle<dax::Id> usedPointIds;
+    DeviceAdapter::StreamCompact(this->MaskPointHandle,usedPointIds);
 
     //extract from the grid the subset of topology information we
     //need to construct the unstructured grid
     dax::cont::internal::ExtractTopology<DeviceAdapter, InGridType>
       extractedTopology(inGrid, usedCellIds,true);
 
-
     //extract the point coordinates that we need
-    dax::cont::ArrayHandle<dax::Vector3> thresholdPointsHandle;
-
-    dax::cont::internal::ExecutionPackageFieldCoordinatesInput
-        <InGridType, DeviceAdapter> fieldCoordinates(inGrid.GetPoints());
-
-    //use the point handle to get the coordinats we need
-//    DeviceAdapter::StreamCompact(fieldCoordinates,
-//                                 this->MaskPointHandle,
-//                                 thresholdPoints);
+    dax::cont::internal::ExtractCoordinates<DeviceAdapter, InGridType>
+        extractedCoords(inGrid,usedPointIds);
 
     //now that the topology has been fully thresholded,
     //lets ask our derived class if they need to threshold anything
@@ -126,7 +121,7 @@ protected:
 
     //set the handles to the geometery
     outGrid.UpdateHandles(extractedTopology.GetTopology(),
-                          thresholdPointsHandle);
+                          extractedCoords.GetCoordinates());
     }
 
 protected:

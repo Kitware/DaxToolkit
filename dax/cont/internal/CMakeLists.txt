@@ -11,6 +11,7 @@ set(headers
   DeviceAdapterError.h
   ExecutionPackageField.h
   ExecutionPackageGrid.h
+  ExtractCoordinates.h
   ExtractTopology.h
   IteratorContainer.h
   IteratorPolymorphic.h
