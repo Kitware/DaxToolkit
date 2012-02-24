@@ -14,6 +14,8 @@
 #include <dax/cont/ErrorExecution.h>
 #include <dax/exec/internal/ErrorHandler.h>
 
+#include <boost/utility/enable_if.hpp>
+
 #include <map>
 #include <algorithm>
 #include <vector>
@@ -56,6 +58,34 @@ DAX_CONT_EXPORT void scheduleDebug(Functor functor,
     }
 }
 
+
+//If the typedef REQUIRES_BOTH_IDS exists, it means
+//that the functor needs to know the index in the for loop and the
+//value at the index in the data array. This allows some functors to do
+//proper mappings
+template<class Functor, class Parameters, typename boost::enable_if_c<Functor::REQUIRES_BOTH_IDS>::type >
+DAX_CONT_EXPORT void scheduleDebug(Functor functor,
+                                   Parameters parameters,
+                                   dax::internal::DataArray<dax::Id> ids)
+{
+  dax::internal::DataArray<char> errorArray
+      = internal::getScheduleDebugErrorArray();
+
+  // Clear error value.
+  errorArray.SetValue(0, '\0');
+
+  dax::exec::internal::ErrorHandler errorHandler(errorArray);
+  dax::Id size = ids.GetNumberOfEntries();
+  for (dax::Id index = 0; index < size; index++)
+    {
+    dax::Id bothIds[2] = {ids.GetValue(index),index};
+    functor(parameters, bothIds, errorHandler);
+    if (errorHandler.IsErrorRaised())
+      {
+      throw dax::cont::ErrorExecution(errorArray.GetPointer());
+      }
+    }
+}
 
 template<class Functor, class Parameters>
 DAX_CONT_EXPORT void scheduleDebug(Functor functor,
