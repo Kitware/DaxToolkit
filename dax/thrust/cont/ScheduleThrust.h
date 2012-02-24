@@ -81,6 +81,10 @@ public:
     this->Functor(this->Parameters, ::thrust::get<0>(t), ::thrust::get<1>(t),
                   this->ErrorHandler);
   }
+  //needed for when calling from schedule on a range
+  DAX_EXEC_EXPORT void operator()(dax::Id t) {
+      this->Functor(this->Parameters,t,t,this->ErrorHandler);
+  }
 
 private:
   FunctorType Functor;
