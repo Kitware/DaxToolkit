@@ -11,6 +11,7 @@
 
 #include <dax/Types.h>
 #include <dax/Functional.h>
+#include <dax/cont/Assert.h>
 #include <dax/thrust/cont/internal/ArrayContainerExecutionThrust.h>
 
 #include <thrust/copy.h>
@@ -38,8 +39,12 @@ inline void RemoveIf(InputIterator valuesFirst,
   //between remove_copy_if and copy_if
 
   //first get the correct size for output
-  int numLeft = ::thrust::reduce(stencil.GetBeginThrustIterator(),
-                                 stencil.GetEndThrustIterator());
+  //we have to explicitly state accumaltor type to be dax::Id so that
+  //it doesn't use the stencil's type which is generally a char, which will
+  //overflow and migth return a negative number.
+  dax::Id numLeft = ::thrust::reduce(stencil.GetBeginThrustIterator(),
+                                     stencil.GetEndThrustIterator(),
+                                     dax::Id(0));
   output.Allocate(numLeft);
 
   //remove any item that matches the predicate
