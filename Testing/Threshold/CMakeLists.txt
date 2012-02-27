@@ -50,6 +50,8 @@ target_link_libraries(ThresholdTimingDebug
   ${Boost_LIBRARIES}
   )
 
+add_test(ThresholdTimingDebug1-64
+  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingDebug --pipeline 1 --size 64)
 add_test(ThresholdTimingDebug1-128
   ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingDebug --pipeline 1 --size 128)
 
@@ -61,6 +63,8 @@ if (DAX_ENABLE_OPENMP)
     )
 endif (DAX_ENABLE_OPENMP)
 
+add_test(ThresholdTimingOpenMP1-64
+  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingOpenMP --pipeline 1 --size 64)
 add_test(ThresholdTimingOpenMP1-128
   ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingOpenMP --pipeline 1 --size 128)
 
@@ -75,6 +79,8 @@ if (DAX_ENABLE_CUDA)
     )
 endif (DAX_ENABLE_CUDA)
 
+add_test(ThresholdTimingCuda1-64
+  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingCuda --pipeline 1 --size 64)
 add_test(ThresholdTimingCuda1-128
   ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingCuda --pipeline 1 --size 128)
 
