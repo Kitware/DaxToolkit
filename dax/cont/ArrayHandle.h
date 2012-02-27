@@ -250,7 +250,15 @@ private:
   /// by algorithms that don't know the size of an array intill execution
   void UpdateArraySize()
     {
-    this->Internals->Synchronized = false;
+    if(this->IsControlArrayValid())
+      {
+      this->InvalidateControlArray();
+      this->Internals->Synchronized = false;
+      }
+    else
+      {
+      this->Internals->Synchronized = true;
+      }
     this->Internals->NumberOfEntries =
         this->Internals->ExecutionArray.GetNumberOfEntries();
     }
