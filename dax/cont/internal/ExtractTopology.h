@@ -139,7 +139,7 @@ inline void ExtractTopology<DeviceAdapter,GridType>::DoExtract(
   this->Topology = dax::cont::ArrayHandle<dax::Id,DeviceAdapter>(size);
 
   //we want the size of the points to be based on the numCells * points per cell
-  dax::cont::internal::ExecutionPackageFieldInput<dax::Id,DeviceAdapter>
+  dax::cont::internal::ExecutionPackageFieldOutput<dax::Id,DeviceAdapter>
       result(this->Topology, size);
 
   //construct the parameters list for the function
