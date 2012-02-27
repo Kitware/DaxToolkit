@@ -18,11 +18,13 @@ namespace internal {
 
 template <typename CellType>
 DAX_WORKLET void ExtractCoordinates(dax::exec::WorkMapField<CellType> work,
+                                    dax::Id newIndex,
                                     const dax::exec::FieldCoordinates &pointCoord,
                                     dax::exec::Field<dax::Vector3> &output)
 {
   dax::Vector3 pointLocation = work.GetFieldValue(pointCoord);
-  work.SetFieldValue(output,pointLocation);
+  dax::Vector3* location = output.GetArray().GetPointer();
+  location[newIndex]=pointLocation;
 }
 
 template<class CellType>
@@ -35,14 +37,17 @@ struct ExtractCoordinatesParameters
 
 template<class CellType>
 struct ExtractCoordinatesFunctor {
+  static const bool REQUIRES_BOTH_IDS = true;
+
   DAX_EXEC_EXPORT void operator()(
       ExtractCoordinatesParameters<CellType> &parameters,
-      dax::Id index,
+      dax::Id oldIndex, dax::Id newIndex,
       const dax::exec::internal::ErrorHandler &errorHandler)
   {
     dax::exec::WorkMapField<CellType> work(parameters.grid, errorHandler);
-    work.SetIndex(index);
+    work.SetIndex(oldIndex);
     dax::exec::kernel::internal::ExtractCoordinates(work,
+                                                    newIndex,
                                                     parameters.inCoordinates,
                                                     parameters.outField);
   }
