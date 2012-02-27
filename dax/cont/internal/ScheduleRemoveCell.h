@@ -103,8 +103,16 @@ protected:
     //dax::Ids
     dax::cont::ArrayHandle<dax::Id> usedCellIds;
     DeviceAdapter::StreamCompact(this->MaskCellHandle,usedCellIds);
+
     dax::cont::ArrayHandle<dax::Id> usedPointIds;
     DeviceAdapter::StreamCompact(this->MaskPointHandle,usedPointIds);
+
+    if(this->MaskCellHandle.GetNumberOfEntries() == 0 ||
+       this->MaskPointHandle.GetNumberOfEntries() == 0)
+    {
+    //we have nothing to generate so return the output unmodified
+    return;
+    }
 
     //extract from the grid the subset of topology information we
     //need to construct the unstructured grid
