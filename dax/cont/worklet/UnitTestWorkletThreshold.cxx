@@ -19,29 +19,13 @@
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 
+#include <dax/cont/internal/Testing.h>
 #include <vector>
+
 
 namespace {
 
 const dax::Id DIM = 64;
-const dax::Scalar TOLERANCE = 0.0001;
-
-#define test_assert(condition, message) \
-  test_assert_impl(condition, message, __FILE__, __LINE__);
-
-static inline void test_assert_impl(bool condition,
-                                    const std::string& message,
-                                    const char *file,
-                                    int line)
-{
-  if(!condition)
-    {
-    std::stringstream error;
-    error << file << ":" << line << std::endl;
-    error << message << std::endl;
-    throw error.str();
-    }
-}
 
 //-----------------------------------------------------------------------------
 static void TestThreshold()
@@ -66,13 +50,24 @@ static void TestThreshold()
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
   std::cout << "Running Threshold worklet" << std::endl;
-  dax::Scalar min = 0.1;
-  dax::Scalar max = 0.2;
-  dax::cont::worklet::Threshold(grid,grid2,min,max,fieldHandle,resultHandle);
+  dax::Scalar min = 70;
+  dax::Scalar max = 82;
+
+  try
+    {
+    dax::cont::worklet::Threshold(grid,grid2,min,max,fieldHandle,resultHandle);
+    }
+  catch (dax::cont::ErrorControl error)
+    {
+    std::cout << "Got error: " << error.GetMessage() << std::endl;
+    DAX_TEST_ASSERT(true==false,error.GetMessage());
+    }
 
   std::vector<dax::Scalar> result(resultHandle.GetNumberOfEntries());
   resultHandle.SetNewControlData(result.begin(),result.end());
-  resultHandle.CompleteAsOutput(); //fetch bac to control
+  resultHandle.CompleteAsOutput(); //fetch back to control
+
+  //test max < min.
 }
 
 } // Anonymous namespace
@@ -80,17 +75,6 @@ static void TestThreshold()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletThreshold(int, char *[])
 {
-  try
-    {
-    TestThreshold();
-    }
-  catch (std::string error)
-    {
-    std::cout
-        << "Encountered error: " << std::endl
-        << error << std::endl;
-    return 1;
-    }
-
-  return 0;
+  return dax::cont::internal::Testing::Run(TestThreshold);
 }
+
