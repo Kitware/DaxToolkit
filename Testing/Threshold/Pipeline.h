@@ -19,6 +19,8 @@
 
 #include <vector>
 
+#include <vtkImageData.h>
+
 #define MAKE_STRING2(x) #x
 #define MAKE_STRING1(x) MAKE_STRING2(x)
 #define DEVICE_ADAPTER MAKE_STRING1(DAX_DEFAULT_DEVICE_ADAPTER)
@@ -82,7 +84,7 @@ void PrintResults(int pipeline, double time)
             << pipeline << "," << time << std::endl;
 }
 
-void RunPipeline1(const dax::cont::UniformGrid &grid)
+void RunDAXPipeline(const dax::cont::UniformGrid &grid)
 {
   std::cout << "Running pipeline 1: Elevation -> Threshold" << std::endl;
 
@@ -92,20 +94,16 @@ void RunPipeline1(const dax::cont::UniformGrid &grid)
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
   dax::Scalar min = 0;
-  dax::Scalar max = 10;
+  dax::Scalar max = 100;
 
   dax::cont::worklet::Elevation(grid, grid.GetPoints(), intermediate1);
-
-
-  //dump elevation to console
-  //std::vector<dax::Scalar> resultsBuffer(grid.GetNumberOfPoints());
-  //intermediate1.SetNewControlData(resultsBuffer.begin(),resultsBuffer.end());
-  //intermediate1.CompleteAsOutput();
-  //PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
 
   Timer timer;
   dax::cont::worklet::Threshold(grid,grid2,min,max,intermediate1,resultHandle);
   double time = timer.elapsed();
+  std::cout << "original GetNumberOfCells: " << grid.GetNumberOfCells() << std::endl;
+  std::cout << "threshold GetNumberOfCells: " << grid2.GetNumberOfCells() << std::endl;
+
   PrintResults(1, time);
 }
 

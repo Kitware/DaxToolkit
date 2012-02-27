@@ -14,16 +14,7 @@
 
 void RunPipelineCuda(int pipeline, const dax::cont::UniformGrid &grid)
 {
-  switch (pipeline)
-    {
-    case 1:
-      RunPipeline1(grid);
-      break;    
-    default:
-      std::cout << "Invalid pipeline selected." << std::endl;
-      exit(1);
-      break;
-    }
+  RunDAXPipeline(grid);
 }
 
 // This is kind of a hack. I'd rather the main files be consolidated

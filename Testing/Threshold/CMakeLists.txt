@@ -24,6 +24,11 @@ if (DAX_ENABLE_THRUST)
   include_directories(${THRUST_INCLUDE_DIR})
 endif (DAX_ENABLE_THRUST)
 
+
+#-----------------------------------------------------------------------------
+#Include VTK so we can benchmark agianst it
+find_package(VTK)
+
 #-----------------------------------------------------------------------------
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/ThresholdConfig.h.in
@@ -36,12 +41,30 @@ set(headers
   Pipeline.h
   )
 
+set(vtkHeaders
+  VTKPipeline.h
+)
+
 set(sources
-  #PipelineDebug.cxx
-  #ThresholdTiming.cxx
   ArgumentsParser.cxx
   Timer.cxx
   )
+
+#-----------------------------------------------------------------------------
+if(VTK_FOUND)
+  include(${VTK_USE_FILE})
+  add_executable(ThresholdTimingVTK ${sources} ${vtkHeaders} PipelineVTK.cxx)
+  set_source_files_properties(${headers} PROPERTIES HEADER_FILE_ONLY TRUE)
+  target_link_libraries(ThresholdTimingVTK
+    ${Boost_LIBRARIES}
+    vtkGraphics
+    )
+
+  add_test(ThresholdTimingDebug1-128
+    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingVTK --pipeline 1 --size 128)
+  add_test(ThresholdTimingDebug1-256
+    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingVTK --pipeline 1 --size 256)
+endif()
 
 #-----------------------------------------------------------------------------
 add_executable(ThresholdTimingDebug ${sources} ${headers} PipelineDebug.cxx)
@@ -50,10 +73,10 @@ target_link_libraries(ThresholdTimingDebug
   ${Boost_LIBRARIES}
   )
 
-add_test(ThresholdTimingDebug1-64
-  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingDebug --pipeline 1 --size 64)
 add_test(ThresholdTimingDebug1-128
   ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingDebug --pipeline 1 --size 128)
+add_test(ThresholdTimingDebug1-256
+  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingDebug --pipeline 1 --size 256)
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_OPENMP)
@@ -63,10 +86,10 @@ if (DAX_ENABLE_OPENMP)
     )
 endif (DAX_ENABLE_OPENMP)
 
-add_test(ThresholdTimingOpenMP1-64
-  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingOpenMP --pipeline 1 --size 64)
 add_test(ThresholdTimingOpenMP1-128
   ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingOpenMP --pipeline 1 --size 128)
+add_test(ThresholdTimingOpenMP1-256
+  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingOpenMP --pipeline 1 --size 256)
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_CUDA)
@@ -79,8 +102,8 @@ if (DAX_ENABLE_CUDA)
     )
 endif (DAX_ENABLE_CUDA)
 
-add_test(ThresholdTimingCuda1-64
-  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingCuda --pipeline 1 --size 64)
 add_test(ThresholdTimingCuda1-128
   ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingCuda --pipeline 1 --size 128)
+add_test(ThresholdTimingCuda1-256
+  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingCuda --pipeline 1 --size 256)
 
