@@ -119,7 +119,7 @@ inline void ExtractCoordinates<DeviceAdapter,GridType>::DoExtract(
   this->Coordinates = dax::cont::ArrayHandle<dax::Vector3,DeviceAdapter>(size);
 
   //we want the size of the points to be based on the numCells * points per cell
-  dax::cont::internal::ExecutionPackageFieldInput<dax::Vector3,DeviceAdapter>
+  dax::cont::internal::ExecutionPackageFieldOutput<dax::Vector3,DeviceAdapter>
       result(this->Coordinates, size);
 
   //construct the parameters list for the function
