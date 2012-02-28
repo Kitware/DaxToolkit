@@ -19,8 +19,6 @@
 
 #include <vector>
 
-#include <vtkImageData.h>
-
 #define MAKE_STRING2(x) #x
 #define MAKE_STRING1(x) MAKE_STRING2(x)
 #define DEVICE_ADAPTER MAKE_STRING1(DAX_DEFAULT_DEVICE_ADAPTER)
