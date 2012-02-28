@@ -16,6 +16,15 @@
 #include <dax/cont/internal/ExtractTopology.h>
 #include <dax/cont/internal/ExtractCoordinates.h>
 
+
+
+#include <boost/timer.hpp>
+namespace {
+struct MyTimer : public boost::timer{};
+}
+
+
+
 namespace dax {
 namespace cont {
 namespace internal {
@@ -43,8 +52,15 @@ public:
   void run(const InGridType& inGrid,
            OutGridType& outGrid)
     {
+    MyTimer timer;
     this->ScheduleWorklet(inGrid);
+    double swTime = timer.elapsed();
     this->GenerateOutput(inGrid,outGrid);
+    double totalTime = timer.elapsed();
+    std::cout<< "Total RemoveCell time is: " << totalTime << std::endl;
+    std::cout<< "Schedule Worklet time: " << swTime << std::endl;
+    std::cout<< "Generate Output time: " << totalTime - swTime << std::endl;
+
     }
 
 /// \fn template <typename WorkType> Parameters GenerateParameters(const GridType& grid)
@@ -99,29 +115,36 @@ protected:
   template<typename InGridType,typename OutGridType>
   void GenerateOutput(const InGridType &inGrid, OutGridType& outGrid)
     {
+
+    MyTimer time;
     //stream compact with two paramters the second one needs to be
     //dax::Ids
     dax::cont::ArrayHandle<dax::Id> usedCellIds;
     DeviceAdapter::StreamCompact(this->MaskCellHandle,usedCellIds);
+    std::cout << "Stream Compact 1 time: " << time.elapsed() << std::endl;
+    time.restart();
 
     dax::cont::ArrayHandle<dax::Id> usedPointIds;
     DeviceAdapter::StreamCompact(this->MaskPointHandle,usedPointIds);
+    std::cout << "Stream Compact 2 time: " << time.elapsed() << std::endl;
+    time.restart();
 
     if(this->MaskCellHandle.GetNumberOfEntries() == 0 ||
-       this->MaskPointHandle.GetNumberOfEntries() == 0)
-    {
-    //we have nothing to generate so return the output unmodified
-    return;
-    }
+        this->MaskPointHandle.GetNumberOfEntries() == 0)
+     {
+     //we have nothing to generate so return the output unmodified
+     return;
+     }
 
     //extract from the grid the subset of topology information we
     //need to construct the unstructured grid
+    time.restart();
     dax::cont::internal::ExtractTopology<DeviceAdapter, InGridType>
-      extractedTopology(inGrid, usedCellIds,true);
+       extractedTopology(inGrid, usedCellIds,true);
 
     //extract the point coordinates that we need
     dax::cont::internal::ExtractCoordinates<DeviceAdapter, InGridType>
-        extractedCoords(inGrid,usedPointIds);
+           extractedCoords(inGrid,usedPointIds);
 
     //now that the topology has been fully thresholded,
     //lets ask our derived class if they need to threshold anything
@@ -129,7 +152,9 @@ protected:
 
     //set the handles to the geometery
     outGrid.UpdateHandles(extractedTopology.GetTopology(),
-                          extractedCoords.GetCoordinates());
+                        extractedCoords.GetCoordinates());
+    std::cout << "ExtractTopology time: " << time.elapsed() << std::endl;
+    time.restart();
     }
 
 protected:
