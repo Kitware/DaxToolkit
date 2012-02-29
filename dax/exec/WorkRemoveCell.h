@@ -27,14 +27,11 @@ namespace exec {
 // There are different versions for different cell types, which might have
 // different constructors because they identify topology differently.
 
-template<class CellType> class WorkRemoveCell;
-
-
-template<>
-class WorkRemoveCell<dax::exec::CellVoxel>
+template<class CT> class WorkRemoveCell
 {
 public:
-  typedef dax::exec::CellVoxel CellType;
+  typedef CT CellType;
+  typedef typename CellType::TopologyType TopologyType;
   typedef char MaskType;
 
 private:
@@ -45,7 +42,7 @@ private:
 public:
 
   DAX_EXEC_EXPORT WorkRemoveCell(
-    const dax::internal::TopologyUniform &gridStructure,
+    const TopologyType &gridStructure,
     const dax::exec::FieldCell<MaskType> &deadCells,
     const dax::exec::FieldPoint<MaskType> &deadPoints,
     const dax::exec::internal::ErrorHandler &errorHandler)
@@ -55,7 +52,7 @@ public:
       ErrorHandler(errorHandler)
     { }
 
-  DAX_EXEC_EXPORT const dax::exec::CellVoxel GetCell() const
+  DAX_EXEC_EXPORT const CellType GetCell() const
   {
     return this->Cell;
   }
@@ -122,11 +119,21 @@ public:
     const dax::exec::FieldCoordinates &, dax::Id vertexIndex) const
   {
     dax::Id pointIndex = this->GetCell().GetPointIndex(vertexIndex);
-    const dax::internal::TopologyUniform &gridStructure
-        = this->GetCell().GetGridTopology();
+    const TopologyType &gridStructure = this->GetCell().GetGridTopology();
     return
         dax::exec::internal::fieldAccessUniformCoordinatesGet(gridStructure,
                                                               pointIndex);
+  }
+
+  DAX_EXEC_EXPORT void GetFieldValues(
+    const dax::exec::FieldCoordinates &,
+      dax::Vector3 coords[CellType::NUM_POINTS]) const
+  {
+    dax::Id indices[CellType::NUM_POINTS];
+    this->GetCell().GetPointIndices(indices);
+
+    const TopologyType &gridStructure = this->GetCell().GetGridTopology();
+    dax::exec::internal::fieldAccessUniformCoordinatesGet<CellType::NUM_POINTS>(gridStructure, indices, coords);
   }
 
   DAX_EXEC_EXPORT dax::Id GetCellIndex() const { return this->Cell.GetIndex(); }
