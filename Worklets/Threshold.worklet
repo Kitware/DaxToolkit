@@ -15,13 +15,16 @@
 namespace dax {
 namespace worklet {
 
-template<typename T>
-struct DoThreshold {
-  DAX_EXEC_EXPORT dax::Id operator()(T min, T max, T x) const
-  {
-    return static_cast<char>((x > min) && (x <= max));
-  }
-};
+template<int size, typename T>
+DAX_EXEC_EXPORT char DoThreshold(T min, T max, T values[size])
+{
+  char valid=1;
+  for(int i=0; i < size; ++i)
+    {
+    valid &= (values[i] > min) && (values[i] <= max);
+    }
+  return valid;
+}
 
 template<typename CellType, typename FieldType>
 DAX_WORKLET void Threshold(
@@ -31,14 +34,11 @@ DAX_WORKLET void Threshold(
     DAX_IN dax::exec::FieldPoint<FieldType> &inField)
 {
   //compare the value at each point with the threshold min/max
-  char valid = 1;
-  for (dax::Id vertexId = 0; vertexId < CellType::NUM_POINTS; vertexId++)
-    {
-    FieldType inValue = work.GetFieldValue(inField, vertexId);
-    char value = ((inValue > thresholdMin) && (inValue <= thresholdMax));
-    valid &= value;
-    }
-  work.SetRemoveCell(valid);
+  FieldType pointFieldValues[CellType::NUM_POINTS];
+  work.GetFieldValues(inField,pointFieldValues);
+  work.SetRemoveCell(DoThreshold<CellType::NUM_POINTS>(thresholdMin,
+                                                       thresholdMax,
+                                                       pointFieldValues));
 }
 
 }

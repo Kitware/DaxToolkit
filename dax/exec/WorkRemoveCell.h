@@ -106,6 +106,15 @@ public:
     return dax::exec::internal::fieldAccessNormalGet(field, pointIndex);
   }
 
+  template<typename T>
+  DAX_EXEC_EXPORT void GetFieldValues(const dax::exec::FieldPoint<T> &field,
+                                          T values[CellType::NUM_POINTS]) const
+  {
+    dax::Id pointIndices[CellType::NUM_POINTS];
+    this->GetCell().GetPointIndices(pointIndices);
+    dax::exec::internal::fieldAccessNormalGet<CellType::NUM_POINTS>(field, pointIndices, values);
+  }
+
   DAX_EXEC_EXPORT dax::Vector3 GetFieldValue(
     const dax::exec::FieldCoordinates &, dax::Id vertexIndex) const
   {

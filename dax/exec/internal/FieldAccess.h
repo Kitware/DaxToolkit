@@ -24,6 +24,20 @@ DAX_EXEC_EXPORT const T &fieldAccessNormalGet(
   return field.GetArray().GetValue(index);
 }
 
+template<int size, typename T>
+DAX_EXEC_EXPORT void fieldAccessNormalGet(
+  const dax::exec::Field<T> &field,
+    dax::Id indices[size],
+    T result[size])
+{
+  const dax::internal::DataArray<T> data =  field.GetArray();
+  for(int i=0; i < size; ++i)
+    {
+    result[i] = data.GetValue(indices[i]);
+    }
+}
+
+
 template<typename T>
 DAX_EXEC_EXPORT void fieldAccessNormalSet(dax::exec::Field<T> &field,
                                           dax::Id index,

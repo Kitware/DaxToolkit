@@ -73,6 +73,43 @@ public:
     return pointIndex;
   }
 
+  /// Given a vertex index for a point (0 to GetNumberOfPoints() - 1), returns
+  /// the index for the point in point space.
+  DAX_EXEC_EXPORT void GetPointIndices(dax::Id vertexIndices[NUM_POINTS]) const
+  {
+    dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(
+          this->GetIndex(),
+          this->GetGridTopology().Extent);
+
+    const dax::Id3 cellVertexToPointIndex[8] = {
+      dax::make_Id3(0, 0, 0),
+      dax::make_Id3(1, 0, 0),
+      dax::make_Id3(1, 1, 0),
+      dax::make_Id3(0, 1, 0),
+      dax::make_Id3(0, 0, 1),
+      dax::make_Id3(1, 0, 1),
+      dax::make_Id3(1, 1, 1),
+      dax::make_Id3(0, 1, 1)
+    };
+
+    vertexIndices[0] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[0],
+                                         this->GetGridTopology().Extent);
+    vertexIndices[1] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[1],
+                                         this->GetGridTopology().Extent);
+    vertexIndices[2] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[2],
+                                         this->GetGridTopology().Extent);
+    vertexIndices[3] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[3],
+                                         this->GetGridTopology().Extent);
+    vertexIndices[4] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[4],
+                                         this->GetGridTopology().Extent);
+    vertexIndices[5] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[5],
+                                         this->GetGridTopology().Extent);
+    vertexIndices[6] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[6],
+                                         this->GetGridTopology().Extent);
+    vertexIndices[7] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[7],
+                                         this->GetGridTopology().Extent);
+  }
+
   /// Get the origin (the location of the point at grid coordinates 0,0,0).
   DAX_EXEC_EXPORT const dax::Vector3 &GetOrigin() const
   {

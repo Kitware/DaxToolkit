@@ -58,6 +58,21 @@ public:
           this->TopologyPosition+vertexIndex);
   }
 
+  /// Given a vertex index for a point (0 to GetNumberOfPoints() - 1), returns
+  /// the index for the point in point space.
+  DAX_EXEC_EXPORT void GetPointIndices(dax::Id vertexIndices[NUM_POINTS]) const
+  {
+    dax::Id pos = this->TopologyPosition;
+    vertexIndices[0] = this->GridTopology.Topology.GetValue(pos);
+    vertexIndices[1] = this->GridTopology.Topology.GetValue(++pos);
+    vertexIndices[2] = this->GridTopology.Topology.GetValue(++pos);
+    vertexIndices[3] = this->GridTopology.Topology.GetValue(++pos);
+    vertexIndices[4] = this->GridTopology.Topology.GetValue(++pos);
+    vertexIndices[5] = this->GridTopology.Topology.GetValue(++pos);
+    vertexIndices[6] = this->GridTopology.Topology.GetValue(++pos);
+    vertexIndices[7] = this->GridTopology.Topology.GetValue(++pos);
+  }
+
   /// Get the cell index.  Probably only useful internally.
   DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->CellIndex; }
 
