@@ -25,16 +25,18 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
     const dax::exec::FieldCoordinates &, // Not used for voxels
     const dax::exec::FieldPoint<dax::Scalar> &point_scalar)
 {
-  const dax::Id numVerts = 8;
+  const dax::Id NUM_POINTS  = dax::exec::CellVoxel::NUM_POINTS;
 
-  dax::Vector3 derivativeWeights[numVerts];
+  dax::Vector3 derivativeWeights[NUM_POINTS];
   dax::exec::internal::derivativeWeightsVoxel(pcoords, derivativeWeights);
 
   dax::Vector3 sum = dax::make_Vector3(0.0, 0.0, 0.0);
-  for (dax::Id vertexId = 0; vertexId < numVerts; vertexId++)
+  dax::Scalar fieldValues[NUM_POINTS];
+  work.GetFieldValues(point_scalar,fieldValues);
+
+  for (dax::Id vertexId = 0; vertexId < NUM_POINTS; vertexId++)
     {
-    dax::Scalar value = work.GetFieldValue(point_scalar, vertexId);
-    sum = sum + value * derivativeWeights[vertexId];
+    sum = sum + fieldValues[vertexId] * derivativeWeights[vertexId];
     }
 
   return sum/cell.GetSpacing();
@@ -52,9 +54,9 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
   //for know we are considering that a cell hexahedron
   //is actually a voxel in an unstructured grid.
   //ToDo: use a proper derivative calculation.
+  const dax::Id NUM_POINTS  = dax::exec::CellVoxel::NUM_POINTS;
 
-  const dax::Id numVerts = 8;
-  dax::Vector3 derivativeWeights[numVerts];
+  dax::Vector3 derivativeWeights[NUM_POINTS];
   dax::exec::internal::derivativeWeightsVoxel(pcoords, derivativeWeights);
 
 
@@ -70,11 +72,14 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
     }
 
   dax::Vector3 sum = dax::make_Vector3(0.0, 0.0, 0.0);
-  for (dax::Id vertexId = 0; vertexId < numVerts; vertexId++)
+  dax::Scalar fieldValues[NUM_POINTS];
+  work.GetFieldValues(point_scalar,fieldValues);
+
+  for (dax::Id vertexId = 0; vertexId < NUM_POINTS; vertexId++)
     {
-    dax::Scalar value = work.GetFieldValue(point_scalar, vertexId);
-    sum = sum + value * derivativeWeights[vertexId];
+    sum = sum + fieldValues[vertexId] * derivativeWeights[vertexId];
     }
+
 
   return sum/spacing;
 }
