@@ -68,17 +68,20 @@ public:
                                               this->GetCellIndex(),
                                               value);
 
+    //TODO: Make this a separate function
+    dax::Id pointIndices[CellType::NUM_POINTS];
+    this->GetCell().GetPointIndices(pointIndices);
+
     //also set each point of that cell to be removed.
-    const dax::Id numPoints = this->GetCell().GetNumberOfPoints();
     MaskType status;
-    for(dax::Id i=0;i<numPoints;++i)
+    for(dax::Id i=0;i<CellType::NUM_POINTS;++i)
       {
       //We want a point to be kept if any of the cells that it is part
       //of is being kept. So we OR the current value with the points current value
-      dax::Id pointIndex = this->GetCell().GetPointIndex(i);
       status = value | dax::exec::internal::fieldAccessNormalGet(
-                 this->DeadPoints,pointIndex);
-      dax::exec::internal::fieldAccessNormalSet(this->DeadPoints,pointIndex,
+                 this->DeadPoints,pointIndices[i]);
+      dax::exec::internal::fieldAccessNormalSet(this->DeadPoints,
+                                                pointIndices[i],
                                                 status);
       }
   }

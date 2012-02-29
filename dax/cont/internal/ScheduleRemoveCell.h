@@ -16,6 +16,7 @@
 #include <dax/cont/internal/ExtractTopology.h>
 #include <dax/cont/internal/ExtractCoordinates.h>
 
+#include <iostream>
 
 
 #include <boost/timer.hpp>
@@ -141,10 +142,14 @@ protected:
     time.restart();
     dax::cont::internal::ExtractTopology<DeviceAdapter, InGridType>
        extractedTopology(inGrid, usedCellIds,true);
+    std::cout << "ExtractTopology: " << time.elapsed() << std::endl;
+    time.restart();
 
     //extract the point coordinates that we need
     dax::cont::internal::ExtractCoordinates<DeviceAdapter, InGridType>
            extractedCoords(inGrid,usedPointIds);
+    std::cout << "ExtractCoordinates: " << time.elapsed() << std::endl;
+    time.restart();
 
     //now that the topology has been fully thresholded,
     //lets ask our derived class if they need to threshold anything
@@ -153,7 +158,7 @@ protected:
     //set the handles to the geometery
     outGrid.UpdateHandles(extractedTopology.GetTopology(),
                         extractedCoords.GetCoordinates());
-    std::cout << "ExtractTopology time: " << time.elapsed() << std::endl;
+    std::cout << "UpdateHandles time: " << time.elapsed() << std::endl;
     time.restart();
     }
 
