@@ -54,6 +54,18 @@ DAX_EXEC_EXPORT dax::Vector3 fieldAccessUniformCoordinatesGet(
   return dax::internal::pointCoordiantes(GridTopology, index);
 }
 
+template<int size, typename Grid, typename T>
+DAX_EXEC_EXPORT void fieldAccessUniformCoordinatesGet(
+  const Grid &GridTopology,
+  dax::Id indices[size],
+  T result[size])
+{
+  for(int i=0; i < size; ++i)
+    {
+    result[i] = dax::internal::pointCoordiantes(GridTopology, indices[i]);
+    }
+}
+
 }}}
 
 #endif //__dax_exec_internal_FieldAccess_h

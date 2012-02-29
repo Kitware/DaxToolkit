@@ -142,7 +142,7 @@ protected:
     time.restart();
     dax::cont::internal::ExtractTopology<DeviceAdapter, InGridType>
        extractedTopology(inGrid, usedCellIds,true);
-    std::cout << "ExtractTopology: " << time.elapsed() << std::endl;
+
     time.restart();
 
     //extract the point coordinates that we need
