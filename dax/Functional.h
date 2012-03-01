@@ -25,7 +25,7 @@ struct identity
 
 
 
-/// Identity is a Unary Function that takes a single argument \c x, and returns
+/// Identity is a Predicate that takes a single argument \c x, and returns
 /// True if it is the identity of the Type \p T.
 template<typename T>
 struct is_identity
@@ -39,7 +39,7 @@ struct is_identity
     }
 };
 
-/// Identity is a Unary Function that takes a single argument \c x, and returns
+/// Identity is a Predicate that takes a single argument \c x, and returns
 /// True if it isn't the identity of the Type \p T.
 template<typename T>
 struct not_identity
