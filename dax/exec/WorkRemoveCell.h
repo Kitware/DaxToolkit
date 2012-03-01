@@ -64,22 +64,22 @@ public:
     dax::exec::internal::fieldAccessNormalSet(this->DeadCells,
                                               this->GetCellIndex(),
                                               value);
-
-    //TODO: Make this a separate function
-    dax::Id pointIndices[CellType::NUM_POINTS];
-    this->GetCell().GetPointIndices(pointIndices);
-
-    //also set each point of that cell to be removed.
-    MaskType status;
-    for(dax::Id i=0;i<CellType::NUM_POINTS;++i)
+    if(value)
       {
-      //We want a point to be kept if any of the cells that it is part
-      //of is being kept. So we OR the current value with the points current value
-      status = value | dax::exec::internal::fieldAccessNormalGet(
-                 this->DeadPoints,pointIndices[i]);
-      dax::exec::internal::fieldAccessNormalSet(this->DeadPoints,
-                                                pointIndices[i],
-                                                status);
+      //TODO: Make this a separate function
+      //This is currently okay to be in an if statement
+      //since Threshold very rarely branches inside a wavelet, but
+      //that won't always be the case
+      dax::Id pointIndices[CellType::NUM_POINTS];
+      this->GetCell().GetPointIndices(pointIndices);
+
+      //also set each point of that cell to be removed.
+      for(dax::Id i=0;i<CellType::NUM_POINTS;++i)
+        {
+        dax::exec::internal::fieldAccessNormalSet(this->DeadPoints,
+                                                  pointIndices[i],
+                                                  value);
+        }
       }
   }
 
