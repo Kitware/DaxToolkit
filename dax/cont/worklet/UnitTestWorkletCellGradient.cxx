@@ -10,14 +10,12 @@
 #include <dax/cont/internal/DeviceAdapterError.h>
 
 #include <dax/cont/worklet/CellGradient.h>
-#include <dax/TypeTraits.h>
+#include <dax/VectorTraits.h>
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <dax/cont/internal/Testing.h>
-
-#include <math.h>
 
 namespace {
 

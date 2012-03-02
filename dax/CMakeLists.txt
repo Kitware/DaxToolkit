@@ -11,6 +11,7 @@ set(headers
   Extent.h
   Types.h
   TypeTraits.h
+  VectorTraits.h
   )
 
 dax_declare_headers(${headers})
@@ -36,6 +37,7 @@ set(unit_tests
   UnitTestExtent.cxx
   UnitTestTypes.cxx
   UnitTestTypeTraits.cxx
+  UnitTestVectorTraits.cxx
   )
 
 dax_unit_tests(SOURCES ${unit_tests})

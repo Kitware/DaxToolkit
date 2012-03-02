@@ -22,6 +22,7 @@ dax_declare_headers(CUDA ${headers})
 
 #-----------------------------------------------------------------------------
 set(unit_tests
+  UnitTestCudaMath.cu
   UnitTestCudaScheduleNative.cu
   UnitTestCudaScheduleThrust.cu
   UnitTestDeviceAdapterCuda.cu

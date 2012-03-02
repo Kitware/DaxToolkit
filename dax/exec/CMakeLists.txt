@@ -36,6 +36,7 @@ configure_file(
 
 #-----------------------------------------------------------------------------
 add_subdirectory(internal)
+add_subdirectory(math)
 
 set(unit_tests
   UnitTestCells.cxx
