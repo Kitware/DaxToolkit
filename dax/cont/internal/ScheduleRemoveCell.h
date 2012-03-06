@@ -14,7 +14,7 @@
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 #include <dax/cont/internal/ExtractTopology.h>
-#include <dax/cont/internal/CreatePointMask.h>
+#include <dax/cont/internal/ExtractCoordinates.h>
 
 #include <iostream>
 
@@ -31,41 +31,33 @@ namespace exec {
 namespace kernel {
 namespace internal {
 
-
-template <typename CellType>
-DAX_WORKLET void CreatePointMask(dax::exec::WorkMapCell<CellType> work,
-                                 dax::Id newIndex,
-                                 const dax::exec::FieldCoordinates &pointCoord,
-                                 dax::exec::Field<dax::Vector3> &output)
-{
-  dax::Vector3 pointLocation = work.GetFieldValue(pointCoord);
-  dax::Vector3* location = output.GetArray().GetPointer();
-  location[newIndex]=pointLocation;
-}
-
 template<class CellType>
-struct CreatePointMaskParameters
+struct GetUsedPointsParameters
 {
   typename CellType::TopologyType grid;
-  dax::exec::FieldCoordinates inCoordinates;
-  dax::exec::Field<dax::Vector3> outField;
+  dax::exec::Field<dax::Id> outField;
+  dax::Id offset;
 };
 
 template<class CellType>
-struct CreatePointMaskFunctor {
+struct GetUsedPointsFunctor {
   static const bool REQUIRES_BOTH_IDS = true;
-
   DAX_EXEC_EXPORT void operator()(
-      CreatePointMaskParameters<CellType> &parameters,
+      GetUsedPointsParameters<CellType> &parameters,
       dax::Id oldIndex, dax::Id newIndex,
       const dax::exec::internal::ErrorHandler &errorHandler)
   {
-    dax::exec::WorkMapField<CellType> work(parameters.grid, errorHandler);
-    work.SetIndex(oldIndex);
-    dax::exec::kernel::internal::CreatePointMask(work,
-                                                    newIndex,
-                                                    parameters.inCoordinates,
-                                                    parameters.outField);
+    CellType cell(parameters.grid,oldIndex);
+    dax::Id* output = parameters.outField.GetArray().GetPointer();
+    output += newIndex;
+
+    dax::Id indices[CellType::NUM_POINTS];
+    cell.GetPointIndices(indices);
+    for(dax::Id i=0;i<CellType::NUM_POINTS;++i)
+      {
+      *output=indices[i];
+      output += parameters.offset;
+      }
   }
 };
 
@@ -105,11 +97,14 @@ public:
     MyTimer timer;
     this->ScheduleWorklet(inGrid);
     double swTime = timer.elapsed();
-    this->GenerateOutput(inGrid,outGrid);
-    double totalTime = timer.elapsed();
-    std::cout<< "Total RemoveCell time is: " << totalTime << std::endl;
     std::cout<< "Schedule Worklet time: " << swTime << std::endl;
-    std::cout<< "Generate Output time: " << totalTime - swTime << std::endl;
+    timer.restart();
+    this->GenerateOutput(inGrid,outGrid);
+    double goTime = timer.elapsed();
+    std::cout<< "Generate Output time: " << goTime << std::endl;
+
+    std::cout<< "Total RemoveCell time is: " << goTime+swTime << std::endl;
+
 
     }
 
@@ -143,10 +138,6 @@ protected:
                           new ExecPackFieldCellOutput(
                                 this->MaskCellHandle,grid));
 
-    this->PackageMaskPoint = ExecPackFieldPointOutputPtr(
-                               new ExecPackFieldPointOutput(
-                                 this->MaskPointHandle,grid));
-
     //we need the control grid to create the parameters struct.
     //So pass those objects to the derived class and let it populate the
     //parameters struct with all the user defined information letting the user
@@ -166,19 +157,33 @@ protected:
     MyTimer time;
     //stream compact with two paramters the second one needs to be
     //dax::Ids
+    time.restart();
     dax::cont::ArrayHandle<dax::Id> usedCellIds;
     DeviceAdapter::StreamCompact(this->MaskCellHandle,usedCellIds);
-    std::cout << "Stream Compact 1 time: " << time.elapsed() << std::endl;
+    std::cout << "Stream Compact Cell Mask time: " << time.elapsed() << std::endl;
     time.restart();
 
-    dax::cont::ArrayHandle<dax::Id> usedPointIds;
-    DeviceAdapter::StreamCompact(this->MaskCellHandle,usedPointIds);
+    if(usedCellIds.GetNumberOfEntries() == 0)
+      {
+      //we have nothing to generate so return the output unmodified
+      return;
+      }
 
-    if(this->MaskCellHandle.GetNumberOfEntries() == 0)
-     {
-     //we have nothing to generate so return the output unmodified
-     return;
-     }
+    //generate the point mask
+    this->GeneratePointMask(inGrid,usedCellIds);
+
+    time.restart();
+    dax::cont::ArrayHandle<dax::Id> usedPointIds;
+    DeviceAdapter::StreamCompact(this->MaskPointHandle,usedPointIds);
+    std::cout << "Stream Compact Point Mask time: " << time.elapsed() << std::endl;
+    time.restart();
+
+    if(usedPointIds.GetNumberOfEntries() == 0)
+      {
+      std::cout << "No unique points " << std::endl;
+      //we have nothing to generate so return the output unmodified
+      return;
+      }
 
     //extract from the grid the subset of topology information we
     //need to construct the unstructured grid
@@ -189,9 +194,9 @@ protected:
     time.restart();
 
     //extract the point coordinates that we need
-    dax::cont::internal::CreatePointMask<DeviceAdapter, InGridType>
-           extractedCoords(inGrid,usedPointIds);
-    std::cout << "CreatePointMask: " << time.elapsed() << std::endl;
+    dax::cont::internal::ExtractCoordinates<DeviceAdapter, InGridType>
+                                    extractedCoords(inGrid,usedPointIds);
+    std::cout << "GetUsedPoints: " << time.elapsed() << std::endl;
     time.restart();
 
     //now that the topology has been fully thresholded,
@@ -205,20 +210,57 @@ protected:
     time.restart();
     }
 
+  template<typename GridType>
+  void GeneratePointMask(const GridType &grid,
+                         dax::cont::ArrayHandle<dax::Id>& usedCellIds)
+    {
+    typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
+    typedef typename GridPackageType::ExecutionCellType CellType;
+
+    //construct the input grid
+    GridPackageType inPGrid(grid);
+
+    //construct the temporary result storage
+    const dax::Id size(usedCellIds.GetNumberOfEntries()* CellType::NUM_POINTS);
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> temp(size);
+
+     //we want the size of the points to be based on the numCells * points per cell
+     dax::cont::internal::ExecutionPackageFieldOutput<dax::Id,DeviceAdapter>
+         result(temp, size);
+
+     MyTimer time;
+    //construct the parameters list for the function
+    dax::exec::kernel::internal::GetUsedPointsParameters<CellType> etParams =
+                                        {
+                                        inPGrid.GetExecutionObject(),
+                                        result.GetExecutionObject(),
+                                        usedCellIds.GetNumberOfEntries()
+                                        };
+    DeviceAdapter::Schedule(
+      dax::exec::kernel::internal::GetUsedPointsFunctor<CellType>(),
+      etParams,
+      usedCellIds);
+    std::cout << "Generate input for Point Mask: " << time.elapsed() << std::endl;
+    time.restart();
+
+    this->MaskPointHandle =
+        dax::cont::ArrayHandle<MaskType>(grid.GetNumberOfPoints());
+    this->MaskPointHandle.ReadyAsOutput();
+
+    DeviceAdapter::GenerateStencil(temp,this->MaskPointHandle);
+
+
+    std::cout << "Generate Point Mask Stencil: " << time.elapsed() << std::endl;
+    std::cout << "MaskPointHandle: " << this->MaskPointHandle.GetNumberOfEntries() << std::endl;
+    }
+
 protected:
   typedef dax::cont::internal::ExecutionPackageFieldCellOutput<
                                 MaskType,DeviceAdapter> ExecPackFieldCellOutput;
-  typedef dax::cont::internal::ExecutionPackageFieldPointOutput<
-                                MaskType,DeviceAdapter> ExecPackFieldPointOutput;
-
   typedef  boost::shared_ptr< ExecPackFieldCellOutput >
             ExecPackFieldCellOutputPtr;
 
-  typedef  boost::shared_ptr< ExecPackFieldPointOutput >
-            ExecPackFieldPointOutputPtr;
-
   ExecPackFieldCellOutputPtr PackageMaskCell;
-  ExecPackFieldPointOutputPtr PackageMaskPoint;
 
   dax::cont::ArrayHandle<MaskType> MaskCellHandle;
   dax::cont::ArrayHandle<MaskType> MaskPointHandle;
