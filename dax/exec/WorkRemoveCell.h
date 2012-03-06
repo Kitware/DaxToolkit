@@ -37,18 +37,15 @@ public:
 private:
   CellType Cell;
   dax::exec::FieldCell<MaskType> DeadCells;
-  dax::exec::FieldPoint<MaskType> DeadPoints;
   dax::exec::internal::ErrorHandler ErrorHandler;
 public:
 
   DAX_EXEC_EXPORT WorkRemoveCell(
     const TopologyType &gridStructure,
     const dax::exec::FieldCell<MaskType> &deadCells,
-    const dax::exec::FieldPoint<MaskType> &deadPoints,
     const dax::exec::internal::ErrorHandler &errorHandler)
     : Cell(gridStructure, 0),
       DeadCells(deadCells),
-      DeadPoints(deadPoints),
       ErrorHandler(errorHandler)
     { }
 
@@ -64,23 +61,6 @@ public:
     dax::exec::internal::fieldAccessNormalSet(this->DeadCells,
                                               this->GetCellIndex(),
                                               value);
-    if(value)
-      {
-      //TODO: Make this a separate function
-      //This is currently okay to be in an if statement
-      //since Threshold very rarely branches inside a wavelet, but
-      //that won't always be the case
-      dax::Id pointIndices[CellType::NUM_POINTS];
-      this->GetCell().GetPointIndices(pointIndices);
-
-      //also set each point of that cell to be removed.
-      for(dax::Id i=0;i<CellType::NUM_POINTS;++i)
-        {
-        dax::exec::internal::fieldAccessNormalSet(this->DeadPoints,
-                                                  pointIndices[i],
-                                                  value);
-        }
-      }
   }
 
   //set this to true if you want to remove this cell

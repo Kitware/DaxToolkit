@@ -14,7 +14,7 @@
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 #include <dax/cont/internal/ExtractTopology.h>
-#include <dax/cont/internal/ExtractCoordinates.h>
+#include <dax/cont/internal/CreatePointMask.h>
 
 #include <iostream>
 
@@ -24,6 +24,55 @@ namespace {
 struct MyTimer : public boost::timer{};
 }
 
+
+
+namespace dax {
+namespace exec {
+namespace kernel {
+namespace internal {
+
+
+template <typename CellType>
+DAX_WORKLET void CreatePointMask(dax::exec::WorkMapCell<CellType> work,
+                                 dax::Id newIndex,
+                                 const dax::exec::FieldCoordinates &pointCoord,
+                                 dax::exec::Field<dax::Vector3> &output)
+{
+  dax::Vector3 pointLocation = work.GetFieldValue(pointCoord);
+  dax::Vector3* location = output.GetArray().GetPointer();
+  location[newIndex]=pointLocation;
+}
+
+template<class CellType>
+struct CreatePointMaskParameters
+{
+  typename CellType::TopologyType grid;
+  dax::exec::FieldCoordinates inCoordinates;
+  dax::exec::Field<dax::Vector3> outField;
+};
+
+template<class CellType>
+struct CreatePointMaskFunctor {
+  static const bool REQUIRES_BOTH_IDS = true;
+
+  DAX_EXEC_EXPORT void operator()(
+      CreatePointMaskParameters<CellType> &parameters,
+      dax::Id oldIndex, dax::Id newIndex,
+      const dax::exec::internal::ErrorHandler &errorHandler)
+  {
+    dax::exec::WorkMapField<CellType> work(parameters.grid, errorHandler);
+    work.SetIndex(oldIndex);
+    dax::exec::kernel::internal::CreatePointMask(work,
+                                                    newIndex,
+                                                    parameters.inCoordinates,
+                                                    parameters.outField);
+  }
+};
+
+}
+}
+}
+} //dax::exec::kernel::internal
 
 
 namespace dax {
@@ -90,9 +139,6 @@ protected:
     this->MaskCellHandle =
         dax::cont::ArrayHandle<MaskType>(grid.GetNumberOfCells());
 
-    this->MaskPointHandle =
-        dax::cont::ArrayHandle<MaskType>(grid.GetNumberOfPoints());
-
     this->PackageMaskCell = ExecPackFieldCellOutputPtr(
                           new ExecPackFieldCellOutput(
                                 this->MaskCellHandle,grid));
@@ -109,7 +155,7 @@ protected:
     //Actually run the Functor which is the user worklet with the correct parameters
     DeviceAdapter::Schedule(Functor(),
                             static_cast<Derived*>(this)->GenerateParameters(
-                              grid,packagedGrid),
+                            grid,packagedGrid),
                             grid.GetNumberOfCells());
     }
 
@@ -126,12 +172,9 @@ protected:
     time.restart();
 
     dax::cont::ArrayHandle<dax::Id> usedPointIds;
-    DeviceAdapter::StreamCompact(this->MaskPointHandle,usedPointIds);
-    std::cout << "Stream Compact 2 time: " << time.elapsed() << std::endl;
-    time.restart();
+    DeviceAdapter::StreamCompact(this->MaskCellHandle,usedPointIds);
 
-    if(this->MaskCellHandle.GetNumberOfEntries() == 0 ||
-        this->MaskPointHandle.GetNumberOfEntries() == 0)
+    if(this->MaskCellHandle.GetNumberOfEntries() == 0)
      {
      //we have nothing to generate so return the output unmodified
      return;
@@ -141,14 +184,14 @@ protected:
     //need to construct the unstructured grid
     time.restart();
     dax::cont::internal::ExtractTopology<DeviceAdapter, InGridType>
-       extractedTopology(inGrid, usedCellIds,true);
+       extractedTopology(inGrid, usedCellIds, true);
 
     time.restart();
 
     //extract the point coordinates that we need
-    dax::cont::internal::ExtractCoordinates<DeviceAdapter, InGridType>
+    dax::cont::internal::CreatePointMask<DeviceAdapter, InGridType>
            extractedCoords(inGrid,usedPointIds);
-    std::cout << "ExtractCoordinates: " << time.elapsed() << std::endl;
+    std::cout << "CreatePointMask: " << time.elapsed() << std::endl;
     time.restart();
 
     //now that the topology has been fully thresholded,
