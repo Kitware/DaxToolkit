@@ -18,6 +18,11 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/reduce.h>
 
+#include <thrust/iterator/constant_iterator.h>
+#include <thrust/sort.h>
+#include <thrust/unique.h>
+#include <thrust/gather.h>
+
 namespace dax {
 namespace thrust {
 namespace cont {
@@ -84,6 +89,22 @@ inline void streamCompact(
                               input,
                               output,
                               dax::not_identity<T>());
+}
+
+template<typename T>
+inline void generateStencil(
+    dax::thrust::cont::internal::ArrayContainerExecutionThrust<T>& input,
+    dax::thrust::cont::internal::ArrayContainerExecutionThrust<char>& output)
+{
+  typedef typename ::thrust::device_vector<T>::iterator uniqueResultType;
+
+  ::thrust::sort(input.GetBeginThrustIterator(),input.GetEndThrustIterator());
+  uniqueResultType newEnd = ::thrust::unique(input.GetBeginThrustIterator(),
+                                             input.GetEndThrustIterator());
+  ::thrust::constant_iterator<int> constantIt(1);
+  ::thrust::gather(input.GetBeginThrustIterator(),newEnd,
+                   constantIt,
+                   output.GetBeginThrustIterator());
 }
 
 }
