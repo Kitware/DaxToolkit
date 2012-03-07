@@ -20,10 +20,6 @@
 ##
 ## cmake -DDax_SOURCE_DIR=<Dax_SOURCE_DIR> -P <Dax_SOURCE_DIR>/CMake/DaxCheckCopyright.cmake
 ##
-## or more simply
-##
-## cmake -P <path>/DaxCheckCopyright.cmake
-##
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -42,14 +38,10 @@ set(EXCEPTIONS
   )
 
 if (NOT Dax_SOURCE_DIR)
-  get_filename_component(Dax_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
+  message(SEND_ERROR "Dax_SOURCE_DIR not defined.")
 endif (NOT Dax_SOURCE_DIR)
 
 set(copyright_file ${Dax_SOURCE_DIR}/CMake/DaxCopyrightStatement.txt)
-
-if (NOT EXISTS ${copyright_file})
-  set(copyright_file ${CMAKE_CURRENT_SOURCE_DIR}/DaxCopyrightStatement.txt)
-endif (NOT EXISTS ${copyright_file})
 
 if (NOT EXISTS ${copyright_file})
   message(SEND_ERROR "Cannot find DaxCopyrightStatement.txt.")
