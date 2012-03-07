@@ -82,6 +82,14 @@ include_directories(
   )
 
 #-----------------------------------------------------------------------------
+# Add test to check for copyright statement on all source files.
+if (DAX_ENABLE_TESTING)
+  add_test(CopyrightStatement
+    COMMAND ${CMAKE_COMMAND} "-DDax_SOURCE_DIR=${Dax_SOURCE_DIR}" -P "${Dax_SOURCE_DIR}/CMake/DaxCheckCopyright.cmake"
+    )
+endif (DAX_ENABLE_TESTING)
+
+#-----------------------------------------------------------------------------
 # Check basic type sizes.
 include(CheckTypeSize)
 
