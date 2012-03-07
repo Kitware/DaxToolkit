@@ -35,28 +35,23 @@ template<class CellType>
 struct GetUsedPointsParameters
 {
   typename CellType::TopologyType grid;
-  dax::exec::Field<dax::Id> outField;
-  dax::Id offset;
+  dax::exec::Field<char> outField;
 };
 
 template<class CellType>
 struct GetUsedPointsFunctor {
-  static const bool REQUIRES_BOTH_IDS = true;
   DAX_EXEC_EXPORT void operator()(
       GetUsedPointsParameters<CellType> &parameters,
-      dax::Id oldIndex, dax::Id newIndex,
+      dax::Id oldIndex,
       const dax::exec::internal::ErrorHandler &errorHandler)
   {
     CellType cell(parameters.grid,oldIndex);
-    dax::Id* output = parameters.outField.GetArray().GetPointer();
-    output += newIndex;
-
     dax::Id indices[CellType::NUM_POINTS];
     cell.GetPointIndices(indices);
+    char* output = parameters.outField.GetArray().GetPointer();
     for(dax::Id i=0;i<CellType::NUM_POINTS;++i)
       {
-      *output=indices[i];
-      output += parameters.offset;
+      output[indices[i]]=1;
       }
   }
 };
@@ -190,13 +185,12 @@ protected:
     time.restart();
     dax::cont::internal::ExtractTopology<DeviceAdapter, InGridType>
        extractedTopology(inGrid, usedCellIds, true);
-
     time.restart();
 
     //extract the point coordinates that we need
     dax::cont::internal::ExtractCoordinates<DeviceAdapter, InGridType>
                                     extractedCoords(inGrid,usedPointIds);
-    std::cout << "GetUsedPoints: " << time.elapsed() << std::endl;
+    std::cout << "ExtractCoordinates: " << time.elapsed() << std::endl;
     time.restart();
 
     //now that the topology has been fully thresholded,
@@ -220,38 +214,27 @@ protected:
     //construct the input grid
     GridPackageType inPGrid(grid);
 
-    //construct the temporary result storage
-    const dax::Id size(usedCellIds.GetNumberOfEntries()* CellType::NUM_POINTS);
-    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> temp(size);
+    MyTimer time;
+    const dax::Id size=(grid.GetNumberOfPoints());
+    this->MaskPointHandle =
+        dax::cont::ArrayHandle<MaskType>(size);
 
      //we want the size of the points to be based on the numCells * points per cell
-     dax::cont::internal::ExecutionPackageFieldOutput<dax::Id,DeviceAdapter>
-         result(temp, size);
+    dax::cont::internal::ExecutionPackageFieldOutput<char,DeviceAdapter>
+         result(this->MaskPointHandle,size);
 
-     MyTimer time;
+
     //construct the parameters list for the function
     dax::exec::kernel::internal::GetUsedPointsParameters<CellType> etParams =
                                         {
                                         inPGrid.GetExecutionObject(),
                                         result.GetExecutionObject(),
-                                        usedCellIds.GetNumberOfEntries()
                                         };
     DeviceAdapter::Schedule(
       dax::exec::kernel::internal::GetUsedPointsFunctor<CellType>(),
       etParams,
       usedCellIds);
     std::cout << "Generate input for Point Mask: " << time.elapsed() << std::endl;
-    time.restart();
-
-    this->MaskPointHandle =
-        dax::cont::ArrayHandle<MaskType>(grid.GetNumberOfPoints());
-    this->MaskPointHandle.ReadyAsOutput();
-
-    DeviceAdapter::GenerateStencil(temp,this->MaskPointHandle);
-
-
-    std::cout << "Generate Point Mask Stencil: " << time.elapsed() << std::endl;
-    std::cout << "MaskPointHandle: " << this->MaskPointHandle.GetNumberOfEntries() << std::endl;
     }
 
 protected:
