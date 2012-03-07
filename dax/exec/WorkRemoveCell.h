@@ -32,7 +32,7 @@ template<class CT> class WorkRemoveCell
 public:
   typedef CT CellType;
   typedef typename CellType::TopologyType TopologyType;
-  typedef char MaskType;
+  typedef dax::Id MaskType;
 
 private:
   CellType Cell;
@@ -56,7 +56,7 @@ public:
 
   //set this to true if you want to remove this cell
   //Any cell with the value of zero is removed.
-  DAX_EXEC_EXPORT void SetRemoveCell(char value)
+  DAX_EXEC_EXPORT void SetRemoveCell(dax::Id value)
   {
     dax::exec::internal::fieldAccessNormalSet(this->DeadCells,
                                               this->GetCellIndex(),

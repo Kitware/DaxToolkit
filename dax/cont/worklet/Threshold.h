@@ -38,7 +38,7 @@ struct ThresholdParameters
   typedef typename CellType::TopologyType GridType;
 
   GridType grid;
-  dax::exec::FieldCell<char> workCellMask;
+  dax::exec::FieldCell<dax::Id> workCellMask;
 
   FieldType min;
   FieldType max;

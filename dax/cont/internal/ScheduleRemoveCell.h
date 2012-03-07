@@ -35,7 +35,7 @@ template<class CellType>
 struct GetUsedPointsParameters
 {
   typename CellType::TopologyType grid;
-  dax::exec::Field<char> outField;
+  dax::exec::Field<dax::Id> outField;
 };
 
 template<class CellType>
@@ -48,7 +48,7 @@ struct GetUsedPointsFunctor {
     CellType cell(parameters.grid,oldIndex);
     dax::Id indices[CellType::NUM_POINTS];
     cell.GetPointIndices(indices);
-    char* output = parameters.outField.GetArray().GetPointer();
+    int* output = parameters.outField.GetArray().GetPointer();
     for(dax::Id i=0;i<CellType::NUM_POINTS;++i)
       {
       output[indices[i]]=1;
@@ -81,7 +81,8 @@ template<class Derived,
 class ScheduleRemoveCell
 {
 public:
-  typedef char MaskType;
+  typedef dax::Id MaskType;
+
 
   /// Executes the ScheduleRemoveCell algorithm on the inputGrid and places
   /// the resulting unstructured grid in outGrid
@@ -222,7 +223,7 @@ protected:
         dax::cont::ArrayHandle<MaskType>(size);
 
      //we want the size of the points to be based on the numCells * points per cell
-    dax::cont::internal::ExecutionPackageFieldOutput<char,DeviceAdapter>
+    dax::cont::internal::ExecutionPackageFieldOutput<MaskType,DeviceAdapter>
          result(this->MaskPointHandle,size);
 
 
