@@ -11,11 +11,8 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
-#include <dax/cont/UnstructuredGrid.h>
-#include <dax/cont/VectorOperations.h>
 
 #include <dax/cont/worklet/Elevation.h>
-#include <dax/cont/worklet/Threshold.h>
 
 #include <vector>
 
@@ -25,8 +22,16 @@
 #include <vtkThreshold.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
 
+
+#include <piston/piston_math.h>
+#include <piston/choose_container.h>
+
+#define SPACE thrust::detail::default_device_space_tag
+
+#include <piston/image3d.h>
+#include <piston/vtk_image3d.h>
+#include <piston/threshold_geometry.h>
 
 namespace
 {
@@ -37,7 +42,7 @@ void PrintResults(int pipeline, double time, const char* name)
             << pipeline << "," << time << std::endl;
 }
 
-void RunVTKPipeline(const dax::cont::UniformGrid &dgrid, vtkImageData* grid)
+void RunPISTONPipeline(const dax::cont::UniformGrid &dgrid, vtkImageData* grid)
 {
   std::cout << "Running pipeline 1: Elevation -> Threshold" << std::endl;
 
@@ -51,24 +56,23 @@ void RunVTKPipeline(const dax::cont::UniformGrid &dgrid, vtkImageData* grid)
   vtkSmartPointer<vtkFloatArray> vtkElevationPoints = vtkSmartPointer<vtkFloatArray>::New();
   vtkElevationPoints->SetName("Elevation");
   vtkElevationPoints->SetVoidArray(&elev[0],elev.size(),1);
-  grid->GetPointData()->AddArray(vtkElevationPoints);
 
-  vtkNew<vtkThreshold> threshold;
-  threshold->SetInput(grid);
-  threshold->AllScalarsOn();
-  threshold->ThresholdBetween(0, 100);
-  threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,"Elevation");
+  grid->GetPointData()->SetScalars(vtkElevationPoints); //piston on works on active scalars
+  piston::vtk_image3d<int,float,SPACE> image(grid);
+  piston::threshold_geometry<piston::vtk_image3d<int, float, SPACE> > threshold(image,0,100);
+  threshold.set_threshold_range(0,100);
 
   Timer timer;
-  threshold->Update();
+  threshold();
   double time = timer.elapsed();
 
-  vtkSmartPointer<vtkUnstructuredGrid> out = threshold->GetOutput();
-  
   std::cout << "original GetNumberOfCells: " << dgrid.GetNumberOfCells() << std::endl;
-  std::cout << "threshold GetNumberOfCells: " << out->GetNumberOfCells() << std::endl;
-  PrintResults(1, time, "VTK");
+  std::cout << "threshold GetNumberOfCells: " << threshold.valid_cell_indices.size() << std::endl;
+  PrintResults(1, time, "Piston");
 }
+
+
+
 
 } // Anonymous namespace
 

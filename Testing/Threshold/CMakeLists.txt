@@ -30,6 +30,13 @@ endif (DAX_ENABLE_THRUST)
 find_package(VTK)
 
 #-----------------------------------------------------------------------------
+#Include PISTON so we can benchmark agianst it
+find_path( PISTON_INCLUDE
+  NAMES piston/piston_math.h
+  DOC "Piston headers"
+  )
+
+#-----------------------------------------------------------------------------
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/ThresholdConfig.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/ThresholdConfig.h
@@ -41,10 +48,6 @@ set(headers
   Pipeline.h
   )
 
-set(vtkHeaders
-  VTKPipeline.h
-)
-
 set(sources
   ArgumentsParser.cxx
   Timer.cxx
@@ -52,18 +55,42 @@ set(sources
 
 #-----------------------------------------------------------------------------
 if(VTK_FOUND)
+  set(vtkHeaders
+    VTKPipeline.h
+    )
+
   include(${VTK_USE_FILE})
   add_executable(ThresholdTimingVTK ${sources} ${vtkHeaders} PipelineVTK.cxx)
-  set_source_files_properties(${headers} PROPERTIES HEADER_FILE_ONLY TRUE)
+  set_source_files_properties(${vtkHeaders} PROPERTIES HEADER_FILE_ONLY TRUE)
   target_link_libraries(ThresholdTimingVTK
+    ${Boost_LIBRARIES}    
+    vtkGraphics
+    )
+
+  add_test(ThresholdTimingVTK1-128
+    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingVTK --pipeline 1 --size 128)
+  add_test(ThresholdTimingVTK1-256
+    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingVTK --pipeline 1 --size 256)
+endif()
+
+#-----------------------------------------------------------------------------
+if(VTK_FOUND AND NOT (PISTON_INCLUDE EQUAL "PISTON_INCLUDE-NOT_FOUND") )
+  set(pistonHeaders
+    PISTONPipeline.h
+    )
+  include(${VTK_USE_FILE})
+  include_directories(${PISTON_INCLUDE})
+  cuda_add_executable(ThresholdTimingPISTON ${sources} ${pistonHeaders} PipelinePISTON.cu)
+  set_source_files_properties(${pistonHeaders} PROPERTIES HEADER_FILE_ONLY TRUE)
+  target_link_libraries(ThresholdTimingPISTON
     ${Boost_LIBRARIES}
     vtkGraphics
     )
 
-  add_test(ThresholdTimingDebug1-128
-    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingVTK --pipeline 1 --size 128)
-  add_test(ThresholdTimingDebug1-256
-    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingVTK --pipeline 1 --size 256)
+  add_test(ThresholdTimingPiston1-128
+    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingPISTON --pipeline 1 --size 128)
+  add_test(ThresholdTimingPiston1-256
+    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingPISTON --pipeline 1 --size 256)
 endif()
 
 #-----------------------------------------------------------------------------

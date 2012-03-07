@@ -6,12 +6,13 @@
 
 ===========================================================================*/
 
-#ifndef __PipelineVTK_h
-#define __PipelineVTK_h
+#ifndef __PipelinePISTON_h
+#define __PipelinePISTON_h
 
 #include <dax/cont/UniformGrid.h>
+
 class vtkImageData;
 
-void RunPipelineVTK(int pipeline, const dax::cont::UniformGrid &dgrid, vtkImageData* grid);
+void RunPipelinePISTON(int pipeline, const dax::cont::UniformGrid &dgrid, vtkImageData* grid);
 
-#endif //__PipelineVTK_h
+#endif //__PipelinePISTON_h
