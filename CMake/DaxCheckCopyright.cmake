@@ -39,7 +39,6 @@ set(FILES_TO_CHECK
 
 set(EXCEPTIONS
   LICENSE.txt
-  CMake/DaxCopyrightStatement.txt
   )
 
 if (NOT Dax_SOURCE_DIR)
@@ -151,6 +150,8 @@ function(get_comment_prefix var filename)
     set(${var} "##" PARENT_SCOPE)
   elseif (base STREQUAL "CMakeLists" AND extension STREQUAL ".txt")
     set(${var} "##" PARENT_SCOPE)
+  elseif (extension STREQUAL ".txt")
+    set(${var} "" PARENT_SCOPE)
   elseif (extension STREQUAL ".h" OR extension STREQUAL ".h.in" OR extension STREQUAL ".cxx" OR extension STREQUAL ".cu")
     set(${var} "//" PARENT_SCOPE)
   elseif (extension STREQUAL ".worklet")
@@ -179,11 +180,17 @@ function(check_copyright filename)
     # list REMOVE_AT command removed the escaping on the ; in one of the
     # header_line's items and cause the compare to fail.
     foreach (header_line IN LISTS header_lines)
-      string(REGEX MATCH
-	"^${comment_prefix}[ \t]*${copyright_line}[ \t]*$"
-	match
-	"${header_line}"
-	)
+      if (copyright_line)
+	string(REGEX MATCH
+	  "^${comment_prefix}[ \t]*${copyright_line}[ \t]*$"
+	  match
+	  "${header_line}"
+	  )
+      else (copyright_line)
+	if (NOT header_line)
+	  set(match TRUE)
+	endif (NOT header_line)
+      endif (copyright_line)
       if (match)
 	break()
       endif (match)
