@@ -16,15 +16,51 @@ namespace dax {
 namespace worklet {
 
 template<int size, typename T>
-DAX_EXEC_EXPORT char DoThreshold(T min, T max, T values[size])
+struct DoThreshold
 {
-  char valid=1;
-  for(int i=0; i < size; ++i)
+  const T Min;
+  const T Max;
+  DAX_WORKLET DoThreshold(const T &min, const T &max):
+    Min(min), Max(max)
     {
-    valid &= (values[i] > min) && (values[i] <= max);
     }
-  return valid;
-}
+
+  DAX_EXEC_EXPORT char operator()(T values[size]) const
+  {
+    char valid=1;
+    for(int i=0; i < size; ++i)
+      {
+      valid &= (values[i] > Min) && (values[i] <= Max);
+      }
+    return valid;
+  }
+};
+
+template<typename T>
+struct DoThreshold<8,T>
+{
+  const T Min;
+  const T Max;
+  DAX_WORKLET DoThreshold(const T &min, const T &max):
+    Min(min), Max(max)
+    {
+    }
+
+  DAX_EXEC_EXPORT char operator()(T values[8]) const
+  {
+    char valid=1;
+    valid &= (values[0] > Min) && (values[0] <= Max);
+    valid &= (values[1] > Min) && (values[1] <= Max);
+    valid &= (values[2] > Min) && (values[2] <= Max);
+    valid &= (values[3] > Min) && (values[3] <= Max);
+    valid &= (values[4] > Min) && (values[4] <= Max);
+    valid &= (values[5] > Min) && (values[5] <= Max);
+    valid &= (values[6] > Min) && (values[6] <= Max);
+    valid &= (values[7] > Min) && (values[7] <= Max);
+    return valid;
+  }
+};
+
 
 template<typename CellType, typename FieldType>
 DAX_WORKLET void Threshold(
@@ -36,9 +72,8 @@ DAX_WORKLET void Threshold(
   //compare the value at each point with the threshold min/max
   FieldType pointFieldValues[CellType::NUM_POINTS];
   work.GetFieldValues(inField,pointFieldValues);
-  work.SetRemoveCell(DoThreshold<CellType::NUM_POINTS>(thresholdMin,
-                                                       thresholdMax,
-                                                       pointFieldValues));
+  DoThreshold<CellType::NUM_POINTS,FieldType> threshold(thresholdMin,thresholdMax);
+  work.SetRemoveCell(threshold(pointFieldValues));
 }
 
 }

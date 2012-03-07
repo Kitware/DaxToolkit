@@ -68,7 +68,7 @@ namespace internal {
 
 
 /// ScheduleRemoveCell is the control enviorment representation of a worklet
-/// of the type WorkRemoveCell. This class handles properly calling the worklet
+//   / of the type WorkRemoveCell. This class handles properly calling the worklet
 /// that the user has defined has being of type WorkRemoveCell.
 ///
 /// Since ScheduleRemoveCell uses CRTP, every worklet needs to construct a class
@@ -196,10 +196,12 @@ protected:
     //now that the topology has been fully thresholded,
     //lets ask our derived class if they need to threshold anything
     static_cast<Derived*>(this)->GenerateOutputFields();
+    std::cout << "GenerateOutputFields time: " << time.elapsed() << std::endl;
+    time.restart();
 
     //set the handles to the geometery
     outGrid.UpdateHandles(extractedTopology.GetTopology(),
-                        extractedCoords.GetCoordinates());
+                          extractedCoords.GetCoordinates());
     std::cout << "UpdateHandles time: " << time.elapsed() << std::endl;
     time.restart();
     }
