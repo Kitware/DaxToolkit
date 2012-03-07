@@ -27,6 +27,21 @@
 
 cmake_minimum_required(VERSION 2.8)
 
+set(FILES_TO_CHECK
+  *.txt
+  *.cmake
+  *.h
+  *.h.in
+  *.cxx
+  *.cu
+  *.worklet
+  )
+
+set(EXCEPTIONS
+  LICENSE.txt
+  CMake/DaxCopyrightStatement.txt
+  )
+
 if (NOT Dax_SOURCE_DIR)
   get_filename_component(Dax_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 endif (NOT Dax_SOURCE_DIR)
@@ -101,6 +116,12 @@ function(get_comment_prefix var filename)
   get_filename_component(extension "${filename}" EXT)
   if (extension STREQUAL ".cmake")
     set(${var} "##" PARENT_SCOPE)
+  elseif (base STREQUAL "CMakeLists" AND extension STREQUAL ".txt")
+    set(${var} "##" PARENT_SCOPE)
+  elseif (extension STREQUAL ".h" OR extension STREQUAL ".h.in" OR extension STREQUAL ".cxx" OR extension STREQUAL ".cu")
+    set(${var} "//" PARENT_SCOPE)
+  elseif (extension STREQUAL ".worklet")
+    set(${var} "//" PARENT_SCOPE)
   else (extension STREQUAL ".cmake")
     message(SEND_ERROR "Could not identify file type of ${filename}.")
   endif (extension STREQUAL ".cmake")
@@ -142,4 +163,14 @@ function(check_copyright filename)
   endforeach (copyright_line)
 endfunction(check_copyright)
 
-check_copyright(${Dax_SOURCE_DIR}/CMake/DaxCheckCopyright.cmake)
+foreach (glob_expression ${FILES_TO_CHECK})
+  file(GLOB_RECURSE file_list
+    RELATIVE "${Dax_SOURCE_DIR}"
+    "${Dax_SOURCE_DIR}/${glob_expression}"
+    )
+  list(REMOVE_ITEM file_list ${EXCEPTIONS})
+  foreach (file ${file_list})
+    message("Checking ${file}")
+    check_copyright("${Dax_SOURCE_DIR}/${file}")
+  endforeach (file)
+endforeach (glob_expression)
