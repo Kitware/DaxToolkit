@@ -53,15 +53,74 @@ struct Functor
       dax::Id index,
       const dax::exec::internal::ErrorHandler &errorHandler)
   {
-  dax::exec::WorkRemoveCell<CT> work(parameters.grid,
-                                     parameters.workCellMask,
-                                     errorHandler);
-  work.SetCellIndex(index);
-  dax::worklet::Threshold(work,
-                          parameters.min,
-                          parameters.max,
-                          parameters.inField);
+    typedef CT CellType;
+    typedef FT FieldType;
+    CellType cell(parameters.grid,index);
+
+    const dax::Extent3 extent = cell.GetExtent();
+    const dax::Id3 dims = extent.Max - extent.Min;
+    const int x = index % (dims[0]);
+    const int y = (index / dims[0]) % dims[1];
+    const int z = (index / (dims[0] * dims[1]));
+
+    const int i0 = x + y*dims[0] + z * dims[0] * dims[0];
+    const int i1 = i0   + 1;
+    const int i2 = i0   + 1	+ dims[0];
+    const int i3 = i0   + dims[0];
+
+    const int i4 = i0   + dims[0] * dims[1];
+    const int i5 = i1   + dims[0] * dims[1];
+    const int i6 = i2   + dims[0] * dims[1];
+    const int i7 = i3   + dims[0] * dims[1];
+
+    const FT* point_data = parameters.inField.GetArray().GetPointer();
+    const FT f0 = *(point_data + i0);
+    const FT f1 = *(point_data + i1);
+    const FT f2 = *(point_data + i2);
+    const FT f3 = *(point_data + i3);
+    const FT f4 = *(point_data + i4);
+    const FT f5 = *(point_data + i5);
+    const FT f6 = *(point_data + i6);
+    const FT f7 = *(point_data + i7);
+
+    char valid=1;
+    valid &= (f0 > parameters.min) && (f0 <= parameters.max);
+    valid &= (f1 > parameters.min) && (f1 <= parameters.max);
+    valid &= (f2 > parameters.min) && (f2 <= parameters.max);
+    valid &= (f3 > parameters.min) && (f3 <= parameters.max);
+    valid &= (f4 > parameters.min) && (f4 <= parameters.max);
+    valid &= (f5 > parameters.min) && (f5 <= parameters.max);
+    valid &= (f6 > parameters.min) && (f6 <= parameters.max);
+    valid &= (f7 > parameters.min) && (f7 <= parameters.max);
+
+
+    parameters.workCellMask.GetArray().SetValue(index,valid);
+
   }
+
+
+//  dax::Id indices[CellType::NUM_POINTS];
+//  cell.GetPointIndices(indices);
+
+//  FieldType values[CellType::NUM_POINTS];
+//  dax::exec::internal::fieldAccessNormalGet<CellType::NUM_POINTS>(
+//        cell, parameters.inField, values);
+
+//  char valid=1;
+//  for(int i=0; i < CellType::NUM_POINTS; ++i)
+//    {
+//    valid &= (values[i] > parameters.min) && (values[i] <= parameters.max);
+//    }
+
+
+//  dax::exec::WorkRemoveCell<CT> work(parameters.grid,
+//                                     parameters.workCellMask,
+//                                     errorHandler);
+//  work.SetCellIndex(index);
+//  dax::worklet::Threshold(work,
+//                          parameters.min,
+//                          parameters.max,
+//                          parameters.inField);
 };
 
 template<class Parameters,
