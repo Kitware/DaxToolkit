@@ -83,6 +83,15 @@ class ScheduleRemoveCell
 public:
   typedef dax::Id MaskType;
 
+  void SetCompactTopology(bool compact)
+    {
+    this->CompactTopology=compact;
+    }
+
+  const bool& GetCompactTopology()
+    {
+    return this->CompactTopology;
+    }
 
   /// Executes the ScheduleRemoveCell algorithm on the inputGrid and places
   /// the resulting unstructured grid in outGrid
@@ -100,7 +109,6 @@ public:
     std::cout<< "Generate Output time: " << goTime << std::endl;
 
     std::cout<< "Total RemoveCell time is: " << goTime+swTime << std::endl;
-
 
     }
 
@@ -165,46 +173,40 @@ protected:
       return;
       }
 
-    //generate the point mask
-    this->GeneratePointMask(inGrid,usedCellIds);
-
-    time.restart();
-    dax::cont::ArrayHandle<dax::Id> usedPointIds;
-    DeviceAdapter::StreamCompact(this->MaskPointHandle,usedPointIds);
-    std::cout << "Stream Compact Point Mask time: " << time.elapsed() << std::endl;
-    time.restart();
-
-    if(usedPointIds.GetNumberOfEntries() == 0)
+    if(this->CompactTopology)
       {
-      std::cout << "No unique points " << std::endl;
-      //we have nothing to generate so return the output unmodified
-      return;
-      }
+      //extract from the grid the subset of topology information we
+      //need to construct the unstructured grid
+      time.restart();
+      dax::cont::internal::ExtractTopology<DeviceAdapter, InGridType>
+         extractedTopology(inGrid, usedCellIds, this->CompactTopology);
+      time.restart();
 
-    //extract from the grid the subset of topology information we
-    //need to construct the unstructured grid
-    time.restart();
-    dax::cont::internal::ExtractTopology<DeviceAdapter, InGridType>
-       extractedTopology(inGrid, usedCellIds, true);
-    time.restart();
+      //generate the point mask
+      this->GeneratePointMask(inGrid,usedCellIds);
 
-    //extract the point coordinates that we need
-    dax::cont::internal::ExtractCoordinates<DeviceAdapter, InGridType>
-                                    extractedCoords(inGrid,usedPointIds);
-    std::cout << "ExtractCoordinates: " << time.elapsed() << std::endl;
-    time.restart();
+      //now that the topology has been fully thresholded,
+      //lets ask our derived class if they need to threshold anything
+      static_cast<Derived*>(this)->GenerateOutputFields();
+      std::cout << "GenerateOutputFields time: " << time.elapsed() << std::endl;
+      time.restart();
 
-    //now that the topology has been fully thresholded,
-    //lets ask our derived class if they need to threshold anything
-    static_cast<Derived*>(this)->GenerateOutputFields();
-    std::cout << "GenerateOutputFields time: " << time.elapsed() << std::endl;
-    time.restart();
+      dax::cont::ArrayHandle<dax::Id> usedPointIds;
+      DeviceAdapter::StreamCompact(this->MaskPointHandle,usedPointIds);
+      std::cout << "Stream Compact Point Mask time: " << time.elapsed() << std::endl;
+      time.restart();
 
-    //set the handles to the geometery
-    outGrid.UpdateHandles(extractedTopology.GetTopology(),
-                          extractedCoords.GetCoordinates());
-    std::cout << "UpdateHandles time: " << time.elapsed() << std::endl;
-    time.restart();
+      //extract the point coordinates that we need
+      dax::cont::internal::ExtractCoordinates<DeviceAdapter, InGridType>
+                                      extractedCoords(inGrid,usedPointIds);
+      std::cout << "ExtractCoordinates: " << time.elapsed() << std::endl;
+      time.restart();
+
+      //set the handles to the geometery
+      outGrid.UpdateHandles(extractedTopology.GetTopology(),
+                            extractedCoords.GetCoordinates());
+      std::cout << "UpdateHandles time: " << time.elapsed() << std::endl;
+      }    
     }
 
   template<typename GridType>
@@ -241,6 +243,7 @@ protected:
     }
 
 protected:
+  bool CompactTopology;
   typedef dax::cont::internal::ExecutionPackageFieldCellOutput<
                                 MaskType,DeviceAdapter> ExecPackFieldCellOutput;
   typedef  boost::shared_ptr< ExecPackFieldCellOutput >
