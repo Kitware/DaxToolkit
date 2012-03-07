@@ -56,6 +56,24 @@ if (NOT EXISTS ${copyright_file})
   message(SEND_ERROR "Cannot find DaxCopyrightStatement.txt.")
 endif (NOT EXISTS ${copyright_file})
 
+# Gets the current year (if possible).
+function (get_year var)
+  if (UNIX)
+    execute_process(COMMAND "date" "+%Y" OUTPUT_VARIABLE result)
+    string(REGEX REPLACE "(....).*" "\\1" result "${result}")
+  elseif (WIN32)
+    execute_process(COMMAND "date" "/T" OUTPUT_VARIABLE result)
+    string(REGEX REPLACE ".*../../(....).*" "\\1" result "${result}")
+  else (UNIX)
+    message("Don't know how to get date.")
+    set(result "20XX")
+  endif (UNIX)
+  set(${var} "${result}" PARENT_SCOPE)
+endfunction (get_year)
+
+set(copyright_file_year 2011)
+get_year(current_year)
+
 # Escapes ';' characters (list delimiters) and splits the given string into
 # a list of its lines without newlines.
 function (list_of_lines var string)
@@ -76,9 +94,25 @@ string(REGEX REPLACE "\n+$" "" COPYRIGHT_STATEMENT "${COPYRIGHT_STATEMENT}")
 list_of_lines(COPYRIGHT_LINE_LIST "${COPYRIGHT_STATEMENT}")
 
 # Comment regular expression characters that we want to match literally.
-string(REGEX REPLACE "\\." "\\\\." COPYRIGHT_LINE_LIST "${COPYRIGHT_LINE_LIST}")
-string(REGEX REPLACE "\\(" "\\\\(" COPYRIGHT_LINE_LIST "${COPYRIGHT_LINE_LIST}")
-string(REGEX REPLACE "\\)" "\\\\)" COPYRIGHT_LINE_LIST "${COPYRIGHT_LINE_LIST}")
+string(REPLACE "." "\\." COPYRIGHT_LINE_LIST "${COPYRIGHT_LINE_LIST}")
+string(REPLACE "(" "\\(" COPYRIGHT_LINE_LIST "${COPYRIGHT_LINE_LIST}")
+string(REPLACE ")" "\\)" COPYRIGHT_LINE_LIST "${COPYRIGHT_LINE_LIST}")
+
+# Introduce regular expression for years we want to be generic.
+string(REPLACE
+  "${copyright_file_year}"
+  "20[0-9][0-9]"
+  COPYRIGHT_LINE_LIST
+  "${COPYRIGHT_LINE_LIST}"
+  )
+
+# Replace year in COPYRIGHT_STATEMENT with current year.
+string(REPLACE
+  "${copyright_file_year}"
+  "${current_year}"
+  COPYRIGHT_STATEMENT
+  "${COPYRIGHT_STATEMENT}"
+  )
 
 # Print an error concerning the missing copyright in the given file.
 function(missing_copyright filename comment_prefix)
@@ -104,10 +138,9 @@ function(missing_copyright filename comment_prefix)
   message("${comment_copyright}")
   message("${comment_prefix}")
   message("${comment_prefix}=============================================================================\n")
-  message(SEND_ERROR "
-Please add the previous statement to the beginning of ${filename}
-(Replace [0-9] with a numeric digit.)
-")
+  message(SEND_ERROR
+    "Please add the previous statement to the beginning of ${filename}"
+    )
 endfunction(missing_copyright)
 
 # Get an appropriate beginning line comment for the given filename.
