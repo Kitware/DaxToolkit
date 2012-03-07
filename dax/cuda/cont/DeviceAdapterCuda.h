@@ -98,15 +98,6 @@ struct DeviceAdapterCuda
                                    output.GetExecutionArray());
     output.UpdateArraySize();
     }
-
-  template<typename T, typename U>
-  static void GenerateStencil(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& input,
-                              dax::cont::ArrayHandle<U,DeviceAdapterCuda>& stencil)
-  {
-    dax::cuda::cont::generateStencil(input.GetExecutionArray(),
-                                     stencil.GetExecutionArray());
-    stencil.UpdateArraySize();
-  }
   
   template<typename T>
   static void Weld(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& ids)

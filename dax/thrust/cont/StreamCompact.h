@@ -91,21 +91,6 @@ inline void streamCompact(
                               dax::not_identity<T>());
 }
 
-template<typename T>
-inline void generateStencil(
-    dax::thrust::cont::internal::ArrayContainerExecutionThrust<T>& input,
-    dax::thrust::cont::internal::ArrayContainerExecutionThrust<char>& output)
-{
-  typedef typename ::thrust::device_vector<T>::iterator uniqueResultType;
-
-  ::thrust::sort(input.GetBeginThrustIterator(),input.GetEndThrustIterator());
-  uniqueResultType newEnd = ::thrust::unique(input.GetBeginThrustIterator(),
-                                             input.GetEndThrustIterator());
-  ::thrust::constant_iterator<int> constantIt(1);
-  ::thrust::gather(input.GetBeginThrustIterator(),newEnd,
-                   constantIt,
-                   output.GetBeginThrustIterator());
-}
 
 }
 }

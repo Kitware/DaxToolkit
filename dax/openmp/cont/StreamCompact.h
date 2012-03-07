@@ -30,14 +30,6 @@ DAX_CONT_EXPORT void streamCompact(const T& input,
   dax::thrust::cont::streamCompact(input,stencil,output);
 }
 
-template<typename T, typename U>
-static void generateStencil(T& input,
-                            U& stencil)
-{
-  dax::thrust::cont::generateStencil(input,
-                                     stencil);
-}
-
 }
 }
 } // namespace dax::openmap::cont
