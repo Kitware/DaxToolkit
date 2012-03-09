@@ -8,9 +8,11 @@
 
 set(headers
   DeviceAdapterOpenMP.h
-  WeldThrust.h
+  LowerBounds.h
   ScheduleThrust.h
   StreamCompact.h
+  Sort.h
+  Unique.h
   )
 
 #-----------------------------------------------------------------------------

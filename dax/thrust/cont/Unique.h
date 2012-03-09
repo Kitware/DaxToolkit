@@ -6,25 +6,28 @@
 
 =========================================================================*/
 
-#ifndef __dax_openmp_cont_WeldThrust_h
-#define __dax_openmp_cont_WeldThrust_h
+#ifndef __dax_thrust_cont_Unique_h
+#define __dax_thrust_cont_Unique_h
 
-#include <dax/openmp/cont/internal/SetThrustForOpenMP.h>
-#include <dax/thrust/cont/WeldThrust.h>
+#include <dax/Types.h>
+#include <dax/thrust/cont/internal/ArrayContainerExecutionThrust.h>
+
+#include <thrust/unique.h>
 
 namespace dax {
-namespace openmp {
+namespace thrust {
 namespace cont {
 
 
 template<typename T>
-DAX_CONT_EXPORT void WeldThrust(dax::internal::DataArray<T> values)
+DAX_CONT_EXPORT void unique(
+    dax::thrust::cont::internal::ArrayContainerExecutionThrust<T> &values)
 {
-  dax::thrust::cont::WeldThrust(values);
+
 }
 
 }
 }
-} // namespace dax::openmp::cont
+} // namespace dax::thrust::cont
 
-#endif //__dax_openmp_cont_WeldThrust_h
+#endif //__dax_thrust_cont_Unique_h

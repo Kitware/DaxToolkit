@@ -18,11 +18,6 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/reduce.h>
 
-#include <thrust/iterator/constant_iterator.h>
-#include <thrust/sort.h>
-#include <thrust/unique.h>
-#include <thrust/gather.h>
-
 namespace dax {
 namespace thrust {
 namespace cont {

@@ -18,12 +18,13 @@ set(headers
   ErrorControlBadValue.h
   ErrorControlOutOfMemory.h
   ErrorExecution.h
+  LowerBoundsDebug.h
   ScheduleDebug.h
+  SortDebug.h
   StreamCompactDebug.h
-  WeldDebug.h
   UniformGrid.h
+  UniqueDebug.h
   UnstructuredGrid.h
-
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
   )
 #-----------------------------------------------------------------------------

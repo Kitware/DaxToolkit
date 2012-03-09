@@ -22,8 +22,10 @@
 #include <dax/cuda/cont/ScheduleThrust.h>
 #endif
 
+#include <dax/cuda/cont/LowerBounds.h>
 #include <dax/cuda/cont/StreamCompact.h>
-#include <dax/cuda/cont/WeldThrust.h>
+#include <dax/cuda/cont/Sort.h>
+#include <dax/cuda/cont/Unique.h>
 #include <dax/cuda/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
@@ -47,6 +49,15 @@ struct DeviceAdapterCuda
       : public dax::cuda::cont::internal::ArrayContainerExecutionThrust<T>
   { };
 
+  template<typename T,typename U>
+  static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& input,
+                         const dax::cont::ArrayHandle<U,DeviceAdapterCuda>& values,
+                         dax::cont::ArrayHandle<dax::Id,DeviceAdapterCuda>& output)
+    {
+    dax::cuda::cont::lowerBounds(input,values,output);
+    output.UpdateArraySize();
+    }
+
   template<class Functor, class Parameters>
   static void Schedule(Functor functor,
                        Parameters parameters,
@@ -58,6 +69,12 @@ struct DeviceAdapterCuda
     dax::cuda::cont::scheduleThrust(functor, parameters, numInstances);
 #endif
   }
+
+  template<typename T>
+  static void Sort(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& values)
+    {
+    dax::cuda::cont::sort(values);
+    }
 
   template<typename T,typename U>
   static void StreamCompact(
@@ -88,10 +105,12 @@ struct DeviceAdapterCuda
     }
   
   template<typename T>
-  static void Weld(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& ids)
-  {
-  dax::cuda::cont::WeldThrust(ids.ReadyAsInput());
-  }
+  static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& values)
+    {
+    dax::cuda::cont::usnique(values);
+    values.UpdateArraySize();
+    }
+
 
 };
 

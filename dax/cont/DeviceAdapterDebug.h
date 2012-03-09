@@ -16,9 +16,11 @@
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterDebug
 
 #include <dax/internal/DataArray.h>
+#include <dax/cont/LowerBoundsDebug.h>
 #include <dax/cont/ScheduleDebug.h>
+#include <dax/cont/SortDebug.h>
 #include <dax/cont/StreamCompactDebug.h>
-#include <dax/cont/WeldDebug.h>
+#include <dax/cont/UniqueDebug.h>
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 
 
@@ -42,6 +44,15 @@ struct DeviceAdapterDebug
   class ArrayContainerExecution
       : public dax::cont::internal::ArrayContainerExecutionCPU<T> { };
 
+  template<typename T>
+  static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& input,
+                         const dax::cont::ArrayHandle<U,DeviceAdapterDebug>& values,
+                         dax::cont::ArrayHandle<U,DeviceAdapterDebug>& output)
+    {
+    dax::cont::lowerBoundsDebug(input,values,output);
+    output.UpdateArraySize();
+    }
+
   template<class Functor, class Parameters>
   static void Schedule(Functor functor,
                        Parameters parameters,
@@ -49,6 +60,13 @@ struct DeviceAdapterDebug
   {
     dax::cont::scheduleDebug(functor, parameters, numInstances);
   }
+
+
+  template<typename T>
+  static void Sort(dax::cont::ArrayHandle<T,DeviceAdapterDebug>& values)
+    {
+    dax::cont::sortDebug(values);
+    }
 
   template<typename T,typename U>
   static void StreamCompact(
@@ -79,10 +97,11 @@ struct DeviceAdapterDebug
     }
   
   template<typename T>
-  static void Weld(dax::cont::ArrayHandle<T,DeviceAdapterDebug>& ids)
-  {
-    dax::cont::WeldDebug(ids.ReadyAsInput());
-  }
+  static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterDebug>& values)
+    {
+    dax::cont::uniqueDebug(values);
+    values.UpdateArraySize();
+    }
 
 };
 

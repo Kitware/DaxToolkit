@@ -6,24 +6,27 @@
 
 =========================================================================*/
 
-#ifndef __dax_cuda_cont_WeldThrust_h
-#define __dax_cuda_cont_WeldThrust_h
+#ifndef __dax_thrust_cont_Sort_h
+#define __dax_thrust_cont_Sort_h
 
-#include <dax/cuda/cont/internal/SetThrustForCuda.h>
-#include <dax/thrust/cont/WeldThrust.h>
+#include <dax/Types.h>
+#include <dax/thrust/cont/internal/ArrayContainerExecutionThrust.h>
+
+#include <thrust/sort.h>
 
 namespace dax {
-namespace cuda {
+namespace thrust {
 namespace cont {
 
+
 template<typename T>
-DAX_CONT_EXPORT void WeldThrust(dax::internal::DataArray<T> values)
+DAX_CONT_EXPORT void sort(
+    dax::thrust::cont::internal::ArrayContainerExecutionThrust<T> &values)
 {
-  dax::thrust::cont::WeldThrust(values);
 }
 
 }
 }
-} // namespace dax::cuda::cont
+} // namespace dax::thrust::cont
 
-#endif //__dax_cuda_cont_WeldThrust_h
+#endif //__dax_thrust_cont_Sort_h

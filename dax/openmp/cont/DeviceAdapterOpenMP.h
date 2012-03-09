@@ -15,9 +15,11 @@
 
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::openmp::cont::DeviceAdapterOpenMP
 
+#include <dax/openmp/cont/LowerBounds.h>
 #include <dax/openmp/cont/ScheduleThrust.h>
 #include <dax/openmp/cont/StreamCompact.h>
-#include <dax/openmp/cont/WeldThrust.h>
+#include <dax/openmp/cont/Sort.h>
+#include <dax/openmp/cont/Unique.h>
 #include <dax/openmp/cont/internal/ArrayContainerExecutionThrust.h>
 
 namespace dax {
@@ -41,6 +43,15 @@ struct DeviceAdapterOpenMP
       : public dax::openmp::cont::internal::ArrayContainerExecutionThrust<T>
   { };
 
+  template<typename T>
+  static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& input,
+                         const dax::cont::ArrayHandle<U,DeviceAdapterOpenMP>& values,
+                         dax::cont::ArrayHandle<U,DeviceAdapterOpenMP>& output)
+    {
+    dax::openmp::cont::lowerBounds(input,values,output);
+    output.UpdateArraySize();
+    }
+
   template<class Functor, class Parameters>
   static void Schedule(Functor functor,
                        Parameters parameters,
@@ -48,6 +59,12 @@ struct DeviceAdapterOpenMP
   {
     dax::openmp::cont::scheduleThrust(functor, parameters, numInstances);
   }
+
+  template<typename T>
+  static void Sort(dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& values)
+    {
+    dax::openmp::cont::sort(values);
+    }
 
   template<typename T,typename U>
   static void StreamCompact(
@@ -78,11 +95,11 @@ struct DeviceAdapterOpenMP
     }
 
   template<typename T>
-  static void Weld(dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& ids)
-  {
-    dax::openmp::cont::WeldThrust(ids.ReadyAsInput());
-  }
-
+  static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& values)
+    {
+    dax::openmp::cont::unique(values);
+    values.UpdateArraySize();
+    }
 };
 
 }
