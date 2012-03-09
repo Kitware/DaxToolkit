@@ -42,24 +42,6 @@ __global__ void scheduleCudaKernel(Functor functor,
     }
 }
 
-
-template<typename Functor, class Parameters>
-__global__ void scheduleCudaKernel(Functor functor,
-                                   Parameters parameters,
-                                   dax::internal::DataArray<dax::Id> instances,
-                                   dax::Id numInstances,
-                                   dax::internal::DataArray<char> errorArray)
-{
-  dax::exec::internal::ErrorHandler errorHandler(errorArray);
-
-  for (dax::cuda::exec::internal::CudaThreadIterator iter(numInstances);
-       !iter.IsDone();
-       iter.Next())
-    {
-    functor(parameters, instances.GetValue(iter.GetIndex()), errorHandler);
-    }
-}
-
 }
 }
 }
@@ -112,40 +94,6 @@ DAX_CONT_EXPORT void scheduleCuda(Functor functor,
                    errorString);
     throw dax::cont::ErrorExecution(errorString);
     }
-}
-
-template<class Functor, class Parameters>
-DAX_CONT_EXPORT void scheduleCuda(Functor functor,
-                                  Parameters parameters,
-                                  dax::internal::DataArray<dax::Id> instances)
-{
-  const dax::Id ERROR_ARRAY_SIZE = 1024;
-  dax::cuda::cont::internal::ArrayContainerExecutionThrust<char> &errorArray
-      = internal::getScheduleCudaErrorArray();
-  errorArray.Allocate(ERROR_ARRAY_SIZE);
-  *errorArray.GetBeginThrustIterator() = '\0';
-
-  dax::Id numInstances = instances.GetNumberOfEntries();
-  dax::cuda::cont::internal::CudaParameters cudaParam(numInstances);
-  dax::Id numBlocks = cudaParam.GetNumberOfBlocks();
-  dax::Id numThreads = cudaParam.GetNumberOfThreads();
-
-  using dax::cuda::exec::internal::kernel::scheduleCudaKernel;
-  scheduleCudaKernel<<<numBlocks, numThreads>>>(functor,
-                                                parameters,
-                                                instances,
-                                                numInstances,
-                                                errorArray.GetExecutionArray());
-
-  if (*errorArray.GetBeginThrustIterator() != '\0')
-    {
-    char errorString[ERROR_ARRAY_SIZE];
-    ::thrust::copy(errorArray.GetBeginThrustIterator(),
-                   errorArray.GetEndThrustIterator(),
-                   errorString);
-    throw dax::cont::ErrorExecution(errorString);
-    }
-
 }
 
 }

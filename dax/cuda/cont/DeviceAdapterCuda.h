@@ -59,18 +59,6 @@ struct DeviceAdapterCuda
 #endif
   }
 
-  template<class Functor, class Parameters, typename T>
-  static void Schedule(Functor functor,
-                       Parameters parameters,
-                       dax::cont::ArrayHandle<T,DeviceAdapterCuda> &ids)
-  {
-#ifdef DAX_CUDA_NATIVE_SCHEDULE
-    dax::cuda::cont::scheduleCuda(functor, parameters, ids.ReadyAsInput());
-#else
-    dax::cuda::cont::scheduleThrust(functor, parameters, ids.ReadyAsInput());
-#endif
-  }
-
   template<typename T,typename U>
   static void StreamCompact(
       const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& input,

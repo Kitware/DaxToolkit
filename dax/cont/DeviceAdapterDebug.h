@@ -50,14 +50,6 @@ struct DeviceAdapterDebug
     dax::cont::scheduleDebug(functor, parameters, numInstances);
   }
 
-  template<class Functor, class Parameters, typename T>
-  static void Schedule(Functor functor,
-                       Parameters parameters,
-                       dax::cont::ArrayHandle<T,DeviceAdapterDebug>& ids)
-  {
-    dax::cont::scheduleDebug(functor, parameters, ids.ReadyAsInput());
-  }
-
   template<typename T,typename U>
   static void StreamCompact(
       const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& input,

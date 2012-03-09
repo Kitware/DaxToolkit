@@ -24,14 +24,6 @@ DAX_CONT_EXPORT void scheduleThrust(Functor functor,
   dax::thrust::cont::scheduleThrust(functor, parameters, numInstances);
 }
 
-template<class Functor, class Parameters>
-DAX_CONT_EXPORT void scheduleThrust(Functor functor,
-                                    Parameters parameters,
-                                    dax::internal::DataArray<dax::Id> ids)
-{
-  dax::thrust::cont::scheduleThrust(functor, parameters, ids);
-}
-
 }
 }
 } // namespace dax::cuda::cont
