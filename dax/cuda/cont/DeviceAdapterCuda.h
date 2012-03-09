@@ -49,10 +49,10 @@ struct DeviceAdapterCuda
       : public dax::cuda::cont::internal::ArrayContainerExecutionThrust<T>
   { };
 
-  template<typename T,typename U>
+  template<typename T, typename U>
   static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& input,
-                         const dax::cont::ArrayHandle<U,DeviceAdapterCuda>& values,
-                         dax::cont::ArrayHandle<dax::Id,DeviceAdapterCuda>& output)
+                         const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& values,
+                         dax::cont::ArrayHandle<U,DeviceAdapterCuda>& output)
     {
     dax::cuda::cont::lowerBounds(input,values,output);
     output.UpdateArraySize();

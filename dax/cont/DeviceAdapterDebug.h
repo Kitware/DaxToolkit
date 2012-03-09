@@ -44,9 +44,9 @@ struct DeviceAdapterDebug
   class ArrayContainerExecution
       : public dax::cont::internal::ArrayContainerExecutionCPU<T> { };
 
-  template<typename T>
+  template<typename T, typename U>
   static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& input,
-                         const dax::cont::ArrayHandle<U,DeviceAdapterDebug>& values,
+                         const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& values,
                          dax::cont::ArrayHandle<U,DeviceAdapterDebug>& output)
     {
     dax::cont::lowerBoundsDebug(input,values,output);

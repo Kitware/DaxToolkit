@@ -43,9 +43,9 @@ struct DeviceAdapterOpenMP
       : public dax::openmp::cont::internal::ArrayContainerExecutionThrust<T>
   { };
 
-  template<typename T>
+  template<typename T, typename U>
   static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& input,
-                         const dax::cont::ArrayHandle<U,DeviceAdapterOpenMP>& values,
+                         const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& values,
                          dax::cont::ArrayHandle<U,DeviceAdapterOpenMP>& output)
     {
     dax::openmp::cont::lowerBounds(input,values,output);

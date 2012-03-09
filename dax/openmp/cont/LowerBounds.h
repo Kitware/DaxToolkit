@@ -19,7 +19,7 @@ namespace cont {
 
 template<typename T, typename U>
 DAX_CONT_EXPORT void lowerBounds(const T& input,
-                                 const U& values,
+                                 const T& values,
                                  U& output)
 {
   dax::thrust::cont::lowerBounds(input,values,output);

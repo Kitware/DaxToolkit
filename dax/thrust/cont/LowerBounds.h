@@ -6,27 +6,33 @@
 
 =========================================================================*/
 
-#ifndef __dax_openmp_cont_LowerBounds_h
-#define __dax_openmp_cont_LowerBounds_h
+#ifndef __dax_thrust_cont_LowerBounds_h
+#define __dax_thrust_cont_LowerBounds_h
 
-#include <dax/openmp/cont/internal/SetThrustForOpenMP.h>
-#include <dax/thrust/cont/LowerBounds.h>
+#include <dax/Types.h>
+#include <dax/thrust/cont/internal/ArrayContainerExecutionThrust.h>
+#include <thrust/binary_search.h>
 
 namespace dax {
-namespace openmp {
+namespace thrust {
 namespace cont {
 
 
-template<typename T, typename U>
-DAX_CONT_EXPORT void lowerBounds(const T& input,
-                                 const U& values,
-                                 U& output)
+template<typename T>
+DAX_CONT_EXPORT void lowerBounds(
+    const dax::thrust::cont::internal::ArrayContainerExecutionThrust<T>& input,
+    const dax::thrust::cont::internal::ArrayContainerExecutionThrust<T>& values,
+    dax::thrust::cont::internal::ArrayContainerExecutionThrust<dax::Id>& output)
 {
-  dax::thrust::cont::lowerBounds(input,values,output);
+  ::thrust::lower_bound(input.GetBeginThrustIterator(),
+                        input.GetEndThrustIterator(),
+                        values.GetBeginThrustIterator(),
+                        values.GetEndThrustIterator(),
+                        output.GetBeginThrustIterator());
 }
 
 }
 }
-} // namespace dax::openmp::cont
+} // namespace dax::thrust::cont
 
-#endif //__dax_openmp_cont_LowerBounds_h
+#endif //__dax_thrust_cont_LowerBounds_h
