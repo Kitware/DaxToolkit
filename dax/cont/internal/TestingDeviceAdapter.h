@@ -22,6 +22,7 @@
 #include <dax/cont/internal/IteratorContainer.h>
 #include <dax/cont/internal/Testing.h>
 #include <dax/cont/internal/TestingGridGenerator.h>
+#include <dax/cont/internal/ScheduleMapAdapter.h>
 
 #include <dax/internal/DataArray.h>
 
@@ -51,6 +52,16 @@ public:
                                     dax::exec::internal::ErrorHandler &)
     {
       array.SetValue(index, OFFSET);
+    }
+  };
+
+  struct ClearArrayMapKernel
+  {
+    DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id> array,
+                                    dax::Id, dax::Id value,
+                                    dax::exec::internal::ErrorHandler &)
+    {
+      array.SetValue(value, OFFSET);
     }
   };
 
@@ -210,9 +221,9 @@ private:
                                                          rawsubset.end());
 
     std::cout << "Running clear on subset." << std::endl;
-    DeviceAdapter::Schedule(ClearArrayKernel(),
-                            array.GetExecutionArray(),
-                            subset);
+    dax::cont::internal::ScheduleMap(ClearArrayMapKernel(),
+                                     array.GetExecutionArray(),
+                                     subset);
     array.CopyFromExecutionToControl(arrayContainer);
 
     for (dax::Id index = 0; index < 4; index++)

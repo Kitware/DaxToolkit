@@ -1,5 +1,5 @@
-#ifndef __dax_exec_internal_ExtractCoordinates_h
-#define __dax_exec_internal_ExtractCoordinates_h
+#ifndef __dax_cont_internal_ExtractCoordinates_h
+#define __dax_cont_internal_ExtractCoordinates_h
 
 #include <dax/Types.h>
 #include <dax/exec/Cell.h>
@@ -9,6 +9,7 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
+#include <dax/cont/internal/ScheduleMapAdapter.h>
 
 namespace dax {
 namespace exec {
@@ -37,17 +38,15 @@ struct ExtractCoordinatesParameters
 
 template<class CellType>
 struct ExtractCoordinatesFunctor {
-  static const bool REQUIRES_BOTH_IDS = true;
-
   DAX_EXEC_EXPORT void operator()(
       ExtractCoordinatesParameters<CellType> &parameters,
-      dax::Id oldIndex, dax::Id newIndex,
+      dax::Id key, dax::Id value,
       const dax::exec::internal::ErrorHandler &errorHandler)
   {
     dax::exec::WorkMapField<CellType> work(parameters.grid, errorHandler);
-    work.SetIndex(oldIndex);
+    work.SetIndex(value);
     dax::exec::kernel::internal::ExtractCoordinates(work,
-                                                    newIndex,
+                                                    key,
                                                     parameters.inCoordinates,
                                                     parameters.outField);
   }
@@ -66,15 +65,6 @@ template<typename DeviceAdapter, typename GridType>
 class ExtractCoordinates
 {
 public:
-
-  /// Extract the Coordinates for all the cells in the grid.
-  ExtractCoordinates(const GridType& grid)
-    {
-    DAX_ASSERT_CONT(grid.GetNumberOfPoints() > 0);
-    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> temp;
-    this->DoExtract(grid,temp,false);
-    }
-
   /// Extract a subset of the cells Coordinates.
   ExtractCoordinates(const GridType& grid,
                   dax::cont::ArrayHandle<dax::Id,DeviceAdapter> &extractIds)
@@ -83,7 +73,7 @@ public:
     DAX_ASSERT_CONT(grid.GetNumberOfPoints() > 0);
     DAX_ASSERT_CONT(extractIds.GetNumberOfEntries() > 0);
     DAX_ASSERT_CONT(extractIds.GetNumberOfEntries()<=grid.GetNumberOfPoints());
-    this->DoExtract(grid,extractIds,true);
+    this->DoExtract(grid,extractIds);
   }
 
   /// Returns an array handle to the execution enviornment data that
@@ -93,8 +83,7 @@ public:
 
 private:
   void DoExtract(const GridType& grid,
-                 dax::cont::ArrayHandle<dax::Id,DeviceAdapter> &extractIds,
-                 bool useSubSet);
+                 dax::cont::ArrayHandle<dax::Id,DeviceAdapter> &extractIds);
 
   dax::cont::ArrayHandle<dax::Vector3,DeviceAdapter> Coordinates;
 };
@@ -103,8 +92,7 @@ private:
 template<typename DeviceAdapter, typename GridType>
 inline void ExtractCoordinates<DeviceAdapter,GridType>::DoExtract(
     const GridType& grid,
-    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> &extractIds,
-    bool useSubSet)
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> &extractIds)
 {
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   typedef typename GridPackageType::ExecutionCellType CellType;
@@ -117,9 +105,8 @@ inline void ExtractCoordinates<DeviceAdapter,GridType>::DoExtract(
       fieldCoords(grid.GetPoints());
 
   //construct the Coordinates result array
-  dax::Id numCellsToExtract=(useSubSet)? extractIds.GetNumberOfEntries():
-                                         grid.GetNumberOfCells();
-  dax::Id size = numCellsToExtract * CellType::NUM_POINTS;
+  dax::Id numCellsToExtract(extractIds.GetNumberOfEntries());
+  dax::Id size(numCellsToExtract * CellType::NUM_POINTS);
 
   this->Coordinates = dax::cont::ArrayHandle<dax::Vector3,DeviceAdapter>(size);
 
@@ -132,22 +119,14 @@ inline void ExtractCoordinates<DeviceAdapter,GridType>::DoExtract(
                                       {
                                       inPGrid.GetExecutionObject(),
                                       fieldCoords.GetExecutionObject(),
-                                      result.GetExecutionObject()
+                                      result.GetExecutionObject(),
                                       };
-  if(useSubSet)
-    {
-    DeviceAdapter::Schedule(
+
+  dax::cont::internal::ScheduleMap(
         dax::exec::kernel::internal::ExtractCoordinatesFunctor<CellType>(),
         etParams,
         extractIds);
-    }
-  else
-    {
-    DeviceAdapter::Schedule(
-      dax::exec::kernel::internal::ExtractCoordinatesFunctor<CellType>(),
-      etParams,
-      numCellsToExtract);
-    }
+
 }
 
 
