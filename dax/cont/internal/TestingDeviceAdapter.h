@@ -320,10 +320,10 @@ private:
       }
   }
 
-  static DAX_CONT_EXPORT void TestWeld()
+  static DAX_CONT_EXPORT void TestOrderedUniqueValues()
   {
     std::cout << "-------------------------------------------" << std::endl;
-    std::cout << "Testing Weld" << std::endl;
+    std::cout << "Testing Sort, Unique, and LowerBounds" << std::endl;
     std::vector<dax::Id> testData(ARRAY_SIZE);
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
       {
@@ -331,7 +331,14 @@ private:
       }
     dax::cont::ArrayHandle<dax::Id,DeviceAdapter> handle(testData.begin(),
                                                          testData.end());
-    DeviceAdapter::Weld(handle);
+
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> temp;
+    DeviceAdapter::Copy(handle,temp);
+    DeviceAdapter::Sort(temp);
+    DeviceAdapter::Unique(temp);
+    DeviceAdapter::LowerBounds(temp,handle,handle);
+    temp.ReleaseExecutionResources();
+
     handle.CompleteAsOutput();
 
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
@@ -340,7 +347,7 @@ private:
       DAX_TEST_ASSERT(value == i % 50, "Got bad value from the Weld");
       }
 
-    std::cout << "Testing Weld with 2" << std::endl;
+    std::cout << "Testing Sort, Unique, and LowerBounds with random values" << std::endl;
     //now test it works when the id are not incrementing
     std::vector<dax::Id> randomData(6);
     randomData[0]=500;  //2
@@ -352,7 +359,12 @@ private:
 
     dax::cont::ArrayHandle<dax::Id,DeviceAdapter> rhandle(randomData.begin(),
                                                          randomData.end());
-    DeviceAdapter::Weld(rhandle);
+    DeviceAdapter::Copy(rhandle,temp);
+    DeviceAdapter::Sort(temp);
+    DeviceAdapter::Unique(temp);
+    DeviceAdapter::LowerBounds(temp,rhandle,rhandle);
+    temp.ReleaseExecutionResources();
+
     rhandle.CompleteAsOutput();
 
     DAX_TEST_ASSERT(randomData[0] == 2, "bad value from the weld operation.");
@@ -551,7 +563,7 @@ private:
       TestSchedule();
       TestStreamCompact();
       TestStreamCompactWithStencil();
-      TestWeld();
+      TestOrderedUniqueValues();
       TestErrorExecution();
 
       std::cout << "Doing Worklet tests with UniformGrid" << std::endl;

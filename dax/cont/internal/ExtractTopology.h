@@ -98,10 +98,15 @@ public:
     this->DoExtract(grid,cellsToExtract);
     std::cout << "ExtractTopology: " << time.elapsed() << std::endl;
 
-    if(OrderedUniqueValueIndices && this->Topology.GetNumberOfEntries() > CellType::NUM_POINTS)
+    if(OrderedUniqueValueIndices &&
+       this->Topology.GetNumberOfEntries() > CellType::NUM_POINTS)
       {
       time.restart();
-      DeviceAdapter::Weld(this->Topology);
+      dax::cont::ArrayHandle<dax::Id,DeviceAdapter> temp;
+      DeviceAdapter::Copy(this->Topology,temp);
+      DeviceAdapter::Sort(temp);
+      DeviceAdapter::Unique(temp);
+      DeviceAdapter::LowerBounds(temp,this->Topology,this->Topology);
       std::cout << "ExtractTopology - Weld: " << time.elapsed() << std::endl;
       }
     }
