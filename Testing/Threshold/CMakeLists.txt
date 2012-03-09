@@ -74,7 +74,8 @@ if(VTK_FOUND)
 endif()
 
 #-----------------------------------------------------------------------------
-if(VTK_FOUND AND NOT (PISTON_INCLUDE EQUAL "PISTON_INCLUDE-NOT_FOUND") )
+option(DAX_ENABLE_PISTON_TESTING FALSE)
+if(VTK_FOUND AND DAX_ENABLE_PISTON_TESTING )
   set(pistonHeaders
     PISTONPipeline.h
     )
