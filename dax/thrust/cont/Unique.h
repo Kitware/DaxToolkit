@@ -23,7 +23,11 @@ template<typename T>
 DAX_CONT_EXPORT void unique(
     dax::thrust::cont::internal::ArrayContainerExecutionThrust<T> &values)
 {
+  typedef typename dax::thrust::cont::internal::ArrayContainerExecutionThrust<T>::iterator resultType;
 
+  resultType newEnd = ::thrust::unique(values.GetBeginThrustIterator(),
+                          values.GetEndThrustIterator());
+  values.Allocate(::thrust::distance(values.GetBeginThrustIterator(),newEnd) );
 }
 
 }
