@@ -20,7 +20,7 @@ template<typename T>
 DAX_CONT_EXPORT void lowerBoundsDebug(
     const dax::cont::internal::ArrayContainerExecutionCPU<T>& input,
     const dax::cont::internal::ArrayContainerExecutionCPU<T>& values,
-    const dax::cont::internal::ArrayContainerExecutionCPU<dax::Id>& output)
+    dax::cont::internal::ArrayContainerExecutionCPU<dax::Id>& output)
 {
   typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::const_iterator CIter;
   typedef typename dax::cont::internal::ArrayContainerExecutionCPU<dax::Id>::iterator OIter;
@@ -30,7 +30,7 @@ DAX_CONT_EXPORT void lowerBoundsDebug(
   OIter out=output.begin();
   for(CIter i=values.begin(); i!=values.end(); ++i,++out)
     {
-    *out = std::lower_bound(input.begin(),input.end(),*i);
+    *out = *(std::lower_bound(input.begin(),input.end(),*i));
     }
 }
 

@@ -49,7 +49,7 @@ struct DeviceAdapterDebug
   static void Copy(const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& from,
                          dax::cont::ArrayHandle<T,DeviceAdapterDebug>& to)
     {
-    dax::cont::copyDebug(from,to);
+    dax::cont::copyDebug(from.GetExecutionArray(),to.GetExecutionArray());
     to.UpdateArraySize();
     }
 
@@ -59,7 +59,9 @@ struct DeviceAdapterDebug
                          const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& values,
                          dax::cont::ArrayHandle<U,DeviceAdapterDebug>& output)
     {
-    dax::cont::lowerBoundsDebug(input,values,output);
+    dax::cont::lowerBoundsDebug(input.GetExecutionArray(),
+                                values.GetExecutionArray(),
+                                output.GetExecutionArray());
     output.UpdateArraySize();
     }
 
@@ -75,7 +77,7 @@ struct DeviceAdapterDebug
   template<typename T>
   static void Sort(dax::cont::ArrayHandle<T,DeviceAdapterDebug>& values)
     {
-    dax::cont::sortDebug(values);
+    dax::cont::sortDebug(values.GetExecutionArray());
     }
 
   template<typename T,typename U>
@@ -109,7 +111,7 @@ struct DeviceAdapterDebug
   template<typename T>
   static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterDebug>& values)
     {
-    dax::cont::uniqueDebug(values);
+    dax::cont::uniqueDebug(values.GetExecutionArray());
     values.UpdateArraySize();
     }
 

@@ -54,7 +54,7 @@ struct DeviceAdapterCuda
   static void Copy(const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& from,
                          dax::cont::ArrayHandle<T,DeviceAdapterCuda>& to)
     {
-    dax::cuda::cont::copy(from,to);
+    dax::cuda::cont::copy(from.GetExecutionArray(),to.GetExecutionArray());
     to.UpdateArraySize();
     }
 
@@ -63,7 +63,9 @@ struct DeviceAdapterCuda
                          const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& values,
                          dax::cont::ArrayHandle<U,DeviceAdapterCuda>& output)
     {
-    dax::cuda::cont::lowerBounds(input,values,output);
+    dax::cuda::cont::lowerBounds(input.GetExecutionArray(),
+                                 values.GetExecutionArray(),
+                                 output.GetExecutionArray());
     output.UpdateArraySize();
     }
 
@@ -82,7 +84,7 @@ struct DeviceAdapterCuda
   template<typename T>
   static void Sort(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& values)
     {
-    dax::cuda::cont::sort(values);
+    dax::cuda::cont::sort(values.GetExecutionArray());
     }
 
   template<typename T,typename U>
@@ -116,7 +118,7 @@ struct DeviceAdapterCuda
   template<typename T>
   static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& values)
     {
-    dax::cuda::cont::unique(values);
+    dax::cuda::cont::unique(values.GetExecutionArray());
     values.UpdateArraySize();
     }
 
