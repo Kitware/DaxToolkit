@@ -7,6 +7,7 @@
 #=========================================================================
 
 set(headers
+  Copy.h
   LowerBounds.h
   ScheduleThrust.h
   Sort.h

@@ -15,6 +15,7 @@
 
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::openmp::cont::DeviceAdapterOpenMP
 
+#include <dax/openmp/cont/Copy.h>
 #include <dax/openmp/cont/LowerBounds.h>
 #include <dax/openmp/cont/ScheduleThrust.h>
 #include <dax/openmp/cont/StreamCompact.h>
@@ -42,6 +43,14 @@ struct DeviceAdapterOpenMP
   class ArrayContainerExecution
       : public dax::openmp::cont::internal::ArrayContainerExecutionThrust<T>
   { };
+
+  template<typename T>
+  static void Copy(const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& from,
+                         dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& to)
+    {
+    dax::openmp::cont::copy(from,to);
+    to.UpdateArraySize();
+    }
 
   template<typename T, typename U>
   static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& input,

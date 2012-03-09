@@ -22,6 +22,7 @@
 #include <dax/cuda/cont/ScheduleThrust.h>
 #endif
 
+#include <dax/cuda/cont/Copy.h>
 #include <dax/cuda/cont/LowerBounds.h>
 #include <dax/cuda/cont/StreamCompact.h>
 #include <dax/cuda/cont/Sort.h>
@@ -48,6 +49,14 @@ struct DeviceAdapterCuda
   class ArrayContainerExecution
       : public dax::cuda::cont::internal::ArrayContainerExecutionThrust<T>
   { };
+
+  template<typename T>
+  static void Copy(const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& from,
+                         dax::cont::ArrayHandle<T,DeviceAdapterCuda>& to)
+    {
+    dax::cuda::cont::copy(from,to);
+    to.UpdateArraySize();
+    }
 
   template<typename T, typename U>
   static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& input,

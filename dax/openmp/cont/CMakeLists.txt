@@ -7,6 +7,7 @@
 #=========================================================================
 
 set(headers
+  Copy.h
   DeviceAdapterOpenMP.h
   LowerBounds.h
   ScheduleThrust.h

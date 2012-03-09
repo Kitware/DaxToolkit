@@ -16,6 +16,7 @@
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterDebug
 
 #include <dax/internal/DataArray.h>
+#include <dax/cont/CopyDebug.h>
 #include <dax/cont/LowerBoundsDebug.h>
 #include <dax/cont/ScheduleDebug.h>
 #include <dax/cont/SortDebug.h>
@@ -43,6 +44,15 @@ struct DeviceAdapterDebug
   template<typename T>
   class ArrayContainerExecution
       : public dax::cont::internal::ArrayContainerExecutionCPU<T> { };
+
+  template<typename T>
+  static void Copy(const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& from,
+                         dax::cont::ArrayHandle<T,DeviceAdapterDebug>& to)
+    {
+    dax::cont::copyDebug(from,to);
+    to.UpdateArraySize();
+    }
+
 
   template<typename T, typename U>
   static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& input,
