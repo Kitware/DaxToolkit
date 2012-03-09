@@ -107,7 +107,7 @@ struct DeviceAdapterCuda
   template<typename T>
   static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& values)
     {
-    dax::cuda::cont::usnique(values);
+    dax::cuda::cont::unique(values);
     values.UpdateArraySize();
     }
 
