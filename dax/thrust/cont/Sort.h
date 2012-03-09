@@ -23,6 +23,7 @@ template<typename T>
 DAX_CONT_EXPORT void sort(
     dax::thrust::cont::internal::ArrayContainerExecutionThrust<T> &values)
 {
+  ::thrust::sort(values.GetBeginThrustIterator(),values.GetEndThrustIterator());
 }
 
 }
