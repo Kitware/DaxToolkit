@@ -10,9 +10,6 @@
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
-#include <iostream>
-#include <boost/timer.hpp>
-
 namespace dax {
 namespace exec {
 namespace kernel {
@@ -93,22 +90,17 @@ public:
     DAX_ASSERT_CONT(grid.GetNumberOfCells() > 0);
     DAX_ASSERT_CONT(cellsToExtract.GetNumberOfEntries() > 0);
 
-    boost::timer time;
-    time.restart();
     this->DoExtract(grid,cellsToExtract);
-    std::cout << "ExtractTopology: " << time.elapsed() << std::endl;
 
     if(OrderedUniqueValueIndices &&
        this->Topology.GetNumberOfEntries() > CellType::NUM_POINTS)
       {
-      time.restart();
       dax::cont::ArrayHandle<dax::Id,DeviceAdapter> temp(
             this->Topology.GetNumberOfEntries());
       DeviceAdapter::Copy(this->Topology,temp);
       DeviceAdapter::Sort(temp);
       DeviceAdapter::Unique(temp);
       DeviceAdapter::LowerBounds(temp,this->Topology,this->Topology);
-      std::cout << "ExtractTopology - Weld: " << time.elapsed() << std::endl;
       }
 
     this->Topology.CompleteAsOutput();
