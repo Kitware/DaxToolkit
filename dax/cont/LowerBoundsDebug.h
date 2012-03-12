@@ -22,15 +22,22 @@ DAX_CONT_EXPORT void lowerBoundsDebug(
     const dax::cont::internal::ArrayContainerExecutionCPU<T>& values,
     dax::cont::internal::ArrayContainerExecutionCPU<dax::Id>& output)
 {
-  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::const_iterator CIter;
-  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<dax::Id>::iterator OIter;
+  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::const_iterator ConstInputIter;
+  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::const_iterator InputIter;
+
+  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<dax::Id>::iterator OutIter;
 
   //stl lower_bound only supports a single value to search for.
   //So we iterate over all the values and search for each one
-  OIter out=output.begin();
-  for(CIter i=values.begin(); i!=values.end(); ++i,++out)
+  OutIter out=output.begin();
+  ConstInputIter inputStartPos=input.begin(); //needed for distance call
+  ConstInputIter result;
+  for(ConstInputIter i=values.begin(); i!=values.end(); ++i,++out)
     {
-    *out = *(std::lower_bound(input.begin(),input.end(),*i));
+    //std::lower_bound returns an iterator to the position where you can insert
+    //we want the distance from the start
+    result = std::lower_bound(input.begin(),input.end(),*i);
+    *out = static_cast<dax::Id>(std::distance(inputStartPos,result));
     }
 }
 
