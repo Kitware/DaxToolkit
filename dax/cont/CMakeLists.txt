@@ -10,6 +10,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 set(headers
   ArrayHandle.h
   Assert.h
+  CopyDebug.h
   DeviceAdapter.h
   DeviceAdapterDebug.h
   Error.h
