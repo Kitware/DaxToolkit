@@ -1,10 +1,19 @@
-#=========================================================================
-#
-#  This software is distributed WITHOUT ANY WARRANTY; without even
-#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-#  PURPOSE.  See the above copyright notice for more information.
-#
-#=========================================================================
+##=============================================================================
+##
+##  Copyright (c) Kitware, Inc.
+##  All rights reserved.
+##  See LICENSE.txt for details.
+##
+##  This software is distributed WITHOUT ANY WARRANTY; without even
+##  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+##  PURPOSE.  See the above copyright notice for more information.
+##
+##  Copyright 2011 Sandia Corporation.
+##  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+##  the U.S. Government retains certain rights in this software.
+##
+##=============================================================================
+
 cmake_minimum_required(VERSION 2.8)
 project (Dax)
 
@@ -71,6 +80,14 @@ include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}
   )
+
+#-----------------------------------------------------------------------------
+# Add test to check for copyright statement on all source files.
+if (DAX_ENABLE_TESTING)
+  add_test(CopyrightStatement
+    COMMAND ${CMAKE_COMMAND} "-DDax_SOURCE_DIR=${Dax_SOURCE_DIR}" -P "${Dax_SOURCE_DIR}/CMake/DaxCheckCopyright.cmake"
+    )
+endif (DAX_ENABLE_TESTING)
 
 #-----------------------------------------------------------------------------
 # Check basic type sizes.
