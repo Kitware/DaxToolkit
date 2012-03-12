@@ -31,7 +31,7 @@ public:
   CheckValid() : Valid(true) { }
   operator bool() { return this->Valid; }
   void operator()(dax::Scalar value) {
-    if ((value < -1) || (value > 1)) { this->Valid = false; }
+    if ((value < 0) || (value > 100)) { this->Valid = false; }
   }
 private:
   bool Valid;
@@ -42,36 +42,25 @@ void PrintScalarValue(dax::Scalar value)
   std::cout << " " << value;
 }
 
+
 template<class IteratorType>
-void PrintCheckValues(IteratorType begin, IteratorType end)
+void CheckValues(IteratorType begin, IteratorType end)
 {
   typedef typename std::iterator_traits<IteratorType>::value_type VectorType;
 
-  dax::Id index = 0;
+  CheckValid isValid;
   for (IteratorType iter = begin; iter != end; iter++)
     {
     VectorType vector = *iter;
-    if (index < 20)
+    dax::cont::VectorForEach(vector, isValid);
+    if (!isValid)
       {
-      std::cout << index << ":";
+      std::cout << "*** Encountered bad value." << std::endl;
+      std::cout << std::distance(begin,iter) << ":";
       dax::cont::VectorForEach(vector, PrintScalarValue);
       std::cout << std::endl;
+      break;
       }
-    else
-      {
-      CheckValid isValid;
-      dax::cont::VectorForEach(vector, isValid);
-      if (!isValid)
-        {
-        std::cout << "*** Encountered bad value." << std::endl;
-        std::cout << index << ":";
-        dax::cont::VectorForEach(vector, PrintScalarValue);
-        std::cout << std::endl;
-        break;
-        }
-      }
-
-    index++;
     }
 }
 
@@ -101,8 +90,13 @@ void RunDAXPipeline(const dax::cont::UniformGrid &grid)
   double time = timer.elapsed();
   std::cout << "original GetNumberOfCells: " << grid.GetNumberOfCells() << std::endl;
   std::cout << "threshold GetNumberOfCells: " << grid2.GetNumberOfCells() << std::endl;
-
   PrintResults(1, time);
+
+  std::vector<dax::Scalar> resultsBuffer(resultHandle.GetNumberOfEntries());
+  resultHandle.SetNewControlData(resultsBuffer.begin(),resultsBuffer.end());
+  resultHandle.CompleteAsOutput(); //fetch back to control
+
+  CheckValues(resultsBuffer.begin(), resultsBuffer.end());
 }
 
 

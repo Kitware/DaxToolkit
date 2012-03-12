@@ -18,14 +18,56 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
+#include <dax/cont/VectorOperations.h>
 
 #include <dax/cont/internal/Testing.h>
 #include <vector>
 
 
 namespace {
-
 const dax::Id DIM = 64;
+const dax::Id MIN_THRESHOLD = 70;
+const dax::Id MAX_THRESHOLD = 82;
+
+
+class CheckValid {
+public:
+  CheckValid() : Valid(true) { }
+  operator bool() { return this->Valid; }
+  void operator()(dax::Scalar value) {
+    if ((value < MIN_THRESHOLD) || (value > MAX_THRESHOLD)) {
+      this->Valid = false; }
+  }
+private:
+  bool Valid;
+};
+
+void PrintScalarValue(dax::Scalar value)
+{
+  std::cout << " " << value;
+}
+
+
+template<class IteratorType>
+void CheckValues(IteratorType begin, IteratorType end)
+{
+  typedef typename std::iterator_traits<IteratorType>::value_type VectorType;
+
+  CheckValid isValid;
+  for (IteratorType iter = begin; iter != end; iter++)
+    {
+    VectorType vector = *iter;
+    dax::cont::VectorForEach(vector, isValid);
+    if (!isValid)
+      {
+      std::cout << "*** Encountered bad value." << std::endl;
+      std::cout << std::distance(begin,iter) << ":";
+      dax::cont::VectorForEach(vector, PrintScalarValue);
+      std::cout << std::endl;
+      break;
+      }
+    }
+}
 
 //-----------------------------------------------------------------------------
 static void TestThreshold()
@@ -50,8 +92,8 @@ static void TestThreshold()
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
   std::cout << "Running Threshold worklet" << std::endl;
-  dax::Scalar min = 70;
-  dax::Scalar max = 82;
+  dax::Scalar min = MIN_THRESHOLD;
+  dax::Scalar max = MAX_THRESHOLD;
 
   try
     {
@@ -63,9 +105,13 @@ static void TestThreshold()
     DAX_TEST_ASSERT(true==false,error.GetMessage());
     }
 
+  DAX_TEST_ASSERT(resultHandle.GetNumberOfEntries()==grid2.GetNumberOfPoints(),
+                  "Incorrect number of points in the result array");
+
   std::vector<dax::Scalar> result(resultHandle.GetNumberOfEntries());
   resultHandle.SetNewControlData(result.begin(),result.end());
-  resultHandle.CompleteAsOutput(); //fetch back to control
+  resultHandle.CompleteAsOutput(); //fetch back to control  
+  CheckValues(result.begin(), result.end());
 
   //test max < min.
 }
