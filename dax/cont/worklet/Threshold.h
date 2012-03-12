@@ -111,6 +111,7 @@ public:
       DeviceAdapter::StreamCompact(this->InputField,
                                    this->MaskPointHandle,
                                    this->OutputField);
+      this->OutputField.CompleteAsOutput();
       }
 
 private:
