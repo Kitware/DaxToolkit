@@ -102,13 +102,16 @@ public:
        this->Topology.GetNumberOfEntries() > CellType::NUM_POINTS)
       {
       time.restart();
-      dax::cont::ArrayHandle<dax::Id,DeviceAdapter> temp;
+      dax::cont::ArrayHandle<dax::Id,DeviceAdapter> temp(
+            this->Topology.GetNumberOfEntries());
       DeviceAdapter::Copy(this->Topology,temp);
       DeviceAdapter::Sort(temp);
       DeviceAdapter::Unique(temp);
       DeviceAdapter::LowerBounds(temp,this->Topology,this->Topology);
       std::cout << "ExtractTopology - Weld: " << time.elapsed() << std::endl;
       }
+
+    this->Topology.CompleteAsOutput();
     }
 
   /// Returns an array handle to the execution enviornment data that

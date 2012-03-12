@@ -155,7 +155,7 @@ inline void Threshold(
                               DeviceAdapter
                               >
   threshold(thresholdMin,thresholdMax,thresholdHandle,thresholdResult);
-  threshold.SetCompactTopology(false);
+  threshold.SetCompactTopology(true);
 
   threshold.run(inGrid,outGeom);
 }

@@ -74,6 +74,7 @@ public:
     DAX_ASSERT_CONT(extractIds.GetNumberOfEntries() > 0);
     DAX_ASSERT_CONT(extractIds.GetNumberOfEntries()<=grid.GetNumberOfPoints());
     this->DoExtract(grid,extractIds);
+    this->Coordinates.CompleteAsOutput();
   }
 
   /// Returns an array handle to the execution enviornment data that

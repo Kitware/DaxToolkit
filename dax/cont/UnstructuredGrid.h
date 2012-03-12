@@ -52,11 +52,20 @@ public:
   void UpdateHandles(dax::cont::ArrayHandle<dax::Id>& topo,
                      dax::cont::ArrayHandle<dax::Vector3>& coords)
     {
+    if(topo.IsControlArrayValid())
+      {
+      topo.ReadyAsInput();
+      }
+    if(coords.IsControlArrayValid())
+      {
+      coords.ReadyAsInput();
+      }
+
     this->Topology = topo;
     this->PointsCoordinates = coords;
 
-    this->GridTopology = TopologyType(this->PointsCoordinates.ReadyAsInput(),
-                                      this->Topology.ReadyAsInput());
+    this->GridTopology = TopologyType(this->PointsCoordinates.ReadyAsOutput(),
+                                      this->Topology.ReadyAsOutput());
     }
 
   /// A simple class representing the points in an unstructured grid.

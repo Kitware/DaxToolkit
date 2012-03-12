@@ -153,6 +153,9 @@ protected:
                             static_cast<Derived*>(this)->GenerateParameters(
                             grid,packagedGrid),
                             grid.GetNumberOfCells());
+
+    //mark the handle as complete so we can use as input
+    this->MaskCellHandle.CompleteAsOutput();
     }
 
   template<typename InGridType,typename OutGridType>
@@ -164,7 +167,9 @@ protected:
     //dax::Ids
     time.restart();
     dax::cont::ArrayHandle<dax::Id> usedCellIds;
-    DeviceAdapter::StreamCompact(this->MaskCellHandle,usedCellIds);
+    DeviceAdapter::StreamCompact(this->MaskCellHandle,usedCellIds);    
+    usedCellIds.CompleteAsOutput(); //mark it complete so we can use as input
+
     std::cout << "Stream Compact Cell Mask time: " << time.elapsed() << std::endl;
     time.restart();
 
@@ -194,6 +199,7 @@ protected:
 
       dax::cont::ArrayHandle<dax::Id> usedPointIds;
       DeviceAdapter::StreamCompact(this->MaskPointHandle,usedPointIds);
+      usedPointIds.CompleteAsOutput();
       std::cout << "Stream Compact Point Mask time: " << time.elapsed() << std::endl;
       time.restart();
 
@@ -242,6 +248,8 @@ protected:
       dax::exec::kernel::internal::GetUsedPointsFunctor<CellType>(),
       etParams,
       usedCellIds.GetNumberOfEntries());
+
+    this->MaskPointHandle.CompleteAsOutput();
     std::cout << "Generate input for Point Mask: " << time.elapsed() << std::endl;
     }
 
