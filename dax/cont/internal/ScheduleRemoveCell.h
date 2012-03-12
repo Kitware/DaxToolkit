@@ -15,6 +15,7 @@
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 #include <dax/cont/internal/ExtractTopology.h>
 #include <dax/cont/internal/ExtractCoordinates.h>
+#include <dax/cont/internal/ScheduleMapAdapter.h>
 
 namespace dax {
 namespace exec {
@@ -26,17 +27,16 @@ struct GetUsedPointsParameters
 {
   typename CellType::TopologyType grid;
   dax::exec::Field<dax::Id> outField;
-  dax::exec::Field<dax::Id> subset;
 };
 
 template<class CellType>
 struct GetUsedPointsFunctor {
   DAX_EXEC_EXPORT void operator()(
       GetUsedPointsParameters<CellType> &parameters,
-      dax::Id index,
+      dax::Id,dax::Id value,
       const dax::exec::internal::ErrorHandler &errorHandler)
   {
-    CellType cell(parameters.grid,index);
+    CellType cell(parameters.grid,value);
     dax::Id indices[CellType::NUM_POINTS];
     cell.GetPointIndices(indices);
     int* output = parameters.outField.GetArray().GetPointer();
@@ -199,22 +199,20 @@ protected:
     dax::cont::internal::ExecutionPackageFieldOutput<MaskType,DeviceAdapter>
          result(this->MaskPointHandle,size);
 
-    dax::cont::internal::ExecutionPackageFieldInput<dax::Id,DeviceAdapter>
-        cellIdPackage(usedCellIds,usedCellIds.GetNumberOfEntries());
-
     //construct the parameters list for the function
     dax::exec::kernel::internal::GetUsedPointsParameters<CellType> etParams =
                                         {
                                         inPGrid.GetExecutionObject(),
-                                        result.GetExecutionObject(),
-                                        cellIdPackage.GetExecutionObject()
+                                        result.GetExecutionObject()
                                         };
-    DeviceAdapter::Schedule(
-      dax::exec::kernel::internal::GetUsedPointsFunctor<CellType>(),
-      etParams,
-      usedCellIds.GetNumberOfEntries());
+
+    dax::cont::internal::ScheduleMap(
+          dax::exec::kernel::internal::GetUsedPointsFunctor<CellType>(),
+          etParams,
+          usedCellIds);
 
     this->MaskPointHandle.CompleteAsOutput();
+
     }
 
 protected:
