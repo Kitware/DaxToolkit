@@ -332,7 +332,8 @@ private:
     dax::cont::ArrayHandle<dax::Id,DeviceAdapter> handle(testData.begin(),
                                                          testData.end());
 
-    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> temp;
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> temp(handle.GetNumberOfEntries());
+    handle.ReadyAsInput(); //make sure the array is ready for copying
     DeviceAdapter::Copy(handle,temp);
     DeviceAdapter::Sort(temp);
     DeviceAdapter::Unique(temp);
@@ -344,7 +345,7 @@ private:
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
       {
       dax::Id value = testData[i];
-      DAX_TEST_ASSERT(value == i % 50, "Got bad value from the Weld");
+      DAX_TEST_ASSERT(value == i % 50, "Got bad value");
       }
 
     std::cout << "Testing Sort, Unique, and LowerBounds with random values" << std::endl;
@@ -357,22 +358,39 @@ private:
     randomData[4]=320;  //1
     randomData[5]=955;  //3
 
-    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> rhandle(randomData.begin(),
-                                                         randomData.end());
-    DeviceAdapter::Copy(rhandle,temp);
+    //change the control structure under the handle
+    handle = dax::cont::ArrayHandle<dax::Id,DeviceAdapter>(randomData.begin(),
+                                                           randomData.end());
+    DAX_TEST_ASSERT(handle.GetNumberOfEntries() ==
+                    static_cast<dax::Id>(randomData.size()),
+                    "Handle incorrect size after setting new control data");
+
+    //change temps control structure
+    temp.ReleaseExecutionResources();
+    temp = dax::cont::ArrayHandle<dax::Id,DeviceAdapter>(
+                                              handle.GetNumberOfEntries());
+
+    handle.ReadyAsInput();
+    DeviceAdapter::Copy(handle,temp);
+    DAX_TEST_ASSERT(temp.GetNumberOfEntries() ==
+                    static_cast<dax::Id>(randomData.size()),
+                    "Copy failed");
     DeviceAdapter::Sort(temp);
     DeviceAdapter::Unique(temp);
-    DeviceAdapter::LowerBounds(temp,rhandle,rhandle);
+    DeviceAdapter::LowerBounds(temp,handle,handle);
     temp.ReleaseExecutionResources();
 
-    rhandle.CompleteAsOutput();
+    handle.CompleteAsOutput();
+    DAX_TEST_ASSERT(handle.GetNumberOfEntries() ==
+                    static_cast<dax::Id>(randomData.size()),
+                    "LowerBounds returned incorrect size");
 
-    DAX_TEST_ASSERT(randomData[0] == 2, "bad value from the weld operation.");
-    DAX_TEST_ASSERT(randomData[1] == 3, "bad value from the weld operation.");
-    DAX_TEST_ASSERT(randomData[2] == 3, "bad value from the weld operation.");
-    DAX_TEST_ASSERT(randomData[3] == 0, "bad value from the weld operation.");
-    DAX_TEST_ASSERT(randomData[4] == 1, "bad value from the weld operation.");
-    DAX_TEST_ASSERT(randomData[5] == 3, "bad value from the weld operation.");
+    DAX_TEST_ASSERT(randomData[0] == 2, "Got bad value");
+    DAX_TEST_ASSERT(randomData[1] == 3, "Got bad value");
+    DAX_TEST_ASSERT(randomData[2] == 3, "Got bad value");
+    DAX_TEST_ASSERT(randomData[3] == 0, "Got bad value");
+    DAX_TEST_ASSERT(randomData[4] == 1, "Got bad value");
+    DAX_TEST_ASSERT(randomData[5] == 3, "Got bad value");
   }
 
   static DAX_CONT_EXPORT void TestErrorExecution()
