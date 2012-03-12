@@ -106,8 +106,7 @@ inline void ExtractCoordinates<DeviceAdapter,GridType>::DoExtract(
       fieldCoords(grid.GetPoints());
 
   //construct the Coordinates result array
-  dax::Id numCellsToExtract(extractIds.GetNumberOfEntries());
-  dax::Id size(numCellsToExtract * CellType::NUM_POINTS);
+  const dax::Id size(extractIds.GetNumberOfEntries());
 
   this->Coordinates = dax::cont::ArrayHandle<dax::Vector3,DeviceAdapter>(size);
 
