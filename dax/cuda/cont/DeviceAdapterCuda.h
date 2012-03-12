@@ -54,8 +54,10 @@ struct DeviceAdapterCuda
   static void Copy(const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& from,
                          dax::cont::ArrayHandle<T,DeviceAdapterCuda>& to)
     {
+    DAX_ASSERT_CONT(from.hasExecutionArray());
+    DAX_ASSERT_CONT(to.GetNumberOfEntries() >= from.GetNumberOfEntries());
+    to.ReadyAsOutput();
     dax::cuda::cont::copy(from.GetExecutionArray(),to.GetExecutionArray());
-    to.UpdateArraySize();
     }
 
   template<typename T, typename U>
@@ -63,10 +65,13 @@ struct DeviceAdapterCuda
                          const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& values,
                          dax::cont::ArrayHandle<U,DeviceAdapterCuda>& output)
     {
+    DAX_ASSERT_CONT(input.hasExecutionArray());
+    DAX_ASSERT_CONT(values.hasExecutionArray());
+    DAX_ASSERT_CONT(output.hasExecutionArray());
+    DAX_ASSERT_CONT(values.GetNumberOfEntries() <= output.GetNumberOfEntries());
     dax::cuda::cont::lowerBounds(input.GetExecutionArray(),
                                  values.GetExecutionArray(),
                                  output.GetExecutionArray());
-    output.UpdateArraySize();
     }
 
   template<class Functor, class Parameters>
@@ -84,6 +89,7 @@ struct DeviceAdapterCuda
   template<typename T>
   static void Sort(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& values)
     {
+    DAX_ASSERT_CONT(values.hasExecutionArray());
     dax::cuda::cont::sort(values.GetExecutionArray());
     }
 
@@ -118,8 +124,9 @@ struct DeviceAdapterCuda
   template<typename T>
   static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& values)
     {
+    DAX_ASSERT_CONT(values.hasExecutionArray());
     dax::cuda::cont::unique(values.GetExecutionArray());
-    values.UpdateArraySize();
+    values.UpdateArraySize(); //unique might resize the execution array
     }
 
 

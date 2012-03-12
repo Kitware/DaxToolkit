@@ -88,6 +88,12 @@ public:
   ///
   bool IsControlArrayValid() const {return this->Internals->ControlArray.IsValid();}
 
+  /// True if the execution array has been constructed.
+  ///
+  bool hasExecutionArray() const {
+    return this->Internals->NumberOfEntries ==
+        this->Internals->ExecutionArray.GetNumberOfEntries();}
+
   /// Marks the iterators passed into the constructor (if there were any) as
   /// invalid. This invalidate is propagated to any copies of the ArrayHandle.
   ///

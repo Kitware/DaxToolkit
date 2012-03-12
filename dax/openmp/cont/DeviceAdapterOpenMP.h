@@ -48,8 +48,10 @@ struct DeviceAdapterOpenMP
   static void Copy(const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& from,
                          dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& to)
     {
+    DAX_ASSERT_CONT(from.hasExecutionArray());
+    DAX_ASSERT_CONT(to.GetNumberOfEntries() >= from.GetNumberOfEntries());
+    to.ReadyAsOutput();
     dax::openmp::cont::copy(from.GetExecutionArray(),to.GetExecutionArray());
-    to.UpdateArraySize();
     }
 
   template<typename T, typename U>
@@ -57,10 +59,13 @@ struct DeviceAdapterOpenMP
                          const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& values,
                          dax::cont::ArrayHandle<U,DeviceAdapterOpenMP>& output)
     {
+    DAX_ASSERT_CONT(input.hasExecutionArray());
+    DAX_ASSERT_CONT(values.hasExecutionArray());
+    DAX_ASSERT_CONT(output.hasExecutionArray());
+    DAX_ASSERT_CONT(values.GetNumberOfEntries() <= output.GetNumberOfEntries());
     dax::openmp::cont::lowerBounds(input.GetExecutionArray(),
                                    values.GetExecutionArray(),
                                    output.GetExecutionArray());
-    output.UpdateArraySize();
     }
 
   template<class Functor, class Parameters>
@@ -74,6 +79,7 @@ struct DeviceAdapterOpenMP
   template<typename T>
   static void Sort(dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& values)
     {
+    DAX_ASSERT_CONT(values.hasExecutionArray());
     dax::openmp::cont::sort(values.GetExecutionArray());
     }
 
@@ -108,8 +114,9 @@ struct DeviceAdapterOpenMP
   template<typename T>
   static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& values)
     {
+    DAX_ASSERT_CONT(values.hasExecutionArray());
     dax::openmp::cont::unique(values.GetExecutionArray());
-    values.UpdateArraySize();
+    values.UpdateArraySize(); //unique might resize the execution array
     }
 };
 
