@@ -177,7 +177,7 @@ protected:
                                       extractedCoords(inGrid,usedPointIds);
 
       //set the handles to the geometery
-      outGrid.UpdateHandles(extractedTopology.GetTopology(),
+      outGrid = OutGridType(extractedTopology.GetTopology(),
                             extractedCoords.GetCoordinates());
       }    
     }

@@ -116,8 +116,8 @@ private:
           this->Info.points.begin(),this->Info.points.end());
     dax::cont::ArrayHandle<dax::Id,DeviceAdapter> ahTopo(
           this->Info.topology.begin(),this->Info.topology.end());
-
-    grid.UpdateHandles(ahTopo,ahPoints);
+    grid = dax::cont::UnstructuredGrid<dax::exec::CellHexahedron>(ahTopo,
+                                                                  ahPoints);
     }
 };
 
