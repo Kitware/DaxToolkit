@@ -22,7 +22,6 @@ namespace dax {
 namespace thrust {
 namespace cont {
 
-
 template<typename InputIterator,
          typename StencilVector,
          typename OutputVector,
@@ -68,7 +67,7 @@ inline void streamCompact(
                             input.GetEndThrustIterator(),
                             stencil,
                             output,
-                            dax::not_identity<U>());
+                            dax::not_default_constructor<U>());
 }
 
 template<typename T, typename U>
@@ -83,7 +82,7 @@ inline void streamCompact(
                               ::thrust::make_counting_iterator<U>(input.GetNumberOfEntries()),
                               input,
                               output,
-                              dax::not_identity<T>());
+                              dax::not_default_constructor<T>());
 }
 
 

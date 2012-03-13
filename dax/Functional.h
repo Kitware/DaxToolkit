@@ -13,46 +13,16 @@
 
 namespace dax
 {
-
-/// Identity is a Unary Function that represents the identity function: it takes
-/// a single argument \c x, and returns \c x.
-template<typename T>
-struct identity
-{
-  DAX_EXEC_CONT_EXPORT const T &operator()(const T &x) const {return x;}
-};
-
-
-
-
-/// Identity is a Predicate that takes a single argument \c x, and returns
-/// True if it is the identity of the Type \p T.
-template<typename T>
-struct is_identity
-  {
-    //should we store a const value of type T that is equal to identity
-    //rather than generating one?
-    DAX_EXEC_CONT_EXPORT
-    bool operator()(const T &x)
-    {
-      return (x  == dax::identity<T>()(T()));
-    }
-};
-
-/// Identity is a Predicate that takes a single argument \c x, and returns
+/// Predicate that takes a single argument \c x, and returns
 /// True if it isn't the identity of the Type \p T.
 template<typename T>
-struct not_identity
+struct not_default_constructor
+{
+  DAX_EXEC_CONT_EXPORT bool operator()(const T &x)
   {
-    //should we store a const value of type T that is equal to identity
-    //rather than generating one?
-    DAX_EXEC_CONT_EXPORT
-    bool operator()(const T &x)
-    {
-      return (x  != dax::identity<T>()(T()));
-    }
+    return (x  != T());
+  }
 };
-
 }
 
 

@@ -33,7 +33,7 @@ DAX_EXEC_CONT_EXPORT void streamCompactDebug(
   //first count the number of values to go into the output array.
   dax::Id size = std::count_if(stencil.begin(),
                                stencil.end(),
-                               dax::not_identity<U>());
+                               dax::not_default_constructor<U>());
   output.Allocate(size);
   Iter out = output.begin();
   Iter outEnd = output.end();
@@ -42,7 +42,7 @@ DAX_EXEC_CONT_EXPORT void streamCompactDebug(
   for(;out!=outEnd;++in,++sten)
     {
     //check the output so we loop over the smaller sized array
-    if(dax::not_identity<U>()(*sten))
+    if(dax::not_default_constructor<U>()(*sten))
       {
       //only remove cell that match the identity ( aka default constructor ) of T
       *out = *in;
@@ -62,7 +62,7 @@ DAX_EXEC_CONT_EXPORT void streamCompactDebug(
   //first count the number of values to go into the output array.
   dax::Id size = std::count_if(input.begin(),
                                input.end(),
-                               dax::not_identity<T>());
+                               dax::not_default_constructor<T>());
 
   output.Allocate(size);
   Iter out = output.begin();
@@ -72,7 +72,7 @@ DAX_EXEC_CONT_EXPORT void streamCompactDebug(
   for(;out!=outEnd;++in,++index)
     {
     //check the output so we loop over the smaller sized array
-    if(dax::not_identity<T>()(*in))
+    if(dax::not_default_constructor<T>()(*in))
       {
       //only remove cell that match the identity ( aka default constructor ) of T
       *out = index;
