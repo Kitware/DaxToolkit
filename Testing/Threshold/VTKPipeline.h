@@ -25,6 +25,7 @@
 #include <vtkThreshold.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
+#include <vtkTrivialProducer.h>
 #include <vtkUnstructuredGrid.h>
 
 
@@ -53,8 +54,11 @@ void RunVTKPipeline(const dax::cont::UniformGrid &dgrid, vtkImageData* grid)
   vtkElevationPoints->SetVoidArray(&elev[0],elev.size(),1);
   grid->GetPointData()->AddArray(vtkElevationPoints);
 
+  vtkNew<vtkTrivialProducer> producer;
+  producer->SetOutput(grid);
+
   vtkNew<vtkThreshold> threshold;
-  threshold->SetInput(grid);
+  threshold->SetInputConnection(producer->GetOutputPort());
   threshold->AllScalarsOn();
   threshold->ThresholdBetween(0, 100);
   threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,"Elevation");

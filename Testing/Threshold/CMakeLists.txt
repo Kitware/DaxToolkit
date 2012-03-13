@@ -64,6 +64,7 @@ if(VTK_FOUND)
   set_source_files_properties(${vtkHeaders} PROPERTIES HEADER_FILE_ONLY TRUE)
   target_link_libraries(ThresholdTimingVTK
     ${Boost_LIBRARIES}    
+    vtkFiltering
     vtkGraphics
     )
 
@@ -86,6 +87,7 @@ if(VTK_FOUND AND DAX_ENABLE_PISTON_TESTING )
   target_link_libraries(ThresholdTimingPISTON
     ${Boost_LIBRARIES}
     vtkGraphics
+    vtkFiltering
     )
 
   add_test(ThresholdTimingPiston1-128
