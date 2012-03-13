@@ -38,19 +38,10 @@ public:
     this->GridTopology = TopologyType();
     }
 
-  UnstructuredGrid(const dax::cont::ArrayHandle<dax::Id>& topo,
-                   const dax::cont::ArrayHandle<dax::Vector3>& coords):
+  UnstructuredGrid(dax::cont::ArrayHandle<dax::Id>& topo,
+                   dax::cont::ArrayHandle<dax::Vector3>& coords):
     Topology(topo),
     PointsCoordinates(coords)
-    {
-    //I am not happy that the unstructured grid is not placed
-    //in the execution enviornment on object creation
-    this->GridTopology = TopologyType(this->PointsCoordinates.ReadyAsInput(),
-                                      this->Topology.ReadyAsInput());
-    }
-
-  void UpdateHandles(dax::cont::ArrayHandle<dax::Id>& topo,
-                     dax::cont::ArrayHandle<dax::Vector3>& coords)
     {
     if(topo.IsControlArrayValid())
       {
@@ -61,9 +52,8 @@ public:
       coords.ReadyAsInput();
       }
 
-    this->Topology = topo;
-    this->PointsCoordinates = coords;
-
+    //I am not happy that the unstructured grid is not placed
+    //in the execution enviornment on object creation
     this->GridTopology = TopologyType(this->PointsCoordinates.ReadyAsOutput(),
                                       this->Topology.ReadyAsOutput());
     }
@@ -77,9 +67,10 @@ public:
     dax::Vector3 GetCoordinates(dax::Id pointIndex) const {
       return dax::internal::pointCoordiantes(this->GridTopology, pointIndex);
     }
-    const dax::internal::TopologyUniform &GetStructureForExecution() const {
+    const dax::internal::TopologyUnstructured<CellType> &GetStructureForExecution() const
+      {
       return this->GridTopology;
-    }
+      }
   private:
     dax::internal::TopologyUnstructured<CellType> GridTopology;
   };
@@ -109,6 +100,11 @@ public:
   dax::Vector3 GetPointCoordinates(dax::Id pointIndex) const {
     return this->PointsCoordinates.GetValue(pointIndex);
   }
+
+  dax::cont::ArrayHandle<dax::Id>& GetTopologyHandle()
+    { return Topology; }
+  dax::cont::ArrayHandle<dax::Vector3>& GetCoordinatesHandle()
+    { return PointsCoordinates; }
 
 private:
   friend class Points;
