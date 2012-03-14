@@ -82,7 +82,7 @@ public:
   DAX_EXEC_EXPORT dax::Tuple<T,CellType::NUM_POINTS> GetFieldValues(
       const dax::exec::FieldPoint<T> &field) const
   {
-    return dax::exec::internal::fieldAccessNormalGet<CellType::NUM_POINTS>(
+    return dax::exec::internal::fieldAccessNormalGet<T,CellType::NUM_POINTS>(
           field, this->Cell.GetPointIndices());
   }
 

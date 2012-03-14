@@ -21,13 +21,12 @@ DAX_WORKLET void ExtractTopology(dax::exec::WorkMapCell<CellType> work,
                                  dax::Id newIndex,
                                  dax::exec::Field<dax::Id> &topology)
   {
+  typedef typename CellType::PointIds PointIds;
   CellType cell(work.GetCell());
   dax::Id offset(CellType::NUM_POINTS * newIndex);
 
   //manual unrolled in an attempt to make this faster
-  dax::Id pointIndices[CellType::NUM_POINTS];
-  cell.GetPointIndices(pointIndices);
-
+  PointIds pointIndices = cell.GetPointIndices();
 
   dax::Id* temp = topology.GetArray().GetPointer()+offset;
   for(dax::Id i=0;i < CellType::NUM_POINTS; ++i)

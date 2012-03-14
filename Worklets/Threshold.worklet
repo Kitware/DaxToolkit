@@ -25,7 +25,7 @@ struct DoThreshold
     {
     }
 
-  DAX_EXEC_EXPORT char operator()(T values[size]) const
+  DAX_EXEC_EXPORT char operator()(const dax::Tuple<T,size>& values) const
   {
     char valid=1;
     for(int i=0; i < size; ++i)
@@ -46,7 +46,7 @@ struct DoThreshold<8,T>
     {
     }
 
-  DAX_EXEC_EXPORT char operator()(T values[8]) const
+  DAX_EXEC_EXPORT char operator()(const dax::Tuple<T,8>& values) const
   {
     char valid=1;
     valid &= (values[0] > Min) && (values[0] <= Max);
@@ -70,10 +70,11 @@ DAX_WORKLET void Threshold(
     DAX_IN dax::exec::FieldPoint<FieldType> &inField)
 {
   //compare the value at each point with the threshold min/max
-  FieldType pointFieldValues[CellType::NUM_POINTS];
-  work.GetFieldValues(inField,pointFieldValues);
+  dax::Tuple<FieldType,CellType::NUM_POINTS> fieldValues=
+      work.GetFieldValues(inField);
+
   DoThreshold<CellType::NUM_POINTS,FieldType> threshold(thresholdMin,thresholdMax);
-  work.SetRemoveCell(threshold(pointFieldValues));
+  work.SetRemoveCell(threshold(fieldValues));
 }
 
 }

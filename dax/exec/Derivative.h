@@ -31,8 +31,8 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
   dax::exec::internal::derivativeWeightsVoxel(pcoords, derivativeWeights);
 
   dax::Vector3 sum = dax::make_Vector3(0.0, 0.0, 0.0);
-  dax::Scalar fieldValues[NUM_POINTS];
-  work.GetFieldValues(point_scalar,fieldValues);
+  dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
+      work.GetFieldValues(point_scalar);
 
   for (dax::Id vertexId = 0; vertexId < NUM_POINTS; vertexId++)
     {
@@ -72,8 +72,8 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
     }
 
   dax::Vector3 sum = dax::make_Vector3(0.0, 0.0, 0.0);
-  dax::Scalar fieldValues[NUM_POINTS];
-  work.GetFieldValues(point_scalar,fieldValues);
+  dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
+      work.GetFieldValues(point_scalar);
 
   for (dax::Id vertexId = 0; vertexId < NUM_POINTS; vertexId++)
     {

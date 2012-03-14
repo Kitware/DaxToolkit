@@ -36,9 +36,9 @@ struct GetUsedPointsFunctor {
       dax::Id,dax::Id value,
       const dax::exec::internal::ErrorHandler &errorHandler)
   {
+    typedef typename CellType::PointIds PointIds;
     CellType cell(parameters.grid,value);
-    dax::Id indices[CellType::NUM_POINTS];
-    cell.GetPointIndices(indices);
+    PointIds indices = cell.GetPointIndices();
     int* output = parameters.outField.GetArray().GetPointer();
     for(dax::Id i=0;i<CellType::NUM_POINTS;++i)
       {
