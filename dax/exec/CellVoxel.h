@@ -34,6 +34,7 @@ private:
 public:
   /// static variable that returns the number of points per cell
   const static dax::Id NUM_POINTS = 8; //needed by extract topology
+  typedef dax::Tuple<dax::Id,NUM_POINTS> PointIds;
 
   /// Create a cell for the given work.
   DAX_EXEC_CONT_EXPORT CellVoxel(const TopologyType &gs,
@@ -73,9 +74,8 @@ public:
     return pointIndex;
   }
 
-  /// Given a vertex index for a point (0 to GetNumberOfPoints() - 1), returns
-  /// the index for the point in point space.
-  DAX_EXEC_EXPORT void GetPointIndices(dax::Id vertexIndices[NUM_POINTS]) const
+  /// returns the indices for all the points in the cell.
+  DAX_EXEC_EXPORT PointIds GetPointIndices() const
   {
     dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(
           this->GetIndex(),
@@ -92,22 +92,26 @@ public:
       dax::make_Id3(0, 1, 1)
     };
 
-    vertexIndices[0] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[0],
+    PointIds pointIndices;
+
+    pointIndices[0] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[0],
                                          this->GetGridTopology().Extent);
-    vertexIndices[1] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[1],
+    pointIndices[1] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[1],
                                          this->GetGridTopology().Extent);
-    vertexIndices[2] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[2],
+    pointIndices[2] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[2],
                                          this->GetGridTopology().Extent);
-    vertexIndices[3] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[3],
+    pointIndices[3] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[3],
                                          this->GetGridTopology().Extent);
-    vertexIndices[4] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[4],
+    pointIndices[4] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[4],
                                          this->GetGridTopology().Extent);
-    vertexIndices[5] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[5],
+    pointIndices[5] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[5],
                                          this->GetGridTopology().Extent);
-    vertexIndices[6] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[6],
+    pointIndices[6] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[6],
                                          this->GetGridTopology().Extent);
-    vertexIndices[7] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[7],
+    pointIndices[7] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[7],
                                          this->GetGridTopology().Extent);
+
+    return pointIndices;
   }
 
   /// Get the origin (the location of the point at grid coordinates 0,0,0).

@@ -27,13 +27,14 @@ class CellHexahedron
 public:
   typedef dax::internal::TopologyUnstructured<CellHexahedron> TopologyType;
 
-private:
+private:  
   const TopologyType GridTopology;
   dax::Id CellIndex;
   dax::Id TopologyPosition;
 public:
   /// static variable that returns the number of points per cell
   const static dax::Id NUM_POINTS = 8; //needed by extract topology
+  typedef dax::Tuple<dax::Id,NUM_POINTS> PointIds;
 
   /// Create a cell for the given work.
   DAX_EXEC_CONT_EXPORT CellHexahedron(
@@ -58,19 +59,20 @@ public:
           this->TopologyPosition+vertexIndex);
   }
 
-  /// Given a vertex index for a point (0 to GetNumberOfPoints() - 1), returns
-  /// the index for the point in point space.
-  DAX_EXEC_EXPORT void GetPointIndices(dax::Id vertexIndices[NUM_POINTS]) const
+  /// returns the indices for all the points in the cell.
+  DAX_EXEC_EXPORT PointIds GetPointIndices() const
   {
+    PointIds pointIndices;
     dax::Id pos = this->TopologyPosition;
-    vertexIndices[0] = this->GridTopology.Topology.GetValue(pos);
-    vertexIndices[1] = this->GridTopology.Topology.GetValue(++pos);
-    vertexIndices[2] = this->GridTopology.Topology.GetValue(++pos);
-    vertexIndices[3] = this->GridTopology.Topology.GetValue(++pos);
-    vertexIndices[4] = this->GridTopology.Topology.GetValue(++pos);
-    vertexIndices[5] = this->GridTopology.Topology.GetValue(++pos);
-    vertexIndices[6] = this->GridTopology.Topology.GetValue(++pos);
-    vertexIndices[7] = this->GridTopology.Topology.GetValue(++pos);
+    pointIndices[0] = this->GridTopology.Topology.GetValue(pos);
+    pointIndices[1] = this->GridTopology.Topology.GetValue(++pos);
+    pointIndices[2] = this->GridTopology.Topology.GetValue(++pos);
+    pointIndices[3] = this->GridTopology.Topology.GetValue(++pos);
+    pointIndices[4] = this->GridTopology.Topology.GetValue(++pos);
+    pointIndices[5] = this->GridTopology.Topology.GetValue(++pos);
+    pointIndices[6] = this->GridTopology.Topology.GetValue(++pos);
+    pointIndices[7] = this->GridTopology.Topology.GetValue(++pos);
+    return pointIndices;
   }
 
   /// Get the cell index.  Probably only useful internally.
