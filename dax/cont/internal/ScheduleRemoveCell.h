@@ -134,7 +134,7 @@ protected:
     GridPackageType packagedGrid(grid);
 
     this->NewCellCountHandle =
-        dax::cont::ArrayHandle<MaskType>(grid.GetNumberOfCells());
+        dax::cont::ArrayHandle<dax::Id>(grid.GetNumberOfCells());
 
     this->PackageCellCount = ExecPackFieldCellOutputPtr(
                           new ExecPackFieldCellOutput(
@@ -234,13 +234,13 @@ protected:
 protected:
   bool CompactTopology;
   typedef dax::cont::internal::ExecutionPackageFieldCellOutput<
-                                MaskType,DeviceAdapter> ExecPackFieldCellOutput;
+                                dax::Id,DeviceAdapter> ExecPackFieldCellOutput;
   typedef  boost::shared_ptr< ExecPackFieldCellOutput >
             ExecPackFieldCellOutputPtr;
 
   ExecPackFieldCellOutputPtr PackageCellCount;
 
-  dax::cont::ArrayHandle<MaskType> NewCellCountHandle;
+  dax::cont::ArrayHandle<dax::Id> NewCellCountHandle;
   dax::cont::ArrayHandle<MaskType> MaskPointHandle;
 };
 
