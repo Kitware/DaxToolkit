@@ -30,7 +30,7 @@
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
-#include <dax/exec/WorkRemoveCell.h>
+#include <dax/exec/WorkDetermineNewCellCount.h>
 #include <dax/cont/internal/ScheduleRemoveCell.h>
 
 #include <Worklets/Threshold.worklet>
@@ -62,7 +62,7 @@ struct Functor
       dax::Id index,
       const dax::exec::internal::ErrorHandler &errorHandler)
   {
-  dax::exec::WorkRemoveCell<CT> work(parameters.grid,
+  dax::exec::WorkDetermineNewCellCount<CT> work(parameters.grid,
                                      parameters.workCellMask,
                                      errorHandler);
   work.SetCellIndex(index);
@@ -99,14 +99,15 @@ public:
 
       }
 
-    //generate the parameters for the worklet
+    //generate the parameters for the classification worklet
     template <typename GridType, typename PackagedGrid>
-    Parameters GenerateParameters(const GridType& grid, PackagedGrid& pgrid)
+    Parameters GenerateClassificationParameters(const GridType& grid,
+                                                PackagedGrid& pgrid)
       {
       this->PackageField = PackageFieldInputPtr(new PackageFieldInput(
                                                   this->InputField, grid));
       Parameters parameters = {pgrid.GetExecutionObject(),
-                               this->PackageMaskCell->GetExecutionObject(),
+                               this->PackageCellCount->GetExecutionObject(),
                                this->Min,
                                this->Max,
                                this->PackageField->GetExecutionObject()};

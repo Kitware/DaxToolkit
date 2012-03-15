@@ -19,7 +19,7 @@
 
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
-#include <dax/exec/WorkRemoveCell.h>
+#include <dax/exec/WorkDetermineNewCellCount.h>
 
 namespace dax {
 namespace worklet {
@@ -73,7 +73,7 @@ struct DoThreshold<8,T>
 
 template<typename CellType, typename FieldType>
 DAX_WORKLET void Threshold(
-    DAX_IN dax::exec::WorkRemoveCell<CellType> &work,
+    DAX_IN dax::exec::WorkDetermineNewCellCount<CellType> &work,
     DAX_IN FieldType thresholdMin,
     DAX_IN FieldType thresholdMax,
     DAX_IN dax::exec::FieldPoint<FieldType> &inField)
@@ -83,16 +83,10 @@ DAX_WORKLET void Threshold(
       work.GetFieldValues(inField);
 
   DoThreshold<CellType::NUM_POINTS,FieldType> threshold(thresholdMin,thresholdMax);
-  work.SetRemoveCell(threshold(fieldValues));
+  work.SetNewCellCount(threshold(fieldValues));
 }
 
 }
 } //dax::worklet
 
 #endif
-
-
-//we need to make a stencil class which this can use
-//which define the proper settings for each of the CsG steps
-//somehow stencil needs to define the following:
-// the functors for classify size, scan, generate size, generate worklet

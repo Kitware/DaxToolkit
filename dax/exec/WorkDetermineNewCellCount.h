@@ -13,9 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-
-#ifndef __dax_exec_WorkRemoveCell_h
-#define __dax_exec_WorkRemoveCell_h
+#ifndef __dax_exec_WorkDetermineNewCellCount_h
+#define __dax_exec_WorkDetermineNewCellCount_h
 
 #include <dax/Types.h>
 #include <dax/exec/Cell.h>
@@ -30,31 +29,31 @@ namespace dax {
 namespace exec {
 
 ///----------------------------------------------------------------------------
-// Work for worklets that determine if a cell should be removed. This
-// worklet is based on the WorkMapCell type so you have access to
-// "CellArray" information i.e. information about what points form a cell.
-// There are different versions for different cell types, which might have
-// different constructors because they identify topology differently.
+/// Worklet that determines how many new cells should be generated
+/// from it with the same topology.
+/// This worklet is based on the WorkMapCell type so you have access to
+/// "CellArray" information i.e. information about what points form a cell.
+/// There are different versions for different cell types, which might have
+/// different constructors because they identify topology differently.
 
-template<class CT> class WorkRemoveCell
+template<class CT> class WorkDetermineNewCellCount
 {
 public:
   typedef CT CellType;
   typedef typename CellType::TopologyType TopologyType;
-  typedef dax::Id MaskType;
 
 private:
   CellType Cell;
-  dax::exec::FieldCell<MaskType> DeadCells;
+  dax::exec::FieldCell<dax::Id> NewCellCount;
   dax::exec::internal::ErrorHandler ErrorHandler;
 public:
 
-  DAX_EXEC_EXPORT WorkRemoveCell(
+  DAX_EXEC_EXPORT WorkDetermineNewCellCount(
     const TopologyType &gridStructure,
-    const dax::exec::FieldCell<MaskType> &deadCells,
+    const dax::exec::FieldCell<dax::Id> &cellCount,
     const dax::exec::internal::ErrorHandler &errorHandler)
     : Cell(gridStructure, 0),
-      DeadCells(deadCells),
+      NewCellCount(cellCount),
       ErrorHandler(errorHandler)
     { }
 
@@ -63,20 +62,12 @@ public:
     return this->Cell;
   }
 
-  //set this to true if you want to remove this cell
-  //Any cell with the value of zero is removed.
-  DAX_EXEC_EXPORT void SetRemoveCell(dax::Id value)
+  //Set the number of cells you want this cell to generate
+  DAX_EXEC_EXPORT void SetNewCellCount(dax::Id value)
   {
-    dax::exec::internal::fieldAccessNormalSet(this->DeadCells,
+    dax::exec::internal::fieldAccessNormalSet(this->NewCellCount,
                                               this->GetCellIndex(),
                                               value);
-  }
-
-  //set this to true if you want to remove this cell
-  DAX_EXEC_EXPORT dax::Id IsCellRemoved()
-  {
-    return dax::exec::internal::fieldAccessNormalGet(this->DeadCells,
-                                                     this->GetCellIndex());
   }
 
   template<typename T>
@@ -134,4 +125,4 @@ public:
 }
 }
 
-#endif //__dax_exec_WorkRemoveCell_h
+#endif //__dax_exec_WorkDetermineNewCellCount_h

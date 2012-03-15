@@ -75,8 +75,8 @@ namespace internal {
 
 
 /// ScheduleRemoveCell is the control enviorment representation of a worklet
-//   / of the type WorkRemoveCell. This class handles properly calling the worklet
-/// that the user has defined has being of type WorkRemoveCell.
+//   / of the type WorkDetermineNewCellCount. This class handles properly calling the worklet
+/// that the user has defined has being of type WorkDetermineNewCellCount.
 ///
 /// Since ScheduleRemoveCell uses CRTP, every worklet needs to construct a class
 /// that inherits from this class and define GenerateParameters.
@@ -106,15 +106,15 @@ public:
   void run(const InGridType& inGrid,
            OutGridType& outGrid)
     {
-    this->ScheduleWorklet(inGrid);
-    this->GenerateOutput(inGrid,outGrid);
+    this->ScheduleClassification(inGrid);
+    this->GenerateNewTopology(inGrid,outGrid);
     }
 
-/// \fn template <typename WorkType> Parameters GenerateParameters(const GridType& grid)
+/// \fn template <typename WorkType> Parameters GenerateClassificationParameters(const GridType& grid)
 /// \brief Abstract method that inherited classes must implement.
 ///
 /// The method must return the populated parameters struct with all the information
-/// needed for the ScheduleRemoveCell class to execute the \c Functor.
+/// needed for the ScheduleRemoveCell class to execute the classification \c Functor.
 
 /// \fn template <typename WorkType> Parameters GenerateOutputFields()
 /// \brief Abstract method that inherited classes must implement.
@@ -127,18 +127,18 @@ protected:
 
   //constructs everything needed to call the user defined worklet
   template<typename InGridType>
-  void ScheduleWorklet(const InGridType &grid)
+  void ScheduleClassification(const InGridType &grid)
     {
     typedef dax::cont::internal::ExecutionPackageGrid<InGridType> GridPackageType;
     //create the grid, and result packages
     GridPackageType packagedGrid(grid);
 
-    this->MaskCellHandle =
+    this->NewCellCountHandle =
         dax::cont::ArrayHandle<MaskType>(grid.GetNumberOfCells());
 
-    this->PackageMaskCell = ExecPackFieldCellOutputPtr(
+    this->PackageCellCount = ExecPackFieldCellOutputPtr(
                           new ExecPackFieldCellOutput(
-                                this->MaskCellHandle,grid));
+                                this->NewCellCountHandle,grid));
 
     //we need the control grid to create the parameters struct.
     //So pass those objects to the derived class and let it populate the
@@ -147,21 +147,21 @@ protected:
     //for an arbitrary number of input parameters
     //Actually run the Functor which is the user worklet with the correct parameters
     DeviceAdapter::Schedule(Functor(),
-                            static_cast<Derived*>(this)->GenerateParameters(
+                            static_cast<Derived*>(this)->GenerateClassificationParameters(
                             grid,packagedGrid),
                             grid.GetNumberOfCells());
 
     //mark the handle as complete so we can use as input
-    this->MaskCellHandle.CompleteAsOutput();
+    this->NewCellCountHandle.CompleteAsOutput();
     }
 
   template<typename InGridType,typename OutGridType>
-  void GenerateOutput(const InGridType &inGrid, OutGridType& outGrid)
+  void GenerateNewTopology(const InGridType &inGrid, OutGridType& outGrid)
     {
 
     //stream compact with two paramters the second one needs to be dax::Ids
     dax::cont::ArrayHandle<dax::Id> usedCellIds;
-    DeviceAdapter::StreamCompact(this->MaskCellHandle,usedCellIds);    
+    DeviceAdapter::StreamCompact(this->NewCellCountHandle,usedCellIds);
     usedCellIds.CompleteAsOutput(); //mark it complete so we can use as input
 
     if(usedCellIds.GetNumberOfEntries() == 0)
@@ -238,9 +238,9 @@ protected:
   typedef  boost::shared_ptr< ExecPackFieldCellOutput >
             ExecPackFieldCellOutputPtr;
 
-  ExecPackFieldCellOutputPtr PackageMaskCell;
+  ExecPackFieldCellOutputPtr PackageCellCount;
 
-  dax::cont::ArrayHandle<MaskType> MaskCellHandle;
+  dax::cont::ArrayHandle<MaskType> NewCellCountHandle;
   dax::cont::ArrayHandle<MaskType> MaskPointHandle;
 };
 
