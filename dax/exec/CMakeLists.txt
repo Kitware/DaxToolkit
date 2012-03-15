@@ -23,9 +23,11 @@ set(headers
   Field.h
   Interpolate.h
   ParametricCoordinates.h
+  WorkDetermineNewCellCount.h
+  WorkGenerateTopology.h
   WorkMapCell.h
   WorkMapField.h
-  WorkDetermineNewCellCount.h
+
 
   ${Dax_BINARY_DIR}/dax/exec/VectorOperations.h
 )
