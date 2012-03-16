@@ -73,15 +73,47 @@ struct ThresholdClassifyFunctor
     }
 };
 
+
+template<class ICT, class OCT>
+struct GenerateTopologyParameters
+{
+  typedef ICT CellType;
+  typedef OCT OutCellType;
+  typedef typename CellType::TopologyType GridType;
+
+  GridType grid;
+  dax::exec::Field<dax::Id> outputTopology;
+};
+
+template<class ICT, class OCT>
+struct GenerateTopologyFunctor
+{
+  DAX_EXEC_EXPORT void operator()(
+      dax::exec::kernel::internal::GenerateTopologyParameters<ICT,OCT> &parameters,
+      dax::Id key, dax::Id value,
+      const dax::exec::internal::ErrorHandler &errorHandler)
+  {
+  dax::exec::WorkGenerateTopology<ICT,OCT> work(parameters.grid,
+                                           parameters.outputTopology,
+                                           errorHandler);
+  work.SetCellIndex(key);
+  work.SetOutputCellIndex(value);
+  dax::worklet::Threshold_Topology(work);
+  }
+};
+
 template<class Parameters,
-         class Functor,
+         class FunctorClassify,
+         class FunctorTopology,
          class DeviceAdapter>
 class Threshold : public dax::cont::internal::ScheduleRemoveCell
     <
     Threshold<Parameters,
-              Functor,
+              FunctorClassify,
+              FunctorTopology,
               DeviceAdapter>,
-    Functor,
+    FunctorClassify,
+    FunctorTopology,
     DeviceAdapter>
 {
 public:
@@ -157,12 +189,19 @@ inline void Threshold(
 {
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   typedef typename GridPackageType::ExecutionCellType CellType;
+
+  typedef dax::cont::internal::ExecutionPackageGrid<OutGridType> OutGridPackageType;
+  typedef typename OutGridPackageType::ExecutionCellType OutCellType;
+
   typedef dax::exec::kernel::ThresholdClassifyParameters<CellType,FieldType> Parameters;
-  typedef dax::exec::kernel::ThresholdClassifyFunctor<CellType,FieldType> Functor;
+  typedef dax::exec::kernel::ThresholdClassifyFunctor<CellType,FieldType> FunctorClassify;
+  typedef dax::exec::kernel::GenerateTopologyParameters<CellType,OutCellType> Parameters;
+  typedef dax::exec::kernel::GenerateTopologyFunctor<CellType,OutCellType> FunctorTopology;
 
   dax::exec::kernel::Threshold<
                               Parameters,
-                              Functor,
+                              FunctorClassify,
+                              FunctorTopology,
                               DeviceAdapter
                               >
   threshold(thresholdMin,thresholdMax,thresholdHandle,thresholdResult);

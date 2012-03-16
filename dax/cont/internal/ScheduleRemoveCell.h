@@ -61,34 +61,6 @@ struct GetUsedPointsFunctor {
       output[indices[i]]=1;
       }
   }
-
-  template<class ICT, class OCT>
-  struct GenerateTopologyParameters
-  {
-    typedef ICT CellType;
-    typedef OCT OutCellType;
-    typedef typename CellType::TopologyType GridType;
-
-    GridType grid;
-    dax::exec::Field<dax::Id> outputTopology;
-  };
-
-  template<class ICT, class OCT>
-  struct GenerateTopologyFunctor
-  {
-    DAX_EXEC_EXPORT void operator()(
-        dax::exec::kernel::GenerateTopologyParameters<ICT,OCT> &parameters,
-        dax::Id key, dax::Id value,
-        const dax::exec::internal::ErrorHandler &errorHandler)
-    {
-    dax::exec::WorkGenerateTopology<ICT,OCT> work(parameters.grid,
-                                             parameters.outputTopology,
-                                             errorHandler);
-    work.SetCellIndex(key);
-    work.SetOutputCellIndex(value);
-    dax::worklet::Threshold_Topology(work);
-    }
-  };
 };
 
 }
@@ -110,7 +82,8 @@ namespace internal {
 /// that inherits from this class and define GenerateParameters.
 ///
 template<class Derived,
-         class Functor,
+         class FunctorClassify,
+         class FunctorTopoly,
          class DeviceAdapter
          >
 class ScheduleRemoveCell
@@ -173,8 +146,8 @@ protected:
     //parameters struct with all the user defined information letting the user
     //defined class do this work allows us to easily extend this class
     //for an arbitrary number of input parameters
-    //Actually run the Functor which is the user worklet with the correct parameters
-    DeviceAdapter::Schedule(Functor(),
+    //Actually run the FunctorClassify which is the user worklet with the correct parameters
+    DeviceAdapter::Schedule(FunctorClassify(),
                             static_cast<Derived*>(this)->GenerateClassificationParameters(
                             grid,packagedGrid),
                             grid.GetNumberOfCells());
@@ -208,7 +181,7 @@ protected:
     // array { 2, 4, 1, 9 } becomes { 2, 6, 7, 16 }
     DeviceAdapter::InclusiveScan(newCellCounts,newCellCounts);
 
-    dax::cont::internal::ScheduleLowerBounds(newCellCounts,0,20,TopologyFunctor);
+    dax::cont::internal::ScheduleLowerBounds(newCellCounts,0,20,FunctorTopology);
 
     //Generate the new topology for the output grid
 
@@ -232,9 +205,6 @@ protected:
     //lets ask our derived class if they need to threshold anything
     static_cast<Derived*>(this)->GenerateOutputFields();
     }
-
-  template<typename GridType>
-  void GenerateNewTopology
 
   template<typename GridType>
   void GeneratePointMask(const GridType &grid,
