@@ -27,14 +27,21 @@ endif (DAX_ENABLE_THRUST)
 
 #-----------------------------------------------------------------------------
 #Include VTK so we can benchmark agianst it
-find_package(VTK)
+option(DAX_ENABLE_VTK_TESTING FALSE)
+if(DAX_ENABLE_VTK_TESTING)
+  find_package(VTK)
+endif()
 
 #-----------------------------------------------------------------------------
 #Include PISTON so we can benchmark agianst it
-find_path( PISTON_INCLUDE
-  NAMES piston/piston_math.h
-  DOC "Piston headers"
-  )
+option(DAX_ENABLE_PISTON_TESTING FALSE)
+if(DAX_ENABLE_PISTON_TESTING)
+  find_package(VTK)
+  find_path( PISTON_INCLUDE
+    NAMES piston/piston_math.h
+    DOC "Piston headers"
+    )
+endif()
 
 #-----------------------------------------------------------------------------
 configure_file(
@@ -54,7 +61,7 @@ set(sources
   )
 
 #-----------------------------------------------------------------------------
-if(VTK_FOUND)
+if(DAX_ENABLE_VTK_TESTING)
   set(vtkHeaders
     VTKPipeline.h
     )
@@ -75,8 +82,7 @@ if(VTK_FOUND)
 endif()
 
 #-----------------------------------------------------------------------------
-option(DAX_ENABLE_PISTON_TESTING FALSE)
-if(VTK_FOUND AND DAX_ENABLE_PISTON_TESTING )
+if(DAX_ENABLE_PISTON_TESTING)
   set(pistonHeaders
     PISTONPipeline.h
     )
