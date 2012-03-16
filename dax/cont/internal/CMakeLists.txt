@@ -27,6 +27,7 @@ set(headers
   ScheduleRemoveCell.h
   Testing.h
   TestingDeviceAdapter.h
+  TestingGridGenerator.h
   )
 
 dax_declare_headers(${headers})

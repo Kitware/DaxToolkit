@@ -16,6 +16,7 @@
 
 set(headers
   DeviceAdapterCuda.h
+  Copy.h
   LowerBounds.h
   ScheduleCuda.h
   ScheduleThrust.h
