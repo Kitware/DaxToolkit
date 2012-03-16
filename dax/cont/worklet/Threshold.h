@@ -40,14 +40,14 @@ namespace exec {
 namespace kernel {
 
 template<class CT, class FT>
-struct ThresholdParameters
+struct ThresholdClassifyParameters
 {
   typedef CT CellType;
   typedef FT FieldType;
   typedef typename CellType::TopologyType GridType;
 
   GridType grid;
-  dax::exec::FieldCell<dax::Id> workCellMask;
+  dax::exec::FieldCell<dax::Id> newCellCount;
 
   FieldType min;
   FieldType max;
@@ -55,18 +55,18 @@ struct ThresholdParameters
 };
 
 template<class CT, class FT>
-struct Functor
+struct ThresholdClassifyFunctor
 {
   DAX_EXEC_EXPORT void operator()(
-      dax::exec::kernel::ThresholdParameters<CT,FT> &parameters,
+      dax::exec::kernel::ThresholdClassifyParameters<CT,FT> &parameters,
       dax::Id index,
       const dax::exec::internal::ErrorHandler &errorHandler)
   {
   dax::exec::WorkDetermineNewCellCount<CT> work(parameters.grid,
-                                     parameters.workCellMask,
+                                     parameters.newCellCount,
                                      errorHandler);
   work.SetCellIndex(index);
-  dax::worklet::Threshold(work,
+  dax::worklet::Threshold_Classify(work,
                           parameters.min,
                           parameters.max,
                           parameters.inField);
@@ -157,8 +157,8 @@ inline void Threshold(
 {
   typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
   typedef typename GridPackageType::ExecutionCellType CellType;
-  typedef dax::exec::kernel::ThresholdParameters<CellType,FieldType> Parameters;
-  typedef dax::exec::kernel::Functor<CellType,FieldType> Functor;
+  typedef dax::exec::kernel::ThresholdClassifyParameters<CellType,FieldType> Parameters;
+  typedef dax::exec::kernel::ThresholdClassifyFunctor<CellType,FieldType> Functor;
 
   dax::exec::kernel::Threshold<
                               Parameters,

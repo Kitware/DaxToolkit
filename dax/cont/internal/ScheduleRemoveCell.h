@@ -22,14 +22,14 @@
 #include <dax/Types.h>
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
+#include <dax/exec/internal/FieldAccess.h>
+#include <dax/exec/WorkGenerateTopology.h>
 
 #include <dax/internal/GridTopologys.h>
-#include <dax/exec/internal/FieldAccess.h>
 
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
-#include <dax/cont/internal/ExtractTopology.h>
 #include <dax/cont/internal/ExtractCoordinates.h>
 #include <dax/cont/internal/ScheduleMapAdapter.h>
 
@@ -61,6 +61,34 @@ struct GetUsedPointsFunctor {
       output[indices[i]]=1;
       }
   }
+
+  template<class ICT, class OCT>
+  struct GenerateTopologyParameters
+  {
+    typedef ICT CellType;
+    typedef OCT OutCellType;
+    typedef typename CellType::TopologyType GridType;
+
+    GridType grid;
+    dax::exec::Field<dax::Id> outputTopology;
+  };
+
+  template<class ICT, class OCT>
+  struct GenerateTopologyFunctor
+  {
+    DAX_EXEC_EXPORT void operator()(
+        dax::exec::kernel::GenerateTopologyParameters<ICT,OCT> &parameters,
+        dax::Id key, dax::Id value,
+        const dax::exec::internal::ErrorHandler &errorHandler)
+    {
+    dax::exec::WorkGenerateTopology<ICT,OCT> work(parameters.grid,
+                                             parameters.outputTopology,
+                                             errorHandler);
+    work.SetCellIndex(key);
+    work.SetOutputCellIndex(value);
+    dax::worklet::Threshold_Topology(work);
+    }
+  };
 };
 
 }
@@ -158,45 +186,55 @@ protected:
   template<typename InGridType,typename OutGridType>
   void GenerateNewTopology(const InGridType &inGrid, OutGridType& outGrid)
     {
+    dax::cont::ArrayHandle<dax::Id> newCellIds;
+    DeviceAdapter::StreamCompact(this->NewCellCountHandle,newCellIds);
+    newCellIds.CompleteAsOutput(); //mark it complete so we can use as input
 
-    //stream compact with two paramters the second one needs to be dax::Ids
-    dax::cont::ArrayHandle<dax::Id> usedCellIds;
-    DeviceAdapter::StreamCompact(this->NewCellCountHandle,usedCellIds);
-    usedCellIds.CompleteAsOutput(); //mark it complete so we can use as input
-
-    if(usedCellIds.GetNumberOfEntries() == 0)
+    if(newCellIds.GetNumberOfEntries() == 0)
       {
       //we have nothing to generate so return the output unmodified
       return;
       }
 
-    if(this->CompactTopology)
-      {
-      //extract from the grid the subset of topology information we
-      //need to construct the unstructured grid
-      dax::cont::internal::ExtractTopology<DeviceAdapter, InGridType>
-         extractedTopology(inGrid, usedCellIds, this->CompactTopology);
+    //remove all entries that have zero
+    dax::cont::ArrayHandle<dax::Id> newCellCounts;
+    DeviceAdapter::StreamCompact(this->NewCellCountHandle,
+                                 this->NewCellCountHandle,
+                                 newCellCounts);
 
-      //generate the point mask
-      this->GeneratePointMask(inGrid,usedCellIds);
+    //convert the array from a series of num of cells each cell will generate
+    //into an array which holds the value for the lowest id it will generate
+    //for example:
+    // array { 2, 4, 1, 9 } becomes { 2, 6, 7, 16 }
+    DeviceAdapter::InclusiveScan(newCellCounts,newCellCounts);
 
-      //now that the topology has been fully thresholded,
-      //lets ask our derived class if they need to threshold anything
-      static_cast<Derived*>(this)->GenerateOutputFields();
+    dax::cont::internal::ScheduleLowerBounds(newCellCounts,0,20,TopologyFunctor);
 
-      dax::cont::ArrayHandle<dax::Id> usedPointIds;
-      DeviceAdapter::StreamCompact(this->MaskPointHandle,usedPointIds);
-      usedPointIds.CompleteAsOutput();
+    //Generate the new topology for the output grid
 
-      //extract the point coordinates that we need
-      dax::cont::internal::ExtractCoordinates<DeviceAdapter, InGridType>
-                                      extractedCoords(inGrid,usedPointIds);
 
-      //set the handles to the geometery
-      outGrid = OutGridType(extractedTopology.GetTopology(),
-                            extractedCoords.GetCoordinates());
-      }    
+    //generate the point mask using the new topology that has been generated
+
+
+    dax::cont::ArrayHandle<dax::Id> usedPointIds;
+    DeviceAdapter::StreamCompact(this->MaskPointHandle,usedPointIds);
+    usedPointIds.CompleteAsOutput();
+
+    //extract the point coordinates that we need
+    dax::cont::internal::ExtractCoordinates<DeviceAdapter, InGridType>
+                                    extractedCoords(inGrid,usedPointIds);
+
+    //set the handles to the geometery
+    outGrid = OutGridType(extractedTopology.GetTopology(),
+                          extractedCoords.GetCoordinates());
+
+    //now that the topology has been fully thresholded,
+    //lets ask our derived class if they need to threshold anything
+    static_cast<Derived*>(this)->GenerateOutputFields();
     }
+
+  template<typename GridType>
+  void GenerateNewTopology
 
   template<typename GridType>
   void GeneratePointMask(const GridType &grid,
