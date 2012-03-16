@@ -1,10 +1,18 @@
-/*=========================================================================
-
-  This software is distributed WITHOUT ANY WARRANTY; without even
-  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-  PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
+//=============================================================================
+//
+//  Copyright (c) Kitware, Inc.
+//  All rights reserved.
+//  See LICENSE.txt for details.
+//
+//  This software is distributed WITHOUT ANY WARRANTY; without even
+//  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+//  PURPOSE.  See the above copyright notice for more information.
+//
+//  Copyright 2012 Sandia Corporation.
+//  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+//  the U.S. Government retains certain rights in this software.
+//
+//=============================================================================
 
 #include <dax/Types.h>
 
@@ -12,7 +20,9 @@
 
 namespace {
 
-static void TestVector3()
+template <typename T> void TypeTest();
+
+template<> void TypeTest<dax::Vector3>()
 {
   dax::Vector3 a = dax::make_Vector3(2, 4, 6);
   dax::Vector3 b = dax::make_Vector3(1, 2, 3);
@@ -69,7 +79,7 @@ static void TestVector3()
     }
 }
 
-static void TestVector4()
+template<> void TypeTest<dax::Vector4>()
 {
   dax::Vector4 a = dax::make_Vector4(2, 4, 6, 8);
   dax::Vector4 b = dax::make_Vector4(1, 2, 3, 4);
@@ -126,7 +136,7 @@ static void TestVector4()
     }
 }
 
-static void TestId3()
+template<> void TypeTest<dax::Id3>()
 {
   dax::Id3 a = dax::make_Id3(2, 4, 6);
   dax::Id3 b = dax::make_Id3(1, 2, 3);
@@ -183,11 +193,104 @@ static void TestId3()
     }
 }
 
+template<> void TypeTest<dax::Scalar>()
+{
+  dax::Scalar a = 4;
+  dax::Scalar b = 2;
+
+  dax::Scalar plus = a + b;
+  if (plus != 6)
+    {
+    DAX_TEST_FAIL("Scalars do not add correctly.");
+    }
+
+  dax::Scalar minus = a - b;
+  if (minus != 2)
+    {
+    DAX_TEST_FAIL("Scalars to not subtract correctly.");
+    }
+
+  dax::Scalar mult = a * b;
+  if (mult != 8)
+    {
+    DAX_TEST_FAIL("Scalars to not multiply correctly.");
+    }
+
+  dax::Scalar div = a / b;
+  if (div != 2)
+    {
+    DAX_TEST_FAIL("Scalars to not divide correctly.");
+    }
+
+  if (a == b)
+    {
+    DAX_TEST_FAIL("operator== wrong");
+    }
+  if (!(a != b))
+    {
+    DAX_TEST_FAIL("operator!= wrong");
+    }
+
+  if (dax::dot(a, b) != 8)
+    {
+    DAX_TEST_FAIL("dot(Scalar) wrong");
+    }
+}
+
+template<> void TypeTest<dax::Id>()
+{
+  dax::Id a = 4;
+  dax::Id b = 2;
+
+  dax::Id plus = a + b;
+  if (plus != 6)
+    {
+    DAX_TEST_FAIL("Scalars do not add correctly.");
+    }
+
+  dax::Id minus = a - b;
+  if (minus != 2)
+    {
+    DAX_TEST_FAIL("Scalars to not subtract correctly.");
+    }
+
+  dax::Id mult = a * b;
+  if (mult != 8)
+    {
+    DAX_TEST_FAIL("Scalars to not multiply correctly.");
+    }
+
+  dax::Id div = a / b;
+  if (div != 2)
+    {
+    DAX_TEST_FAIL("Scalars to not divide correctly.");
+    }
+
+  if (a == b)
+    {
+    DAX_TEST_FAIL("operator== wrong");
+    }
+  if (!(a != b))
+    {
+    DAX_TEST_FAIL("operator!= wrong");
+    }
+
+  if (dax::dot(a, b) != 8)
+    {
+    DAX_TEST_FAIL("dot(Id) wrong");
+    }
+}
+
+struct TypeTestFunctor
+{
+  template <typename T> void operator()(const T&) const {
+    TypeTest<T>();
+  }
+};
+
 void TestTypes()
 {
-  TestVector3();
-  TestVector4();
-  TestId3();
+  dax::internal::Testing::TryAllTypes(TypeTestFunctor());
 }
 
 } // anonymous namespace

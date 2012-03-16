@@ -1,10 +1,18 @@
-/*=========================================================================
-
-  This software is distributed WITHOUT ANY WARRANTY; without even
-  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-  PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
+//=============================================================================
+//
+//  Copyright (c) Kitware, Inc.
+//  All rights reserved.
+//  See LICENSE.txt for details.
+//
+//  This software is distributed WITHOUT ANY WARRANTY; without even
+//  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+//  PURPOSE.  See the above copyright notice for more information.
+//
+//  Copyright 2012 Sandia Corporation.
+//  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+//  the U.S. Government retains certain rights in this software.
+//
+//=============================================================================
 #ifndef __dax_internal_DataArray_h
 #define __dax_internal_DataArray_h
 
@@ -97,46 +105,6 @@ private:
   dax::Id NumEntries;
   dax::Id IndexOffset;
 };
-
-/// Create a dax::internal::DataArray from a raw pointer.
-DAX_EXEC_CONT_EXPORT
-DataArray<dax::Id> make_DataArrayId(dax::Id *rawData, dax::Id numEntries)
-{
-  return DataArray<dax::Id>(rawData, numEntries);
-}
-
-/// Create a dax::internal::DataArray from a raw pointer.
-DAX_EXEC_CONT_EXPORT
-DataArray<dax::Id3> make_DataArrayId3(dax::Id *rawData, dax::Id numTuples)
-{
-  return DataArray<dax::Id3>(reinterpret_cast<dax::Id3*>(rawData), numTuples);
-}
-
-/// Create a dax::internal::DataArray from a raw pointer.
-DAX_EXEC_CONT_EXPORT
-DataArray<dax::Scalar> make_DataArrayScalar(dax::Scalar *rawData,
-                                            dax::Id numEntries)
-{
-  return DataArray<dax::Scalar>(rawData, numEntries);
-}
-
-/// Create a dax::internal::DataArray from a raw pointer.
-DAX_EXEC_CONT_EXPORT
-DataArray<dax::Vector3> make_DataArrayVector3(dax::Scalar *rawData,
-                                              dax::Id numTuples)
-{
-  return DataArray<dax::Vector3>(reinterpret_cast<dax::Vector3*>(rawData),
-                                 numTuples);
-}
-
-/// Create a dax::internal::DataArray from a raw pointer.
-DAX_EXEC_CONT_EXPORT
-DataArray<dax::Vector4> make_DataArrayVector4(dax::Scalar *rawData,
-                                              dax::Id numTuples)
-{
-  return DataArray<dax::Vector4>(reinterpret_cast<dax::Vector4*>(rawData),
-                                 numTuples);
-}
 
 }}
 

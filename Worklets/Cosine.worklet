@@ -1,30 +1,28 @@
-/*=========================================================================
-
-  This software is distributed WITHOUT ANY WARRANTY; without even
-  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-  PURPOSE.  See the above copyright notice for more information.
-
-===========================================================================*/
+//=============================================================================
+//
+//  Copyright (c) Kitware, Inc.
+//  All rights reserved.
+//  See LICENSE.txt for details.
+//
+//  This software is distributed WITHOUT ANY WARRANTY; without even
+//  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+//  PURPOSE.  See the above copyright notice for more information.
+//
+//  Copyright 2012 Sandia Corporation.
+//  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+//  the U.S. Government retains certain rights in this software.
+//
+//=============================================================================
 #ifndef __Cosine_worklet_
 #define __Cosine_worklet_
 
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
-
-#include <dax/TypeTraits.h>
-#include <dax/exec/VectorOperations.h>
+#include <dax/exec/math/Trig.h>
 
 namespace dax {
 namespace worklet {
-
-template<typename T>
-struct DoCosine {
-  DAX_EXEC_EXPORT T operator()(T x) const
-  {
-    return static_cast<T>(cosf(x));
-  }
-};
 
 template<class CellType, class FieldType>
 DAX_WORKLET void Cosine(
@@ -32,9 +30,8 @@ DAX_WORKLET void Cosine(
     DAX_IN const dax::exec::Field<FieldType> &inField,
     DAX_OUT dax::exec::Field<FieldType> &outField)
 {
-  typedef typename dax::VectorTraits<FieldType>::ValueType ComponentType;
   FieldType inValue = work.GetFieldValue(inField);
-  FieldType outValue = dax::exec::VectorMap(inValue, DoCosine<ComponentType>());
+  FieldType outValue = dax::exec::math::Cos(inValue);
   work.SetFieldValue(outField, outValue);
 }
 

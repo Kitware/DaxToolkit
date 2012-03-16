@@ -1,14 +1,22 @@
-/*=========================================================================
-
-  This software is distributed WITHOUT ANY WARRANTY; without even
-  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-  PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
+//=============================================================================
+//
+//  Copyright (c) Kitware, Inc.
+//  All rights reserved.
+//  See LICENSE.txt for details.
+//
+//  This software is distributed WITHOUT ANY WARRANTY; without even
+//  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+//  PURPOSE.  See the above copyright notice for more information.
+//
+//  Copyright 2012 Sandia Corporation.
+//  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+//  the U.S. Government retains certain rights in this software.
+//
+//=============================================================================
 #ifndef __@DAX_VECTOR_OPERATIONS_NAMESPACE_NAME@_VectorOperations_h
 #define __@DAX_VECTOR_OPERATIONS_NAMESPACE_NAME@_VectorOperations_h
 
-#include <dax/TypeTraits.h>
+#include <dax/VectorTraits.h>
 
 @DAX_VECTOR_OPERATIONS_NAMESPACE_START@
 
@@ -88,6 +96,46 @@ void VectorForEach(VectorType &vector, const FunctorType &functor)
 
 namespace internal {
 
+/// This hidden functor is used to implement VectorFill with VectorForEach.
+///
+template<typename ValueType>
+struct VectorFillFunctor
+{
+  VectorFillFunctor(ValueType value) : Value(value) { }
+  void operator()(ValueType &component) const { component = this->Value; }
+private:
+  ValueType Value;
+};
+
+} // namespace internal
+
+/// Fills every component in a vector with the given value.
+///
+template<class VectorType>
+@DAX_VECTOR_OPERATIONS_EXPORT@
+void VectorFill(VectorType &vector,
+                typename dax::VectorTraits<VectorType>::ValueType value)
+{
+  typedef typename dax::VectorTraits<VectorType>::ValueType ValueType;
+  VectorForEach(vector, internal::VectorFillFunctor<ValueType>(value));
+}
+
+/// Fills every component in a vector with the given value. As a convenience,
+/// this version of the function returns a new vector rather than making you
+/// first declare one of your own. When using this form of the function, the
+/// template parameter must be explicitly given.
+///
+template<class VectorType>
+@DAX_VECTOR_OPERATIONS_EXPORT@
+VectorType VectorFill(typename dax::VectorTraits<VectorType>::ValueType value)
+{
+  VectorType vector;
+  VectorFill(vector, value);
+  return vector;
+}
+
+namespace internal {
+
 /// This hidden implementation allows us to specialize VectorReduce for single
 /// component vectors.
 ///
@@ -137,7 +185,7 @@ VectorReduceImpl(const VectorType &vector,
   return dax::VectorTraits<VectorType>::GetComponent(vector, 0);
 }
 
-}
+} // namespace internal
 
 /// Reduces the components in a vector to a single value.
 ///

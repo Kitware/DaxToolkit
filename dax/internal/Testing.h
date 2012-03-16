@@ -1,15 +1,24 @@
-/*=========================================================================
-
-  This software is distributed WITHOUT ANY WARRANTY; without even
-  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-  PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
+//=============================================================================
+//
+//  Copyright (c) Kitware, Inc.
+//  All rights reserved.
+//  See LICENSE.txt for details.
+//
+//  This software is distributed WITHOUT ANY WARRANTY; without even
+//  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+//  PURPOSE.  See the above copyright notice for more information.
+//
+//  Copyright 2012 Sandia Corporation.
+//  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+//  the U.S. Government retains certain rights in this software.
+//
+//=============================================================================
 #ifndef __dax_internal_Testing_h
 #define __dax_internal_Testing_h
 
 #include <dax/Types.h>
 #include <dax/TypeTraits.h>
+#include <dax/VectorTraits.h>
 
 #include <iostream>
 #include <sstream>
@@ -147,6 +156,108 @@ public:
     return 0;
   }
 #endif
+
+  /// Check functors to be used with the TryAllTypes method.
+  ///
+  struct TypeCheckAlwaysTrue {
+    template <typename T, class Functor>
+    void operator()(T t, Functor function) const { function(t); }
+  };
+  struct TypeCheckInteger {
+    template <typename T, class Functor>
+    void operator()(T t, Functor function) const {
+      this->DoInteger(typename dax::TypeTraits<T>::NumericTag(), t, function);
+    }
+  private:
+    template <class Tag, typename T, class Functor>
+    void DoInteger(Tag, T, const Functor&) const {  }
+    template <typename T, class Functor>
+    void DoInteger(dax::TypeTraitsIntegerTag, T t, Functor function) const {
+      function(t);
+    }
+  };
+  struct TypeCheckReal {
+    template <typename T, class Functor>
+    void operator()(T t, Functor function) const {
+      this->DoReal(typename dax::TypeTraits<T>::NumericTag(), t, function);
+    }
+  private:
+    template <class Tag, typename T, class Functor>
+    void DoReal(Tag, T, const Functor&) const {  }
+    template <typename T, class Functor>
+    void DoReal(dax::TypeTraitsRealTag, T t, Functor function) const {
+      function(t);
+    }
+  };
+  struct TypeCheckScalar {
+    template <typename T, class Functor>
+    void operator()(T t, Functor func) const {
+      this->DoScalar(typename dax::TypeTraits<T>::DimensionalityTag(), t, func);
+    }
+  private:
+    template <class Tag, typename T, class Functor>
+    void DoScalar(Tag, const T &, const Functor &) const {  }
+    template <typename T, class Functor>
+    void DoScalar(dax::TypeTraitsScalarTag, T t, Functor function) const {
+      function(t);
+    }
+  };
+  struct TypeCheckVector {
+    template <typename T, class Functor>
+    void operator()(T t, Functor func) const {
+      this->DoVector(typename dax::TypeTraits<T>::DimensionalityTag(), t, func);
+    }
+  private:
+    template <class Tag, typename T, class Functor>
+    void DoVector(Tag, const T &, const Functor &) const {  }
+    template <typename T, class Functor>
+    void DoVector(dax::TypeTraitsVectorTag, T t, Functor function) const {
+      function(t);
+    }
+  };
+
+  template<class FunctionType>
+  struct InternalPrintOnInvoke {
+    InternalPrintOnInvoke(FunctionType function, std::string toprint)
+      : Function(function), ToPrint(toprint) { }
+    template <typename T> void operator()(T t) {
+      std::cout << this->ToPrint << std::endl;
+      this->Function(t);
+    }
+  private:
+    FunctionType Function;
+    std::string ToPrint;
+  };
+
+  /// Runs templated \p function on all the basic types defined in Dax. This is
+  /// helpful to test templated functions that should work on all types. If the
+  /// function is supposed to work on some subset of types, then \p check can
+  /// be set to restrict the types used. This Testing class contains several
+  /// helpful check functors.
+  ///
+  template<class FunctionType, class CheckType>
+  static void TryAllTypes(FunctionType function, CheckType check)
+  {
+    dax::Id id = 0;
+    check(id, InternalPrintOnInvoke<FunctionType>(function, "dax::Id"));
+
+    dax::Id3 id3 = dax::make_Id3(0, 0, 0);
+    check(id3, InternalPrintOnInvoke<FunctionType>(function, "dax::Id3"));
+
+    dax::Scalar scalar = 0.0;
+    check(scalar, InternalPrintOnInvoke<FunctionType>(function, "dax::Scalar"));
+
+    dax::Vector3 vector3 = dax::make_Vector3(0.0, 0.0, 0.0);
+    check(vector3, InternalPrintOnInvoke<FunctionType>(function, "dax::Vector3"));
+
+    dax::Vector4 vector4 = dax::make_Vector4(0.0, 0.0, 0.0, 0.0);
+    check(vector4, InternalPrintOnInvoke<FunctionType>(function, "dax::Vector4"));
+  }
+  template<class FunctionType>
+  static void TryAllTypes(FunctionType function)
+  {
+    TryAllTypes(function, TypeCheckAlwaysTrue());
+  }
 };
 
 }

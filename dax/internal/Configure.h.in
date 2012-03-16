@@ -1,0 +1,41 @@
+//=============================================================================
+//
+//  Copyright (c) Kitware, Inc.
+//  All rights reserved.
+//  See LICENSE.txt for details.
+//
+//  This software is distributed WITHOUT ANY WARRANTY; without even
+//  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+//  PURPOSE.  See the above copyright notice for more information.
+//
+//  Copyright 2012 Sandia Corporation.
+//  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+//  the U.S. Government retains certain rights in this software.
+//
+//=============================================================================
+#ifndef __dax_internal_Configure_h
+#define __dax_internal_Configure_h
+
+#cmakedefine DAX_USE_DOUBLE_PRECISION
+
+#cmakedefine DAX_USE_64BIT_IDS
+
+#define DAX_SIZE_FLOAT @DAX_SIZE_FLOAT@
+#define DAX_SIZE_DOUBLE @DAX_SIZE_DOUBLE@
+#define DAX_SIZE_INT @DAX_SIZE_INT@
+#define DAX_SIZE_LONG @DAX_SIZE_LONG@
+#define DAX_SIZE_LONG_LONG @DAX_SIZE_LONG_LONG@
+
+#ifdef DAX_USE_DOUBLE_PRECISION
+#define DAX_SIZE_SCALAR DAX_SIZE_DOUBLE
+#else
+#define DAX_SIZE_SCALAR DAX_SIZE_FLOAT
+#endif
+
+#ifdef DAX_USE_64BIT_IDS
+#define DAX_SIZE_ID 8
+#else
+#define DAX_SIZE_ID 4
+#endif
+
+#endif //__dax_internal_Configure_h
