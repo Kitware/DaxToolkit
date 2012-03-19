@@ -67,7 +67,8 @@ struct DeviceAdapterOpenMP
   static T InclusiveScan(const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP> &input,
                             dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& output)
     {
-    return dax::openmp::cont::inclusiveScan(input,output);
+    return dax::openmp::cont::inclusiveScan(input.GetExecutionArray(),
+                                            output.GetExecutionArray());
     }
 
   template<typename T, typename U>

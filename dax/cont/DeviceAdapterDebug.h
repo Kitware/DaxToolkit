@@ -68,7 +68,8 @@ struct DeviceAdapterDebug
   static T InclusiveScan(const dax::cont::ArrayHandle<T,DeviceAdapterDebug> &input,
                             dax::cont::ArrayHandle<T,DeviceAdapterDebug>& output)
     {
-    return dax::cont::inclusiveScanDebug(input,output);
+    return dax::cont::inclusiveScanDebug(input.GetExecutionArray(),
+                                         output.GetExecutionArray());
     }
 
   template<typename T, typename U>
