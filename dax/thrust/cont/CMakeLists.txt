@@ -16,6 +16,7 @@
 
 set(headers
   Copy.h
+  InclusiveScan.h
   LowerBounds.h
   ScheduleThrust.h
   Sort.h

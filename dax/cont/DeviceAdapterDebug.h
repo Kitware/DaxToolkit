@@ -25,6 +25,7 @@
 
 #include <dax/internal/DataArray.h>
 #include <dax/cont/CopyDebug.h>
+#include <dax/cont/InclusiveScanDebug.h>
 #include <dax/cont/LowerBoundsDebug.h>
 #include <dax/cont/ScheduleDebug.h>
 #include <dax/cont/SortDebug.h>
@@ -63,6 +64,12 @@ struct DeviceAdapterDebug
     dax::cont::copyDebug(from.GetExecutionArray(),to.GetExecutionArray());
     }
 
+  template<typename T>
+  static T InclusiveScan(const dax::cont::ArrayHandle<T,DeviceAdapterDebug> &input,
+                            dax::cont::ArrayHandle<T,DeviceAdapterDebug>& output)
+    {
+    return dax::cont::inclusiveScanDebug(input,output);
+    }
 
   template<typename T, typename U>
   static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& input,
@@ -82,9 +89,9 @@ struct DeviceAdapterDebug
   static void Schedule(Functor functor,
                        Parameters parameters,
                        dax::Id numInstances)
-  {
+    {
     dax::cont::scheduleDebug(functor, parameters, numInstances);
-  }
+    }
 
 
   template<typename T>

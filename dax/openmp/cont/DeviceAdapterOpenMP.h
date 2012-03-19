@@ -24,6 +24,7 @@
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::openmp::cont::DeviceAdapterOpenMP
 
 #include <dax/openmp/cont/Copy.h>
+#include <dax/openmp/cont/InclusiveScan.h>
 #include <dax/openmp/cont/LowerBounds.h>
 #include <dax/openmp/cont/ScheduleThrust.h>
 #include <dax/openmp/cont/StreamCompact.h>
@@ -60,6 +61,13 @@ struct DeviceAdapterOpenMP
     DAX_ASSERT_CONT(to.GetNumberOfEntries() >= from.GetNumberOfEntries());
     to.ReadyAsOutput();
     dax::openmp::cont::copy(from.GetExecutionArray(),to.GetExecutionArray());
+    }
+
+  template<typename T>
+  static T InclusiveScan(const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP> &input,
+                            dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& output)
+    {
+    return dax::openmp::cont::inclusiveScan(input,output);
     }
 
   template<typename T, typename U>

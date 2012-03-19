@@ -31,6 +31,7 @@
 #endif
 
 #include <dax/cuda/cont/Copy.h>
+#include <dax/cuda/cont/InclusiveScan.h>
 #include <dax/cuda/cont/LowerBounds.h>
 #include <dax/cuda/cont/StreamCompact.h>
 #include <dax/cuda/cont/Sort.h>
@@ -66,6 +67,13 @@ struct DeviceAdapterCuda
     DAX_ASSERT_CONT(to.GetNumberOfEntries() >= from.GetNumberOfEntries());
     to.ReadyAsOutput();
     dax::cuda::cont::copy(from.GetExecutionArray(),to.GetExecutionArray());
+    }
+
+  template<typename T>
+  static T InclusiveScan(const dax::cont::ArrayHandle<T,DeviceAdapterCuda> &input,
+                            dax::cont::ArrayHandle<T,DeviceAdapterCuda>& output)
+    {
+    return dax::thrust::cont::inclusiveScan(input,output);
     }
 
   template<typename T, typename U>

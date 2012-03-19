@@ -28,6 +28,7 @@ set(headers
   ErrorControlBadValue.h
   ErrorControlOutOfMemory.h
   ErrorExecution.h
+  InclusiveScanDebug.h
   LowerBoundsDebug.h
   ScheduleDebug.h
   SortDebug.h
