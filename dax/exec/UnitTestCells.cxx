@@ -24,9 +24,9 @@ static void CheckPointIndex(dax::Id pointFlatIndex,
                             const dax::Id3 &pointIjkIndex,
                             const dax::Extent3 &extent)
 {
-  dax::Id3 compareIndex = dax::flatIndexToIndex3(pointFlatIndex, extent);
+  dax::Id3 compaWeld = dax::flatIndexToIndex3(pointFlatIndex, extent);
 
-  DAX_TEST_ASSERT(compareIndex == pointIjkIndex,
+  DAX_TEST_ASSERT(compaWeld == pointIjkIndex,
                   "Bad point index.");
 }
 

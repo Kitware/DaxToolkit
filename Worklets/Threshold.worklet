@@ -1,0 +1,98 @@
+//=============================================================================
+//
+//  Copyright (c) Kitware, Inc.
+//  All rights reserved.
+//  See LICENSE.txt for details.
+//
+//  This software is distributed WITHOUT ANY WARRANTY; without even
+//  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+//  PURPOSE.  See the above copyright notice for more information.
+//
+//  Copyright 2012 Sandia Corporation.
+//  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+//  the U.S. Government retains certain rights in this software.
+//
+//=============================================================================
+
+#ifndef __Threshold_worklet_
+#define __Threshold_worklet_
+
+#include <dax/exec/Cell.h>
+#include <dax/exec/Field.h>
+#include <dax/exec/WorkRemoveCell.h>
+
+namespace dax {
+namespace worklet {
+
+template<int size, typename T>
+struct DoThreshold
+{
+  const T Min;
+  const T Max;
+  DAX_WORKLET DoThreshold(const T &min, const T &max):
+    Min(min), Max(max)
+    {
+    }
+
+  DAX_EXEC_EXPORT char operator()(const dax::Tuple<T,size>& values) const
+  {
+    char valid=1;
+    for(int i=0; i < size; ++i)
+      {
+      valid &= (values[i] > Min) && (values[i] <= Max);
+      }
+    return valid;
+  }
+};
+
+template<typename T>
+struct DoThreshold<8,T>
+{
+  const T Min;
+  const T Max;
+  DAX_WORKLET DoThreshold(const T &min, const T &max):
+    Min(min), Max(max)
+    {
+    }
+
+  DAX_EXEC_EXPORT char operator()(const dax::Tuple<T,8>& values) const
+  {
+    char valid=1;
+    valid &= (values[0] > Min) && (values[0] <= Max);
+    valid &= (values[1] > Min) && (values[1] <= Max);
+    valid &= (values[2] > Min) && (values[2] <= Max);
+    valid &= (values[3] > Min) && (values[3] <= Max);
+    valid &= (values[4] > Min) && (values[4] <= Max);
+    valid &= (values[5] > Min) && (values[5] <= Max);
+    valid &= (values[6] > Min) && (values[6] <= Max);
+    valid &= (values[7] > Min) && (values[7] <= Max);
+    return valid;
+  }
+};
+
+
+template<typename CellType, typename FieldType>
+DAX_WORKLET void Threshold(
+    DAX_IN dax::exec::WorkRemoveCell<CellType> &work,
+    DAX_IN FieldType thresholdMin,
+    DAX_IN FieldType thresholdMax,
+    DAX_IN dax::exec::FieldPoint<FieldType> &inField)
+{
+  //compare the value at each point with the threshold min/max
+  dax::Tuple<FieldType,CellType::NUM_POINTS> fieldValues=
+      work.GetFieldValues(inField);
+
+  DoThreshold<CellType::NUM_POINTS,FieldType> threshold(thresholdMin,thresholdMax);
+  work.SetRemoveCell(threshold(fieldValues));
+}
+
+}
+} //dax::worklet
+
+#endif
+
+
+//we need to make a stencil class which this can use
+//which define the proper settings for each of the CsG steps
+//somehow stencil needs to define the following:
+// the functors for classify size, scan, generate size, generate worklet

@@ -26,9 +26,6 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-namespace dax {
-namespace cont {
-
 /// Manages an array-worth of data. Typically this data holds field data. The
 /// array handle optionally contains a reference to user managed data, with
 /// which it can read input data or write results data. The array handle also
@@ -51,6 +48,8 @@ namespace cont {
 /// Any memory created for the execution environment will remain around in case
 /// it is needed again.
 ///
+namespace dax {
+namespace cont {
 template<typename T, class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER>
 class ArrayHandle
 {
@@ -95,7 +94,13 @@ public:
   /// operations on this array handle should move data to or from that memory
   /// depending on the nature (input or output) of the operation.
   ///
-  bool IsControlArrayValid() {return this->Internals->ControlArray.IsValid();}
+  bool IsControlArrayValid() const {return this->Internals->ControlArray.IsValid();}
+
+  /// True if the execution array has been constructed.
+  ///
+  bool hasExecutionArray() const {
+    return this->Internals->NumberOfEntries ==
+        this->Internals->ExecutionArray.GetNumberOfEntries();}
 
   /// Marks the iterators passed into the constructor (if there were any) as
   /// invalid. This invalidate is propagated to any copies of the ArrayHandle.
@@ -173,6 +178,32 @@ public:
     this->Internals->Synchronized = true;
   }
 
+  /// Change the control data that this Handle points too.
+  /// This allows ArrayHandles that only point to execution data
+  /// be allowed to move data to the control enviornment.
+  template<class IteratorType>
+  void SetNewControlData(IteratorType begin, IteratorType end) {
+    dax::Id numEntries = this->GetNumberOfEntries();
+    if (std::distance(begin,end) != numEntries)
+      {
+      throw dax::cont::ErrorControlBadValue(
+              "Tried to set new control data array, but the size is incorrect.\n"
+              "Make sure that the distance between the iterators matches the "
+              "number of entries in the ArrayHandle");
+      }
+    this->Internals->SetNewControlArray(begin,end);
+    }
+
+  /// Get a single value in the control enviornment.
+  /// Will throw an exception if the index is out of range, or if the control
+  /// array doesn't exist.
+  const ValueType& GetValue(dax::Id index) const
+    {
+    DAX_ASSERT_CONT(this->IsControlArrayValid());
+    DAX_ASSERT_CONT( (index >= 0 && index < this->GetNumberOfEntries()) );
+    return *(this->Internals->ControlArray.GetBeginIterator()+index);
+    }
+
 private:
   struct InternalStruct {
     dax::cont::internal::IteratorContainer<
@@ -190,9 +221,57 @@ private:
         dax::cont::internal::IteratorPolymorphic<ValueType> beginControl,
         dax::cont::internal::IteratorPolymorphic<ValueType> endControl)
       : ControlArray(beginControl, endControl) { }
+
+    void SetNewControlArray(
+        dax::cont::internal::IteratorPolymorphic<ValueType> beginControl,
+        dax::cont::internal::IteratorPolymorphic<ValueType> endControl)
+      {
+      ControlArray = dax::cont::internal::IteratorContainer<
+                     dax::cont::internal::IteratorPolymorphic<ValueType> >
+                     (beginControl,endControl);
+      }
   };
 
   boost::shared_ptr<InternalStruct> Internals;
+
+  //make the converter class a friend class,
+  //so that it can access GetExecutionArray.
+  friend class dax::cont::DeviceAdapterDebug;
+  friend class dax::cuda::cont::DeviceAdapterCuda;
+  friend class dax::openmp::cont::DeviceAdapterOpenMP;
+
+  /// Returns the raw execution array. This doesn't verify
+  /// any level of synchronization, so the caller must first
+  /// make sure the array is of the correct size and is allocated
+  const typename DeviceAdapter::template ArrayContainerExecution<ValueType>&
+    GetExecutionArray() const
+    {
+    return this->Internals->ExecutionArray;
+    }
+
+  /// Returns the raw execution array. This doesn't verify
+  /// any level of synchronization, so the caller must first
+  /// make sure the array is of the correct size and is allocated
+  typename DeviceAdapter::template ArrayContainerExecution<ValueType>&
+    GetExecutionArray()
+    {
+    this->Internals->Synchronized = false;
+    return this->Internals->ExecutionArray;
+    }
+
+  /// Queries the internal execution array to determine the updated
+  /// size of the array. This is used in conjuction with GetExecutionArray
+  /// by algorithms that don't know the size of an array intill execution
+  void UpdateArraySize()
+    {
+    this->Internals->Synchronized = false;
+    if(this->IsControlArrayValid())
+      {
+      this->InvalidateControlArray();
+      }
+    this->Internals->NumberOfEntries =
+        this->Internals->ExecutionArray.GetNumberOfEntries();
+    }
 };
 
 }

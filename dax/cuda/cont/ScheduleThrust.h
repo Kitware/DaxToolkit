@@ -18,7 +18,6 @@
 #define __dax_cuda_cont_ScheduleThrust_h
 
 #include <dax/cuda/cont/internal/SetThrustForCuda.h>
-
 #include <dax/thrust/cont/ScheduleThrust.h>
 
 namespace dax {
@@ -27,8 +26,8 @@ namespace cont {
 
 template<class Functor, class Parameters>
 DAX_CONT_EXPORT void scheduleThrust(Functor functor,
-                                    Parameters parameters,
-                                    dax::Id numInstances)
+                                  Parameters parameters,
+                                  dax::Id numInstances)
 {
   dax::thrust::cont::scheduleThrust(functor, parameters, numInstances);
 }

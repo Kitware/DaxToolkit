@@ -39,6 +39,8 @@ class ArrayContainerExecutionCPU
 {
 public:
   typedef T ValueType;
+  typedef typename std::vector<ValueType>::const_iterator const_iterator;
+  typedef typename std::vector<ValueType>::iterator iterator;
 
   /// On inital creation, no memory is allocated on the device.
   ///
@@ -59,6 +61,10 @@ public:
       }
   }
 
+  /// Returns the length of the array
+  ///
+  dax::Id GetNumberOfEntries() const { return this->DeviceArray.size(); }
+
   /// Copies the data pointed to by the passed in \c iterators (assumed to be
   /// in the control environment), into the array in the execution environment
   /// managed by this class.
@@ -78,6 +84,26 @@ public:
   /// Frees any resources (i.e. memory) on the device.
   ///
   void ReleaseResources() { this->Allocate(0); }
+
+  /// Gets the vector iterators for the contained array. May be too low level
+  /// to expose to everyone
+  ///
+  typename ::std::vector<ValueType>::iterator begin()
+  {
+    return this->DeviceArray.begin();
+  }
+  typename ::std::vector<ValueType>::const_iterator begin() const
+  {
+    return this->DeviceArray.begin();
+  }
+  typename ::std::vector<ValueType>::iterator end()
+  {
+    return this->DeviceArray.end();
+  }
+  typename ::std::vector<ValueType>::const_iterator end() const
+  {
+    return this->DeviceArray.end();
+  }
 
   /// Gets a DataArray that is valid in the execution environment.
   dax::internal::DataArray<ValueType> GetExecutionArray();

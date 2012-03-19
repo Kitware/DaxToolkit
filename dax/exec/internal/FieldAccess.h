@@ -32,6 +32,21 @@ DAX_EXEC_EXPORT const T &fieldAccessNormalGet(
   return field.GetArray().GetValue(index);
 }
 
+template<typename T, int Size>
+DAX_EXEC_EXPORT dax::Tuple<T,Size> fieldAccessNormalGet(
+  const dax::exec::Field<T> &field,
+  dax::Tuple<dax::Id,Size> indices)
+{
+  dax::Tuple<T,Size> result;
+  const dax::internal::DataArray<T> data = field.GetArray();
+  for(int i=0; i < Size; ++i)
+    {
+    result[i] = data.GetValue(indices[i]);
+    }
+  return result;
+}
+
+
 template<typename T>
 DAX_EXEC_EXPORT void fieldAccessNormalSet(dax::exec::Field<T> &field,
                                           dax::Id index,
@@ -47,6 +62,20 @@ DAX_EXEC_EXPORT dax::Vector3 fieldAccessUniformCoordinatesGet(
 {
   return dax::internal::pointCoordiantes(GridTopology, index);
 }
+
+template<typename Grid, typename T, int Size>
+DAX_EXEC_EXPORT dax::Tuple<T,Size> fieldAccessUniformCoordinatesGet(
+  const Grid &GridTopology,
+  const dax::Tuple<Id,Size>& indices)
+{
+  dax::Tuple<T,Size> result;
+  for(int i=0; i < Size; ++i)
+    {
+    result[i] = dax::internal::pointCoordiantes(GridTopology, indices[i]);
+    }
+  return result;
+}
+
 
 }}}
 

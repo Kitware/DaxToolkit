@@ -41,6 +41,8 @@ class ArrayContainerExecutionThrust
 {
 public:
   typedef T ValueType;
+  typedef typename ::thrust::device_vector<ValueType>::const_iterator const_iterator;
+  typedef typename ::thrust::device_vector<ValueType>::iterator iterator;
 
   /// On inital creation, no memory is allocated on the device.
   ///
@@ -60,6 +62,10 @@ public:
           "Failed to allocate execution array with thrust.");
       }
   }
+
+  /// Returns the length of the array
+  ///
+  dax::Id GetNumberOfEntries() const { return this->DeviceArray.size(); }
 
   /// Copies the data pointed to by the passed in \c iterators (assumed to be
   /// in the control environment), into the array in the execution environment
@@ -88,7 +94,17 @@ public:
   {
     return this->DeviceArray.begin();
   }
+  typename ::thrust::device_vector<ValueType>::const_iterator
+    GetBeginThrustIterator() const
+  {
+    return this->DeviceArray.begin();
+  }
   typename ::thrust::device_vector<ValueType>::iterator GetEndThrustIterator()
+  {
+    return this->DeviceArray.end();
+  }
+  typename ::thrust::device_vector<ValueType>::const_iterator
+    GetEndThrustIterator() const
   {
     return this->DeviceArray.end();
   }

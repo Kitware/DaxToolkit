@@ -20,7 +20,6 @@
 #ifdef DAX_DEFAULT_DEVICE_ADAPTER
 #undef DAX_DEFAULT_DEVICE_ADAPTER
 #endif
-
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cuda::cont::DeviceAdapterCuda
 
 //#define DAX_CUDA_NATIVE_SCHEDULE
@@ -31,7 +30,19 @@
 #include <dax/cuda/cont/ScheduleThrust.h>
 #endif
 
+#include <dax/cuda/cont/Copy.h>
+#include <dax/cuda/cont/LowerBounds.h>
+#include <dax/cuda/cont/StreamCompact.h>
+#include <dax/cuda/cont/Sort.h>
+#include <dax/cuda/cont/Unique.h>
 #include <dax/cuda/cont/internal/ArrayContainerExecutionThrust.h>
+
+namespace dax {
+namespace cont {
+  //forward declare the ArrayHandle before we use it.
+  template< typename OtherT, class OtherDeviceAdapter > class ArrayHandle;
+}
+}
 
 namespace dax {
 namespace cuda {
@@ -42,6 +53,35 @@ namespace cont {
 ///
 struct DeviceAdapterCuda
 {
+  template<typename T>
+  class ArrayContainerExecution
+      : public dax::cuda::cont::internal::ArrayContainerExecutionThrust<T>
+  { };
+
+  template<typename T>
+  static void Copy(const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& from,
+                         dax::cont::ArrayHandle<T,DeviceAdapterCuda>& to)
+    {
+    DAX_ASSERT_CONT(from.hasExecutionArray());
+    DAX_ASSERT_CONT(to.GetNumberOfEntries() >= from.GetNumberOfEntries());
+    to.ReadyAsOutput();
+    dax::cuda::cont::copy(from.GetExecutionArray(),to.GetExecutionArray());
+    }
+
+  template<typename T, typename U>
+  static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& input,
+                         const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& values,
+                         dax::cont::ArrayHandle<U,DeviceAdapterCuda>& output)
+    {
+    DAX_ASSERT_CONT(input.hasExecutionArray());
+    DAX_ASSERT_CONT(values.hasExecutionArray());
+    DAX_ASSERT_CONT(output.hasExecutionArray());
+    DAX_ASSERT_CONT(values.GetNumberOfEntries() <= output.GetNumberOfEntries());
+    dax::cuda::cont::lowerBounds(input.GetExecutionArray(),
+                                 values.GetExecutionArray(),
+                                 output.GetExecutionArray());
+    }
+
   template<class Functor, class Parameters>
   static void Schedule(Functor functor,
                        Parameters parameters,
@@ -55,9 +95,49 @@ struct DeviceAdapterCuda
   }
 
   template<typename T>
-  class ArrayContainerExecution
-      : public dax::cuda::cont::internal::ArrayContainerExecutionThrust<T>
-  { };
+  static void Sort(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& values)
+    {
+    DAX_ASSERT_CONT(values.hasExecutionArray());
+    dax::cuda::cont::sort(values.GetExecutionArray());
+    }
+
+  template<typename T,typename U>
+  static void StreamCompact(
+      const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& input,
+      dax::cont::ArrayHandle<U,DeviceAdapterCuda>& output)
+    {
+    //the input array is both the input and the stencil output for the scan
+    //step. In this case the index position is the input and the value at
+    //each index is the stencil value
+    dax::cuda::cont::streamCompact(input.GetExecutionArray(),
+                                  output.GetExecutionArray());
+    output.UpdateArraySize();
+    }
+
+  template<typename T,typename U>
+  static void StreamCompact(
+      const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& input,
+      const dax::cont::ArrayHandle<U,DeviceAdapterCuda>& stencil,
+      dax::cont::ArrayHandle<T,DeviceAdapterCuda>& output)
+    {
+    //the input array is both the input and the stencil output for the scan
+    //step. In this case the index position is the input and the value at
+    //each index is the stencil value
+    dax::cuda::cont::streamCompact(input.GetExecutionArray(),
+                                   stencil.GetExecutionArray(),
+                                   output.GetExecutionArray());
+    output.UpdateArraySize();
+    }
+  
+  template<typename T>
+  static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterCuda>& values)
+    {
+    DAX_ASSERT_CONT(values.hasExecutionArray());
+    dax::cuda::cont::unique(values.GetExecutionArray());
+    values.UpdateArraySize(); //unique might resize the execution array
+    }
+
+
 };
 
 }

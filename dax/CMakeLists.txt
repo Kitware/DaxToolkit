@@ -18,6 +18,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 set(headers
   Extent.h
+  Functional.h
   Types.h
   TypeTraits.h
   VectorTraits.h

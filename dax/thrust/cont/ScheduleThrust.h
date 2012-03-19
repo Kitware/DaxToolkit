@@ -26,7 +26,11 @@
 
 #include <thrust/copy.h>
 #include <thrust/iterator/counting_iterator.h>
+#include <thrust/device_ptr.h>
 #include <thrust/for_each.h>
+#include <thrust/iterator/zip_iterator.h>
+
+#include <boost/utility/enable_if.hpp>
 
 namespace dax {
 namespace thrust {
@@ -44,10 +48,10 @@ public:
       dax::thrust::cont::internal::ArrayContainerExecutionThrust<char> &errorArray)
     : Functor(functor),
       Parameters(parameters),
-      ErrorHandler(errorArray.GetExecutionArray()) { }
+      ErrorHandler(errorArray.GetExecutionArray()) {}
 
-  DAX_EXEC_EXPORT void operator()(dax::Id instance) {
-    this->Functor(this->Parameters, instance, this->ErrorHandler);
+  DAX_EXEC_EXPORT void operator()(dax::Id index) {
+    this->Functor(this->Parameters, index,this->ErrorHandler);
   }
 
 private:

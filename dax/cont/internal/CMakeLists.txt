@@ -19,10 +19,15 @@ set(headers
   DeviceAdapterError.h
   ExecutionPackageField.h
   ExecutionPackageGrid.h
+  ExtractCoordinates.h
+  ExtractTopology.h
   IteratorContainer.h
   IteratorPolymorphic.h
+  ScheduleMapAdapter.h
+  ScheduleRemoveCell.h
   Testing.h
   TestingDeviceAdapter.h
+  TestingGridGenerator.h
   )
 
 dax_declare_headers(${headers})

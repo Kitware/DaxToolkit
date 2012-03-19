@@ -20,7 +20,7 @@ set(headers
   Elevation.h
   Sine.h
   Square.h
-
+  Threshold.h
   testing/Assert.h
   testing/CellMapError.h
   testing/FieldMapError.h
@@ -34,7 +34,7 @@ set(unit_tests
   UnitTestWorkletElevation.cxx
   UnitTestWorkletSine.cxx
   UnitTestWorkletSquare.cxx
-
+  UnitTestWorkletThreshold.cxx
   UnitTestWorkletAssert.cxx
   UnitTestWorkletMapCellError.cxx
   UnitTestWorkletMapFieldError.cxx

@@ -85,18 +85,31 @@ typedef float Scalar __attribute__ ((aligned(DAX_SIZE_SCALAR)));
 
 #endif //DAX_USE_DOUBLE_PRECISION
 
-/// Vector3 corresponds to a 3-tuple
-class Vector3 {
-public:
-  typedef dax::Scalar ValueType;
-  static const int NUM_COMPONENTS = 3;
+/// Represents an ID.
+typedef int Id __attribute__ ((aligned(4)));
 
-  DAX_EXEC_CONT_EXPORT Vector3() { }
-  DAX_EXEC_CONT_EXPORT Vector3(ValueType x, ValueType y, ValueType z) {
-    this->Values[0] = x;
-    this->Values[1] = y;
-    this->Values[2] = z;
-  }
+/// Tuple corresponds to a Size-tuple of type T
+template<typename T, int Size>
+class Tuple {
+public:
+  typedef T ValueType;
+  static const int NUM_COMPONENTS=Size;
+
+  DAX_EXEC_CONT_EXPORT Tuple(){}
+  DAX_EXEC_CONT_EXPORT explicit Tuple(const ValueType& value)
+    {
+    for(int i=0; i < NUM_COMPONENTS;++i)
+      {
+      this->Values[i]=value;
+      }
+    }
+  DAX_EXEC_CONT_EXPORT explicit Tuple(const ValueType* values)
+    {
+    for(int i=0; i < NUM_COMPONENTS;++i)
+      {
+      this->Values[i]=values[i];
+      }
+    }
 
   DAX_EXEC_CONT_EXPORT const ValueType &operator[](int idx) const {
     return this->Values[idx];
@@ -105,17 +118,37 @@ public:
     return this->Values[idx];
   }
 
-private:
+protected:
   ValueType Values[NUM_COMPONENTS];
+};
+
+/// Vector3 corresponds to a 3-tuple
+class Vector3 : public dax::Tuple<dax::Scalar,3>{
+public:
+
+  DAX_EXEC_CONT_EXPORT Vector3() {}
+  DAX_EXEC_CONT_EXPORT explicit Vector3(const dax::Scalar& value):
+    dax::Tuple<dax::Scalar, 3>(value){}
+  DAX_EXEC_CONT_EXPORT explicit Vector3(const dax::Scalar* values):
+    dax::Tuple<dax::Scalar, 3>(values) { }
+
+  DAX_EXEC_CONT_EXPORT Vector3(ValueType x, ValueType y, ValueType z) {
+    this->Values[0] = x;
+    this->Values[1] = y;
+    this->Values[2] = z;
+  }
 } __attribute__ ((aligned(DAX_SIZE_SCALAR)));
 
-/// Vector4 corresponds to a 3-tuple
-class Vector4 {
+/// Vector4 corresponds to a 4-tuple
+class Vector4 : public dax::Tuple<Scalar,4>{
 public:
-  typedef dax::Scalar ValueType;
-  static const int NUM_COMPONENTS = 4;
 
-  DAX_EXEC_CONT_EXPORT Vector4() { }
+  DAX_EXEC_CONT_EXPORT Vector4() {}
+  DAX_EXEC_CONT_EXPORT explicit Vector4(const dax::Scalar& value):
+    dax::Tuple<dax::Scalar, 4>(value){}
+  DAX_EXEC_CONT_EXPORT explicit Vector4(const dax::Scalar* values):
+    dax::Tuple<dax::Scalar, 4>(values) { }
+
   DAX_EXEC_CONT_EXPORT
   Vector4(ValueType x, ValueType y, ValueType z, ValueType w) {
     this->Values[0] = x;
@@ -123,17 +156,8 @@ public:
     this->Values[2] = z;
     this->Values[3] = w;
   }
-
-  DAX_EXEC_CONT_EXPORT const ValueType &operator[](int idx) const {
-    return this->Values[idx];
-  }
-  DAX_EXEC_CONT_EXPORT ValueType &operator[](int idx) {
-    return this->Values[idx];
-  }
-
-private:
-  ValueType Values[NUM_COMPONENTS];
 } __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+
 
 namespace internal {
 
@@ -172,27 +196,20 @@ typedef internal::Int64Type Id __attribute__ ((aligned(DAX_SIZE_ID)));
 
 /// Id3 corresponds to a 3-dimensional index for 3d arrays.  Note that
 /// the precision of each index may be less than dax::Id.
-class Id3 {
+class Id3 : public dax::Tuple<dax::Id,3>{
 public:
-  typedef dax::Id ValueType;
-  static const int NUM_COMPONENTS = 3;
 
-  DAX_EXEC_CONT_EXPORT Id3() { }
+  DAX_EXEC_CONT_EXPORT Id3() {}
+  DAX_EXEC_CONT_EXPORT explicit Id3(const dax::Id& value):
+    dax::Tuple<dax::Id, 3>(value){}
+  DAX_EXEC_CONT_EXPORT explicit Id3(const dax::Id* values):
+    dax::Tuple<dax::Id, 3>(values) { }
+
   DAX_EXEC_CONT_EXPORT Id3(ValueType x, ValueType y, ValueType z) {
     this->Values[0] = x;
     this->Values[1] = y;
     this->Values[2] = z;
   }
-
-  DAX_EXEC_CONT_EXPORT const ValueType &operator[](int idx) const {
-    return this->Values[idx];
-  }
-  DAX_EXEC_CONT_EXPORT ValueType &operator[](int idx) {
-    return this->Values[idx];
-  }
-
-private:
-  ValueType Values[NUM_COMPONENTS];
 } __attribute__ ((aligned(DAX_SIZE_ID)));
 
 /// Initializes and returns a Vector3.

@@ -30,16 +30,17 @@ DAX_EXEC_EXPORT T cellInterpolate(const WorkType &work,
                                   const dax::Vector3 &pcoords,
                                   const dax::exec::FieldPoint<T> &point_field)
 {
-  const dax::Id numVerts = 8;
+  const dax::Id numVerts = dax::exec::CellVoxel::NUM_POINTS;
+  typedef dax::Tuple<T,numVerts> FieldTuple;
 
   dax::Scalar weights[numVerts];
   dax::exec::internal::interpolationWeightsVoxel(pcoords, weights);
 
+  FieldTuple values = work.GetFieldValues(point_field);
   T result = 0;
   for (dax::Id vertexId = 0; vertexId < numVerts; vertexId++)
     {
-    T value = work.GetFieldValue(point_field, vertexId);
-    result += value * weights[vertexId];
+    result += values[vertexId] * weights[vertexId];
     }
 
   return result;

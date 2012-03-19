@@ -63,6 +63,26 @@ namespace cont {
 /// If an error is raised, the string that was raised is returned. Otherwise,
 /// NULL or a zero-length string is returned.
 
+/// \fn template<typename T, typename U> void DeviceAdapter::StreamCompact(const dax::cont::ArrayHandle<T>&input, dax::cont::ArrayHandle<U>& output)
+/// \brief Performs stream compaction to remove unwanted elements in the input array.
+///
+/// Calls the parallel primitive function of stream compaction on the \c input
+/// to remove unwanted elements. The result of the stream compaction is placed
+/// in \c output. The \c input values are used as the stream compaction stencil
+/// while \c input indices are used as the values to place into \c ouput.
+/// The size of \c output will be modified after this call as we can't know
+/// the number of elements that will be removed by the stream compaction algorithm.
+
+/// \fn template<typename T, typename U> void DeviceAdapter::StreamCompact(const dax::cont::ArrayHandle<T>&input, const dax::cont::ArrayHandle<U>& stencil, dax::cont::ArrayHandle<T>& output)
+/// \brief Performs stream compaction to remove unwanted elements in the input array.
+///
+/// Calls the parallel primitive function of stream compaction on the \c input
+/// to remove unwanted elements. The result of the stream compaction is placed
+/// in \c output. The values in \c stencil are used as the stream compaction stencil
+/// while \c input values are placed into \c ouput.
+/// The size of \c output will be modified after this call as we can't know
+/// the number of elements that will be removed by the stream compaction algorithm.
+
 /// \class template<class T> DeviceAdapter::ArrayContainerExecution<T>
 /// \brief Class that manages data in the execution environment.
 ///
@@ -99,5 +119,11 @@ namespace cont {
 
 }
 }
+
+//forward declare all the different device adapters so that
+//ArrayHandle can be use them as a friend class
+namespace dax { namespace cont { struct DeviceAdapterDebug; }}
+namespace dax { namespace cuda { namespace cont { struct DeviceAdapterCuda; }}}
+namespace dax { namespace openmp {  namespace cont { struct DeviceAdapterOpenMP; }}}
 
 #endif //__dax_cont_DeviceAdapter_h

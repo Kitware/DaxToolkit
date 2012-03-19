@@ -19,6 +19,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 set(headers
   ArrayHandle.h
   Assert.h
+  CopyDebug.h
   DeviceAdapter.h
   DeviceAdapterDebug.h
   Error.h
@@ -27,12 +28,16 @@ set(headers
   ErrorControlBadValue.h
   ErrorControlOutOfMemory.h
   ErrorExecution.h
+  LowerBoundsDebug.h
   ScheduleDebug.h
+  SortDebug.h
+  StreamCompactDebug.h
   UniformGrid.h
-
+  UniqueDebug.h
+  UnstructuredGrid.h
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
   )
-
+#-----------------------------------------------------------------------------
 add_subdirectory(internal)
 
 dax_declare_headers(${impl_headers} ${headers})

@@ -25,6 +25,7 @@ set(headers
   ParametricCoordinates.h
   WorkMapCell.h
   WorkMapField.h
+  WorkRemoveCell.h
 
   ${Dax_BINARY_DIR}/dax/exec/VectorOperations.h
 )

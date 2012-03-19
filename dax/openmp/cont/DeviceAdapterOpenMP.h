@@ -23,8 +23,20 @@
 
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::openmp::cont::DeviceAdapterOpenMP
 
+#include <dax/openmp/cont/Copy.h>
+#include <dax/openmp/cont/LowerBounds.h>
 #include <dax/openmp/cont/ScheduleThrust.h>
+#include <dax/openmp/cont/StreamCompact.h>
+#include <dax/openmp/cont/Sort.h>
+#include <dax/openmp/cont/Unique.h>
 #include <dax/openmp/cont/internal/ArrayContainerExecutionThrust.h>
+
+namespace dax {
+namespace cont {
+  //forward declare the ArrayHandle before we use it.
+  template< typename OtherT, class OtherDeviceAdapter > class ArrayHandle;
+}
+}
 
 namespace dax {
 namespace openmp {
@@ -35,6 +47,35 @@ namespace cont {
 ///
 struct DeviceAdapterOpenMP
 {
+  template<typename T>
+  class ArrayContainerExecution
+      : public dax::openmp::cont::internal::ArrayContainerExecutionThrust<T>
+  { };
+
+  template<typename T>
+  static void Copy(const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& from,
+                         dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& to)
+    {
+    DAX_ASSERT_CONT(from.hasExecutionArray());
+    DAX_ASSERT_CONT(to.GetNumberOfEntries() >= from.GetNumberOfEntries());
+    to.ReadyAsOutput();
+    dax::openmp::cont::copy(from.GetExecutionArray(),to.GetExecutionArray());
+    }
+
+  template<typename T, typename U>
+  static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& input,
+                         const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& values,
+                         dax::cont::ArrayHandle<U,DeviceAdapterOpenMP>& output)
+    {
+    DAX_ASSERT_CONT(input.hasExecutionArray());
+    DAX_ASSERT_CONT(values.hasExecutionArray());
+    DAX_ASSERT_CONT(output.hasExecutionArray());
+    DAX_ASSERT_CONT(values.GetNumberOfEntries() <= output.GetNumberOfEntries());
+    dax::openmp::cont::lowerBounds(input.GetExecutionArray(),
+                                   values.GetExecutionArray(),
+                                   output.GetExecutionArray());
+    }
+
   template<class Functor, class Parameters>
   static void Schedule(Functor functor,
                        Parameters parameters,
@@ -44,9 +85,47 @@ struct DeviceAdapterOpenMP
   }
 
   template<typename T>
-  class ArrayContainerExecution
-      : public dax::openmp::cont::internal::ArrayContainerExecutionThrust<T>
-  { };
+  static void Sort(dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& values)
+    {
+    DAX_ASSERT_CONT(values.hasExecutionArray());
+    dax::openmp::cont::sort(values.GetExecutionArray());
+    }
+
+  template<typename T,typename U>
+  static void StreamCompact(
+      const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& input,
+      dax::cont::ArrayHandle<U,DeviceAdapterOpenMP>& output)
+    {
+    //the input array is both the input and the stencil output for the scan
+    //step. In this case the index position is the input and the value at
+    //each index is the stencil value
+    dax::openmp::cont::streamCompact(input.GetExecutionArray(),
+                                  output.GetExecutionArray());
+    output.UpdateArraySize();
+    }
+
+  template<typename T, typename U>
+  static void StreamCompact(
+      const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& input,
+      const dax::cont::ArrayHandle<U,DeviceAdapterOpenMP>& stencil,
+      dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& output)
+    {
+    //the input array is both the input and the stencil output for the scan
+    //step. In this case the index position is the input and the value at
+    //each index is the stencil value
+    dax::openmp::cont::streamCompact(input.GetExecutionArray(),
+                                     stencil.GetExecutionArray(),
+                                     output.GetExecutionArray());
+    output.UpdateArraySize();
+    }
+
+  template<typename T>
+  static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& values)
+    {
+    DAX_ASSERT_CONT(values.hasExecutionArray());
+    dax::openmp::cont::unique(values.GetExecutionArray());
+    values.UpdateArraySize(); //unique might resize the execution array
+    }
 };
 
 }

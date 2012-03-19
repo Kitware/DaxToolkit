@@ -20,6 +20,7 @@
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
 #include <dax/cont/UniformGrid.h>
+#include <dax/cont/UnstructuredGrid.h>
 
 #include <dax/cont/worklet/CellGradient.h>
 #include <dax/cont/worklet/Square.h>
@@ -28,6 +29,8 @@
 
 #include <dax/cont/internal/IteratorContainer.h>
 #include <dax/cont/internal/Testing.h>
+#include <dax/cont/internal/TestingGridGenerator.h>
+#include <dax/cont/internal/ScheduleMapAdapter.h>
 
 #include <dax/internal/DataArray.h>
 
@@ -60,6 +63,16 @@ public:
     }
   };
 
+  struct ClearArrayMapKernel
+  {
+    DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id> array,
+                                    dax::Id, dax::Id value,
+                                    dax::exec::internal::ErrorHandler &)
+    {
+      array.SetValue(value, OFFSET);
+    }
+  };
+
   struct AddArrayKernel
   {
     DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id> array,
@@ -88,6 +101,26 @@ public:
         dax::Id, dax::Id, dax::exec::internal::ErrorHandler &errorHandler)
     {
       errorHandler.RaiseError(ERROR_MESSAGE);
+    }
+  };
+
+  struct OffsetPlusIndexKernel
+  {
+    DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id> array,
+                                    dax::Id index,
+                                    dax::exec::internal::ErrorHandler &)
+    {
+      array.SetValue(index,OFFSET + index);
+    }
+  };
+
+  struct MarkOddNumbersKernel
+  {
+    DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id> array,
+                                    dax::Id index,
+                                    dax::exec::internal::ErrorHandler &)
+    {
+      array.SetValue(index,index%2);
     }
   };
 
@@ -188,6 +221,184 @@ private:
       DAX_TEST_ASSERT(value == index + OFFSET,
                       "Got bad value for scheduled kernels.");
       }
+
+    std::cout << "Testing Schedule on Subset" << std::endl;
+    std::vector<dax::Id> rawsubset(4);
+    rawsubset[0]=0;rawsubset[1]=10;rawsubset[2]=30;rawsubset[3]=20;
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> subset(rawsubset.begin(),
+                                                         rawsubset.end());
+
+    std::cout << "Running clear on subset." << std::endl;
+    dax::cont::internal::ScheduleMap(ClearArrayMapKernel(),
+                                     array.GetExecutionArray(),
+                                     subset);
+    array.CopyFromExecutionToControl(arrayContainer);
+
+    for (dax::Id index = 0; index < 4; index++)
+      {
+      dax::Id value = controlArray[rawsubset[index]];
+      DAX_TEST_ASSERT(value == OFFSET,
+                      "Got bad value for subset scheduled kernel.");
+      }
+
+  }
+
+  static DAX_CONT_EXPORT void TestStreamCompact()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing Stream Compact" << std::endl;
+
+    //test the version of compact that takes in input and uses it as a stencil
+    //and uses the index of each item as the value to place in the result vector
+    typedef dax::cont::ArrayHandle<dax::Id, DeviceAdapter> Handle;
+    Handle array(ARRAY_SIZE);
+    Handle result;
+
+    //construct the index array
+
+    DeviceAdapter::Schedule(MarkOddNumbersKernel(),
+                             array.ReadyAsOutput(),
+                             ARRAY_SIZE);
+
+    DeviceAdapter::StreamCompact(array,result);
+    DAX_TEST_ASSERT(result.GetNumberOfEntries() == array.GetNumberOfEntries()/2,
+                    "result of compacation has an incorrect size");
+
+    std::vector<dax::Id> resultHost;
+    resultHost.resize(result.GetNumberOfEntries());
+
+    //set the control array after stream compact as we didn't
+    //know the size before hand
+    result.SetNewControlData(resultHost.begin(), resultHost.end());
+
+    //now pull the results from the execution env to the control env
+    result.CompleteAsOutput();
+
+    dax::Id index=0;
+    for(std::vector<dax::Id>::const_iterator i = resultHost.begin();
+        i != resultHost.end();
+        ++i,++index)
+      {
+      const dax::Id value = *i;
+      DAX_TEST_ASSERT(value == (index*2)+1,
+                  "Incorrect value in compaction result.");
+      }
+  }
+
+  static DAX_CONT_EXPORT void TestStreamCompactWithStencil()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing Stream Compact with stencil" << std::endl;
+
+    //test the version of compact that takes in input and a stencil
+    typedef dax::cont::ArrayHandle<dax::Id, DeviceAdapter> Handle;
+
+    Handle array(ARRAY_SIZE);
+    Handle stencil(ARRAY_SIZE);
+    Handle result;
+
+    //construct the index array
+    DeviceAdapter::Schedule(OffsetPlusIndexKernel(),
+                            array.ReadyAsOutput(),
+                            ARRAY_SIZE);
+    DeviceAdapter::Schedule(MarkOddNumbersKernel(),
+                            stencil.ReadyAsOutput(),
+                            ARRAY_SIZE);
+
+    DeviceAdapter::StreamCompact(array,stencil,result);
+    DAX_TEST_ASSERT(result.GetNumberOfEntries() == array.GetNumberOfEntries()/2,
+                    "result of compacation has an incorrect size");
+
+    std::vector<dax::Id> resultHost;
+    resultHost.resize(result.GetNumberOfEntries());
+    //get the results from the execution env
+    result.SetNewControlData(resultHost.begin(), resultHost.end());
+
+    //copy the results from exec env to cont env
+    result.CompleteAsOutput();
+
+    dax::Id index=0;
+    for(std::vector<dax::Id>::const_iterator i = resultHost.begin();
+        i != resultHost.end();
+        ++i,++index)
+      {
+      const dax::Id value = *i;
+      DAX_TEST_ASSERT(value == (OFFSET + (index*2)+1),
+                  "Incorrect value in compaction result.");
+      }
+  }
+
+  static DAX_CONT_EXPORT void TestOrderedUniqueValues()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing Sort, Unique, and LowerBounds" << std::endl;
+    std::vector<dax::Id> testData(ARRAY_SIZE);
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      testData[i]= OFFSET+(i % 50);
+      }
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> handle(testData.begin(),
+                                                         testData.end());
+
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> temp(handle.GetNumberOfEntries());
+    handle.ReadyAsInput(); //make sure the array is ready for copying
+    DeviceAdapter::Copy(handle,temp);
+    DeviceAdapter::Sort(temp);
+    DeviceAdapter::Unique(temp);
+    DeviceAdapter::LowerBounds(temp,handle,handle);
+    temp.ReleaseExecutionResources();
+
+    handle.CompleteAsOutput();
+
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      dax::Id value = testData[i];
+      DAX_TEST_ASSERT(value == i % 50, "Got bad value");
+      }
+
+    std::cout << "Testing Sort, Unique, and LowerBounds with random values" << std::endl;
+    //now test it works when the id are not incrementing
+    std::vector<dax::Id> randomData(6);
+    randomData[0]=500;  //2
+    randomData[1]=955;  //3
+    randomData[2]=955;  //3
+    randomData[3]=120;  //0
+    randomData[4]=320;  //1
+    randomData[5]=955;  //3
+
+    //change the control structure under the handle
+    handle = dax::cont::ArrayHandle<dax::Id,DeviceAdapter>(randomData.begin(),
+                                                           randomData.end());
+    DAX_TEST_ASSERT(handle.GetNumberOfEntries() ==
+                    static_cast<dax::Id>(randomData.size()),
+                    "Handle incorrect size after setting new control data");
+
+    //change temps control structure
+    temp.ReleaseExecutionResources();
+    temp = dax::cont::ArrayHandle<dax::Id,DeviceAdapter>(
+                                              handle.GetNumberOfEntries());
+
+    handle.ReadyAsInput();
+    DeviceAdapter::Copy(handle,temp);
+    DAX_TEST_ASSERT(temp.GetNumberOfEntries() ==
+                    static_cast<dax::Id>(randomData.size()),
+                    "Copy failed");
+    DeviceAdapter::Sort(temp);
+    DeviceAdapter::Unique(temp);
+    DeviceAdapter::LowerBounds(temp,handle,handle);
+    temp.ReleaseExecutionResources();
+
+    handle.CompleteAsOutput();
+    DAX_TEST_ASSERT(handle.GetNumberOfEntries() ==
+                    static_cast<dax::Id>(randomData.size()),
+                    "LowerBounds returned incorrect size");
+
+    DAX_TEST_ASSERT(randomData[0] == 2, "Got bad value");
+    DAX_TEST_ASSERT(randomData[1] == 3, "Got bad value");
+    DAX_TEST_ASSERT(randomData[2] == 3, "Got bad value");
+    DAX_TEST_ASSERT(randomData[3] == 0, "Got bad value");
+    DAX_TEST_ASSERT(randomData[4] == 1, "Got bad value");
+    DAX_TEST_ASSERT(randomData[5] == 3, "Got bad value");
   }
 
   static DAX_CONT_EXPORT void TestErrorExecution()
@@ -224,37 +435,40 @@ private:
                     "Did not get expected error message.");
   }
 
+  template<typename GridType>
   static DAX_CONT_EXPORT void TestWorkletMapField()
   {
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing basic map field worklet" << std::endl;
 
-    dax::cont::UniformGrid grid;
-    grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+    //use a scoped pointer that constructs and fills a grid of the
+    //right type
+    dax::cont::internal::TestGrid<GridType,DeviceAdapter> grid(DIM);
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
-    std::vector<dax::Scalar> field(grid.GetNumberOfPoints());
+    std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
+    std::cout << "Number of Points in the grid" <<  grid->GetNumberOfPoints() << std::endl;
     for (dax::Id pointIndex = 0;
-         pointIndex < grid.GetNumberOfPoints();
+         pointIndex < grid->GetNumberOfPoints();
          pointIndex++)
       {
       field[pointIndex]
-          = dax::dot(grid.GetPointCoordinates(pointIndex), trueGradient);
+          = dax::dot(grid->GetPointCoordinates(pointIndex), trueGradient);
       }
     dax::cont::ArrayHandle<dax::Scalar, DeviceAdapter>
         fieldHandle(field.begin(), field.end());
 
-    std::vector<dax::Scalar> square(grid.GetNumberOfPoints());
+    std::vector<dax::Scalar> square(grid->GetNumberOfPoints());
     dax::cont::ArrayHandle<dax::Scalar, DeviceAdapter>
         squareHandle(square.begin(), square.end());
 
     std::cout << "Running Square worklet" << std::endl;
-    dax::cont::worklet::Square(grid, fieldHandle, squareHandle);
+    dax::cont::worklet::Square(grid.GetRealGrid(), fieldHandle, squareHandle);
 
     std::cout << "Checking result" << std::endl;
     for (dax::Id pointIndex = 0;
-         pointIndex < grid.GetNumberOfPoints();
+         pointIndex < grid->GetNumberOfPoints();
          pointIndex++)
       {
       dax::Scalar squareValue = square[pointIndex];
@@ -264,20 +478,20 @@ private:
       }
   }
 
+  template<typename GridType>
   static DAX_CONT_EXPORT void TestWorkletFieldMapError()
   {
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing map field worklet error" << std::endl;
 
-    dax::cont::UniformGrid grid;
-    grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+    dax::cont::internal::TestGrid<GridType,DeviceAdapter> grid(DIM);
 
     std::cout << "Running field map worklet that errors" << std::endl;
     bool gotError = false;
     try
       {
       dax::cont::worklet::testing::FieldMapError
-          <dax::cont::UniformGrid, DeviceAdapter>(grid);
+          <GridType, DeviceAdapter>(grid.GetRealGrid());
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -289,41 +503,40 @@ private:
     DAX_TEST_ASSERT(gotError, "Never got the error thrown.");
   }
 
-
+  template<typename GridType>
   static DAX_CONT_EXPORT void TestWorkletMapCell()
   {
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing basic map cell worklet" << std::endl;
 
-    dax::cont::UniformGrid grid;
-    grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+    dax::cont::internal::TestGrid<GridType,DeviceAdapter> grid(DIM);
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
-    std::vector<dax::Scalar> field(grid.GetNumberOfPoints());
+    std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
     for (dax::Id pointIndex = 0;
-         pointIndex < grid.GetNumberOfPoints();
+         pointIndex < grid->GetNumberOfPoints();
          pointIndex++)
       {
       field[pointIndex]
-          = dax::dot(grid.GetPointCoordinates(pointIndex), trueGradient);
+          = dax::dot(grid->GetPointCoordinates(pointIndex), trueGradient);
       }
     dax::cont::ArrayHandle<dax::Scalar, DeviceAdapter>
         fieldHandle(field.begin(), field.end());
 
-    std::vector<dax::Vector3> gradient(grid.GetNumberOfCells());
+    std::vector<dax::Vector3> gradient(grid->GetNumberOfCells());
     dax::cont::ArrayHandle<dax::Vector3, DeviceAdapter>
         gradientHandle(gradient.begin(), gradient.end());
 
     std::cout << "Running CellGradient worklet" << std::endl;
-    dax::cont::worklet::CellGradient(grid,
-                                     grid.GetPoints(),
+    dax::cont::worklet::CellGradient(grid.GetRealGrid(),
+                                     grid->GetPoints(),
                                      fieldHandle,
                                      gradientHandle);
 
     std::cout << "Checking result" << std::endl;
     for (dax::Id cellIndex = 0;
-         cellIndex < grid.GetNumberOfCells();
+         cellIndex < grid->GetNumberOfCells();
          cellIndex++)
       {
       dax::Vector3 gradientValue = gradient[cellIndex];
@@ -332,20 +545,20 @@ private:
       }
   }
 
+  template<typename GridType>
   static DAX_CONT_EXPORT void TestWorkletCellMapError()
   {
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing map cell worklet error" << std::endl;
 
-    dax::cont::UniformGrid grid;
-    grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+    dax::cont::internal::TestGrid<GridType,DeviceAdapter> grid(DIM);
 
     std::cout << "Running cell map worklet that errors" << std::endl;
     bool gotError = false;
     try
       {
       dax::cont::worklet::testing::CellMapError
-          <dax::cont::UniformGrid, DeviceAdapter>(grid);
+          <GridType, DeviceAdapter>(grid.GetRealGrid());
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -359,17 +572,31 @@ private:
 
   struct TestAll
   {
+    template<typename GridType>
+    DAX_CONT_EXPORT void WorkletTests()
+      {
+      TestWorkletMapField<GridType>();
+      TestWorkletFieldMapError<GridType>();
+      TestWorkletMapCell<GridType>();
+      TestWorkletCellMapError<GridType>();
+      }
+
     DAX_CONT_EXPORT void operator()()
     {
       std::cout << "Doing DeviceAdapter tests" << std::endl;
       TestArrayContainerExecution();
       TestOutOfMemory();
       TestSchedule();
+      TestStreamCompact();
+      TestStreamCompactWithStencil();
+      TestOrderedUniqueValues();
       TestErrorExecution();
-      TestWorkletMapField();
-      TestWorkletFieldMapError();
-      TestWorkletMapCell();
-      TestWorkletCellMapError();
+
+      std::cout << "Doing Worklet tests with UniformGrid" << std::endl;
+      WorkletTests<dax::cont::UniformGrid>();
+
+      std::cout << "Doing Worklet tests with UnstructuredGrid" << std::endl;
+      WorkletTests<dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> >();
     }
   };
 
