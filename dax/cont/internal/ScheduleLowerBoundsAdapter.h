@@ -87,10 +87,10 @@ DAX_CONT_EXPORT void ScheduleLowerBounds(
 
   //use the new cell index array and the values array to generate
   //the lower bounds array
+  DeviceAdapter::LowerBounds(values,lowerBoundsResult,lowerBoundsResult);
 
   //with those two arrays we can now schedule the functor on each of those
   //items where me map
-
   LowerBoundsFunctor lowerBoundsFunctor(functor,
                                         values.ReadyAsInput(),
                                         lowerBoundsResult.ReadyAsInput());
