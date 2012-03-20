@@ -74,7 +74,7 @@ struct DeviceAdapterCuda
                             dax::cont::ArrayHandle<T,DeviceAdapterCuda>& output)
     {
     return dax::cuda::cont::inclusiveScan(input.GetExecutionArray(),
-                                            output.GetExecutionArray());
+                                          output.GetExecutionArray());
     }
 
   template<typename T, typename U>

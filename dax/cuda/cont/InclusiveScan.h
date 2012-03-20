@@ -26,9 +26,9 @@ namespace cont {
 
 
 template<typename T>
-DAX_CONT_EXPORT void inclusiveScan(const T &from, T& to)
+DAX_CONT_EXPORT typename T::ValueType inclusiveScan(const T &from, T& to)
 {
-  dax::thrust::cont::inclusiveScan(from,to);
+  return dax::thrust::cont::inclusiveScan(from,to);
 }
 
 }

@@ -36,7 +36,7 @@ DAX_CONT_EXPORT T inclusiveScan(
                                          to.GetBeginThrustIterator());
 
   //return the value at the last index in the array, as that is the size
-  if(::thrust::distance(to.begin(),result) > 0)
+  if(::thrust::distance(to.GetBeginThrustIterator(),result) > 0)
     {
     return *(--result);
     }
