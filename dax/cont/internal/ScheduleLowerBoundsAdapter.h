@@ -21,6 +21,10 @@
 #include <dax/internal/DataArray.h>
 #include <dax/cont/ArrayHandle.h>
 
+
+#include <iostream>
+#include <boost/timer.hpp>
+
 namespace dax {
 namespace exec {
 namespace kernel {
@@ -77,6 +81,9 @@ DAX_CONT_EXPORT void ScheduleLowerBounds(
 {
   typedef dax::exec::kernel::internal::ScheduleLowerBoundsMapAdapter<Functor> LowerBoundsFunctor;
 
+  boost::timer bt;
+  bt.restart();
+
   const dax::Id size(values.GetNumberOfEntries());
   //create a temporary list of all the values from 1 to size+1
   //this is the new cell index off by 1
@@ -84,10 +91,16 @@ DAX_CONT_EXPORT void ScheduleLowerBounds(
   DeviceAdapter::Schedule(dax::exec::kernel::internal::ScheduleInc(),
                           lowerBoundsResult.ReadyAsOutput(),
                           size);
+  lowerBoundsResult.CompleteAsOutput();
+  std::cout << "    ScheduleInc time " << bt.elapsed() << std::endl;
+  bt.restart();
 
   //use the new cell index array and the values array to generate
   //the lower bounds array
   DeviceAdapter::LowerBounds(values,lowerBoundsResult,lowerBoundsResult);
+  lowerBoundsResult.CompleteAsOutput();
+  std::cout << "    Lower Bounds " << bt.elapsed() << std::endl;
+  bt.restart();
 
   //with those two arrays we can now schedule the functor on each of those
   //items where me map
@@ -96,6 +109,8 @@ DAX_CONT_EXPORT void ScheduleLowerBounds(
                                         lowerBoundsResult.ReadyAsInput());
 
   DeviceAdapter::Schedule(lowerBoundsFunctor,parameters,size);
+  std::cout << "    Topology Schedule Call time  " << bt.elapsed() << std::endl;
+  bt.restart();
 }
 
 }}}

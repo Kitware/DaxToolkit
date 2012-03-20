@@ -34,6 +34,9 @@
 #include <dax/cont/internal/ScheduleMapAdapter.h>
 #include <dax/cont/internal/ScheduleLowerBoundsAdapter.h>
 
+#include <iostream>
+#include <boost/timer.hpp>
+
 namespace dax {
 namespace exec {
 namespace kernel {
@@ -120,9 +123,19 @@ public:
   void run(const InGridType& inGrid,
            OutGridType& outGrid)
     {
+    boost::timer mt;
+
+    mt.restart();
     this->ScheduleClassification(inGrid);
+    std::cout << "ScheduleClassification: " << mt.elapsed() << std::endl;
+
+    mt.restart();
     this->ScheduleTopology(inGrid,outGrid);
+    std::cout << "ScheduleTopology: " << mt.elapsed() << std::endl;
+
+    mt.restart();
     this->GenerateNewTopology(inGrid,outGrid);
+    std::cout << "GenerateNewTopology: " << mt.elapsed() << std::endl;
     }
 
 /// \fn template <typename WorkType> Parameters GenerateClassificationParameters(const GridType& grid)
@@ -186,9 +199,26 @@ protected:
     //generate the lower index for each cell id by using inclusive scan,
     //this is required for the lower bounds schedule to generate the key
     //value pair for each id mapping
+    boost::timer bt;
+    bt.restart();
+
+    //The first thing we need to do is reduce the cell counts
+    //from an array of values to an array that only holds non zero values. The
+    //reason that this is important is that it reduces the number of values
+    //the lower bounds call will have to iterate over which makes a massive difference
+    //Without the compataction it takes 1sec to do the topology generation, with it
+    //it takes 0.02sec
     dax::cont::ArrayHandle<dax::Id> scanResult;
-    dax::Id newTopoSize =
-        DeviceAdapter::InclusiveScan(this->NewCellCountHandle,scanResult);
+    DeviceAdapter::StreamCompact(this->NewCellCountHandle,this->NewCellCountHandle,scanResult);
+    std::cout << " Stream Compact time " << bt.elapsed() << std::endl;
+
+    bt.restart();
+
+    dax::Id newTopoSize = DeviceAdapter::InclusiveScan(scanResult,scanResult);
+    scanResult.CompleteAsOutput();
+
+    std::cout << " Inclusive Scan time " << bt.elapsed() << std::endl;
+    bt.restart();
 
     dax::cont::ArrayHandle<dax::Id> newTopology(newTopoSize);
     dax::cont::internal::ExecutionPackageFieldOutput<dax::Id,DeviceAdapter> packagedTopo(
@@ -202,6 +232,7 @@ protected:
     dax::cont::internal::ScheduleLowerBounds(FunctorTopology(),
                                              params,
                                              scanResult);
+    std::cout << "  ScheduleLowerBounds " << bt.elapsed() << std::endl;
   }
 
   template<typename InGridType,typename OutGridType>

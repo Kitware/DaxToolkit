@@ -68,6 +68,9 @@ struct DeviceAdapterDebug
   static T InclusiveScan(const dax::cont::ArrayHandle<T,DeviceAdapterDebug> &input,
                             dax::cont::ArrayHandle<T,DeviceAdapterDebug>& output)
     {
+    DAX_ASSERT_CONT(input.hasExecutionArray());
+    DAX_ASSERT_CONT(output.GetNumberOfEntries() == input.GetNumberOfEntries());
+    output.ReadyAsOutput();
     return dax::cont::inclusiveScanDebug(input.GetExecutionArray(),
                                          output.GetExecutionArray());
     }
@@ -78,9 +81,9 @@ struct DeviceAdapterDebug
                          dax::cont::ArrayHandle<U,DeviceAdapterDebug>& output)
     {
     DAX_ASSERT_CONT(input.hasExecutionArray());
-    DAX_ASSERT_CONT(values.hasExecutionArray());
-    DAX_ASSERT_CONT(output.hasExecutionArray());
+    DAX_ASSERT_CONT(values.hasExecutionArray());    
     DAX_ASSERT_CONT(values.GetNumberOfEntries() <= output.GetNumberOfEntries());
+    output.ReadyAsOutput();
     dax::cont::lowerBoundsDebug(input.GetExecutionArray(),
                                 values.GetExecutionArray(),
                                 output.GetExecutionArray());
@@ -110,6 +113,7 @@ struct DeviceAdapterDebug
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
     //each index is the stencil value
+    DAX_ASSERT_CONT(input.hasExecutionArray());
     dax::cont::streamCompactDebug(input.GetExecutionArray(),
                                   output.GetExecutionArray());
     output.UpdateArraySize();
@@ -124,6 +128,8 @@ struct DeviceAdapterDebug
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
     //each index is the stencil value
+    DAX_ASSERT_CONT(input.hasExecutionArray());
+    DAX_ASSERT_CONT(stencil.hasExecutionArray());
     dax::cont::streamCompactDebug(input.GetExecutionArray(),
                                   stencil.GetExecutionArray(),
                                   output.GetExecutionArray());
