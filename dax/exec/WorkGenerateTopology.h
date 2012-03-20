@@ -74,7 +74,7 @@ public:
   DAX_EXEC_EXPORT void SetOutputTopology(const OutputPointIds &topology)
   {
     dax::exec::internal::fieldAccessNormalSet(this->OutputTopology,
-                                              this->OutputIndex,
+                                              this->OutputIndex*OutputCellType::NUM_POINTS, //needs to be the index into the topology array
                                               topology);
   }
 
