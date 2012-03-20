@@ -80,6 +80,9 @@ void RunVTKPipeline(const dax::cont::UniformGrid &dgrid, vtkImageData* grid)
   
   std::cout << "original GetNumberOfCells: " << dgrid.GetNumberOfCells() << std::endl;
   std::cout << "threshold GetNumberOfCells: " << out->GetNumberOfCells() << std::endl;
+
+  std::cout << "original GetNumberOfPoints: " << dgrid.GetNumberOfPoints() << std::endl;
+  std::cout << "threshold GetNumberOfPoints: " << out->GetNumberOfPoints() << std::endl;
   PrintResults(1, time, "VTK");
 }
 
