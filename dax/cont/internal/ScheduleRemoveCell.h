@@ -32,7 +32,6 @@
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 #include <dax/cont/internal/ExtractCoordinates.h>
 #include <dax/cont/internal/ScheduleMapAdapter.h>
-#include <dax/cont/internal/ScheduleLowerBoundsAdapter.h>
 
 #include <iostream>
 #include <boost/timer.hpp>
@@ -71,6 +70,16 @@ struct GenerateTopologyParameters
   dax::exec::Field<dax::Id> outputTopology;
 };
 
+
+struct LowerBoundsInputFunctor
+{
+DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id> array,
+                                dax::Id index,
+                                dax::exec::internal::ErrorHandler &)
+{
+  array.SetValue(index, index+1);
+}
+};
 
 }
 }
@@ -188,32 +197,44 @@ protected:
     //create the grid, and result packages
     GridPackageType packagedGrid(inGrid);
 
-    boost::timer bt;
-    bt.restart();
-    dax::cont::ArrayHandle<dax::Id> newCellCounts(this->NewCellCountHandle.GetNumberOfEntries());
-    const dax::Id newNumOfCells = DeviceAdapter::InclusiveScan(this->NewCellCountHandle,
-                                                               newCellCounts);
-    newCellCounts.CompleteAsOutput();
-    std::cout << " Inclusive Scan time " << bt.elapsed() << std::endl;
-    bt.restart();
 
+    //do an inclusive scan of the cell count / cell mask to get the number
+    //of cells in the output
+    dax::cont::ArrayHandle<dax::Id> newCellCounts(
+          this->NewCellCountHandle.GetNumberOfEntries());
+    const dax::Id newNumOfCells =
+        DeviceAdapter::InclusiveScan(this->NewCellCountHandle,newCellCounts);
+    newCellCounts.CompleteAsOutput();
+
+    //fill the validCellRange with the values from 1 to size+1, this is used
+    //for the lower bounds to compute the right indices
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> validCellRange(newNumOfCells);
+    DeviceAdapter::Schedule(dax::exec::kernel::internal::LowerBoundsInputFunctor(),
+                            validCellRange.ReadyAsOutput(),
+                            newNumOfCells);
+    validCellRange.CompleteAsOutput();
+
+    //now do the lower bounds of the cell indices so that we figure out
+    //which original topology indexs match the new indices.
+    DeviceAdapter::LowerBounds(newCellCounts,validCellRange,validCellRange);
+    validCellRange.CompleteAsOutput();
+
+    //we can now remove newCellCounts
+    newCellCounts.ReleaseExecutionResources();
+
+    //now call the user topology generation worklet
+    //now we can determine the size of the topoogy and construct that array
     const dax::Id genTopoSize(OutCellType::NUM_POINTS * newNumOfCells);
     this->GeneratedTopology = dax::cont::ArrayHandle<dax::Id> (genTopoSize);
     dax::cont::internal::ExecutionPackageFieldOutput<dax::Id,DeviceAdapter> packagedTopo(
           this->GeneratedTopology,genTopoSize);
 
-    //call the Topology Functor for each cell in the range that InclusiveScan
-    //returned. This will allow us to generate the new topology
-
     TopoParams params = { packagedGrid.GetExecutionObject(),
                           packagedTopo.GetExecutionObject()};
-    dax::cont::internal::ScheduleLowerBounds(FunctorTopology(),
-                                             params,
-                                             newNumOfCells,
-                                             newCellCounts);
-    std::cout << "  ScheduleLowerBounds " << bt.elapsed() << std::endl;
-  }
 
+
+    dax::cont::internal::ScheduleMap(FunctorTopology(),params,validCellRange);
+  }
 
   template<typename GridType>
   void GeneratePointMask(const GridType &grid)

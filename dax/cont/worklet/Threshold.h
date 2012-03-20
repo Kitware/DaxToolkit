@@ -85,8 +85,8 @@ struct GenerateTopologyFunctor
   dax::exec::WorkGenerateTopology<ICT,OCT> work(parameters.grid,
                                            parameters.outputTopology,
                                            errorHandler);
-  work.SetCellIndex(key);
-  work.SetOutputCellIndex(value);
+  work.SetCellIndex(value);
+  work.SetOutputCellIndex(key);
   dax::worklet::Threshold_Topology(work);
   }
 };

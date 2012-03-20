@@ -23,7 +23,6 @@ set(headers
   ExtractTopology.h
   IteratorContainer.h
   IteratorPolymorphic.h
-  ScheduleLowerBoundsAdapter.h
   ScheduleMapAdapter.h
   ScheduleRemoveCell.h
   Testing.h
