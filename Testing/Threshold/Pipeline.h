@@ -174,10 +174,10 @@ void RunDAXPipeline(const dax::cont::UniformGrid &grid)
 
 
   //rough dump to file
-  std::ofstream file;
-  file.open ("daxResult.vtk");
-  PrintContentsToStream(grid2,file);
-  file.close();
+//  std::ofstream file;
+//  file.open ("daxResult.vtk");
+//  PrintContentsToStream(grid2,file);
+//  file.close();
 
   CheckValues(resultsBuffer.begin(), resultsBuffer.end());
 }

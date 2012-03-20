@@ -33,9 +33,6 @@
 #include <dax/cont/internal/ExtractCoordinates.h>
 #include <dax/cont/internal/ScheduleMapAdapter.h>
 
-#include <iostream>
-#include <boost/timer.hpp>
-
 namespace dax {
 namespace exec {
 namespace kernel {
@@ -115,24 +112,14 @@ public:
   void run(const InGridType& inGrid,
            OutGridType& outGrid)
     {
-    boost::timer mt;
-
-    mt.restart();
     this->ScheduleClassification(inGrid);
-    std::cout << "ScheduleClassification: " << mt.elapsed() << std::endl;
 
-    mt.restart();
     this->ScheduleTopology(inGrid,outGrid);
-    std::cout << "ScheduleTopology: " << mt.elapsed() << std::endl;
 
-    mt.restart();
     //GeneratePointMask uses the topology that schedule topology generates
     this->GeneratePointMask(inGrid);
-    std::cout << "GeneratePointMask: " << mt.elapsed() << std::endl;
 
-    mt.restart();
     this->GenerateCompactedTopology(inGrid,outGrid);
-    std::cout << "GenerateNewTopology: " << mt.elapsed() << std::endl;
 
     //now that the topology has been fully thresholded,
     //lets ask our derived class if they need to threshold anything
@@ -196,7 +183,6 @@ protected:
     typedef dax::exec::kernel::internal::GenerateTopologyParameters<InCellType,OutCellType> TopoParams;
     //create the grid, and result packages
     GridPackageType packagedGrid(inGrid);
-
 
     //do an inclusive scan of the cell count / cell mask to get the number
     //of cells in the output
