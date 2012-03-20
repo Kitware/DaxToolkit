@@ -21,9 +21,8 @@
 #include <dax/internal/DataArray.h>
 #include <dax/cont/ArrayHandle.h>
 
-
 #include <iostream>
-#include <boost/timer.hpp>
+
 
 namespace dax {
 namespace exec {
@@ -43,24 +42,21 @@ template<class Functor>
 struct ScheduleLowerBoundsMapAdapter
 {
   DAX_CONT_EXPORT ScheduleLowerBoundsMapAdapter(const Functor& functor,
-                                          dax::internal::DataArray<dax::Id> values,
-                                          dax::internal::DataArray<dax::Id> lookup)
-    : Function(functor), LowerBoundValues(values), LookupTable(lookup) { }
+                                          dax::internal::DataArray<dax::Id> nci)
+    : Function(functor), NewCellIndices(nci){ }
 
   template<class Parameters, class ErrorHandler>
   DAX_EXEC_EXPORT void operator()(Parameters parameters, dax::Id index,
                                   ErrorHandler& errorHandler )
-  {
-
+  {    
     this->Function(parameters,
-                   this->LowerBoundValues.GetValue(index)-1,
-                   this->LookupTable.GetValue(index),
+                   this->NewCellIndices.GetValue(index),
+                   index,
                    errorHandler);
   }
 private:
   Functor Function;
-  dax::internal::DataArray<dax::Id> LowerBoundValues;
-  dax::internal::DataArray<dax::Id> LookupTable;
+  dax::internal::DataArray<dax::Id> NewCellIndices;
 };
 
 }
@@ -77,40 +73,33 @@ template<class Functor, class Parameters, class DeviceAdapter>
 DAX_CONT_EXPORT void ScheduleLowerBounds(
     Functor functor,
     Parameters parameters,
-    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> values)
+    const dax::Id size,
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> cellCounts)
 {
   typedef dax::exec::kernel::internal::ScheduleLowerBoundsMapAdapter<Functor> LowerBoundsFunctor;
 
-  boost::timer bt;
-  bt.restart();
 
-  const dax::Id size(values.GetNumberOfEntries());
+  std::cout << "cell count is: " << size << std::endl;
   //create a temporary list of all the values from 1 to size+1
   //this is the new cell index off by 1
-  dax::cont::ArrayHandle<dax::Id,DeviceAdapter> lowerBoundsResult(size);
+  dax::cont::ArrayHandle<dax::Id,DeviceAdapter> newCellIndices(size);
   DeviceAdapter::Schedule(dax::exec::kernel::internal::ScheduleInc(),
-                          lowerBoundsResult.ReadyAsOutput(),
+                          newCellIndices.ReadyAsOutput(),
                           size);
-  lowerBoundsResult.CompleteAsOutput();
-  std::cout << "    ScheduleInc time " << bt.elapsed() << std::endl;
-  bt.restart();
+  newCellIndices.CompleteAsOutput();
 
   //use the new cell index array and the values array to generate
   //the lower bounds array
-  DeviceAdapter::LowerBounds(values,lowerBoundsResult,lowerBoundsResult);
-  lowerBoundsResult.CompleteAsOutput();
-  std::cout << "    Lower Bounds " << bt.elapsed() << std::endl;
-  bt.restart();
+  DeviceAdapter::LowerBounds(cellCounts,newCellIndices,newCellIndices);
+  newCellIndices.CompleteAsOutput();
 
-  //with those two arrays we can now schedule the functor on each of those
-  //items where me map
+  //the lower bounds now holds the old index that each new cell maps
+  //too, where the array index is the new cell index. This is the inverse
+  //of what SchedulMapAdapter expects.
   LowerBoundsFunctor lowerBoundsFunctor(functor,
-                                        values.ReadyAsInput(),
-                                        lowerBoundsResult.ReadyAsInput());
+                                        newCellIndices.ReadyAsInput());
 
   DeviceAdapter::Schedule(lowerBoundsFunctor,parameters,size);
-  std::cout << "    Topology Schedule Call time  " << bt.elapsed() << std::endl;
-  bt.restart();
 }
 
 }}}
