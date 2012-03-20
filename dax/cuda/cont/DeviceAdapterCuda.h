@@ -73,7 +73,7 @@ struct DeviceAdapterCuda
   static T InclusiveScan(const dax::cont::ArrayHandle<T,DeviceAdapterCuda> &input,
                             dax::cont::ArrayHandle<T,DeviceAdapterCuda>& output)
     {
-    return dax::thrust::cont::inclusiveScan(input.GetExecutionArray(),
+    return dax::cuda::cont::inclusiveScan(input.GetExecutionArray(),
                                             output.GetExecutionArray());
     }
 

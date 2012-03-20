@@ -22,6 +22,7 @@
 #include <thrust/scan.h>
 
 namespace dax {
+namespace thrust {
 namespace cont {
 
 template<typename T>
@@ -43,6 +44,7 @@ DAX_CONT_EXPORT T inclusiveScan(
 }
 
 }
-} // namespace dax::cont
+}
+} // namespace dax::thrust::cont
 
 #endif //__dax_cont_InclusiveScan_h
