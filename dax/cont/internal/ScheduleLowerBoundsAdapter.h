@@ -20,7 +20,6 @@
 #include <dax/Types.h>
 #include <dax/internal/DataArray.h>
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/internal/ScheduleMapAdapter.h>
 
 namespace dax {
 namespace exec {
@@ -34,6 +33,30 @@ DAX_EXEC_EXPORT void operator()(dax::internal::DataArray<dax::Id> array,
 {
   array.SetValue(index, index+1);
 }
+};
+
+template<class Functor>
+struct ScheduleLowerBoundsMapAdapter
+{
+  DAX_CONT_EXPORT ScheduleLowerBoundsMapAdapter(const Functor& functor,
+                                          dax::internal::DataArray<dax::Id> values,
+                                          dax::internal::DataArray<dax::Id> lookup)
+    : Function(functor), LowerBoundValues(values), LookupTable(lookup) { }
+
+  template<class Parameters, class ErrorHandler>
+  DAX_EXEC_EXPORT void operator()(Parameters parameters, dax::Id index,
+                                  ErrorHandler& errorHandler )
+  {
+
+    this->Function(parameters,
+                   this->LowerBoundValues.GetValue(index)-1,
+                   this->LookupTable.GetValue(index),
+                   errorHandler);
+  }
+private:
+  Functor Function;
+  dax::internal::DataArray<dax::Id> LowerBoundValues;
+  dax::internal::DataArray<dax::Id> LookupTable;
 };
 
 }
@@ -52,15 +75,27 @@ DAX_CONT_EXPORT void ScheduleLowerBounds(
     Parameters parameters,
     dax::cont::ArrayHandle<dax::Id,DeviceAdapter> values)
 {
-  const dax::Id size(values.GetNumberOfEntries());
+  typedef dax::exec::kernel::internal::ScheduleLowerBoundsMapAdapter<Functor> LowerBoundsFunctor;
 
+  const dax::Id size(values.GetNumberOfEntries());
   //create a temporary list of all the values from 1 to size+1
-  //place that in lower bounds
+  //this is the new cell index off by 1
   dax::cont::ArrayHandle<dax::Id,DeviceAdapter> lowerBoundsResult(size);
   DeviceAdapter::Schedule(dax::exec::kernel::internal::ScheduleInc(),
                           lowerBoundsResult.ReadyAsOutput(),
                           size);
-  dax::cont::internal::ScheduleMap(functor,parameters,lowerBoundsResult);
+
+  //use the new cell index array and the values array to generate
+  //the lower bounds array
+
+  //with those two arrays we can now schedule the functor on each of those
+  //items where me map
+
+  LowerBoundsFunctor lowerBoundsFunctor(functor,
+                                        values.ReadyAsInput(),
+                                        lowerBoundsResult.ReadyAsInput());
+
+  DeviceAdapter::Schedule(lowerBoundsFunctor,parameters,size);
 }
 
 }}}
