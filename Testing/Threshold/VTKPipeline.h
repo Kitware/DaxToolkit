@@ -68,6 +68,7 @@ void RunVTKPipeline(const dax::cont::UniformGrid &dgrid, vtkImageData* grid)
 
   vtkNew<vtkThreshold> threshold;
   threshold->SetInputConnection(producer->GetOutputPort());
+  threshold->SetPointsDataTypeToFloat();
   threshold->AllScalarsOn();
   threshold->ThresholdBetween(0, 100);
   threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,"Elevation");

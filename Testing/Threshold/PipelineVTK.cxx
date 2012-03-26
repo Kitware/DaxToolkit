@@ -32,7 +32,6 @@ void RunPipelineVTK(int pipeline, const dax::cont::UniformGrid& dgrid, vtkImageD
 //create a dax and vtk image structure of the same size
 dax::cont::UniformGrid CreateStructures(vtkImageData *grid, dax::Id dim)
 {
-  
   grid->SetOrigin(0.0, 0.0, 0.0);
   grid->SetSpacing(1.0, 1.0, 1.0);
   grid->SetExtent(0, dim-1,0, dim-1,0, dim-1);
