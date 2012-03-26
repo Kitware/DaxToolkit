@@ -14,8 +14,8 @@
 //
 //=============================================================================
 
-#ifndef __dax_cont_internal_ScheduleRemoveCell_h
-#define __dax_cont_internal_ScheduleRemoveCell_h
+#ifndef __dax_cont_internal_ScheduleGenerateTopology_h
+#define __dax_cont_internal_ScheduleGenerateTopology_h
 
 #include <boost/shared_ptr.hpp>
 
@@ -89,11 +89,11 @@ namespace cont {
 namespace internal {
 
 
-/// ScheduleRemoveCell is the control enviorment representation of a worklet
+/// ScheduleGenerateTopology is the control enviorment representation of a worklet
 //   / of the type WorkDetermineNewCellCount. This class handles properly calling the worklet
 /// that the user has defined has being of type WorkDetermineNewCellCount.
 ///
-/// Since ScheduleRemoveCell uses CRTP, every worklet needs to construct a class
+/// Since ScheduleGenerateTopology uses CRTP, every worklet needs to construct a class
 /// that inherits from this class and define GenerateParameters.
 ///
 template<class Derived,
@@ -101,12 +101,12 @@ template<class Derived,
          class FunctorTopology,
          class DeviceAdapter
          >
-class ScheduleRemoveCell
+class ScheduleGenerateTopology
 {
 public:
   typedef dax::Id MaskType;
 
-  /// Executes the ScheduleRemoveCell algorithm on the inputGrid and places
+  /// Executes the ScheduleGenerateTopology algorithm on the inputGrid and places
   /// the resulting unstructured grid in outGrid
   template<typename InGridType, typename OutGridType>
   void run(const InGridType& inGrid,
@@ -130,7 +130,7 @@ public:
 /// \brief Abstract method that inherited classes must implement.
 ///
 /// The method must return the populated parameters struct with all the information
-/// needed for the ScheduleRemoveCell class to execute the classification \c Functor.
+/// needed for the ScheduleGenerateTopology class to execute the classification \c Functor.
 
 /// \fn template <typename WorkType> Parameters GenerateOutputFields()
 /// \brief Abstract method that inherited classes must implement.
@@ -308,4 +308,4 @@ protected:
 } //dax
 
 
-#endif // __dax_cont_internal_ScheduleRemoveCell_h
+#endif // __dax_cont_internal_ScheduleGenerateTopology_h

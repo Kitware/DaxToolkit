@@ -31,7 +31,7 @@
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
 #include <dax/exec/WorkDetermineNewCellCount.h>
-#include <dax/cont/internal/ScheduleRemoveCell.h>
+#include <dax/cont/internal/ScheduleGenerateTopology.h>
 
 #include <Worklets/Threshold.worklet>
 
@@ -95,7 +95,7 @@ template<class ParametersClassify,
          class FunctorClassify,
          class FunctorTopology,
          class DeviceAdapter>
-class Threshold : public dax::cont::internal::ScheduleRemoveCell
+class Threshold : public dax::cont::internal::ScheduleGenerateTopology
     <
     Threshold<ParametersClassify,
               FunctorClassify,
