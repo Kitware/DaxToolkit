@@ -34,9 +34,10 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
     const dax::exec::FieldPoint<dax::Scalar> &point_scalar)
 {
   const dax::Id NUM_POINTS  = dax::exec::CellVoxel::NUM_POINTS;
+  typedef dax::Tuple<dax::Vector3,NUM_POINTS> DerivWeights;
 
-  dax::Vector3 derivativeWeights[NUM_POINTS];
-  dax::exec::internal::derivativeWeightsVoxel(pcoords, derivativeWeights);
+  DerivWeights derivativeWeights = dax::exec::internal::derivativeWeightsVoxel(
+                                     pcoords);
 
   dax::Vector3 sum = dax::make_Vector3(0.0, 0.0, 0.0);
   dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
@@ -63,10 +64,10 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
   //is actually a voxel in an unstructured grid.
   //ToDo: use a proper derivative calculation.
   const dax::Id NUM_POINTS  = dax::exec::CellHexahedron::NUM_POINTS;
+  typedef dax::Tuple<dax::Vector3,NUM_POINTS> DerivWeights;
 
-  dax::Vector3 derivativeWeights[NUM_POINTS];
-  dax::exec::internal::derivativeWeightsVoxel(pcoords, derivativeWeights);
-
+  DerivWeights derivativeWeights = dax::exec::internal::derivativeWeightsVoxel(
+                                     pcoords);
 
   dax::Vector3 spacing;
     {
@@ -90,22 +91,6 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
 
 
   return sum/spacing;
-}
-
-//-----------------------------------------------------------------------------
-template<class WorkType>
-DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
-    const WorkType &work,
-    const dax::exec::CellTriangle &,
-    const dax::Vector3 &pcoords,
-    const dax::exec::FieldCoordinates &fcoords,
-    const dax::exec::FieldPoint<dax::Scalar> &point_scalar)
-{
-  const dax::Id NUM_POINTS  = dax::exec::CellTriangle::NUM_POINTS;
-  dax::Vector3 derivativeWeights[NUM_POINTS];
-  dax::exec::internal::derivativeWeightsTriangle(pcoords, derivativeWeights);
-
-
 }
 
 }};
