@@ -91,8 +91,8 @@ static void TestDerivativeWeightsVoxel()
     {
     dax::Vector3 pcoords = cellVertexToParametricCoords[vertexIndex];
 
-    dax::Vector3 weights[8];
-    dax::exec::internal::derivativeWeightsVoxel(pcoords, weights);
+    dax::Tuple<dax::Vector3,8> weights =
+        dax::exec::internal::derivativeWeightsVoxel(pcoords);
 
     for (dax::Id weightIndex = 0; weightIndex < 8; weightIndex++)
       {
@@ -103,9 +103,8 @@ static void TestDerivativeWeightsVoxel()
     }
 
   // Check for Derivative at middle.
-  dax::Vector3 weights[8];
-  dax::exec::internal::derivativeWeightsVoxel(dax::make_Vector3(0.5,0.5,0.5),
-                                              weights);
+  dax::Tuple<dax::Vector3,8> weights =
+      dax::exec::internal::derivativeWeightsVoxel(dax::make_Vector3(0.5,0.5,0.5));
   for (dax::Id weightIndex = 0; weightIndex < 8; weightIndex++)
     {
     dax::Vector3 vertexPCoords = cellVertexToParametricCoords[weightIndex];
