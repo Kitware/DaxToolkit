@@ -76,11 +76,6 @@ public:
     pointIndices[0] = this->GridTopology.Topology.GetValue(pos);
     pointIndices[1] = this->GridTopology.Topology.GetValue(++pos);
     pointIndices[2] = this->GridTopology.Topology.GetValue(++pos);
-    pointIndices[3] = this->GridTopology.Topology.GetValue(++pos);
-    pointIndices[4] = this->GridTopology.Topology.GetValue(++pos);
-    pointIndices[5] = this->GridTopology.Topology.GetValue(++pos);
-    pointIndices[6] = this->GridTopology.Topology.GetValue(++pos);
-    pointIndices[7] = this->GridTopology.Topology.GetValue(++pos);
     return pointIndices;
   }
 
