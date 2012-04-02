@@ -22,6 +22,63 @@ namespace {
 
 template <typename T> void TypeTest();
 
+template<> void TypeTest<dax::Vector2>()
+{
+  dax::Vector2 a = dax::make_Vector2(2, 4);
+  dax::Vector2 b = dax::make_Vector2(1, 2);
+  dax::Scalar s = 5;
+
+  dax::Vector2 plus = a + b;
+  if ((plus[0] != 3) || (plus[1] != 6))
+    {
+    DAX_TEST_FAIL("Vectors do not add correctly.");
+    }
+
+  dax::Vector2 minus = a - b;
+  if ((minus[0] != 1) || (minus[1] != 2))
+    {
+    DAX_TEST_FAIL("Vectors to not subtract correctly.");
+    }
+
+  dax::Vector2 mult = a * b;
+  if ((mult[0] != 2) || (mult[1] != 8))
+    {
+    DAX_TEST_FAIL("Vectors to not multiply correctly.");
+    }
+
+  dax::Vector2 div = a / b;
+  if ((div[0] != 2) || (div[1] != 2))
+    {
+    DAX_TEST_FAIL("Vectors to not divide correctly.");
+    }
+
+  mult = s * a;
+  if ((mult[0] != 10) || (mult[1] != 20))
+    {
+    DAX_TEST_FAIL("Vector and scalar to not multiply correctly.");
+    }
+
+  mult = a * s;
+  if ((mult[0] != 10) || (mult[1] != 20))
+    {
+    DAX_TEST_FAIL("Vector and scalar to not multiply correctly.");
+    }
+
+  if (a == b)
+    {
+    DAX_TEST_FAIL("operator== wrong");
+    }
+  if (!(a != b))
+    {
+    DAX_TEST_FAIL("operator!= wrong");
+    }
+
+  if (dax::dot(a, b) != 10)
+    {
+    DAX_TEST_FAIL("dot(Vector2) wrong");
+    }
+}
+
 template<> void TypeTest<dax::Vector3>()
 {
   dax::Vector3 a = dax::make_Vector3(2, 4, 6);

@@ -247,6 +247,9 @@ public:
     dax::Scalar scalar = 0.0;
     check(scalar, InternalPrintOnInvoke<FunctionType>(function, "dax::Scalar"));
 
+    dax::Vector2 vector2 = dax::make_Vector2(0.0, 0.0);
+    check(vector2, InternalPrintOnInvoke<FunctionType>(function, "dax::Vector2"));
+
     dax::Vector3 vector3 = dax::make_Vector3(0.0, 0.0, 0.0);
     check(vector3, InternalPrintOnInvoke<FunctionType>(function, "dax::Vector3"));
 
