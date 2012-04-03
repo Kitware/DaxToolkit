@@ -93,6 +93,82 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
   return sum/spacing;
 }
 
+namespace internal {
+
+//make this a seperate function so that these temporary values
+//are scoped to be removed once we generate the matrix
+DAX_EXEC_EXPORT dax::Tuple<dax::Vector2, 2> make_InvertedJacobian(
+    const dax::Vector3& len1,
+    const dax::Vector3& len2,
+    const dax::Vector3& crossResult)
+  {
+  //ripped from VTK
+  //dot product
+  dax::Scalar lenX = dax::normalize(len1);
+  dax::Vector2 dotResult(dax::dot(len2,len1),dax::dot(len2,crossResult));
+
+  //invert the matrix drop b*c since b is zero
+  dax::Scalar det = 1.0/(dotResult[1] * lenX);
+
+  //compute the jacobian 2x2 matrix
+  dax::Tuple<dax::Vector2, 2> invertedJacobain;
+  invertedJacobain[0] = dax::make_Vector2(det * dotResult[1], det * -dotResult[0]);
+  invertedJacobain[1] = dax::make_Vector2(0,det * lenX);
+  return invertedJacobain;
+  }
+}
+
+//-----------------------------------------------------------------------------
+template<class WorkType>
+DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
+    const WorkType &work,
+    const dax::exec::CellTriangle &,
+    const dax::Vector3 &pcoords,
+    const dax::exec::FieldCoordinates &fcoords,
+    const dax::exec::FieldPoint<dax::Scalar> &point_scalar)
+{
+  const dax::Id NUM_POINTS(dax::exec::CellTriangle::NUM_POINTS);
+  typedef dax::Tuple<dax::Vector2,NUM_POINTS> DerivWeights;
+
+
+  dax::Tuple<dax::Vector2, 2 > invertedJacobain;
+  dax::Vector3 len1, len2;
+  {
+    const dax::Vector3 x0 = work.GetFieldValue(fcoords,0);
+    const dax::Vector3 x1 = work.GetFieldValue(fcoords,1);
+    const dax::Vector3 x2 = work.GetFieldValue(fcoords,2);
+    const dax::Vector3 crossResult = dax::exec::CellTriangle::Normal(x0,x1,x2);
+    len1 = x1 - x0;
+    len2 = x2 - x0;
+    invertedJacobain = dax::exec::internal::make_InvertedJacobian(len1,len2,
+                                                                  crossResult);
+  }
+
+  DerivWeights derivativeWeights =
+      dax::exec::internal::derivativeWeightsTriangle(pcoords);
+
+  //compute sum
+  dax::Vector2 sum = dax::make_Vector2(0.0, 0.0);
+  dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
+      work.GetFieldValues(point_scalar);
+  for (dax::Id vertexId = 0; vertexId < NUM_POINTS; vertexId++)
+    {
+    sum = sum + fieldValues[vertexId] * derivativeWeights[vertexId];
+    }
+
+  //i think we can reorder these elements for better performance in the future
+  dax::Vector2 dBy;
+  dBy[0] = sum[0] * invertedJacobain[0][0] + sum[1] * invertedJacobain[0][1];
+  dBy[1] = sum[0] * invertedJacobain[1][0] + sum[1] * invertedJacobain[1][1];
+
+  len1 = len1 * dBy[0];
+  len2 = len2 * dBy[1];
+  return len1 + len2;
+
+
+}
+
+
 }};
 
 #endif //__dax_exec_Derivative_h
