@@ -106,6 +106,7 @@ template<> struct TypeTraits<T> { \
 ///
 
 DAX_VECTOR_TYPE(dax::Id3, TypeTraitsIntegerTag);
+DAX_VECTOR_TYPE(dax::Vector2, TypeTraitsRealTag);
 DAX_VECTOR_TYPE(dax::Vector3, TypeTraitsRealTag);
 DAX_VECTOR_TYPE(dax::Vector4, TypeTraitsRealTag);
 
