@@ -401,6 +401,37 @@ private:
     DAX_TEST_ASSERT(randomData[5] == 3, "Got bad value");
   }
 
+  static DAX_CONT_EXPORT void TestInclusiveScan()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing Inclusive Scan" << std::endl;
+    typedef dax::cont::ArrayHandle<dax::Id, DeviceAdapter> Handle;
+    //construct the index array
+    Handle array(ARRAY_SIZE);
+    DeviceAdapter::Schedule(ClearArrayKernel(),
+                            array.ReadyAsOutput(),ARRAY_SIZE);
+    //we know have an array whose sum is equal to OFFSET * ARRAY_SIZE,
+    //lets validate that
+    dax::Id sum = DeviceAdapter::InclusiveScan(array,array);
+    DAX_TEST_ASSERT(sum == OFFSET * ARRAY_SIZE, "Got bad sum from Inclusive Scan");
+
+    std::vector<dax::Id> result(ARRAY_SIZE);
+    array.SetNewControlData(result.begin(), result.end());
+    array.CompleteAsOutput(); //copy to host
+    array.ReleaseExecutionResources();
+
+    //each value should be equal to the Triangle Number of that index
+    //ie 1, 3, 6, 10, 15, 21 ...
+    dax::Id partialSum = 0;
+    dax::Id triangleNumber = 0;
+    for(unsigned int i=0, pos=1; i < ARRAY_SIZE; ++i, ++pos)
+      {
+      partialSum += result[i];
+      triangleNumber = ((pos*(pos+1))/2);
+      DAX_TEST_ASSERT(partialSum == triangleNumber * OFFSET, "Incorrect partial sum");
+      }
+  }
+
   static DAX_CONT_EXPORT void TestErrorExecution()
   {
     std::cout << "-------------------------------------------" << std::endl;
@@ -589,7 +620,8 @@ private:
       TestSchedule();
       TestStreamCompact();
       TestStreamCompactWithStencil();
-      TestOrderedUniqueValues();
+      TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
+      TestInclusiveScan();
       TestErrorExecution();
 
       std::cout << "Doing Worklet tests with UniformGrid" << std::endl;

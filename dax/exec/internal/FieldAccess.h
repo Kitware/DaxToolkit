@@ -55,6 +55,19 @@ DAX_EXEC_EXPORT void fieldAccessNormalSet(dax::exec::Field<T> &field,
   field.GetArray().SetValue(index, value);
 }
 
+template<typename T, int Size>
+DAX_EXEC_EXPORT void fieldAccessNormalSet(
+  dax::exec::Field<T> &field,
+  dax::Id index,
+  dax::Tuple<T,Size> values)
+{
+  dax::internal::DataArray<T> data = field.GetArray();
+  for(int i=0; i < Size; ++i)
+    {
+    data.SetValue(index+i,values[i]);
+    }
+}
+
 template<typename Grid>
 DAX_EXEC_EXPORT dax::Vector3 fieldAccessUniformCoordinatesGet(
   const Grid &GridTopology,

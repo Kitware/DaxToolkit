@@ -15,8 +15,9 @@
 ##=============================================================================
 
 set(headers
-  DeviceAdapterCuda.h
   Copy.h
+  DeviceAdapterCuda.h
+  InclusiveScan.h
   LowerBounds.h
   ScheduleCuda.h
   ScheduleThrust.h

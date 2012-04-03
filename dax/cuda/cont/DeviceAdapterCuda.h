@@ -31,6 +31,7 @@
 #endif
 
 #include <dax/cuda/cont/Copy.h>
+#include <dax/cuda/cont/InclusiveScan.h>
 #include <dax/cuda/cont/LowerBounds.h>
 #include <dax/cuda/cont/StreamCompact.h>
 #include <dax/cuda/cont/Sort.h>
@@ -68,6 +69,17 @@ struct DeviceAdapterCuda
     dax::cuda::cont::copy(from.GetExecutionArray(),to.GetExecutionArray());
     }
 
+  template<typename T>
+  static T InclusiveScan(const dax::cont::ArrayHandle<T,DeviceAdapterCuda> &input,
+                            dax::cont::ArrayHandle<T,DeviceAdapterCuda>& output)
+    {
+    DAX_ASSERT_CONT(input.hasExecutionArray());
+    DAX_ASSERT_CONT(output.GetNumberOfEntries() == input.GetNumberOfEntries());
+    output.ReadyAsOutput();
+    return dax::cuda::cont::inclusiveScan(input.GetExecutionArray(),
+                                          output.GetExecutionArray());
+    }
+
   template<typename T, typename U>
   static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& input,
                          const dax::cont::ArrayHandle<T,DeviceAdapterCuda>& values,
@@ -75,8 +87,8 @@ struct DeviceAdapterCuda
     {
     DAX_ASSERT_CONT(input.hasExecutionArray());
     DAX_ASSERT_CONT(values.hasExecutionArray());
-    DAX_ASSERT_CONT(output.hasExecutionArray());
     DAX_ASSERT_CONT(values.GetNumberOfEntries() <= output.GetNumberOfEntries());
+    output.ReadyAsOutput();
     dax::cuda::cont::lowerBounds(input.GetExecutionArray(),
                                  values.GetExecutionArray(),
                                  output.GetExecutionArray());
@@ -109,6 +121,7 @@ struct DeviceAdapterCuda
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
     //each index is the stencil value
+    DAX_ASSERT_CONT(input.hasExecutionArray());
     dax::cuda::cont::streamCompact(input.GetExecutionArray(),
                                   output.GetExecutionArray());
     output.UpdateArraySize();
@@ -123,6 +136,8 @@ struct DeviceAdapterCuda
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
     //each index is the stencil value
+    DAX_ASSERT_CONT(input.hasExecutionArray());
+    DAX_ASSERT_CONT(stencil.hasExecutionArray());
     dax::cuda::cont::streamCompact(input.GetExecutionArray(),
                                    stencil.GetExecutionArray(),
                                    output.GetExecutionArray());

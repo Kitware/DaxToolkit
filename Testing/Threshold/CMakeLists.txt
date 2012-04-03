@@ -37,14 +37,14 @@ endif (DAX_ENABLE_THRUST)
 #Include VTK so we can benchmark agianst it
 option(DAX_ENABLE_VTK_TESTING FALSE)
 if(DAX_ENABLE_VTK_TESTING)
-  find_package(VTK)
+  find_package(VTK REQUIRED)
 endif()
 
 #-----------------------------------------------------------------------------
 #Include PISTON so we can benchmark agianst it
 option(DAX_ENABLE_PISTON_TESTING FALSE)
 if(DAX_ENABLE_PISTON_TESTING)
-  find_package(VTK)
+  find_package(VTK REQUIRED)
   find_path( PISTON_INCLUDE
     NAMES piston/piston_math.h
     DOC "Piston headers"

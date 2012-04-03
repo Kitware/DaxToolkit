@@ -19,7 +19,8 @@
 
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
-#include <dax/exec/WorkRemoveCell.h>
+#include <dax/exec/WorkDetermineNewCellCount.h>
+#include <dax/exec/WorkGenerateTopology.h>
 
 namespace dax {
 namespace worklet {
@@ -72,8 +73,8 @@ struct DoThreshold<8,T>
 
 
 template<typename CellType, typename FieldType>
-DAX_WORKLET void Threshold(
-    DAX_IN dax::exec::WorkRemoveCell<CellType> &work,
+DAX_WORKLET void Threshold_Classify(
+    DAX_IN dax::exec::WorkDetermineNewCellCount<CellType> &work,
     DAX_IN FieldType thresholdMin,
     DAX_IN FieldType thresholdMax,
     DAX_IN dax::exec::FieldPoint<FieldType> &inField)
@@ -83,16 +84,31 @@ DAX_WORKLET void Threshold(
       work.GetFieldValues(inField);
 
   DoThreshold<CellType::NUM_POINTS,FieldType> threshold(thresholdMin,thresholdMax);
-  work.SetRemoveCell(threshold(fieldValues));
+  work.SetNewCellCount(threshold(fieldValues));
+}
+
+template<typename InCellType>
+DAX_WORKLET void Threshold_Topology(
+    DAX_IN dax::exec::WorkGenerateTopology<InCellType,InCellType> &work)
+{
+  //we can ignore the the requested cell Id to generate
+  //on the work object since we know for threshold it is a pass through
+  work.SetOutputTopology(work.GetInputTopology());
+}
+
+//Threshold only works when the topology is the same for input and output/
+//The only special case so far is converting CellVoxel to CellHexahedron
+DAX_WORKLET void Threshold_Topology(
+    DAX_IN dax::exec::WorkGenerateTopology<
+      dax::exec::CellVoxel,
+      dax::exec::CellHexahedron> &work)
+{
+  //we can ignore the the requested cell Id to generate
+  //on the work object since we know for threshold it is a pass through
+  work.SetOutputTopology(work.GetInputTopology());
 }
 
 }
 } //dax::worklet
 
 #endif
-
-
-//we need to make a stencil class which this can use
-//which define the proper settings for each of the CsG steps
-//somehow stencil needs to define the following:
-// the functors for classify size, scan, generate size, generate worklet

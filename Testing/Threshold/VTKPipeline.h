@@ -65,12 +65,19 @@ void RunVTKPipeline(const dax::cont::UniformGrid &dgrid, vtkImageData* grid)
 
   vtkNew<vtkTrivialProducer> producer;
   producer->SetOutput(grid);
+  producer->Update();
 
   vtkNew<vtkThreshold> threshold;
   threshold->SetInputConnection(producer->GetOutputPort());
+  threshold->SetPointsDataTypeToFloat();
   threshold->AllScalarsOn();
-  threshold->ThresholdBetween(0, 100);
+  threshold->ThresholdBetween(0, 50);
   threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,"Elevation");
+
+  //call once to have the threshold pipeline have proper mtimes so the real threshold
+  //is as fast as possible.
+  threshold->Update();
+  threshold->ThresholdBetween(0,100);
 
   Timer timer;
   threshold->Update();
@@ -80,6 +87,9 @@ void RunVTKPipeline(const dax::cont::UniformGrid &dgrid, vtkImageData* grid)
   
   std::cout << "original GetNumberOfCells: " << dgrid.GetNumberOfCells() << std::endl;
   std::cout << "threshold GetNumberOfCells: " << out->GetNumberOfCells() << std::endl;
+
+  std::cout << "original GetNumberOfPoints: " << dgrid.GetNumberOfPoints() << std::endl;
+  std::cout << "threshold GetNumberOfPoints: " << out->GetNumberOfPoints() << std::endl;
   PrintResults(1, time, "VTK");
 }
 

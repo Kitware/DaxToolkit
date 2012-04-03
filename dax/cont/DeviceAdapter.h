@@ -48,7 +48,39 @@ namespace cont {
 /// done \em before loading in any other Dax header files. Failing to do so
 /// could create inconsistencies in the default adapter used amongst classes.
 
-/// \fn template<class Functor, class Parameters> const char *DeviceAdapter::Schedule(Functor functor, Parameters parameters, dax::Id numInstances)
+/// \fn template<typename T> static void  DeviceAdapter::Copy(const dax::cont::ArrayHandle<T>& from, dax::cont::ArrayHandle<T>& to)
+/// \brief Copy the contents of one ArrayHandle to another
+
+/// Copies the contents of \c from to \c to. The array \c to must be of the same
+/// type as \c from and be at least the same size as \c from. If \c to is larger
+/// that \c from the excess range will have undefined values.
+/// Requirements: \c from must already be allocated in the execution environment
+
+/// \fn template<typename T> static T InclusiveScan(const dax::cont::ArrayHandle<T> &input, dax::cont::ArrayHandle<T>& output)
+/// \brief Compute an inclusive prefix sum operation on the input ArrayHandle.
+
+/// Computes an inclusive prefix sum operation on the \c input ArrayHandle, storing
+/// the results in the \c output ArrayHandle. InclusiveScan is similiar to the
+/// stl partial sum function, exception that InclusiveScan doesn't do a serial
+/// sumnation. This means that if you have defined a custom plus operator for
+/// T it must be associative, or you will get inconsistent results.
+/// When the input and output ArrayHandles are the same ArrayHandle the operation
+/// will be done inplace.
+/// Requirements: \c input must already be allocated in the execution environment
+/// Requirements: \c input and \c output must be the same size
+
+/// \fn  template<typename T> static void LowerBounds(const dax::cont::ArrayHandle<T>& input, const dax::cont::ArrayHandle<T>& values, dax::cont::ArrayHandle<dax::Id>& output)
+/// \brief Output is the first index in input for each item in values that wouldn't alter the ordering of input
+
+/// LowerBounds is a vectorized search. From each value in \c values it finds the first
+/// place the item can be inserted in the ordered \c input array and stores the index in \c output.
+/// Note: \c values and \c output can be the same array.
+/// Requirements: \c input must already be sorted
+/// Requirements: \c input must already be allocated in the execution environment
+/// Requirements: \c values must already be allocated in the execution environment
+/// Requirements: \c values and \c output must be the same size
+
+/// \fn template<class Functor, class Parameters> static void DeviceAdapter::Schedule(Functor functor, Parameters parameters, dax::Id numInstances)
 /// \brief Schedule many instances of a function to run on concurrent threads.
 ///
 /// Calls the \c functor on several threads. This is the function used in the
@@ -60,11 +92,16 @@ namespace cont {
 /// the thread or instance of the invocation. There should be one invocation
 /// for each index in the range [0, \c numInstances]. The third argment
 /// contains an ErrorHandler that can be used to raise an error in the functor.
-/// If an error is raised, the string that was raised is returned. Otherwise,
-/// NULL or a zero-length string is returned.
 
-/// \fn template<typename T, typename U> void DeviceAdapter::StreamCompact(const dax::cont::ArrayHandle<T>&input, dax::cont::ArrayHandle<U>& output)
-/// \brief Performs stream compaction to remove unwanted elements in the input array.
+/// \fn template<typename T> static void Sort(dax::cont::ArrayHandle<T>& values)
+/// \brief Unstable ascending sort of input array.
+
+/// Sorts the contents of \c values so that they in ascending value. Doesn't
+/// guarantee stability
+/// Requirements: \c values must already be allocated in the execution environment
+
+/// \fn template<typename T> static void DeviceAdapter::StreamCompact(const dax::cont::ArrayHandle<T>&input, dax::cont::ArrayHandle<dax::Id>& output)
+/// \brief Performs stream compaction to remove unwanted elements in the input array. Output becomes the index values of input that are valid.
 ///
 /// Calls the parallel primitive function of stream compaction on the \c input
 /// to remove unwanted elements. The result of the stream compaction is placed
@@ -72,8 +109,9 @@ namespace cont {
 /// while \c input indices are used as the values to place into \c ouput.
 /// The size of \c output will be modified after this call as we can't know
 /// the number of elements that will be removed by the stream compaction algorithm.
+/// Requirements: \c input must already be allocated in the execution environment
 
-/// \fn template<typename T, typename U> void DeviceAdapter::StreamCompact(const dax::cont::ArrayHandle<T>&input, const dax::cont::ArrayHandle<U>& stencil, dax::cont::ArrayHandle<T>& output)
+/// \fn template<typename T, typename U> static void DeviceAdapter::StreamCompact(const dax::cont::ArrayHandle<T>&input, const dax::cont::ArrayHandle<U>& v, dax::cont::ArrayHandle<T>& output)
 /// \brief Performs stream compaction to remove unwanted elements in the input array.
 ///
 /// Calls the parallel primitive function of stream compaction on the \c input
@@ -82,7 +120,18 @@ namespace cont {
 /// while \c input values are placed into \c ouput.
 /// The size of \c output will be modified after this call as we can't know
 /// the number of elements that will be removed by the stream compaction algorithm.
+/// Requirements: \c input must already be allocated in the execution environment
+/// Requirements: \c stencil must already be allocated in the execution environment
 
+/// \fn template<typename T> static void Unique(dax::cont::ArrayHandle<T>& values)
+/// \brief Reduce an array to only the unique values it contains
+
+/// Removes all duplicate values in \c values which are adjacent to each other.
+/// Which means you should sort the input array unless you want duplicate values
+/// which aren't adjacent. Note the values array size might be modified by
+/// this operation.
+/// Requirements: \c values must already be allocated in the execution environment
+  
 /// \class template<class T> DeviceAdapter::ArrayContainerExecution<T>
 /// \brief Class that manages data in the execution environment.
 ///

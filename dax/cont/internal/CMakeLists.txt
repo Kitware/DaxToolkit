@@ -23,8 +23,8 @@ set(headers
   ExtractTopology.h
   IteratorContainer.h
   IteratorPolymorphic.h
+  ScheduleGenerateTopology.h
   ScheduleMapAdapter.h
-  ScheduleRemoveCell.h
   Testing.h
   TestingDeviceAdapter.h
   TestingGridGenerator.h
