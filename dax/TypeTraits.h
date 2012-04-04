@@ -43,22 +43,32 @@ struct TypeTraitsScalarTag {};
 ///
 struct TypeTraitsVectorTag {};
 
-/// \class dax::TypeTraits
-///
+template<typename T> struct TypeTraits;
+
+#ifdef DAX_DOXYGEN_ONLY
+
 /// The TypeTraits class provides helpful compile-time information about the
 /// basic types used in Dax (and a few others for convienience). The majority
 /// of TypeTraits contents are typedefs to tags that can be used to easily
 /// override behavior of called functions.
 ///
-/// \typedef typedef NumericTag
-/// This tag is either TypeTraitsRealTag or TypeTraitsIntegerTag.
-///
-/// \typedef typedef DimensionalityTag
-/// This tag is either TypeTraitsScalarTag or TypeTraitsVectorTag. Scalars can
-/// also be treated as vectors.
-///
+template<typename T>
+class TypeTraits {
+public:
 
-template<typename T> struct TypeTraits;
+  /// \brief A tag to determing whether the type is integer or real.
+  ///
+  /// This tag is either TypeTraitsRealTag or TypeTraitsIntegerTag.
+  typedef tag_type NumericTag;
+
+  /// \brief A tag to determine whether the type has multiple components.
+  ///
+  /// This tag is either TypeTraitsScalarTag or TypeTraitsVectorTag. Scalars can
+  /// also be treated as vectors.
+  typedef tag_type DimensionalityTag;
+};
+
+#endif //DAX_DOXYGEN_ONLY
 
 #define DAX_BASIC_REAL_TYPE(T) \
 template<> struct TypeTraits<T> { \

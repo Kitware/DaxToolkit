@@ -39,15 +39,11 @@ namespace dax {
 namespace cont {
   //forward declare the ArrayHandle before we use it.
   template< typename OtherT, class OtherDeviceAdapter > class ArrayHandle;
-}
-}
 
 /// A simple implementation of a DeviceAdapter that can be used for debuging.
 /// The scheduling will simply run everything in a serial loop, which is easy
 /// to track in a debugger.
 ///
-namespace dax {
-namespace cont {
 struct DeviceAdapterDebug
 {
   template<typename T>
