@@ -222,7 +222,7 @@ public:
   };
 };
 
-#endif
+#endif //DAX_DOXYGEN_ONLY
 
 }
 }

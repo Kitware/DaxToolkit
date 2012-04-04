@@ -21,13 +21,17 @@
 namespace dax {
 namespace internal {
 
+/// Contains all the parameters necessary to specify the topology of a uniform
+/// rectilinear grid.
+///
 struct TopologyUniform {
   Vector3 Origin;
   Vector3 Spacing;
   Extent3 Extent;
 } __attribute__ ((aligned(4)));
 
-/// Returns the number of points in a structured grid.
+/// Returns the number of points in a uniform rectilinear grid.
+///
 DAX_EXEC_CONT_EXPORT
 dax::Id numberOfPoints(const TopologyUniform &GridTopology)
 {
@@ -35,7 +39,8 @@ dax::Id numberOfPoints(const TopologyUniform &GridTopology)
   return dims[0]*dims[1]*dims[2];
 }
 
-/// Returns the number of cells in a structured grid.
+/// Returns the number of cells in a uniform rectilinear grid.
+///
 template<typename T>
 DAX_EXEC_CONT_EXPORT
 dax::Id numberOfCells(const T &GridTopology)
@@ -47,6 +52,7 @@ dax::Id numberOfCells(const T &GridTopology)
 
 /// Returns the point position in a structured grid for a given i, j, and k
 /// value stored in /c ijk
+///
 DAX_EXEC_CONT_EXPORT
 dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
                               dax::Id3 ijk)
@@ -60,6 +66,7 @@ dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
 
 /// Returns the point position in a structured grid for a given index
 /// which is represented by /c pointIndex
+///
 DAX_EXEC_CONT_EXPORT
 dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
                               dax::Id pointIndex)
