@@ -24,7 +24,7 @@ template<typename VectorType>
 void TestMinMax(VectorType x, VectorType y)
 {
   typedef dax::VectorTraits<VectorType> Traits;
-  typedef typename Traits::ValueType ValueType;
+  typedef typename Traits::ComponentType ComponentType;
   const dax::Id NUM_COMPONENTS = Traits::NUM_COMPONENTS;
 
   std::cout << "  Testing Min and Max: " << NUM_COMPONENTS << " components"
@@ -35,10 +35,10 @@ void TestMinMax(VectorType x, VectorType y)
 
   for (dax::Id index = 0; index < NUM_COMPONENTS; index++)
     {
-    ValueType x_index = Traits::GetComponent(x, index);
-    ValueType y_index = Traits::GetComponent(y, index);
-    ValueType min_index = Traits::GetComponent(min, index);
-    ValueType max_index = Traits::GetComponent(max, index);
+    ComponentType x_index = Traits::GetComponent(x, index);
+    ComponentType y_index = Traits::GetComponent(y, index);
+    ComponentType min_index = Traits::GetComponent(min, index);
+    ComponentType max_index = Traits::GetComponent(max, index);
     if (x_index < y_index)
       {
       DAX_TEST_ASSERT(x_index == min_index, "Got wrong min.");
