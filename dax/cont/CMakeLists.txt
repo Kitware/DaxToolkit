@@ -21,7 +21,7 @@ set(headers
   Assert.h
   CopyDebug.h
   DeviceAdapter.h
-  DeviceAdapterDebug.h
+  DeviceAdapterSerial.h
   Error.h
   ErrorControl.h
   ErrorControlAssert.h

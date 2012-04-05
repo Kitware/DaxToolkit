@@ -21,7 +21,7 @@
 #undef DAX_DEFAULT_DEVICE_ADAPTER
 #endif
 
-#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterDebug
+#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterSerial
 
 #include <dax/internal/DataArray.h>
 #include <dax/cont/CopyDebug.h>
@@ -44,15 +44,15 @@ namespace cont {
 /// The scheduling will simply run everything in a serial loop, which is easy
 /// to track in a debugger.
 ///
-struct DeviceAdapterDebug
+struct DeviceAdapterSerial
 {
   template<typename T>
   class ArrayContainerExecution
       : public dax::cont::internal::ArrayContainerExecutionCPU<T> { };
 
   template<typename T>
-  static void Copy(const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& from,
-                   dax::cont::ArrayHandle<T,DeviceAdapterDebug>& to)
+  static void Copy(const dax::cont::ArrayHandle<T,DeviceAdapterSerial>& from,
+                   dax::cont::ArrayHandle<T,DeviceAdapterSerial>& to)
     {
     DAX_ASSERT_CONT(from.hasExecutionArray());
     DAX_ASSERT_CONT(to.GetNumberOfEntries() >= from.GetNumberOfEntries());
@@ -61,8 +61,8 @@ struct DeviceAdapterDebug
     }
 
   template<typename T>
-  static T InclusiveScan(const dax::cont::ArrayHandle<T,DeviceAdapterDebug> &input,
-                            dax::cont::ArrayHandle<T,DeviceAdapterDebug>& output)
+  static T InclusiveScan(const dax::cont::ArrayHandle<T,DeviceAdapterSerial> &input,
+                            dax::cont::ArrayHandle<T,DeviceAdapterSerial>& output)
     {
     DAX_ASSERT_CONT(input.hasExecutionArray());
     DAX_ASSERT_CONT(output.GetNumberOfEntries() == input.GetNumberOfEntries());
@@ -72,9 +72,9 @@ struct DeviceAdapterDebug
     }
 
   template<typename T, typename U>
-  static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& input,
-                         const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& values,
-                         dax::cont::ArrayHandle<U,DeviceAdapterDebug>& output)
+  static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterSerial>& input,
+                         const dax::cont::ArrayHandle<T,DeviceAdapterSerial>& values,
+                         dax::cont::ArrayHandle<U,DeviceAdapterSerial>& output)
     {
     DAX_ASSERT_CONT(input.hasExecutionArray());
     DAX_ASSERT_CONT(values.hasExecutionArray());    
@@ -95,7 +95,7 @@ struct DeviceAdapterDebug
 
 
   template<typename T>
-  static void Sort(dax::cont::ArrayHandle<T,DeviceAdapterDebug>& values)
+  static void Sort(dax::cont::ArrayHandle<T,DeviceAdapterSerial>& values)
     {
     DAX_ASSERT_CONT(values.hasExecutionArray());
     dax::cont::sortDebug(values.GetExecutionArray());
@@ -103,8 +103,8 @@ struct DeviceAdapterDebug
 
   template<typename T,typename U>
   static void StreamCompact(
-      const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& input,
-      dax::cont::ArrayHandle<U,DeviceAdapterDebug>& output)
+      const dax::cont::ArrayHandle<T,DeviceAdapterSerial>& input,
+      dax::cont::ArrayHandle<U,DeviceAdapterSerial>& output)
     {
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
@@ -117,9 +117,9 @@ struct DeviceAdapterDebug
 
   template<typename T, typename U>
   static void StreamCompact(
-      const dax::cont::ArrayHandle<T,DeviceAdapterDebug>& input,
-      const dax::cont::ArrayHandle<U,DeviceAdapterDebug>& stencil,
-      dax::cont::ArrayHandle<T,DeviceAdapterDebug>& output)
+      const dax::cont::ArrayHandle<T,DeviceAdapterSerial>& input,
+      const dax::cont::ArrayHandle<U,DeviceAdapterSerial>& stencil,
+      dax::cont::ArrayHandle<T,DeviceAdapterSerial>& output)
     {
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
@@ -133,7 +133,7 @@ struct DeviceAdapterDebug
     }
   
   template<typename T>
-  static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterDebug>& values)
+  static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterSerial>& values)
     {
     DAX_ASSERT_CONT(values.hasExecutionArray());
     dax::cont::uniqueDebug(values.GetExecutionArray());

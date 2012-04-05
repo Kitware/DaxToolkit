@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/cont/DeviceAdapterDebug.h>
+#include <dax/cont/DeviceAdapterSerial.h>
 
 #include "PipelineDebug.h"
 
