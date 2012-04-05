@@ -47,7 +47,7 @@ namespace cont {
 /// adapter can be overloaded by including the header file for a different
 /// adapter (for example, DeviceAdapterDebug.h). This overloading should be
 /// done \em before loading in any other Dax header files. Failing to do so
-/// could create inconsistencies in the default adapter used amongst classes.
+/// could create inconsistencies in the default adapter used among classes.
 ///
 class DeviceAdapter
 {
