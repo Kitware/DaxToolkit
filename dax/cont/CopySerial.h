@@ -14,8 +14,8 @@
 //
 //=============================================================================
 
-#ifndef __dax_cont_CopyDebug_h
-#define __dax_cont_CopyDebug_h
+#ifndef __dax_cont_CopySerial_h
+#define __dax_cont_CopySerial_h
 
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 #include <algorithm>
@@ -24,7 +24,7 @@ namespace dax {
 namespace cont {
 
 template<typename T>
-DAX_CONT_EXPORT void copyDebug(
+DAX_CONT_EXPORT void copySerial(
     const dax::cont::internal::ArrayContainerExecutionCPU<T> &from,
     dax::cont::internal::ArrayContainerExecutionCPU<T> &to)
 {
@@ -34,4 +34,4 @@ DAX_CONT_EXPORT void copyDebug(
 }
 } // namespace dax::cont
 
-#endif //__dax_cont_CopyDebug_h
+#endif //__dax_cont_CopySerial_h

@@ -19,7 +19,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 set(headers
   ArrayHandle.h
   Assert.h
-  CopyDebug.h
+  CopySerial.h
   DeviceAdapter.h
   DeviceAdapterSerial.h
   Error.h
@@ -28,13 +28,13 @@ set(headers
   ErrorControlBadValue.h
   ErrorControlOutOfMemory.h
   ErrorExecution.h
-  InclusiveScanDebug.h
-  LowerBoundsDebug.h
-  ScheduleDebug.h
-  SortDebug.h
-  StreamCompactDebug.h
+  InclusiveScanSerial.h
+  LowerBoundsSerial.h
+  ScheduleSerial.h
+  SortSerial.h
+  StreamCompactSerial.h
   UniformGrid.h
-  UniqueDebug.h
+  UniqueSerial.h
   UnstructuredGrid.h
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
   )

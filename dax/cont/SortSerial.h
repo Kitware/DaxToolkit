@@ -14,8 +14,8 @@
 //
 //=============================================================================
 
-#ifndef __dax_cont_SortDebug_h
-#define __dax_cont_SortDebug_h
+#ifndef __dax_cont_SortSerial_h
+#define __dax_cont_SortSerial_h
 
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 #include <algorithm>
@@ -25,7 +25,7 @@ namespace cont {
 
 
 template<typename T>
-DAX_CONT_EXPORT void sortDebug(
+DAX_CONT_EXPORT void sortSerial(
     dax::cont::internal::ArrayContainerExecutionCPU<T> &values)
 {
   std::sort(values.begin(),values.end());
@@ -34,4 +34,4 @@ DAX_CONT_EXPORT void sortDebug(
 }
 } // namespace dax::cont
 
-#endif //__dax_cont_SortDebug_h
+#endif //__dax_cont_SortSerial_h

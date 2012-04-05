@@ -14,8 +14,8 @@
 //
 //=============================================================================
 
-#ifndef __dax_cont_InclusiveScanDebug_h
-#define __dax_cont_InclusiveScanDebug_h
+#ifndef __dax_cont_InclusiveScanSerial_h
+#define __dax_cont_InclusiveScanSerial_h
 
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 #include <numeric>
@@ -24,7 +24,7 @@ namespace dax {
 namespace cont {
 
 template<typename T>
-DAX_CONT_EXPORT T inclusiveScanDebug(
+DAX_CONT_EXPORT T inclusiveScanSerial(
     const dax::cont::internal::ArrayContainerExecutionCPU<T> &from,
     dax::cont::internal::ArrayContainerExecutionCPU<T> &to)
 {
@@ -42,4 +42,4 @@ DAX_CONT_EXPORT T inclusiveScanDebug(
 }
 } // namespace dax::cont
 
-#endif //__dax_cont_InclusiveScanDebug_h
+#endif //__dax_cont_InclusiveScanSerial_h

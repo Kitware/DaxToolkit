@@ -15,8 +15,8 @@
 //=============================================================================
 
 
-#ifndef __dax_cont_UniqueDebug_h
-#define __dax_cont_UniqueDebug_h
+#ifndef __dax_cont_UniqueSerial_h
+#define __dax_cont_UniqueSerial_h
 
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 
@@ -27,7 +27,7 @@ namespace cont {
 
 
 template<typename T>
-DAX_CONT_EXPORT void uniqueDebug(dax::cont::internal::ArrayContainerExecutionCPU<T> &values)
+DAX_CONT_EXPORT void uniqueSerial(dax::cont::internal::ArrayContainerExecutionCPU<T> &values)
 {
   typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::iterator resultType;
 
@@ -39,4 +39,4 @@ DAX_CONT_EXPORT void uniqueDebug(dax::cont::internal::ArrayContainerExecutionCPU
 }
 } // namespace dax::cont
 
-#endif //__dax_cont_UniqueDebug_h
+#endif //__dax_cont_UniqueSerial_h

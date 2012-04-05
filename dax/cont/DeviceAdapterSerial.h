@@ -24,13 +24,13 @@
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterSerial
 
 #include <dax/internal/DataArray.h>
-#include <dax/cont/CopyDebug.h>
-#include <dax/cont/InclusiveScanDebug.h>
-#include <dax/cont/LowerBoundsDebug.h>
-#include <dax/cont/ScheduleDebug.h>
-#include <dax/cont/SortDebug.h>
-#include <dax/cont/StreamCompactDebug.h>
-#include <dax/cont/UniqueDebug.h>
+#include <dax/cont/CopySerial.h>
+#include <dax/cont/InclusiveScanSerial.h>
+#include <dax/cont/LowerBoundsSerial.h>
+#include <dax/cont/ScheduleSerial.h>
+#include <dax/cont/SortSerial.h>
+#include <dax/cont/StreamCompactSerial.h>
+#include <dax/cont/UniqueSerial.h>
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 
 
@@ -57,7 +57,7 @@ struct DeviceAdapterSerial
     DAX_ASSERT_CONT(from.hasExecutionArray());
     DAX_ASSERT_CONT(to.GetNumberOfEntries() >= from.GetNumberOfEntries());
     to.ReadyAsOutput();
-    dax::cont::copyDebug(from.GetExecutionArray(),to.GetExecutionArray());
+    dax::cont::copySerial(from.GetExecutionArray(),to.GetExecutionArray());
     }
 
   template<typename T>
@@ -67,7 +67,7 @@ struct DeviceAdapterSerial
     DAX_ASSERT_CONT(input.hasExecutionArray());
     DAX_ASSERT_CONT(output.GetNumberOfEntries() == input.GetNumberOfEntries());
     output.ReadyAsOutput();
-    return dax::cont::inclusiveScanDebug(input.GetExecutionArray(),
+    return dax::cont::inclusiveScanSerial(input.GetExecutionArray(),
                                          output.GetExecutionArray());
     }
 
@@ -80,7 +80,7 @@ struct DeviceAdapterSerial
     DAX_ASSERT_CONT(values.hasExecutionArray());    
     DAX_ASSERT_CONT(values.GetNumberOfEntries() <= output.GetNumberOfEntries());
     output.ReadyAsOutput();
-    dax::cont::lowerBoundsDebug(input.GetExecutionArray(),
+    dax::cont::lowerBoundsSerial(input.GetExecutionArray(),
                                 values.GetExecutionArray(),
                                 output.GetExecutionArray());
     }
@@ -90,7 +90,7 @@ struct DeviceAdapterSerial
                        Parameters parameters,
                        dax::Id numInstances)
     {
-    dax::cont::scheduleDebug(functor, parameters, numInstances);
+    dax::cont::scheduleSerial(functor, parameters, numInstances);
     }
 
 
@@ -98,7 +98,7 @@ struct DeviceAdapterSerial
   static void Sort(dax::cont::ArrayHandle<T,DeviceAdapterSerial>& values)
     {
     DAX_ASSERT_CONT(values.hasExecutionArray());
-    dax::cont::sortDebug(values.GetExecutionArray());
+    dax::cont::sortSerial(values.GetExecutionArray());
     }
 
   template<typename T,typename U>
@@ -110,7 +110,7 @@ struct DeviceAdapterSerial
     //step. In this case the index position is the input and the value at
     //each index is the stencil value
     DAX_ASSERT_CONT(input.hasExecutionArray());
-    dax::cont::streamCompactDebug(input.GetExecutionArray(),
+    dax::cont::streamCompactSerial(input.GetExecutionArray(),
                                   output.GetExecutionArray());
     output.UpdateArraySize();
     }
@@ -126,7 +126,7 @@ struct DeviceAdapterSerial
     //each index is the stencil value
     DAX_ASSERT_CONT(input.hasExecutionArray());
     DAX_ASSERT_CONT(stencil.hasExecutionArray());
-    dax::cont::streamCompactDebug(input.GetExecutionArray(),
+    dax::cont::streamCompactSerial(input.GetExecutionArray(),
                                   stencil.GetExecutionArray(),
                                   output.GetExecutionArray());
     output.UpdateArraySize();
@@ -136,7 +136,7 @@ struct DeviceAdapterSerial
   static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterSerial>& values)
     {
     DAX_ASSERT_CONT(values.hasExecutionArray());
-    dax::cont::uniqueDebug(values.GetExecutionArray());
+    dax::cont::uniqueSerial(values.GetExecutionArray());
     values.UpdateArraySize(); //unique might resize the execution array
     }
 
