@@ -14,8 +14,8 @@
 //
 //=============================================================================
 
-#ifndef __dax_cont_DeviceAdapterDebug_h
-#define __dax_cont_DeviceAdapterDebug_h
+#ifndef __dax_cont_DeviceAdapterSerial_h
+#define __dax_cont_DeviceAdapterSerial_h
 
 #ifdef DAX_DEFAULT_DEVICE_ADAPTER
 #undef DAX_DEFAULT_DEVICE_ADAPTER
@@ -145,4 +145,4 @@ struct DeviceAdapterSerial
 }
 } // namespace dax::cont
 
-#endif //__dax_cont_DeviceAdapterDebug_h
+#endif //__dax_cont_DeviceAdapterSerial_h

@@ -41,7 +41,7 @@ bool dax::testing::ArgumentsParser::parseArguments(int argc, char* argv[])
   desc.add_options()
     ("size", po::value<unsigned int>(), "Problem size (default: 128)")
     ("pipeline", po::value<unsigned int>(), "Pipeline (1, 2 or 3) (default: 1)")
-    ("device", po::value<std::string>(), "Device (all, debug, openmp or cuda) (default: all)")
+    ("device", po::value<std::string>(), "Device (all, serial, openmp or cuda) (default: all)")
     ("help", "Generate this help message");
 
   po::variables_map variables;
@@ -72,9 +72,9 @@ bool dax::testing::ArgumentsParser::parseArguments(int argc, char* argv[])
       {
       this->Device = DEVICE_ALL;
       }
-    if (deviceString == "debug")
+    if (deviceString == "serial")
       {
-      this->Device = DEVICE_DEBUG;
+      this->Device = DEVICE_SERIAL;
       }
     if (deviceString == "openmp")
       {

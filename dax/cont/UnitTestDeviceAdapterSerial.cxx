@@ -18,7 +18,7 @@
 
 #include <dax/cont/internal/TestingDeviceAdapter.h>
 
-int UnitTestDeviceAdapterDebug(int, char *[])
+int UnitTestDeviceAdapterSerial(int, char *[])
 {
   return dax::cont::internal::TestingDeviceAdapter
       <dax::cont::DeviceAdapterSerial>::Run();

@@ -57,7 +57,7 @@ configure_file(
 #-----------------------------------------------------------------------------
 set(unit_tests
   UnitTestArrayHandle.cxx
-  UnitTestDeviceAdapterDebug.cxx
+  UnitTestDeviceAdapterSerial.cxx
   UnitTestVectorOperations.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

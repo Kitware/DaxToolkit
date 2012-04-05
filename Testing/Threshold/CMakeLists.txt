@@ -111,16 +111,16 @@ if(DAX_ENABLE_PISTON_TESTING)
 endif()
 
 #-----------------------------------------------------------------------------
-add_executable(ThresholdTimingDebug ${sources} ${headers} PipelineDebug.cxx)
+add_executable(ThresholdTimingSerial ${sources} ${headers} PipelineSerial.cxx)
 set_source_files_properties(${headers} PROPERTIES HEADER_FILE_ONLY TRUE)
-target_link_libraries(ThresholdTimingDebug
+target_link_libraries(ThresholdTimingSerial
   ${Boost_LIBRARIES}
   )
 
-add_test(ThresholdTimingDebug1-128
-  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingDebug --pipeline 1 --size 128)
-add_test(ThresholdTimingDebug1-256
-  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingDebug --pipeline 1 --size 256)
+add_test(ThresholdTimingSerial1-128
+  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingSerial --pipeline 1 --size 128)
+add_test(ThresholdTimingSerial1-256
+  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingSerial --pipeline 1 --size 256)
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_OPENMP)

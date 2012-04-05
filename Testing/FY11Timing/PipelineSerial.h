@@ -14,11 +14,11 @@
 //
 //=============================================================================
 
-#ifndef __PipelineDebug_h
-#define __PipelineDebug_h
+#ifndef __PipelineSerial_h
+#define __PipelineSerial_h
 
 #include <dax/cont/UniformGrid.h>
 
-void RunPipelineDebug(int pipeline, const dax::cont::UniformGrid &grid);
+void RunPipelineSerial(int pipeline, const dax::cont::UniformGrid &grid);
 
-#endif //__PipelineDebug_h
+#endif //__PipelineSerial_h
