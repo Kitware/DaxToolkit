@@ -18,6 +18,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 set(headers
   ArrayContainerControl.h
+  ArrayContainerControlBasic.h
   ArrayHandle.h
   Assert.h
   CopyDebug.h

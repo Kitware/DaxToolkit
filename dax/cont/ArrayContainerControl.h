@@ -20,8 +20,6 @@
 // Include for basic container.
 #endif // DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
 
-#include <dax/Types.h>
-
 namespace dax {
 namespace cont {
 
@@ -50,6 +48,23 @@ namespace cont {
 /// memory of the array can be incorrectly bound to the wrong process.  If you
 /// do provide your own ArrayContainerControl, please be diligent in comparing
 /// its performance to the ArrayContainerControlBasic.
+///
+/// In addition to the performance constraints listed above, an implementation
+/// of ArrayContainerControl is expected to exhibit the following behaviors (in
+/// addition to the obvious documentation of members).
+///
+/// \param A copy of an ArrayContainerControl (either through a copy
+/// constructor or a copy operator) should do a shallow copy.
+///
+/// \param An Allocate or ReleaseResources on any copy of the array should
+/// change the memory reference in all copies of the ArrayContainerControl.
+///
+/// \param The ArrayContainerControl should internally reference count the
+/// number of copies pointing to memory and automatically free the memory when
+/// the count reaches 0.
+///
+/// These requirements together basically state that the ArrayContainerControl
+/// should be have like a reference counted smart pointer.
 ///
 template <typename ValueT>
 class ArrayContainerControl
@@ -80,8 +95,10 @@ public:
 
   /// \brief Allocates an array large enough to hold the given number of values.
   ///
-  /// This method can throw ErrorControlOutOfMemory if the array cannot be
-  /// allocated.
+  /// The allocation may be done on an already existing array, but can wipe out
+  /// any data already in the array. This method can throw
+  /// ErrorControlOutOfMemory if the array cannot be allocated.
+  ///
   void Allocate(dax::Id numberOfValues);
 
   /// \brief Frees any resources (i.e. memory) stored in this array.
