@@ -27,8 +27,8 @@
 ///
 /// \param functor is a function or functor class that accepts one argument of
 /// the scalar type contained in the vector (specifically
-/// <tt>dax::VectorTraits<VectorType>::ValueType</tt>) and returns a value of
-/// the same type.
+/// <tt>dax::VectorTraits<VectorType>::ComponentType</tt>) and returns a value
+/// of the same type.
 ///
 /// \return A vector with \c functor applied to all components of \c vector.
 ///
@@ -71,7 +71,7 @@ VectorType VectorMap(const VectorType &vector, const FunctorType &functor)
 ///
 /// \param functor is a function or functor class that accepts one argument of
 /// the scalar type contained in the vector (specifically
-/// <tt>dax::VectorTraits<VectorType>::ValueType</tt>).
+/// <tt>dax::VectorTraits<VectorType>::ComponentType</tt>).
 ///
 template<class VectorType, class FunctorType>
 @DAX_VECTOR_OPERATIONS_EXPORT@
@@ -98,13 +98,13 @@ namespace internal {
 
 /// This hidden functor is used to implement VectorFill with VectorForEach.
 ///
-template<typename ValueType>
+template<typename ComponentType>
 struct VectorFillFunctor
 {
-  VectorFillFunctor(ValueType value) : Value(value) { }
-  void operator()(ValueType &component) const { component = this->Value; }
+  VectorFillFunctor(ComponentType value) : Value(value) { }
+  void operator()(ComponentType &component) const { component = this->Value; }
 private:
-  ValueType Value;
+  ComponentType Value;
 };
 
 } // namespace internal
@@ -114,10 +114,10 @@ private:
 template<class VectorType>
 @DAX_VECTOR_OPERATIONS_EXPORT@
 void VectorFill(VectorType &vector,
-                typename dax::VectorTraits<VectorType>::ValueType value)
+                typename dax::VectorTraits<VectorType>::ComponentType value)
 {
-  typedef typename dax::VectorTraits<VectorType>::ValueType ValueType;
-  VectorForEach(vector, internal::VectorFillFunctor<ValueType>(value));
+  typedef typename dax::VectorTraits<VectorType>::ComponentType ComponentType;
+  VectorForEach(vector, internal::VectorFillFunctor<ComponentType>(value));
 }
 
 /// Fills every component in a vector with the given value. As a convenience,
@@ -127,7 +127,8 @@ void VectorFill(VectorType &vector,
 ///
 template<class VectorType>
 @DAX_VECTOR_OPERATIONS_EXPORT@
-VectorType VectorFill(typename dax::VectorTraits<VectorType>::ValueType value)
+VectorType VectorFill(
+    typename dax::VectorTraits<VectorType>::ComponentType value)
 {
   VectorType vector;
   VectorFill(vector, value);
@@ -141,14 +142,14 @@ namespace internal {
 ///
 template<class VectorType, class FunctorType>
 @DAX_VECTOR_OPERATIONS_EXPORT@
-typename dax::VectorTraits<VectorType>::ValueType
+typename dax::VectorTraits<VectorType>::ComponentType
 VectorReduceImpl(const VectorType &vector,
                  FunctorType &functor,
                  dax::VectorTraitsTagMultipleComponents)
 {
   typedef dax::VectorTraits<VectorType> Traits;
-  typedef typename Traits::ValueType ValueType;
-  ValueType result = functor(Traits::GetComponent(vector, 0),
+  typedef typename Traits::ComponentType ComponentType;
+  ComponentType result = functor(Traits::GetComponent(vector, 0),
                              Traits::GetComponent(vector, 1));
   for (int component = 2; component < Traits::NUM_COMPONENTS; component++)
     {
@@ -159,14 +160,14 @@ VectorReduceImpl(const VectorType &vector,
 
 template<class VectorType, class FunctorType>
 @DAX_VECTOR_OPERATIONS_EXPORT@
-typename dax::VectorTraits<VectorType>::ValueType
+typename dax::VectorTraits<VectorType>::ComponentType
 VectorReduceImpl(const VectorType &vector,
                  const FunctorType &functor,
                  dax::VectorTraitsTagMultipleComponents)
 {
   typedef dax::VectorTraits<VectorType> Traits;
-  typedef typename Traits::ValueType ValueType;
-  ValueType result = functor(Traits::GetComponent(vector, 0),
+  typedef typename Traits::ComponentType ComponentType;
+  ComponentType result = functor(Traits::GetComponent(vector, 0),
                              Traits::GetComponent(vector, 1));
   for (int component = 2; component < Traits::NUM_COMPONENTS; component++)
     {
@@ -177,7 +178,7 @@ VectorReduceImpl(const VectorType &vector,
 
 template<class VectorType, class FunctorType>
 @DAX_VECTOR_OPERATIONS_EXPORT@
-typename dax::VectorTraits<VectorType>::ValueType
+typename dax::VectorTraits<VectorType>::ComponentType
 VectorReduceImpl(const VectorType &vector,
                  const FunctorType &,
                  dax::VectorTraitsTagSingleComponent)
@@ -193,15 +194,15 @@ VectorReduceImpl(const VectorType &vector,
 ///
 /// \param functor is a function or functor class that accepts two arguments of
 /// the scalar type contained in the vector (specifically
-/// <tt>dax::VectorTraits<VectorType>::ValueType</tt>) and returns a value of
-/// the same type.  The operation should be associative.
+/// <tt>dax::VectorTraits<VectorType>::ComponentType</tt>) and returns a value
+/// of the same type. The operation should be associative.
 ///
 /// \return The reduced value of the vector. If the vector contains only one
 /// component, that component is returned.
 ///
 template<class VectorType, class FunctorType>
 @DAX_VECTOR_OPERATIONS_EXPORT@
-typename dax::VectorTraits<VectorType>::ValueType
+typename dax::VectorTraits<VectorType>::ComponentType
 VectorReduce(const VectorType &vector, FunctorType &functor)
 {
   typedef typename dax::VectorTraits<VectorType>::HasMultipleComponents
@@ -212,7 +213,7 @@ VectorReduce(const VectorType &vector, FunctorType &functor)
 }
 template<class VectorType, class FunctorType>
 @DAX_VECTOR_OPERATIONS_EXPORT@
-typename dax::VectorTraits<VectorType>::ValueType
+typename dax::VectorTraits<VectorType>::ComponentType
 VectorReduce(const VectorType &vector, const FunctorType &functor)
 {
   typedef typename dax::VectorTraits<VectorType>::HasMultipleComponents

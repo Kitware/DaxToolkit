@@ -38,7 +38,7 @@ template<class VectorType>
 struct VectorTraits {
   /// Type of the components in the vector.
   ///
-  typedef typename VectorType::ValueType ValueType;
+  typedef typename VectorType::ComponentType ComponentType;
 
   /// Number of components in the vector.
   ///
@@ -55,12 +55,12 @@ struct VectorTraits {
 
   /// Returns the value in a given component of the vector.
   ///
-  DAX_EXEC_CONT_EXPORT static const ValueType &GetComponent(
+  DAX_EXEC_CONT_EXPORT static const ComponentType &GetComponent(
       const typename boost::remove_const<VectorType>::type &vector,
       int component) {
     return vector[component];
   }
-  DAX_EXEC_CONT_EXPORT static ValueType &GetComponent(
+  DAX_EXEC_CONT_EXPORT static ComponentType &GetComponent(
       typename boost::remove_const<VectorType>::type &vector,
       int component) {
     return vector[component];
@@ -70,7 +70,7 @@ struct VectorTraits {
   ///
   DAX_EXEC_CONT_EXPORT static void SetComponent(VectorType &vector,
                                                 int component,
-                                                ValueType value) {
+                                                ComponentType value) {
     vector[component] = value;
   }
 };
@@ -80,22 +80,23 @@ namespace internal {
 ///
 template<typename ScalarType>
 struct VectorTraitsBasic {
-  typedef ScalarType ValueType;
+  typedef ScalarType ComponentType;
   static const int NUM_COMPONENTS = 1;
   typedef VectorTraitsTagSingleComponent HasMultipleComponents;
 
-  DAX_EXEC_CONT_EXPORT static const ValueType &GetComponent(
+  DAX_EXEC_CONT_EXPORT static const ComponentType &GetComponent(
       const ScalarType &vector,
       int) {
     return vector;
   }
-  DAX_EXEC_CONT_EXPORT static ValueType &GetComponent(ScalarType &vector, int) {
+  DAX_EXEC_CONT_EXPORT
+  static ComponentType &GetComponent(ScalarType &vector, int) {
     return vector;
   }
 
   DAX_EXEC_CONT_EXPORT static void SetComponent(ScalarType &vector,
                                                 int,
-                                                ValueType value) {
+                                                ComponentType value) {
     vector = value;
   }
 };
