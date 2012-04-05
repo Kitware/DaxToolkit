@@ -41,18 +41,19 @@ template <class VectorType>
 static void TestVectorType(const VectorType &value)
 {
   typedef typename dax::VectorTraits<VectorType> Traits;
-  typedef typename Traits::ValueType ValueType;
+  typedef typename Traits::ComponentType ComponentType;
 
-  VectorType squaredVector = dax::cont::VectorMap(value, Square<ValueType>);
+  VectorType squaredVector = dax::cont::VectorMap(value, Square<ComponentType>);
   DAX_TEST_ASSERT(squaredVector == value*value,
                   "Got bad result for squaring vector components");
 
-  ValueType magSquared = dax::cont::VectorReduce(squaredVector, Add<ValueType>);
+  ComponentType magSquared
+      = dax::cont::VectorReduce(squaredVector, Add<ComponentType>);
   DAX_TEST_ASSERT(magSquared == dax::dot(value, value),
                   "Got bad result for summing vector components");
 
   {
-  Summation<ValueType> sum;
+  Summation<ComponentType> sum;
   dax::cont::VectorForEach(squaredVector, sum);
   DAX_TEST_ASSERT(sum.Sum == magSquared,
                   "Got bad result for summing with VectorForEach");
@@ -60,7 +61,7 @@ static void TestVectorType(const VectorType &value)
 
   {
   // Repeat the last test with a const reference.
-  Summation<ValueType> sum;
+  Summation<ComponentType> sum;
   const VectorType &constSquaredVector = squaredVector;
   dax::cont::VectorForEach(constSquaredVector, sum);
   DAX_TEST_ASSERT(sum.Sum == magSquared,
@@ -69,10 +70,10 @@ static void TestVectorType(const VectorType &value)
 
   {
   // Test the VectorFill function.
-  ValueType fillValue = Traits::GetComponent(value, 0);
+  ComponentType fillValue = Traits::GetComponent(value, 0);
   VectorType fillVector;
   dax::cont::VectorFill(fillVector, fillValue);
-  Summation<ValueType> sum;
+  Summation<ComponentType> sum;
   dax::cont::VectorForEach(fillVector, sum);
   DAX_TEST_ASSERT(sum.Sum == fillValue * Traits::NUM_COMPONENTS,
                   "Got bad result filling vector");
@@ -80,9 +81,9 @@ static void TestVectorType(const VectorType &value)
 
   {
   // Test another form of the VectorFill function.
-  ValueType fillValue = Traits::GetComponent(value, 0);
+  ComponentType fillValue = Traits::GetComponent(value, 0);
   VectorType fillVector = dax::cont::VectorFill<VectorType>(fillValue);
-  Summation<ValueType> sum;
+  Summation<ComponentType> sum;
   dax::cont::VectorForEach(fillVector, sum);
   DAX_TEST_ASSERT(sum.Sum == fillValue * Traits::NUM_COMPONENTS,
                   "Got bad result filling vector");
