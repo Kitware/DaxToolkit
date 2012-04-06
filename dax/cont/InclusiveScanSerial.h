@@ -14,29 +14,32 @@
 //
 //=============================================================================
 
-
-#ifndef __dax_cont_UniqueDebug_h
-#define __dax_cont_UniqueDebug_h
+#ifndef __dax_cont_InclusiveScanSerial_h
+#define __dax_cont_InclusiveScanSerial_h
 
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
-
-#include <algorithm>
+#include <numeric>
 
 namespace dax {
 namespace cont {
 
-
 template<typename T>
-DAX_CONT_EXPORT void uniqueDebug(dax::cont::internal::ArrayContainerExecutionCPU<T> &values)
+DAX_CONT_EXPORT T inclusiveScanSerial(
+    const dax::cont::internal::ArrayContainerExecutionCPU<T> &from,
+    dax::cont::internal::ArrayContainerExecutionCPU<T> &to)
 {
-  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::iterator resultType;
+  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::iterator Iter;
+  Iter result = std::partial_sum(from.begin(),from.end(),to.begin());
 
-  resultType newEnd = std::unique(values.begin(),values.end());
-  values.Allocate( std::distance(values.begin(),newEnd) );
-
+  //return the value at the last index in the array, as that is the size
+  if(std::distance(to.begin(),result) > 0)
+    {
+    return *(--result);
+    }
+  return T(0);
 }
 
 }
 } // namespace dax::cont
 
-#endif //__dax_cont_UniqueDebug_h
+#endif //__dax_cont_InclusiveScanSerial_h

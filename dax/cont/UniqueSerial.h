@@ -14,11 +14,29 @@
 //
 //=============================================================================
 
-#ifndef __PipelineDebug_h
-#define __PipelineDebug_h
 
-#include <dax/cont/UniformGrid.h>
+#ifndef __dax_cont_UniqueSerial_h
+#define __dax_cont_UniqueSerial_h
 
-void RunPipelineDebug(int pipeline, const dax::cont::UniformGrid &grid);
+#include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 
-#endif //__PipelineDebug_h
+#include <algorithm>
+
+namespace dax {
+namespace cont {
+
+
+template<typename T>
+DAX_CONT_EXPORT void uniqueSerial(dax::cont::internal::ArrayContainerExecutionCPU<T> &values)
+{
+  typedef typename dax::cont::internal::ArrayContainerExecutionCPU<T>::iterator resultType;
+
+  resultType newEnd = std::unique(values.begin(),values.end());
+  values.Allocate( std::distance(values.begin(),newEnd) );
+
+}
+
+}
+} // namespace dax::cont
+
+#endif //__dax_cont_UniqueSerial_h

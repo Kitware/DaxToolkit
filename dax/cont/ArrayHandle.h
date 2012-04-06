@@ -238,7 +238,7 @@ private:
 
   //make the converter class a friend class,
   //so that it can access GetExecutionArray.
-  friend class dax::cont::DeviceAdapterDebug;
+  friend class dax::cont::DeviceAdapterSerial;
   friend class dax::cuda::cont::DeviceAdapterCuda;
   friend class dax::openmp::cont::DeviceAdapterOpenMP;
 

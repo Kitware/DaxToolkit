@@ -37,7 +37,7 @@ static void TestAssert()
   try
     {
     dax::cont::worklet::testing::Assert
-        <dax::cont::UniformGrid, dax::cont::DeviceAdapterDebug>(grid);
+        <dax::cont::UniformGrid, dax::cont::DeviceAdapterSerial>(grid);
     }
   catch (dax::cont::ErrorExecution error)
     {

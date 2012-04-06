@@ -52,18 +52,18 @@ set(sources
   )
 
 #-----------------------------------------------------------------------------
-add_executable(FY11TimingDebug ${sources} ${headers} PipelineDebug.cxx)
+add_executable(FY11TimingSerial ${sources} ${headers} PipelineSerial.cxx)
 set_source_files_properties(${headers} PROPERTIES HEADER_FILE_ONLY TRUE)
-target_link_libraries(FY11TimingDebug
+target_link_libraries(FY11TimingSerial
   ${Boost_LIBRARIES}
   )
 
-add_test(FY11TimingDebug1-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingDebug --pipeline 1 --size 128)
-add_test(FY11TimingDebug2-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingDebug --pipeline 2 --size 128)
-add_test(FY11TimingDebug3-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingDebug --pipeline 3 --size 128)
+add_test(FY11TimingSerial1-128
+  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingSerial --pipeline 1 --size 128)
+add_test(FY11TimingSerial2-128
+  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingSerial --pipeline 2 --size 128)
+add_test(FY11TimingSerial3-128
+  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingSerial --pipeline 3 --size 128)
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_OPENMP)

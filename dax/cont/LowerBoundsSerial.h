@@ -14,8 +14,8 @@
 //
 //=============================================================================
 
-#ifndef __dax_cont_LowerBoundsDebug_h
-#define __dax_cont_LowerBoundsDebug_h
+#ifndef __dax_cont_LowerBoundsSerial_h
+#define __dax_cont_LowerBoundsSerial_h
 
 #include <dax/Types.h>
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
@@ -25,7 +25,7 @@
 namespace dax {
 namespace cont {
 template<typename T>
-DAX_CONT_EXPORT void lowerBoundsDebug(
+DAX_CONT_EXPORT void lowerBoundsSerial(
     const dax::cont::internal::ArrayContainerExecutionCPU<T>& input,
     const dax::cont::internal::ArrayContainerExecutionCPU<T>& values,
     dax::cont::internal::ArrayContainerExecutionCPU<dax::Id>& output)
@@ -53,4 +53,4 @@ DAX_CONT_EXPORT void lowerBoundsDebug(
 }
 } // namespace dax::cont
 
-#endif //__dax_cont_LowerBoundsDebug_h
+#endif //__dax_cont_LowerBoundsSerial_h

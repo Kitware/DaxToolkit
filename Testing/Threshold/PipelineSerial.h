@@ -14,12 +14,11 @@
 //
 //=============================================================================
 
-#include <dax/cont/DeviceAdapterDebug.h>
+#ifndef __PipelineSerial_h
+#define __PipelineSerial_h
 
-#include <dax/cont/internal/TestingDeviceAdapter.h>
+#include <dax/cont/UniformGrid.h>
 
-int UnitTestDeviceAdapterDebug(int, char *[])
-{
-  return dax::cont::internal::TestingDeviceAdapter
-      <dax::cont::DeviceAdapterDebug>::Run();
-}
+void RunPipelineSerial(int pipeline, const dax::cont::UniformGrid &grid);
+
+#endif //__PipelineSerial_h

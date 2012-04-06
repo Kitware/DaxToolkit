@@ -14,24 +14,12 @@
 //
 //=============================================================================
 
-#ifndef __dax_cont_SortDebug_h
-#define __dax_cont_SortDebug_h
+#include <dax/cont/DeviceAdapterSerial.h>
 
-#include <dax/cont/internal/ArrayContainerExecutionCPU.h>
-#include <algorithm>
+#include <dax/cont/internal/TestingDeviceAdapter.h>
 
-namespace dax {
-namespace cont {
-
-
-template<typename T>
-DAX_CONT_EXPORT void sortDebug(
-    dax::cont::internal::ArrayContainerExecutionCPU<T> &values)
+int UnitTestDeviceAdapterSerial(int, char *[])
 {
-  std::sort(values.begin(),values.end());
+  return dax::cont::internal::TestingDeviceAdapter
+      <dax::cont::DeviceAdapterSerial>::Run();
 }
-
-}
-} // namespace dax::cont
-
-#endif //__dax_cont_SortDebug_h

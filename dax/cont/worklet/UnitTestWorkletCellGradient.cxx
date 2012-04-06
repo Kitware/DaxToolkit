@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/cont/DeviceAdapterDebug.h>
+#include <dax/cont/DeviceAdapterSerial.h>
 #include <dax/cont/internal/DeviceAdapterError.h>
 
 #include <dax/cont/worklet/CellGradient.h>
@@ -45,11 +45,11 @@ static void TestCellGradient()
     field[pointIndex]
         = dax::dot(grid.GetPointCoordinates(pointIndex), trueGradient);
     }
-  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterDebug>
+  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterSerial>
       fieldHandle(field.begin(), field.end());
 
   std::vector<dax::Vector3> gradient(grid.GetNumberOfCells());
-  dax::cont::ArrayHandle<dax::Vector3, dax::cont::DeviceAdapterDebug>
+  dax::cont::ArrayHandle<dax::Vector3, dax::cont::DeviceAdapterSerial>
       gradientHandle(gradient.begin(), gradient.end());
 
   std::cout << "Running CellGradient worklet" << std::endl;
