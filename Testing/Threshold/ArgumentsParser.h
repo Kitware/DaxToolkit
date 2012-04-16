@@ -37,7 +37,7 @@ public:
   enum DeviceAdapterMode
   {
     DEVICE_ALL,
-    DEVICE_DEBUG,
+    DEVICE_SERIAL,
     DEVICE_OPENMP,
     DEVICE_CUDA
   };

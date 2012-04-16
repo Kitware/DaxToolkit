@@ -26,7 +26,7 @@
 #ifdef DAX_OPENMP
 #include <dax/openmp/cont/DeviceAdapterOpenMP.h>
 #else // DAX_OPENMP
-#include <dax/cont/DeviceAdapterDebug.h>
+#include <dax/cont/DeviceAdapterSerial.h>
 #endif // DAX_OPENMP
 #endif // DAX_CUDA
 #endif // DAX_DEFAULT_DEVICE_ADAPTER
@@ -45,7 +45,7 @@ namespace cont {
 /// Loading the dax/cont/DeviceAdapter.h header file will set a default device
 /// adapter appropriate for the current compile environment. The default
 /// adapter can be overloaded by including the header file for a different
-/// adapter (for example, DeviceAdapterDebug.h). This overloading should be
+/// adapter (for example, DeviceAdapterSerial.h). This overloading should be
 /// done \em before loading in any other Dax header files. Failing to do so
 /// could create inconsistencies in the default adapter used among classes.
 ///
@@ -229,7 +229,7 @@ public:
 
 //forward declare all the different device adapters so that
 //ArrayHandle can be use them as a friend class
-namespace dax { namespace cont { struct DeviceAdapterDebug; }}
+namespace dax { namespace cont { struct DeviceAdapterSerial; }}
 namespace dax { namespace cuda { namespace cont { struct DeviceAdapterCuda; }}}
 namespace dax { namespace openmp {  namespace cont { struct DeviceAdapterOpenMP; }}}
 

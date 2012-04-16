@@ -74,7 +74,7 @@ namespace cont {
 
 namespace internal {
 
-DAX_CONT_EXPORT dax::internal::DataArray<char> getScheduleDebugErrorArray()
+DAX_CONT_EXPORT dax::internal::DataArray<char> getScheduleSerialErrorArray()
 {
   const dax::Id ERROR_ARRAY_SIZE = 1024;
   static char ErrorArrayBuffer[ERROR_ARRAY_SIZE];
@@ -85,12 +85,12 @@ DAX_CONT_EXPORT dax::internal::DataArray<char> getScheduleDebugErrorArray()
 }
 
 template<class Functor, class Parameters>
-DAX_CONT_EXPORT void scheduleDebug(Functor functor,
+DAX_CONT_EXPORT void scheduleSerial(Functor functor,
                                    Parameters &parameters,
                                    dax::Id numInstances)
 {
   dax::internal::DataArray<char> errorArray
-      = internal::getScheduleDebugErrorArray();
+      = internal::getScheduleSerialErrorArray();
   // Clear error value.
   errorArray.SetValue(0, '\0');
 

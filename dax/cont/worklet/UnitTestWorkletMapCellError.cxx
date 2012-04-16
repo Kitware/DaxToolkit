@@ -37,7 +37,7 @@ static void TestCellMapError()
   try
     {
     dax::cont::worklet::testing::CellMapError
-        <dax::cont::UniformGrid, dax::cont::DeviceAdapterDebug>(grid);
+        <dax::cont::UniformGrid, dax::cont::DeviceAdapterSerial>(grid);
     }
   catch (dax::cont::ErrorExecution error)
     {

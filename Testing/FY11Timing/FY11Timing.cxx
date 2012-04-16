@@ -26,7 +26,7 @@
 
 #include "FY11TimingConfig.h"
 
-#include "PipelineDebug.h"
+#include "PipelineSerial.h"
 
 #ifdef DAX_ENABLE_OPENMP
 #include "PipelineOpenMP.h"
@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
   switch (parser.device())
     {
     case dax::testing::ArgumentsParser::DEVICE_ALL:
-      RunPipelineDebug(pipeline, grid);
+      RunPipelineSerial(pipeline, grid);
 #ifdef DAX_ENABLE_OPENMP
       RunPipelineOpenMP(pipeline, grid);
 #endif
@@ -78,8 +78,8 @@ int main(int argc, char* argv[])
       RunPipelineCuda(pipeline, grid);
 #endif
       break;
-    case dax::testing::ArgumentsParser::DEVICE_DEBUG:
-      RunPipelineDebug(pipeline, grid);
+    case dax::testing::ArgumentsParser::DEVICE_SERIAL:
+      RunPipelineSerial(pipeline, grid);
       break;
     case dax::testing::ArgumentsParser::DEVICE_OPENMP:
 #ifdef DAX_ENABLE_OPENMP

@@ -29,7 +29,7 @@ namespace dax {
 namespace cont {
 
 template<typename T, typename U>
-DAX_EXEC_CONT_EXPORT void streamCompactDebug(
+DAX_EXEC_CONT_EXPORT void streamCompactSerial(
     const dax::cont::internal::ArrayContainerExecutionCPU<T>& input,
     const dax::cont::internal::ArrayContainerExecutionCPU<U>& stencil,
     dax::cont::internal::ArrayContainerExecutionCPU<T>& output)
@@ -60,7 +60,7 @@ DAX_EXEC_CONT_EXPORT void streamCompactDebug(
 }
 
 template<typename T,typename U>
-DAX_EXEC_CONT_EXPORT void streamCompactDebug(
+DAX_EXEC_CONT_EXPORT void streamCompactSerial(
     const dax::cont::internal::ArrayContainerExecutionCPU<T>& input,
     dax::cont::internal::ArrayContainerExecutionCPU<U>& output)
 {

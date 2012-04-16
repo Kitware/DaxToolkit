@@ -37,7 +37,7 @@ static void TestFieldMapError()
   try
     {
     dax::cont::worklet::testing::FieldMapError
-        <dax::cont::UniformGrid, dax::cont::DeviceAdapterDebug>(grid);
+        <dax::cont::UniformGrid, dax::cont::DeviceAdapterSerial>(grid);
     }
   catch (dax::cont::ErrorExecution error)
     {

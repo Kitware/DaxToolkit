@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/cont/DeviceAdapterDebug.h>
+#include <dax/cont/DeviceAdapterSerial.h>
 #include <dax/cont/internal/DeviceAdapterError.h>
 
 #include <dax/cont/worklet/Sine.h>
@@ -45,11 +45,11 @@ static void TestSine()
     field[pointIndex]
         = dax::dot(grid.GetPointCoordinates(pointIndex), trueGradient);
     }
-  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterDebug>
+  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterSerial>
       fieldHandle(field.begin(), field.end());
 
   std::vector<dax::Scalar> sine(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterDebug>
+  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterSerial>
       sineHandle(sine.begin(), sine.end());
 
   std::cout << "Running Sine worklet" << std::endl;

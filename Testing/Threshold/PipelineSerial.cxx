@@ -14,13 +14,13 @@
 //
 //=============================================================================
 
-#include <dax/cont/DeviceAdapterDebug.h>
+#include <dax/cont/DeviceAdapterSerial.h>
 
-#include "PipelineDebug.h"
+#include "PipelineSerial.h"
 
 #include "Pipeline.h"
 
-void RunPipelineDebug(int pipeline, const dax::cont::UniformGrid &grid)
+void RunPipelineSerial(int pipeline, const dax::cont::UniformGrid &grid)
 {
   RunDAXPipeline(grid);
 }
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
   int pipeline = parser.pipeline();
   std::cout << "Pipeline #" << pipeline << std::endl;
 
-  RunPipelineDebug(pipeline, grid);
+  RunPipelineSerial(pipeline, grid);
 
   return 0;
 }

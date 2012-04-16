@@ -14,11 +14,24 @@
 //
 //=============================================================================
 
-#ifndef __PipelineDebug_h
-#define __PipelineDebug_h
+#ifndef __dax_cont_SortSerial_h
+#define __dax_cont_SortSerial_h
 
-#include <dax/cont/UniformGrid.h>
+#include <dax/cont/internal/ArrayContainerExecutionCPU.h>
+#include <algorithm>
 
-void RunPipelineDebug(int pipeline, const dax::cont::UniformGrid &grid);
+namespace dax {
+namespace cont {
 
-#endif //__PipelineDebug_h
+
+template<typename T>
+DAX_CONT_EXPORT void sortSerial(
+    dax::cont::internal::ArrayContainerExecutionCPU<T> &values)
+{
+  std::sort(values.begin(),values.end());
+}
+
+}
+} // namespace dax::cont
+
+#endif //__dax_cont_SortSerial_h
