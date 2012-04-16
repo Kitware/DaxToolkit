@@ -78,7 +78,7 @@ if(DAX_ENABLE_VTK_TESTING)
   add_executable(ThresholdTimingVTK ${sources} ${vtkHeaders} PipelineVTK.cxx)
   set_source_files_properties(${vtkHeaders} PROPERTIES HEADER_FILE_ONLY TRUE)
   target_link_libraries(ThresholdTimingVTK
-    ${Boost_LIBRARIES}    
+    ${Boost_LIBRARIES}
     vtkFiltering
     vtkGraphics
     )
@@ -128,12 +128,12 @@ if (DAX_ENABLE_OPENMP)
   target_link_libraries(ThresholdTimingOpenMP
     ${Boost_LIBRARIES}
     )
-endif (DAX_ENABLE_OPENMP)
 
-add_test(ThresholdTimingOpenMP1-128
-  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingOpenMP --pipeline 1 --size 128)
-add_test(ThresholdTimingOpenMP1-256
-  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingOpenMP --pipeline 1 --size 256)
+  add_test(ThresholdTimingOpenMP1-128
+    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingOpenMP --pipeline 1 --size 128)
+  add_test(ThresholdTimingOpenMP1-256
+    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingOpenMP --pipeline 1 --size 256)
+endif (DAX_ENABLE_OPENMP)
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_CUDA)
@@ -144,10 +144,10 @@ if (DAX_ENABLE_CUDA)
   target_link_libraries(ThresholdTimingCuda
     ${Boost_LIBRARIES}
     )
-endif (DAX_ENABLE_CUDA)
 
-add_test(ThresholdTimingCuda1-128
-  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingCuda --pipeline 1 --size 128)
-add_test(ThresholdTimingCuda1-256
-  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingCuda --pipeline 1 --size 256)
+  add_test(ThresholdTimingCuda1-128
+    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingCuda --pipeline 1 --size 128)
+  add_test(ThresholdTimingCuda1-256
+    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingCuda --pipeline 1 --size 256)
+endif (DAX_ENABLE_CUDA)
 
