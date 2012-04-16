@@ -58,6 +58,7 @@ configure_file(
 
 #-----------------------------------------------------------------------------
 set(unit_tests
+  UnitTestArrayContainerControlBasic.cxx
   UnitTestArrayHandle.cxx
   UnitTestDeviceAdapterDebug.cxx
   UnitTestVectorOperations.cxx

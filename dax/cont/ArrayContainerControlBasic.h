@@ -56,12 +56,13 @@ public:
     this->Internals->ReferenceCount++;
   }
   ArrayContainerControlBasic<ValueType,Allocator> &operator=(
-      ArrayContainerControlBasic<ValueType,Allocator> &src)
+      const ArrayContainerControlBasic<ValueType,Allocator> &src)
   {
-    if (this->Internals == src->Internals) return;
+    if (this->Internals == src.Internals) return *this;
     this->ReleaseReference();
     this->Internals = src.Internals;
     this->Internals->ReferenceCount++;
+    return *this;
   }
 
   ~ArrayContainerControlBasic()
@@ -74,8 +75,11 @@ public:
     if (this->Internals->NumberOfValues > 0)
       {
       DAX_ASSERT_CONT(this->Internals->Array != NULL);
-      Allocator<ValueType>::deallocate(this->Internals->Array);
+      Allocator<ValueType> allocator;
+      allocator.deallocate(this->Internals->Array,
+                           this->Internals->NumberOfValues);
       this->Internals->Array = NULL;
+      this->Internals->NumberOfValues = 0;
       }
     else
       {
@@ -90,8 +94,16 @@ public:
     this->ReleaseResources();
     try
       {
-      this->Internals->Array = Allocator<ValueType>::allocate(numberOfValues);
-      this->Internals->NumberOfValues = numberOfValues;
+      if (numberOfValues > 0)
+        {
+        Allocator<ValueType> allocator;
+        this->Internals->Array = allocator.allocate(numberOfValues);
+        this->Internals->NumberOfValues = numberOfValues;
+        }
+      else
+        {
+        // ReleaseResources should have already set NumberOfValues to 0.
+        }
       }
     catch (std::bad_alloc err)
       {
@@ -129,9 +141,10 @@ public:
   ///
   ValueType *StealArray()
   {
-    return this->Internals->Array;
+    ValueType *saveArray =  this->Internals->Array;
     this->Internals->Array = NULL;
     this->Internals->NumberOfValues = 0;
+    return saveArray;
   }
 
 private:
