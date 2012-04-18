@@ -20,6 +20,8 @@
 
 #include <dax/cont/Assert.h>
 
+#include <algorithm>
+
 namespace dax {
 namespace cont {
 namespace internal {
@@ -73,12 +75,28 @@ public:
     DAX_ASSERT_CONT(controlArray.GetIteratorEnd() == this->EndIterator);
   }
 
+  /// This methods copies data from the control array into the given iterator.
+  ///
+  template <class IteratorTypeControl>
+  DAX_CONT_EXPORT void CopyInto(IteratorTypeControl dest) const
+  {
+    std::copy(this->BeginIterator, this->EndIterator, dest);
+  }
+
   /// Returns the iterator previously saved from an \c ArrayContainerControl.
   ///
   DAX_CONT_EXPORT IteratorType GetIteratorBegin() const
   {
     DAX_ASSERT_CONT(this->IteratorsValid);
     return this->BeginIterator;
+  }
+
+  /// Returns the iterator previously saved from an \c ArrayContainerControl.
+  ///
+  DAX_CONT_EXPORT IteratorType GetIteratorEnd() const
+  {
+    DAX_ASSERT_CONT(this->IteratorsValid);
+    return this->EndIterator;
   }
 
   /// A no-op.

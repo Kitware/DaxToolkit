@@ -40,6 +40,7 @@ dax_declare_headers(${headers})
 
 set(unit_tests
   UnitTestArrayContainerExecutionCPU.cxx
+  UnitTestArrayManagerExecutionShareWithControl.cxx
   UnitTestContTesting.cxx
   UnitTestExecutionPackage.cxx
   UnitTestIteratorPolymorphic.cxx

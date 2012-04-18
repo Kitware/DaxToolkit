@@ -242,8 +242,7 @@ public:
     /// and exeuction have seperate memory spaces).
     ///
     template <class IteratorTypeControl>
-    void CopyInto(const ArrayContainerControl<ValueType> &controlArray,
-                  IteratorTypeControl dest);
+    void CopyInto(IteratorTypeControl dest) const;
 
     /// Returns an iterator that can be used in the execution environment. This
     /// iterator was defined in either LoadDataForInput or
