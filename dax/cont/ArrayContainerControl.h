@@ -49,23 +49,6 @@ namespace cont {
 /// do provide your own ArrayContainerControl, please be diligent in comparing
 /// its performance to the ArrayContainerControlBasic.
 ///
-/// In addition to the performance constraints listed above, an implementation
-/// of ArrayContainerControl is expected to exhibit the following behaviors (in
-/// addition to the obvious documentation of members).
-///
-/// \param A copy of an ArrayContainerControl (either through a copy
-/// constructor or a copy operator) should do a shallow copy.
-///
-/// \param An Allocate or ReleaseResources on any copy of the array should
-/// change the memory reference in all copies of the ArrayContainerControl.
-///
-/// \param The ArrayContainerControl should internally reference count the
-/// number of copies pointing to memory and automatically free the memory when
-/// the count reaches 0.
-///
-/// These requirements together basically state that the ArrayContainerControl
-/// should be have like a reference counted smart pointer.
-///
 template <typename ValueT>
 class ArrayContainerControl
 {

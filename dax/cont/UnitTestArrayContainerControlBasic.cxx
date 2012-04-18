@@ -117,54 +117,11 @@ struct TemplatedTests
                     "Array not released correctly.");
   }
 
-  /// Checks to makes sure that the array container correctly behaves like
-  /// a shared pointer when copied.
-  void SharedArray()
-  {
-    const ValueType SHARED_ARRAY_VALUE = dax::cont::VectorFill<ValueType>(659);
-
-    ArrayContainerType originalArray;
-    ArrayContainerType copyArray(originalArray);
-
-    originalArray.Allocate(ARRAY_SIZE);
-    DAX_TEST_ASSERT(copyArray.GetNumberOfValues() == ARRAY_SIZE,
-                    "Array copy not allocated along with original.");
-
-    SetContainer(originalArray, SHARED_ARRAY_VALUE);
-    DAX_TEST_ASSERT(CheckContainer(copyArray, SHARED_ARRAY_VALUE),
-                    "Correct value not in copy.");
-
-    {
-    ArrayContainerType scopedArray;
-    scopedArray = copyArray;
-
-    DAX_TEST_ASSERT(scopedArray.GetNumberOfValues() == ARRAY_SIZE,
-                    "Array copy not allocated along with original.");
-    DAX_TEST_ASSERT(CheckContainer(scopedArray, SHARED_ARRAY_VALUE),
-                      "Correct value not in copy.");
-    }
-
-    DAX_TEST_ASSERT(originalArray.GetNumberOfValues() == ARRAY_SIZE,
-                    "Original array changed size after copy left scope.");
-    DAX_TEST_ASSERT(CheckContainer(originalArray, SHARED_ARRAY_VALUE),
-                    "Correct value not in original after leaving scope.");
-
-    copyArray.Allocate(ARRAY_SIZE * 2);
-    DAX_TEST_ASSERT(originalArray.GetNumberOfValues() == ARRAY_SIZE*2,
-                    "Original array size not changed on copy allocation.");
-
-    originalArray.ReleaseResources();
-    DAX_TEST_ASSERT(copyArray.GetNumberOfValues() == 0,
-                    "Copy not cleared when original deleted.");
-  }
-
   void operator()()
   {
     ValueType *stolenArray = StealArray1();
 
     BasicAllocation();
-
-    SharedArray();
 
     StealArray2(stolenArray);
   }

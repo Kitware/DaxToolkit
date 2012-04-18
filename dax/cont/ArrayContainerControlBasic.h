@@ -36,69 +36,60 @@ namespace cont {
 /// not constructed. These are things like basic types (int, float, etc.) and
 /// the Dax Tuple classes.
 ///
-template <typename ValueT, template <typename> class Allocator = std::allocator>
+template <typename ValueT>
 class ArrayContainerControlBasic
 {
 public:
   typedef ValueT ValueType;
   typedef ValueType *IteratorType;
 
-  ArrayContainerControlBasic() : Internals(new SharedInternals)
-  {
-    this->Internals->Array = NULL;
-    this->Internals->NumberOfValues = 0;
-    this->Internals->ReferenceCount = 1;
-  }
-  ArrayContainerControlBasic(
-      const ArrayContainerControlBasic<ValueType,Allocator> &src)
-    : Internals(src.Internals)
-  {
-    this->Internals->ReferenceCount++;
-  }
-  ArrayContainerControlBasic<ValueType,Allocator> &operator=(
-      const ArrayContainerControlBasic<ValueType,Allocator> &src)
-  {
-    if (this->Internals == src.Internals) return *this;
-    this->ReleaseReference();
-    this->Internals = src.Internals;
-    this->Internals->ReferenceCount++;
-    return *this;
-  }
+private:
+  /// The original design of this class provided an allocator as a template
+  /// parameters. That messed things up, though, because other templated
+  /// classes assume that the \c ArrayContainerControl has one template
+  /// parameter. There are other ways to allow you to specify the allocator,
+  /// but it is uncertain whether that would ever be useful. So, instead of
+  /// jumping through hoops implementing them, just fix the allocator for now.
+  ///
+  typedef std::allocator<ValueType> AllocatorType;
+
+public:
+
+  ArrayContainerControlBasic() : Array(NULL), NumberOfValues(0) { }
 
   ~ArrayContainerControlBasic()
   {
-    this->ReleaseReference();
+    this->ReleaseResources();
   }
 
   void ReleaseResources()
   {
-    if (this->Internals->NumberOfValues > 0)
+    if (this->NumberOfValues > 0)
       {
-      DAX_ASSERT_CONT(this->Internals->Array != NULL);
-      Allocator<ValueType> allocator;
-      allocator.deallocate(this->Internals->Array,
-                           this->Internals->NumberOfValues);
-      this->Internals->Array = NULL;
-      this->Internals->NumberOfValues = 0;
+      DAX_ASSERT_CONT(this->Array != NULL);
+      AllocatorType allocator;
+      allocator.deallocate(this->Array, this->NumberOfValues);
+      this->Array = NULL;
+      this->NumberOfValues = 0;
       }
     else
       {
-      DAX_ASSERT_CONT(this->Internals->Array == NULL);
+      DAX_ASSERT_CONT(this->Array == NULL);
       }
   }
 
   void Allocate(dax::Id numberOfValues)
   {
-    if (this->Internals->NumberOfValues == numberOfValues) return;
+    if (this->NumberOfValues == numberOfValues) return;
 
     this->ReleaseResources();
     try
       {
       if (numberOfValues > 0)
         {
-        Allocator<ValueType> allocator;
-        this->Internals->Array = allocator.allocate(numberOfValues);
-        this->Internals->NumberOfValues = numberOfValues;
+        AllocatorType allocator;
+        this->Array = allocator.allocate(numberOfValues);
+        this->NumberOfValues = numberOfValues;
         }
       else
         {
@@ -108,8 +99,8 @@ public:
     catch (std::bad_alloc err)
       {
       // Make sureour state is OK.
-      this->Internals->Array = NULL;
-      this->Internals->NumberOfValues = 0;
+      this->Array = NULL;
+      this->NumberOfValues = 0;
       throw dax::cont::ErrorControlOutOfMemory(
             "Could not allocate basic control array.");
       }
@@ -117,12 +108,12 @@ public:
 
   dax::Id GetNumberOfValues() const
   {
-    return this->Internals->NumberOfValues;
+    return this->NumberOfValues;
   }
 
   IteratorType GetIteratorBegin() const
   {
-    return this->Internals->Array;
+    return this->Array;
   }
 
   IteratorType GetIteratorEnd() const
@@ -132,47 +123,28 @@ public:
 
   /// \brief Take the reference away from this object.
   ///
-  /// This method returns the pointer to the array held by this array (and any
-  /// copies). It then clears the internal array pointer to NULL, thereby
-  /// ensuring that the ArrayContainerControlBasic will never deallocate the
-  /// array. This is helpful for taking a reference for an array created
-  /// internally by Dax and not having to keep a Dax object around. Obviously
-  /// the caller becomes responsible for destroying the memory.
+  /// This method returns the pointer to the array held by this array. It then
+  /// clears the internal array pointer to NULL, thereby ensuring that the
+  /// ArrayContainerControlBasic will never deallocate the array. This is
+  /// helpful for taking a reference for an array created internally by Dax and
+  /// not having to keep a Dax object around. Obviously the caller becomes
+  /// responsible for destroying the memory.
   ///
   ValueType *StealArray()
   {
-    ValueType *saveArray =  this->Internals->Array;
-    this->Internals->Array = NULL;
-    this->Internals->NumberOfValues = 0;
+    ValueType *saveArray =  this->Array;
+    this->Array = NULL;
+    this->NumberOfValues = 0;
     return saveArray;
   }
 
 private:
-  struct SharedInternals
-  {
-    ValueType *Array;
-    dax::Id NumberOfValues;
-    dax::Id ReferenceCount;
-  };
+  // Not implemented.
+  ArrayContainerControlBasic(const ArrayContainerControlBasic<ValueType> &src);
+  void operator=(const ArrayContainerControlBasic<ValueType> &src);
 
-  SharedInternals *Internals;
-
-  /// Should only be called if this->Internals will never be used again.
-  void ReleaseReference()
-  {
-    DAX_ASSERT_CONT(this->Internals->ReferenceCount > 0);
-    this->Internals->ReferenceCount--;
-    if (this->Internals->ReferenceCount == 0)
-      {
-      this->ReleaseResources();
-      delete this->Internals;
-      }
-    else
-      {
-      // Other copies still using array.  Leave alone.
-      }
-    this->Internals = NULL;
-  }
+  ValueType *Array;
+  dax::Id NumberOfValues;
 };
 
 }
