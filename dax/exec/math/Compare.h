@@ -45,6 +45,10 @@ DAX_EXEC_EXPORT dax::Scalar Max(dax::Scalar x, dax::Scalar y)
 {
   return DAX_SYS_MATH_FUNCTION(fmax)(x, y);
 }
+DAX_EXEC_EXPORT dax::vector2 Max(dax::vector2 x, dax::vector2 y)
+{
+  return dax::make_vector2(Max(x[0], y[0]), Max(x[1], y[1]));
+}
 DAX_EXEC_EXPORT dax::Vector3 Max(dax::Vector3 x, dax::Vector3 y)
 {
   return dax::make_Vector3(Max(x[0], y[0]), Max(x[1], y[1]), Max(x[2], y[2]));
@@ -71,6 +75,10 @@ DAX_EXEC_EXPORT dax::Id3 Max(dax::Id3 x, dax::Id3 y)
 DAX_EXEC_EXPORT dax::Scalar Min(dax::Scalar x, dax::Scalar y)
 {
   return DAX_SYS_MATH_FUNCTION(fmin)(x, y);
+}
+DAX_EXEC_EXPORT dax::Vector2 Min(dax::Vector2 x, dax::Vector2 y)
+{
+  return dax::make_Vector2(Min(x[0], y[0]), Min(x[1], y[1]));
 }
 DAX_EXEC_EXPORT dax::Vector3 Min(dax::Vector3 x, dax::Vector3 y)
 {
