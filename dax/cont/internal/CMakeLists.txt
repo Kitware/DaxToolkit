@@ -16,6 +16,7 @@
 
 set(headers
   ArrayContainerExecutionCPU.h
+  ArrayManagerExecutionShareWithControl.h
   DeviceAdapterError.h
   ExecutionPackageField.h
   ExecutionPackageGrid.h

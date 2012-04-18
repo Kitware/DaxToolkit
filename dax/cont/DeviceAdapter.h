@@ -212,7 +212,8 @@ public:
     /// Allocates a large enough array in the execution environment and copies
     /// the given data to that array. The allocated array can later be accessed
     /// via the GetIteratorBegin method. If control and execution share arrays,
-    /// then this method may be a no-op.
+    /// then this method may save the iterators to be returned in \c
+    /// GetBeginIterator.
     ///
     void LoadDataForInput(
         typename ArrayContainerControl<ValueType>::IteratorType beginIterator,
@@ -223,14 +224,16 @@ public:
     /// data using the given ArrayContainerExecution and remember its iterators
     /// so that it can be used directly in the exeuction environment.
     ///
-    void AllocateArrayForOutput(ArrayContainerControl<ValueType> controlArray,
+    void AllocateArrayForOutput(ArrayContainerControl<ValueType> &controlArray,
                                 dax::Id numberOfValues);
 
     /// Allocates data in the given ArrayContainerControl and copies data held
     /// in the execution environment (managed by this class) into the control
     /// array. If control and execution share arrays, this can be no operation.
+    /// This method should only be called after AllocateArrayForOutput is
+    /// called.
     ///
-    void RetrieveOutputData(ArrayContainerControl<ValueType> controlArray);
+    void RetrieveOutputData(ArrayContainerControl<ValueType> &controlArray);
 
     /// Similar to RetrieveOutputData except that instead of writing to the
     /// controlArray itself, it writes to the given control environment
@@ -239,7 +242,7 @@ public:
     /// and exeuction have seperate memory spaces).
     ///
     template <class IteratorTypeControl>
-    void CopyInto(ArrayContainerControl<ValueType> controlArray,
+    void CopyInto(const ArrayContainerControl<ValueType> &controlArray,
                   IteratorTypeControl dest);
 
     /// Returns an iterator that can be used in the execution environment. This
@@ -247,8 +250,7 @@ public:
     /// AllocateArrayForOutput. If control and environment share memory space,
     /// this class may return the iterator from the \c controlArray.
     ///
-    IteratorType GetIteratorBegin(
-        ArrayContainerControl<ValueType> controlArray) const;
+    IteratorType GetIteratorBegin() const;
 
     /// Frees any resources (i.e. memory) allocated for the exeuction
     /// environment, if any.
