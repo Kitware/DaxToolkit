@@ -182,9 +182,88 @@ public:
   /// \brief Class that manages data in the execution environment.
   ///
   /// This is a class that is responsible for allocating data in the execution
+  /// environment and copying data back and forth between control and
+  /// execution. It is also expected that this class will automatically release
+  /// any resources in its destructor.
+  ///
+  /// This class typically takes on one of two forms. If the control and
+  /// execution environments have seperate memory spaces, then this class
+  /// behaves how you would expect. It allocates/deallocates arrays and copies
+  /// data. However, if the control and execution environments share the same
+  /// memory space, this class should delegate all its operations to the
+  /// ArrayContainerControl. The latter can probably be implemented with a
+  /// trivial subclass of
+  /// dax::cont::internal::ArrayManagerExecutionShareWithControl.
+  ///
+  template<typename T, template <typename> class ArrayContainerControl>
+  class ArrayManagerExecution
+  {
+  public:
+    /// The type of value held in the array (dax::Scalar, dax::Vector3, etc.)
+    ///
+    typedef T ValueType;
+
+    /// An iterator that can be used in the execution environment to access
+    /// portions of the arrays. This example defines the iterator as a pointer,
+    /// but any random access iterator is valid.
+    ///
+    typedef ValueType *IteratorType;
+
+    /// Allocates a large enough array in the execution environment and copies
+    /// the given data to that array. The allocated array can later be accessed
+    /// via the GetIteratorBegin method. If control and execution share arrays,
+    /// then this method may be a no-op.
+    ///
+    void LoadDataForInput(
+        typename ArrayContainerControl<ValueType>::IteratorType beginIterator,
+        typename ArrayContainerControl<ValueType>::IteartorType endIterator);
+
+    /// Allocates an array in the execution environment of the specified size.
+    /// If control and execution share arrays, then this class can allocate
+    /// data using the given ArrayContainerExecution and remember its iterators
+    /// so that it can be used directly in the exeuction environment.
+    ///
+    void AllocateArrayForOutput(ArrayContainerControl<ValueType> controlArray,
+                                dax::Id numberOfValues);
+
+    /// Allocates data in the given ArrayContainerControl and copies data held
+    /// in the execution environment (managed by this class) into the control
+    /// array. If control and execution share arrays, this can be no operation.
+    ///
+    void RetrieveOutputData(ArrayContainerControl<ValueType> controlArray);
+
+    /// Similar to RetrieveOutputData except that instead of writing to the
+    /// controlArray itself, it writes to the given control environment
+    /// iterator. This allows the user to retrieve data without necessarily
+    /// allocating an array in the ArrayContainerControl (assuming that control
+    /// and exeuction have seperate memory spaces).
+    ///
+    template <class IteratorTypeControl>
+    void CopyInto(ArrayContainerControl<ValueType> controlArray,
+                  IteratorTypeControl dest);
+
+    /// Returns an iterator that can be used in the execution environment. This
+    /// iterator was defined in either LoadDataForInput or
+    /// AllocateArrayForOutput. If control and environment share memory space,
+    /// this class may return the iterator from the \c controlArray.
+    ///
+    IteratorType GetIteratorBegin(
+        ArrayContainerControl<ValueType> controlArray) const;
+
+    /// Frees any resources (i.e. memory) allocated for the exeuction
+    /// environment, if any.
+    ///
+    void ReleaseResources();
+  };
+
+  /// \brief Class that manages data in the execution environment.
+  ///
+  /// This is a class that is responsible for allocating data in the execution
   /// environment and copying data back and forth between control and execution
   /// environment. It is also expected that this class will automatically
   /// release any resources in its destructor.
+  ///
+  /// TODO: Delete this class.
   ///
   template<class T>
   class ArrayContainerExecution
