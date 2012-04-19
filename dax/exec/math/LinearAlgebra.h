@@ -30,58 +30,21 @@ namespace dax {
 namespace exec {
 namespace math {
 
-#ifdef DAX_USE_DOUBLE_PRECISION
-#define DAX_SYS_MATH_FUNCTION(func) func
-#else //DAX_USE_DOUBLE_PRECISION
-#define DAX_SYS_MATH_FUNCTION(func) func ## f
-#endif //DAX_USE_DOUBLE_PRECISION
-
-#define DAX_SYS_MATH_FUNCTOR(func) \
-  namespace internal { \
-  struct func ## _functor { \
-    DAX_EXEC_EXPORT dax::Scalar operator()(dax::Scalar x) const { \
-      return DAX_SYS_MATH_FUNCTION(func)(x); \
-    } \
-  }; \
-  }
-
-#define DAX_SYS_MATH_TEMPLATE(func) \
-  DAX_SYS_MATH_FUNCTOR(func) \
-  namespace internal { \
-    template <typename T> DAX_EXEC_EXPORT T func ## _template(T x) \
-    { \
-      return func(x); \
-    } \
-  }
-
 // ----------------------------------------------------------------------------
-#ifdef DAX_CUDA
-DAX_SYS_MATH_TEMPLATE( normalize )
-#else
 namespace internal {
-struct add_functor {
-  DAX_EXEC_EXPORT dax::Scalar  operator () (const dax::Scalar &x ,
-                                            const dax::Scalar &y) const {
-    return x+y;
-  }
-};
 template <typename T>
-DAX_EXEC_EXPORT dax::Scalar normalize_template( T x ) {
-  return dax::exec::math::Sqrt(dax::exec::VectorReduce(x*x, add_functor() ) );
+DAX_EXEC_EXPORT T normalize_template( T x ) {
+  return x * dax::exec::math::RSqrt(dax::dot(x,x));
 }
 }
-#endif
 
-DAX_EXEC_EXPORT dax::Scalar Normalize(dax::Scalar x) {
+DAX_EXEC_EXPORT dax::Vector2 Normalize(dax::Vector2 x) {
   return internal::normalize_template(x);
 }
-DAX_EXEC_EXPORT dax::Scalar Normalize(dax::Vector2 x) {
+DAX_EXEC_EXPORT dax::Vector3 Normalize(dax::Vector3 x) {
   return internal::normalize_template(x);
 }
-DAX_EXEC_EXPORT dax::Scalar Normalize(dax::Vector3 x) {
-  return internal::normalize_template(x);
-}
-DAX_EXEC_EXPORT dax::Scalar Normalize(dax::Vector4 x) {
+DAX_EXEC_EXPORT dax::Vector4 Normalize(dax::Vector4 x) {
   return internal::normalize_template(x);
 }
 
