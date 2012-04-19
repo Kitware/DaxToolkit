@@ -20,6 +20,7 @@ set(headers
   Precision.h
   Sign.h
   Trig.h
+  LinearAlgebra.h
   )
 
 dax_declare_headers(${headers})
