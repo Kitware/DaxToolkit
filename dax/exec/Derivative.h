@@ -19,7 +19,7 @@
 
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
-
+#include <dax/exec/math/LinearAlgebra.h>
 #include <dax/exec/internal/DerivativeWeights.h>
 
 namespace dax { namespace exec {
@@ -104,7 +104,7 @@ DAX_EXEC_EXPORT dax::Tuple<dax::Vector2, 2> make_InvertedJacobian(
   {
   //ripped from VTK
   //dot product
-  dax::Scalar lenX = dax::normalize(len1);
+  dax::Scalar lenX = dax::exec::math::Normalize(len1);
   dax::Vector2 dotResult(dax::dot(len2,len1),dax::dot(len2,crossResult));
 
   //invert the matrix drop b*c since b is zero
@@ -137,7 +137,7 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
     const dax::Vector3 x0 = work.GetFieldValue(fcoords,0);
     const dax::Vector3 x1 = work.GetFieldValue(fcoords,1);
     const dax::Vector3 x2 = work.GetFieldValue(fcoords,2);
-    const dax::Vector3 crossResult = dax::exec::CellTriangle::Normal(x0,x1,x2);
+    const dax::Vector3 crossResult = dax::normal(x0,x1,x2);
     len1 = x1 - x0;
     len2 = x2 - x0;
     invertedJacobain = dax::exec::internal::make_InvertedJacobian(len1,len2,
@@ -164,8 +164,6 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
   len1 = len1 * dBy[0];
   len2 = len2 * dBy[1];
   return len1 + len2;
-
-
 }
 
 
