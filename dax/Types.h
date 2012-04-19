@@ -472,9 +472,9 @@ DAX_EXEC_CONT_EXPORT dax::Vector3 cross(const dax::Vector3 &a,
                             a[0]*b[1] - a[1]*b[0]);
 }
 
-DAX_EXEC_CONT_EXPORT dax::Vector3 normal(const dax::Vector3 a,
-                                         const dax::Vector3 b,
-                                         const dax::Vector3 c)
+DAX_EXEC_CONT_EXPORT dax::Vector3 normal(const dax::Vector3 &a,
+                                         const dax::Vector3 &b,
+                                         const dax::Vector3 &c)
 {
   return dax::cross ( c-b, a-b );
 }
