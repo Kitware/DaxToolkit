@@ -20,6 +20,7 @@
 
 #include <dax/Types.h>
 #include <dax/exec/VectorOperations.h>
+#include <dax/exec/math/Exp.h>
 
 #ifndef DAX_CUDA
 #include <math.h>
@@ -49,26 +50,27 @@ namespace math {
   namespace internal { \
     template <typename T> DAX_EXEC_EXPORT T func ## _template(T x) \
     { \
-      return dax::exec::VectorMap(x, func ## _functor()); \
+      return func(x); \
     } \
   }
 
 // ----------------------------------------------------------------------------
-// #ifdef DAX_CUDA
-// DAX_SYS_MATH_TEMPLATE( normalize )
-// #else
+#ifdef DAX_CUDA
+DAX_SYS_MATH_TEMPLATE( normalize )
+#else
 namespace internal {
 struct add_functor {
-  DAX_EXEC_EXPORT dax::Scalar  operator () ( dax::Scalar x , dax::Scalar y) const {
+  DAX_EXEC_EXPORT dax::Scalar  operator () (const dax::Scalar &x ,
+                                            const dax::Scalar &y) const {
     return x+y;
   }
 };
 template <typename T>
 DAX_EXEC_EXPORT dax::Scalar normalize_template( T x ) {
-  return dax::exec::VectorReduce(x, add_functor() );
+  return dax::exec::math::Sqrt(dax::exec::VectorReduce(x*x, add_functor() ) );
 }
 }
-  //#endif
+#endif
 
 DAX_EXEC_EXPORT dax::Scalar Normalize(dax::Scalar x) {
   return internal::normalize_template(x);
