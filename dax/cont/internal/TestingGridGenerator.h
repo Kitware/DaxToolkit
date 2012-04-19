@@ -79,6 +79,10 @@ private:
     grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
     }
 
+    void BuildGrid(dax::cont::UnstructuredGrid<dax::exec::CellTriangle> &grid)
+    {
+    }
+
   void BuildGrid(dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> &grid)
     {
     //we need to make a volume grid
