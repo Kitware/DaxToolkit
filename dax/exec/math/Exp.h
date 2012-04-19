@@ -76,6 +76,9 @@ DAX_SYS_MATH_TEMPLATE(sqrt)
 DAX_EXEC_EXPORT dax::Scalar Sqrt(dax::Scalar x) {
   return internal::sqrt_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 Sqrt(dax::Vector2 x) {
+  return internal::sqrt_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 Sqrt(dax::Vector3 x) {
   return internal::sqrt_template(x);
 }
@@ -102,6 +105,9 @@ template<typename T> DAX_EXEC_EXPORT T rsqrt_template(T x) {
 DAX_EXEC_EXPORT dax::Scalar RSqrt(dax::Scalar x) {
   return internal::rsqrt_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 RSqrt(dax::Vector2 x) {
+  return internal::rsqrt_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 RSqrt(dax::Vector3 x) {
   return internal::rsqrt_template(x);
 }
@@ -115,6 +121,9 @@ DAX_SYS_MATH_TEMPLATE(cbrt)
 /// Compute the cube root of \p x.
 ///
 DAX_EXEC_EXPORT dax::Scalar Cbrt(dax::Scalar x) {
+  return internal::cbrt_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector2 Cbrt(dax::Vector2 x) {
   return internal::cbrt_template(x);
 }
 DAX_EXEC_EXPORT dax::Vector3 Cbrt(dax::Vector3 x) {
@@ -143,6 +152,9 @@ template<typename T> DAX_EXEC_EXPORT T rcbrt_template(T x) {
 DAX_EXEC_EXPORT dax::Scalar RCbrt(dax::Scalar x) {
   return internal::rcbrt_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 RCbrt(dax::Vector2 x) {
+  return internal::rcbrt_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 RCbrt(dax::Vector3 x) {
   return internal::rcbrt_template(x);
 }
@@ -160,6 +172,9 @@ DAX_SYS_MATH_TEMPLATE(expm1)
 DAX_EXEC_EXPORT dax::Scalar Exp(dax::Scalar x) {
   return internal::exp_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 Exp(dax::Vector2 x) {
+  return internal::exp_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 Exp(dax::Vector3 x) {
   return internal::exp_template(x);
 }
@@ -170,6 +185,9 @@ DAX_EXEC_EXPORT dax::Vector4 Exp(dax::Vector4 x) {
 /// Computes 2**\p x, the base-2 exponential of \p x.
 ///
 DAX_EXEC_EXPORT dax::Scalar Exp2(dax::Scalar x) {
+  return internal::exp2_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector2 Exp2(dax::Vector2 x) {
   return internal::exp2_template(x);
 }
 DAX_EXEC_EXPORT dax::Vector3 Exp2(dax::Vector3 x) {
@@ -183,6 +201,9 @@ DAX_EXEC_EXPORT dax::Vector4 Exp2(dax::Vector4 x) {
 /// accuracy of this function is good even for very small values of x.
 ///
 DAX_EXEC_EXPORT dax::Scalar ExpM1(dax::Scalar x) {
+  return internal::expm1_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector2 ExpM1(dax::Vector2 x) {
   return internal::expm1_template(x);
 }
 DAX_EXEC_EXPORT dax::Vector3 ExpM1(dax::Vector3 x) {
@@ -214,6 +235,9 @@ template<typename T> DAX_EXEC_EXPORT T exp10_template(T x)
 DAX_EXEC_EXPORT dax::Scalar Exp10(dax::Scalar x) {
   return internal::exp10_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 Exp10(dax::Vector2 x) {
+  return internal::exp10_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 Exp10(dax::Vector3 x) {
   return internal::exp10_template(x);
 }
@@ -232,6 +256,9 @@ DAX_SYS_MATH_TEMPLATE(log1p)
 DAX_EXEC_EXPORT dax::Scalar Log(dax::Scalar x) {
   return internal::log_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 Log(dax::Vector2 x) {
+  return internal::log_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 Log(dax::Vector3 x) {
   return internal::log_template(x);
 }
@@ -242,6 +269,9 @@ DAX_EXEC_EXPORT dax::Vector4 Log(dax::Vector4 x) {
 /// Computes the logarithm base 2 of \p x.
 ///
 DAX_EXEC_EXPORT dax::Scalar Log2(dax::Scalar x) {
+  return internal::log2_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector2 Log2(dax::Vector2 x) {
   return internal::log2_template(x);
 }
 DAX_EXEC_EXPORT dax::Vector3 Log2(dax::Vector3 x) {
@@ -256,6 +286,9 @@ DAX_EXEC_EXPORT dax::Vector4 Log2(dax::Vector4 x) {
 DAX_EXEC_EXPORT dax::Scalar Log10(dax::Scalar x) {
   return internal::log10_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 Log10(dax::Vector2 x) {
+  return internal::log10_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 Log10(dax::Vector3 x) {
   return internal::log10_template(x);
 }
@@ -266,6 +299,9 @@ DAX_EXEC_EXPORT dax::Vector4 Log10(dax::Vector4 x) {
 /// Computes the value of log(1+x) accurately for very small values of x.
 ///
 DAX_EXEC_EXPORT dax::Scalar Log1P(dax::Scalar x) {
+  return internal::log1p_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector2 Log1P(dax::Vector2 x) {
   return internal::log1p_template(x);
 }
 DAX_EXEC_EXPORT dax::Vector3 Log1P(dax::Vector3 x) {
