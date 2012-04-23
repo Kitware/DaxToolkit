@@ -66,7 +66,22 @@ DAX_EXEC_EXPORT void Normalize(dax::Vector4 &x) {
   return internal::normalize_template(x);
 }
 
+namespace internal {
+template <typename T>
+DAX_EXEC_EXPORT dax::Scalar norm_template( T &x ) {
+  return dax::exec::math::Sqrt(dax::dot(x,x));
+}
+}
 
+DAX_EXEC_EXPORT dax::Scalar Norm( const dax::Vector2 &x ) {
+  return internal::norm_template( x );
+}
+DAX_EXEC_EXPORT dax::Scalar Norm( const dax::Vector3 &x ) {
+  return internal::norm_template( x );
+}
+DAX_EXEC_EXPORT dax::Scalar Norm( const dax::Vector4 &x ) {
+  return internal::norm_template( x );
+}
 
 }
 }
