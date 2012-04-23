@@ -98,13 +98,14 @@ namespace internal {
 //make this a seperate function so that these temporary values
 //are scoped to be removed once we generate the matrix
 DAX_EXEC_EXPORT dax::Tuple<dax::Vector2, 2> make_InvertedJacobian(
-    const dax::Vector3& len1,
-    const dax::Vector3& len2,
+    dax::Vector3& len1,
+    dax::Vector3& len2,
     const dax::Vector3& crossResult)
   {
   //ripped from VTK
   //dot product
-  dax::Scalar lenX = dax::exec::math::Normalize(len1);
+  dax::Scalar lenX = dax::exec::math::Norm( len1 );
+  dax::exec::math::Normalize(len1);
   dax::Vector2 dotResult(dax::dot(len2,len1),dax::dot(len2,crossResult));
 
   //invert the matrix drop b*c since b is zero
