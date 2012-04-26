@@ -34,15 +34,7 @@ namespace math {
 namespace internal {
 template <typename T>
 DAX_EXEC_EXPORT T normalized_template(const T &x ) {
-  return x * static_cast<T> ( dax::exec::math::RSqrt(dax::dot(x,x)) );
-}
-}
-
-// ----------------------------------------------------------------------------
-namespace internal {
-template <typename T>
-DAX_EXEC_EXPORT void normalize_template( T &x ) {
-  x = x * static_cast<T> ( dax::exec::math::RSqrt(dax::dot(x,x)) );
+  return dax::exec::math::RSqrt(dax::dot(x,x)) * x;
 }
 }
 
@@ -54,6 +46,14 @@ DAX_EXEC_EXPORT dax::Vector3 Normalized(const dax::Vector3 &x) {
 }
 DAX_EXEC_EXPORT dax::Vector4 Normalized(const dax::Vector4 &x) {
   return internal::normalized_template(x);
+}
+
+// ----------------------------------------------------------------------------
+namespace internal {
+template <typename T>
+DAX_EXEC_EXPORT void normalize_template( T &x ) {
+  x = dax::exec::math::RSqrt(dax::dot(x,x)) * x;
+}
 }
 
 DAX_EXEC_EXPORT void Normalize(dax::Vector2 &x) {
