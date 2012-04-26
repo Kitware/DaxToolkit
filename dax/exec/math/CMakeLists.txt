@@ -29,6 +29,7 @@ dax_declare_headers(${headers})
 set(unit_tests
   UnitTestMathCompare.cxx
   UnitTestMathExp.cxx
+  UnitTestMathLinearAlgebra.cxx
   UnitTestMathPrecision.cxx
   UnitTestMathSign.cxx
   UnitTestMathTrig.cxx
