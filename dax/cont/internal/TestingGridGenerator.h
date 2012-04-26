@@ -79,8 +79,98 @@ private:
     grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
     }
 
-    void BuildGrid(dax::cont::UnstructuredGrid<dax::exec::CellTriangle> &grid)
+  void BuildGrid(dax::cont::UnstructuredGrid<dax::exec::CellTriangle> &grid)
     {
+    //we need to make a volume grid
+    dax::cont::UniformGrid uniform;
+    uniform.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
+
+    //copy the point info over to the unstructured grid
+    this->Info.points.clear();
+    for(dax::Id i=0; i <uniform.GetNumberOfPoints(); ++i)
+      {
+      this->Info.points.push_back(uniform.GetPointCoordinates(i));
+      }
+
+    //copy the cell topology information over
+    //create 2 triangles for each of the 6 sides of cube
+    const dax::Id3 cellVertexToPointIndex[36] = {
+      // Front
+      dax::make_Id3(0, 0, 0),
+      dax::make_Id3(1, 0, 0),
+      dax::make_Id3(1, 1, 0),
+
+      dax::make_Id3(1, 1, 0),
+      dax::make_Id3(0, 1, 0),
+      dax::make_Id3(0, 0, 0),
+
+      // Left
+      dax::make_Id3(0, 0, 0),
+      dax::make_Id3(0, 1, 0),
+      dax::make_Id3(0, 1, 1),
+
+      dax::make_Id3(0, 1, 1),
+      dax::make_Id3(0, 0, 1),
+      dax::make_Id3(0, 0, 0),
+
+      // Bottom
+      dax::make_Id3(0, 0, 0),
+      dax::make_Id3(0, 0, 1),
+      dax::make_Id3(1, 0, 1),
+
+      dax::make_Id3(1, 0, 1),
+      dax::make_Id3(1, 0, 0),
+      dax::make_Id3(0, 0, 0),
+
+      // Back
+      dax::make_Id3(1, 1, 1),
+      dax::make_Id3(1, 0, 1),
+      dax::make_Id3(0, 0, 1),
+
+      dax::make_Id3(0, 0, 1),
+      dax::make_Id3(0, 1, 1),
+      dax::make_Id3(1, 1, 1),
+
+      // Right
+      dax::make_Id3(1, 1, 1),
+      dax::make_Id3(1, 1, 0),
+      dax::make_Id3(0, 1, 0),
+
+      dax::make_Id3(0, 1, 0),
+      dax::make_Id3(0, 1, 1),
+      dax::make_Id3(1, 1, 1),
+
+      // Top
+      dax::make_Id3(1, 1, 1),
+      dax::make_Id3(1, 0, 1),
+      dax::make_Id3(1, 0, 0),
+
+      dax::make_Id3(1, 0, 0),
+      dax::make_Id3(1, 1, 0),
+      dax::make_Id3(1, 1, 1),
+    };
+
+    this->Info.topology.clear();
+    dax::Id numPointsPerCell = ::dax::exec::CellTriangle::NUM_POINTS;
+    const dax::Extent3 extents = uniform.GetExtent();
+    for ( dax::Id i=0; i < uniform.GetNumberOfCells(); ++i )
+      {
+      dax::Id3 ijkCell = dax::flatIndexToIndex3Cell( i, extents );
+      for(dax::Id j=0; j < numPointsPerCell*12; ++j)
+        {
+        dax::Id3 ijkPoint = ijkCell + cellVertexToPointIndex[j];
+
+        dax::Id pointIndex = index3ToFlatIndex(ijkPoint,extents);
+        this->Info.topology.push_back(pointIndex);
+        }
+      }
+
+    dax::cont::ArrayHandle<dax::Vector3,DeviceAdapter> ahPoints(
+          this->Info.points.begin(),this->Info.points.end());
+    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> ahTopo(
+          this->Info.topology.begin(),this->Info.topology.end());
+    grid = dax::cont::UnstructuredGrid<dax::exec::CellTriangle>(ahTopo,
+                                                                ahPoints);
     }
 
   void BuildGrid(dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> &grid)
