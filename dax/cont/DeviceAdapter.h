@@ -59,9 +59,10 @@ public:
   /// that \c from the excess range will have undefined values.
   /// Requirements: \c from must already be allocated in the execution environment
   ///
-  template<typename T>
-  static void Copy(const dax::cont::ArrayHandle<T,DeviceAdapter>& from,
-                   dax::cont::ArrayHandle<T,DeviceAdapter>& to);
+  template<typename T, template <typename> class Container>
+  static void Copy(
+      const dax::cont::ArrayHandle<T,Container,DeviceAdapter>& from,
+      dax::cont::ArrayHandle<T,Container,DeviceAdapter>& to);
 
   /// \brief Compute an inclusive prefix sum operation on the input ArrayHandle.
   ///
@@ -76,9 +77,10 @@ public:
   /// \arg \c input must already be allocated in the execution environment
   /// \arg \c input and \c output must be the same size
   ///
-  template<typename T>
-  static T InclusiveScan(const dax::cont::ArrayHandle<T,DeviceAdapter> &input,
-                         dax::cont::ArrayHandle<T,DeviceAdapter>& output);
+  template<typename T, template <typename> class Container>
+  static T InclusiveScan(
+      const dax::cont::ArrayHandle<T,Container,DeviceAdapter> &input,
+      dax::cont::ArrayHandle<T,Container,DeviceAdapter>& output);
 
   /// \brief Output is the first index in input for each item in values that wouldn't alter the ordering of input
   ///
@@ -93,11 +95,11 @@ public:
   /// \arg \c input must already be allocated in the execution environment
   /// \arg \c values must already be allocated in the execution environment
   /// \arg \c values and \c output must be the same size
-  template<typename T>
+  template<typename T, template <typename> class Container>
   static void LowerBounds(
-      const dax::cont::ArrayHandle<T,DeviceAdapter>& input,
-      const dax::cont::ArrayHandle<T,DeviceAdapter>& values,
-      dax::cont::ArrayHandle<dax::Id,DeviceAdapter>& output);
+      const dax::cont::ArrayHandle<T,Container,DeviceAdapter>& input,
+      const dax::cont::ArrayHandle<T,Container,DeviceAdapter>& values,
+      dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapter>& output);
 
   /// \brief Schedule many instances of a function to run on concurrent threads.
   ///
@@ -125,8 +127,8 @@ public:
   /// \par Requirements;
   /// \arg \c values must already be allocated in the execution environment
   ///
-  template<typename T>
-  static void Sort(dax::cont::ArrayHandle<T,DeviceAdapter>& values);
+  template<typename T, template <typename> class Container>
+  static void Sort(dax::cont::ArrayHandle<T,Container,DeviceAdapter>& values);
 
   /// \brief Performs stream compaction to remove unwanted elements in the input array. Output becomes the index values of input that are valid.
   ///
@@ -141,10 +143,10 @@ public:
   /// \par Requirements:
   /// \arg \c input must already be allocated in the execution environment
   ///
-  template<typename T>
+  template<typename T, template <typename> class Container>
   static void StreamCompact(
-      const dax::cont::ArrayHandle<T,DeviceAdapter> &input,
-      dax::cont::ArrayHandle<dax::Id,DeviceAdapter> &output);
+      const dax::cont::ArrayHandle<T,Container,DeviceAdapter> &input,
+      dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapter> &output);
 
   /// \brief Performs stream compaction to remove unwanted elements in the input array.
   ///
@@ -162,9 +164,9 @@ public:
   ///
   template<typename T, typename U>
   static void StreamCompact(
-      const dax::cont::ArrayHandle<T,DeviceAdapter> &input,
-      const dax::cont::ArrayHandle<U,DeviceAdapter> &v,
-      dax::cont::ArrayHandle<T,DeviceAdapter> &output);
+      const dax::cont::ArrayHandle<T,Container,DeviceAdapter> &input,
+      const dax::cont::ArrayHandle<U,Container,DeviceAdapter> &v,
+      dax::cont::ArrayHandle<T,Container,DeviceAdapter> &output);
 
   /// \brief Reduce an array to only the unique values it contains
   ///
@@ -176,8 +178,8 @@ public:
   /// \par Requirements:
   /// \arg \c values must already be allocated in the execution environment
   ///
-  template<typename T>
-  static void Unique(dax::cont::ArrayHandle<T,DeviceAdapter>& values);
+  template<typename T, template <typename> class Container>
+  static void Unique(dax::cont::ArrayHandle<T,Container,DeviceAdapter>& values);
 
   /// \brief Class that manages data in the execution environment.
   ///
@@ -233,7 +235,8 @@ public:
     /// This method should only be called after AllocateArrayForOutput is
     /// called.
     ///
-    void RetrieveOutputData(ArrayContainerControl<ValueType> &controlArray);
+    void RetrieveOutputData(
+        ArrayContainerControl<ValueType> &controlArray) const;
 
     /// Similar to RetrieveOutputData except that instead of writing to the
     /// controlArray itself, it writes to the given control environment

@@ -32,13 +32,13 @@
 #include <dax/cont/StreamCompactSerial.h>
 #include <dax/cont/UniqueSerial.h>
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
-
+#include <dax/cont/internal/ArrayManagerExecutionShareWithControl.h>
 
 
 namespace dax {
 namespace cont {
-  //forward declare the ArrayHandle before we use it.
-  template< typename OtherT, class OtherDeviceAdapter > class ArrayHandle;
+//forward declare the ArrayHandle before we use it.
+template<typename T, template <typename> class ArrayContainerControl, class DeviceAdapter> class ArrayHandle;
 
 /// A simple implementation of a DeviceAdapter that can be used for debuging.
 /// The scheduling will simply run everything in a serial loop, which is easy
@@ -46,13 +46,26 @@ namespace cont {
 ///
 struct DeviceAdapterSerial
 {
+  template <typename T, template <typename> class ArrayContainerControl>
+  class ArrayManagerExecution
+      : public dax::cont::internal::ArrayManagerExecutionShareWithControl
+          <T, ArrayContainerControl>
+  {
+  public:
+    typedef dax::cont::internal::ArrayManagerExecutionShareWithControl
+        <T, ArrayContainerControl> Superclass;
+    typedef typename Superclass::ValueType ValueType;
+    typedef typename Superclass::IteratorType IteratorType;
+  };
+
   template<typename T>
   class ArrayContainerExecution
       : public dax::cont::internal::ArrayContainerExecutionCPU<T> { };
 
-  template<typename T>
-  static void Copy(const dax::cont::ArrayHandle<T,DeviceAdapterSerial>& from,
-                   dax::cont::ArrayHandle<T,DeviceAdapterSerial>& to)
+  template<typename T, template <typename> class Container>
+  static void Copy(
+      const dax::cont::ArrayHandle<T,Container,DeviceAdapterSerial>& from,
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterSerial>& to)
     {
     DAX_ASSERT_CONT(from.hasExecutionArray());
     DAX_ASSERT_CONT(to.GetNumberOfEntries() >= from.GetNumberOfEntries());
@@ -60,9 +73,10 @@ struct DeviceAdapterSerial
     dax::cont::copySerial(from.GetExecutionArray(),to.GetExecutionArray());
     }
 
-  template<typename T>
-  static T InclusiveScan(const dax::cont::ArrayHandle<T,DeviceAdapterSerial> &input,
-                            dax::cont::ArrayHandle<T,DeviceAdapterSerial>& output)
+  template<typename T, template <typename> class Container>
+  static T InclusiveScan(
+      const dax::cont::ArrayHandle<T,Container,DeviceAdapterSerial> &input,
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterSerial>& output)
     {
     DAX_ASSERT_CONT(input.hasExecutionArray());
     DAX_ASSERT_CONT(output.GetNumberOfEntries() == input.GetNumberOfEntries());
@@ -71,13 +85,14 @@ struct DeviceAdapterSerial
                                          output.GetExecutionArray());
     }
 
-  template<typename T, typename U>
-  static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterSerial>& input,
-                         const dax::cont::ArrayHandle<T,DeviceAdapterSerial>& values,
-                         dax::cont::ArrayHandle<U,DeviceAdapterSerial>& output)
+  template<typename T, typename U, template <typename> class Container>
+  static void LowerBounds(
+      const dax::cont::ArrayHandle<T,Container,DeviceAdapterSerial>& input,
+      const dax::cont::ArrayHandle<T,Container,DeviceAdapterSerial>& values,
+      dax::cont::ArrayHandle<U,Container,DeviceAdapterSerial>& output)
     {
     DAX_ASSERT_CONT(input.hasExecutionArray());
-    DAX_ASSERT_CONT(values.hasExecutionArray());    
+    DAX_ASSERT_CONT(values.hasExecutionArray());
     DAX_ASSERT_CONT(values.GetNumberOfEntries() <= output.GetNumberOfEntries());
     output.ReadyAsOutput();
     dax::cont::lowerBoundsSerial(input.GetExecutionArray(),
@@ -94,17 +109,18 @@ struct DeviceAdapterSerial
     }
 
 
-  template<typename T>
-  static void Sort(dax::cont::ArrayHandle<T,DeviceAdapterSerial>& values)
+  template<typename T, template <typename> class Container>
+  static void Sort(
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterSerial>& values)
     {
     DAX_ASSERT_CONT(values.hasExecutionArray());
     dax::cont::sortSerial(values.GetExecutionArray());
     }
 
-  template<typename T,typename U>
+  template<typename T,typename U, template <typename> class Container>
   static void StreamCompact(
-      const dax::cont::ArrayHandle<T,DeviceAdapterSerial>& input,
-      dax::cont::ArrayHandle<U,DeviceAdapterSerial>& output)
+      const dax::cont::ArrayHandle<T,Container,DeviceAdapterSerial>& input,
+      dax::cont::ArrayHandle<U,Container,DeviceAdapterSerial>& output)
     {
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
@@ -115,11 +131,11 @@ struct DeviceAdapterSerial
     output.UpdateArraySize();
     }
 
-  template<typename T, typename U>
+  template<typename T, typename U, template <typename> class Container>
   static void StreamCompact(
-      const dax::cont::ArrayHandle<T,DeviceAdapterSerial>& input,
-      const dax::cont::ArrayHandle<U,DeviceAdapterSerial>& stencil,
-      dax::cont::ArrayHandle<T,DeviceAdapterSerial>& output)
+      const dax::cont::ArrayHandle<T,Container,DeviceAdapterSerial>& input,
+      const dax::cont::ArrayHandle<U,Container,DeviceAdapterSerial>& stencil,
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterSerial>& output)
     {
     //the input array is both the input and the stencil output for the scan
     //step. In this case the index position is the input and the value at
@@ -131,9 +147,10 @@ struct DeviceAdapterSerial
                                   output.GetExecutionArray());
     output.UpdateArraySize();
     }
-  
-  template<typename T>
-  static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterSerial>& values)
+
+  template<typename T, template <typename> class Container>
+  static void Unique(
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterSerial>& values)
     {
     DAX_ASSERT_CONT(values.hasExecutionArray());
     dax::cont::uniqueSerial(values.GetExecutionArray());

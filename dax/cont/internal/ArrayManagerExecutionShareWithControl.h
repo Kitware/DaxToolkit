@@ -68,14 +68,15 @@ public:
   /// controlArray (under correct operation).
   ///
   DAX_CONT_EXPORT void RetreiveOutputData(
-      ArrayContainerControl<ValueType> &controlArray)
+      ArrayContainerControl<ValueType> &controlArray) const
   {
     DAX_ASSERT_CONT(this->IteratorsValid);
     DAX_ASSERT_CONT(controlArray.GetIteratorBegin() == this->BeginIterator);
     DAX_ASSERT_CONT(controlArray.GetIteratorEnd() == this->EndIterator);
   }
 
-  /// This methods copies data from the control array into the given iterator.
+  /// This methods copies data from the execution array into the given
+  /// iterator.
   ///
   template <class IteratorTypeControl>
   DAX_CONT_EXPORT void CopyInto(IteratorTypeControl dest) const

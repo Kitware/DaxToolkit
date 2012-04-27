@@ -17,7 +17,7 @@
 #define __dax__cont__ArrayContainerControl_h
 
 #ifndef DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
-// Include for basic container.
+#include <dax/cont/ArrayContainerControlBasic.h>
 #endif // DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
 
 namespace dax {
