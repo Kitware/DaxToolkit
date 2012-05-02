@@ -15,18 +15,42 @@
 //=============================================================================
 
 #include <dax/exec/math/LinearAlgebra.h>
-
 #include <dax/internal/Testing.h>
+#include <math.h>
 
 namespace {
 
 namespace internal{
 
 template<typename VectorType>
-VectorType::ValueType norm(VectorType vt)
-  {
-  return 0;
-  }
+dax::Scalar norm(VectorType vt)
+{
+  double total = 0.0;
+  for (int i = 0; i < vt.NUM_COMPONENTS; ++i)
+    {
+    total += vt[i] *vt[i];
+    }
+  return sqrt(total);
+}
+
+template<typename VectorType>
+VectorType normalized(VectorType vt)
+{
+  double total = 0.0;
+  for (int i = 0; i < vt.NUM_COMPONENTS; ++i)
+    {
+    total += vt[i] * vt[i];
+    }
+  VectorType temp = vt;
+  if(total)
+    {
+    for (int i = 0; i < vt.NUM_COMPONENTS; ++i)
+      {
+      temp[i] = vt[i]/sqrt(total);
+      }
+    }
+  return temp;
+}
 
 }
 
@@ -35,14 +59,14 @@ void TestVector(VectorType vector)
 {
   //to do have to implement a norm and normalized call to verify the math ones
   //agianst
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Norm(vector), norm),
+  DAX_TEST_ASSERT(test_equal(dax::exec::math::Norm(vector), internal::norm(vector)),
                   "Norm on zero length vector failed test.");
 
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Normalized(vector), normalized),
+  DAX_TEST_ASSERT(test_equal(dax::exec::math::Normalized(vector), internal::normalized(vector)),
                   "Normalized vector failed test.");
 
   dax::exec::math::Normalize(vector);
-  DAX_TEST_ASSERT(test_equal(vector, normalized),
+  DAX_TEST_ASSERT(test_equal(vector, internal::normalized(vector)),
                   "Inplace Normalized vector failed test.");
 }
 
