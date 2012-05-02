@@ -224,7 +224,7 @@ public:
     }
   private:
     template <class Tag1, class Tag2, typename T, class Functor>
-    void DoVector(Tag, Tag2, const T &, const Functor &) const {  }
+    void DoVector(Tag1, Tag2, const T &, const Functor &) const {  }
     template <typename T, class Functor>
     void DoVector(dax::TypeTraitsVectorTag,dax::TypeTraitsRealTag, T t, Functor function) const {
       function(t);
