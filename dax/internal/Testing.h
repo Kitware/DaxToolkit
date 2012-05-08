@@ -216,21 +216,6 @@ public:
     }
   };
 
-  struct TypeCheckRealVector {
-    template <typename T, class Functor>
-    void operator()(T t, Functor func) const {
-      this->DoVector(typename dax::TypeTraits<T>::DimensionalityTag(),
-                     typename dax::TypeTraits<T>::NumericTag(), t, func);
-    }
-  private:
-    template <class Tag1, class Tag2, typename T, class Functor>
-    void DoVector(Tag1, Tag2, const T &, const Functor &) const {  }
-    template <typename T, class Functor>
-    void DoVector(dax::TypeTraitsVectorTag,dax::TypeTraitsRealTag, T t, Functor function) const {
-      function(t);
-    }
-  };
-
   template<class FunctionType>
   struct InternalPrintOnInvoke {
     InternalPrintOnInvoke(FunctionType function, std::string toprint)
