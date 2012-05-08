@@ -37,7 +37,9 @@ DAX_EXEC_EXPORT T normalized_template(const T &x ) {
   return dax::exec::math::RSqrt(dax::dot(x,x)) * x;
 }
 }
-
+DAX_EXEC_EXPORT dax::Scalar Normalized(dax::Scalar x) {
+  return internal::normalized_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector2 Normalized(const dax::Vector2 &x) {
   return internal::normalized_template(x);
 }
@@ -55,7 +57,9 @@ DAX_EXEC_EXPORT void normalize_template( T &x ) {
   x = dax::exec::math::RSqrt(dax::dot(x,x)) * x;
 }
 }
-
+DAX_EXEC_EXPORT void Normalize(dax::Scalar &x) {
+  return internal::normalize_template(x);
+}
 DAX_EXEC_EXPORT void Normalize(dax::Vector2 &x) {
   return internal::normalize_template(x);
 }
@@ -73,6 +77,9 @@ DAX_EXEC_EXPORT dax::Scalar norm_template( T &x ) {
 }
 }
 
+DAX_EXEC_EXPORT dax::Scalar Norm( dax::Scalar x ) {
+  return internal::norm_template( x );
+}
 DAX_EXEC_EXPORT dax::Scalar Norm( const dax::Vector2 &x ) {
   return internal::norm_template( x );
 }
