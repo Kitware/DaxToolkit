@@ -26,7 +26,7 @@ template<typename VectorType>
 dax::Scalar norm(VectorType vt)
 {
   double total = 0.0;
-  for (int i = 0; i < vt.NUM_COMPONENTS; ++i)
+  for (int i = 0; i < typename VectorType::NUM_COMPONENTS; ++i)
     {
     total += vt[i] *vt[i];
     }
@@ -37,14 +37,14 @@ template<typename VectorType>
 VectorType normalized(VectorType vt)
 {
   double total = 0.0;
-  for (int i = 0; i < vt.NUM_COMPONENTS; ++i)
+  for (int i = 0; i < typename VectorType::NUM_COMPONENTS; ++i)
     {
     total += vt[i] * vt[i];
     }
   VectorType temp = vt;
   if(total)
     {
-    for (int i = 0; i < vt.NUM_COMPONENTS; ++i)
+    for (int i = 0; i < typename VectorType::NUM_COMPONENTS; ++i)
       {
       temp[i] = vt[i]/sqrt(total);
       }
@@ -102,7 +102,7 @@ struct TestLinearFunctor
 void TestLinearAlgebra()
 {
   dax::internal::Testing::TryAllTypes(TestLinearFunctor(),
-                                      dax::internal::Testing::TypeCheckRealVector());
+                                      dax::internal::Testing::TypeCheckReal());
 }
 
 } // anonymous namespace
