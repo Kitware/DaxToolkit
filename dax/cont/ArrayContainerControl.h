@@ -65,13 +65,28 @@ public:
   ///
   typedef ValueType *IteratorType;
 
+  /// \brief The type of iterator objects (const version) for the array.
+  ///
+  /// The actual iterator object may be more complicated, much like the
+  /// iterators in STL containers.
+  ///
+  typedef const ValueType *IteratorConstType;
+
   /// Returns the iterator at the beginning of the array.
   ///
-  IteratorType GetIteratorBegin() const;
+  IteratorType GetIteratorBegin();
 
   /// Returns the iterator at the end of the array.
   ///
-  IteratorType GetIteratorEnd() const;
+  IteratorType GetIteratorEnd();
+
+  /// Returns the const iterator at the beginning of the array.
+  ///
+  IteratorConstType GetIteratorConstBegin() const;
+
+  /// Returns the const iterator at the end of the array.
+  ///
+  IteratorConstType GetIteratorConstEnd() const;
 
   /// Retuns the number of entries allocated in the array.
   dax::Id GetNumberOfValues() const;

@@ -211,15 +211,26 @@ public:
     ///
     typedef ValueType *IteratorType;
 
+    /// Const version of IteratorType.
+    ///
+    typedef const ValueType *IteratorConstType;
+
     /// Allocates a large enough array in the execution environment and copies
     /// the given data to that array. The allocated array can later be accessed
     /// via the GetIteratorBegin method. If control and execution share arrays,
-    /// then this method may save the iterators to be returned in \c
-    /// GetBeginIterator.
+    /// then this method may save the iterators to be returned in the \c
+    /// GetIterator* methods.
     ///
     void LoadDataForInput(
         typename ArrayContainerControl<ValueType>::IteratorType beginIterator,
         typename ArrayContainerControl<ValueType>::IteartorType endIterator);
+
+    /// Const version of LoadDataForInput.  Functionally equivalent to the
+    /// non-const version except that the non-const versions of GetIterator*
+    /// may not be available.
+    void LoadDataForInput(
+        typename ArrayContainerControl<ValueType>::IteratorConstType beginIterator,
+        typename ArrayContainerControl<ValueType>::IteartorConstType endIterator);
 
     /// Allocates an array in the execution environment of the specified size.
     /// If control and execution share arrays, then this class can allocate
@@ -252,56 +263,27 @@ public:
     /// AllocateArrayForOutput. If control and environment share memory space,
     /// this class may return the iterator from the \c controlArray.
     ///
-    IteratorType GetIteratorBegin() const;
+    IteratorType GetIteratorBegin();
+
+    /// Returns an iterator that can be used in the execution environment. This
+    /// iterator was defined in either LoadDataForInput or
+    /// AllocateArrayForOutput. If control and environment share memory space,
+    /// this class may return the iterator from the \c controlArray.
+    ///
+    IteratorType GetIteratorEnd();
+
+    /// Const version of GetIteratorBegin.
+    ///
+    IteratorConstType GetIteratorConstBegin() const;
+
+    /// Const version of GetIteratorEnd.
+    ///
+    IteratorConstType GetIteratorConstEnd() const;
 
     /// Frees any resources (i.e. memory) allocated for the exeuction
     /// environment, if any.
     ///
     void ReleaseResources();
-  };
-
-  /// \brief Class that manages data in the execution environment.
-  ///
-  /// This is a class that is responsible for allocating data in the execution
-  /// environment and copying data back and forth between control and execution
-  /// environment. It is also expected that this class will automatically
-  /// release any resources in its destructor.
-  ///
-  /// TODO: Delete this class.
-  ///
-  template<class T>
-  class ArrayContainerExecution
-  {
-  public:
-
-    /// Allocates an array on the device large enough to hold the given number
-    /// of entries.
-    ///
-    void Allocate(dax::Id numEntries);
-
-    /// Copies the data pointed to by the passed in \c iterators (assumed to be
-    /// in the control environment), into the array in the execution
-    /// environment managed by this class.
-    ///
-    template<class Iterator>
-    void CopyFromControlToExecution(
-        const dax::cont::internal::IteratorContainer<Iterator> &iterators);
-
-    /// Copies the data from the array in the execution environment managed by
-    /// this class into the memory passed in the \c iterators (assumed to be in
-    /// the control environment).
-    ///
-    template<class Iterator>
-    void CopyFromExecutionToControl(
-        const dax::cont::internal::IteratorContainer<Iterator> &iterators);
-
-    /// Frees any resources (i.e. memory) on the device.
-    ///
-    void ReleaseResources();
-
-    /// Gets a DataArray that is valid in the execution environment.
-    ///
-    dax::internal::DataArray<T> GetExecutionArray();
   };
 };
 

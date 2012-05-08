@@ -38,14 +38,35 @@ class ArrayManagerExecutionShareWithControl
 public:
   typedef T ValueType;
   typedef typename ArrayContainerControl<ValueType>::IteratorType IteratorType;
+  typedef typename ArrayContainerControl<ValueType>::IteratorConstType
+      IteratorConstType;
 
   DAX_CONT_EXPORT ArrayManagerExecutionShareWithControl()
     : IteratorsValid(false) { }
 
   /// Saves the given iterators to be returned later.
   ///
+  DAX_CONT_EXPORT void LoadDataForInput(IteratorConstType beginIterator,
+                                        IteratorConstType endIterator)
+  {
+    this->BeginConstIterator = beginIterator;
+    this->EndConstIterator = endIterator;
+    this->ConstIteratorsValid = true;
+
+    // Non-const versions not defined.
+    this->IteratorsValid = false;
+  }
+
+  /// Saves the given iterators to be returned later.
+  ///
   DAX_CONT_EXPORT void LoadDataForInput(IteratorType beginIterator,
-                                        IteratorType endIterator) {
+                                        IteratorType endIterator)
+  {
+    // This only works if there is a valid cast from non-const to const
+    // iterator.
+    this->LoadDataForInput(IteratorConstType(beginIterator),
+                           IteratorConstType(endIterator));
+
     this->BeginIterator = beginIterator;
     this->EndIterator = endIterator;
     this->IteratorsValid = true;
@@ -58,9 +79,14 @@ public:
       dax::Id numberOfValues)
   {
     controlArray.Allocate(numberOfValues);
+
     this->BeginIterator = controlArray.GetIteratorBegin();
     this->EndIterator = controlArray.GetIteratorEnd();
     this->IteratorsValid = true;
+
+    this->BeginConstIterator = controlArray.GetIteratorConstBegin();
+    this->EndConstIterator = controlArray.GetIteratorConstEnd();
+    this->ConstIteratorsValid = true;
   }
 
   /// This method is a no-op (except for a few checks). Any data written to
@@ -70,9 +96,11 @@ public:
   DAX_CONT_EXPORT void RetreiveOutputData(
       ArrayContainerControl<ValueType> &controlArray) const
   {
-    DAX_ASSERT_CONT(this->IteratorsValid);
-    DAX_ASSERT_CONT(controlArray.GetIteratorBegin() == this->BeginIterator);
-    DAX_ASSERT_CONT(controlArray.GetIteratorEnd() == this->EndIterator);
+    DAX_ASSERT_CONT(this->ConstIteratorsValid);
+    DAX_ASSERT_CONT(
+          controlArray.GetIteratorConstBegin() == this->BeginConstIterator);
+    DAX_ASSERT_CONT(
+          controlArray.GetIteratorConstEnd() == this->EndConstIterator);
   }
 
   /// This methods copies data from the execution array into the given
@@ -81,12 +109,13 @@ public:
   template <class IteratorTypeControl>
   DAX_CONT_EXPORT void CopyInto(IteratorTypeControl dest) const
   {
-    std::copy(this->BeginIterator, this->EndIterator, dest);
+    DAX_ASSERT_CONT(this->ConstIteratorsValid);
+    std::copy(this->BeginConstIterator, this->EndConstIterator, dest);
   }
 
   /// Returns the iterator previously saved from an \c ArrayContainerControl.
   ///
-  DAX_CONT_EXPORT IteratorType GetIteratorBegin() const
+  DAX_CONT_EXPORT IteratorType GetIteratorBegin()
   {
     DAX_ASSERT_CONT(this->IteratorsValid);
     return this->BeginIterator;
@@ -94,10 +123,26 @@ public:
 
   /// Returns the iterator previously saved from an \c ArrayContainerControl.
   ///
-  DAX_CONT_EXPORT IteratorType GetIteratorEnd() const
+  DAX_CONT_EXPORT IteratorType GetIteratorEnd()
   {
     DAX_ASSERT_CONT(this->IteratorsValid);
     return this->EndIterator;
+  }
+
+  /// Const version of GetIteratorBegin.
+  ///
+  DAX_CONT_EXPORT IteratorConstType GetIteratorConstBegin()
+  {
+    DAX_ASSERT_CONT(this->ConstIteratorsValid);
+    return this->BeginConstIterator;
+  }
+
+  /// Const version of GetIteratorEnd.
+  ///
+  DAX_CONT_EXPORT IteratorConstType GetIteratorConstEnd()
+  {
+    DAX_ASSERT_CONT(this->ConstIteratorsValid);
+    return this->EndConstIterator;
   }
 
   /// A no-op.
@@ -114,6 +159,10 @@ private:
   IteratorType BeginIterator;
   IteratorType EndIterator;
   bool IteratorsValid;
+
+  IteratorType BeginConstIterator;
+  IteratorType EndConstIterator;
+  bool ConstIteratorsValid;
 };
 
 }

@@ -42,6 +42,7 @@ class ArrayContainerControlBasic
 public:
   typedef ValueT ValueType;
   typedef ValueType *IteratorType;
+  typedef const ValueType *IteratorConstType;
 
 private:
   /// The original design of this class provided an allocator as a template
@@ -111,12 +112,22 @@ public:
     return this->NumberOfValues;
   }
 
-  IteratorType GetIteratorBegin() const
+  IteratorType GetIteratorBegin()
   {
     return this->Array;
   }
 
-  IteratorType GetIteratorEnd() const
+  IteratorType GetIteratorEnd()
+  {
+    return this->GetIteratorBegin() + this->GetNumberOfValues();
+  }
+
+  IteratorConstType GetIteratorConstBegin() const
+  {
+    return this->Array;
+  }
+
+  IteratorConstType GetIteratorConstEnd() const
   {
     return this->GetIteratorBegin() + this->GetNumberOfValues();
   }

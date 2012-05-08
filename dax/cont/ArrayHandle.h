@@ -82,7 +82,11 @@ private:
 public:
   typedef T ValueType;
   typedef typename ArrayContainerControlType::IteratorType IteratorControl;
+  typedef typename ArrayContainerControlType::IteratorConstType
+      IteratorConstControl;
   typedef typename ArrayManagerExecutionType::IteratorType IteratorExecution;
+  typedef typename ArrayManagerExecutionType::IteratorConstType
+      IteratorConstExecution;
 
   /// Constructs an empty ArrayHandle. Typically used for output or
   /// intermediate arrays that will be filled by a Dax algorithm.
@@ -96,8 +100,8 @@ public:
 
   /// Constructs an ArrayHandle pointing to the data in the given iterators.
   ///
-  DAX_CONT_EXPORT ArrayHandle(IteratorControl userDataBegin,
-                              IteratorControl userDataEnd)
+  DAX_CONT_EXPORT ArrayHandle(IteratorConstControl userDataBegin,
+                              IteratorConstControl userDataEnd)
     : Internals(new InternalStruct)
   {
     this->Internals->UserIteratorBegin = userDataBegin;
@@ -115,7 +119,8 @@ public:
     this->SyncControlArray();
     if (this->Internals->UserIteratorValid)
       {
-      return this->Internals->UserIteratorBegin;
+      throw dax::cont::ErrorControlBadValue(
+            "ArrayHandle has a read-only control iterator.");
       }
     else if (this->Internals->ControlArrayValid)
       {
@@ -134,7 +139,8 @@ public:
     this->SyncControlArray();
     if (this->Internals->UserIteratorValid)
       {
-      return this->Internals->UserIteratorEnd;
+      throw dax::cont::ErrorControlBadValue(
+            "ArrayHandle has a read-only control iterator.");
       }
     else if (this->Internals->ControlArrayValid)
       {
@@ -148,7 +154,7 @@ public:
 
   /// The begin iterator of the control array.
   ///
-  DAX_CONT_EXPORT const IteratorControl GetIteratorControlBegin() const
+  DAX_CONT_EXPORT IteratorConstControl GetIteratorConstControlBegin() const
   {
     this->SyncControlArray();
     if (this->Internals->UserIteratorValid)
@@ -157,7 +163,7 @@ public:
       }
     else if (this->Internals->ControlArrayValid)
       {
-      return this->Internals->ControlArray.GetIteratorBegin();
+      return this->Internals->ControlArray.GetIteratorConstBegin();
       }
     else
       {
@@ -167,7 +173,7 @@ public:
 
   /// The end iterator of the control array.
   ///
-  DAX_CONT_EXPORT const IteratorControl GetIteratorControlEnd() const
+  DAX_CONT_EXPORT IteratorConstControl GetIteratorConstControlEnd() const
   {
     this->SyncControlArray();
     if (this->Internals->UserIteratorValid)
@@ -176,7 +182,7 @@ public:
       }
     else if (this->Internals->ControlArrayValid)
       {
-      return this->Internals->ControlArray.GetIteratorEnd();
+      return this->Internals->ControlArray.GetIteratorConstEnd();
       }
     else
       {
@@ -258,7 +264,7 @@ public:
   /// any data. Returns a pair of begin/end iterators that can be used in code
   /// running in the execution environment.
   ///
-  DAX_CONT_EXPORT std::pair<const IteratorExecution, const IteratorExecution>
+  DAX_CONT_EXPORT std::pair<IteratorConstExecution, IteratorConstExecution>
   PrepareForInput() const
   {
     if (this->Internals->ExecutionArrayValid)
@@ -273,24 +279,22 @@ public:
             this->Internals->UserIteratorBegin,
             this->Internals->UserIteratorEnd);
       this->Internals->ExecutionArrayValid = true;
-      return this->Internals->ExecutionArray.GetIteratorBegin();
       }
     else if (this->Internals->ControlArrayValid)
       {
       this->Internals->ExecutionArray.LoadDataForInput(
-            this->Internals->ControlArray.GetIteratorBegin(),
-            this->Internals->ControlArray.GetIteratorEnd());
+            this->Internals->ControlArray.GetIteratorConstBegin(),
+            this->Internals->ControlArray.GetIteratorConstEnd());
       this->Internals->ExecutionArrayValid = true;
-      return this->Internals->ExecutionArray.GetIteratorBegin();
       }
     else
       {
       throw dax::cont::ErrorControlBadValue(
             "ArrayHandle has no data when PrepareForInput called.");
       }
-    return std::make_pair<const IteratorExecution, const IteratorExecution>(
-          this->Internals->ExecutionArray.GetIteratorBegin(),
-          this->Internals->ExecutionArray.GetIteratorEnd());
+    return std::make_pair(
+          this->Internals->ExecutionArray.GetIteratorConstBegin(),
+          this->Internals->ExecutionArray.GetIteratorConstEnd());
   }
 
   /// Prepares (allocates) this array to be used as an output from an operation
@@ -338,8 +342,8 @@ public:
 
 private:
   struct InternalStruct {
-    IteratorControl UserIteratorBegin;
-    IteratorControl UserIteratorEnd;
+    IteratorConstControl UserIteratorBegin;
+    IteratorConstControl UserIteratorEnd;
     bool UserIteratorValid;
 
     ArrayContainerControlType ControlArray;
