@@ -15,7 +15,11 @@
 //=============================================================================
 
 #include <dax/exec/math/LinearAlgebra.h>
+
+#include<dax/Types.h>
+#include <dax/exec/VectorOperations.h>
 #include <dax/internal/Testing.h>
+
 #include <math.h>
 
 namespace {
@@ -23,30 +27,33 @@ namespace {
 namespace internal{
 
 template<typename VectorType>
-dax::Scalar norm(VectorType vt)
+dax::Scalar norm(const VectorType& vt)
 {
+  typedef dax::VectorTraits<VectorType> Traits;
   double total = 0.0;
-  for (int i = 0; i < typename VectorType::NUM_COMPONENTS; ++i)
+  for (int i = 0; i < Traits::NUM_COMPONENTS; ++i)
     {
-    total += vt[i] *vt[i];
+    total += Traits::GetComponent(vt,i) * Traits::GetComponent(vt,i);
     }
   return sqrt(total);
 }
 
 template<typename VectorType>
-VectorType normalized(VectorType vt)
+VectorType normalized(const VectorType& vt)
 {
+  typedef dax::VectorTraits<VectorType> Traits;
   double total = 0.0;
-  for (int i = 0; i < typename VectorType::NUM_COMPONENTS; ++i)
+  for (int i = 0; i < Traits::NUM_COMPONENTS; ++i)
     {
-    total += vt[i] * vt[i];
+    total += Traits::GetComponent(vt,i) * Traits::GetComponent(vt,i);
     }
   VectorType temp = vt;
   if(total)
     {
-    for (int i = 0; i < typename VectorType::NUM_COMPONENTS; ++i)
+    for (int i = 0; i < Traits::NUM_COMPONENTS; ++i)
       {
-      temp[i] = vt[i]/sqrt(total);
+      typename Traits::ValueType norm = Traits::GetComponent(vt,i)/sqrt(total);
+      Traits::SetComponent(temp,i,norm);
       }
     }
   return temp;
@@ -55,7 +62,7 @@ VectorType normalized(VectorType vt)
 }
 
 template<typename VectorType>
-void TestVector(VectorType vector)
+void TestVector(const VectorType& vector)
 {
   //to do have to implement a norm and normalized call to verify the math ones
   //agianst
@@ -65,8 +72,9 @@ void TestVector(VectorType vector)
   DAX_TEST_ASSERT(test_equal(dax::exec::math::Normalized(vector), internal::normalized(vector)),
                   "Normalized vector failed test.");
 
-  dax::exec::math::Normalize(vector);
-  DAX_TEST_ASSERT(test_equal(vector, internal::normalized(vector)),
+  VectorType normalizedVector=vector;
+  dax::exec::math::Normalize(normalizedVector);
+  DAX_TEST_ASSERT(test_equal(normalizedVector, internal::normalized(vector)),
                   "Inplace Normalized vector failed test.");
 }
 
@@ -75,11 +83,13 @@ const dax::Id MAX_VECTOR_SIZE = 4;
 struct LinearAlgInitStruct {
   dax::Scalar zero;
   dax::Scalar normalized;
+  dax::Scalar positive;
+  dax::Scalar negative;
 }  LinearAlgInit[MAX_VECTOR_SIZE] = {
-  { 0, 1 },
-  { 0, 1 },
-  { 0, 1 },
-  { 0, 1 },
+  { 0, 1, 0.13, -2 },
+  { 0, 1, 8, -4 },
+  { 0, 1, 3.0, -1 },
+  { 0, 1, 4, -2 },
 };
 
 struct TestLinearFunctor
@@ -88,14 +98,18 @@ struct TestLinearFunctor
     typedef dax::VectorTraits<T> Traits;
     DAX_TEST_ASSERT(Traits::NUM_COMPONENTS <= MAX_VECTOR_SIZE,
                     "Need to update test for larger vectors.");
-    T zeroVector,normalizedVector;
+    T zeroVector,normalizedVector,posVec,negVec;
     for (int index = 0; index < Traits::NUM_COMPONENTS; index++)
       {
       Traits::SetComponent(zeroVector, index, LinearAlgInit[index].zero);
       Traits::SetComponent(normalizedVector, index, LinearAlgInit[index].normalized);
+      Traits::SetComponent(posVec, index, LinearAlgInit[index].positive);
+      Traits::SetComponent(negVec, index, LinearAlgInit[index].negative);
       }
     TestVector(zeroVector);
     TestVector(normalizedVector);
+    TestVector(posVec);
+    TestVector(negVec);
   }
 };
 
