@@ -44,6 +44,8 @@ class ArrayHandle;
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
+#include <utility>
+
 namespace dax {
 namespace cont {
 
@@ -108,7 +110,7 @@ public:
 
   /// The begin iterator of the control array.
   ///
-  DAX_CONT_EXPORT IteratorControl GetIteratorBegin()
+  DAX_CONT_EXPORT IteratorControl GetIteratorControlBegin()
   {
     this->SyncControlArray();
     if (this->Internals->UserIteratorValid)
@@ -127,7 +129,7 @@ public:
 
   /// The end iterator of the control array.
   ///
-  DAX_CONT_EXPORT IteratorControl GetIteratorEnd()
+  DAX_CONT_EXPORT IteratorControl GetIteratorControlEnd()
   {
     this->SyncControlArray();
     if (this->Internals->UserIteratorValid)
@@ -146,7 +148,7 @@ public:
 
   /// The begin iterator of the control array.
   ///
-  DAX_CONT_EXPORT const IteratorControl GetIteratorBegin() const
+  DAX_CONT_EXPORT const IteratorControl GetIteratorControlBegin() const
   {
     this->SyncControlArray();
     if (this->Internals->UserIteratorValid)
@@ -165,7 +167,7 @@ public:
 
   /// The end iterator of the control array.
   ///
-  DAX_CONT_EXPORT const IteratorControl GetIteratorEnd() const
+  DAX_CONT_EXPORT const IteratorControl GetIteratorControlEnd() const
   {
     this->SyncControlArray();
     if (this->Internals->UserIteratorValid)
@@ -179,6 +181,30 @@ public:
     else
       {
       throw dax::cont::ErrorControlBadValue("ArrayHandle contains no data.");
+      }
+  }
+
+  /// Returns the number of entries in the array.
+  ///
+  DAX_CONT_EXPORT dax::Id GetNumberOfValues() const
+  {
+    if (this->Internals->UserIteratorValid)
+      {
+      return (this->Internals->UserIteratorEnd
+              - this->Internals->UserIteratorBegin);
+      }
+    else if (this->Internals->ControlArrayValid)
+      {
+      return this->Internals->ControlArray.GetNumberOfValues();
+      }
+    else if (this->Internals->ExecutionArrayValid)
+      {
+      return (this->Internals->ExecutionArray.GetEndIterator()
+              - this->Internals->ExecutionArray.GetBeginIterator());
+      }
+    else
+      {
+      return 0;
       }
   }
 
@@ -229,10 +255,11 @@ public:
   /// Prepares this array to be used as an input to an operation in the
   /// execution environment. If necessary, copies data to the execution
   /// environment. Can throw an exception if this array does not yet contain
-  /// any data. Returns an iterator that can be used in code running in the
-  /// execution environment.
+  /// any data. Returns a pair of begin/end iterators that can be used in code
+  /// running in the execution environment.
   ///
-  DAX_CONT_EXPORT IteratorExecution PrepareForInput()
+  DAX_CONT_EXPORT std::pair<const IteratorExecution, const IteratorExecution>
+  PrepareForInput() const
   {
     if (this->Internals->ExecutionArrayValid)
       {
@@ -261,16 +288,20 @@ public:
       throw dax::cont::ErrorControlBadValue(
             "ArrayHandle has no data when PrepareForInput called.");
       }
+    return std::make_pair<const IteratorExecution, const IteratorExecution>(
+          this->Internals->ExecutionArray.GetIteratorBegin(),
+          this->Internals->ExecutionArray.GetIteratorEnd());
   }
 
   /// Prepares (allocates) this array to be used as an output from an operation
   /// in the execution environment. The internal state of this class is set to
   /// have valid data in the execution array with the assumption that the array
   /// will be filled soon (i.e. before any other methods of this object are
-  /// called).  Returns an iterator that can be used in code running in the
-  /// execution environment.
+  /// called). Returns a pair of begin/end iterators that can be used in code
+  /// running in the execution environment.
   ///
-  DAX_CONT_EXPORT IteratorExecution PrepareForOutput(dax::Id numberOfValues)
+  DAX_CONT_EXPORT std::pair<IteratorExecution, IteratorExecution>
+  PrepareForOutput(dax::Id numberOfValues)
   {
     // Invalidate any control arrays.
     // Should the control array resource be released? Probably not be a good
@@ -281,16 +312,18 @@ public:
     this->Internals->ExecutionArray.AllocateArrayForOutput(
           this->Internals->ControlArray, numberOfValues);
 
-    return this->Internals->ExecutionArray.GetIteratorBegin();
+    return std::make_pair(this->Internals->ExecutionArray.GetIteratorBegin(),
+                          this->Internals->ExecutionArray.GetIteratorEnd);
   }
 
   /// Prepares this array to be used in an in-place operation (both as input
   /// and output) in the execution environment. If necessary, copies data to
   /// the execution environment. Can throw an exception if this array does not
-  /// yet contain any data. Returns an iterator that can be used in code
-  /// running in the execution environment.
+  /// yet contain any data. Returns a a pair of begin/end iterators that can be
+  /// used in code running in the execution environment.
   ///
-  DAX_CONT_EXPORT IteratorExecution PrepareForInPlace()
+  DAX_CONT_EXPORT std::pair<IteratorExecution, IteratorExecution>
+  PrepareForInPlace()
   {
     this->PrepareForInput();
 
@@ -299,7 +332,8 @@ public:
     this->Internals->UserIteratorValid = false;
     this->Internals->ControlArrayValid = false;
 
-    return this->Internals->ExecutionArray.GetIteratorBegin();
+    return std::make_pair(this->Internals->ExecutionArray.GetIteratorBegin(),
+                          this->Internals->ExecutionArray.GetIteratorEnd());
   }
 
 private:
