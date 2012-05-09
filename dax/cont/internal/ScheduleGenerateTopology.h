@@ -126,18 +126,28 @@ public:
     static_cast<Derived*>(this)->GenerateOutputFields();
     }
 
-/// \fn template <typename WorkType> Parameters GenerateClassificationParameters(const GridType& grid)
-/// \brief Abstract method that inherited classes must implement.
-///
-/// The method must return the populated parameters struct with all the information
-/// needed for the ScheduleGenerateTopology class to execute the classification \c Functor.
+#ifdef DAX_DOXYGEN_ONLY
 
-/// \fn template <typename WorkType> Parameters GenerateOutputFields()
-/// \brief Abstract method that inherited classes must implement.
-///
-/// The method is called after the new grids points and topology have been generated
-/// This allows dervied classes the ability to use the MaskCellHandle and MaskPointHandle
-/// To generate a new field arrays for the output grid
+  /// \brief Abstract method that inherited classes must implement.
+  ///
+  /// The method must return the populated parameters struct with all the
+  /// information needed for the ScheduleGenerateTopology class to execute the
+  /// classification \c Functor.
+  ///
+  template <typename GridType, typename PackagedGrid>
+  ParametersClassify GenerateClassificationParameters(const GridType& grid,
+                                                      PackagedGrid& pgrid);
+
+  /// \brief Abstract method that inherited classes must implement.
+  ///
+  /// The method is called after the new grids points and topology have been
+  /// generated. This allows dervied classes the ability to use the
+  /// MaskCellHandle and MaskPointHandle To generate a new field arrays for the
+  /// output grid
+  ///
+  void GenerateOutputFields();
+
+#endif //DAX_DOXYGEN_ONLY
 
 protected:
 

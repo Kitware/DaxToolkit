@@ -47,6 +47,9 @@ namespace internal {
 #define OFFSET 1000
 #define DIM 64
 
+/// This class has a single static member, Run, that tests the templated
+/// DeviceAdapter for conformance.
+///
 template<class DeviceAdapter>
 struct TestingDeviceAdapter
 {
@@ -634,6 +637,11 @@ private:
   };
 
 public:
+
+  /// Run a suite of tests to check to see if a DeviceAdapter properly supports
+  /// all members and classes required for driving Dax algorithms. Returns an
+  /// error code that can be returned from the main function of a test.
+  ///
   static DAX_CONT_EXPORT int Run()
   {
     return dax::cont::internal::Testing::Run(TestAll());

@@ -20,6 +20,11 @@
 
 namespace dax { namespace exec {
 
+/// \brief A handle to field data.
+///
+/// Worklets use this object in conjunction with a work object to retrieve the
+/// field data that the worklet has access to.
+///
 template<typename T>
 class Field
 {
@@ -45,6 +50,8 @@ private:
   dax::internal::DataArray<ValueType> Array;
 };
 
+/// \brief  A handle to field data that is specifically mapped to points.
+///
 template<typename T>
 class FieldPoint : public dax::exec::Field<T>
 {
@@ -57,6 +64,8 @@ public:
   { }
 };
 
+/// \brief A handle to field data that represents the coordinates of vertices.
+///
 class FieldCoordinates : public dax::exec::FieldPoint<dax::Vector3>
 {
 public:
@@ -68,6 +77,8 @@ public:
    { }
 };
 
+/// \brief A handle to field dta that is specifically mapped to cells.
+///
 template<class T>
 class FieldCell : public dax::exec::Field<T>
 {

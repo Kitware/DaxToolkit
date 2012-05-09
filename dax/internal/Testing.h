@@ -133,6 +133,7 @@ public:
   /// {
   ///   return dax::internal::Testing::Run(TestFoo);
   /// }
+  /// \endcode
   ///
   template<class Func>
   static DAX_CONT_EXPORT int Run(Func function)

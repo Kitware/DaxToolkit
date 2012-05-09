@@ -48,14 +48,14 @@ private:
   template <typename T>
   void TestNumeric(T, dax::TypeTraitsIntegerTag) {
     std::cout << "  integer" << std::endl;
-    typedef typename dax::VectorTraits<T>::ValueType VT;
+    typedef typename dax::VectorTraits<T>::ComponentType VT;
     VT value = VT(2.001);
     DAX_TEST_ASSERT(value == 2, "Integer does not round to integer.");
   }
   template <typename T>
   void TestNumeric(T, dax::TypeTraitsRealTag) {
     std::cout << "  real" << std::endl;
-    typedef typename dax::VectorTraits<T>::ValueType VT;
+    typedef typename dax::VectorTraits<T>::ComponentType VT;
     VT value = VT(2.001);
     DAX_TEST_ASSERT(test_equal(float(value), float(2.001)),
                     "Real does not hold floaing point number.");

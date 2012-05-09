@@ -26,11 +26,15 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-/// Manages an array-worth of data. Typically this data holds field data. The
-/// array handle optionally contains a reference to user managed data, with
-/// which it can read input data or write results data. The array handle also
-/// manages any memory needed to access the data from the execution
-/// environment.
+namespace dax {
+namespace cont {
+
+/// \brief Manages an array-worth of data.
+///
+/// Typically this data holds field data. The array handle optionally contains
+/// a reference to user managed data, with which it can read input data or
+/// write results data. The array handle also manages any memory needed to
+/// access the data from the execution environment.
 ///
 /// An ArrayHandle can be created without pointing to any actual user data. In
 /// this case, ArrayHandle will only maintain an array accessed from the
@@ -48,8 +52,6 @@
 /// Any memory created for the execution environment will remain around in case
 /// it is needed again.
 ///
-namespace dax {
-namespace cont {
 template<typename T, class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER>
 class ArrayHandle
 {

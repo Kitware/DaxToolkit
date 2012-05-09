@@ -34,42 +34,42 @@ static void CompareDimensionalityTags(dax::TypeTraitsVectorTag,
 /// Compares some manual arithmetic through type traits to overloaded
 /// arithmetic that should be tested separately in UnitTestTypes.
 template <class T>
-static void TestVectorType(const T &value)
+static void TestVectorType(const T &vector)
 {
   typedef typename dax::VectorTraits<T> Traits;
 
   {
   T result;
-  const typename Traits::ValueType multiplier = 4;
+  const typename Traits::ComponentType multiplier = 4;
   for (int i = 0; i < Traits::NUM_COMPONENTS; i++)
     {
-    Traits::SetComponent(result, i, multiplier*Traits::GetComponent(value, i));
+    Traits::SetComponent(result, i, multiplier*Traits::GetComponent(vector, i));
     }
-  DAX_TEST_ASSERT(result == multiplier*value,
+  DAX_TEST_ASSERT(result == multiplier*vector,
                   "Got bad result for scalar multiple");
   }
 
   {
   T result;
-  const typename Traits::ValueType multiplier = 7;
+  const typename Traits::ComponentType multiplier = 7;
   for (int i = 0; i < Traits::NUM_COMPONENTS; i++)
     {
     Traits::GetComponent(result, i)
-        = multiplier * Traits::GetComponent(value, i);
+        = multiplier * Traits::GetComponent(vector, i);
     }
-  DAX_TEST_ASSERT(result == multiplier*value,
+  DAX_TEST_ASSERT(result == multiplier*vector,
                   "Got bad result for scalar multiple");
   }
 
   {
-  typename Traits::ValueType result = 0;
+  typename Traits::ComponentType result = 0;
   for (int i = 0; i < Traits::NUM_COMPONENTS; i++)
     {
-    typename Traits::ValueType component
-        = Traits::GetComponent(value, i);
+    typename Traits::ComponentType component
+        = Traits::GetComponent(vector, i);
     result += component * component;
     }
-  DAX_TEST_ASSERT(result == dax::dot(value, value),
+  DAX_TEST_ASSERT(result == dax::dot(vector, vector),
                   "Got bad result for dot product");
   }
 

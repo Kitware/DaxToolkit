@@ -52,7 +52,7 @@ VectorType normalized(const VectorType& vt)
     {
     for (int i = 0; i < Traits::NUM_COMPONENTS; ++i)
       {
-      typename Traits::ValueType norm = Traits::GetComponent(vt,i)/sqrt(total);
+      typename Traits::ComponentType norm = Traits::GetComponent(vt,i)/sqrt(total);
       Traits::SetComponent(temp,i,norm);
       }
     }

@@ -92,34 +92,34 @@ typedef int Id __attribute__ ((aligned(4)));
 template<typename T, int Size>
 class Tuple {
 public:
-  typedef T ValueType;
+  typedef T ComponentType;
   static const int NUM_COMPONENTS=Size;
 
   DAX_EXEC_CONT_EXPORT Tuple(){}
-  DAX_EXEC_CONT_EXPORT explicit Tuple(const ValueType& value)
+  DAX_EXEC_CONT_EXPORT explicit Tuple(const ComponentType& value)
     {
     for(int i=0; i < NUM_COMPONENTS;++i)
       {
-      this->Values[i]=value;
+      this->Components[i]=value;
       }
     }
-  DAX_EXEC_CONT_EXPORT explicit Tuple(const ValueType* values)
+  DAX_EXEC_CONT_EXPORT explicit Tuple(const ComponentType* values)
     {
     for(int i=0; i < NUM_COMPONENTS;++i)
       {
-      this->Values[i]=values[i];
+      this->Components[i]=values[i];
       }
     }
 
-  DAX_EXEC_CONT_EXPORT const ValueType &operator[](int idx) const {
-    return this->Values[idx];
+  DAX_EXEC_CONT_EXPORT const ComponentType &operator[](int idx) const {
+    return this->Components[idx];
   }
-  DAX_EXEC_CONT_EXPORT ValueType &operator[](int idx) {
-    return this->Values[idx];
+  DAX_EXEC_CONT_EXPORT ComponentType &operator[](int idx) {
+    return this->Components[idx];
   }
 
 protected:
-  ValueType Values[NUM_COMPONENTS];
+  ComponentType Components[NUM_COMPONENTS];
 };
 
 /// Vector2 corresponds to a 2-tuple
@@ -132,9 +132,9 @@ public:
   DAX_EXEC_CONT_EXPORT explicit Vector2(const dax::Scalar* values):
     dax::Tuple<dax::Scalar, 2>(values) { }
 
-  DAX_EXEC_CONT_EXPORT Vector2(ValueType x, ValueType y) {
-    this->Values[0] = x;
-    this->Values[1] = y;
+  DAX_EXEC_CONT_EXPORT Vector2(ComponentType x, ComponentType y) {
+    this->Components[0] = x;
+    this->Components[1] = y;
   }
 } __attribute__ ((aligned(DAX_SIZE_SCALAR)));
 
@@ -148,10 +148,11 @@ public:
   DAX_EXEC_CONT_EXPORT explicit Vector3(const dax::Scalar* values):
     dax::Tuple<dax::Scalar, 3>(values) { }
 
-  DAX_EXEC_CONT_EXPORT Vector3(ValueType x, ValueType y, ValueType z) {
-    this->Values[0] = x;
-    this->Values[1] = y;
-    this->Values[2] = z;
+  DAX_EXEC_CONT_EXPORT
+  Vector3(ComponentType x, ComponentType y, ComponentType z) {
+    this->Components[0] = x;
+    this->Components[1] = y;
+    this->Components[2] = z;
   }
 } __attribute__ ((aligned(DAX_SIZE_SCALAR)));
 
@@ -166,11 +167,11 @@ public:
     dax::Tuple<dax::Scalar, 4>(values) { }
 
   DAX_EXEC_CONT_EXPORT
-  Vector4(ValueType x, ValueType y, ValueType z, ValueType w) {
-    this->Values[0] = x;
-    this->Values[1] = y;
-    this->Values[2] = z;
-    this->Values[3] = w;
+  Vector4(ComponentType x, ComponentType y, ComponentType z, ComponentType w) {
+    this->Components[0] = x;
+    this->Components[1] = y;
+    this->Components[2] = z;
+    this->Components[3] = w;
   }
 } __attribute__ ((aligned(DAX_SIZE_SCALAR)));
 
@@ -221,10 +222,10 @@ public:
   DAX_EXEC_CONT_EXPORT explicit Id3(const dax::Id* values):
     dax::Tuple<dax::Id, 3>(values) { }
 
-  DAX_EXEC_CONT_EXPORT Id3(ValueType x, ValueType y, ValueType z) {
-    this->Values[0] = x;
-    this->Values[1] = y;
-    this->Values[2] = z;
+  DAX_EXEC_CONT_EXPORT Id3(ComponentType x, ComponentType y, ComponentType z) {
+    this->Components[0] = x;
+    this->Components[1] = y;
+    this->Components[2] = z;
   }
 } __attribute__ ((aligned(DAX_SIZE_ID)));
 
@@ -263,8 +264,8 @@ DAX_EXEC_CONT_EXPORT dax::Id dot(dax::Id a, dax::Id b)
   return a * b;
 }
 
-DAX_EXEC_CONT_EXPORT dax::Id3::ValueType dot(const dax::Id3 &a,
-                                             const dax::Id3 &b)
+DAX_EXEC_CONT_EXPORT dax::Id3::ComponentType dot(const dax::Id3 &a,
+                                                 const dax::Id3 &b)
 {
   return (a[0]*b[0]) + (a[1]*b[1]) + (a[2]*b[2]);
 }
@@ -274,20 +275,20 @@ DAX_EXEC_CONT_EXPORT dax::Scalar dot(dax::Scalar a, dax::Scalar b)
   return a * b;
 }
 
-DAX_EXEC_CONT_EXPORT dax::Vector2::ValueType dot(const dax::Vector2 &a,
+DAX_EXEC_CONT_EXPORT dax::Vector2::ComponentType dot(const dax::Vector2 &a,
                                                  const dax::Vector2 &b)
 {
   return (a[0]*b[0]) + (a[1]*b[1]);
 }
 
-DAX_EXEC_CONT_EXPORT dax::Vector3::ValueType dot(const dax::Vector3 &a,
-                                                 const dax::Vector3 &b)
+DAX_EXEC_CONT_EXPORT dax::Vector3::ComponentType dot(const dax::Vector3 &a,
+                                                     const dax::Vector3 &b)
 {
   return (a[0]*b[0]) + (a[1]*b[1]) + (a[2]*b[2]);
 }
 
-DAX_EXEC_CONT_EXPORT dax::Vector4::ValueType dot(const dax::Vector4 &a,
-                                                 const dax::Vector4 &b)
+DAX_EXEC_CONT_EXPORT dax::Vector4::ComponentType dot(const dax::Vector4 &a,
+                                                     const dax::Vector4 &b)
 {
   return (a[0]*b[0]) + (a[1]*b[1]) + (a[2]*b[2]) + (a[3]*b[3]);
 }
@@ -325,13 +326,13 @@ DAX_EXEC_CONT_EXPORT bool operator!=(const dax::Id3 &a,
   return !(a == b);
 }
 
-DAX_EXEC_CONT_EXPORT dax::Id3 operator*(dax::Id3::ValueType a,
+DAX_EXEC_CONT_EXPORT dax::Id3 operator*(dax::Id3::ComponentType a,
                                         const dax::Id3 &b)
 {
   return dax::make_Id3(a*b[0], a*b[1], a*b[2]);
 }
 DAX_EXEC_CONT_EXPORT dax::Id3 operator*(const dax::Id3 &a,
-                                        dax::Id3::ValueType &b)
+                                        dax::Id3::ComponentType &b)
 {
   return dax::make_Id3(a[0]*b, a[1]*b, a[2]*b);
 }
@@ -367,13 +368,13 @@ DAX_EXEC_CONT_EXPORT bool operator!=(const dax::Vector2 &a,
   return !(a == b);
 }
 
-DAX_EXEC_CONT_EXPORT dax::Vector2 operator*(dax::Vector2::ValueType a,
+DAX_EXEC_CONT_EXPORT dax::Vector2 operator*(dax::Vector2::ComponentType a,
                                             const dax::Vector2 &b)
 {
   return dax::make_Vector2(a*b[0], a*b[1]);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector2 operator*(const dax::Vector2 &a,
-                                            dax::Vector2::ValueType &b)
+                                            dax::Vector2::ComponentType &b)
 {
   return dax::make_Vector2(a[0]*b, a[1]*b);
 }
@@ -409,13 +410,13 @@ DAX_EXEC_CONT_EXPORT bool operator!=(const dax::Vector3 &a,
   return !(a == b);
 }
 
-DAX_EXEC_CONT_EXPORT dax::Vector3 operator*(dax::Vector3::ValueType a,
+DAX_EXEC_CONT_EXPORT dax::Vector3 operator*(dax::Vector3::ComponentType a,
                                             const dax::Vector3 &b)
 {
   return dax::make_Vector3(a*b[0], a*b[1], a*b[2]);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector3 operator*(const dax::Vector3 &a,
-                                            dax::Vector3::ValueType &b)
+                                            dax::Vector3::ComponentType &b)
 {
   return dax::make_Vector3(a[0]*b, a[1]*b, a[2]*b);
 }
@@ -451,7 +452,7 @@ DAX_EXEC_CONT_EXPORT bool operator!=(const dax::Vector4 &a,
   return !(a == b);
 }
 
-DAX_EXEC_CONT_EXPORT dax::Vector4 operator*(dax::Vector4::ValueType a,
+DAX_EXEC_CONT_EXPORT dax::Vector4 operator*(dax::Vector4::ComponentType a,
                                             const dax::Vector4 &b)
 {
   return dax::make_Vector4(a*b[0], a*b[1], a*b[2], a*b[3]);
