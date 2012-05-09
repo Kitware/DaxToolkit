@@ -64,6 +64,9 @@ DAX_SYS_MATH_TEMPLATE(fabs)
 DAX_EXEC_EXPORT dax::Scalar Abs(dax::Scalar x) {
   return internal::fabs_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 Abs(dax::Vector2 x) {
+  return internal::fabs_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 Abs(dax::Vector3 x) {
   return internal::fabs_template(x);
 }
