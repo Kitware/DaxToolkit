@@ -21,7 +21,6 @@ set(headers
   ArrayContainerControlBasic.h
   ArrayHandle.h
   Assert.h
-  CopySerial.h
   DeviceAdapter.h
   DeviceAdapterSerial.h
   Error.h
@@ -30,13 +29,7 @@ set(headers
   ErrorControlBadValue.h
   ErrorControlOutOfMemory.h
   ErrorExecution.h
-  InclusiveScanSerial.h
-  LowerBoundsSerial.h
-  ScheduleSerial.h
-  SortSerial.h
-  StreamCompactSerial.h
   UniformGrid.h
-  UniqueSerial.h
   UnstructuredGrid.h
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
   )

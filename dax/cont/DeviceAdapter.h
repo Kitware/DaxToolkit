@@ -170,9 +170,9 @@ public:
 
   /// \brief Reduce an array to only the unique values it contains
   ///
-  /// Removes all duplicate values in \c values which are adjacent to each
+  /// Removes all duplicate values in \c values that are adjacent to each
   /// other. Which means you should sort the input array unless you want
-  /// duplicate values which aren't adjacent. Note the values array size might
+  /// duplicate values that aren't adjacent. Note the values array size might
   /// be modified by this operation.
   ///
   /// \par Requirements:
@@ -257,6 +257,17 @@ public:
     ///
     template <class IteratorTypeControl>
     void CopyInto(IteratorTypeControl dest) const;
+
+    /// \brief Reduces the size of the array without changing its values.
+    ///
+    /// This method allows you to resize the array without reallocating it. The
+    /// number of entries in the array is changed to \c numberOfValues. The data
+    /// in the array (from indices 0 to \c numberOfValues - 1) are the same, but
+    /// \c numberOfValues must be equal or less than the preexisting size
+    /// (returned from GetNumberOfValues). That is, this method can only be used
+    /// to shorten the array, not lengthen.
+    ///
+    void Shrink(dax::Id numberOfValues);
 
     /// Returns an iterator that can be used in the execution environment. This
     /// iterator was defined in either LoadDataForInput or

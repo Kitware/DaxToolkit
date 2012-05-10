@@ -123,12 +123,13 @@ public:
                                                    this->EndConstIterator);
     DAX_ASSERT_CONT(numberOfValues <= originalNumberOfValues);
 
-    this->EndConstIterator = std::advance(this->BeginConstIterator,
-                                          numberOfValues);
+    this->EndConstIterator = this->BeginConstIterator;
+    std::advance(this->EndConstIterator, numberOfValues);
 
     if (this->IteratorsValid)
       {
-      this->EndIterator = std::advance(this->BeginIterator, numberOfValues);
+      this->EndIterator = this->BeginIterator;
+      std::advance(this->EndIterator, numberOfValues);
       }
   }
 
@@ -179,8 +180,8 @@ private:
   IteratorType EndIterator;
   bool IteratorsValid;
 
-  IteratorType BeginConstIterator;
-  IteratorType EndConstIterator;
+  IteratorConstType BeginConstIterator;
+  IteratorConstType EndConstIterator;
   bool ConstIteratorsValid;
 };
 

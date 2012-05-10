@@ -131,7 +131,9 @@ public:
 
   IteratorType GetIteratorEnd()
   {
-    return this->GetIteratorBegin() + this->GetNumberOfValues();
+    IteratorType iter = this->GetIteratorBegin();
+    std::advance(iter, this->GetNumberOfValues());
+    return iter;
   }
 
   IteratorConstType GetIteratorConstBegin() const
@@ -141,7 +143,9 @@ public:
 
   IteratorConstType GetIteratorConstEnd() const
   {
-    return this->GetIteratorBegin() + this->GetNumberOfValues();
+    IteratorConstType iter = this->GetIteratorConstBegin();
+    std::advance(iter, this->GetNumberOfValues());
+    return iter;
   }
 
   /// \brief Take the reference away from this object.

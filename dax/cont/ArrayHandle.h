@@ -247,8 +247,8 @@ public:
       {
       if (this->Internals->UserIteratorValid)
         {
-        this->Internals->UserIteratorEnd
-            = std::advance(this->Internals->UserIteratorBegin, numberOfValues);
+        this->Internals->UserIteratorEnd = this->Internals->UserIteratorBegin;
+        std::advance(this->Internals->UserIteratorEnd, numberOfValues);
         }
       if (this->Internals->ControlArrayValid)
         {
@@ -312,7 +312,6 @@ public:
     if (this->Internals->ExecutionArrayValid)
       {
       // Nothing to do, data already loaded.
-      return this->Internals->ExecutionArray.GetIteratorBegin();
       }
     else if (this->Internals->UserIteratorValid)
       {
@@ -359,7 +358,7 @@ public:
           this->Internals->ControlArray, numberOfValues);
 
     return std::make_pair(this->Internals->ExecutionArray.GetIteratorBegin(),
-                          this->Internals->ExecutionArray.GetIteratorEnd);
+                          this->Internals->ExecutionArray.GetIteratorEnd());
   }
 
   /// Prepares this array to be used in an in-place operation (both as input
