@@ -196,8 +196,8 @@ public:
   {
     if (this->Internals->UserIteratorValid)
       {
-      return (this->Internals->UserIteratorEnd
-              - this->Internals->UserIteratorBegin);
+      return std::distance(this->Internals->UserIteratorBegin,
+                           this->Internals->UserIteratorEnd);
       }
     else if (this->Internals->ControlArrayValid)
       {
@@ -205,8 +205,9 @@ public:
       }
     else if (this->Internals->ExecutionArrayValid)
       {
-      return (this->Internals->ExecutionArray.GetEndIterator()
-              - this->Internals->ExecutionArray.GetBeginIterator());
+      return
+          std::distance(this->Internals->ExecutionArray.GetIteratorConstBegin(),
+                        this->Internals->ExecutionArray.GetIteratorConstEnd());
       }
     else
       {
@@ -228,6 +229,47 @@ public:
       {
       std::copy(this->GetIteratorBegin(), this->GetIteratorEnd(), dest);
       }
+  }
+
+  /// \brief Reduces the size of the array without changing its values.
+  ///
+  /// This method allows you to resize the array without reallocating it. The
+  /// number of entries in the array is changed to \c numberOfValues. The data
+  /// in the array (from indices 0 to \c numberOfValues - 1) are the same, but
+  /// \c numberOfValues must be equal or less than the preexisting size
+  /// (returned from GetNumberOfValues). That is, this method can only be used
+  /// to shorten the array, not lengthen.
+  void Shrink(dax::Id numberOfValues)
+  {
+    dax::Id originalNumberOfValues = this->GetNumberOfValues();
+
+    if (numberOfValues < originalNumberOfValues)
+      {
+      if (this->Internals->UserIteratorValid)
+        {
+        this->Internals->UserIteratorEnd
+            = std::advance(this->Internals->UserIteratorBegin, numberOfValues);
+        }
+      if (this->Internals->ControlArrayValid)
+        {
+        this->Internals->ControlArray.Shrink(numberOfValues);
+        }
+      if (this->Internals->ExecutionArrayValid)
+        {
+        this->Internals->ExecutionArray.Shrink(numberOfValues);
+        }
+      }
+    else if (numberOfValues == originalNumberOfValues)
+      {
+      // Nothing to do.
+      }
+    else // numberOfValues > originalNumberOfValues
+      {
+      throw dax::cont::ErrorControlBadValue(
+            "ArrayHandle::Shrink cannot be used to grow array.");
+      }
+
+    DAX_ASSERT_CONT(this->GetNumberOfValues() == numberOfValues);
   }
 
   /// Releases any resources being used in the execution environment (that are

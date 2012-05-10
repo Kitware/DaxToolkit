@@ -113,6 +113,25 @@ public:
     std::copy(this->BeginConstIterator, this->EndConstIterator, dest);
   }
 
+  /// Adjusts saved end iterators to resize array.
+  ///
+  DAX_CONT_EXPORT void Shrink(dax::Id numberOfValues)
+  {
+    DAX_ASSERT_CONT(this->ConstIteratorsValid);
+
+    dax::Id originalNumberOfValues = std::distance(this->BeginConstIterator,
+                                                   this->EndConstIterator);
+    DAX_ASSERT_CONT(numberOfValues <= originalNumberOfValues);
+
+    this->EndConstIterator = std::advance(this->BeginConstIterator,
+                                          numberOfValues);
+
+    if (this->IteratorsValid)
+      {
+      this->EndIterator = std::advance(this->BeginIterator, numberOfValues);
+      }
+  }
+
   /// Returns the iterator previously saved from an \c ArrayContainerControl.
   ///
   DAX_CONT_EXPORT IteratorType GetIteratorBegin()

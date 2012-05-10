@@ -99,6 +99,16 @@ public:
   ///
   void Allocate(dax::Id numberOfValues);
 
+  /// \brief Reduces the size of the array without changing its values.
+  ///
+  /// This method allows you to resize the array without reallocating it. The
+  /// number of entries in the array is changed to \c numberOfValues. The data
+  /// in the array (from indices 0 to \c numberOfValues - 1) are the same, but
+  /// \c numberOfValues must be equal or less than the preexisting size
+  /// (returned from GetNumberOfValues). That is, this method can only be used
+  /// to shorten the array, not lengthen.
+  void Shrink(dax::Id numberOfValues);
+
   /// \brief Frees any resources (i.e. memory) stored in this array.
   ///
   /// After calling this method GetNumberOfValues will return 0 and

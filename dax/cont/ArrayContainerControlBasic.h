@@ -24,6 +24,7 @@
 
 #include <dax/Types.h>
 #include <dax/cont/Assert.h>
+#include <dax/cont/ErrorControlBadValue.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
 
 namespace dax {
@@ -110,6 +111,17 @@ public:
   dax::Id GetNumberOfValues() const
   {
     return this->NumberOfValues;
+  }
+
+  void Shrink(dax::Id numberOfValues)
+  {
+    if (numberOfValues > this->GetNumberOfValues())
+      {
+      throw dax::cont::ErrorControlBadValue(
+            "Shrink method cannot be used to grow array.");
+      }
+
+    this->NumberOfValues = numberOfValues;
   }
 
   IteratorType GetIteratorBegin()
