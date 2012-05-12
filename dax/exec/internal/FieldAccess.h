@@ -24,48 +24,45 @@ namespace dax { namespace exec { class CellVoxel; }}
 
 namespace dax { namespace exec { namespace internal {
 
-template<typename T>
+template<typename T, class ExecutionAdapter, class WorkType>
 DAX_EXEC_EXPORT const T &fieldAccessNormalGet(
-  const dax::exec::Field<T> &field,
-  dax::Id index)
+    const dax::exec::Field<T, ExecutionAdapter> &field,
+    dax::Id index,
+    WorkType &work)
 {
-  return field.GetArray().GetValue(index);
+  typename dax::exec::Field<T, ExecutionAdapter>::IteratorConstType iterator
+      = dax::exec::internal::FieldAccessor::GetBeginIterator(field, work);
+  return *(iterator + index);
 }
 
-template<typename T, int Size>
-DAX_EXEC_EXPORT dax::Tuple<T,Size> fieldAccessNormalGet(
-  const dax::exec::Field<T> &field,
-  dax::Tuple<dax::Id,Size> indices)
+template<typename T, int Size, class ExecutionAdapter, class WorkType>
+DAX_EXEC_EXPORT dax::Tuple<T,Size> fieldAccessNormalMultiGet(
+  const dax::exec::Field<T, ExecutionAdapter> &field,
+  dax::Tuple<dax::Id,Size> indices,
+    WorkType &work)
 {
+  typename dax::exec::Field<T, ExecutionAdapter>::IteratorConstType iterator
+      = dax::exec::internal::FieldAccessor::GetBeginIterator(field, work);
   dax::Tuple<T,Size> result;
-  const dax::internal::DataArray<T> data = field.GetArray();
   for(int i=0; i < Size; ++i)
     {
-    result[i] = data.GetValue(indices[i]);
+    result[i] = *(iterator + indices[i]);
     }
   return result;
 }
 
 
-template<typename T>
-DAX_EXEC_EXPORT void fieldAccessNormalSet(dax::exec::Field<T> &field,
-                                          dax::Id index,
-                                          const T &value)
-{
-  field.GetArray().SetValue(index, value);
-}
-
-template<typename T, int Size>
+template<typename T, class ExecutionAdapter, class WorkType>
 DAX_EXEC_EXPORT void fieldAccessNormalSet(
-  dax::exec::Field<T> &field,
-  dax::Id index,
-  dax::Tuple<T,Size> values)
+    dax::exec::Field<T, ExecutionAdapter> &field,
+    dax::Id index,
+    const T &value,
+    WorkType &work)
 {
-  dax::internal::DataArray<T> data = field.GetArray();
-  for(int i=0; i < Size; ++i)
-    {
-    data.SetValue(index+i,values[i]);
-    }
+  typename dax::exec::Field<T, ExecutionAdapter>::IteratorType iterator
+      = dax::exec::internal::FieldAccessor::GetBeginIterator(field, work);
+  iterator += index;
+  *iterator = value;
 }
 
 template<typename Grid>
@@ -77,7 +74,7 @@ DAX_EXEC_EXPORT dax::Vector3 fieldAccessUniformCoordinatesGet(
 }
 
 template<typename Grid, typename T, int Size>
-DAX_EXEC_EXPORT dax::Tuple<T,Size> fieldAccessUniformCoordinatesGet(
+DAX_EXEC_EXPORT dax::Tuple<T,Size> fieldAccessUniformCoordinatesMultiGet(
   const Grid &GridTopology,
   const dax::Tuple<Id,Size>& indices)
 {

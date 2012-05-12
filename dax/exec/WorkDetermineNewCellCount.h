@@ -36,7 +36,8 @@ namespace exec {
 /// There are different versions for different cell types, which might have
 /// different constructors because they identify topology differently.
 
-template<class CT> class WorkDetermineNewCellCount
+template<class CT, class ExecutionAdapter>
+class WorkDetermineNewCellCount
 {
 public:
   typedef CT CellType;
@@ -44,13 +45,13 @@ public:
 
 private:
   CellType Cell;
-  dax::exec::FieldCell<dax::Id> NewCellCount;
+  dax::exec::FieldCell<dax::Id, ExecutionAdapter> NewCellCount;
   dax::exec::internal::ErrorHandler ErrorHandler;
 public:
 
   DAX_EXEC_EXPORT WorkDetermineNewCellCount(
     const TopologyType &gridStructure,
-    const dax::exec::FieldCell<dax::Id> &cellCount,
+    const dax::exec::FieldCell<dax::Id, ExecutionAdapter> &cellCount,
     const dax::exec::internal::ErrorHandler &errorHandler)
     : Cell(gridStructure, 0),
       NewCellCount(cellCount),
@@ -72,7 +73,8 @@ public:
 
   template<typename T>
   DAX_EXEC_EXPORT
-  const T &GetFieldValue(const dax::exec::FieldCell<T> &field) const
+  const T &GetFieldValue(
+      const dax::exec::FieldCell<T, ExecutionAdapter> &field) const
   {
     return dax::exec::internal::fieldAccessNormalGet(field,
                                                      this->GetCellIndex());
@@ -80,14 +82,15 @@ public:
 
   template<typename T>
   DAX_EXEC_EXPORT dax::Tuple<T,CellType::NUM_POINTS> GetFieldValues(
-      const dax::exec::FieldPoint<T> &field) const
+      const dax::exec::FieldPoint<T, ExecutionAdapter> &field) const
   {
-    return dax::exec::internal::fieldAccessNormalGet<T,CellType::NUM_POINTS>(
+    return dax::exec::internal::fieldAccessNormalMultiGet(
           field, this->Cell.GetPointIndices());
   }
 
   DAX_EXEC_EXPORT dax::Vector3 GetFieldValue(
-      const dax::exec::FieldCoordinates &, dax::Id vertexIndex) const
+      const dax::exec::FieldCoordinates<ExecutionAdapter> &,
+      dax::Id vertexIndex) const
   {
     dax::Id pointIndex = this->GetCell().GetPointIndex(vertexIndex);
     const TopologyType &GridTopology = this->GetCell().GetGridTopology();
@@ -97,14 +100,11 @@ public:
   }
 
   DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,CellType::NUM_POINTS> GetFieldValues(
-    const dax::exec::FieldCoordinates &) const
+    const dax::exec::FieldCoordinates<ExecutionAdapter> &) const
   {
     const TopologyType &gridStructure = this->GetCell().GetGridTopology();
-    return dax::exec::internal::fieldAccessUniformCoordinatesGet<
-        TopologyType,
-        dax::Vector3,
-        CellType::NUM_POINTS
-        > (gridStructure, this->Cell.GetPointIndices());
+    return dax::exec::internal::fieldAccessUniformCoordinatesMultiGet(
+          gridStructure, this->Cell.GetPointIndices());
   }
 
 
@@ -118,7 +118,7 @@ public:
   DAX_EXEC_EXPORT void RaiseError(const char* message)
   {
     this->ErrorHandler.RaiseError(message);
-  }  
+  }
 };
 
 

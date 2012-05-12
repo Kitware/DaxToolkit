@@ -17,6 +17,8 @@
 
 #include <dax/exec/WorkMapCell.h>
 
+#include <dax/exec/internal/TestExecutionAdapter.h>
+
 #include <dax/internal/Testing.h>
 
 namespace {
@@ -27,12 +29,13 @@ dax::exec::internal::ErrorHandler ErrorHandler
 
 }  // Anonymous namespace
 
-template<class WorkType, class CellType>
-static void CompareCoordinates(const WorkType &work,
-                               const CellType &cell,
-                               const dax::exec::FieldCoordinates &coordField,
-                               dax::Vector3 truePCoords,
-                               dax::Vector3 trueWCoords)
+template<class WorkType, class CellType, class ExecutionAdapter>
+static void CompareCoordinates(
+    const WorkType &work,
+    const CellType &cell,
+    const dax::exec::FieldCoordinates<ExecutionAdapter> &coordField,
+    dax::Vector3 truePCoords,
+    dax::Vector3 trueWCoords)
 {
   dax::Vector3 computedWCoords
       = dax::exec::parametricCoordinatesToWorldCoordinates(work,
@@ -51,9 +54,10 @@ static void CompareCoordinates(const WorkType &work,
                   "Computed wrong parametric coords from world coords.");
 }
 
+template<class ExecutionAdapter>
 static void TestPCoordsVoxel(
-  const dax::exec::WorkMapCell<dax::exec::CellVoxel> &work,
-  const dax::exec::FieldCoordinates &coordField)
+  const dax::exec::WorkMapCell<dax::exec::CellVoxel, ExecutionAdapter> &work,
+  const dax::exec::FieldCoordinates<ExecutionAdapter> &coordField)
 {
   const dax::Vector3 cellVertexToParametricCoords[8] = {
     dax::make_Vector3(0, 0, 0),
@@ -89,8 +93,7 @@ static void TestPCoordsVoxel()
 {
   std::cout << "Testing TestPCoords<CellVoxel>" << std::endl;
 
-  dax::internal::DataArray<dax::Vector3> dummyArray;
-  dax::exec::FieldCoordinates coordField(dummyArray);
+  dax::exec::FieldCoordinates<TestExecutionAdapter> coordField;
 
   {
   dax::internal::TopologyUniform gridstruct;
@@ -98,7 +101,8 @@ static void TestPCoordsVoxel()
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
   gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
-  dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, ErrorHandler);
+  dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
+      work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0; flatIndex < 1000; flatIndex++)
     {
     work.SetCellIndex(flatIndex);
@@ -112,7 +116,8 @@ static void TestPCoordsVoxel()
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
   gridstruct.Extent.Max = dax::make_Id3(15, 6, 13);
-  dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, ErrorHandler);
+  dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
+      work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0; flatIndex < 1500; flatIndex++)
     {
     work.SetCellIndex(flatIndex);

@@ -18,6 +18,7 @@
 #include <dax/exec/ParametricCoordinates.h>
 #include <dax/exec/WorkMapCell.h>
 #include <dax/exec/WorkMapField.h>
+#include <dax/exec/internal/TestExecutionAdapter.h>
 #include <dax/internal/GridTopologys.h>
 
 #include <dax/internal/Testing.h>
@@ -46,9 +47,10 @@ const dax::Id bufferSize = 1024*1024;
 static dax::Scalar fieldBuffer[bufferSize];
 
 template<class CellType>
-static dax::exec::FieldPoint<dax::Scalar> CreatePointField(
-    dax::exec::WorkMapField<CellType> work,
-    const dax::exec::FieldCoordinates &coordField,
+static dax::exec::FieldPoint<dax::Scalar, TestExecutionAdapter>
+CreatePointField(
+    dax::exec::WorkMapField<CellType, TestExecutionAdapter> work,
+    const dax::exec::FieldCoordinates<TestExecutionAdapter> &coordField,
     const LinearField &fieldValues,
     dax::Id numPoints)
 {
@@ -56,8 +58,7 @@ static dax::exec::FieldPoint<dax::Scalar> CreatePointField(
                   "Internal test error.  Buffer not large enough");
 
   // Create field.
-  dax::internal::DataArray<dax::Scalar> fieldData(fieldBuffer, numPoints);
-  dax::exec::FieldPoint<dax::Scalar> field(fieldData);
+  dax::exec::FieldPoint<dax::Scalar, TestExecutionAdapter> field(fieldBuffer);
 
   // Fill field.
   for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
@@ -71,11 +72,11 @@ static dax::exec::FieldPoint<dax::Scalar> CreatePointField(
   return field;
 }
 
-template<class CellType>
+template<class CellType, class ExecutionAdapter>
 static void TestInterpolateCell(
-    const dax::exec::WorkMapCell<CellType> &work,
-    const dax::exec::FieldCoordinates &coordField,
-    const dax::exec::FieldPoint<dax::Scalar> &scalarField,
+    const dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
+    const dax::exec::FieldCoordinates<ExecutionAdapter> &coordField,
+    const dax::exec::FieldPoint<dax::Scalar, ExecutionAdapter> &scalarField,
     const LinearField &fieldValues)
 {
   CellType cell = work.GetCell();
@@ -108,17 +109,15 @@ static void TestInterpolateVoxel(
     const dax::internal::TopologyUniform &gridstruct,
     const LinearField &fieldValues)
 {
-  dax::exec::WorkMapField<dax::exec::CellVoxel> workField(gridstruct,
-                                                          ErrorHandler);
-  dax::exec::FieldCoordinates coordField
-      = dax::exec::FieldCoordinates(
-          dax::internal::DataArray<dax::Vector3>());
+  dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter>
+      workField(gridstruct, ErrorHandler);
+  dax::exec::FieldCoordinates<TestExecutionAdapter> coordField;
   dax::Id numPoints = dax::internal::numberOfPoints(gridstruct);
-  dax::exec::FieldPoint<dax::Scalar> scalarField
+  dax::exec::FieldPoint<dax::Scalar, TestExecutionAdapter> scalarField
       = CreatePointField(workField, coordField, fieldValues, numPoints);
 
-  dax::exec::WorkMapCell<dax::exec::CellVoxel> workCell(gridstruct,
-                                                        ErrorHandler);
+  dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
+      workCell(gridstruct, ErrorHandler);
   dax::Id numCells = dax::internal::numberOfCells(gridstruct);
   for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
     {

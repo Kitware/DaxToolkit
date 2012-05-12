@@ -38,7 +38,7 @@ namespace exec {
 ///----------------------------------------------------------------------------
 // Work for worklets that map points to cell. Use this work when the worklets
 // need "CellArray" information i.e. information about what points form a cell.
-template<class CT> class WorkMapCell
+template<class CT, class ExecutionAdapter> class WorkMapCell
 {
 public:
   typedef CT CellType;
@@ -62,31 +62,36 @@ public:
 
   template<typename T>
   DAX_EXEC_EXPORT
-  const T &GetFieldValue(const dax::exec::FieldCell<T> &field) const
+  const T &GetFieldValue(
+      const dax::exec::FieldCell<T, ExecutionAdapter> &field) const
   {
     return dax::exec::internal::fieldAccessNormalGet(field,
-                                                     this->GetCellIndex());
+                                                     this->GetCellIndex(),
+                                                     *this);
   }
 
   template<typename T>
-  DAX_EXEC_EXPORT void SetFieldValue(dax::exec::FieldCell<T> &field,
-                                     const T &value)
+  DAX_EXEC_EXPORT void SetFieldValue(
+      dax::exec::FieldCell<T, ExecutionAdapter> &field,
+      const T &value)
   {
     dax::exec::internal::fieldAccessNormalSet(field,
                                               this->GetCellIndex(),
-                                              value);
+                                              value,
+                                              *this);
   }
 
   template<typename T>
   DAX_EXEC_EXPORT dax::Tuple<T,CellType::NUM_POINTS> GetFieldValues(
-      const dax::exec::FieldPoint<T> &field) const
+      const dax::exec::FieldPoint<T, ExecutionAdapter> &field) const
   {
-    return dax::exec::internal::fieldAccessNormalGet<T,CellType::NUM_POINTS>(
-          field, this->Cell.GetPointIndices());
+    return dax::exec::internal::fieldAccessNormalMultiGet(
+          field, this->Cell.GetPointIndices(), *this);
   }
 
   DAX_EXEC_EXPORT dax::Vector3 GetFieldValue(
-      const dax::exec::FieldCoordinates &, dax::Id vertexIndex) const
+      const dax::exec::FieldCoordinates<ExecutionAdapter> &,
+      dax::Id vertexIndex) const
   {
     dax::Id pointIndex = this->GetCell().GetPointIndex(vertexIndex);
     const TopologyType &GridTopology = this->GetCell().GetGridTopology();
@@ -96,14 +101,11 @@ public:
   }
 
   DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,CellType::NUM_POINTS> GetFieldValues(
-    const dax::exec::FieldCoordinates &) const
+    const dax::exec::FieldCoordinates<ExecutionAdapter> &) const
   {
     const TopologyType &gridStructure = this->GetCell().GetGridTopology();
-    return dax::exec::internal::fieldAccessUniformCoordinatesGet<
-        TopologyType,
-        dax::Vector3,
-        CellType::NUM_POINTS
-        > (gridStructure, this->Cell.GetPointIndices());
+    return dax::exec::internal::fieldAccessUniformCoordinatesMultiGet(
+          gridStructure, this->Cell.GetPointIndices());
   }
 
   DAX_EXEC_EXPORT dax::Id GetCellIndex() const { return this->Cell.GetIndex(); }

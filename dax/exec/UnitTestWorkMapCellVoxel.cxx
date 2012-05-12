@@ -15,6 +15,8 @@
 //=============================================================================
 #include <dax/exec/WorkMapCell.h>
 
+#include <dax/exec/internal/TestExecutionAdapter.h>
+
 #include <dax/internal/Testing.h>
 
 #include <algorithm>
@@ -34,7 +36,7 @@ dax::exec::internal::ErrorHandler ErrorHandler
 }  // Anonymous namespace
 
 static void TestMapCellVoxel(
-  dax::exec::WorkMapCell<dax::exec::CellVoxel> &work,
+  dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter> &work,
   const dax::internal::TopologyUniform &gridstruct,
   dax::Id cellFlatIndex)
 {
@@ -48,9 +50,8 @@ static void TestMapCellVoxel(
   std::fill(fieldData.begin(), fieldData.end(), -1.0);
   fieldData[cellFlatIndex] = cellFlatIndex;
 
-  dax::internal::DataArray<dax::Scalar> fieldArray(&fieldData.at(0),
-                                                   fieldData.size());
-  dax::exec::FieldCell<dax::Scalar> field(fieldArray);
+  dax::exec::FieldCell<dax::Scalar, TestExecutionAdapter>
+      field(&fieldData.at(0));
 
   dax::Scalar scalarValue = work.GetFieldValue(field);
   DAX_TEST_ASSERT(scalarValue == cellFlatIndex,
@@ -73,7 +74,8 @@ static void TestMapCellVoxel()
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
   gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
-  dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, ErrorHandler);
+  dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
+      work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0;
        flatIndex < dax::internal::numberOfCells(gridstruct);
        flatIndex++)
@@ -89,7 +91,8 @@ static void TestMapCellVoxel()
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
   gridstruct.Extent.Max = dax::make_Id3(15, 6, 13);
-  dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, ErrorHandler);
+  dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
+      work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0;
        flatIndex < dax::internal::numberOfPoints(gridstruct);
        flatIndex++)

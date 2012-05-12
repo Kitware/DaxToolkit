@@ -13,24 +13,18 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_internal_FieldBuild_h
-#define __dax_exec_internal_FieldBuild_h
+#ifndef __dax_exec_internal_TestExecutionAdapter_h
+#define __dax_exec_internal_TestExecutionAdapter_h
 
-#include <dax/exec/Field.h>
-
-#include <dax/internal/DataArray.h>
-#include <dax/internal/GridTopologys.h>
-
-namespace dax { namespace exec { namespace internal {
-
-DAX_EXEC_CONT_EXPORT dax::exec::FieldCoordinates fieldCoordinatesBuild(
-    const dax::internal::TopologyUniform &)
+struct TestExecutionAdapter
 {
-  dax::internal::DataArray<dax::Vector3> dummyArray;
-  dax::exec::FieldCoordinates field(dummyArray);
-  return field;
-}
+  //template <typename T> class IteratorType : public T * { };
+  template <typename T>
+  struct FieldStructures
+  {
+    typedef T *IteratorType;
+    typedef const T *IteratorConstType;
+  };
+};
 
-}}}
-
-#endif //__dax_exec_internal_FieldBuild_h
+#endif //__dax_exec_internal_TestExecutionAdapter_h

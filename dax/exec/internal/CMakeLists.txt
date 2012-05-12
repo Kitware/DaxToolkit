@@ -18,8 +18,8 @@ set(headers
   DerivativeWeights.h
   ErrorHandler.h
   FieldAccess.h
-  FieldBuild.h
   InterpolationWeights.h
+  TestExecutionAdapter.h
   )
 
 dax_declare_headers(${headers})

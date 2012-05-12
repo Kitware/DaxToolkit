@@ -30,7 +30,7 @@ namespace dax { namespace exec {
 /// Work for worklets that map fields without regard to topology or any other
 /// connectivity information.  The template is because the internal accessors
 /// of the cells may change based on type.
-template<class CellT>
+template<class CellT, class ExecutionAdapter>
 class WorkMapField
 {
   dax::Id Index;
@@ -54,19 +54,26 @@ public:
       GridTopology(){ }
 
   template<typename T>
-  DAX_EXEC_EXPORT const T &GetFieldValue(const dax::exec::Field<T> &field) const
+  DAX_EXEC_EXPORT const T &GetFieldValue(
+      const dax::exec::Field<T, ExecutionAdapter> &field) const
   {
-    return dax::exec::internal::fieldAccessNormalGet(field, this->GetIndex());
+    return dax::exec::internal::fieldAccessNormalGet(field,
+                                                     this->GetIndex(),
+                                                     *this);
   }
 
   template<typename T>
-  DAX_EXEC_EXPORT void SetFieldValue(dax::exec::Field<T> &field, const T &value)
+  DAX_EXEC_EXPORT void SetFieldValue(
+      dax::exec::Field<T, ExecutionAdapter> &field, const T &value)
   {
-    dax::exec::internal::fieldAccessNormalSet(field, this->GetIndex(), value);
+    dax::exec::internal::fieldAccessNormalSet(field,
+                                              this->GetIndex(),
+                                              value,
+                                              *this);
   }
 
   DAX_EXEC_EXPORT dax::Vector3 GetFieldValue(
-    const dax::exec::FieldCoordinates &)
+    const dax::exec::FieldCoordinates<ExecutionAdapter> &)
   {
     // Special case.  Point coordiantes are determined implicitly by index.
     return dax::exec::internal::fieldAccessUniformCoordinatesGet(

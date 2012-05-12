@@ -26,11 +26,11 @@ namespace dax {
 namespace exec {
 
 //-----------------------------------------------------------------------------
-template<class WorkType>
+template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 parametricCoordinatesToWorldCoordinates(
   const WorkType &work,
   const dax::exec::CellVoxel &cell,
-  const dax::exec::FieldCoordinates &coordField,
+  const dax::exec::FieldCoordinates<ExecutionAdapter> &coordField,
   const dax::Vector3 pcoords)
 {
   dax::Vector3 spacing = cell.GetSpacing();
@@ -40,11 +40,11 @@ DAX_EXEC_EXPORT dax::Vector3 parametricCoordinatesToWorldCoordinates(
   return cellOffset + minCoord;
 }
 
-template<class WorkType>
+template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 worldCoordinatesToParametricCoordinates(
   const WorkType &work,
   const dax::exec::CellVoxel &cell,
-  const dax::exec::FieldCoordinates &coordField,
+  const dax::exec::FieldCoordinates<ExecutionAdapter> &coordField,
   const dax::Vector3 wcoords)
 {
   dax::Vector3 minCoord = work.GetFieldValue(coordField, 0);
