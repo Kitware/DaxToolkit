@@ -48,7 +48,7 @@ static void TestMapFieldVoxel(
   std::fill(fieldData.begin(), fieldData.end(), -1.0);
   fieldData[pointFlatIndex] = pointFlatIndex;
 
-  dax::exec::FieldPoint<dax::Scalar, TestExecutionAdapter>
+  dax::exec::FieldPointOut<dax::Scalar, TestExecutionAdapter>
       field(&fieldData.at(0));
 
   dax::Scalar scalarValue = work.GetFieldValue(field);
@@ -65,7 +65,7 @@ static void TestMapFieldVoxel(
                           static_cast<dax::Scalar>(pointIjkIndex[2]));
   expectedCoords = gridstruct.Origin + expectedCoords * gridstruct.Spacing;
 
-  dax::exec::FieldCoordinates<TestExecutionAdapter> fieldCoords;
+  dax::exec::FieldCoordinatesIn<TestExecutionAdapter> fieldCoords;
   dax::Vector3 coords = work.GetFieldValue(fieldCoords);
 
   DAX_TEST_ASSERT(expectedCoords == coords,

@@ -54,7 +54,7 @@ static void TestMapCellHexahedron(
   std::fill(fieldData.begin(), fieldData.end(), -1.0);
   fieldData[cellFlatIndex] = cellFlatIndex;
 
-  dax::exec::FieldCell<dax::Scalar, TestExecutionAdapter>
+  dax::exec::FieldCellOut<dax::Scalar, TestExecutionAdapter>
       field(&fieldData.at(0));
 
   dax::Scalar scalarValue = work.GetFieldValue(field);

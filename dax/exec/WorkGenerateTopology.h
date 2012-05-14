@@ -51,13 +51,13 @@ public:
 private:
   InputCellType InputCell;
   dax::Id OutputIndex;
-  dax::exec::Field<dax::Id, ExecutionAdapter> OutputTopology;
+  dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> OutputTopology;
   dax::exec::internal::ErrorHandler ErrorHandler;
 public:
 
   DAX_EXEC_EXPORT WorkGenerateTopology(
     const TopologyType &gridStructure,
-    const dax::exec::Field<dax::Id, ExecutionAdapter> &outTopology,
+    const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> &outTopology,
     const dax::exec::internal::ErrorHandler &errorHandler)
     : InputCell(gridStructure, 0),
       OutputIndex(0),
@@ -74,10 +74,17 @@ public:
   /// Set the topology of one of the output cells
   DAX_EXEC_EXPORT void SetOutputTopology(const OutputPointIds &topology)
   {
-    dax::exec::internal::fieldAccessNormalSet(
-          this->OutputTopology,
-          this->OutputIndex*OutputCellType::NUM_POINTS, //needs to be the index into the topology array
-          topology);
+    DAX_ASSERT_EXEC(OutputCellType::NUM_POINTS == OutputPointIds::NUM_POINTS,
+                    *this);
+    for (dax::Id index = this->OutputIndex*OutputCellType::NUM_POINTS;
+         index < (this->OutputIndex+1)*OutputCellType::NUM_POINTS;
+         index++)
+      {
+      dax::exec::internal::FieldAccess::SetNormal(this->OutputTopology,
+                                                  index,
+                                                  topology[index],
+                                                  *this);
+      }
   }
 
   DAX_EXEC_EXPORT void SetCellIndex(dax::Id cellIndex)

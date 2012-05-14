@@ -30,8 +30,8 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
     const WorkType &work,
     const dax::exec::CellVoxel &cell,
     const dax::Vector3 &pcoords,
-    const dax::exec::FieldCoordinates<ExecutionAdapter> &, //Not used for voxels
-    const dax::exec::FieldPoint<dax::Scalar, ExecutionAdapter> &point_scalar)
+    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &, //Not used for voxels
+    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
 {
   const dax::Id NUM_POINTS  = dax::exec::CellVoxel::NUM_POINTS;
 
@@ -56,8 +56,8 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
     const WorkType &work,
     const dax::exec::CellHexahedron &,
     const dax::Vector3 &pcoords,
-    const dax::exec::FieldCoordinates<ExecutionAdapter> &fcoords,
-    const dax::exec::FieldPoint<dax::Scalar, ExecutionAdapter> &point_scalar)
+    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
+    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
 {
   //for know we are considering that a cell hexahedron
   //is actually a voxel in an unstructured grid.

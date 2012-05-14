@@ -47,18 +47,15 @@ const dax::Id bufferSize = 1024*1024;
 static dax::Scalar fieldBuffer[bufferSize];
 
 template<class CellType>
-static dax::exec::FieldPoint<dax::Scalar, TestExecutionAdapter>
+static dax::exec::FieldPointIn<dax::Scalar, TestExecutionAdapter>
 CreatePointField(
     dax::exec::WorkMapField<CellType, TestExecutionAdapter> work,
-    const dax::exec::FieldCoordinates<TestExecutionAdapter> &coordField,
+    const dax::exec::FieldCoordinatesIn<TestExecutionAdapter> &coordField,
     const LinearField &fieldValues,
     dax::Id numPoints)
 {
   DAX_TEST_ASSERT(bufferSize >= numPoints,
                   "Internal test error.  Buffer not large enough");
-
-  // Create field.
-  dax::exec::FieldPoint<dax::Scalar, TestExecutionAdapter> field(fieldBuffer);
 
   // Fill field.
   for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
@@ -66,8 +63,11 @@ CreatePointField(
     work.SetIndex(pointIndex);
     dax::Vector3 coordinates = work.GetFieldValue(coordField);
     dax::Scalar fieldValue = fieldValues.GetValue(coordinates);
-    work.SetFieldValue(field, fieldValue);
+    fieldBuffer[pointIndex] = fieldValue;
     }
+
+  // Create field object.
+  dax::exec::FieldPointIn<dax::Scalar, TestExecutionAdapter> field(fieldBuffer);
 
   return field;
 }
@@ -75,8 +75,8 @@ CreatePointField(
 template<class CellType, class ExecutionAdapter>
 static void TestDerivativeCell(
     const dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
-    const dax::exec::FieldCoordinates<ExecutionAdapter> &coordField,
-    const dax::exec::FieldPoint<dax::Scalar, ExecutionAdapter> &scalarField,
+    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
+    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &scalarField,
     const LinearField &fieldValues)
 {
   CellType cell = work.GetCell();
@@ -107,9 +107,9 @@ static void TestDerivativeVoxel(
 {
   dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter>
       workField(gridstruct, ErrorHandler);
-  dax::exec::FieldCoordinates<TestExecutionAdapter> coordField;
+  dax::exec::FieldCoordinatesIn<TestExecutionAdapter> coordField;
   dax::Id numPoints = dax::internal::numberOfPoints(gridstruct);
-  dax::exec::FieldPoint<dax::Scalar, TestExecutionAdapter> scalarField
+  dax::exec::FieldPointIn<dax::Scalar, TestExecutionAdapter> scalarField
       = CreatePointField(workField, coordField, fieldValues, numPoints);
 
   dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>

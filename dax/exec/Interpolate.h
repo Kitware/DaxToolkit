@@ -29,7 +29,7 @@ DAX_EXEC_EXPORT T cellInterpolate(
     const WorkType &work,
     const dax::exec::CellVoxel &cell,
     const dax::Vector3 &pcoords,
-    const dax::exec::FieldPoint<T, ExecutionAdapter> &point_field)
+    const dax::exec::FieldPointIn<T, ExecutionAdapter> &point_field)
 {
   const dax::Id numVerts = dax::exec::CellVoxel::NUM_POINTS;
   typedef dax::Tuple<T,numVerts> FieldTuple;

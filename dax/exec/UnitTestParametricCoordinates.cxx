@@ -33,7 +33,7 @@ template<class WorkType, class CellType, class ExecutionAdapter>
 static void CompareCoordinates(
     const WorkType &work,
     const CellType &cell,
-    const dax::exec::FieldCoordinates<ExecutionAdapter> &coordField,
+    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
     dax::Vector3 truePCoords,
     dax::Vector3 trueWCoords)
 {
@@ -57,7 +57,7 @@ static void CompareCoordinates(
 template<class ExecutionAdapter>
 static void TestPCoordsVoxel(
   const dax::exec::WorkMapCell<dax::exec::CellVoxel, ExecutionAdapter> &work,
-  const dax::exec::FieldCoordinates<ExecutionAdapter> &coordField)
+  const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField)
 {
   const dax::Vector3 cellVertexToParametricCoords[8] = {
     dax::make_Vector3(0, 0, 0),
@@ -72,17 +72,19 @@ static void TestPCoordsVoxel(
   const dax::exec::CellVoxel &cell = work.GetCell();
 
   // Check the coordinates at all vertices
+  dax::Tuple<dax::Vector3, 8> cellVertexToWorldCoords
+      = work.GetFieldValues(coordField);
   for (dax::Id vertexIndex = 0; vertexIndex < 8; vertexIndex++)
     {
     dax::Vector3 truePCoords = cellVertexToParametricCoords[vertexIndex];
-    dax::Vector3 trueWCoords = work.GetFieldValue(coordField, vertexIndex);
+    dax::Vector3 trueWCoords = cellVertexToWorldCoords[vertexIndex];
     CompareCoordinates(work, cell, coordField, truePCoords, trueWCoords);
     }
 
   dax::Vector3 centerCoords = dax::make_Vector3(0.0, 0.0, 0.0);
   for (dax::Id vertexIndex = 0; vertexIndex < 8; vertexIndex++)
     {
-    centerCoords = centerCoords + work.GetFieldValue(coordField, vertexIndex);
+    centerCoords = centerCoords + cellVertexToWorldCoords[vertexIndex];
     }
   centerCoords = (1.0/8.0) * centerCoords;
   CompareCoordinates(
@@ -93,7 +95,7 @@ static void TestPCoordsVoxel()
 {
   std::cout << "Testing TestPCoords<CellVoxel>" << std::endl;
 
-  dax::exec::FieldCoordinates<TestExecutionAdapter> coordField;
+  dax::exec::FieldCoordinatesIn<TestExecutionAdapter> coordField;
 
   {
   dax::internal::TopologyUniform gridstruct;

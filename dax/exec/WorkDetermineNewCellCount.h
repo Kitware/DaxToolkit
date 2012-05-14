@@ -45,13 +45,13 @@ public:
 
 private:
   CellType Cell;
-  dax::exec::FieldCell<dax::Id, ExecutionAdapter> NewCellCount;
+  dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> NewCellCount;
   dax::exec::internal::ErrorHandler ErrorHandler;
 public:
 
   DAX_EXEC_EXPORT WorkDetermineNewCellCount(
     const TopologyType &gridStructure,
-    const dax::exec::FieldCell<dax::Id, ExecutionAdapter> &cellCount,
+    const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> &cellCount,
     const dax::exec::internal::ErrorHandler &errorHandler)
     : Cell(gridStructure, 0),
       NewCellCount(cellCount),
@@ -66,47 +66,40 @@ public:
   //Set the number of cells you want this cell to generate
   DAX_EXEC_EXPORT void SetNewCellCount(dax::Id value)
   {
-    dax::exec::internal::fieldAccessNormalSet(this->NewCellCount,
-                                              this->GetCellIndex(),
-                                              value);
+    dax::exec::internal::FieldAccess::SetNormal(this->NewCellCount,
+                                                this->GetCellIndex(),
+                                                value);
   }
 
-  template<typename T>
-  DAX_EXEC_EXPORT
-  const T &GetFieldValue(
-      const dax::exec::FieldCell<T, ExecutionAdapter> &field) const
+  template<typename T, template<typename, class> class Access>
+  DAX_EXEC_EXPORT T GetFieldValue(
+      dax::exec::internal::FieldBase<
+          Access<T,ExecutionAdapter>,
+          dax::exec::internal::FieldAssociationCellTag> field) const
   {
-    return dax::exec::internal::fieldAccessNormalGet(field,
-                                                     this->GetCellIndex());
+    return dax::exec::internal::FieldAccess::GetNormal(field,
+                                                       this->GetCellIndex(),
+                                                       *this);
   }
 
   template<typename T>
   DAX_EXEC_EXPORT dax::Tuple<T,CellType::NUM_POINTS> GetFieldValues(
-      const dax::exec::FieldPoint<T, ExecutionAdapter> &field) const
+      dax::exec::FieldPointIn<T, ExecutionAdapter> field) const
   {
-    return dax::exec::internal::fieldAccessNormalMultiGet(
-          field, this->Cell.GetPointIndices());
+    return dax::exec::internal::FieldAccess::GetMultiple(
+          field, this->GetCell().GetPointIndices(), *this);
   }
 
-  DAX_EXEC_EXPORT dax::Vector3 GetFieldValue(
-      const dax::exec::FieldCoordinates<ExecutionAdapter> &,
-      dax::Id vertexIndex) const
+  DAX_EXEC_EXPORT
+  dax::Tuple<dax::Vector3,CellType::NUM_POINTS> GetFieldValues(
+      dax::exec::FieldCoordinatesIn<ExecutionAdapter> field) const
   {
-    dax::Id pointIndex = this->GetCell().GetPointIndex(vertexIndex);
-    const TopologyType &GridTopology = this->GetCell().GetGridTopology();
-    return
-      dax::exec::internal::fieldAccessUniformCoordinatesGet(GridTopology,
-                                                            pointIndex);
+    return dax::exec::internal::FieldAccess::GetCoordinatesMultiple(
+          field,
+          this->GetCell().GetPointIndices(),
+          this->GetCell().GetGridTopology(),
+          *this);
   }
-
-  DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,CellType::NUM_POINTS> GetFieldValues(
-    const dax::exec::FieldCoordinates<ExecutionAdapter> &) const
-  {
-    const TopologyType &gridStructure = this->GetCell().GetGridTopology();
-    return dax::exec::internal::fieldAccessUniformCoordinatesMultiGet(
-          gridStructure, this->Cell.GetPointIndices());
-  }
-
 
   DAX_EXEC_EXPORT dax::Id GetCellIndex() const { return this->Cell.GetIndex(); }
 
