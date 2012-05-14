@@ -85,9 +85,6 @@ typedef float Scalar __attribute__ ((aligned(DAX_SIZE_SCALAR)));
 
 #endif //DAX_USE_DOUBLE_PRECISION
 
-/// Represents an ID.
-typedef int Id __attribute__ ((aligned(4)));
-
 /// Tuple corresponds to a Size-tuple of type T
 template<typename T, int Size>
 class Tuple {
