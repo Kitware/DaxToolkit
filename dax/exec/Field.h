@@ -22,119 +22,188 @@
 namespace dax { namespace exec {
 
 namespace internal {
-struct FieldAccessor;
-}
 
-/// \brief A handle to field data.
-///
-/// Worklets use this object in conjunction with a work object to retrieve the
-/// field data that the worklet has access to.
+/// A policy-like class used to determine the input/output and read/write
+/// semantics of a Field class.
 ///
 template<typename T, class ExecutionAdapter>
-class Field
+struct FieldAccessPolicyInput
 {
-public:
+  typedef T ValueType;
+  typedef typename ExecutionAdapter::template FieldStructures<ValueType>
+      ::IteratorConstType IteratorType;
+};
+
+/// A policy-like class used to determine the input/output and read/write
+/// semantics of a Field class.
+///
+template<typename T, class ExecutionAdapter>
+struct FieldAccessPolicyOutput
+{
   typedef T ValueType;
   typedef typename ExecutionAdapter::template FieldStructures<ValueType>
       ::IteratorType IteratorType;
-  typedef typename ExecutionAdapter::template FieldStructures<ValueType>
-      ::IteratorConstType IteratorConstType;
+};
 
-  DAX_EXEC_EXPORT Field(IteratorType beginIterator = IteratorType())
+/// A tag to determine the association (points, cells, etc.) of a field.
+///
+struct FieldAssociationBaseTag { };
+
+/// A tag to determine the association (points, cells, etc.) of a field.
+///
+struct FieldAssociationCellTag : public FieldAssociationBaseTag { };
+
+/// A tag to determine the association (points, cells, etc.) of a field.
+///
+struct FieldAssociationPointTag : public FieldAssociationBaseTag { };
+
+/// A tag to determine the association (points, cells, etc.) of a field.
+///
+struct FieldAssociationCoordinatesTag : public FieldAssociationPointTag { };
+
+class FieldAccess;
+
+/// Base class for all Field objects.
+///
+template<class Access, class Association>
+class FieldBase
+{
+public:
+  typedef typename Access::ValueType ValueType;
+  typedef typename Access::IteratorType IteratorType;
+
+  DAX_EXEC_EXPORT FieldBase(IteratorType beginIterator)
     : BeginIterator(beginIterator)
-  {
-  }
+  { }
 
 private:
   IteratorType BeginIterator;
 
-  friend class internal::FieldAccessor;
+  friend class FieldAccess;
 };
 
-namespace internal {
-struct FieldAccessor
-{
-private:
-  template <typename T>
-  DAX_EXEC_EXPORT static bool NotDefaultConstructor(T &x) { return (x != T()); }
-
-public:
-  // Note that in these methods the pass-by-reference of the field class serves
-  // the important function of causing a compile error if trying to pass a
-  // field of incompatable const-ness.
-
-  template<typename T, class ExecutionAdapter, class WorkType>
-  DAX_EXEC_EXPORT static
-  typename dax::exec::Field<T, ExecutionAdapter>::IteratorType
-  GetBeginIterator(
-      dax::exec::Field<T, ExecutionAdapter> &field,
-      WorkType work)
-  {
-    DAX_ASSERT_EXEC(NotDefaultConstructor(field.BeginIterator), work);
-    return field.BeginIterator;
-  }
-
-  template<typename T, class ExecutionAdapter, class WorkType>
-  DAX_EXEC_EXPORT static
-  typename dax::exec::Field<T, ExecutionAdapter>::IteratorConstType
-  GetBeginIterator(const dax::exec::Field<T, ExecutionAdapter> &field,
-                   WorkType work)
-  {
-    DAX_ASSERT_EXEC(NotDefaultConstructor(field.BeginIterator), work);
-    return field.BeginIterator;
-  }
-};
 } // namespace internal
 
-/// \brief  A handle to field data that is specifically mapped to points.
+#define DAX_DEFINE_FIELD_MACRO(name, access, association) \
+template<typename T, class ExecutionAdapter> \
+class name \
+    : public internal::FieldBase< \
+        internal::FieldAccessPolicy##access<T, ExecutionAdapter>, \
+        internal::FieldAssociation##association##Tag> \
+{ \
+public: \
+  typedef internal::FieldBase< \
+      internal::FieldAccessPolicy##access<T, ExecutionAdapter>, \
+      internal::FieldAssociation##association##Tag> BaseType; \
+  typedef typename BaseType::ValueType ValueType; \
+  typedef typename BaseType::IteratorType IteratorType; \
+ \
+  DAX_EXEC_EXPORT name(IteratorType beginIterator = IteratorType()) \
+    : BaseType(beginIterator) \
+  { \
+  } \
+}
+
+/// \brief A handle to general input field data.
 ///
-template<typename T, class ExecutionAdapter>
-class FieldPoint : public dax::exec::Field<T, ExecutionAdapter>
-{
-public:
-  typedef T ValueType;
-  typedef dax::exec::Field<ValueType, ExecutionAdapter> Superclass;
-  typedef typename Superclass::IteratorType IteratorType;
-  typedef typename Superclass::IteratorConstType IteratorConstType;
+/// Worklets use this object in conjunction with a work object to retrieve the
+/// field data that the worklet has access to.  The different types of
+/// field classes specify the access and association semantics.
+///
+DAX_DEFINE_FIELD_MACRO(FieldIn, Input, Base);
 
-  DAX_EXEC_EXPORT FieldPoint(IteratorType beginIterator)
-    : Superclass(beginIterator)
-  { }
-};
+/// \brief A handle to general output field data.
+///
+/// Worklets use this object in conjunction with a work object to retrieve the
+/// field data that the worklet has access to.  The different types of
+/// field classes specify the access and association semantics.
+///
+DAX_DEFINE_FIELD_MACRO(FieldOut, Output, Base);
 
-/// \brief A handle to field data that represents the coordinates of vertices.
+/// \brief A handle to input point field data.
+///
+/// Worklets use this object in conjunction with a work object to retrieve the
+/// field data that the worklet has access to.  The different types of
+/// field classes specify the access and association semantics.
+///
+DAX_DEFINE_FIELD_MACRO(FieldPointIn, Input, Point);
+
+/// \brief A handle to output point field data.
+///
+/// Worklets use this object in conjunction with a work object to retrieve the
+/// field data that the worklet has access to.  The different types of
+/// field classes specify the access and association semantics.
+///
+DAX_DEFINE_FIELD_MACRO(FieldPointOut, Output, Point);
+
+/// \brief A handle to input cell field data.
+///
+/// Worklets use this object in conjunction with a work object to retrieve the
+/// field data that the worklet has access to.  The different types of
+/// field classes specify the access and association semantics.
+///
+DAX_DEFINE_FIELD_MACRO(FieldCellIn, Input, Cell);
+
+/// \brief A handle to output cell field data.
+///
+/// Worklets use this object in conjunction with a work object to retrieve the
+/// field data that the worklet has access to.  The different types of
+/// field classes specify the access and association semantics.
+///
+DAX_DEFINE_FIELD_MACRO(FieldCellOut, Output, Cell);
+
+/// \brief A handle to input coordinates field data (on points).
+///
+/// Worklets use this object in conjunction with a work object to retrieve the
+/// field data that the worklet has access to.  The different types of
+/// field classes specify the access and association semantics.
 ///
 template<class ExecutionAdapter>
-class FieldCoordinates
-    : public dax::exec::FieldPoint<dax::Vector3, ExecutionAdapter>
+class FieldCoordinatesIn
+    : public internal::FieldBase<
+        internal::FieldAccessPolicyInput<dax::Vector3, ExecutionAdapter>,
+        internal::FieldAssociationCoordinatesTag>
 {
 public:
-  typedef dax::Vector3 ValueType;
-  typedef dax::exec::FieldPoint<ValueType, ExecutionAdapter> Superclass;
-  typedef typename Superclass::IteratorType IteratorType;
-  typedef typename Superclass::IteratorConstType IteratorConstType;
+  typedef internal::FieldBase<
+      internal::FieldAccessPolicyInput<dax::Vector3, ExecutionAdapter>,
+      internal::FieldAssociationCoordinatesTag> BaseType;
+  typedef typename BaseType::ValueType ValueType;
+  typedef typename BaseType::IteratorType IteratorType;
 
-  DAX_EXEC_EXPORT FieldCoordinates(IteratorType beginIterator = IteratorType())
-    : Superclass(beginIterator)
-   { }
+  DAX_EXEC_EXPORT FieldCoordinatesIn(IteratorType beginIterator=IteratorType())
+    : BaseType(beginIterator)
+  {
+  }
 };
 
-/// \brief A handle to field dta that is specifically mapped to cells.
+/// \brief A handle to output coordinates field data (on points).
 ///
-template<class T, class ExecutionAdapter>
-class FieldCell : public dax::exec::Field<T, ExecutionAdapter>
+/// Worklets use this object in conjunction with a work object to retrieve the
+/// field data that the worklet has access to.  The different types of
+/// field classes specify the access and association semantics.
+///
+template<class ExecutionAdapter>
+class FieldCoordinatesOut
+    : public internal::FieldBase<
+        internal::FieldAccessPolicyOutput<dax::Vector3, ExecutionAdapter>,
+        internal::FieldAssociationCoordinatesTag>
 {
 public:
-  typedef T ValueType;
-  typedef dax::exec::Field<ValueType, ExecutionAdapter> Superclass;
-  typedef typename Superclass::IteratorType IteratorType;
-  typedef typename Superclass::IteratorConstType IteratorConstType;
+  typedef internal::FieldBase<
+      internal::FieldAccessPolicyOutput<dax::Vector3, ExecutionAdapter>,
+      internal::FieldAssociationCoordinatesTag> BaseType;
+  typedef typename BaseType::ValueType ValueType;
+  typedef typename BaseType::IteratorType IteratorType;
 
-  DAX_EXEC_EXPORT FieldCell(IteratorType beginIterator)
-    : Superclass(beginIterator)
-  { }
+  DAX_EXEC_EXPORT FieldCoordinatesOut(IteratorType beginIterator=IteratorType())
+    : BaseType(beginIterator)
+  {
+  }
 };
 
-}}
+#undef DAX_DEFINE_FIELD_MACRO
+
+}} // namespace dax::exec
 
 #endif

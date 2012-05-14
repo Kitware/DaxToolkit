@@ -18,7 +18,6 @@
 
 struct TestExecutionAdapter
 {
-  //template <typename T> class IteratorType : public T * { };
   template <typename T>
   struct FieldStructures
   {

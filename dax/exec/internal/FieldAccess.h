@@ -18,74 +18,104 @@
 
 #include <dax/exec/Field.h>
 
-#include <dax/internal/GridTopologys.h>
+#include <dax/internal/TopologyStructured.h>
 
 namespace dax { namespace exec { class CellVoxel; }}
 
 namespace dax { namespace exec { namespace internal {
 
-template<typename T, class ExecutionAdapter, class WorkType>
-DAX_EXEC_EXPORT const T &fieldAccessNormalGet(
-    const dax::exec::Field<T, ExecutionAdapter> &field,
-    dax::Id index,
-    WorkType &work)
+struct FieldAccess
 {
-  typename dax::exec::Field<T, ExecutionAdapter>::IteratorConstType iterator
-      = dax::exec::internal::FieldAccessor::GetBeginIterator(field, work);
-  return *(iterator + index);
-}
+private:
+  template <typename T>
+  DAX_EXEC_EXPORT static bool NotDefaultConstructor(T &x) { return (x != T()); }
 
-template<typename T, int Size, class ExecutionAdapter, class WorkType>
-DAX_EXEC_EXPORT dax::Tuple<T,Size> fieldAccessNormalMultiGet(
-  const dax::exec::Field<T, ExecutionAdapter> &field,
-  dax::Tuple<dax::Id,Size> indices,
-    WorkType &work)
-{
-  typename dax::exec::Field<T, ExecutionAdapter>::IteratorConstType iterator
-      = dax::exec::internal::FieldAccessor::GetBeginIterator(field, work);
-  dax::Tuple<T,Size> result;
-  for(int i=0; i < Size; ++i)
-    {
-    result[i] = *(iterator + indices[i]);
-    }
-  return result;
-}
+public:
+  /// Using normal field semantics (that is, a field is just a pointer to an
+  /// array), get the value at the given index.
+  ///
+  template<class Access, class Association, class WorkType>
+  DAX_EXEC_EXPORT static
+  typename Access::ValueType GetNormal(
+      dax::exec::internal::FieldBase<Access, Association> field,
+      dax::Id index,
+      WorkType work)
+  {
+    DAX_ASSERT_EXEC(NotDefaultConstructor(field.BeginIterator), work);
+    return *(field.BeginIterator + index);
+  }
 
+  /// Using normal field semantics (that is, a field is just a pointer to an
+  /// array), set the value at the given index.
+  ///
+  template<class T, class ExecutionAdapter, class Association, class WorkType>
+  DAX_EXEC_EXPORT static void SetNormal(
+      dax::exec::internal::FieldBase<
+          dax::exec::internal::FieldAccessPolicyOutput<T, ExecutionAdapter>,
+          Association> field,
+      dax::Id index,
+      T value,
+      WorkType work)
+  {
+    DAX_ASSERT_EXEC(NotDefaultConstructor(field.BeginIterator), work);
+    *(field.BeginIterator + index) = value;
+  }
 
-template<typename T, class ExecutionAdapter, class WorkType>
-DAX_EXEC_EXPORT void fieldAccessNormalSet(
-    dax::exec::Field<T, ExecutionAdapter> &field,
-    dax::Id index,
-    const T &value,
-    WorkType &work)
-{
-  typename dax::exec::Field<T, ExecutionAdapter>::IteratorType iterator
-      = dax::exec::internal::FieldAccessor::GetBeginIterator(field, work);
-  iterator += index;
-  *iterator = value;
-}
+  /// Using normal field semantics (that is, a field is just a pointer to an
+  /// array), get several values from the field.
+  ///
+  template<int Size, class Access, class Association, class WorkType>
+  DAX_EXEC_EXPORT static
+  dax::Tuple<typename Access::ValueType, Size> GetMultiple(
+      dax::exec::internal::FieldBase<Access, Association> field,
+      dax::Tuple<dax::Id,Size> indices,
+      WorkType work)
+  {
+    dax::Tuple<typename Access::ValueType, Size> result;
+    for (int i = 0; i < Size; i++)
+      {
+      result[i] = GetNormal(field, indices[i], work);
+      }
+    return result;
+  }
 
-template<typename Grid>
-DAX_EXEC_EXPORT dax::Vector3 fieldAccessUniformCoordinatesGet(
-  const Grid &GridTopology,
-  dax::Id index)
-{
-  return dax::internal::pointCoordiantes(GridTopology, index);
-}
+  /// Get the coordinates from a point coordinate field (which may require
+  /// some computations on the topology).
+  ///
+  template<class ExecutionAdapter, class WorkType>
+  DAX_EXEC_EXPORT static
+  dax::Vector3 GetCoordinates(
+      dax::exec::internal::FieldBase<
+          FieldAccessPolicyInput<dax::Vector3, ExecutionAdapter>,
+          dax::exec::internal::FieldAssociationCoordinatesTag>,
+      dax::Id index,
+      const dax::internal::TopologyUniform topology,
+      WorkType)
+  {
+    return dax::internal::pointCoordiantes(topology, index);
+  }
 
-template<typename Grid, typename T, int Size>
-DAX_EXEC_EXPORT dax::Tuple<T,Size> fieldAccessUniformCoordinatesMultiGet(
-  const Grid &GridTopology,
-  const dax::Tuple<Id,Size>& indices)
-{
-  dax::Tuple<T,Size> result;
-  for(int i=0; i < Size; ++i)
-    {
-    result[i] = dax::internal::pointCoordiantes(GridTopology, indices[i]);
-    }
-  return result;
-}
-
+  /// Get the coordinates from a point coordinate field (which may require
+  /// some computations on the topology).
+  ///
+  template<int Size, class ExecutionAdapter, class WorkType>
+  DAX_EXEC_EXPORT static
+  dax::Tuple<dax::Vector3,Size> GetCoordinatesMultiple(
+      dax::exec::internal::FieldBase<
+          FieldAccessPolicyInput<dax::Vector3, ExecutionAdapter>,
+          dax::exec::internal::FieldAssociationCoordinatesTag> field,
+      dax::Tuple<dax::Id,Size> indices,
+      const dax::internal::TopologyUniform topology,
+      WorkType work)
+  {
+    dax::Tuple<dax::Vector3,Size> result;
+    for (int i = 0; i < Size; i++)
+      {
+      result[i] = GetCoordinates(field, indices[i], topology, work);
+      }
+    return result;
+  }
+};
 
 }}}
 
