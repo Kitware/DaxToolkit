@@ -17,7 +17,6 @@
 #define __dax__internal__Unstructured_h
 
 #include <dax/Types.h>
-#include <dax/internal/GridTopologys.h>
 #include <dax/internal/DataArray.h>
 
 namespace dax {
