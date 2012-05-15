@@ -51,8 +51,8 @@ private:
   {
     PointConnectionsType connections;
     typename GridStructures<ExecutionAdapter>::TopologyType
-        ::ConnectionsIteratorType connectionIter
-          = topology.Connections + cellIndex*NUM_POINTS;
+        ::CellConnectionsIteratorType connectionIter
+          = topology.CellConnections + cellIndex*NUM_POINTS;
     connections[0] = *(connectionIter);
     connections[1] = *(++connectionIter);
     connections[2] = *(++connectionIter);

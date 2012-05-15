@@ -38,13 +38,13 @@ struct TopologyUnstructured
 {
   typedef T CellType;
   typedef typename ExecutionAdapter::template FieldStructures<dax::Vector3>
-      ::IteratorConstType CoordinatesIteratorType;
+      ::IteratorConstType PointCoordinatesIteratorType;
   typedef typename ExecutionAdapter::template FieldStructures<dax::Id>
-      ::IteratorConstType ConnectionsIteratorType;
+      ::IteratorConstType CellConnectionsIteratorType;
 
   TopologyUnstructured()
-    : Coordinates(CoordinatesIteratorType()),
-      Connections(ConnectionsIteratorType()),
+    : PointCoordinates(PointCoordinatesIteratorType()),
+      CellConnections(CellConnectionsIteratorType()),
       NumberOfPoints(0),
       NumberOfCells(0)
     {
@@ -52,25 +52,25 @@ struct TopologyUnstructured
 
   /// Create a topology with the given descriptive arrays.
   ///
-  /// \param coordiantes An array of dax::Vector3 coordinates for each point.
-  /// The length of this array should be \c numberOfPoints.
+  /// \param pointCoordiantes An array of dax::Vector3 coordinates for each
+  /// point. The length of this array should be \c numberOfPoints.
   /// \param numberOfPoints The number of points in the grid.
-  /// \param connections An array containing a list for each cell giving the
-  /// point index for each vertex of the cell.  The length of this array should
-  /// be \c numberOfCells times \c CellType::NUM_POINTS.
+  /// \param cellConnections An array containing a list for each cell giving
+  /// the point index for each vertex of the cell.  The length of this array
+  /// should be \c numberOfCells times \c CellType::NUM_POINTS.
   /// \param numberOfCells The number of cells in the grid.
   ///
-  TopologyUnstructured(CoordinatesIteratorType coordinates,
+  TopologyUnstructured(PointCoordinatesIteratorType pointCoordinates,
                        dax::Id numberOfPoints,
-                       ConnectionsIteratorType connections,
+                       CellConnectionsIteratorType cellConnections,
                        dax::Id numberOfCells)
-    : Coordinates(coordinates), Connections(connections),
+    : PointCoordinates(pointCoordinates), CellConnections(cellConnections),
       NumberOfPoints(numberOfPoints), NumberOfCells(numberOfCells)
   {
   }
 
-  CoordinatesIteratorType Coordinates;
-  ConnectionsIteratorType Connections;
+  PointCoordinatesIteratorType PointCoordinates;
+  CellConnectionsIteratorType CellConnections;
   dax::Id NumberOfPoints;
   dax::Id NumberOfCells;
 };
@@ -102,7 +102,7 @@ dax::Vector3 pointCoordiantes(
     const TopologyUnstructured<T, ExecutionAdapter> &topology,
     dax::Id pointIndex)
 {
-  return *(topology.Coordinates + pointIndex);
+  return *(topology.PointCoordinates + pointIndex);
 }
 
 } //internal
