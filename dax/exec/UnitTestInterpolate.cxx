@@ -18,8 +18,8 @@
 #include <dax/exec/ParametricCoordinates.h>
 #include <dax/exec/WorkMapCell.h>
 #include <dax/exec/WorkMapField.h>
+#include <dax/exec/internal/GridTopologies.h>
 #include <dax/exec/internal/TestExecutionAdapter.h>
-#include <dax/internal/GridTopologys.h>
 
 #include <dax/internal/Testing.h>
 
@@ -106,19 +106,19 @@ static void TestInterpolateCell(
 }
 
 static void TestInterpolateVoxel(
-    const dax::internal::TopologyUniform &gridstruct,
+    const dax::exec::internal::TopologyUniform &gridstruct,
     const LinearField &fieldValues)
 {
   dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter>
       workField(gridstruct, ErrorHandler);
   dax::exec::FieldCoordinatesIn<TestExecutionAdapter> coordField;
-  dax::Id numPoints = dax::internal::numberOfPoints(gridstruct);
+  dax::Id numPoints = dax::exec::internal::numberOfPoints(gridstruct);
   dax::exec::FieldPointIn<dax::Scalar, TestExecutionAdapter> scalarField
       = CreatePointField(workField, coordField, fieldValues, numPoints);
 
   dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
       workCell(gridstruct, ErrorHandler);
-  dax::Id numCells = dax::internal::numberOfCells(gridstruct);
+  dax::Id numCells = dax::exec::internal::numberOfCells(gridstruct);
   for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
     {
     workCell.SetCellIndex(cellIndex);
@@ -128,7 +128,7 @@ static void TestInterpolateVoxel(
 
 static void TestInterpolateVoxel()
 {
-  dax::internal::TopologyUniform gridstruct;
+  dax::exec::internal::TopologyUniform gridstruct;
   LinearField fieldValues;
 
   std::cout << "Very simple field." << std::endl;

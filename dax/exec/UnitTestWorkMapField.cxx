@@ -32,7 +32,7 @@ dax::exec::internal::ErrorHandler ErrorHandler
 
 static void TestMapFieldVoxel(
   dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter> work,
-  const dax::internal::TopologyUniform &gridstruct,
+  const dax::exec::internal::TopologyUniform &gridstruct,
   dax::Id pointFlatIndex)
 {
   DAX_TEST_ASSERT(work.GetIndex() == pointFlatIndex,
@@ -77,7 +77,7 @@ static void TestMapFieldVoxel()
   std::cout << "Testing WorkMapField<CellVoxel>" << std::endl;
 
   {
-  dax::internal::TopologyUniform gridstruct;
+  dax::exec::internal::TopologyUniform gridstruct;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
@@ -92,7 +92,7 @@ static void TestMapFieldVoxel()
   }
 
   {
-  dax::internal::TopologyUniform gridstruct;
+  dax::exec::internal::TopologyUniform gridstruct;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);

@@ -13,12 +13,13 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax__internal__Structured_h
-#define __dax__internal__Structured_h
+#ifndef __dax__exec__internal__TopologyUniform_h
+#define __dax__exec__internal__TopologyUniform_h
 
 #include <dax/Extent.h>
 
 namespace dax {
+namespace exec {
 namespace internal {
 
 /// Contains all the parameters necessary to specify the topology of a uniform
@@ -75,6 +76,6 @@ dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
   return pointCoordiantes(grid, ijk);
 }
 
-}  }
+}  }  } //namespace dax::exec::internal
 
-#endif //__dax__internal__Structured_h
+#endif //__dax__exec__internal__TopologyUniform_h

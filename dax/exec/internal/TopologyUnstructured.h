@@ -13,14 +13,14 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax__internal__Unstructured_h
-#define __dax__internal__Unstructured_h
+#ifndef __dax__exec__internal__TopologyUnstructured_h
+#define __dax__exec__internal__TopologyUnstructured_h
 
 #include <dax/Types.h>
-#include <dax/internal/GridTopologys.h>
 #include <dax/internal/DataArray.h>
 
 namespace dax {
+namespace exec {
 namespace internal {
 
 
@@ -73,6 +73,7 @@ dax::Vector3 pointCoordiantes(const TopologyUnstructured<T> &grid,
 
 
 } //internal
+} //exec
 } //dax
 
-#endif // __dax__internal__UnstructuredGrid_h
+#endif // __dax__exec__internal__TopologyUnstructured_h

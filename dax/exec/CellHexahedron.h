@@ -17,7 +17,7 @@
 #define __dax_exec_CellHexahedron_h
 
 #include <dax/Types.h>
-#include <dax/internal/GridTopologys.h>
+#include <dax/exec/internal/TopologyUnstructured.h>
 
 #include <dax/exec/Field.h>
 
@@ -33,9 +33,10 @@ namespace dax { namespace exec {
 class CellHexahedron
 {
 public:
-  typedef dax::internal::TopologyUnstructured<CellHexahedron> TopologyType;
+  typedef dax::exec::internal::TopologyUnstructured<CellHexahedron>
+      TopologyType;
 
-private:  
+private:
   const TopologyType GridTopology;
   dax::Id CellIndex;
   dax::Id TopologyPosition;
@@ -62,7 +63,7 @@ public:
   /// Given a vertex index for a point (0 to GetNumberOfPoints() - 1), returns
   /// the index for the point in point space.
   DAX_EXEC_EXPORT dax::Id GetPointIndex(const dax::Id vertexIndex) const
-  {    
+  {
     return this->GridTopology.Topology.GetValue(
           this->TopologyPosition+vertexIndex);
   }

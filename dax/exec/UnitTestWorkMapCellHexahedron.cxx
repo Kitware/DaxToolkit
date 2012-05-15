@@ -25,10 +25,10 @@
 extern void TestCellHexahedron(const dax::exec::CellHexahedron cell,
                                const dax::exec::CellVoxel Hexahedron);
 
-extern dax::internal::TopologyUnstructured<dax::exec::CellHexahedron> make_ugrid(
-    const dax::internal::TopologyUniform& uniform,
-    std::vector<dax::Vector3>& points,
-    std::vector<dax::Id>& topology);
+extern dax::exec::internal::TopologyUnstructured<dax::exec::CellHexahedron>
+make_ugrid(const dax::exec::internal::TopologyUniform& uniform,
+           std::vector<dax::Vector3>& points,
+           std::vector<dax::Id>& topology);
 
 namespace {
 
@@ -41,7 +41,7 @@ dax::exec::internal::ErrorHandler ErrorHandler
 
 static void TestMapCellHexahedron(
   dax::exec::WorkMapCell<dax::exec::CellHexahedron, TestExecutionAdapter> &work,
-  const dax::internal::TopologyUniform &gridstruct,
+  const dax::exec::internal::TopologyUniform &gridstruct,
   dax::Id cellFlatIndex)
 {
   DAX_TEST_ASSERT(work.GetCellIndex() == cellFlatIndex,
@@ -73,11 +73,11 @@ static void TestMapCellHexahedron()
 {
   std::cout << "Testing WorkMapCell<CellHexahedron>" << std::endl;
 
-  dax::internal::TopologyUniform gridstruct;
+  dax::exec::internal::TopologyUniform gridstruct;
 
   std::vector<dax::Id> topo;
   std::vector<dax::Vector3> points;
-  dax::internal::TopologyUnstructured<dax::exec::CellHexahedron> ugrid;
+  dax::exec::internal::TopologyUnstructured<dax::exec::CellHexahedron> ugrid;
 
   {
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
@@ -89,7 +89,7 @@ static void TestMapCellHexahedron()
   dax::exec::WorkMapCell<dax::exec::CellHexahedron, TestExecutionAdapter>
       work(ugrid,ErrorHandler);
   for (dax::Id flatIndex = 0;
-       flatIndex < dax::internal::numberOfCells(gridstruct);
+       flatIndex < dax::exec::internal::numberOfCells(gridstruct);
        flatIndex++)
     {
     work.SetCellIndex(flatIndex);
@@ -107,7 +107,7 @@ static void TestMapCellHexahedron()
   dax::exec::WorkMapCell<dax::exec::CellHexahedron, TestExecutionAdapter>
       work(ugrid,ErrorHandler);
   for (dax::Id flatIndex = 0;
-       flatIndex < dax::internal::numberOfCells(gridstruct);
+       flatIndex < dax::exec::internal::numberOfCells(gridstruct);
        flatIndex++)
     {
     work.SetCellIndex(flatIndex);

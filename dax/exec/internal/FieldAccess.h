@@ -18,7 +18,7 @@
 
 #include <dax/exec/Field.h>
 
-#include <dax/internal/TopologyStructured.h>
+#include <dax/exec/internal/TopologyUniform.h>
 
 namespace dax { namespace exec { class CellVoxel; }}
 
@@ -89,10 +89,10 @@ public:
           FieldAccessPolicyInput<dax::Vector3, ExecutionAdapter>,
           dax::exec::internal::FieldAssociationCoordinatesTag>,
       dax::Id index,
-      const dax::internal::TopologyUniform topology,
+      const dax::exec::internal::TopologyUniform &topology,
       WorkType)
   {
-    return dax::internal::pointCoordiantes(topology, index);
+    return dax::exec::internal::pointCoordiantes(topology, index);
   }
 
   /// Get the coordinates from a point coordinate field (which may require
@@ -105,7 +105,7 @@ public:
           FieldAccessPolicyInput<dax::Vector3, ExecutionAdapter>,
           dax::exec::internal::FieldAssociationCoordinatesTag> field,
       dax::Tuple<dax::Id,Size> indices,
-      const dax::internal::TopologyUniform topology,
+      const dax::exec::internal::TopologyUniform &topology,
       WorkType work)
   {
     dax::Tuple<dax::Vector3,Size> result;

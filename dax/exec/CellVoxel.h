@@ -17,7 +17,7 @@
 #define __dax_exec_CellVoxel_h
 
 #include <dax/Types.h>
-#include <dax/internal/GridTopologys.h>
+#include <dax/exec/internal/TopologyUniform.h>
 
 #include <dax/exec/Field.h>
 
@@ -33,7 +33,7 @@ namespace dax { namespace exec {
 class CellVoxel
 {
 public:
-  typedef dax::internal::TopologyUniform TopologyType;
+  typedef dax::exec::internal::TopologyUniform TopologyType;
 
 private:
   const TopologyType GridTopology;

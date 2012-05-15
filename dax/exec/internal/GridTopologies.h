@@ -13,10 +13,10 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax__internal__GridTopologys_h
-#define __dax__internal__GridTopologys_h
+#ifndef __dax__exec__internal__GridTopologies_h
+#define __dax__exec__internal__GridTopologies_h
 
-#include <dax/internal/TopologyStructured.h>
-#include <dax/internal/TopologyUnstructured.h>
+#include <dax/exec/internal/TopologyUniform.h>
+#include <dax/exec/internal/TopologyUnstructured.h>
 
-#endif //__dax__internal__GridTopologys_h
+#endif //__dax__internal__GridTopologies_h

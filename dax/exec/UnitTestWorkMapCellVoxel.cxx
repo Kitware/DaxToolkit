@@ -22,9 +22,10 @@
 #include <algorithm>
 #include <vector>
 
-extern void TestCellVoxel(const dax::exec::CellVoxel cell,
-                          const dax::internal::TopologyUniform &gridstruct,
-                          dax::Id cellFlatIndex);
+extern void TestCellVoxel(
+    const dax::exec::CellVoxel cell,
+    const dax::exec::internal::TopologyUniform &gridstruct,
+    dax::Id cellFlatIndex);
 
 
 namespace {
@@ -37,7 +38,7 @@ dax::exec::internal::ErrorHandler ErrorHandler
 
 static void TestMapCellVoxel(
   dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter> &work,
-  const dax::internal::TopologyUniform &gridstruct,
+  const dax::exec::internal::TopologyUniform &gridstruct,
   dax::Id cellFlatIndex)
 {
   DAX_TEST_ASSERT(work.GetCellIndex() == cellFlatIndex,
@@ -69,7 +70,7 @@ static void TestMapCellVoxel()
   std::cout << "Testing WorkMapCell<CellVoxel>" << std::endl;
 
   {
-  dax::internal::TopologyUniform gridstruct;
+  dax::exec::internal::TopologyUniform gridstruct;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
@@ -77,7 +78,7 @@ static void TestMapCellVoxel()
   dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
       work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0;
-       flatIndex < dax::internal::numberOfCells(gridstruct);
+       flatIndex < dax::exec::internal::numberOfCells(gridstruct);
        flatIndex++)
     {
     work.SetCellIndex(flatIndex);
@@ -86,7 +87,7 @@ static void TestMapCellVoxel()
   }
 
   {
-  dax::internal::TopologyUniform gridstruct;
+  dax::exec::internal::TopologyUniform gridstruct;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
@@ -94,7 +95,7 @@ static void TestMapCellVoxel()
   dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
       work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0;
-       flatIndex < dax::internal::numberOfPoints(gridstruct);
+       flatIndex < dax::exec::internal::numberOfPoints(gridstruct);
        flatIndex++)
     {
     work.SetCellIndex(flatIndex);

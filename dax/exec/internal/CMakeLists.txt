@@ -18,8 +18,11 @@ set(headers
   DerivativeWeights.h
   ErrorHandler.h
   FieldAccess.h
+  GridTopologies.h
   InterpolationWeights.h
   TestExecutionAdapter.h
+  TopologyUniform.h
+  TopologyUnstructured.h
   )
 
 dax_declare_headers(${headers})
@@ -27,5 +30,6 @@ dax_declare_headers(${headers})
 set(unit_tests
   UnitTestDerivativeWeights.cxx
   UnitTestInterpolationWeights.cxx
+  UnitTestGridTopologies.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
