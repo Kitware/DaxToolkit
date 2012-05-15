@@ -66,20 +66,22 @@ public:
   //Set the number of cells you want this cell to generate
   DAX_EXEC_EXPORT void SetNewCellCount(dax::Id value) const
   {
-    dax::exec::internal::FieldAccess::SetNormal(this->NewCellCountField,
-                                                this->GetCellIndex(),
-                                                value);
+    dax::exec::internal::FieldAccess::SetField(this->NewCellCountField,
+                                               this->GetCellIndex(),
+                                               value);
   }
 
-  template<typename T, template<typename, class> class Access>
+  template<typename T, class Access>
   DAX_EXEC_EXPORT T GetFieldValue(
       dax::exec::internal::FieldBase<
-          Access<T,ExecutionAdapter>,
-          dax::exec::internal::FieldAssociationCellTag> field) const
+          Access,
+          dax::exec::internal::FieldAssociationCellTag,
+          T,
+          ExecutionAdapter> field) const
   {
-    return dax::exec::internal::FieldAccess::GetNormal(field,
-                                                       this->GetCellIndex(),
-                                                       *this);
+    return dax::exec::internal::FieldAccess::GetField(field,
+                                                      this->GetCellIndex(),
+                                                      *this);
   }
 
   template<typename T>

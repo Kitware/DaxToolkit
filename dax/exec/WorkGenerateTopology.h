@@ -86,10 +86,10 @@ public:
          index < (this->OutputIndex+1)*OutputCellType::NUM_POINTS;
          index++)
       {
-      dax::exec::internal::FieldAccess::SetNormal(this->OutputTopology,
-                                                  index,
-                                                  connections[index],
-                                                  *this);
+      dax::exec::internal::FieldAccess::SetField(this->OutputTopology,
+                                                 index,
+                                                 connections[index],
+                                                 *this);
       }
   }
 

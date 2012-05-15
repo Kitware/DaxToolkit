@@ -34,10 +34,13 @@ public:
   /// Using normal field semantics (that is, a field is just a pointer to an
   /// array), get the value at the given index.
   ///
-  template<class Access, class Association, class WorkType>
-  DAX_EXEC_EXPORT static
-  typename Access::ValueType GetNormal(
-      dax::exec::internal::FieldBase<Access, Association> field,
+  template<class T,
+           class ExecutionAdapter,
+           class Access,
+           class Association,
+           class WorkType>
+  DAX_EXEC_EXPORT static T GetField(
+      dax::exec::internal::FieldBase<Access, Association, T, ExecutionAdapter> field,
       dax::Id index,
       WorkType work)
   {
@@ -48,11 +51,13 @@ public:
   /// Using normal field semantics (that is, a field is just a pointer to an
   /// array), set the value at the given index.
   ///
-  template<class T, class ExecutionAdapter, class Association, class WorkType>
-  DAX_EXEC_EXPORT static void SetNormal(
+  template<class T, class ExecAdapter, class Association, class WorkType>
+  DAX_EXEC_EXPORT static void SetField(
       dax::exec::internal::FieldBase<
-          dax::exec::internal::FieldAccessPolicyOutput<T, ExecutionAdapter>,
-          Association> field,
+          dax::exec::internal::FieldAccessOutputTag,
+          Association,
+          T,
+          ExecAdapter> field,
       dax::Id index,
       T value,
       WorkType work)
@@ -64,17 +69,16 @@ public:
   /// Using normal field semantics (that is, a field is just a pointer to an
   /// array), get several values from the field.
   ///
-  template<int Size, class Access, class Association, class WorkType>
-  DAX_EXEC_EXPORT static
-  dax::Tuple<typename Access::ValueType, Size> GetMultiple(
-      dax::exec::internal::FieldBase<Access, Association> field,
+  template<int Size, class T, class ExecutionAdapter, class Access, class Association, class WorkType>
+  DAX_EXEC_EXPORT static dax::Tuple<T, Size> GetMultiple(
+      dax::exec::internal::FieldBase<Access, Association, T, ExecutionAdapter> field,
       dax::Tuple<dax::Id,Size> indices,
       WorkType work)
   {
-    dax::Tuple<typename Access::ValueType, Size> result;
+    dax::Tuple<T, Size> result;
     for (int i = 0; i < Size; i++)
       {
-      result[i] = GetNormal(field, indices[i], work);
+      result[i] = GetField(field, indices[i], work);
       }
     return result;
   }
@@ -86,8 +90,10 @@ public:
   DAX_EXEC_EXPORT static
   dax::Vector3 GetCoordinates(
       dax::exec::internal::FieldBase<
-          FieldAccessPolicyInput<dax::Vector3, ExecutionAdapter>,
-          dax::exec::internal::FieldAssociationCoordinatesTag>,
+          FieldAccessInputTag,
+          dax::exec::internal::FieldAssociationCoordinatesTag,
+          dax::Vector3,
+          ExecutionAdapter>,
       dax::Id index,
       const dax::exec::internal::TopologyUniform &topology,
       WorkType)
@@ -102,8 +108,10 @@ public:
   DAX_EXEC_EXPORT static
   dax::Tuple<dax::Vector3,Size> GetCoordinatesMultiple(
       dax::exec::internal::FieldBase<
-          FieldAccessPolicyInput<dax::Vector3, ExecutionAdapter>,
-          dax::exec::internal::FieldAssociationCoordinatesTag> field,
+          FieldAccessInputTag,
+          dax::exec::internal::FieldAssociationCoordinatesTag,
+          dax::Vector3,
+          ExecutionAdapter> field,
       dax::Tuple<dax::Id,Size> indices,
       const dax::exec::internal::TopologyUniform &topology,
       WorkType work)

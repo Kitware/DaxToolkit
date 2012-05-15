@@ -23,22 +23,32 @@ namespace dax { namespace exec {
 
 namespace internal {
 
+/// A tag to determine the input/output and read/write semantics of a Field
+/// class.
+///
+struct FieldAccessInputTag { };
+
+/// A tag to determine the input/output and read/write semantics of a Field
+/// class.
+///
+struct FieldAccessOutputTag { };
+
 /// A policy-like class used to determine the input/output and read/write
 /// semantics of a Field class.
 ///
+template<class FieldAccessTag, typename T, class ExecutionAdapter>
+struct FieldAccessPolicy;
+
 template<typename T, class ExecutionAdapter>
-struct FieldAccessPolicyInput
+struct FieldAccessPolicy<FieldAccessInputTag, T, ExecutionAdapter>
 {
   typedef T ValueType;
   typedef typename ExecutionAdapter::template FieldStructures<ValueType>
       ::IteratorConstType IteratorType;
 };
 
-/// A policy-like class used to determine the input/output and read/write
-/// semantics of a Field class.
-///
 template<typename T, class ExecutionAdapter>
-struct FieldAccessPolicyOutput
+struct FieldAccessPolicy<FieldAccessOutputTag, T, ExecutionAdapter>
 {
   typedef T ValueType;
   typedef typename ExecutionAdapter::template FieldStructures<ValueType>
@@ -65,12 +75,16 @@ class FieldAccess;
 
 /// Base class for all Field objects.
 ///
-template<class Access, class Association>
+template<class Access, class Association, class T, class ExecutionAdapter>
 class FieldBase
 {
 public:
-  typedef typename Access::ValueType ValueType;
-  typedef typename Access::IteratorType IteratorType;
+  typedef Access AccessTag;
+  typedef Association AssociationTag;
+  typedef FieldAccessPolicy<AccessTag, T, ExecutionAdapter> AccessPolicy;
+
+  typedef typename AccessPolicy::ValueType ValueType;
+  typedef typename AccessPolicy::IteratorType IteratorType;
 
   DAX_EXEC_EXPORT FieldBase(IteratorType beginIterator)
     : BeginIterator(beginIterator)
@@ -88,13 +102,19 @@ private:
 template<typename T, class ExecutionAdapter> \
 class name \
     : public internal::FieldBase< \
-        internal::FieldAccessPolicy##access<T, ExecutionAdapter>, \
-        internal::FieldAssociation##association##Tag> \
+          internal::FieldAccess##access##Tag, \
+          internal::FieldAssociation##association##Tag, \
+          T, \
+          ExecutionAdapter> \
 { \
 public: \
   typedef internal::FieldBase< \
-      internal::FieldAccessPolicy##access<T, ExecutionAdapter>, \
-      internal::FieldAssociation##association##Tag> BaseType; \
+      internal::FieldAccess##access##Tag, \
+      internal::FieldAssociation##association##Tag, \
+      T, \
+      ExecutionAdapter> BaseType; \
+  typedef typename BaseType::AccessPolicy AccessPolicy; \
+  typedef typename BaseType::AssociationTag AssociationTag; \
   typedef typename BaseType::ValueType ValueType; \
   typedef typename BaseType::IteratorType IteratorType; \
  \
@@ -161,13 +181,19 @@ DAX_DEFINE_FIELD_MACRO(FieldCellOut, Output, Cell);
 template<class ExecutionAdapter>
 class FieldCoordinatesIn
     : public internal::FieldBase<
-        internal::FieldAccessPolicyInput<dax::Vector3, ExecutionAdapter>,
-        internal::FieldAssociationCoordinatesTag>
+        internal::FieldAccessInputTag,
+        internal::FieldAssociationCoordinatesTag,
+        dax::Vector3,
+        ExecutionAdapter>
 {
 public:
   typedef internal::FieldBase<
-      internal::FieldAccessPolicyInput<dax::Vector3, ExecutionAdapter>,
-      internal::FieldAssociationCoordinatesTag> BaseType;
+      internal::FieldAccessInputTag,
+      internal::FieldAssociationCoordinatesTag,
+      dax::Vector3,
+      ExecutionAdapter> BaseType;
+  typedef typename BaseType::AccessPolicy AccessPolicy;
+  typedef typename BaseType::AssociationTag AssociationTag;
   typedef typename BaseType::ValueType ValueType;
   typedef typename BaseType::IteratorType IteratorType;
 
@@ -186,13 +212,17 @@ public:
 template<class ExecutionAdapter>
 class FieldCoordinatesOut
     : public internal::FieldBase<
-        internal::FieldAccessPolicyOutput<dax::Vector3, ExecutionAdapter>,
-        internal::FieldAssociationCoordinatesTag>
+        internal::FieldAccessOutputTag,
+        internal::FieldAssociationCoordinatesTag,
+        dax::Vector3,
+        ExecutionAdapter>
 {
 public:
   typedef internal::FieldBase<
-      internal::FieldAccessPolicyOutput<dax::Vector3, ExecutionAdapter>,
-      internal::FieldAssociationCoordinatesTag> BaseType;
+      internal::FieldAccessOutputTag,
+      internal::FieldAssociationCoordinatesTag,
+      dax::Vector3,
+      ExecutionAdapter> BaseType;
   typedef typename BaseType::ValueType ValueType;
   typedef typename BaseType::IteratorType IteratorType;
 

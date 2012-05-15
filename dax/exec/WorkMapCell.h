@@ -60,15 +60,17 @@ public:
     return this->Cell;
   }
 
-  template<typename T, template<typename, class> class Access>
+  template<typename T, class Access>
   DAX_EXEC_EXPORT T GetFieldValue(
       dax::exec::internal::FieldBase<
-          Access<T,ExecutionAdapter>,
-          dax::exec::internal::FieldAssociationCellTag> field) const
+          Access,
+          dax::exec::internal::FieldAssociationCellTag,
+          T,
+          ExecutionAdapter> field) const
   {
-    return dax::exec::internal::FieldAccess::GetNormal(field,
-                                                       this->GetCellIndex(),
-                                                       *this);
+    return dax::exec::internal::FieldAccess::GetField(field,
+                                                      this->GetCellIndex(),
+                                                      *this);
   }
 
   template<typename T>
@@ -76,10 +78,10 @@ public:
       dax::exec::FieldCellOut<T, ExecutionAdapter> field,
       T value) const
   {
-    dax::exec::internal::FieldAccess::SetNormal(field,
-                                                this->GetCellIndex(),
-                                                value,
-                                                *this);
+    dax::exec::internal::FieldAccess::SetField(field,
+                                               this->GetCellIndex(),
+                                               value,
+                                               *this);
   }
 
   template<typename T>

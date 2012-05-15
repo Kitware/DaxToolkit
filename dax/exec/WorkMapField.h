@@ -49,33 +49,37 @@ public:
     : GridTopology(gs), Index(index), ErrorHandler(errorHandler)
   { }
 
-  template<typename T, template<typename, class> class Access, class Assoc>
+  template<typename T, class Access, class Assoc>
   DAX_EXEC_EXPORT T GetFieldValue(
       dax::exec::internal::FieldBase<
-          Access<T,ExecutionAdapter>, Assoc> field) const
+          Access, Assoc, T, ExecutionAdapter> field) const
   {
-    return dax::exec::internal::FieldAccess::GetNormal(field,
-                                                       this->GetIndex(),
-                                                       *this);
+    return dax::exec::internal::FieldAccess::GetField(field,
+                                                      this->GetIndex(),
+                                                      *this);
   }
 
   template<typename T, class Assoc>
   DAX_EXEC_EXPORT void SetFieldValue(
       dax::exec::internal::FieldBase<
-          dax::exec::internal::FieldAccessPolicyOutput<T, ExecutionAdapter>,
-          Assoc> field,
+          dax::exec::internal::FieldAccessOutputTag,
+          Assoc,
+          T,
+          ExecutionAdapter> field,
       T value) const
   {
-    dax::exec::internal::FieldAccess::SetNormal(field,
-                                                this->GetIndex(),
-                                                value,
-                                                *this);
+    dax::exec::internal::FieldAccess::SetField(field,
+                                               this->GetIndex(),
+                                               value,
+                                               *this);
   }
 
   DAX_EXEC_EXPORT dax::Vector3 GetFieldValue(
       dax::exec::internal::FieldBase<
-          dax::exec::internal::FieldAccessPolicyInput<dax::Vector3, ExecutionAdapter>,
-          dax::exec::internal::FieldAssociationCoordinatesTag> field) const
+          dax::exec::internal::FieldAccessInputTag,
+          dax::exec::internal::FieldAssociationCoordinatesTag,
+          dax::Vector3,
+          ExecutionAdapter> field) const
   {
     // Special case.  Point coordiantes can bedetermined implicitly by index.
     return dax::exec::internal::FieldAccess::GetCoordinates(
