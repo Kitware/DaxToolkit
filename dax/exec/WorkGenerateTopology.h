@@ -22,7 +22,6 @@
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapCell.h>
 
-#include <dax/exec/internal/ErrorHandler.h>
 #include <dax/exec/internal/FieldAccess.h>
 
 namespace dax {
@@ -55,7 +54,7 @@ private:
   const InputCellType InputCell;
   const dax::Id OutputIndex;
   const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> OutputConnectionField;
-  const dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
+  const typename ExecutionAdapter::ErrorHandler ErrorHandler;
 public:
 
   DAX_EXEC_EXPORT WorkGenerateTopology(
@@ -63,7 +62,7 @@ public:
       dax::Id inputIndex,
       const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> &outConnectionField,
       dax::Id outputIndex,
-      const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
+      const typename ExecutionAdapter::ErrorHandler &errorHandler)
     : InputCell(gridStructure, inputIndex),
       OutputIndex(outputIndex),
       OutputConnectionField(outConnectionField),

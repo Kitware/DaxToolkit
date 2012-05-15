@@ -16,6 +16,8 @@
 #ifndef __dax_exec_internal_TestExecutionAdapter_h
 #define __dax_exec_internal_TestExecutionAdapter_h
 
+#include <dax/internal/Testing.h>
+
 struct TestExecutionAdapter
 {
   template <typename T>
@@ -23,6 +25,15 @@ struct TestExecutionAdapter
   {
     typedef T *IteratorType;
     typedef const T *IteratorConstType;
+  };
+
+  class ErrorHandler
+  {
+  public:
+    void RaiseError(const char *message) const
+    {
+      DAX_TEST_FAIL(message);
+    }
   };
 };
 

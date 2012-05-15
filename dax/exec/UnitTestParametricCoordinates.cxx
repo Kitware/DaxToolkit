@@ -24,8 +24,7 @@
 namespace {
 
 /// An (invalid) error handler to pass to work constructors.
-dax::exec::internal::ErrorHandler<TestExecutionAdapter> ErrorHandler
-  = dax::exec::internal::ErrorHandler<TestExecutionAdapter>(NULL, NULL);
+TestExecutionAdapter::ErrorHandler ErrorHandler;
 
 }  // Anonymous namespace
 

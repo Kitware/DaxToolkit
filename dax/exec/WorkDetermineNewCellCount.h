@@ -21,7 +21,6 @@
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapCell.h>
 
-#include <dax/exec/internal/ErrorHandler.h>
 #include <dax/exec/internal/FieldAccess.h>
 
 namespace dax {
@@ -46,14 +45,14 @@ public:
 private:
   const CellType Cell;
   const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> NewCellCountField;
-  const dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
+  const typename ExecutionAdapter::ErrorHandler ErrorHandler;
 public:
 
   DAX_EXEC_EXPORT WorkDetermineNewCellCount(
       const TopologyType &gridStructure,
       dax::Id cellIndex,
       const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> &cellCount,
-      const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
+      const typename ExecutionAdapter::ErrorHandler &errorHandler)
     : Cell(gridStructure, cellIndex),
       NewCellCountField(cellCount),
       ErrorHandler(errorHandler)

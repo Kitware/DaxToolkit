@@ -20,7 +20,6 @@
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 
-#include <dax/exec/internal/ErrorHandler.h>
 #include <dax/exec/internal/FieldAccess.h>
 
 namespace dax { namespace exec {
@@ -40,13 +39,13 @@ public:
 private:
   const TopologyType GridTopology;
   const dax::Id Index;
-  const dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
+  const typename ExecutionAdapter::ErrorHandler ErrorHandler;
 
 public:
   DAX_EXEC_CONT_EXPORT WorkMapField(
       const TopologyType &gs,
       dax::Id index,
-      const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
+      const typename ExecutionAdapter::ErrorHandler &errorHandler)
     : GridTopology(gs), Index(index), ErrorHandler(errorHandler)
   { }
 

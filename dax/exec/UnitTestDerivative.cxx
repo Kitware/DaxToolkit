@@ -17,7 +17,6 @@
 
 #include <dax/exec/WorkMapCell.h>
 #include <dax/exec/WorkMapField.h>
-#include <dax/exec/internal/ErrorHandler.h>
 #include <dax/exec/internal/GridTopologies.h>
 #include <dax/exec/internal/TestExecutionAdapter.h>
 
@@ -38,8 +37,7 @@ struct LinearField {
 };
 
 /// An (invalid) error handler to pass to work constructors.
-dax::exec::internal::ErrorHandler<TestExecutionAdapter> ErrorHandler
-  = dax::exec::internal::ErrorHandler<TestExecutionAdapter>(NULL, NULL);
+TestExecutionAdapter::ErrorHandler ErrorHandler;
 
 } // Anonymous namespace
 

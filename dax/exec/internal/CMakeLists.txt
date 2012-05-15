@@ -16,7 +16,7 @@
 
 set(headers
   DerivativeWeights.h
-  ErrorHandler.h
+  ErrorMessageBuffer.h
   FieldAccess.h
   GridTopologies.h
   InterpolationWeights.h
