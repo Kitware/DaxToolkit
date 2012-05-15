@@ -15,7 +15,6 @@
 ##=============================================================================
 
 set(headers
-  ArrayContainerExecutionCPU.h
   ArrayManagerExecutionShareWithControl.h
   DeviceAdapterError.h
   ExecutionPackageField.h
@@ -39,7 +38,6 @@ dax_declare_headers(${headers})
 #add_custom_target(daxContInternal ALL DEPENDS daxCont)
 
 set(unit_tests
-  UnitTestArrayContainerExecutionCPU.cxx
   UnitTestArrayManagerExecutionShareWithControl.cxx
   UnitTestContTesting.cxx
   UnitTestExecutionPackage.cxx
