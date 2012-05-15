@@ -33,7 +33,7 @@ struct TopologyUniform {
 
 /// Returns the number of points in a uniform rectilinear grid.
 ///
-DAX_EXEC_CONT_EXPORT
+DAX_EXEC_EXPORT
 dax::Id numberOfPoints(const TopologyUniform &GridTopology)
 {
   dax::Id3 dims = dax::extentDimensions(GridTopology.Extent);
@@ -43,7 +43,7 @@ dax::Id numberOfPoints(const TopologyUniform &GridTopology)
 /// Returns the number of cells in a uniform rectilinear grid.
 ///
 template<typename T>
-DAX_EXEC_CONT_EXPORT
+DAX_EXEC_EXPORT
 dax::Id numberOfCells(const T &GridTopology)
 {
   dax::Id3 dims = dax::extentDimensions(GridTopology.Extent)
@@ -54,7 +54,7 @@ dax::Id numberOfCells(const T &GridTopology)
 /// Returns the point position in a structured grid for a given i, j, and k
 /// value stored in /c ijk
 ///
-DAX_EXEC_CONT_EXPORT
+DAX_EXEC_EXPORT
 dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
                               dax::Id3 ijk)
 {
@@ -68,7 +68,7 @@ dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
 /// Returns the point position in a structured grid for a given index
 /// which is represented by /c pointIndex
 ///
-DAX_EXEC_CONT_EXPORT
+DAX_EXEC_EXPORT
 dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
                               dax::Id pointIndex)
 {

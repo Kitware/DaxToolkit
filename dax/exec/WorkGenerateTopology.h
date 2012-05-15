@@ -43,9 +43,13 @@ public:
   typedef ICT InputCellType;
   typedef OCT OutputCellType;
 
-  typedef typename InputCellType::TopologyType TopologyType;
-  typedef typename InputCellType::PointIds InputPointIds;
-  typedef typename OutputCellType::PointIds OutputPointIds;
+  typedef typename InputCellType::template GridStructures<ExecutionAdapter>
+      ::TopologyType InputTopologyType;
+
+  typedef typename InputCellType::PointConnectionsType
+       InputPointConnectionsType;
+  typedef typename OutputCellType::PointConnectionsType
+       OutputPointConnectionsType;
 
 private:
   const InputCellType InputCell;
@@ -55,7 +59,7 @@ private:
 public:
 
   DAX_EXEC_EXPORT WorkGenerateTopology(
-      const TopologyType &gridStructure,
+      const InputTopologyType &gridStructure,
       dax::Id inputIndex,
       const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> &outConnectionField,
       dax::Id outputIndex,
@@ -67,16 +71,17 @@ public:
     { }
 
   /// Get the topology of the input cell
-  DAX_EXEC_EXPORT InputPointIds GetInputTopology() const
+  DAX_EXEC_EXPORT InputPointConnectionsType GetInputTopology() const
   {
     return this->InputCell.GetPointIndices();
   }
 
   /// Set the topology of one of the output cells
   DAX_EXEC_EXPORT
-  void SetOutputConnections(const OutputPointIds &connections) const
+  void SetOutputConnections(const OutputPointConnectionsType &connections) const
   {
-    DAX_ASSERT_EXEC(OutputCellType::NUM_POINTS == OutputPointIds::NUM_POINTS,
+    DAX_ASSERT_EXEC(OutputCellType::NUM_POINTS
+                    == OutputPointConnectionsType::NUM_POINTS,
                     *this);
     for (dax::Id index = this->OutputIndex*OutputCellType::NUM_POINTS;
          index < (this->OutputIndex+1)*OutputCellType::NUM_POINTS;

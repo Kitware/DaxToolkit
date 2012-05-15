@@ -41,7 +41,8 @@ template<class CT, class ExecutionAdapter> class WorkMapCell
 {
 public:
   typedef CT CellType;
-  typedef typename CellType::TopologyType TopologyType;
+  typedef typename CellType::template GridStructures<ExecutionAdapter>
+      ::TopologyType TopologyType;
 
 private:
   const CellType Cell;

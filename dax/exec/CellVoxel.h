@@ -23,29 +23,29 @@
 
 namespace dax { namespace exec {
 
-/// All cell objects are expected to have the following methods defined:
-///   Cell<type>(work);
-///   GetNumberOfPoints() const;
-///   GetPoint(index) const;
-///   GetPoint(index, field) const;
-
 /// A cell in a regular structured grid.
 class CellVoxel
 {
 public:
-  typedef dax::exec::internal::TopologyUniform TopologyType;
+  // Even though this templating is unnecessary for this class, it is requried
+  // for pretty much all other cell types. To match, we template this, too.
+  template<class ExecutionAdapter>
+  struct GridStructures
+  {
+    typedef dax::exec::internal::TopologyUniform TopologyType;
+  };
+
+  /// static variable that holds the number of points per cell
+  const static dax::Id NUM_POINTS = 8;
+  typedef dax::Tuple<dax::Id,NUM_POINTS> PointConnectionsType;
 
 private:
-  const TopologyType GridTopology;
-  dax::Id CellIndex;
+  const dax::exec::internal::TopologyUniform GridTopology;
+  const dax::Id CellIndex;
 
 public:
-  /// static variable that returns the number of points per cell
-  const static dax::Id NUM_POINTS = 8; //needed by extract topology
-  typedef dax::Tuple<dax::Id,NUM_POINTS> PointIds;
-
   /// Create a cell for the given work.
-  DAX_EXEC_CONT_EXPORT CellVoxel(const TopologyType &gs,
+  DAX_EXEC_CONT_EXPORT CellVoxel(const dax::exec::internal::TopologyUniform &gs,
                                  dax::Id index)
     : GridTopology(gs), CellIndex(index) { }
 
@@ -83,7 +83,7 @@ public:
   }
 
   /// returns the indices for all the points in the cell.
-  DAX_EXEC_EXPORT PointIds GetPointIndices() const
+  DAX_EXEC_EXPORT PointConnectionsType GetPointIndices() const
   {
     dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(
           this->GetIndex(),
@@ -100,7 +100,7 @@ public:
       dax::make_Id3(0, 1, 1)
     };
 
-    PointIds pointIndices;
+    PointConnectionsType pointIndices;
 
     pointIndices[0] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[0],
                                          this->GetGridTopology().Extent);
@@ -143,15 +143,9 @@ public:
   /// Get the cell index.  Probably only useful internally.
   DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->CellIndex; }
 
-  /// Change the cell id.  (Used internally.)
-  DAX_EXEC_EXPORT void SetIndex(dax::Id cellIndex)
-  {
-    this->CellIndex = cellIndex;
-  }
-
   /// Get the grid structure details.  Only useful internally.
   DAX_EXEC_EXPORT
-  const TopologyType &GetGridTopology() const
+  const dax::exec::internal::TopologyUniform &GetGridTopology() const
   {
     return this->GridTopology;
   }

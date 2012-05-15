@@ -17,60 +17,93 @@
 #define __dax__exec__internal__TopologyUnstructured_h
 
 #include <dax/Types.h>
-#include <dax/internal/DataArray.h>
 
 namespace dax {
 namespace exec {
 namespace internal {
 
 
-template< typename T>
+/// The basic data describing the topology of an unstructured grid. It
+/// comprises two arrays: an array of point coordinates and an array of cell
+/// connections. The unstructured grid is typed on the cell type. Only that one
+/// cell type can be represented in the unstructured grid at any one time.
+/// Also, the data in the arrays is meant to be immutable. To generate new
+/// topology, you have to create these two arrays outside of this structure and
+/// then bring them together. This prevents the structure from getting into
+/// invalid states (as well as get around problems with const vs. non-const
+/// arrays).
+///
+template<typename T, class ExecutionAdapter>
 struct TopologyUnstructured
 {
   typedef T CellType;
+  typedef typename ExecutionAdapter::template FieldStructures<dax::Vector3>
+      ::IteratorConstType CoordinatesIteratorType;
+  typedef typename ExecutionAdapter::template FieldStructures<dax::Id>
+      ::IteratorConstType ConnectionsIteratorType;
 
   TopologyUnstructured()
+    : Coordinates(CoordinatesIteratorType()),
+      Connections(ConnectionsIteratorType()),
+      NumberOfPoints(0),
+      NumberOfCells(0)
     {
     }
 
-  TopologyUnstructured(const dax::internal::DataArray<dax::Vector3>&points,
-                       const dax::internal::DataArray<dax::Id>& topology):
-    Points(points),
-    Topology(topology)
-    {
-    }
+  /// Create a topology with the given descriptive arrays.
+  ///
+  /// \param coordiantes An array of dax::Vector3 coordinates for each point.
+  /// The length of this array should be \c numberOfPoints.
+  /// \param numberOfPoints The number of points in the grid.
+  /// \param connections An array containing a list for each cell giving the
+  /// point index for each vertex of the cell.  The length of this array should
+  /// be \c numberOfCells times \c CellType::NUM_POINTS.
+  /// \param numberOfCells The number of cells in the grid.
+  ///
+  TopologyUnstructured(CoordinatesIteratorType coordinates,
+                       dax::Id numberOfPoints,
+                       ConnectionsIteratorType connections,
+                       dax::Id numberOfCells)
+    : Coordinates(coordinates), Connections(connections),
+      NumberOfPoints(numberOfPoints), NumberOfCells(numberOfCells)
+  {
+  }
 
-  dax::internal::DataArray<dax::Vector3> Points;
-  dax::internal::DataArray<dax::Id> Topology;
+  CoordinatesIteratorType Coordinates;
+  ConnectionsIteratorType Connections;
+  dax::Id NumberOfPoints;
+  dax::Id NumberOfCells;
 };
 
 /// Returns the number of cells in a unstructured grid.
-template<typename T>
-DAX_EXEC_CONT_EXPORT
-dax::Id numberOfCells(const TopologyUnstructured<T> &GridTopology)
+///
+template<typename T, class ExecutionAdapter>
+DAX_EXEC_EXPORT
+dax::Id numberOfCells(const TopologyUnstructured<T, ExecutionAdapter> &topology)
 {
-  typedef typename TopologyUnstructured<T>::CellType CellType;
-  return GridTopology.Topology.GetNumberOfEntries()/CellType::NUM_POINTS;
+  return topology.NumberOfCells;
 }
 
 /// Returns the number of points in a unstructured grid.
-template<typename T>
-DAX_EXEC_CONT_EXPORT
-dax::Id numberOfPoints(const TopologyUnstructured<T> &GridTopology)
+///
+template<typename T, class ExecutionAdapter>
+DAX_EXEC_EXPORT
+dax::Id numberOfPoints(const TopologyUnstructured<T,ExecutionAdapter> &topology)
 {
-  return GridTopology.Points.GetNumberOfEntries();
+  return topology.NumberOfPoints;
 }
 
 /// Returns the point position in a structured grid for a given index
 /// which is represented by /c pointIndex
-template<typename T>
-DAX_EXEC_CONT_EXPORT
-dax::Vector3 pointCoordiantes(const TopologyUnstructured<T> &grid,
-                              dax::Id pointIndex)
+///
+template<typename T, class ExecutionAdapter>
+DAX_EXEC_EXPORT
+dax::Vector3 pointCoordiantes(
+    const TopologyUnstructured<T, ExecutionAdapter> &topology,
+    dax::Id pointIndex)
 {
-  return grid.Points.GetValue(pointIndex);
+  return *(topology.Coordinates + pointIndex);
 }
-
 
 } //internal
 } //exec

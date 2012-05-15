@@ -34,7 +34,8 @@ class WorkMapField
 {
 public:
   typedef CellT CellType;
-  typedef typename CellType::TopologyType TopologyType;
+  typedef typename CellType::template GridStructures<ExecutionAdapter>
+      ::TopologyType TopologyType;
 
 private:
   const TopologyType GridTopology;

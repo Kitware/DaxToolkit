@@ -49,7 +49,7 @@ static dax::Scalar fieldBuffer[bufferSize];
 template<class CellType>
 static dax::exec::FieldPointIn<dax::Scalar, TestExecutionAdapter>
 CreatePointField(
-    const typename CellType::TopologyType &topology,
+    const typename CellType::template GridStructures<TestExecutionAdapter>::TopologyType &topology,
     const dax::exec::FieldCoordinatesIn<TestExecutionAdapter> &coordField,
     const LinearField &fieldValues,
     dax::Id numPoints)
