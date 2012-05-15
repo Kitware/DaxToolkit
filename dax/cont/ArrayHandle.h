@@ -227,7 +227,9 @@ public:
       }
     else
       {
-      std::copy(this->GetIteratorBegin(), this->GetIteratorEnd(), dest);
+      std::copy(this->GetIteratorConstControlBegin(),
+                this->GetIteratorConstControlEnd(),
+                dest);
       }
   }
 
