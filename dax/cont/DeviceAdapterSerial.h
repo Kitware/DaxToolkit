@@ -28,7 +28,6 @@ class DeviceAdapterSerial;
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterSerial
 
 #include <dax/Functional.h>
-#include <dax/internal/DataArray.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/internal/ArrayContainerExecutionCPU.h>
@@ -154,11 +153,11 @@ private: // Support methods/fields for Schedule
     ScheduleKernel(
         const FunctorType &functor,
         const ParametersType &parameters,
-        dax::internal::DataArray<char> &errorArray)
+        std::pair<char *, char *> errorIterators)
       : Functor(functor),
         Parameters(parameters),
-        ErrorArray(errorArray),
-        ErrorHandler(errorArray) {}
+        ErrorArray(errorIterators.first),
+        ErrorHandler(errorIterators.first, errorIterators.second) {}
 
     //needed for when calling from schedule on a range
     DAX_EXEC_EXPORT void operator()(dax::Id index)
@@ -173,16 +172,15 @@ private: // Support methods/fields for Schedule
   private:
     FunctorType Functor;
     ParametersType Parameters;
-    dax::internal::DataArray<char> ErrorArray;
+    char *ErrorArray;
     dax::exec::internal::ErrorHandler ErrorHandler;
   };
 
-  DAX_CONT_EXPORT static dax::internal::DataArray<char> GetErrorArray()
+  DAX_CONT_EXPORT static std::pair<char *, char *> GetErrorArray()
   {
     const dax::Id ERROR_ARRAY_SIZE = 1024;
     static char ErrorArrayBuffer[ERROR_ARRAY_SIZE];
-    dax::internal::DataArray<char> ErrorArray(ErrorArrayBuffer, ERROR_ARRAY_SIZE);
-    return ErrorArray;
+    return std::make_pair(ErrorArrayBuffer, ErrorArrayBuffer+ERROR_ARRAY_SIZE);
   }
 
 public:
@@ -192,9 +190,9 @@ public:
                        Parameters parameters,
                        dax::Id numInstances)
     {
-    dax::internal::DataArray<char> errorArray = GetErrorArray();
+    std::pair<char *, char *> errorArray = GetErrorArray();
     // Clear error value.
-    errorArray.SetValue(0, '\0');
+    errorArray.first[0] = '\0';
 
     ScheduleKernel<Functor, Parameters> kernel(functor, parameters, errorArray);
 

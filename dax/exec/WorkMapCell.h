@@ -45,12 +45,12 @@ public:
 
 private:
   CellType Cell;
-  dax::exec::internal::ErrorHandler ErrorHandler;
+  dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
 
 public:
   DAX_EXEC_EXPORT WorkMapCell(
     const TopologyType &GridTopology,
-    const dax::exec::internal::ErrorHandler &errorHandler)
+    const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
     : Cell(GridTopology, 0),
       ErrorHandler(errorHandler) { }
 

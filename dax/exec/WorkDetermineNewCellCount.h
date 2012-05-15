@@ -45,13 +45,13 @@ public:
 private:
   CellType Cell;
   dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> NewCellCount;
-  dax::exec::internal::ErrorHandler ErrorHandler;
+  dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
 public:
 
   DAX_EXEC_EXPORT WorkDetermineNewCellCount(
     const TopologyType &gridStructure,
     const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> &cellCount,
-    const dax::exec::internal::ErrorHandler &errorHandler)
+    const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
     : Cell(gridStructure, 0),
       NewCellCount(cellCount),
       ErrorHandler(errorHandler)

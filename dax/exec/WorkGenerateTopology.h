@@ -51,13 +51,13 @@ private:
   InputCellType InputCell;
   dax::Id OutputIndex;
   dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> OutputTopology;
-  dax::exec::internal::ErrorHandler ErrorHandler;
+  dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
 public:
 
   DAX_EXEC_EXPORT WorkGenerateTopology(
     const TopologyType &gridStructure,
     const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> &outTopology,
-    const dax::exec::internal::ErrorHandler &errorHandler)
+    const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
     : InputCell(gridStructure, 0),
       OutputIndex(0),
       OutputTopology(outTopology),

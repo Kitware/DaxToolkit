@@ -33,7 +33,7 @@ template<class CellT, class ExecutionAdapter>
 class WorkMapField
 {
   dax::Id Index;
-  dax::exec::internal::ErrorHandler ErrorHandler;
+  dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
 
 public:
   typedef CellT CellType;
@@ -43,12 +43,12 @@ public:
 
   DAX_EXEC_CONT_EXPORT WorkMapField(
       const TopologyType &gs,
-      const dax::exec::internal::ErrorHandler &errorHandler)
+      const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
     : ErrorHandler(errorHandler),
       GridTopology(gs){ }
 
   DAX_EXEC_CONT_EXPORT WorkMapField(
-      const dax::exec::internal::ErrorHandler &errorHandler)
+      const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
     : ErrorHandler(errorHandler),
       GridTopology(){ }
 

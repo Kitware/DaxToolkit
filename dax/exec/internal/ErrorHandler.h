@@ -16,7 +16,7 @@
 #ifndef __dax_exec_internal_ErrorHandler_h
 #define __dax_exec_internal_ErrorHandler_h
 
-#include <dax/internal/DataArray.h>
+#include <dax/Types.h>
 
 namespace dax {
 namespace exec {
@@ -31,11 +31,15 @@ namespace internal {
 /// Before scheduling worklets, the global array should be cleared to have no
 /// error. This can only be reliably done by the device adapter.
 ///
+template<class ExecutionAdapter>
 class ErrorHandler
 {
+private:
+  typedef typename ExecutionAdapter::template FieldStructures<char>
+      ::IteratorType IteratorType;
 public:
-  DAX_EXEC_EXPORT ErrorHandler(dax::internal::DataArray<char> m)
-    : Message(m) { }
+  DAX_EXEC_EXPORT ErrorHandler(IteratorType begin, IteratorType end)
+    : MessageBegin(begin), MessageEnd(end) { }
 
   DAX_EXEC_EXPORT void RaiseError(const char *message)
   {
@@ -49,22 +53,28 @@ public:
     if (this->IsErrorRaised()) { return; }
 
     // Safely copy message into array.
-    dax::Id index;
-    for (index = 0; index < this->Message.GetNumberOfEntries(); index++)
+    const char *inMessage;
+    IteratorType outMessage;
+    for (inMessage = message, outMessage = this->MessageBegin;
+         outMessage != this->MessageEnd;
+         inMessage++, outMessage++)
       {
-      if (message[index] == '\0') break;
-      this->Message.SetValue(index, message[index]);
+      *outMessage = *inMessage;
+      if (*inMessage == '\0') break;
       }
-    this->Message.SetValue(index, '\0');
+
+    // Make sure message is null terminated.
+    *(this->MessageEnd - 1) = '\0';
   }
 
   DAX_EXEC_EXPORT bool IsErrorRaised() const
   {
-    return (this->Message.GetValue(0) != '\0');
+    return (*(this->MessageBegin) != '\0');
   }
 
 private:
-  dax::internal::DataArray<char> Message;
+  IteratorType MessageBegin;
+  IteratorType MessageEnd;
 };
 
 }
