@@ -30,10 +30,7 @@ class DeviceAdapterSerial;
 #include <dax/Functional.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
-#include <dax/cont/internal/ArrayContainerExecutionCPU.h>
 #include <dax/cont/internal/ArrayManagerExecutionShareWithControl.h>
-
-#include <dax/exec/internal/ErrorHandler.h>
 
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -63,6 +60,29 @@ struct DeviceAdapterSerial
     typedef typename Superclass::ValueType ValueType;
     typedef typename Superclass::IteratorType IteratorType;
     typedef typename Superclass::IteratorConstType IteratorConstType;
+  };
+
+  template <template <typename> class ArrayContainerControl>
+  class ExecutionAdapter
+  {
+  public:
+    template <typename T>
+    struct FieldStructures
+    {
+      typedef typename DeviceAdapterSerial::ArrayManagerExecution<
+          T,ArrayContainerControl>::IteratorType IteratorType;
+      typedef typename DeviceAdapterSerial::ArrayManagerExecution<
+          T,ArrayContainerControl>::IteratorConstType IteratorConstType;
+    };
+
+    class ErrorHandler
+    {
+    public:
+      void RaiseError(const char *message) const
+      {
+        throw dax::cont::ErrorExecution(message);
+      }
+    };
   };
 
   template<typename T, template <typename> class Container>
@@ -152,36 +172,20 @@ private: // Support methods/fields for Schedule
   public:
     ScheduleKernel(
         const FunctorType &functor,
-        const ParametersType &parameters,
-        std::pair<char *, char *> errorIterators)
+        const ParametersType &parameters)
       : Functor(functor),
-        Parameters(parameters),
-        ErrorArray(errorIterators.first),
-        ErrorHandler(errorIterators.first, errorIterators.second) {}
+        Parameters(parameters) {  }
 
     //needed for when calling from schedule on a range
     DAX_EXEC_EXPORT void operator()(dax::Id index)
     {
-      this->Functor(this->Parameters,index,this->ErrorHandler);
-      if (this->ErrorHandler.IsErrorRaised())
-        {
-        throw dax::cont::ErrorExecution(this->ErrorArray.GetPointer());
-        }
+      this->Functor(this->Parameters, index, this->ErrorHandler);
     }
 
   private:
     FunctorType Functor;
     ParametersType Parameters;
-    char *ErrorArray;
-    dax::exec::internal::ErrorHandler ErrorHandler;
   };
-
-  DAX_CONT_EXPORT static std::pair<char *, char *> GetErrorArray()
-  {
-    const dax::Id ERROR_ARRAY_SIZE = 1024;
-    static char ErrorArrayBuffer[ERROR_ARRAY_SIZE];
-    return std::make_pair(ErrorArrayBuffer, ErrorArrayBuffer+ERROR_ARRAY_SIZE);
-  }
 
 public:
 
@@ -190,11 +194,7 @@ public:
                        Parameters parameters,
                        dax::Id numInstances)
     {
-    std::pair<char *, char *> errorArray = GetErrorArray();
-    // Clear error value.
-    errorArray.first[0] = '\0';
-
-    ScheduleKernel<Functor, Parameters> kernel(functor, parameters, errorArray);
+    ScheduleKernel<Functor, Parameters> kernel(functor, parameters);
 
     std::for_each(
           ::boost::counting_iterator<dax::Id>(0),

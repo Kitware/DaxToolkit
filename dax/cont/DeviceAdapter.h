@@ -296,6 +296,43 @@ public:
     ///
     void ReleaseResources();
   };
+
+  /// \brief Adapter for execution environment.
+  ///
+  /// Classes in the execution environment use this class in their template
+  /// arguments. This class allows the execution environment to adapt to
+  /// different devices.
+  ///
+  template<template <typename> class ArrayContainerControl>
+  class ExecutionAdapter
+  {
+  public:
+    /// This structure contains iterators that can be used to access the arrays
+    /// representing fields.  The funny templating of the structure containing
+    /// iterators is to handle the case of iterators that are pointers, which
+    /// cannot be partially templated (at least before C++11, which is not yet
+    /// widely adopted).
+    ///
+    template <typename T>
+    struct FieldStructures
+    {
+      typedef typename DeviceAdapter::ArrayManagerExecution<
+          T,ArrayContainerControl>::IteratorType IteratorType;
+      typedef typename DeviceAdapter::ArrayManagerExecution<
+          T,ArrayContainerControl>::IteratorConstType IteratorConstType;
+    };
+
+    /// This class is constructed in work objects so that they can raise
+    /// errors. The work object will simply call the RaiseError method. This
+    /// method should either set the state of the object to signal the error or
+    /// throw an exception.
+    ///
+    class ErrorHandler
+    {
+    public:
+      void RaiseError(const char *message) const;
+    };
+  };
 };
 
 #endif //DAX_DOXYGEN_ONLY
