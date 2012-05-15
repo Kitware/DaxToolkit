@@ -41,7 +41,7 @@ DAX_EXEC_EXPORT dax::Vector3 parametricCoordinatesToWorldCoordinates(
   // a very special case where you would want just one point coordinate because
   // the rest are implicitly defined.
   dax::Vector3 minCoord = dax::exec::internal::FieldAccess::GetCoordinates(
-        coordField, 0, cell.GetGridTopology(), work);
+        coordField, cell.GetPointIndex(0), cell.GetGridTopology(), work);
 
   return cellOffset + minCoord;
 }
@@ -57,7 +57,7 @@ DAX_EXEC_EXPORT dax::Vector3 worldCoordinatesToParametricCoordinates(
   // a very special case where you would want just one point coordinate because
   // the rest are implicitly defined.
   dax::Vector3 minCoord = dax::exec::internal::FieldAccess::GetCoordinates(
-        coordField, 0, cell.GetGridTopology(), work);
+        coordField, cell.GetPointIndex(0), cell.GetGridTopology(), work);
 
   dax::Vector3 cellOffset = wcoords - minCoord;
 
