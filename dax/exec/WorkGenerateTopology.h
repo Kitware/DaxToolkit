@@ -48,19 +48,21 @@ public:
   typedef typename OutputCellType::PointIds OutputPointIds;
 
 private:
-  InputCellType InputCell;
-  dax::Id OutputIndex;
-  dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> OutputTopology;
-  dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
+  const InputCellType InputCell;
+  const dax::Id OutputIndex;
+  const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> OutputConnectionField;
+  const dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
 public:
 
   DAX_EXEC_EXPORT WorkGenerateTopology(
-    const TopologyType &gridStructure,
-    const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> &outTopology,
-    const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
-    : InputCell(gridStructure, 0),
-      OutputIndex(0),
-      OutputTopology(outTopology),
+      const TopologyType &gridStructure,
+      dax::Id inputIndex,
+      const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> &outConnectionField,
+      dax::Id outputIndex,
+      const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
+    : InputCell(gridStructure, inputIndex),
+      OutputIndex(outputIndex),
+      OutputConnectionField(outConnectionField),
       ErrorHandler(errorHandler)
     { }
 
@@ -71,7 +73,8 @@ public:
   }
 
   /// Set the topology of one of the output cells
-  DAX_EXEC_EXPORT void SetOutputTopology(const OutputPointIds &topology)
+  DAX_EXEC_EXPORT
+  void SetOutputConnections(const OutputPointIds &connections) const
   {
     DAX_ASSERT_EXEC(OutputCellType::NUM_POINTS == OutputPointIds::NUM_POINTS,
                     *this);
@@ -81,27 +84,17 @@ public:
       {
       dax::exec::internal::FieldAccess::SetNormal(this->OutputTopology,
                                                   index,
-                                                  topology[index],
+                                                  connections[index],
                                                   *this);
       }
   }
 
-  DAX_EXEC_EXPORT void SetCellIndex(dax::Id cellIndex)
-  {
-    this->InputCell.SetIndex(cellIndex);
-  }
-
-  DAX_EXEC_EXPORT void SetOutputCellIndex(dax::Id cellIndex)
-  {
-  this->OutputIndex = cellIndex;
-  }
-
-  DAX_EXEC_EXPORT dax::Id GetOutputCellIndex()
+  DAX_EXEC_EXPORT dax::Id GetOutputCellIndex() const
   {
   return this->OutputIndex;
   }
 
-  DAX_EXEC_EXPORT void RaiseError(const char* message)
+  DAX_EXEC_EXPORT void RaiseError(const char* message) const
   {
     this->ErrorHandler.RaiseError(message);
   }

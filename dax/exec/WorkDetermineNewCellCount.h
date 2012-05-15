@@ -43,17 +43,18 @@ public:
   typedef typename CellType::TopologyType TopologyType;
 
 private:
-  CellType Cell;
-  dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> NewCellCount;
-  dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
+  const CellType Cell;
+  const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> NewCellCountField;
+  const dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
 public:
 
   DAX_EXEC_EXPORT WorkDetermineNewCellCount(
-    const TopologyType &gridStructure,
-    const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> &cellCount,
-    const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
-    : Cell(gridStructure, 0),
-      NewCellCount(cellCount),
+      const TopologyType &gridStructure,
+      dax::Id cellIndex,
+      const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> &cellCount,
+      const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
+    : Cell(gridStructure, cellIndex),
+      NewCellCountField(cellCount),
       ErrorHandler(errorHandler)
     { }
 
@@ -63,9 +64,9 @@ public:
   }
 
   //Set the number of cells you want this cell to generate
-  DAX_EXEC_EXPORT void SetNewCellCount(dax::Id value)
+  DAX_EXEC_EXPORT void SetNewCellCount(dax::Id value) const
   {
-    dax::exec::internal::FieldAccess::SetNormal(this->NewCellCount,
+    dax::exec::internal::FieldAccess::SetNormal(this->NewCellCountField,
                                                 this->GetCellIndex(),
                                                 value);
   }
@@ -101,11 +102,6 @@ public:
   }
 
   DAX_EXEC_EXPORT dax::Id GetCellIndex() const { return this->Cell.GetIndex(); }
-
-  DAX_EXEC_EXPORT void SetCellIndex(dax::Id cellIndex)
-  {
-    this->Cell.SetIndex(cellIndex);
-  }
 
   DAX_EXEC_EXPORT void RaiseError(const char* message)
   {

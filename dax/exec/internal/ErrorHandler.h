@@ -41,7 +41,7 @@ public:
   DAX_EXEC_EXPORT ErrorHandler(IteratorType begin, IteratorType end)
     : MessageBegin(begin), MessageEnd(end) { }
 
-  DAX_EXEC_EXPORT void RaiseError(const char *message)
+  DAX_EXEC_EXPORT void RaiseError(const char *message) const
   {
     // Only raise the error if one has not been raised yet. This check is not
     // guaranteed to work across threads. However, chances are that if two or

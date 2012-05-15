@@ -103,11 +103,10 @@ static void TestPCoordsVoxel()
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
   gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
-  dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
-      work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0; flatIndex < 1000; flatIndex++)
     {
-    work.SetCellIndex(flatIndex);
+    dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
+        work(gridstruct, flatIndex, ErrorHandler);
     TestPCoordsVoxel(work, coordField);
     }
   }
@@ -118,11 +117,10 @@ static void TestPCoordsVoxel()
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
   gridstruct.Extent.Max = dax::make_Id3(15, 6, 13);
-  dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
-      work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0; flatIndex < 1500; flatIndex++)
     {
-    work.SetCellIndex(flatIndex);
+    dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
+        work(gridstruct, flatIndex, ErrorHandler);
     TestPCoordsVoxel(work, coordField);
     }
   }

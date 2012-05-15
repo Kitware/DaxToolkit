@@ -32,25 +32,22 @@ namespace dax { namespace exec {
 template<class CellT, class ExecutionAdapter>
 class WorkMapField
 {
-  dax::Id Index;
-  dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
-
 public:
   typedef CellT CellType;
   typedef typename CellType::TopologyType TopologyType;
 
+private:
   const TopologyType GridTopology;
+  const dax::Id Index;
+  const dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
 
+public:
   DAX_EXEC_CONT_EXPORT WorkMapField(
       const TopologyType &gs,
+      dax::Id index,
       const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
-    : ErrorHandler(errorHandler),
-      GridTopology(gs){ }
-
-  DAX_EXEC_CONT_EXPORT WorkMapField(
-      const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
-    : ErrorHandler(errorHandler),
-      GridTopology(){ }
+    : GridTopology(gs), Index(index), ErrorHandler(errorHandler)
+  { }
 
   template<typename T, template<typename, class> class Access, class Assoc>
   DAX_EXEC_EXPORT T GetFieldValue(
@@ -67,7 +64,7 @@ public:
       dax::exec::internal::FieldBase<
           dax::exec::internal::FieldAccessPolicyOutput<T, ExecutionAdapter>,
           Assoc> field,
-      T value)
+      T value) const
   {
     dax::exec::internal::FieldAccess::SetNormal(field,
                                                 this->GetIndex(),
@@ -78,7 +75,7 @@ public:
   DAX_EXEC_EXPORT dax::Vector3 GetFieldValue(
       dax::exec::internal::FieldBase<
           dax::exec::internal::FieldAccessPolicyInput<dax::Vector3, ExecutionAdapter>,
-          dax::exec::internal::FieldAssociationCoordinatesTag> field)
+          dax::exec::internal::FieldAssociationCoordinatesTag> field) const
   {
     // Special case.  Point coordiantes can bedetermined implicitly by index.
     return dax::exec::internal::FieldAccess::GetCoordinates(
@@ -87,9 +84,7 @@ public:
 
   DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->Index; }
 
-  DAX_EXEC_EXPORT void SetIndex(dax::Id index) { this->Index = index; }
-
-  DAX_EXEC_EXPORT void RaiseError(const char *message)
+  DAX_EXEC_EXPORT void RaiseError(const char *message) const
   {
     this->ErrorHandler.RaiseError(message);
   }

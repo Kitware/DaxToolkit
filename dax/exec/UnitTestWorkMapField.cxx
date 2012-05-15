@@ -82,11 +82,10 @@ static void TestMapFieldVoxel()
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
   gridstruct.Extent.Max = dax::make_Id3(9, 9, 9);
-  dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter>
-      work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0; flatIndex < 1000; flatIndex++)
     {
-    work.SetIndex(flatIndex);
+    dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter>
+        work(gridstruct, flatIndex, ErrorHandler);
     TestMapFieldVoxel(work, gridstruct, flatIndex);
     }
   }
@@ -97,11 +96,10 @@ static void TestMapFieldVoxel()
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
   gridstruct.Extent.Max = dax::make_Id3(14, 5, 12);
-  dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter>
-      work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0; flatIndex < 1500; flatIndex++)
     {
-    work.SetIndex(flatIndex);
+    dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter>
+        work(gridstruct, flatIndex, ErrorHandler);
     TestMapFieldVoxel(work, gridstruct, flatIndex);
     }
   }

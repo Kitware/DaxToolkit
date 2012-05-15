@@ -49,7 +49,7 @@ static dax::Scalar fieldBuffer[bufferSize];
 template<class CellType>
 static dax::exec::FieldPointIn<dax::Scalar, TestExecutionAdapter>
 CreatePointField(
-    dax::exec::WorkMapField<CellType, TestExecutionAdapter> work,
+    const typename CellType::TopologyType &topology,
     const dax::exec::FieldCoordinatesIn<TestExecutionAdapter> &coordField,
     const LinearField &fieldValues,
     dax::Id numPoints)
@@ -60,7 +60,8 @@ CreatePointField(
   // Fill field.
   for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
     {
-    work.SetIndex(pointIndex);
+    dax::exec::WorkMapField<CellType, TestExecutionAdapter>
+        work(topology, pointIndex, ErrorHandler);
     dax::Vector3 coordinates = work.GetFieldValue(coordField);
     dax::Scalar fieldValue = fieldValues.GetValue(coordinates);
     fieldBuffer[pointIndex] = fieldValue;
@@ -109,19 +110,17 @@ static void TestInterpolateVoxel(
     const dax::exec::internal::TopologyUniform &gridstruct,
     const LinearField &fieldValues)
 {
-  dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter>
-      workField(gridstruct, ErrorHandler);
   dax::exec::FieldCoordinatesIn<TestExecutionAdapter> coordField;
   dax::Id numPoints = dax::exec::internal::numberOfPoints(gridstruct);
-  dax::exec::FieldPointIn<dax::Scalar, TestExecutionAdapter> scalarField
-      = CreatePointField(workField, coordField, fieldValues, numPoints);
+  dax::exec::FieldPointIn<dax::Scalar, TestExecutionAdapter> scalarField =
+      CreatePointField<dax::exec::CellVoxel>(
+        gridstruct, coordField, fieldValues, numPoints);
 
-  dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
-      workCell(gridstruct, ErrorHandler);
   dax::Id numCells = dax::exec::internal::numberOfCells(gridstruct);
   for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
     {
-    workCell.SetCellIndex(cellIndex);
+    dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
+        workCell(gridstruct, cellIndex, ErrorHandler);
     TestInterpolateCell(workCell, coordField, scalarField, fieldValues);
     }
 }

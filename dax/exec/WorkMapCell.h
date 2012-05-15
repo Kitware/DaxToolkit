@@ -44,14 +44,15 @@ public:
   typedef typename CellType::TopologyType TopologyType;
 
 private:
-  CellType Cell;
-  dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
+  const CellType Cell;
+  const dax::exec::internal::ErrorHandler<ExecutionAdapter> ErrorHandler;
 
 public:
   DAX_EXEC_EXPORT WorkMapCell(
-    const TopologyType &GridTopology,
-    const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
-    : Cell(GridTopology, 0),
+      const TopologyType &GridTopology,
+      dax::Id index,
+      const dax::exec::internal::ErrorHandler<ExecutionAdapter> &errorHandler)
+    : Cell(GridTopology, index),
       ErrorHandler(errorHandler) { }
 
   DAX_EXEC_EXPORT const CellType GetCell() const
@@ -73,7 +74,7 @@ public:
   template<typename T>
   DAX_EXEC_EXPORT void SetFieldValue(
       dax::exec::FieldCellOut<T, ExecutionAdapter> field,
-      T value)
+      T value) const
   {
     dax::exec::internal::FieldAccess::SetNormal(field,
                                                 this->GetCellIndex(),
@@ -102,12 +103,7 @@ public:
 
   DAX_EXEC_EXPORT dax::Id GetCellIndex() const { return this->Cell.GetIndex(); }
 
-  DAX_EXEC_EXPORT void SetCellIndex(dax::Id cellIndex)
-  {
-    this->Cell.SetIndex(cellIndex);
-  }
-
-  DAX_EXEC_EXPORT void RaiseError(const char *message)
+  DAX_EXEC_EXPORT void RaiseError(const char *message) const
   {
     this->ErrorHandler.RaiseError(message);
   }

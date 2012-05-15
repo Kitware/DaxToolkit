@@ -86,13 +86,12 @@ static void TestMapCellHexahedron()
   gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
   ugrid = make_ugrid(gridstruct,points,topo);
 
-  dax::exec::WorkMapCell<dax::exec::CellHexahedron, TestExecutionAdapter>
-      work(ugrid,ErrorHandler);
   for (dax::Id flatIndex = 0;
        flatIndex < dax::exec::internal::numberOfCells(gridstruct);
        flatIndex++)
     {
-    work.SetCellIndex(flatIndex);
+    dax::exec::WorkMapCell<dax::exec::CellHexahedron, TestExecutionAdapter>
+        work(ugrid, flatIndex, ErrorHandler);
     TestMapCellHexahedron(work, gridstruct, flatIndex);
     }
   }
@@ -104,13 +103,12 @@ static void TestMapCellHexahedron()
   gridstruct.Extent.Max = dax::make_Id3(15, 6, 13);
   ugrid = make_ugrid(gridstruct,points,topo);
 
-  dax::exec::WorkMapCell<dax::exec::CellHexahedron, TestExecutionAdapter>
-      work(ugrid,ErrorHandler);
   for (dax::Id flatIndex = 0;
        flatIndex < dax::exec::internal::numberOfCells(gridstruct);
        flatIndex++)
     {
-    work.SetCellIndex(flatIndex);
+    dax::exec::WorkMapCell<dax::exec::CellHexahedron, TestExecutionAdapter>
+        work(ugrid, flatIndex, ErrorHandler);
     TestMapCellHexahedron(work, gridstruct, flatIndex);
     }
   }
