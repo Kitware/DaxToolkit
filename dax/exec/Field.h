@@ -113,8 +113,9 @@ public: \
       internal::FieldAssociation##association##Tag, \
       T, \
       ExecutionAdapter> BaseType; \
-  typedef typename BaseType::AccessPolicy AccessPolicy; \
+  typedef typename BaseType::AccessTag AccessTag; \
   typedef typename BaseType::AssociationTag AssociationTag; \
+  typedef typename BaseType::AccessPolicy AccessPolicy; \
   typedef typename BaseType::ValueType ValueType; \
   typedef typename BaseType::IteratorType IteratorType; \
  \
@@ -192,8 +193,9 @@ public:
       internal::FieldAssociationCoordinatesTag,
       dax::Vector3,
       ExecutionAdapter> BaseType;
-  typedef typename BaseType::AccessPolicy AccessPolicy;
+  typedef typename BaseType::AccessTag AccessTag;
   typedef typename BaseType::AssociationTag AssociationTag;
+  typedef typename BaseType::AccessPolicy AccessPolicy;
   typedef typename BaseType::ValueType ValueType;
   typedef typename BaseType::IteratorType IteratorType;
 
@@ -223,6 +225,9 @@ public:
       internal::FieldAssociationCoordinatesTag,
       dax::Vector3,
       ExecutionAdapter> BaseType;
+  typedef typename BaseType::AccessTag AccessTag;
+  typedef typename BaseType::AssociationTag AssociationTag;
+  typedef typename BaseType::AccessPolicy AccessPolicy;
   typedef typename BaseType::ValueType ValueType;
   typedef typename BaseType::IteratorType IteratorType;
 

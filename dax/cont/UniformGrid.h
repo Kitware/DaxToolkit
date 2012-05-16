@@ -101,6 +101,15 @@ public:
   dax::Id ComputeCellIndex(const dax::Id3 &ijk) const {
     return dax::index3ToFlatIndexCell(ijk, this->Extent);
   }
+
+  /// This class just serves as a tag so that a uniform grid can be templated
+  /// as any other grid with points. Eventually there needs to be
+  /// specialization to handle the case that there is no real array.
+  struct PointCoordinatesArrayPlaceholder {  };
+
+  PointCoordinatesArrayPlaceholder GetPointCoordinates() const {
+    return PointCoordinatesArrayPlaceholder();
+  }
 };
 
 }

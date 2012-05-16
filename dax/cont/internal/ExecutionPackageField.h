@@ -21,6 +21,7 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorControlBadValue.h>
+#include <dax/cont/UniformGrid.h>
 
 #include <dax/exec/Field.h>
 
@@ -33,42 +34,32 @@ class ExecutionPackageField
 private:
   template<class ArrayHandleType, class GridType>
   DAX_CONT_EXPORT static
-  dax::Id CheckArraySize(const ArrayHandleType &arrayHandle,
-                         const GridType &grid,
-                         dax::exec::internal::FieldAssociationCellTag)
+  dax::Id GetFieldSize(const GridType &grid,
+                       dax::exec::internal::FieldAssociationCellTag)
   {
-    dax::Id numValues = grid.GetNumberOfCells();
-    if (arrayHandle.GetNumberOfValues() != numValues)
-      {
-      throw dax::cont::ErrorControlBadValue(
-            "Received an array that is the wrong size to represent a "
-            "cell-associated field with the given grid.");
-      }
-    return numValues;
+    return grid.GetNumberOfCells();
   }
   template<class ArrayHandleType, class GridType>
   DAX_CONT_EXPORT static
-  dax::Id CheckArraySize(const ArrayHandleType &arrayHandle,
-                         const GridType &grid,
-                         dax::exec::internal::FieldAssociationPointTag)
+  dax::Id GetFieldSize(const GridType &grid,
+                       dax::exec::internal::FieldAssociationPointTag)
   {
-    dax::Id numValues= grid.GetNumberOfPoints();
-    if (arrayHandle.GetNumberOfValues() != numValues)
-      {
-      throw dax::cont::ErrorControlBadValue(
-            "Received an array that is the wrong size to represent a "
-            "point-associated field with the given grid.");
-      }
-    return numValues;
+    return grid.GetNumberOfPoints();
   }
 
   template<class FieldType, class ArrayHandleType>
   DAX_CONT_EXPORT static
   typename FieldType::IteratorType
   GetExecutionIterator(const ArrayHandleType &arrayHandle,
-                       dax::Id,
+                       dax::Id numValues,
                        dax::exec::internal::FieldAccessInputTag)
   {
+    if (arrayHandle.GetNumberOfValues() != numValues)
+      {
+      throw dax::cont::ErrorControlBadValue(
+            "Received an array that is the wrong size to represent the field "
+            "that it is associated with.");
+      }
     return arrayHandle.PrepareForInput().first;
   }
   template<class FieldType, class ArrayHandleType>
@@ -81,7 +72,34 @@ private:
     return arrayHandle.PrepareForOutput(numValues).first;
   }
 
+  // Special case for point array of uniform grids.  Needs no actual data.
+  template<class FieldType>
+  DAX_CONT_EXPORT static
+  typename FieldType::IteratorType
+  GetExecutionIterator(
+      const dax::cont::UniformGrid::PointCoordinatesArrayPlaceholder &,
+      dax::Id,
+      dax::exec::internal::FieldAccessInputTag)
+  {
+    return FieldType::IteratorType();
+  }
+
 public:
+  /// Given an ArrayHandle, returns a Field object that can be used in the
+  /// execution environment.
+  ///
+  template<class FieldType, class ArrayHandleType>
+  DAX_CONT_EXPORT static
+  FieldType GetExecutionObject(const ArrayHandleType &arrayHandle,
+                               dax::Id numValues)
+  {
+    typename FieldType::IteratorType fieldIterator
+        = GetExecutionIterator<FieldType>(arrayHandle,
+                                          numValues,
+                                          FieldType::AccessTag());
+    return FieldType(fieldIterator);
+  }
+
   /// Given an ArrayHandle, returns a Field object that can be used in the
   /// execution environment.
   ///
@@ -90,13 +108,8 @@ public:
   FieldType GetExecutionObject(const ArrayHandleType &arrayHandle,
                                const GridType &grid)
   {
-    dax::Id numValues
-        = CheckArraySize(arrayHandle, grid, FieldType::AssociationTag());
-    typename FieldType::IteratorType fieldIterator
-        = GetExecutionIterator<FieldType>(arrayHandle,
-                                          numValues,
-                                          FieldType::AccessPolicy());
-    return FieldType(fieldIterator);
+    dax::Id numValues = GetFieldSize(grid, FieldType::AssociationTag());
+    return GetExecutionObject<FieldType>(arrayHandle, numValues);
   }
 };
 
