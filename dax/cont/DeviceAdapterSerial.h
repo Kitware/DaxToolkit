@@ -164,6 +164,15 @@ struct DeviceAdapterSerial
       }
     }
 
+  template<template <typename> class Container>
+  static void LowerBounds(
+      const dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterSerial>& input,
+      dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterSerial>& values_output)
+  {
+    // This is safe because it is a serial operation.
+    DeviceAdapterSerial::LowerBounds(input, values_output, values_output);
+  }
+
 private: // Support methods/fields for Schedule
   // This runs in the execution environment.
   template<class FunctorType,

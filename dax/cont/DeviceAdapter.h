@@ -101,6 +101,18 @@ public:
       const dax::cont::ArrayHandle<T,Container,DeviceAdapter>& values,
       dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapter>& output);
 
+  /// \brief A special version of LowerBounds that does an in place operation.
+  ///
+  /// This version of lower bounds performs an in place operation where each
+  /// value in the \c values_output array is replaced by the index in \c input
+  /// where it occurs. Because this is an in place operation, the of the arrays
+  /// is limited to dax::Id.
+  ///
+  template<template <typename> class Container>
+  static void LowerBounds(
+      const dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapter>& input,
+      dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapter>& values_output);
+
   /// \brief Schedule many instances of a function to run on concurrent threads.
   ///
   /// Calls the \c functor on several threads. This is the function used in the
