@@ -37,6 +37,7 @@
 
 namespace dax {
 namespace exec {
+namespace internal {
 namespace kernel {
 
 template<class CT, class FT>
@@ -58,7 +59,7 @@ template<class CT, class FT>
 struct ThresholdClassifyFunctor
 {
   DAX_EXEC_EXPORT void operator()(
-      dax::exec::kernel::ThresholdClassifyParameters<CT,FT> &parameters,
+      dax::exec::internal::kernel::ThresholdClassifyParameters<CT,FT> &parameters,
       dax::Id index,
       const dax::exec::internal::ErrorHandler &errorHandler)
   {
@@ -91,47 +92,60 @@ struct GenerateTopologyFunctor
   }
 };
 
-template<class ParametersClassify,
-         class FunctorClassify,
-         class FunctorTopology,
+template<class InCellType,
+         class InFieldType,
+         class OutCellType,
+         template <typename> class ArrayContainerControl,
          class DeviceAdapter>
 class Threshold : public dax::cont::internal::ScheduleGenerateTopology
     <
-    Threshold<ParametersClassify,
-              FunctorClassify,
-              FunctorTopology,
+    Threshold<InCellType,
+              InFieldType,
+              OutCellType,
+              ArrayContainerControl,
               DeviceAdapter>,
-    FunctorClassify,
-    FunctorTopology,
+    ThresholdClassifyFunctor<InCellType,InFieldType>,
+    GenerateTopologyFunctor<InCellType,OutCellType>,
+    ArrayContainerControl,
     DeviceAdapter>
 {
 public:
     typedef typename ParametersClassify::FieldType ValueType;
+    typedef dax::cont::ArrayHandle<ValueType,ArrayContainerControl,DeviceAdapter>
+        ValueTypeArrayHandle;
+
+    typedef ThresholdClassifyParameters<InCellType,InFieldType> ParametersClassify;
+    typedef ThresholdClassifyFunctor<InCellType,InFieldType> FunctorClassify;
+    typedef GenerateTopologyFunctor<InCellType,OutCellType> FunctorTopology;
 
     //constructor that is passed all the user decided parts of the worklet too
-    Threshold(const ValueType& min, const ValueType& max,
-              dax::cont::ArrayHandle<ValueType,DeviceAdapter>& thresholdField,
-              dax::cont::ArrayHandle<ValueType,DeviceAdapter>& outputField):
+    Threshold(const ValueType& min,
+              const ValueType& max,
+              const ValueTypeArrayHandle& thresholdField,
+              ValueTypeArrayHandle& outputField):
       Min(min),
       Max(max),
-      InputField(thresholdField),
-      OutputField(outputField)
+      InputHandle(thresholdField),
+      OutputHandle(outputField)
       {
 
       }
 
     //generate the parameters for the classification worklet
-    template <typename GridType, typename PackagedGrid>
-    ParametersClassify GenerateClassificationParameters(const GridType& grid,
-                                                PackagedGrid& pgrid)
+    template <typename GridType, typename ExecutionTopologyType>
+    ParametersClassify GenerateClassificationParameters(
+        const GridType& grid, const ExecutionTopologyType& executionTopology)
       {
-      this->PackageField = PackageFieldInputPtr(new PackageFieldInput(
-                                                  this->InputField, grid));
-      ParametersClassify parameters = {pgrid.GetExecutionObject(),
-                               this->PackageCellCount->GetExecutionObject(),
-                               this->Min,
-                               this->Max,
-                               this->PackageField->GetExecutionObject()};
+      this->InputField = dax::cont::internal::ExecutionPackageField
+          ::GetExecutionObject<dax::exec::FieldPointIn>(this->InputHandle,grid);
+
+      ParametersClassify parameters;
+      parameters.grid = executionTopology;
+      parameters.newCellCount = this->NewCellCountField;
+      parameters.min = this->Min;
+      parameters.max = this->Max;
+      parameters.inField = this->InputField;
+
       return parameters;
       }
 
@@ -139,28 +153,24 @@ public:
     void GenerateOutputFields()
       {
       //we know that the threshold is being done on a point field
-      DeviceAdapter::StreamCompact(this->InputField,
+      DeviceAdapter::StreamCompact(this->InputHandle,
                                    this->MaskPointHandle,
-                                   this->OutputField);
-      this->OutputField.CompleteAsOutput();
+                                   this->OutputHandle);
       }
 
 private:
   ValueType Min;
   ValueType Max;
 
-  typedef dax::cont::internal::ExecutionPackageFieldPointInput<
-                                ValueType,DeviceAdapter> PackageFieldInput;
-  typedef  boost::shared_ptr< PackageFieldInput > PackageFieldInputPtr;
-
-  PackageFieldInputPtr PackageField;
-  dax::cont::ArrayHandle<ValueType,DeviceAdapter> InputField;
-  dax::cont::ArrayHandle<ValueType,DeviceAdapter> OutputField;
+  ValueTypeArrayHandle InputHandle;
+  dax::exec::FieldPointIn InputField;
+  ValueTypeArrayHandle OutputHandle;
 };
-}
-}
-}
 
+}
+}
+}
+} //namespace dax::exec::internal::kernel
 
 
 namespace dax {
@@ -182,11 +192,11 @@ inline void Threshold(
   typedef dax::cont::internal::ExecutionPackageGrid<OutGridType> OutGridPackageType;
   typedef typename OutGridPackageType::ExecutionCellType OutCellType;
 
-  typedef dax::exec::kernel::ThresholdClassifyParameters<CellType,FieldType> ParametersClassify;
-  typedef dax::exec::kernel::ThresholdClassifyFunctor<CellType,FieldType> FunctorClassify;
-  typedef dax::exec::kernel::GenerateTopologyFunctor<CellType,OutCellType> FunctorTopology;
+  typedef dax::exec::internal::kernel::ThresholdClassifyParameters<CellType,FieldType> ParametersClassify;
+  typedef dax::exec::internal::kernel::ThresholdClassifyFunctor<CellType,FieldType> FunctorClassify;
+  typedef dax::exec::internal::kernel::GenerateTopologyFunctor<CellType,OutCellType> FunctorTopology;
 
-  dax::exec::kernel::Threshold<
+  dax::exec::internal::kernel::Threshold<
                               ParametersClassify,
                               FunctorClassify,
                               FunctorTopology,

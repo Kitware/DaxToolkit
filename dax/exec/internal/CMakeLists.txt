@@ -23,6 +23,7 @@ set(headers
   TestExecutionAdapter.h
   TopologyUniform.h
   TopologyUnstructured.h
+  WorkEmpty.h
   )
 
 dax_declare_headers(${headers})
