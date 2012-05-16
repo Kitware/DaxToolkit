@@ -112,12 +112,16 @@ public:
   /// uniquely identifies the thread or instance of the invocation. There
   /// should be one invocation for each index in the range [0, \c
   /// numInstances]. The third argment contains an ErrorHandler that can be
-  /// used to raise an error in the functor.
+  /// used to raise an error in the functor.  The final argument is not used
+  /// for anything but indirectly specifying the template paramters.
   ///
-  template<class ExecutionAdapter, class Functor, class Parameters>
+  template<class Functor,
+           class Parameters,
+           template <typename> class ArrayContainerControl>
   static void Schedule(Functor functor,
                        Parameters parameters,
-                       dax::Id numInstances);
+                       dax::Id numInstances,
+                       ExecutionAdapter<ArrayContainerControl>);
 
   /// \brief Unstable ascending sort of input array.
   ///

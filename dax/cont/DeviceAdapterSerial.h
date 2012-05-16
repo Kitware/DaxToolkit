@@ -166,7 +166,9 @@ struct DeviceAdapterSerial
 
 private: // Support methods/fields for Schedule
   // This runs in the execution environment.
-  template<class FunctorType, class ParametersType>
+  template<class FunctorType,
+           class ParametersType,
+           template <typename> class ArrayContainerControl>
   class ScheduleKernel
   {
   public:
@@ -179,7 +181,9 @@ private: // Support methods/fields for Schedule
     //needed for when calling from schedule on a range
     DAX_EXEC_EXPORT void operator()(dax::Id index)
     {
-      this->Functor(this->Parameters, index, this->ErrorHandler);
+      this->Functor(this->Parameters,
+                    index,
+                    ExecutionAdapter<ArrayContainerControl>::ErrorHandler());
     }
 
   private:
@@ -189,12 +193,16 @@ private: // Support methods/fields for Schedule
 
 public:
 
-  template<class Functor, class Parameters>
+  template<class Functor,
+           class Parameters,
+           template <typename> class ArrayContainerControl>
   static void Schedule(Functor functor,
                        Parameters parameters,
-                       dax::Id numInstances)
+                       dax::Id numInstances,
+                       ExecutionAdapter<ArrayContainerControl>)
     {
-    ScheduleKernel<Functor, Parameters> kernel(functor, parameters);
+    ScheduleKernel<Functor, Parameters, ArrayContainerControl>
+        kernel(functor, parameters);
 
     std::for_each(
           ::boost::counting_iterator<dax::Id>(0),
