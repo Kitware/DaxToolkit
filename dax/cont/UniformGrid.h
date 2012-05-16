@@ -78,14 +78,14 @@ public:
   /// Get the number of points.
   ///
   dax::Id GetNumberOfPoints() const {
-    dax::Id3 dims = dax::extentDimensions(this->Extent);
+    dax::Id3 dims = dax::extentDimensions(this->GetExtent());
     return dims[0]*dims[1]*dims[2];
   }
 
   /// Get the number of cells.
   ///
   dax::Id GetNumberOfCells() const {
-    dax::Id3 dims = dax::extentDimensions(this->Extent)
+    dax::Id3 dims = dax::extentDimensions(this->GetExtent())
                     - dax::make_Id3(1, 1, 1);
     return dims[0]*dims[1]*dims[2];
   }
@@ -93,13 +93,41 @@ public:
   /// Converts an i, j, k point location to a point index.
   ///
   dax::Id ComputePointIndex(const dax::Id3 &ijk) const {
-    return dax::index3ToFlatIndex(ijk, this->Extent);
+    return dax::index3ToFlatIndex(ijk, this->GetExtent());
   }
 
-  /// Converts an i, j, k point location to a cell index.
+  /// Converts an i, j, k cell location to a cell index.
   ///
   dax::Id ComputeCellIndex(const dax::Id3 &ijk) const {
-    return dax::index3ToFlatIndexCell(ijk, this->Extent);
+    return dax::index3ToFlatIndexCell(ijk, this->GetExtent());
+  }
+
+  /// Converts a flat point index to an i, j, k point location.
+  ///
+  dax::Id3 ComputePointLocation(dax::Id index) const {
+    return dax::flatIndexToIndex3(index, this->GetExtent());
+  }
+
+  /// Converts a flat cell index to an i, j, k cell location.
+  ///
+  dax::Id3 ComputeCellLocation(dax::Id index) const {
+    return dax::flatIndexToIndex3Cell(index, this->GetExtent());
+  }
+
+  /// Given a point i, j, k location, computes the coordinates.
+  ///
+  dax::Vector3 ComputePointCoordinates(dax::Id3 location) const {
+    dax::Vector3 coord(
+          this->GetOrigin()[0] + this->GetSpacing()[0]*location[0],
+          this->GetOrigin()[1] + this->GetSpacing()[1]*location[1],
+          this->GetOrigin()[2] + this->GetSpacing()[2]*location[2]);
+    return coord;
+  }
+
+  /// Given a point idnex, computes the coordinates.
+  ///
+  dax::Vector3 ComputePointCoordinates(dax::Id index) const {
+    return this->ComputePointCoordinates(this->ComputePointLocation(index));
   }
 
   /// This class just serves as a tag so that a uniform grid can be templated

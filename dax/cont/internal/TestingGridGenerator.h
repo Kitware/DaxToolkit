@@ -29,18 +29,18 @@ namespace dax {
 namespace cont {
 namespace internal {
 
-template<typename T, typename DA>
+template<class GridType,
+         template <typename> class ArrayContainerControl
+             = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
+         class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER>
 struct TestGrid
 {
-  typedef T GridType;
-  typedef DA DeviceAdapter;
-
 private:
   //custom storage container that changes the size based on the grid type
   //so that we don't have to store extra information for uniform grid
   const dax::Id Size;
   GridType Grid;
-  template<typename GridType> struct GridStorage {};
+  template<typename GT> struct GridStorage {};
   template<typename U> struct GridStorage<dax::cont::UnstructuredGrid<U> >
     {
     std::vector<dax::Id> topology;
@@ -73,6 +73,13 @@ public:
     return this->Grid;
     }
 
+  ~TestGrid()
+  {
+    std::cout << "Test grid destroyed.  "
+              << "Any use of the grid after this point is an error."
+              << std::endl;
+  }
+
 private:
   void BuildGrid(dax::cont::UniformGrid &grid)
     {
@@ -83,13 +90,13 @@ private:
     {
     //we need to make a volume grid
     dax::cont::UniformGrid uniform;
-    uniform.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
+    this->BuildGrid(uniform);
 
     //copy the point info over to the unstructured grid
     this->Info.points.clear();
     for(dax::Id i=0; i <uniform.GetNumberOfPoints(); ++i)
       {
-      this->Info.points.push_back(uniform.GetPointCoordinates(i));
+      this->Info.points.push_back(uniform.ComputePointCoordinates(i));
       }
 
     //copy the cell topology information over
@@ -121,10 +128,10 @@ private:
         }
       }
 
-    dax::cont::ArrayHandle<dax::Vector3,DeviceAdapter> ahPoints(
-          this->Info.points.begin(),this->Info.points.end());
-    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> ahTopo(
-          this->Info.topology.begin(),this->Info.topology.end());
+    dax::cont::ArrayHandle<dax::Vector3, ArrayContainerControl, DeviceAdapter>
+        ahPoints(&this->Info.points.front(), (&this->Info.points.back()) + 1);
+    dax::cont::ArrayHandle<dax::Id, ArrayContainerControl, DeviceAdapter>
+        ahTopo(&this->Info.topology.front(), (&this->Info.topology.back()) + 1);
     grid = dax::cont::UnstructuredGrid<dax::exec::CellHexahedron>(ahTopo,
                                                                   ahPoints);
     }
