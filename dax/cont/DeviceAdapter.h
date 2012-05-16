@@ -107,14 +107,14 @@ public:
   /// control environment to spawn activity in the execution environment. \c
   /// functor is a function-like object that can be invoked with the calling
   /// specification <tt>functor(Parameters parameters, dax::Id index,
-  /// dax::exec::internal::ErrorHandler errorHandler)</tt>. The first argument
-  /// is the \c parameters passed through. The second argument uniquely
-  /// identifies the thread or instance of the invocation. There should be one
-  /// invocation for each index in the range [0, \c numInstances]. The third
-  /// argment contains an ErrorHandler that can be used to raise an error in
-  /// the functor.
+  /// DeviceAdapter::ExectionAdapter::ErrorHandler errorHandler)</tt>. The
+  /// first argument is the \c parameters passed through. The second argument
+  /// uniquely identifies the thread or instance of the invocation. There
+  /// should be one invocation for each index in the range [0, \c
+  /// numInstances]. The third argment contains an ErrorHandler that can be
+  /// used to raise an error in the functor.
   ///
-  template<class Functor, class Parameters>
+  template<class ExecutionAdapter, class Functor, class Parameters>
   static void Schedule(Functor functor,
                        Parameters parameters,
                        dax::Id numInstances);
