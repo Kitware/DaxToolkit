@@ -18,8 +18,14 @@
 
 #include <dax/exec/CellVoxel.h>
 
+#include <dax/exec/internal/TopologyUniform.h>
+
 namespace dax {
 namespace cont {
+
+/// A tag you can use to identify when a grid is a uniform grid.
+///
+struct UniformGridTag {  };
 
 /// This class defines the topology of a uniform grid. A uniform grid is axis
 /// aligned and has uniform spacing between grid points in every dimension. The
@@ -34,6 +40,9 @@ private:
 
 public:
   typedef dax::exec::CellVoxel CellType;
+  typedef UniformGridTag GridTypeTag;
+
+  typedef dax::exec::internal::TopologyUniform ExecutionTopologyStruct;
 
   UniformGrid()
     : Origin(dax::make_Vector3(0.0, 0.0, 0.0)),
