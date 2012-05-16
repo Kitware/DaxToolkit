@@ -52,10 +52,11 @@ public:
   typedef dax::cont::ArrayHandle<
       dax::Vector3, ArrayContainerControl, DeviceAdapter> PointCoordinatesType;
 
-  typedef dax::exec::internal::TopologyUnstructured<
-      CellType,
-      typename DeviceAdapter::template ExecutionAdapter<ArrayContainerControl> >
-        ExecutionTopologyStruct;
+  typedef typename DeviceAdapter::template ExecutionAdapter<ArrayContainerControl>
+      ExecutionAdapter;
+
+  typedef dax::exec::internal::TopologyUnstructured<CellType, ExecutionAdapter>
+      ExecutionTopologyStruct;
 
 private:
   CellConnectionsType CellConnections;

@@ -65,7 +65,7 @@ private:
   template<class FieldType, class ArrayHandleType>
   DAX_CONT_EXPORT static
   typename FieldType::IteratorType
-  GetExecutionIterator(const ArrayHandleType &arrayHandle,
+  GetExecutionIterator(ArrayHandleType &arrayHandle,
                        dax::Id numValues,
                        dax::exec::internal::FieldAccessOutputTag)
   {
@@ -90,13 +90,13 @@ public:
   ///
   template<class FieldType, class ArrayHandleType>
   DAX_CONT_EXPORT static
-  FieldType GetExecutionObject(const ArrayHandleType &arrayHandle,
+  FieldType GetExecutionObject(ArrayHandleType &arrayHandle,
                                dax::Id numValues)
   {
     typename FieldType::IteratorType fieldIterator
         = GetExecutionIterator<FieldType>(arrayHandle,
                                           numValues,
-                                          FieldType::AccessTag());
+                                          typename FieldType::AccessTag());
     return FieldType(fieldIterator);
   }
 
@@ -105,7 +105,7 @@ public:
   ///
   template<class FieldType, class ArrayHandleType, class GridType>
   DAX_CONT_EXPORT static
-  FieldType GetExecutionObject(const ArrayHandleType &arrayHandle,
+  FieldType GetExecutionObject(ArrayHandleType &arrayHandle,
                                const GridType &grid)
   {
     dax::Id numValues = GetFieldSize(grid, FieldType::AssociationTag());

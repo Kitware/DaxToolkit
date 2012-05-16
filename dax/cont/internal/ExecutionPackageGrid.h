@@ -33,7 +33,7 @@ private:
   DAX_CONT_EXPORT static typename GridType::ExecutionTopologyStruct
   GetExecutionObject(const GridType &grid, dax::cont::UnstructuredGridTag)
   {
-    typename GridType::ExectionTopologyStruct topology;
+    typename GridType::ExecutionTopologyStruct topology;
     topology.PointCoordinates
         = grid.GetPointCoordinates().PrepareForInput().first;
     topology.NumberOfPoints = grid.GetNumberOfPoints();
@@ -59,7 +59,7 @@ public:
   DAX_CONT_EXPORT static typename GridType::ExecutionTopologyStruct
   GetExecutionObject(const GridType &grid)
   {
-    return GetExecutionObject(grid, GridType::GridTypeTag());
+    return GetExecutionObject(grid, typename GridType::GridTypeTag());
   }
 };
 
