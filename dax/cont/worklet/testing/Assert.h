@@ -19,11 +19,7 @@
 // TODO: This should be auto-generated.
 
 #include <dax/Types.h>
-#include <dax/internal/DataArray.h>
-#include <dax/internal/GridTopologys.h>
 #include <dax/exec/WorkMapField.h>
-#include <dax/exec/internal/ErrorHandler.h>
-#include <dax/exec/internal/FieldBuild.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
@@ -33,54 +29,64 @@
 
 namespace dax {
 namespace exec {
+namespace internal {
 namespace kernel {
 
-template<class CellType>
+template<class CellType, class ExecAdapter>
 struct AssertParameters
 {
-  typename CellType::TopologyType grid;
+  typename CellType::template GridStructures<ExecAdapter>::TopologyType grid;
 };
 
-template<class CellType>
+template<class CellType, class ExecAdapter>
 struct Assert
 {
   DAX_EXEC_EXPORT void operator()(
-      AssertParameters<CellType> &parameters,
+      AssertParameters<CellType, ExecAdapter> &parameters,
       dax::Id index,
-      const dax::exec::internal::ErrorHandler &errorHandler)
+      typename ExecAdapter::ErrorHandler &errorHandler)
   {
-    dax::exec::WorkMapField<CellType> work(parameters.grid, errorHandler);
-    work.SetIndex(index);
+    dax::exec::WorkMapField<CellType, ExecAdapter>
+        work(parameters.grid, index, errorHandler);
     dax::worklet::testing::Assert(work);
   }
 };
 
 }
 }
-} // dax::exec::kernel
+}
+} // dax::exec::internal::kernel
 
 namespace dax {
 namespace cont {
 namespace worklet {
 namespace testing {
 
-template<class GridType, class DeviceAdapter>
+template<class GridType,
+         template <typename> class Container,
+         class DeviceAdapter>
 inline void Assert(const GridType &grid)
 {
-  typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
-  GridPackageType gridPackage(grid);
+  typedef typename DeviceAdapter::template ExecutionAdapter<Container>
+      ExecAdapter;
 
-  typedef typename GridPackageType::ExecutionCellType CellType;
+  typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
+  ExecutionTopologyType execTopology
+      = dax::cont::internal::ExecutionPackageGrid::GetExecutionObject(grid);
 
-  typedef dax::exec::kernel::AssertParameters<CellType> Parameters;
-  Parameters parameters = {
-    gridPackage.GetExecutionObject()
-  };
+  typedef typename GridType::CellType CellType;
+
+  typedef dax::exec::internal::kernel::AssertParameters<CellType, ExecAdapter>
+      Parameters;
+
+  Parameters parameters;
+  parameters.grid = execTopology;
 
   DeviceAdapter::Schedule(
-        dax::exec::kernel::Assert<CellType>(),
+        dax::exec::internal::kernel::Assert<CellType, ExecAdapter>(),
         parameters,
-        grid.GetNumberOfPoints());
+        grid.GetNumberOfPoints(),
+        ExecAdapter());
 }
 
 }
