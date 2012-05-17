@@ -359,6 +359,17 @@ public:
     this->Internals->ExecutionArray.AllocateArrayForOutput(
           this->Internals->ControlArray, numberOfValues);
 
+    // We are assuming that the calling code will fill the array using the
+    // iterators we are returning, so go ahead ad mark the execution array as
+    // having valid data. (A previous version of this class had a separate call
+    // to mark the array as filled, but that was onerous to call at the the
+    // right time and rather pointless since it is basically always the case
+    // that the array is going to be filled before anything else. In this
+    // implementation the only access to the array is through the iterators
+    // returned from this method, so you would have to work to invalidate this
+    // assumption anyway.
+    this->Internals->ExecutionArrayValid = true;
+
     return std::make_pair(this->Internals->ExecutionArray.GetIteratorBegin(),
                           this->Internals->ExecutionArray.GetIteratorEnd());
   }

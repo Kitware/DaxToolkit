@@ -165,7 +165,7 @@ void TestExecutionField(dax::exec::internal::FieldAccessInputTag)
 template<class FieldType>
 void TestExecutionField(dax::exec::internal::FieldAccessOutputTag)
 {
-  std::cout << "****Checking input field." << std::endl;
+  std::cout << "****Checking output field." << std::endl;
 
   typedef typename FieldType::ValueType ValueType;
 
@@ -189,7 +189,7 @@ void TestExecutionField(dax::exec::internal::FieldAccessOutputTag)
     dax::exec::internal::FieldAccess::SetField(field,i,ValueType(i),dummywork);
     }
 
-  std::cout << "Checking that field comes back to control.";
+  std::cout << "Checking that field comes back to control." << std::endl;
   typedef typename dax::cont::ArrayHandle<ValueType>::IteratorConstControl
       IteratorType;
   dax::Id i = 0;
