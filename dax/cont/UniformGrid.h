@@ -135,6 +135,8 @@ public:
   /// specialization to handle the case that there is no real array.
   struct PointCoordinatesArrayPlaceholder {  };
 
+  typedef PointCoordinatesArrayPlaceholder PointCoordinatesType;
+
   PointCoordinatesArrayPlaceholder GetPointCoordinates() const {
     return PointCoordinatesArrayPlaceholder();
   }

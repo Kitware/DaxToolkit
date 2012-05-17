@@ -19,10 +19,8 @@
 // TODO: This should be auto-generated.
 
 #include <dax/Types.h>
-#include <dax/internal/DataArray.h>
-#include <dax/internal/GridTopologys.h>
+#include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
-#include <dax/exec/internal/ErrorHandler.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ErrorControlBadValue.h>
@@ -33,26 +31,27 @@
 
 namespace dax {
 namespace exec {
+namespace internal {
 namespace kernel {
 
-template<class CellType, typename FieldType>
+template<class CellType, typename FieldType, class ExecAdapter>
 struct SquareParameters
 {
-  typename CellType::TopologyType grid;
-  dax::exec::Field<FieldType> inField;
-  dax::exec::Field<FieldType> outField;
+  typename CellType::template GridStructures<ExecAdapter>::TopologyType grid;
+  dax::exec::FieldIn<FieldType, ExecAdapter> inField;
+  dax::exec::FieldOut<FieldType, ExecAdapter> outField;
 };
 
-template<class CellType, typename FieldType>
+template<class CellType, typename FieldType, class ExecAdapter>
 struct Square
 {
   DAX_EXEC_EXPORT void operator()(
-      SquareParameters<CellType, FieldType> parameters,
+      SquareParameters<CellType, FieldType, ExecAdapter> parameters,
       dax::Id index,
-      const dax::exec::internal::ErrorHandler &errorHandler)
+      typename ExecAdapter::ErrorHandler &errorHandler)
   {
-    dax::exec::WorkMapField<CellType> work(parameters.grid, errorHandler);
-    work.SetIndex(index);
+    dax::exec::WorkMapField<CellType, ExecAdapter>
+        work(parameters.grid, index, errorHandler);
     dax::worklet::Square(work,
                          parameters.inField,
                          parameters.outField);
@@ -61,23 +60,28 @@ struct Square
 
 }
 }
-} // dax::exec::kernel
+}
+} // dax::exec::internal::kernel
 
 namespace dax {
 namespace cont {
 namespace worklet {
 
-template<class GridType, typename FieldType, class DeviceAdapter>
-inline void Square(const GridType &grid,
-                   dax::cont::ArrayHandle<FieldType,DeviceAdapter> &inHandle,
-                   dax::cont::ArrayHandle<FieldType,DeviceAdapter> &outHandle)
+template<class GridType,
+         typename FieldType,
+         template <typename> class Container,
+         class DeviceAdapter>
+DAX_CONT_EXPORT void Square(
+    const GridType &grid,
+    const dax::cont::ArrayHandle<FieldType,Container,DeviceAdapter> &inHandle,
+    dax::cont::ArrayHandle<FieldType,Container,DeviceAdapter> &outHandle)
 {
   dax::Id fieldSize;
-  if (inHandle.GetNumberOfEntries() == grid.GetNumberOfPoints())
+  if (inHandle.GetNumberOfValues() == grid.GetNumberOfPoints())
     {
     fieldSize = grid.GetNumberOfPoints();
     }
-  else if (inHandle.GetNumberOfEntries() == grid.GetNumberOfCells())
+  else if (inHandle.GetNumberOfValues() == grid.GetNumberOfCells())
     {
     fieldSize = grid.GetNumberOfCells();
     }
@@ -87,28 +91,36 @@ inline void Square(const GridType &grid,
           "Number of array entries neither cells nor points.");
     }
 
-  typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
-  GridPackageType gridPackage(grid);
+  typedef typename DeviceAdapter::template ExecutionAdapter<Container>
+      ExecAdapter;
 
-  dax::cont::internal::ExecutionPackageFieldInput<FieldType, DeviceAdapter>
-      inField(inHandle, fieldSize);
+  typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
+  ExecutionTopologyType execTopology
+      = dax::cont::internal::ExecutionPackageGrid::GetExecutionObject(grid);
 
-  dax::cont::internal::ExecutionPackageFieldOutput<FieldType, DeviceAdapter>
-      outField(outHandle, fieldSize);
+  dax::exec::FieldPointIn<FieldType, ExecAdapter> fieldIn
+      = dax::cont::internal::ExecutionPackageField
+        ::GetExecutionObject<dax::exec::FieldPointIn>(inHandle, fieldSize);
 
-  typedef typename GridPackageType::ExecutionCellType CellType;
+  dax::exec::FieldCellOut<FieldType, ExecAdapter> fieldOut
+      = dax::cont::internal::ExecutionPackageField
+        ::GetExecutionObject<dax::exec::FieldCellOut>(outHandle, fieldSize);
 
-  typedef dax::exec::kernel::SquareParameters<CellType, FieldType> Parameters;
-  Parameters parameters = {
-    gridPackage.GetExecutionObject(),
-    inField.GetExecutionObject(),
-    outField.GetExecutionObject()
-  };
+  typedef typename GridType::CellType CellType;
+
+  typedef dax::exec::internal::kernel
+      ::SquareParameters<CellType,FieldType,ExecAdapter> Parameters;
+
+  Parameters parameters;
+  parameters.grid = execTopology;
+  parameters.inField = fieldIn;
+  parameters.outField = fieldOut;
 
   DeviceAdapter::Schedule(
-        dax::exec::kernel::Square<CellType, FieldType>(),
+        dax::exec::internal::kernel::Square<CellType, FieldType, ExecAdapter>(),
         parameters,
-        fieldSize);
+        fieldSize,
+        ExecAdapter());
 }
 
 }

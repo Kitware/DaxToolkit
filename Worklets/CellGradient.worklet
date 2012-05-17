@@ -25,12 +25,12 @@
 namespace dax {
 namespace worklet {
 
-template<class CellType>
+template<class CellType, class ExecutionAdapter>
 DAX_WORKLET void CellGradient(
-    DAX_IN dax::exec::WorkMapCell<CellType> &work,
-    DAX_IN const dax::exec::FieldCoordinates points,
-    DAX_IN const dax::exec::FieldPoint<dax::Scalar> &point_attribute,
-    DAX_OUT dax::exec::FieldCell<dax::Vector3> &cell_attribute)
+    dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
+    dax::exec::FieldCoordinatesIn<ExecutionAdapter> points,
+    dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_attribute,
+    dax::exec::FieldCellOut<dax::Vector3, ExecutionAdapter> &cell_attribute)
 {
   dax::Vector3 parametricCellCenter = dax::make_Vector3(0.5, 0.5, 0.5);
   CellType cell = work.GetCell();
