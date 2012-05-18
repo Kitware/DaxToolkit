@@ -72,14 +72,35 @@ private:
     return arrayHandle.PrepareForOutput(numValues).first;
   }
 
+  template<class FieldType,
+           template <typename> class Container,
+           class DeviceAdapter>
+  DAX_CONT_EXPORT static
+  FieldType GetExecutionObjectInternal(
+      const dax::cont::ArrayHandle<FieldType, Container, DeviceAdapter> &arrayHandle,
+      dax::Id numValues,
+      dax::exec::internal::FieldAccessInputTag)
+  {
+    typename FieldType::IteratorType fieldIterator
+        = GetExecutionIterator<FieldType>(arrayHandle,
+                                          numValues,
+                                          typename FieldType::AccessTag());
+    return FieldType(fieldIterator);
+  }
+
 public:
   /// Given an ArrayHandle, returns a Field object that can be used in the
   /// execution environment.
   ///
-  template<class FieldType, class ArrayHandleType>
+  template<typename FieldType,
+           template <typename> class Container,
+           class DeviceAdapter>
   DAX_CONT_EXPORT static
-  FieldType GetExecutionObject(ArrayHandleType &arrayHandle,
-                               dax::Id numValues)
+  FieldType GetExecutionObject(
+      dax::cont::ArrayHandle<typename FieldType::ValueType,
+                             Container,
+                             DeviceAdapter> &arrayHandle,
+      dax::Id numValues)
   {
     typename FieldType::IteratorType fieldIterator
         = GetExecutionIterator<FieldType>(arrayHandle,
@@ -91,13 +112,115 @@ public:
   /// Given an ArrayHandle, returns a Field object that can be used in the
   /// execution environment.
   ///
-  template<class FieldType, class ArrayHandleType, class GridType>
+  template<typename ValueType,
+           template <typename, class> class FieldType,
+           template <typename> class Container,
+           class DeviceAdapter>
   DAX_CONT_EXPORT static
-  FieldType GetExecutionObject(ArrayHandleType &arrayHandle,
-                               const GridType &grid)
+  FieldType<ValueType,
+            typename DeviceAdapter::template ExeutionAdapter<Container> >
+  GetExecutionObject(
+      dax::cont::ArrayHandle<ValueType, Container, DeviceAdapter> &arrayHandle,
+      dax::Id numValues)
+  {
+    typedef typename DeviceAdapter::template ExeutionAdapter<Container>
+        ExecutionAdapter;
+    return GetExecutionObject<FieldType<ValueType, ExecutionAdapter> >(
+          arrayHandle, numValues);
+  }
+
+  /// Given an ArrayHandle, returns a Field object that can be used in the
+  /// execution environment.
+  ///
+  template<typename ValueType,
+           template <class> class FieldType,
+           template <typename> class Container,
+           class DeviceAdapter>
+  DAX_CONT_EXPORT static
+  FieldType<typename DeviceAdapter::template ExecutionAdapter<Container> >
+  GetExecutionObject(
+      dax::cont::ArrayHandle<ValueType, Container, DeviceAdapter> &arrayHandle,
+      dax::Id numValues)
+  {
+    typedef typename DeviceAdapter::template ExecutionAdapter<Container>
+        ExecutionAdapter;
+    return GetExecutionObject<FieldType<ExecutionAdapter> >(
+          arrayHandle, numValues);
+  }
+
+  /// Given an ArrayHandle, returns a Field object that can be used in the
+  /// execution environment.
+  ///
+  template<class FieldType,
+           template <typename> class Container,
+           class DeviceAdapter>
+  DAX_CONT_EXPORT static
+  FieldType GetExecutionObject(
+      const dax::cont::ArrayHandle<FieldType, Container, DeviceAdapter> &arrayHandle,
+      dax::Id numValues)
+  {
+    return GetExecutionObjectInternal(arrayHandle,
+                                      numValues,
+                                      typename FieldType::AccessTag());
+  }
+
+  /// Given an ArrayHandle, returns a Field object that can be used in the
+  /// execution environment.
+  ///
+  template<typename FieldType,
+           template <typename> class Container,
+           class DeviceAdapter,
+           class GridType>
+  DAX_CONT_EXPORT static
+  FieldType GetExecutionObject(
+      dax::cont::ArrayHandle<typename FieldType::ValueType,
+                             Container,
+                             DeviceAdapter> &arrayHandle,
+      const GridType &grid)
   {
     dax::Id numValues = GetFieldSize(grid, FieldType::AssociationTag());
     return GetExecutionObject<FieldType>(arrayHandle, numValues);
+  }
+
+  /// Given an ArrayHandle, returns a Field object that can be used in the
+  /// execution environment.
+  ///
+  template<typename ValueType,
+           template <typename, class> class FieldType,
+           template <typename> class Container,
+           class DeviceAdapter,
+           class GridType>
+  DAX_CONT_EXPORT static
+  FieldType<ValueType,
+            typename DeviceAdapter::template ExeutionAdapter<Container> >
+  GetExecutionObject(
+      dax::cont::ArrayHandle<ValueType, Container, DeviceAdapter> &arrayHandle,
+      const GridType &grid)
+  {
+    typedef typename DeviceAdapter::template ExeutionAdapter<Container>
+        ExecutionAdapter;
+    return GetExecutionObject<FieldType<ValueType, ExecutionAdapter> >(
+          arrayHandle, grid);
+  }
+
+  /// Given an ArrayHandle, returns a Field object that can be used in the
+  /// execution environment.
+  ///
+  template<typename ValueType,
+           template <class> class FieldType,
+           template <typename> class Container,
+           class DeviceAdapter,
+           class GridType>
+  DAX_CONT_EXPORT static
+  FieldType<typename DeviceAdapter::template ExecutionAdapter<Container> >
+  GetExecutionObject(
+      dax::cont::ArrayHandle<ValueType, Container, DeviceAdapter> &arrayHandle,
+      const GridType &grid)
+  {
+    typedef typename DeviceAdapter::template ExecutionAdapter<Container>
+        ExecutionAdapter;
+    return GetExecutionObject<FieldType<ExecutionAdapter> >(
+          arrayHandle, grid);
   }
 
   /// Special case for uniform grid.
