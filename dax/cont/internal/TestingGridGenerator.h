@@ -79,7 +79,7 @@ public:
   dax::Vector3 GetPointCoordinates(dax::Id index)
   {
     // Not an efficient implementation, but it's test code so who cares?
-    dax::cont::UniformGrid uniform;
+    dax::cont::UniformGrid<> uniform;
     this->BuildGrid(uniform);
     return uniform.ComputePointCoordinates(index);
   }
@@ -92,7 +92,7 @@ public:
   }
 
 private:
-  void BuildGrid(dax::cont::UniformGrid &grid)
+  void BuildGrid(dax::cont::UniformGrid<> &grid)
     {
     grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
     }
@@ -100,7 +100,7 @@ private:
   void BuildGrid(dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> &grid)
     {
     //we need to make a volume grid
-    dax::cont::UniformGrid uniform;
+    dax::cont::UniformGrid<> uniform;
     this->BuildGrid(uniform);
 
     //copy the point info over to the unstructured grid

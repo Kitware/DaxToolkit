@@ -85,6 +85,8 @@ public:
   typedef typename ArrayManagerExecutionType::IteratorType IteratorExecution;
   typedef typename ArrayManagerExecutionType::IteratorConstType
       IteratorConstExecution;
+  typedef typename DeviceAdapter
+      ::template ExecutionAdapter<ArrayContainerControl> ExecutionAdapter;
 
   /// Constructs an empty ArrayHandle. Typically used for output or
   /// intermediate arrays that will be filled by a Dax algorithm.

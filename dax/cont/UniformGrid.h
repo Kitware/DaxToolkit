@@ -16,6 +16,9 @@
 #ifndef __dax__cont__UniformGrid_h
 #define __dax__cont__UniformGrid_h
 
+#include <dax/cont/ArrayContainerControl.h>
+#include <dax/cont/DeviceAdapter.h>
+
 #include <dax/exec/CellVoxel.h>
 
 #include <dax/exec/internal/TopologyUniform.h>
@@ -31,6 +34,9 @@ struct UniformGridTag {  };
 /// aligned and has uniform spacing between grid points in every dimension. The
 /// grid can be shifted and scaled in space by defining and origin and spacing.
 ///
+template <template <typename> class ArrayContainerControl
+              = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
+          class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER>
 class UniformGrid
 {
 private:
@@ -130,10 +136,15 @@ public:
     return this->ComputePointCoordinates(this->ComputePointLocation(index));
   }
 
-  /// This class just serves as a tag so that a uniform grid can be templated
-  /// as any other grid with points. Eventually there needs to be
-  /// specialization to handle the case that there is no real array.
-  struct PointCoordinatesArrayPlaceholder {  };
+  /// This class just serves as a placeholde (in lieu of something like an
+  /// ArrayHandle) so that a uniform grid can be templated as any other grid
+  /// with points. Eventually there needs to be specialization to handle the
+  /// case that there is no real array.
+  ///
+  struct PointCoordinatesArrayPlaceholder {
+    typedef typename DeviceAdapter
+        ::template ExecutionAdapter<ArrayContainerControl> ExecutionAdapter;
+  };
 
   typedef PointCoordinatesArrayPlaceholder PointCoordinatesType;
 

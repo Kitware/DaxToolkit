@@ -72,18 +72,6 @@ private:
     return arrayHandle.PrepareForOutput(numValues).first;
   }
 
-  // Special case for point array of uniform grids.  Needs no actual data.
-  template<class FieldType>
-  DAX_CONT_EXPORT static
-  typename FieldType::IteratorType
-  GetExecutionIterator(
-      const dax::cont::UniformGrid::PointCoordinatesArrayPlaceholder &,
-      dax::Id,
-      dax::exec::internal::FieldAccessInputTag)
-  {
-    return FieldType::IteratorType();
-  }
-
 public:
   /// Given an ArrayHandle, returns a Field object that can be used in the
   /// execution environment.
@@ -110,6 +98,22 @@ public:
   {
     dax::Id numValues = GetFieldSize(grid, FieldType::AssociationTag());
     return GetExecutionObject<FieldType>(arrayHandle, numValues);
+  }
+
+  /// Special case for uniform grid.
+  ///
+  template<template <typename> class Container, class DeviceAdapter>
+  DAX_CONT_EXPORT static
+  dax::exec::FieldCoordinatesIn<
+      typename DeviceAdapter::template ExecutionAdapter<Container> >
+  GetExecutionObject(
+      typename dax::cont::UniformGrid<Container, DeviceAdapter>
+      ::PointCoordinatesArrayPlaceholder &,
+      const dax::cont::UniformGrid<Container, DeviceAdapter> &)
+  {
+    typedef typename DeviceAdapter::template ExecutionAdapter<Container>
+        ExecutionAdapter;
+    return dax::exec::FieldCoordinatesIn<ExecutionAdapter>();
   }
 };
 
