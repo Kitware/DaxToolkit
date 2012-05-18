@@ -39,8 +39,6 @@ class ArrayHandle;
 #include <dax/cont/Assert.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ErrorControlBadValue.h>
-#include <dax/cont/internal/IteratorContainer.h>
-#include <dax/cont/internal/IteratorPolymorphic.h>
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
@@ -422,7 +420,7 @@ private:
       // an external point of view.
       InternalStruct *internals
           = const_cast<InternalStruct*>(this->Internals.get());
-      internals->ExecutionArray.RetreiveOutputData(internals->ControlArray);
+      internals->ExecutionArray.RetrieveOutputData(internals->ControlArray);
       internals->ControlArrayValid = true;
       }
     else

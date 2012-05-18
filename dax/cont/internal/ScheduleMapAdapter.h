@@ -74,13 +74,15 @@ DAX_CONT_EXPORT void ScheduleMap(
       ::template ExecutionAdapter<ArrayContainerControl> ExecutionAdapter;
   typedef typename ExecutionAdapter
       ::template FieldStructures<dax::Id>::IteratorType IteratorType;
+  typedef typename ExecutionAdapter
+      ::template FieldStructures<dax::Id>::IteratorConstType IteratorConstType;
 
-  dax::exec::internal::kernel::ScheduleMappingAdapter<Functor, IteratorType>
+  dax::exec::internal::kernel::ScheduleMappingAdapter<Functor,IteratorConstType>
       mapFunctor(
         functor,
         values.PrepareForInput().first);
 
-  DeviceAdapter::Schedule(mapFunctor,parameters,size);
+  DeviceAdapter::Schedule(mapFunctor,parameters,size,ExecutionAdapter());
 }
 
 }}} // namespace dax::cont::internal

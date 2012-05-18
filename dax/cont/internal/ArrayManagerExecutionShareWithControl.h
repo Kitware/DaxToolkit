@@ -93,7 +93,7 @@ public:
   /// this class's iterators should already be written to the give \c
   /// controlArray (under correct operation).
   ///
-  DAX_CONT_EXPORT void RetreiveOutputData(
+  DAX_CONT_EXPORT void RetrieveOutputData(
       ArrayContainerControl<ValueType> &controlArray) const
   {
     DAX_ASSERT_CONT(this->ConstIteratorsValid);
