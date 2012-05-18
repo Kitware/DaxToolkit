@@ -72,6 +72,9 @@ private:
   typedef dax::cont
       ::ArrayHandle<dax::Scalar, ArrayContainerControlBasic, DeviceAdapter>
       ScalarArrayHandle;
+  typedef dax::cont
+      ::ArrayHandle<dax::Vector3, ArrayContainerControlBasic, DeviceAdapter>
+      Vector3ArrayHandle;
 
 public:
   // Cuda kernels have to be public (in Cuda 4.0).
@@ -492,8 +495,8 @@ private:
          pointIndex < grid->GetNumberOfPoints();
          pointIndex++)
       {
-      field[pointIndex]
-          = dax::dot(grid->GetPointCoordinates(pointIndex), trueGradient);
+      dax::Vector3 coordinates = grid.GetPointCoordinates(pointIndex);
+      field[pointIndex] = dax::dot(coordinates, trueGradient);
       }
     ScalarArrayHandle fieldHandle(&field.front(), &field.back() + 1);
 
@@ -560,16 +563,16 @@ private:
          pointIndex < grid->GetNumberOfPoints();
          pointIndex++)
       {
-      field[pointIndex]
-          = dax::dot(grid->GetPointCoordinates(pointIndex), trueGradient);
+      dax::Vector3 coordinates = grid.GetPointCoordinates(pointIndex);
+      field[pointIndex] = dax::dot(coordinates, trueGradient);
       }
     ScalarArrayHandle fieldHandle(&field.front(), &field.back() + 1);
 
-    ScalarArrayHandle gradientHandle;
+    Vector3ArrayHandle gradientHandle;
 
     std::cout << "Running CellGradient worklet" << std::endl;
     dax::cont::worklet::CellGradient(grid.GetRealGrid(),
-                                     grid->GetPointCoordinatesArray(),
+                                     grid->GetPointCoordinates(),
                                      fieldHandle,
                                      gradientHandle);
 

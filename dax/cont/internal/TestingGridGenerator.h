@@ -58,20 +58,31 @@ public:
     this->BuildGrid(this->Grid);
     }
 
-  // Description:
-  // Enable pointer-like dereference syntax. Returns a pointer to the contained
-  // object.
+  /// Enable pointer-like dereference syntax. Returns a pointer to the
+  /// contained object.
+  ///
   const GridType* operator->() const
     {
     return &this->Grid;
     }
 
-  // Description:
-  // Get a raw pointer to the contained object.
+  /// Get a raw pointer to the contained object.
+  ///
   const GridType& GetRealGrid() const
     {
     return this->Grid;
     }
+
+  /// This convienience function allows you to generate the point coordinate
+  /// field (since there is no consistent way to get it from the grid itself.
+  ///
+  dax::Vector3 GetPointCoordinates(dax::Id index)
+  {
+    // Not an efficient implementation, but it's test code so who cares?
+    dax::cont::UniformGrid uniform;
+    this->BuildGrid(uniform);
+    return uniform.ComputePointCoordinates(index);
+  }
 
   ~TestGrid()
   {
