@@ -20,15 +20,22 @@
 #undef DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
 #endif
 
-#define DAX_DEFAULT_ARRAY_CONTAINER_CONTROL ::dax::cont::ArrayContainerControlBasic
+#define DAX_DEFAULT_ARRAY_CONTAINER_CONTROL \
+  ::dax::cont::ArrayContainerControlTagBasic
 
 #include <dax/Types.h>
+#include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/Assert.h>
 #include <dax/cont/ErrorControlBadValue.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
 
 namespace dax {
 namespace cont {
+
+/// A tag for the basic implementation of an ArrayContainerControl object.
+struct ArrayContainerControlTagBasic;
+
+namespace internal {
 
 /// A basic implementation of an ArrayContainerControl object.
 ///
@@ -38,7 +45,7 @@ namespace cont {
 /// the Dax Tuple classes.
 ///
 template <typename ValueT>
-class ArrayContainerControlBasic
+class ArrayContainerControl<ValueT, ArrayContainerControlTagBasic>
 {
 public:
   typedef ValueT ValueType;
@@ -57,9 +64,9 @@ private:
 
 public:
 
-  ArrayContainerControlBasic() : Array(NULL), NumberOfValues(0) { }
+  ArrayContainerControl() : Array(NULL), NumberOfValues(0) { }
 
-  ~ArrayContainerControlBasic()
+  ~ArrayContainerControl()
   {
     this->ReleaseResources();
   }
@@ -152,7 +159,7 @@ public:
   ///
   /// This method returns the pointer to the array held by this array. It then
   /// clears the internal array pointer to NULL, thereby ensuring that the
-  /// ArrayContainerControlBasic will never deallocate the array. This is
+  /// ArrayContainerControl will never deallocate the array. This is
   /// helpful for taking a reference for an array created internally by Dax and
   /// not having to keep a Dax object around. Obviously the caller becomes
   /// responsible for destroying the memory.
@@ -167,12 +174,14 @@ public:
 
 private:
   // Not implemented.
-  ArrayContainerControlBasic(const ArrayContainerControlBasic<ValueType> &src);
-  void operator=(const ArrayContainerControlBasic<ValueType> &src);
+  ArrayContainerControl(const ArrayContainerControl<ValueType, ArrayContainerControlTagBasic> &src);
+  void operator=(const ArrayContainerControl<ValueType, ArrayContainerControlTagBasic> &src);
 
   ValueType *Array;
   dax::Id NumberOfValues;
 };
+
+} // namespace internal
 
 }
 } // namespace dax::cont

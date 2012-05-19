@@ -27,7 +27,7 @@
 //
 namespace dax { namespace cont {
 template <typename T,
-          template <typename> class ArrayContainerControl,
+          class ArrayContainerControlTag,
           class DeviceAdapter>
 class ArrayHandle;
 } }
@@ -68,13 +68,14 @@ namespace cont {
 /// allocated memory is released.
 ///
 template <typename T,
-          template <typename> class ArrayContainerControl
+          class ArrayContainerControlTag
               = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
           class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER>
 class ArrayHandle
 {
 private:
-  typedef ArrayContainerControl<T> ArrayContainerControlType;
+  typedef ArrayContainerControl<T, ArrayContainerControlType>
+      ArrayContainerControlType;
   typedef typename DeviceAdapter::template ArrayManagerExecution
       <T, ArrayContainerControl> ArrayManagerExecutionType;
 public:

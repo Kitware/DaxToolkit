@@ -40,8 +40,6 @@ class DeviceAdapterSerial;
 
 namespace dax {
 namespace cont {
-//forward declare the ArrayHandle before we use it.
-template<typename T, template <typename> class ArrayContainerControl, class DeviceAdapter> class ArrayHandle;
 
 /// A simple implementation of a DeviceAdapter that can be used for debuging.
 /// The scheduling will simply run everything in a serial loop, which is easy

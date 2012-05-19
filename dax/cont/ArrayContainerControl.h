@@ -16,47 +16,57 @@
 #ifndef __dax__cont__ArrayContainerControl_h
 #define __dax__cont__ArrayContainerControl_h
 
-#ifndef DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
-#include <dax/cont/ArrayContainerControlBasic.h>
-#endif // DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
-
 namespace dax {
 namespace cont {
 
 #ifdef DAX_DOXYGEN_ONLY
-
-/// \brief Abstract interface to client memory allocation.
+/// \brief A tag specifying client memory allocation.
 ///
-/// An ArrayContainerControl is a class that behaves like a container class
-/// (sort of like std::vector but more basic). The class
-/// dax::cont::ArrayContainerControl does not actually exist. Rather, this
-/// documentation is provided to describe the interface for an
-/// ArrayContainerControl. Loading the dax/cont/ArrayContainerControl.h header
-/// will set a default array container. The default array container can be
-/// overloaded by including the header file for a differt array container (for
-/// example, ArrayContainerControlBasic.h) or simply defining the macro
-/// DAX_DEFAULT_ARRAY_CONTAINER_CONTROL. This overloading should be done
-/// \em before loading in any other Dax header files (with the exception of a
+/// An ArrayContainerControl tag specifies how an ArrayHandle allocates and
+/// frees memory. The tag ArrayContainerControlTag___ does not actually exist.
+/// Rather, this documentation is provided to describe how array containers are
+/// specified. Loading the dax/cont/ArrayContainerControl.h header will set a
+/// default array container. The default array container can be overloaded by
+/// including the header file for a differt array container (for example,
+/// ArrayContainerControlBasic.h) or simply defining the macro
+/// DAX_DEFAULT_ARRAY_CONTAINER_CONTROL. This overloading should be done \em
+/// before loading in any other Dax header files (with the exception of a
 /// DeviceAdapter header file). Failing to do so could create inconsistencies
 /// in the default adapter used among classes.
 ///
-/// User code external to Dax is free to make its own ArrayContainerControl
-/// class. This is a good way to get Dax to read data directly in and out of
-/// arrays from other libraries. However, care should be taken when creating an
+/// User code external to Dax is free to make its own ArrayContainerControlTag.
+/// This is a good way to get Dax to read data directly in and out of arrays
+/// from other libraries. However, care should be taken when creating an
 /// ArrayContainerControl. One particular problem that is likely is a container
 /// that "constructs" all the items in the array. If done incorrectly, then
-/// memory of the array can be incorrectly bound to the wrong process.  If you
-/// do provide your own ArrayContainerControl, please be diligent in comparing
-/// its performance to the ArrayContainerControlBasic.
+/// memory of the array can be incorrectly bound to the wrong process. If you
+/// do provide your own ArrayContainerControlTag, please be diligent in
+/// comparing its performance to the ArrayContainerControlTagBasic.
 ///
-template <typename ValueT>
+/// To implement your own ArrayContainerControlTag, you first must create a tag
+/// class (an empty struct) defining your tag (i.e. struct
+/// ArrayContainerControlTagMyAlloc { };). Then provide a partial template
+/// specialization of dax::cont::internal::ArrayContainerControl for your new
+/// tag.
+///
+struct ArrayContainerControlTag___ {  };
+#endif
+
+namespace internal {
+
+/// This templated class must be partially specialized for each
+/// ArrayContainerControlTag created, which will define the implementation for
+/// that tag.
+///
+template<typename T, class ArrayContainerControlTag>
 class ArrayContainerControl
+#ifdef DAX_DOXYGEN_ONLY
 {
 public:
 
   /// The type of each item in the array.
   ///
-  typedef ValueT ValueType;
+  typedef T ValueType;
 
   /// \brief The type of iterator objects for the array.
   ///
@@ -116,11 +126,20 @@ public:
   /// resources should also be released when the ArrayContainerControl class is
   /// destroyed.
   void ReleaseResources();
-};
-
+}
+#else
+;
 #endif
+
+} // namespace internal
 
 }
 } // namespace dax::cont
+
+// This is put at the bottom of the header so that the ArrayContainerControl
+// template is declared before any implementations are called.
+#ifndef DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
+#include <dax/cont/ArrayContainerControlBasic.h>
+#endif // DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
 
 #endif //__dax__cont__ArrayContainerControl_h
