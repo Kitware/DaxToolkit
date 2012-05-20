@@ -50,7 +50,7 @@ namespace cont {
 /// tag.
 ///
 struct ArrayContainerControlTag___ {  };
-#endif
+#endif // DAX_DOXYGEN_ONLY
 
 namespace internal {
 
@@ -126,10 +126,10 @@ public:
   /// resources should also be released when the ArrayContainerControl class is
   /// destroyed.
   void ReleaseResources();
-}
-#else
+};
+#else // DAX_DOXYGEN_ONLY
 ;
-#endif
+#endif // DAX_DOXYGEN_ONLY
 
 } // namespace internal
 
