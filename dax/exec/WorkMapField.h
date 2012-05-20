@@ -39,14 +39,14 @@ public:
 private:
   const TopologyType GridTopology;
   const dax::Id Index;
-  const typename ExecutionAdapter::ErrorHandler ErrorHandler;
+  const ExecutionAdapter Adapter;
 
 public:
   DAX_EXEC_CONT_EXPORT WorkMapField(
       const TopologyType &gs,
       dax::Id index,
-      const typename ExecutionAdapter::ErrorHandler &errorHandler)
-    : GridTopology(gs), Index(index), ErrorHandler(errorHandler)
+      const ExecutionAdapter &executionAdapter)
+    : GridTopology(gs), Index(index), Adapter(executionAdapter)
   { }
 
   template<typename T, class Access, class Assoc>
@@ -90,7 +90,7 @@ public:
 
   DAX_EXEC_EXPORT void RaiseError(const char *message) const
   {
-    this->ErrorHandler.RaiseError(message);
+    this->Adapter.RaiseError(message);
   }
 };
 

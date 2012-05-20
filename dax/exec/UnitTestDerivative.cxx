@@ -36,9 +36,6 @@ struct LinearField {
   }
 };
 
-/// An (invalid) error handler to pass to work constructors.
-TestExecutionAdapter::ErrorHandler ErrorHandler;
-
 } // Anonymous namespace
 
 const dax::Id bufferSize = 1024*1024;
@@ -59,7 +56,7 @@ CreatePointField(
   for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
     {
     dax::exec::WorkMapField<CellType, TestExecutionAdapter>
-        work(topology, pointIndex, ErrorHandler);
+        work(topology, pointIndex, TestExecutionAdapter());
     dax::Vector3 coordinates = work.GetFieldValue(coordField);
     dax::Scalar fieldValue = fieldValues.GetValue(coordinates);
     fieldBuffer[pointIndex] = fieldValue;
@@ -114,7 +111,7 @@ static void TestDerivativeVoxel(
   for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
     {
     dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
-        workCell(gridstruct, cellIndex, ErrorHandler);
+        workCell(gridstruct, cellIndex, TestExecutionAdapter());
     TestDerivativeCell(workCell, coordField, scalarField, fieldValues);
     }
 }

@@ -45,15 +45,15 @@ public:
 
 private:
   const CellType Cell;
-  const typename ExecutionAdapter::ErrorHandler ErrorHandler;
+  const ExecutionAdapter Adapter;
 
 public:
   DAX_EXEC_EXPORT WorkMapCell(
       const TopologyType &GridTopology,
       dax::Id index,
-      const typename ExecutionAdapter::ErrorHandler &errorHandler)
+      const ExecutionAdapter &executionAdapter)
     : Cell(GridTopology, index),
-      ErrorHandler(errorHandler) { }
+      Adapter(executionAdapter) { }
 
   DAX_EXEC_EXPORT const CellType GetCell() const
   {
@@ -107,7 +107,7 @@ public:
 
   DAX_EXEC_EXPORT void RaiseError(const char *message) const
   {
-    this->ErrorHandler.RaiseError(message);
+    this->Adapter.RaiseError(message);
   }
 };
 

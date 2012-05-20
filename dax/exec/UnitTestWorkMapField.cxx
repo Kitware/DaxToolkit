@@ -22,13 +22,6 @@
 #include <algorithm>
 #include <vector>
 
-namespace {
-
-/// An (invalid) error handler to pass to work constructors.
-TestExecutionAdapter::ErrorHandler ErrorHandler;
-
-}  // Anonymous namespace
-
 static void TestMapFieldVoxel(
   dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter> work,
   const dax::exec::internal::TopologyUniform &gridstruct,
@@ -84,7 +77,7 @@ static void TestMapFieldVoxel()
   for (dax::Id flatIndex = 0; flatIndex < 1000; flatIndex++)
     {
     dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter>
-        work(gridstruct, flatIndex, ErrorHandler);
+        work(gridstruct, flatIndex, TestExecutionAdapter());
     TestMapFieldVoxel(work, gridstruct, flatIndex);
     }
   }
@@ -98,7 +91,7 @@ static void TestMapFieldVoxel()
   for (dax::Id flatIndex = 0; flatIndex < 1500; flatIndex++)
     {
     dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter>
-        work(gridstruct, flatIndex, ErrorHandler);
+        work(gridstruct, flatIndex, TestExecutionAdapter());
     TestMapFieldVoxel(work, gridstruct, flatIndex);
     }
   }

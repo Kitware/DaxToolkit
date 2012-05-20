@@ -54,7 +54,7 @@ private:
   const InputCellType InputCell;
   const dax::Id OutputIndex;
   const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> OutputConnectionField;
-  const typename ExecutionAdapter::ErrorHandler ErrorHandler;
+  const ExecutionAdapter Adapter;
 public:
 
   DAX_EXEC_EXPORT WorkGenerateTopology(
@@ -62,11 +62,11 @@ public:
       dax::Id inputIndex,
       const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> &outConnectionField,
       dax::Id outputIndex,
-      const typename ExecutionAdapter::ErrorHandler &errorHandler)
+      const ExecutionAdapter &executionAdapter)
     : InputCell(gridStructure, inputIndex),
       OutputIndex(outputIndex),
       OutputConnectionField(outConnectionField),
-      ErrorHandler(errorHandler)
+      Adapter(executionAdapter)
     { }
 
   /// Get the topology of the input cell
@@ -100,7 +100,7 @@ public:
 
   DAX_EXEC_EXPORT void RaiseError(const char* message) const
   {
-    this->ErrorHandler.RaiseError(message);
+    this->Adapter.RaiseError(message);
   }
 };
 

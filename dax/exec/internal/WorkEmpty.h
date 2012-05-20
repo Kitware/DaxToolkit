@@ -31,16 +31,16 @@ template<class ExecutionAdapter>
 class WorkEmpty
 {
 private:
-  const typename ExecutionAdapter::ErrorHandler ErrorHandler;
+  const ExecutionAdapter Adapter;
 
 public:
   DAX_EXEC_CONT_EXPORT WorkEmpty(
-      const typename ExecutionAdapter::ErrorHandler &errorHandler)
-    : ErrorHandler(errorHandler) { }
+      const ExecutionAdapter &executionAdapter)
+    : Adapter(executionAdapter) { }
 
   DAX_EXEC_EXPORT void RaiseError(const char *message) const
   {
-    this->ErrorHandler.RaiseError(message);
+    this->Adapter.RaiseError(message);
   }
 };
 

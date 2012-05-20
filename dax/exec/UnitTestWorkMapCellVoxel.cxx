@@ -28,13 +28,6 @@ extern void TestCellVoxel(
     dax::Id cellFlatIndex);
 
 
-namespace {
-
-/// An (invalid) error handler to pass to work constructors.
-TestExecutionAdapter::ErrorHandler ErrorHandler;
-
-}  // Anonymous namespace
-
 static void TestMapCellVoxel(
   dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter> &work,
   const dax::exec::internal::TopologyUniform &gridstruct,
@@ -79,7 +72,7 @@ static void TestMapCellVoxel()
        flatIndex++)
     {
     dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
-        work(gridstruct, flatIndex, ErrorHandler);
+        work(gridstruct, flatIndex, TestExecutionAdapter());
     TestMapCellVoxel(work, gridstruct, flatIndex);
     }
   }
@@ -95,7 +88,7 @@ static void TestMapCellVoxel()
        flatIndex++)
     {
     dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
-        work(gridstruct, flatIndex, ErrorHandler);
+        work(gridstruct, flatIndex, TestExecutionAdapter());
     TestMapCellVoxel(work, gridstruct, flatIndex);
     }
   }

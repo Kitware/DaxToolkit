@@ -45,17 +45,17 @@ public:
 private:
   const CellType Cell;
   const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> NewCellCountField;
-  const typename ExecutionAdapter::ErrorHandler ErrorHandler;
+  const ExecutionAdapter Adapter;
 public:
 
   DAX_EXEC_EXPORT WorkDetermineNewCellCount(
       const TopologyType &gridStructure,
       dax::Id cellIndex,
       const dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> &cellCount,
-      const typename ExecutionAdapter::ErrorHandler &errorHandler)
+      const ExecutionAdapter &executionAdapter)
     : Cell(gridStructure, cellIndex),
       NewCellCountField(cellCount),
-      ErrorHandler(errorHandler)
+      Adapter(executionAdapter)
     { }
 
   DAX_EXEC_EXPORT const CellType GetCell() const
@@ -107,7 +107,7 @@ public:
 
   DAX_EXEC_EXPORT void RaiseError(const char* message)
   {
-    this->ErrorHandler.RaiseError(message);
+    this->Adapter.RaiseError(message);
   }
 };
 

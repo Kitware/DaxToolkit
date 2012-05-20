@@ -18,8 +18,9 @@
 
 #include <dax/internal/Testing.h>
 
-struct TestExecutionAdapter
+class TestExecutionAdapter
 {
+public:
   template <typename T>
   struct FieldStructures
   {
@@ -27,14 +28,10 @@ struct TestExecutionAdapter
     typedef const T *IteratorConstType;
   };
 
-  class ErrorHandler
+  void RaiseError(const char *message) const
   {
-  public:
-    void RaiseError(const char *message) const
-    {
-      DAX_TEST_FAIL(message);
-    }
-  };
+    DAX_TEST_FAIL(message);
+  }
 };
 
 #endif //__dax_exec_internal_TestExecutionAdapter_h

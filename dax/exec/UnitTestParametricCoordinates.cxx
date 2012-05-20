@@ -21,13 +21,6 @@
 
 #include <dax/internal/Testing.h>
 
-namespace {
-
-/// An (invalid) error handler to pass to work constructors.
-TestExecutionAdapter::ErrorHandler ErrorHandler;
-
-}  // Anonymous namespace
-
 template<class WorkType, class CellType, class ExecutionAdapter>
 static void CompareCoordinates(
     const WorkType &work,
@@ -105,7 +98,7 @@ static void TestPCoordsVoxel()
   for (dax::Id flatIndex = 0; flatIndex < 1000; flatIndex++)
     {
     dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
-        work(gridstruct, flatIndex, ErrorHandler);
+        work(gridstruct, flatIndex, TestExecutionAdapter());
     TestPCoordsVoxel(work, coordField);
     }
   }
@@ -119,7 +112,7 @@ static void TestPCoordsVoxel()
   for (dax::Id flatIndex = 0; flatIndex < 1500; flatIndex++)
     {
     dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
-        work(gridstruct, flatIndex, ErrorHandler);
+        work(gridstruct, flatIndex, TestExecutionAdapter());
     TestPCoordsVoxel(work, coordField);
     }
   }

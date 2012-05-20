@@ -30,13 +30,6 @@ make_ugrid(const dax::exec::internal::TopologyUniform& uniform,
            std::vector<dax::Vector3>& points,
            std::vector<dax::Id>& topology);
 
-namespace {
-
-/// An (invalid) error handler to pass to work constructors.
-TestExecutionAdapter::ErrorHandler ErrorHandler;
-
-}  // Anonymous namespace
-
 
 static void TestMapCellHexahedron(
   dax::exec::WorkMapCell<dax::exec::CellHexahedron, TestExecutionAdapter> &work,
@@ -91,7 +84,7 @@ static void TestMapCellHexahedron()
        flatIndex++)
     {
     dax::exec::WorkMapCell<dax::exec::CellHexahedron, TestExecutionAdapter>
-        work(ugrid, flatIndex, ErrorHandler);
+        work(ugrid, flatIndex, TestExecutionAdapter());
     TestMapCellHexahedron(work, gridstruct, flatIndex);
     }
   }
@@ -108,7 +101,7 @@ static void TestMapCellHexahedron()
        flatIndex++)
     {
     dax::exec::WorkMapCell<dax::exec::CellHexahedron, TestExecutionAdapter>
-        work(ugrid, flatIndex, ErrorHandler);
+        work(ugrid, flatIndex, TestExecutionAdapter());
     TestMapCellHexahedron(work, gridstruct, flatIndex);
     }
   }
