@@ -18,18 +18,23 @@
 
 #include <dax/Types.h>
 
-#ifdef DAX_DOXYGEN_ONLY
+namespace dax {
+namespace exec {
+namespace internal {
 
 /// \brief Adapter for execution environment.
-///
-/// This class does not actually exist. Various implementations are created by
-/// DeviceAdapters.
 ///
 /// Classes in the execution environment use this class in their template
 /// arguments. This class allows the execution environment to adapt to
 /// different devices.
 ///
+/// Files in the dax::exec package do not need to include this file.  The
+/// ExecutionAdapter will be provided by the control environment when
+/// scheduling occurs.
+///
+template <class ArrayContainerControlTag, class DeviceAdapterTag>
 class ExecutionAdapter
+#ifdef DAX_DOXYGEN_ONLY
 {
 public:
   /// This structure contains iterators that can be used to access the arrays
@@ -52,7 +57,12 @@ public:
   ///
   void RaiseError(const char *message) const;
 };
-
+#else // DAX_DOXYGEN_ONLY
+;
 #endif // DAX_DOXYGEN_ONLY
+
+}
+}
+} // namespace dax::exec::internal
 
 #endif //__dax_exec_internal_ExecutionAdapter_h

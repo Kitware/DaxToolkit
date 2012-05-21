@@ -41,6 +41,8 @@ struct DeviceAdapterTagSerial {  };
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/internal/ArrayManagerExecutionShareWithControl.h>
 
+#include <dax/exec/internal/ExecutionAdapter.h>
+
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/utility/enable_if.hpp>
 
@@ -64,32 +66,43 @@ public:
   typedef typename Superclass::IteratorConstType IteratorConstType;
 };
 
-namespace detail {
+}
+}
+} // namespace dax::cont::internal
+
+namespace dax {
+namespace exec {
+namespace internal {
 
 template <class ArrayContainerControlTag>
-class ExecutionAdapterSerial
+class ExecutionAdapter<ArrayContainerControlTag,
+                       dax::cont::DeviceAdapterTagSerial>
 {
 public:
   template <typename T>
   struct FieldStructures
   {
-    typedef typename ArrayManagerExecution<T,
-                                           ArrayContainerControlTag,
-                                           DeviceAdapterTagSerial>
+    typedef typename dax::cont::internal::ArrayManagerExecution<
+        T,ArrayContainerControlTag,dax::cont::DeviceAdapterTagSerial>
         ::IteratorType IteratorType;
-    typedef typename ArrayManagerExecution<T,
-                                           ArrayContainerControlTag,
-                                           DeviceAdapterTagSerial>
+    typedef typename dax::cont::internal::ArrayManagerExecution<
+        T,ArrayContainerControlTag,dax::cont::DeviceAdapterTagSerial>
         ::IteratorConstType IteratorConstType;
   };
 
-  DAX_CONT_EXPORT void RaiseError(const char *message) const
+  DAX_EXEC_EXPORT void RaiseError(const char *message) const
   {
     throw dax::cont::ErrorExecution(message);
   }
 };
 
-} // namespace detail
+}
+}
+} // namespace dax::exec::internal
+
+namespace dax {
+namespace cont {
+namespace internal {
 
 template<typename T, class Container>
 DAX_CONT_EXPORT void Copy(
@@ -204,8 +217,8 @@ public:
   {
     this->Functor(this->Parameters,
                   index,
-                  dax::cont::internal::detail
-                  ::ExecutionAdapterSerial<ArrayContainerControlTag>());
+                  dax::exec::internal::ExecutionAdapter<
+                      ArrayContainerControlTag,DeviceAdapterTagSerial>());
   }
 
 private:

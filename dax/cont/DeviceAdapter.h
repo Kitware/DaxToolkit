@@ -17,7 +17,7 @@
 #ifndef __dax_cont_DeviceAdapter_h
 #define __dax_cont_DeviceAdapter_h
 
-#include <dax/internal/ExportMacros.h>
+#include <dax/exec/internal/ExecutionAdapter.h>
 
 namespace dax {
 namespace cont {
@@ -36,8 +36,9 @@ namespace cont {
 /// loading in any other Dax header files. Failing to do so could create
 /// inconsistencies in the default adapter used among classes.
 ///
-/// See the DeviceAdapter.h file tfor documentation on all the functions and
-/// classes that must be overloaded/specialized to create a new device adapter.
+/// See the DeviceAdapter.h and ExecutionAdapter.h files for documentation on
+/// all the functions and classes that must be overloaded/specialized to create
+/// a new device adapter.
 ///
 struct DeviceAdapterTag___ {  };
 #endif //DAX_DOXYGEN_ONLY
