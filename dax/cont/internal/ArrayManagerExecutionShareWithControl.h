@@ -19,6 +19,7 @@
 #include <dax/Types.h>
 
 #include <dax/cont/Assert.h>
+#include <dax/cont/ArrayContainerControl.h>
 
 #include <algorithm>
 
@@ -32,14 +33,16 @@ namespace internal {
 /// calls to an \c ArrayContainerControl class and uses the array allocated
 /// there.
 ///
-template<typename T, template <typename> class ArrayContainerControl>
+template<typename T, class ArrayContainerControlTag>
 class ArrayManagerExecutionShareWithControl
 {
 public:
   typedef T ValueType;
-  typedef typename ArrayContainerControl<ValueType>::IteratorType IteratorType;
-  typedef typename ArrayContainerControl<ValueType>::IteratorConstType
-      IteratorConstType;
+  typedef dax::cont::internal
+      ::ArrayContainerControl<ValueType, ArrayContainerControlTag>
+      ContainerType;
+  typedef typename ContainerType::IteratorType IteratorType;
+  typedef typename ContainerType::IteratorConstType IteratorConstType;
 
   DAX_CONT_EXPORT ArrayManagerExecutionShareWithControl()
     : IteratorsValid(false) { }
@@ -74,9 +77,8 @@ public:
 
   /// Actually just allocates memory in the given \p controlArray.
   ///
-  DAX_CONT_EXPORT void AllocateArrayForOutput(
-      ArrayContainerControl<ValueType> &controlArray,
-      dax::Id numberOfValues)
+  DAX_CONT_EXPORT void AllocateArrayForOutput(ContainerType &controlArray,
+                                              dax::Id numberOfValues)
   {
     controlArray.Allocate(numberOfValues);
 
@@ -93,8 +95,7 @@ public:
   /// this class's iterators should already be written to the give \c
   /// controlArray (under correct operation).
   ///
-  DAX_CONT_EXPORT void RetrieveOutputData(
-      ArrayContainerControl<ValueType> &controlArray) const
+  DAX_CONT_EXPORT void RetrieveOutputData(ContainerType &controlArray) const
   {
     DAX_ASSERT_CONT(this->ConstIteratorsValid);
     DAX_ASSERT_CONT(
@@ -172,9 +173,9 @@ public:
 private:
   // Not implemented.
   ArrayManagerExecutionShareWithControl(
-      ArrayManagerExecutionShareWithControl<T, ArrayContainerControl> &);
+      ArrayManagerExecutionShareWithControl<T, ArrayContainerControlTag> &);
   void operator=(
-      ArrayManagerExecutionShareWithControl<T, ArrayContainerControl> &);
+      ArrayManagerExecutionShareWithControl<T, ArrayContainerControlTag> &);
 
   IteratorType BeginIterator;
   IteratorType EndIterator;

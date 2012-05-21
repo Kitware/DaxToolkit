@@ -58,7 +58,7 @@ class ArrayManagerExecution<T, ArrayContainerControlTag, DeviceAdapterTagSerial>
 {
 public:
   typedef dax::cont::internal::ArrayManagerExecutionShareWithControl
-      <T, ArrayContainerControl> Superclass;
+      <T, ArrayContainerControlTag> Superclass;
   typedef typename Superclass::ValueType ValueType;
   typedef typename Superclass::IteratorType IteratorType;
   typedef typename Superclass::IteratorConstType IteratorConstType;
@@ -173,21 +173,12 @@ DAX_CONT_EXPORT void LowerBounds(
     }
 }
 
-template<class Container>
-DAX_CONT_EXPORT void LowerBounds(
-    const dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>& input,
-    dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>& values_output,
-    DeviceAdapterTagSerial)
-{
-  // This is safe because it is a serial operation.
-  DeviceAdapterSerial::LowerBounds(input, values_output, values_output);
-}
-
 namespace detail {
 
 // This runs in the execution environment.
 template<class FunctorType,
-         class ParametersType>
+         class ParametersType,
+         class ArrayContainerControlTag>
 class ScheduleKernelSerial
 {
 public:
@@ -202,7 +193,8 @@ public:
   {
     this->Functor(this->Parameters,
                   index,
-                  dax::cont::internal::detail::ExecutionAdapterSerial());
+                  dax::cont::internal::detail
+                  ::ExecutionAdapterSerial<ArrayContainerControlTag>());
   }
 
 private:
@@ -221,7 +213,8 @@ static void Schedule(Functor functor,
                      ArrayContainerControlTag,
                      DeviceAdapterTagSerial)
 {
-  detail::ScheduleKernelSerial<Functor, Parameters> kernel(functor, parameters);
+  detail::ScheduleKernelSerial<Functor, Parameters, ArrayContainerControlTag>
+      kernel(functor, parameters);
 
   std::for_each(
         ::boost::counting_iterator<dax::Id>(0),
