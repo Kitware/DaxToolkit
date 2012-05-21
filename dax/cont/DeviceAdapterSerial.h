@@ -173,6 +173,17 @@ DAX_CONT_EXPORT void LowerBounds(
     }
 }
 
+template<class Container>
+DAX_CONT_EXPORT void LowerBounds(
+    const dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>
+        &input,
+    dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>
+        &values_output,
+    DeviceAdapterTagSerial)
+{
+  LowerBounds(input, values_output, values_output, DeviceAdapterTagSerial());
+}
+
 namespace detail {
 
 // This runs in the execution environment.

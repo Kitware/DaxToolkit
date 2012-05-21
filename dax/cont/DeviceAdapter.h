@@ -79,8 +79,6 @@ DAX_CONT_EXPORT T InclusiveScan(
 /// the first place the item can be inserted in the ordered \c input array and
 /// stores the index in \c output.
 ///
-/// \note \c values and \c output can be the same array.
-///
 /// \par Requirements:
 /// \arg \c input must already be sorted
 ///
@@ -91,8 +89,6 @@ DAX_CONT_EXPORT void LowerBounds(
     dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapter>& output,
     DeviceAdapterTag___);
 
-#endif // DAX_DOXYGEN_ONLY
-
 /// \brief A special version of LowerBounds that does an in place operation.
 ///
 /// This version of lower bounds performs an in place operation where each
@@ -100,16 +96,11 @@ DAX_CONT_EXPORT void LowerBounds(
 /// where it occurs. Because this is an in place operation, the of the arrays
 /// is limited to dax::Id.
 ///
-template<class Container, class DeviceAdapter>
+template<class Container>
 DAX_CONT_EXPORT void LowerBounds(
-    const dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapter>& input,
-    dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapter>& values_output,
-    DeviceAdapter)
-{
-  LowerBounds(input, values_output, values_output, DeviceAdapter());
-}
-
-#ifdef DAX_DOXYGEN_ONLY
+    const dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTag___>& input,
+    dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTag___>& values_output,
+    DeviceAdapterTag___);
 
 /// \brief Schedule many instances of a function to run on concurrent threads.
 ///
@@ -240,14 +231,14 @@ public:
   /// then this method may save the iterators to be returned in the \c
   /// GetIterator* methods.
   ///
-  void LoadDataForInput(
+  DAX_CONT_EXPORT void LoadDataForInput(
       typename ContainerType::IteratorType beginIterator,
       typename ContainerType::IteratorType endIterator);
 
   /// Const version of LoadDataForInput.  Functionally equivalent to the
   /// non-const version except that the non-const versions of GetIterator*
   /// may not be available.
-  void LoadDataForInput(
+  DAX_CONT_EXPORT void LoadDataForInput(
       typename ContainerType::IteratorConstType beginIterator,
       typename ContainerType::IteratorConstType endIterator);
 
@@ -256,8 +247,8 @@ public:
   /// data using the given ArrayContainerExecution and remember its iterators
   /// so that it can be used directly in the exeuction environment.
   ///
-  void AllocateArrayForOutput(ContainerType &controlArray,
-                              dax::Id numberOfValues);
+  DAX_CONT_EXPORT void AllocateArrayForOutput(ContainerType &controlArray,
+                                              dax::Id numberOfValues);
 
   /// Allocates data in the given ArrayContainerControl and copies data held
   /// in the execution environment (managed by this class) into the control
@@ -265,7 +256,7 @@ public:
   /// This method should only be called after AllocateArrayForOutput is
   /// called.
   ///
-  void RetrieveOutputData(ContainerType &controlArray) const;
+  DAX_CONT_EXPORT void RetrieveOutputData(ContainerType &controlArray) const;
 
   /// Similar to RetrieveOutputData except that instead of writing to the
   /// controlArray itself, it writes to the given control environment
@@ -274,7 +265,7 @@ public:
   /// and exeuction have seperate memory spaces).
   ///
   template <class IteratorTypeControl>
-  void CopyInto(IteratorTypeControl dest) const;
+  DAX_CONT_EXPORT void CopyInto(IteratorTypeControl dest) const;
 
   /// \brief Reduces the size of the array without changing its values.
   ///
@@ -285,34 +276,34 @@ public:
   /// (returned from GetNumberOfValues). That is, this method can only be used
   /// to shorten the array, not lengthen.
   ///
-  void Shrink(dax::Id numberOfValues);
+  DAX_CONT_EXPORT void Shrink(dax::Id numberOfValues);
 
   /// Returns an iterator that can be used in the execution environment. This
   /// iterator was defined in either LoadDataForInput or
   /// AllocateArrayForOutput. If control and environment share memory space,
   /// this class may return the iterator from the \c controlArray.
   ///
-  IteratorType GetIteratorBegin();
+  DAX_CONT_EXPORT IteratorType GetIteratorBegin();
 
   /// Returns an iterator that can be used in the execution environment. This
   /// iterator was defined in either LoadDataForInput or
   /// AllocateArrayForOutput. If control and environment share memory space,
   /// this class may return the iterator from the \c controlArray.
   ///
-  IteratorType GetIteratorEnd();
+  DAX_CONT_EXPORT IteratorType GetIteratorEnd();
 
   /// Const version of GetIteratorBegin.
   ///
-  IteratorConstType GetIteratorConstBegin() const;
+  DAX_CONT_EXPORT IteratorConstType GetIteratorConstBegin() const;
 
   /// Const version of GetIteratorEnd.
   ///
-  IteratorConstType GetIteratorConstEnd() const;
+  DAX_CONT_EXPORT IteratorConstType GetIteratorConstEnd() const;
 
   /// Frees any resources (i.e. memory) allocated for the exeuction
   /// environment, if any.
   ///
-  void ReleaseResources();
+  DAX_CONT_EXPORT void ReleaseResources();
 };
 #else // DAX_DOXGEN_ONLY
 ;
@@ -322,6 +313,9 @@ public:
 
 }
 } // namespace dax::cont
+
+// This is at the bottom of the file so that the templated class prototypes
+// are declared before including the device adapter implementation.
 
 #ifndef DAX_DEFAULT_DEVICE_ADAPTER
 #ifdef DAX_CUDA

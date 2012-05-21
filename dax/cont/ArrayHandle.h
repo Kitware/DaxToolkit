@@ -70,14 +70,15 @@ namespace cont {
 template <typename T,
           class ArrayContainerControlTag
               = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
-          class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER>
+          class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER>
 class ArrayHandle
 {
 private:
-  typedef ArrayContainerControl<T, ArrayContainerControlType>
+  typedef dax::cont::internal::ArrayContainerControl<T,ArrayContainerControlTag>
       ArrayContainerControlType;
-  typedef typename DeviceAdapter::template ArrayManagerExecution
-      <T, ArrayContainerControl> ArrayManagerExecutionType;
+  typedef dax::cont::internal
+      ::ArrayManagerExecution<T,ArrayContainerControlType,DeviceAdapterTag>
+      ArrayManagerExecutionType;
 public:
   typedef T ValueType;
   typedef typename ArrayContainerControlType::IteratorType IteratorControl;
@@ -86,8 +87,6 @@ public:
   typedef typename ArrayManagerExecutionType::IteratorType IteratorExecution;
   typedef typename ArrayManagerExecutionType::IteratorConstType
       IteratorConstExecution;
-  typedef typename DeviceAdapter
-      ::template ExecutionAdapter<ArrayContainerControl> ExecutionAdapter;
 
   /// Constructs an empty ArrayHandle. Typically used for output or
   /// intermediate arrays that will be filled by a Dax algorithm.
