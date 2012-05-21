@@ -48,10 +48,10 @@ struct Square
   DAX_EXEC_EXPORT void operator()(
       SquareParameters<CellType, FieldType, ExecAdapter> parameters,
       dax::Id index,
-      typename ExecAdapter::ErrorHandler &errorHandler)
+      const ExecAdapter &execAdapter) const
   {
     dax::exec::WorkMapField<CellType, ExecAdapter>
-        work(parameters.grid, index, errorHandler);
+        work(parameters.grid, index, execAdapter);
     dax::worklet::Square(work,
                          parameters.inField,
                          parameters.outField);
@@ -69,7 +69,7 @@ namespace worklet {
 
 template<class GridType,
          typename FieldType,
-         template <typename> class Container,
+         class Container,
          class DeviceAdapter>
 DAX_CONT_EXPORT void Square(
     const GridType &grid,
@@ -91,7 +91,7 @@ DAX_CONT_EXPORT void Square(
           "Number of array entries neither cells nor points.");
     }
 
-  typedef typename DeviceAdapter::template ExecutionAdapter<Container>
+  typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
       ExecAdapter;
 
   typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
@@ -99,12 +99,12 @@ DAX_CONT_EXPORT void Square(
       = dax::cont::internal::ExecutionPackageGrid::GetExecutionObject(grid);
 
   dax::exec::FieldIn<FieldType, ExecAdapter> fieldIn
-      = dax::cont::internal::ExecutionPackageField
-        ::GetExecutionObject<dax::exec::FieldIn>(inHandle, fieldSize);
+      = dax::cont::internal::ExecutionPackageField<dax::exec::FieldIn>(
+        inHandle, fieldSize);
 
   dax::exec::FieldOut<FieldType, ExecAdapter> fieldOut
-      = dax::cont::internal::ExecutionPackageField
-        ::GetExecutionObject<dax::exec::FieldOut>(outHandle, fieldSize);
+      = dax::cont::internal::ExecutionPackageField<dax::exec::FieldOut>(
+        outHandle, fieldSize);
 
   typedef typename GridType::CellType CellType;
 
@@ -116,11 +116,12 @@ DAX_CONT_EXPORT void Square(
   parameters.inField = fieldIn;
   parameters.outField = fieldOut;
 
-  DeviceAdapter::Schedule(
+  dax::cont::internal::Schedule(
         dax::exec::internal::kernel::Square<CellType, FieldType, ExecAdapter>(),
         parameters,
         fieldSize,
-        ExecAdapter());
+        Container(),
+        DeviceAdapter());
 }
 
 }

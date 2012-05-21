@@ -32,17 +32,17 @@ struct ScheduleMappingAdapter
                                          ExecutionIteratorType lookup)
     : Function(functor), LookupTable(lookup) { }
 
-  template<class Parameters, class ErrorHandler>
+  template<class Parameters, class ExecHandler>
   DAX_EXEC_EXPORT void operator()(Parameters parameters,
                                   dax::Id index,
-                                  ErrorHandler& errorHandler )
+                                  const ExecHandler& execHandler)
   {
     //send the index as the key, and the LookupTable[index] as value
 
     this->Function(parameters,
                    index,
                    *(this->LookupTable + index),
-                   errorHandler);
+                   execHandler);
   }
 private:
   const Functor Function;
@@ -60,18 +60,20 @@ namespace internal {
 
 template<class Functor,
          class Parameters,
-         template <typename> class ArrayContainerControl,
-         class DeviceAdapter>
+         class ArrayContainerControlTag,
+         class DeviceAdapterTag>
 DAX_CONT_EXPORT void ScheduleMap(
     Functor functor,
     Parameters parameters,
-    dax::cont::ArrayHandle<dax::Id,ArrayContainerControl,DeviceAdapter> values)
+    dax::cont::ArrayHandle<dax::Id,ArrayContainerControlTag,DeviceAdapterTag>
+        values)
 {
   //package up the ids to extract so we can do valid lookups
   const dax::Id size(values.GetNumberOfValues());
 
-  typedef typename DeviceAdapter
-      ::template ExecutionAdapter<ArrayContainerControl> ExecutionAdapter;
+  typedef dax::exec::internal
+      ::ExecutionAdapter<ArrayContainerControlTag,DeviceAdapterTag>
+      ExecutionAdapter;
   typedef typename ExecutionAdapter
       ::template FieldStructures<dax::Id>::IteratorType IteratorType;
   typedef typename ExecutionAdapter
@@ -82,7 +84,11 @@ DAX_CONT_EXPORT void ScheduleMap(
         functor,
         values.PrepareForInput().first);
 
-  DeviceAdapter::Schedule(mapFunctor,parameters,size,ExecutionAdapter());
+  dax::cont::internal::Schedule(mapFunctor,
+                                parameters,
+                                size,
+                                ArrayContainerControlTag(),
+                                DeviceAdapterTag());
 }
 
 }}} // namespace dax::cont::internal

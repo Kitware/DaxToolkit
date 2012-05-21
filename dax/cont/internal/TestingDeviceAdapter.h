@@ -48,32 +48,33 @@ namespace internal {
 /// This class has a single static member, Run, that tests the templated
 /// DeviceAdapter for conformance.
 ///
-template<class DeviceAdapter>
+template<class DeviceAdapterTag>
 struct TestingDeviceAdapter
 {
 private:
-  typedef typename DeviceAdapter::template
-      ExecutionAdapter<ArrayContainerControlBasic> ExecutionAdapter;
+  typedef dax::exec::internal::ExecutionAdapter<
+      ArrayContainerControlTagBasic,
+      DeviceAdapterTag> ExecutionAdapter;
 
   typedef typename ExecutionAdapter::template FieldStructures<dax::Id>
       ::IteratorType IdIteratorType;
   typedef typename ExecutionAdapter::template FieldStructures<dax::Id>
       ::IteratorConstType IdIteratorConstType;
-  typedef typename ExecutionAdapter::ErrorHandler ErrorHandler;
 
   typedef dax::cont
-      ::ArrayHandle<dax::Id, ArrayContainerControlBasic, DeviceAdapter>
+      ::ArrayHandle<dax::Id, ArrayContainerControlTagBasic, DeviceAdapterTag>
         IdArrayHandle;
-  typedef typename DeviceAdapter
-      ::template ArrayManagerExecution<dax::Id, ArrayContainerControlBasic>
+  typedef dax::cont::internal::ArrayManagerExecution<
+      dax::Id, ArrayContainerControlTagBasic, DeviceAdapterTag>
       IdArrayManagerExecution;
-  typedef ArrayContainerControlBasic<dax::Id> IdContainer;
+  typedef ArrayContainerControl<dax::Id, ArrayContainerControlTagBasic>
+      IdContainer;
 
   typedef dax::cont
-      ::ArrayHandle<dax::Scalar, ArrayContainerControlBasic, DeviceAdapter>
+      ::ArrayHandle<dax::Scalar,ArrayContainerControlTagBasic,DeviceAdapterTag>
       ScalarArrayHandle;
   typedef dax::cont
-      ::ArrayHandle<dax::Vector3, ArrayContainerControlBasic, DeviceAdapter>
+      ::ArrayHandle<dax::Vector3,ArrayContainerControlTagBasic,DeviceAdapterTag>
       Vector3ArrayHandle;
 
 public:
@@ -84,7 +85,9 @@ public:
     DAX_EXEC_EXPORT void operator()(
         std::pair<IdIteratorConstType, IdIteratorType> arrays,
         dax::Id index,
-        ErrorHandler &)
+        const dax::exec::internal
+        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
+    const
     {
       *(arrays.second + index) = *(arrays.first + index);
     }
@@ -92,9 +95,12 @@ public:
 
   struct ClearArrayKernel
   {
-    DAX_EXEC_EXPORT void operator()(IdIteratorType array,
-                                    dax::Id index,
-                                    ErrorHandler &)
+    DAX_EXEC_EXPORT void operator()(
+        IdIteratorType array,
+        dax::Id index,
+        const dax::exec::internal
+        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
+    const
     {
       *(array + index) = OFFSET;
     }
@@ -102,9 +108,12 @@ public:
 
   struct ClearArrayMapKernel
   {
-    DAX_EXEC_EXPORT void operator()(IdIteratorType array,
-                                    dax::Id, dax::Id value,
-                                    ErrorHandler &)
+    DAX_EXEC_EXPORT void operator()(
+        IdIteratorType array,
+        dax::Id, dax::Id value,
+        const dax::exec::internal
+        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
+    const
     {
       *(array + value) = OFFSET;
     }
@@ -112,9 +121,12 @@ public:
 
   struct AddArrayKernel
   {
-    DAX_EXEC_EXPORT void operator()(IdIteratorType array,
-                                    dax::Id index,
-                                    ErrorHandler &)
+    DAX_EXEC_EXPORT void operator()(
+        IdIteratorType array,
+        dax::Id index,
+        const dax::exec::internal
+        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
+    const
     {
       *(array + index) += index;
     }
@@ -123,11 +135,15 @@ public:
   struct OneErrorKernel
   {
     DAX_EXEC_EXPORT void operator()(
-        dax::Id, dax::Id index, ErrorHandler &errorHandler)
+        dax::Id,
+        dax::Id index,
+        const dax::exec::internal
+        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag>
+        &adapter) const
     {
       if (index == ARRAY_SIZE/2)
         {
-        errorHandler.RaiseError(ERROR_MESSAGE);
+        adapter.RaiseError(ERROR_MESSAGE);
         }
     }
   };
@@ -135,17 +151,24 @@ public:
   struct AllErrorKernel
   {
     DAX_EXEC_EXPORT void operator()(
-        dax::Id, dax::Id, ErrorHandler &errorHandler)
+        dax::Id,
+        dax::Id,
+        const dax::exec::internal
+        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag>
+        &adapter) const
     {
-      errorHandler.RaiseError(ERROR_MESSAGE);
+      adapter.RaiseError(ERROR_MESSAGE);
     }
   };
 
   struct OffsetPlusIndexKernel
   {
-    DAX_EXEC_EXPORT void operator()(IdIteratorType array,
-                                    dax::Id index,
-                                    ErrorHandler &)
+    DAX_EXEC_EXPORT void operator()(
+        IdIteratorType array,
+        dax::Id index,
+        const dax::exec::internal
+        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
+    const
     {
       *(array + index) = OFFSET + index;
     }
@@ -153,9 +176,12 @@ public:
 
   struct MarkOddNumbersKernel
   {
-    DAX_EXEC_EXPORT void operator()(IdIteratorType array,
-                                    dax::Id index,
-                                    ErrorHandler &)
+    DAX_EXEC_EXPORT void operator()(
+        IdIteratorType array,
+        dax::Id index,
+        const dax::exec::internal
+        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
+    const
     {
       *(array + index) = index%2;
     }
@@ -172,8 +198,8 @@ private:
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing ArrayManagerExecution" << std::endl;
 
-    typedef typename DeviceAdapter
-        ::template ArrayManagerExecution<dax::Scalar,ArrayContainerControlBasic>
+    typedef dax::cont::internal::ArrayManagerExecution<
+        dax::Scalar,ArrayContainerControlTagBasic,DeviceAdapterTag>
         ArrayManagerExecution;
 
     // Create original input array.
@@ -207,10 +233,11 @@ private:
     try
       {
       std::cout << "Do array allocation that should fail." << std::endl;
-      typename DeviceAdapter
-          ::template ArrayManagerExecution<dax::Vector4, ArrayContainerControlBasic>
+      dax::cont::internal::ArrayManagerExecution<
+          dax::Vector4,ArrayContainerControlTagBasic,DeviceAdapterTag>
           bigManager;
-      ArrayContainerControlBasic<dax::Vector4> supportArray;
+      dax::cont::internal::ArrayContainerControl<
+          dax::Vector4, ArrayContainerControlTagBasic> supportArray;
       bigManager.AllocateArrayForOutput(supportArray, -1);
       // It does not seem reasonable to get here.  The previous call should fail.
       DAX_TEST_FAIL("A ridiculously sized allocation succeeded.  Either there "
@@ -235,16 +262,18 @@ private:
     manager.AllocateArrayForOutput(container, ARRAY_SIZE);
 
     std::cout << "Running clear." << std::endl;
-    DeviceAdapter::Schedule(ClearArrayKernel(),
-                            manager.GetIteratorBegin(),
-                            ARRAY_SIZE,
-                            ExecutionAdapter());
+    dax::cont::internal::Schedule(ClearArrayKernel(),
+                                  manager.GetIteratorBegin(),
+                                  ARRAY_SIZE,
+                                  ArrayContainerControlTagBasic(),
+                                  DeviceAdapterTag());
 
     std::cout << "Running add." << std::endl;
-    DeviceAdapter::Schedule(AddArrayKernel(),
-                            manager.GetIteratorBegin(),
-                            ARRAY_SIZE,
-                            ExecutionAdapter());
+    dax::cont::internal::Schedule(AddArrayKernel(),
+                                  manager.GetIteratorBegin(),
+                                  ARRAY_SIZE,
+                                  ArrayContainerControlTagBasic(),
+                                  DeviceAdapterTag());
 
     std::cout << "Checking results." << std::endl;
     manager.RetrieveOutputData(container);
@@ -289,12 +318,13 @@ private:
 
     //construct the index array
 
-    DeviceAdapter::Schedule(MarkOddNumbersKernel(),
-                            array.PrepareForOutput(ARRAY_SIZE).first,
-                            ARRAY_SIZE,
-                            ExecutionAdapter());
+    dax::cont::internal::Schedule(MarkOddNumbersKernel(),
+                                  array.PrepareForOutput(ARRAY_SIZE).first,
+                                  ARRAY_SIZE,
+                                  ArrayContainerControlTagBasic(),
+                                  DeviceAdapterTag());
 
-    DeviceAdapter::StreamCompact(array,result);
+    dax::cont::internal::StreamCompact(array, result, DeviceAdapterTag());
     DAX_TEST_ASSERT(result.GetNumberOfValues() == array.GetNumberOfValues()/2,
                     "result of compacation has an incorrect size");
 
@@ -320,16 +350,18 @@ private:
     IdArrayHandle result;
 
     //construct the index array
-    DeviceAdapter::Schedule(OffsetPlusIndexKernel(),
-                            array.PrepareForOutput(ARRAY_SIZE).first,
-                            ARRAY_SIZE,
-                            ExecutionAdapter());
-    DeviceAdapter::Schedule(MarkOddNumbersKernel(),
-                            stencil.PrepareForOutput(ARRAY_SIZE).first,
-                            ARRAY_SIZE,
-                            ExecutionAdapter());
+    dax::cont::internal::Schedule(OffsetPlusIndexKernel(),
+                                  array.PrepareForOutput(ARRAY_SIZE).first,
+                                  ARRAY_SIZE,
+                                  ArrayContainerControlTagBasic(),
+                                  DeviceAdapterTag());
+    dax::cont::internal::Schedule(MarkOddNumbersKernel(),
+                                  stencil.PrepareForOutput(ARRAY_SIZE).first,
+                                  ARRAY_SIZE,
+                                  ArrayContainerControlTagBasic(),
+                                  DeviceAdapterTag());
 
-    DeviceAdapter::StreamCompact(array,stencil,result);
+    dax::cont::internal::StreamCompact(array,stencil,result,DeviceAdapterTag());
     DAX_TEST_ASSERT(result.GetNumberOfValues() == array.GetNumberOfValues()/2,
                     "result of compacation has an incorrect size");
 
@@ -357,10 +389,10 @@ private:
     IdArrayHandle handle(testData, testData + ARRAY_SIZE);
 
     IdArrayHandle temp;
-    DeviceAdapter::Copy(handle,temp);
-    DeviceAdapter::Sort(temp);
-    DeviceAdapter::Unique(temp);
-    DeviceAdapter::LowerBounds(temp,handle);
+    dax::cont::internal::Copy(handle,temp,DeviceAdapterTag());
+    dax::cont::internal::Sort(temp,DeviceAdapterTag());
+    dax::cont::internal::Unique(temp,DeviceAdapterTag());
+    dax::cont::internal::LowerBounds(temp,handle,DeviceAdapterTag());
     temp.ReleaseResources();
 
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
@@ -385,12 +417,12 @@ private:
     DAX_TEST_ASSERT(handle.GetNumberOfValues() == RANDOMDATA_SIZE,
                     "Handle incorrect size after setting new control data");
 
-    DeviceAdapter::Copy(handle,temp);
+    dax::cont::internal::Copy(handle,temp,DeviceAdapterTag());
     DAX_TEST_ASSERT(temp.GetNumberOfValues() == RANDOMDATA_SIZE,
                     "Copy failed");
-    DeviceAdapter::Sort(temp);
-    DeviceAdapter::Unique(temp);
-    DeviceAdapter::LowerBounds(temp,handle);
+    dax::cont::internal::Sort(temp,DeviceAdapterTag());
+    dax::cont::internal::Unique(temp,DeviceAdapterTag());
+    dax::cont::internal::LowerBounds(temp,handle,DeviceAdapterTag());
 
     DAX_TEST_ASSERT(handle.GetNumberOfValues() == RANDOMDATA_SIZE,
                     "LowerBounds returned incorrect size");
@@ -411,14 +443,17 @@ private:
 
     //construct the index array
     IdArrayHandle array;
-    DeviceAdapter::Schedule(ClearArrayKernel(),
-                            array.PrepareForOutput(ARRAY_SIZE),
-                            ARRAY_SIZE,
-                            ExecutionAdapter());
+    dax::cont::internal::Schedule(ClearArrayKernel(),
+                                  array.PrepareForOutput(ARRAY_SIZE).first,
+                                  ARRAY_SIZE,
+                                  ArrayContainerControlTagBasic(),
+                                  DeviceAdapterTag());
 
     //we know have an array whose sum is equal to OFFSET * ARRAY_SIZE,
     //let's validate that
-    dax::Id sum = DeviceAdapter::InclusiveScan(array,array);
+    dax::Id sum = dax::cont::internal::InclusiveScan(array,
+                                                     array,
+                                                     DeviceAdapterTag());
     DAX_TEST_ASSERT(sum == OFFSET * ARRAY_SIZE, "Got bad sum from Inclusive Scan");
 
     //each value should be equal to the Triangle Number of that index
@@ -443,10 +478,11 @@ private:
     std::string message;
     try
       {
-      DeviceAdapter::Schedule(OneErrorKernel(),
-                              0,
-                              ARRAY_SIZE,
-                              ExecutionAdapter());
+      dax::cont::internal::Schedule(OneErrorKernel(),
+                                    0,
+                                    ARRAY_SIZE,
+                                    ArrayContainerControlTagBasic(),
+                                    DeviceAdapterTag());
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -460,10 +496,11 @@ private:
     message = "";
     try
       {
-      DeviceAdapter::Schedule(AllErrorKernel(),
-                              0,
-                              ARRAY_SIZE,
-                              ExecutionAdapter());
+      dax::cont::internal::Schedule(AllErrorKernel(),
+                                    0,
+                                    ARRAY_SIZE,
+                                    ArrayContainerControlTagBasic(),
+                                    DeviceAdapterTag());
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -483,7 +520,8 @@ private:
     //use a scoped pointer that constructs and fills a grid of the
     //right type
     dax::cont::internal
-        ::TestGrid<GridType,ArrayContainerControlBasic,DeviceAdapter> grid(DIM);
+        ::TestGrid<GridType,ArrayContainerControlTagBasic,DeviceAdapterTag>
+        grid(DIM);
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
@@ -506,7 +544,7 @@ private:
     dax::cont::worklet::Square(grid.GetRealGrid(), fieldHandle, squareHandle);
 
     std::vector<dax::Scalar> square(grid->GetNumberOfPoints());
-    squareHandle.CopyInto(square);
+    squareHandle.CopyInto(square.begin());
 
     std::cout << "Checking result" << std::endl;
     for (dax::Id pointIndex = 0;
@@ -527,14 +565,15 @@ private:
     std::cout << "Testing map field worklet error" << std::endl;
 
     dax::cont::internal
-        ::TestGrid<GridType,ArrayContainerControlBasic,DeviceAdapter> grid(DIM);
+        ::TestGrid<GridType,ArrayContainerControlTagBasic,DeviceAdapterTag>
+        grid(DIM);
 
     std::cout << "Running field map worklet that errors" << std::endl;
     bool gotError = false;
     try
       {
       dax::cont::worklet::testing::FieldMapError
-          <GridType, ArrayContainerControlBasic, DeviceAdapter>
+          <GridType, ArrayContainerControlTagBasic, DeviceAdapterTag>
           (grid.GetRealGrid());
       }
     catch (dax::cont::ErrorExecution error)
@@ -554,7 +593,8 @@ private:
     std::cout << "Testing basic map cell worklet" << std::endl;
 
     dax::cont::internal
-        ::TestGrid<GridType,ArrayContainerControlBasic,DeviceAdapter> grid(DIM);
+        ::TestGrid<GridType,ArrayContainerControlTagBasic,DeviceAdapterTag>
+        grid(DIM);
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
@@ -597,14 +637,15 @@ private:
     std::cout << "Testing map cell worklet error" << std::endl;
 
     dax::cont::internal
-        ::TestGrid<GridType,ArrayContainerControlBasic,DeviceAdapter> grid(DIM);
+        ::TestGrid<GridType,ArrayContainerControlTagBasic,DeviceAdapterTag>
+        grid(DIM);
 
     std::cout << "Running cell map worklet that errors" << std::endl;
     bool gotError = false;
     try
       {
       dax::cont::worklet::testing::CellMapError
-          <GridType, ArrayContainerControlBasic, DeviceAdapter>
+          <GridType, ArrayContainerControlTagBasic, DeviceAdapterTag>
           (grid.GetRealGrid());
       }
     catch (dax::cont::ErrorExecution error)

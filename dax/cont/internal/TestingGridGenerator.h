@@ -30,9 +30,8 @@ namespace cont {
 namespace internal {
 
 template<class GridType,
-         template <typename> class ArrayContainerControl
-             = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
-         class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER>
+         class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
+         class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER>
 struct TestGrid
 {
 private:
@@ -139,9 +138,11 @@ private:
         }
       }
 
-    dax::cont::ArrayHandle<dax::Vector3, ArrayContainerControl, DeviceAdapter>
+    dax::cont::ArrayHandle<dax::Vector3,
+                           ArrayContainerControlTag,
+                           DeviceAdapterTag>
         ahPoints(&this->Info.points.front(), (&this->Info.points.back()) + 1);
-    dax::cont::ArrayHandle<dax::Id, ArrayContainerControl, DeviceAdapter>
+    dax::cont::ArrayHandle<dax::Id,ArrayContainerControlTag,DeviceAdapterTag>
         ahTopo(&this->Info.topology.front(), (&this->Info.topology.back()) + 1);
     grid = dax::cont::UnstructuredGrid<dax::exec::CellHexahedron>(ahTopo,
                                                                   ahPoints);

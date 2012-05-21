@@ -47,10 +47,10 @@ struct CellGradient {
   DAX_EXEC_EXPORT void operator()(
       CellGradientParameters<CellType, ExecAdapter> &parameters,
       dax::Id index,
-      typename ExecAdapter::ErrorHandler &errorHandler)
+      const ExecAdapter &execAdapter)
   {
     dax::exec::WorkMapCell<CellType, ExecAdapter> work(
-          parameters.grid, index, errorHandler);
+          parameters.grid, index, execAdapter);
     dax::worklet::CellGradient(work,
                                parameters.inCoordinates,
                                parameters.inField,
@@ -68,7 +68,7 @@ namespace cont {
 namespace worklet {
 
 template<class GridType,
-         template <typename> class Container,
+         class Container,
          class DeviceAdapter>
 DAX_CONT_EXPORT void CellGradient(
     const GridType &grid,
@@ -76,7 +76,7 @@ DAX_CONT_EXPORT void CellGradient(
     dax::cont::ArrayHandle<dax::Scalar, Container, DeviceAdapter> &inHandle,
     dax::cont::ArrayHandle<dax::Vector3, Container, DeviceAdapter> &outHandle)
 {
-  typedef typename DeviceAdapter::template ExecutionAdapter<Container>
+  typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
       ExecAdapter;
 
   typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
@@ -84,16 +84,16 @@ DAX_CONT_EXPORT void CellGradient(
       = dax::cont::internal::ExecutionPackageGrid::GetExecutionObject(grid);
 
   dax::exec::FieldCoordinatesIn<ExecAdapter> fieldCoordinates
-      = dax::cont::internal::ExecutionPackageField
-        ::GetExecutionObject<dax::exec::FieldCoordinatesIn>(points, grid);
+      = dax::cont::internal
+      ::ExecutionPackageField<dax::exec::FieldCoordinatesIn>(points, grid);
 
   dax::exec::FieldPointIn<dax::Scalar, ExecAdapter> fieldIn
-      = dax::cont::internal::ExecutionPackageField
-        ::GetExecutionObject<dax::exec::FieldPointIn>(inHandle, grid);
+      = dax::cont::internal::ExecutionPackageField<dax::exec::FieldPointIn>(
+        inHandle, grid);
 
   dax::exec::FieldCellOut<dax::Vector3, ExecAdapter> fieldOut
-      = dax::cont::internal::ExecutionPackageField
-        ::GetExecutionObject<dax::exec::FieldCellOut>(outHandle, grid);
+      = dax::cont::internal::ExecutionPackageField<dax::exec::FieldCellOut>(
+        outHandle, grid);
 
   typedef typename GridType::CellType CellType;
 
@@ -106,11 +106,12 @@ DAX_CONT_EXPORT void CellGradient(
   parameters.inField = fieldIn;
   parameters.outField = fieldOut;
 
-  DeviceAdapter::Schedule(
+  dax::cont::internal::Schedule(
         dax::exec::internal::kernel::CellGradient<CellType, ExecAdapter>(),
         parameters,
         grid.GetNumberOfCells(),
-        ExecAdapter());
+        Container(),
+        DeviceAdapter());
 }
 
 }

@@ -33,7 +33,7 @@ namespace dax {
 namespace cont {
 
 /// A tag for the basic implementation of an ArrayContainerControl object.
-struct ArrayContainerControlTagBasic;
+struct ArrayContainerControlTagBasic {  };
 
 namespace internal {
 
@@ -45,7 +45,7 @@ namespace internal {
 /// the Dax Tuple classes.
 ///
 template <typename ValueT>
-class ArrayContainerControl<ValueT, ArrayContainerControlTagBasic>
+class ArrayContainerControl<ValueT, dax::cont::ArrayContainerControlTagBasic>
 {
 public:
   typedef ValueT ValueType;

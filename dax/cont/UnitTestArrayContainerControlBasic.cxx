@@ -29,7 +29,8 @@ const dax::Id ARRAY_SIZE = 10;
 template <typename T>
 struct TemplatedTests
 {
-  typedef dax::cont::ArrayContainerControlBasic<T> ArrayContainerType;
+  typedef dax::cont::internal::ArrayContainerControl<
+      T, dax::cont::ArrayContainerControlTagBasic> ArrayContainerType;
   typedef typename ArrayContainerType::ValueType ValueType;
   typedef typename ArrayContainerType::IteratorType IteratorType;
 

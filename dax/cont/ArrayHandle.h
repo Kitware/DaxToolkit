@@ -40,6 +40,7 @@ class ArrayHandle;
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ErrorControlBadValue.h>
 
+#include <boost/concept_check.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 
 #include <utility>
@@ -77,7 +78,7 @@ private:
   typedef dax::cont::internal::ArrayContainerControl<T,ArrayContainerControlTag>
       ArrayContainerControlType;
   typedef dax::cont::internal
-      ::ArrayManagerExecution<T,ArrayContainerControlType,DeviceAdapterTag>
+      ::ArrayManagerExecution<T,ArrayContainerControlTag,DeviceAdapterTag>
       ArrayManagerExecutionType;
 public:
   typedef T ValueType;
@@ -221,6 +222,8 @@ public:
   template <class IteratorType>
   DAX_CONT_EXPORT void CopyInto(IteratorType dest) const
   {
+    BOOST_CONCEPT_ASSERT((boost::OutputIterator<IteratorType, ValueType>));
+    BOOST_CONCEPT_ASSERT((boost::ForwardIterator<IteratorType>));
     if (this->Internals->ExecutionArrayValid)
       {
       this->Internals->ExecutionArray.CopyInto(dest);

@@ -44,10 +44,10 @@ struct FieldMapError
   DAX_EXEC_EXPORT void operator()(
       FieldMapErrorParameters<CellType, ExecAdapter> &parameters,
       dax::Id index,
-      typename ExecAdapter::ErrorHandler &errorHandler)
+      const ExecAdapter &execAdapter) const
   {
     dax::exec::WorkMapField<CellType, ExecAdapter>
-        work(parameters.grid, index, errorHandler);
+        work(parameters.grid, index, execAdapter);
     dax::worklet::testing::FieldMapError(work);
   }
 };
@@ -63,11 +63,11 @@ namespace worklet {
 namespace testing {
 
 template<class GridType,
-         template <typename> class Container,
+         class Container,
          class DeviceAdapter>
 inline void FieldMapError(const GridType &grid)
 {
-  typedef typename DeviceAdapter::template ExecutionAdapter<Container>
+  typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
       ExecAdapter;
 
   typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
@@ -82,11 +82,12 @@ inline void FieldMapError(const GridType &grid)
   Parameters parameters;
   parameters.grid = execTopology;
 
-  DeviceAdapter::Schedule(
+  dax::cont::internal::Schedule(
         dax::exec::internal::kernel::FieldMapError<CellType, ExecAdapter>(),
         parameters,
         grid.GetNumberOfPoints(),
-        ExecAdapter());
+        Container(),
+        DeviceAdapter());
 }
 
 }
