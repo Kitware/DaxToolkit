@@ -45,6 +45,7 @@ public:
 
 private:
   const CellType Cell;
+  const TopologyType Topology;
   const ExecutionAdapter Adapter;
 
 public:
@@ -53,6 +54,7 @@ public:
       dax::Id index,
       const ExecutionAdapter &executionAdapter)
     : Cell(GridTopology, index),
+      Topology(GridTopology),
       Adapter(executionAdapter) { }
 
   DAX_EXEC_EXPORT const CellType GetCell() const
@@ -99,7 +101,7 @@ public:
     return dax::exec::internal::FieldAccess::GetCoordinatesMultiple(
           field,
           this->GetCell().GetPointIndices(),
-          this->GetCell().GetGridTopology(),
+          this->Topology,
           *this);
   }
 

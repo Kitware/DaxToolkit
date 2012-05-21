@@ -97,9 +97,8 @@ static void TestUnstructuredGrid()
     }
 
   dax::exec::internal::TopologyUnstructured<
-      dax::exec::CellHexahedron, TestExecutionAdapter> ugrid(&points[0],
+      dax::exec::CellHexahedron, TestExecutionAdapter> ugrid(&connections[0],
                                                              numPoints,
-                                                             &connections[0],
                                                              numCells);
 
   TestGridSize(ugrid,18,4);

@@ -37,14 +37,11 @@ template<typename T, class ExecutionAdapter>
 struct TopologyUnstructured
 {
   typedef T CellType;
-  typedef typename ExecutionAdapter::template FieldStructures<dax::Vector3>
-      ::IteratorConstType PointCoordinatesIteratorType;
   typedef typename ExecutionAdapter::template FieldStructures<dax::Id>
       ::IteratorConstType CellConnectionsIteratorType;
 
   TopologyUnstructured()
-    : PointCoordinates(PointCoordinatesIteratorType()),
-      CellConnections(CellConnectionsIteratorType()),
+    : CellConnections(CellConnectionsIteratorType()),
       NumberOfPoints(0),
       NumberOfCells(0)
     {
@@ -52,24 +49,20 @@ struct TopologyUnstructured
 
   /// Create a topology with the given descriptive arrays.
   ///
-  /// \param pointCoordiantes An array of dax::Vector3 coordinates for each
-  /// point. The length of this array should be \c numberOfPoints.
   /// \param numberOfPoints The number of points in the grid.
   /// \param cellConnections An array containing a list for each cell giving
   /// the point index for each vertex of the cell.  The length of this array
   /// should be \c numberOfCells times \c CellType::NUM_POINTS.
   /// \param numberOfCells The number of cells in the grid.
   ///
-  TopologyUnstructured(PointCoordinatesIteratorType pointCoordinates,
+  TopologyUnstructured(CellConnectionsIteratorType cellConnections,
                        dax::Id numberOfPoints,
-                       CellConnectionsIteratorType cellConnections,
                        dax::Id numberOfCells)
-    : PointCoordinates(pointCoordinates), CellConnections(cellConnections),
+    : CellConnections(cellConnections),
       NumberOfPoints(numberOfPoints), NumberOfCells(numberOfCells)
   {
   }
 
-  PointCoordinatesIteratorType PointCoordinates;
   CellConnectionsIteratorType CellConnections;
   dax::Id NumberOfPoints;
   dax::Id NumberOfCells;

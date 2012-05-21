@@ -59,7 +59,7 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
     const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
     const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
 {
-  //for know we are considering that a cell hexahedron
+  //for now we are considering that a cell hexahedron
   //is actually a voxel in an unstructured grid.
   //ToDo: use a proper derivative calculation.
   const dax::Id NUM_POINTS  = dax::exec::CellVoxel::NUM_POINTS;
@@ -70,10 +70,12 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
 
   dax::Vector3 spacing;
     {
-    dax::Vector3 x0 = work.GetFieldValue(fcoords,0);
-    dax::Vector3 x1 = work.GetFieldValue(fcoords,1);
-    dax::Vector3 x2 = work.GetFieldValue(fcoords,2);
-    dax::Vector3 x4 = work.GetFieldValue(fcoords,4);
+    dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS> allCoords;
+    allCoords = work.GetFieldValues(fcoords);
+    dax::Vector3 x0 = allCoords[0];
+    dax::Vector3 x1 = allCoords[1];
+    dax::Vector3 x2 = allCoords[2];
+    dax::Vector3 x4 = allCoords[4];
     spacing = make_Vector3(x1[0] - x0[0],
                            x2[1] - x0[1],
                            x4[2] - x0[2]);

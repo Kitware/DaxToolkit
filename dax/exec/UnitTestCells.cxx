@@ -69,7 +69,7 @@ dax::exec::internal::TopologyUnstructured<dax::exec::CellHexahedron, TestExecuti
     }
 
   dax::exec::internal::TopologyUnstructured<dax::exec::CellHexahedron, TestExecutionAdapter>
-      ugrid(&points[0], numberOfPoints, &connections[0], numberOfCells);
+      ugrid(&connections[0], numberOfPoints, numberOfCells);
   return ugrid;
 }
 

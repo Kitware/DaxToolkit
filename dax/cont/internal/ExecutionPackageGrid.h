@@ -34,11 +34,9 @@ private:
   GetExecutionObject(const GridType &grid, dax::cont::UnstructuredGridTag)
   {
     typename GridType::ExecutionTopologyStruct topology;
-    topology.PointCoordinates
-        = grid.GetPointCoordinates().PrepareForInput().first;
-    topology.NumberOfPoints = grid.GetNumberOfPoints();
     topology.CellConnections
         = grid.GetCellConnections().PrepareForInput().first;
+    topology.NumberOfPoints = grid.GetNumberOfPoints();
     topology.NumberOfCells = grid.GetNumberOfCells();
     return topology;
   }

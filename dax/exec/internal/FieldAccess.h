@@ -18,7 +18,7 @@
 
 #include <dax/exec/Field.h>
 
-#include <dax/exec/internal/TopologyUniform.h>
+#include <dax/exec/internal/GridTopologies.h>
 
 namespace dax { namespace exec { class CellVoxel; }}
 
@@ -122,6 +122,24 @@ public:
       result[i] = GetCoordinates(field, indices[i], topology, work);
       }
     return result;
+  }
+
+  /// Get the coordinates from a point coordinate field (which may require
+  /// some computations on the topology).
+  ///
+  template<int Size, class ExecutionAdapter, class TopologyType, class WorkType>
+  DAX_EXEC_EXPORT static
+  dax::Tuple<dax::Vector3,Size> GetCoordinatesMultiple(
+      dax::exec::internal::FieldBase<
+          FieldAccessInputTag,
+          dax::exec::internal::FieldAssociationCoordinatesTag,
+          dax::Vector3,
+          ExecutionAdapter> field,
+      dax::Tuple<dax::Id,Size> indices,
+      const TopologyType &,
+      WorkType work)
+  {
+    return GetMultiple(field, indices, work);
   }
 };
 
