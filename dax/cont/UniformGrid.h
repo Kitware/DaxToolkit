@@ -34,9 +34,8 @@ struct UniformGridTag {  };
 /// aligned and has uniform spacing between grid points in every dimension. The
 /// grid can be shifted and scaled in space by defining and origin and spacing.
 ///
-template <template <typename> class ArrayContainerControl
-              = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
-          class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER>
+template <class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
+          class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER>
 class UniformGrid
 {
 private:
@@ -142,8 +141,12 @@ public:
   /// case that there is no real array.
   ///
   struct PointCoordinatesArrayPlaceholder {
-    typedef typename DeviceAdapter
-        ::template ExecutionAdapter<ArrayContainerControl> ExecutionAdapter;
+    // Probably no one actually needs these typedefs. They are here mostly to
+    // document why we need the template parameters in the first place (which
+    // is to capture the arrays/device to copy data over to the execution
+    // environment).
+    typedef ArrayContainerControlTag ArrayContainerControl;
+    typedef DeviceAdapterTag DeviceAdapter;
   };
 
   typedef PointCoordinatesArrayPlaceholder PointCoordinatesType;

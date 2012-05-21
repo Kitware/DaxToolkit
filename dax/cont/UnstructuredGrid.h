@@ -38,9 +38,8 @@ struct UnstructuredGridOfCell : UnstructuredGridTag {  };
 /// grid can only contain cells of a single type.
 ///
 template <typename CellT,
-          template <typename> class ArrayContainerControl
-              = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
-          class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER>
+          class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
+          class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER>
 class UnstructuredGrid
 {
 public:
@@ -48,11 +47,13 @@ public:
   typedef UnstructuredGridOfCell<CellType> GridTypeTag;
 
   typedef dax::cont::ArrayHandle<
-      dax::Id, ArrayContainerControl, DeviceAdapter> CellConnectionsType;
+      dax::Id, ArrayContainerControlTag, DeviceAdapterTag> CellConnectionsType;
   typedef dax::cont::ArrayHandle<
-      dax::Vector3, ArrayContainerControl, DeviceAdapter> PointCoordinatesType;
+      dax::Vector3, ArrayContainerControlTag, DeviceAdapterTag>
+      PointCoordinatesType;
 
-  typedef typename DeviceAdapter::template ExecutionAdapter<ArrayContainerControl>
+  typedef dax::exec::internal
+      ::ExecutionAdapter<ArrayContainerControlTag,DeviceAdapterTag>
       ExecutionAdapter;
 
   typedef dax::exec::internal::TopologyUnstructured<CellType, ExecutionAdapter>
