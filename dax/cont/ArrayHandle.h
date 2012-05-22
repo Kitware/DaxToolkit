@@ -48,6 +48,9 @@ class ArrayHandle;
 namespace dax {
 namespace cont {
 
+// Forward declaration
+namespace internal { class ArrayHandleAccess; }
+
 /// \brief Manages an array-worth of data.
 ///
 /// \c ArrayHandle manages as array of data that can be manipulated by Dax
@@ -439,6 +442,8 @@ private:
   }
 
   boost::shared_ptr<InternalStruct> Internals;
+
+  friend class dax::cont::internal::ArrayHandleAccess;
 };
 
 }

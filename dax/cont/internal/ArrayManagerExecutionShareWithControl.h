@@ -152,7 +152,7 @@ public:
 
   /// Const version of GetIteratorBegin.
   ///
-  DAX_CONT_EXPORT IteratorConstType GetIteratorConstBegin()
+  DAX_CONT_EXPORT IteratorConstType GetIteratorConstBegin() const
   {
     DAX_ASSERT_CONT(this->ConstIteratorsValid);
     return this->BeginConstIterator;
@@ -160,7 +160,7 @@ public:
 
   /// Const version of GetIteratorEnd.
   ///
-  DAX_CONT_EXPORT IteratorConstType GetIteratorConstEnd()
+  DAX_CONT_EXPORT IteratorConstType GetIteratorConstEnd() const
   {
     DAX_ASSERT_CONT(this->ConstIteratorsValid);
     return this->EndConstIterator;
