@@ -15,6 +15,7 @@
 ##=============================================================================
 
 set(headers
+  ArrayContainerControlError.h
   ArrayManagerExecutionShareWithControl.h
   DeviceAdapterError.h
   ExecutionPackageField.h

@@ -14,7 +14,12 @@
 //
 //=============================================================================
 
+#include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/DeviceAdapterSerial.h>
+
+// These header files help tease out when the default template arguments to
+// ArrayHandle are inappropriately used.
+#include <dax/cont/internal/ArrayContainerControlError.h>
 #include <dax/cont/internal/DeviceAdapterError.h>
 
 #include <dax/cont/worklet/CellGradient.h>
@@ -25,6 +30,8 @@
 
 #include <dax/cont/internal/Testing.h>
 
+#include <vector>
+
 namespace {
 
 const dax::Id DIM = 64;
@@ -32,7 +39,8 @@ const dax::Id DIM = 64;
 //-----------------------------------------------------------------------------
 static void TestCellGradient()
 {
-  dax::cont::UniformGrid grid;
+  dax::cont::UniformGrid<dax::cont::ArrayContainerControlTagBasic,
+                         dax::cont::DeviceAdapterTagSerial> grid;
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
 
   dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
@@ -43,22 +51,26 @@ static void TestCellGradient()
        pointIndex++)
     {
     field[pointIndex]
-        = dax::dot(grid.GetPointCoordinates(pointIndex), trueGradient);
+        = dax::dot(grid.ComputePointCoordinates(pointIndex), trueGradient);
     }
-  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterSerial>
-      fieldHandle(field.begin(), field.end());
+  dax::cont::ArrayHandle<dax::Scalar,
+                         dax::cont::ArrayContainerControlTagBasic,
+                         dax::cont::DeviceAdapterTagSerial>
+      fieldHandle(&field.front(), (&field.back()) + 1);
 
-  std::vector<dax::Vector3> gradient(grid.GetNumberOfCells());
-  dax::cont::ArrayHandle<dax::Vector3, dax::cont::DeviceAdapterSerial>
-      gradientHandle(gradient.begin(), gradient.end());
+  dax::cont::ArrayHandle<dax::Vector3,
+                         dax::cont::ArrayContainerControlTagBasic,
+                         dax::cont::DeviceAdapterTagSerial> gradientHandle;
 
   std::cout << "Running CellGradient worklet" << std::endl;
   dax::cont::worklet::CellGradient(grid,
-                                   grid.GetPoints(),
+                                   grid.GetPointCoordinates(),
                                    fieldHandle,
                                    gradientHandle);
 
   std::cout << "Checking result" << std::endl;
+  std::vector<dax::Vector3> gradient(grid.GetNumberOfCells());
+  gradientHandle.CopyInto(gradient.begin());
   for (dax::Id cellIndex = 0;
        cellIndex < grid.GetNumberOfCells();
        cellIndex++)

@@ -35,7 +35,7 @@ struct ScheduleMappingAdapter
   template<class Parameters, class ExecHandler>
   DAX_EXEC_EXPORT void operator()(Parameters parameters,
                                   dax::Id index,
-                                  const ExecHandler& execHandler)
+                                  const ExecHandler& execHandler) const
   {
     //send the index as the key, and the LookupTable[index] as value
 

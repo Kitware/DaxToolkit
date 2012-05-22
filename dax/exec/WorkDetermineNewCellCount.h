@@ -68,7 +68,8 @@ public:
   {
     dax::exec::internal::FieldAccess::SetField(this->NewCellCountField,
                                                this->GetCellIndex(),
-                                               value);
+                                               value,
+                                               *this);
   }
 
   template<typename T, class Access>

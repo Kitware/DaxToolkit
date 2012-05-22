@@ -21,6 +21,7 @@
 #include <dax/Types.h>
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
+#include <dax/exec/internal/ExecutionAdapter.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
@@ -47,10 +48,10 @@ struct Elevation
   DAX_EXEC_EXPORT void operator()(
       ElevationParameters<CellType, ExecAdapter> &parameters,
       dax::Id index,
-      typename ExecAdapter::ErrorHandler &errorHandler)
+      const ExecAdapter &execAdapter) const
   {
     dax::exec::WorkMapField<CellType,ExecAdapter>
-        work(parameters.grid, index, errorHandler);
+        work(parameters.grid, index, execAdapter);
     dax::worklet::Elevation(work,
                             parameters.inCoordinates,
                             parameters.outField);
@@ -67,27 +68,26 @@ namespace cont {
 namespace worklet {
 
 template<class GridType,
-         template <typename> class Container,
-         class DeviceAdapter>
+         class Container,
+         class Adapter>
 DAX_CONT_EXPORT void Elevation(
     const GridType &grid,
     const typename GridType::PointCoordinatesType &points,
-    dax::cont::ArrayHandle<dax::Scalar, Container, DeviceAdapter> &outHandle)
+    dax::cont::ArrayHandle<dax::Scalar, Container, Adapter> &outHandle)
 {
-  typedef typename DeviceAdapter::template ExecutionAdapter<Container>
-      ExecAdapter;
+  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
 
   typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
   ExecutionTopologyType execTopology
-      = dax::cont::internal::ExecutionPackageGrid::GetExecutionObject(grid);
+      = dax::cont::internal::ExecutionPackageGrid(grid);
 
-  dax::exec::FieldCoordinatesIn<ExecAdapter> fieldCoordinates
-      = dax::cont::internal::ExecutionPackageField
-        ::GetExecutionObject<dax::exec::FieldCoordinatesIn>(points, grid);
+  dax::exec::FieldCoordinatesIn<ExecAdapter> fieldCoordinates =
+      dax::cont::internal::ExecutionPackageField<dax::exec::FieldCoordinatesIn>(
+        points, grid);
 
-  dax::exec::FieldCellOut<dax::Vector3, ExecAdapter> fieldOut
-      = dax::cont::internal::ExecutionPackageField
-        ::GetExecutionObject<dax::exec::FieldCellOut>(outHandle, grid);
+  dax::exec::FieldPointOut<dax::Scalar, ExecAdapter> fieldOut
+      = dax::cont::internal::ExecutionPackageField<dax::exec::FieldPointOut>(
+        outHandle, grid);
 
   typedef typename GridType::CellType CellType;
 
@@ -99,11 +99,12 @@ DAX_CONT_EXPORT void Elevation(
   parameters.inCoordinates = fieldCoordinates;
   parameters.outField = fieldOut;
 
-  DeviceAdapter::Schedule(
+  dax::cont::internal::Schedule(
         dax::exec::internal::kernel::Elevation<CellType, ExecAdapter>(),
         parameters,
         grid.GetNumberOfPoints(),
-        ExecAdapter());
+        Container(),
+        Adapter());
 }
 
 }

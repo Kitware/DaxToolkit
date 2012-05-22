@@ -66,7 +66,7 @@ struct GetUsedPointsFunctor {
       const GetUsedPointsParameters<MaskType, ExecAdapter> &parameters,
       dax::Id /*key*/,
       dax::Id value,
-      const ExecAdapter &execAdapter)
+      const ExecAdapter &execAdapter) const
   {
     dax::exec::internal::WorkEmpty<ExecAdapter> dummywork(execAdapter);
     dax::exec::internal::FieldAccess::SetField(parameters.outField,
@@ -95,9 +95,9 @@ struct LowerBoundsInputFunctor
 DAX_EXEC_EXPORT void operator()(
     dax::exec::FieldOut<dax::Id, ExecAdapter> field,
     dax::Id index,
-    typename ExecAdapter::ErrorHandler &errorHandler)
+    const ExecAdapter &execAdapter) const
 {
-  dax::exec::internal::WorkEmpty<ExecAdapter> dummywork(errorHandler);
+  dax::exec::internal::WorkEmpty<ExecAdapter> dummywork(execAdapter);
   dax::exec::internal::FieldAccess::SetField(field, index, index+1, dummywork);
 }
 };
@@ -113,12 +113,13 @@ namespace cont {
 namespace internal {
 
 
-/// ScheduleGenerateTopology is the control enviorment representation of a worklet
-//   / of the type WorkDetermineNewCellCount. This class handles properly calling the worklet
-/// that the user has defined has being of type WorkDetermineNewCellCount.
+/// ScheduleGenerateTopology is the control enviorment representation of a
+/// worklet of the type WorkDetermineNewCellCount. This class handles properly
+/// calling the worklet that the user has defined has being of type
+/// WorkDetermineNewCellCount.
 ///
-/// Since ScheduleGenerateTopology uses CRTP, every worklet needs to construct a class
-/// that inherits from this class and define GenerateParameters.
+/// Since ScheduleGenerateTopology uses CRTP, every worklet needs to construct
+/// a class that inherits from this class and define GenerateParameters.
 ///
 template<class Derived,
          class FunctorClassify,
@@ -234,8 +235,8 @@ protected:
     //for the lower bounds to compute the right indices
     dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTag, DeviceAdapterTag>
         validCellRange;
-    dax::exec::FieldPointOut<dax::Id, ExecutionAdapter> validCellRangeField
-        = dax::cont::internal::ExecutionPackageField<dax::exec::FieldPointOut>(
+    dax::exec::FieldOut<dax::Id, ExecutionAdapter> validCellRangeField
+        = dax::cont::internal::ExecutionPackageField<dax::exec::FieldOut>(
           validCellRange, newNumCells);
     dax::cont::internal::Schedule(
           dax::exec::internal::kernel::LowerBoundsInputFunctor

@@ -17,6 +17,9 @@
 #include <dax/cont/worklet/testing/Assert.h>
 
 #include <dax/VectorTraits.h>
+
+#include <dax/cont/ArrayContainerControl.h>
+#include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/UniformGrid.h>
 
@@ -29,15 +32,16 @@ const dax::Id DIM = 64;
 //-----------------------------------------------------------------------------
 static void TestAssert()
 {
-  dax::cont::UniformGrid grid;
+  dax::cont::UniformGrid<> grid;
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
 
   std::cout << "Running field map worklet that errors" << std::endl;
   bool gotError = false;
   try
     {
-    dax::cont::worklet::testing::Assert
-        <dax::cont::UniformGrid, dax::cont::DeviceAdapterSerial>(grid);
+    dax::cont::worklet::testing::Assert<dax::cont::UniformGrid<>,
+                                        DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
+                                        DAX_DEFAULT_DEVICE_ADAPTER>(grid);
     }
   catch (dax::cont::ErrorExecution error)
     {

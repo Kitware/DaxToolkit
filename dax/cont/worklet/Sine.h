@@ -21,6 +21,7 @@
 #include <dax/Types.h>
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
+#include <dax/exec/internal/ExecutionAdapter.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ErrorControlBadValue.h>
@@ -37,7 +38,7 @@ namespace kernel {
 template<class CellType, typename FieldType, class ExecAdapter>
 struct SineParameters
 {
-  typename CellType::TopologyType grid;
+  typename CellType::template GridStructures<ExecAdapter>::TopologyType grid;
   dax::exec::FieldIn<FieldType, ExecAdapter> inField;
   dax::exec::FieldOut<FieldType, ExecAdapter> outField;
 };
@@ -48,10 +49,10 @@ struct Sine
   DAX_EXEC_EXPORT void operator()(
       SineParameters<CellType, FieldType, ExecAdapter> &parameters,
       dax::Id index,
-      typename ExecAdapter::ErrorHandler &errorHandler)
+      const ExecAdapter &execAdapter)
   {
     dax::exec::WorkMapField<CellType, ExecAdapter>
-        work(parameters.grid, index, errorHandler);
+        work(parameters.grid, index, execAdapter);
     dax::worklet::Sine(work,
                        parameters.inField,
                        parameters.outField);
@@ -70,12 +71,12 @@ namespace worklet {
 // Should be templated on grid type too.
 template<class GridType,
          typename FieldType,
-         template <typename> class Container,
-         class DeviceAdapter>
+         class Container,
+         class Adapter>
 DAX_CONT_EXPORT void Sine(
     const GridType &grid,
-    const dax::cont::ArrayHandle<FieldType,Container,DeviceAdapter> &inHandle,
-    dax::cont::ArrayHandle<FieldType,Container,DeviceAdapter> &outHandle)
+    const dax::cont::ArrayHandle<FieldType,Container,Adapter> &inHandle,
+    dax::cont::ArrayHandle<FieldType,Container,Adapter> &outHandle)
 {
   dax::Id fieldSize;
   if (inHandle.GetNumberOfValues() == grid.GetNumberOfPoints())
@@ -92,20 +93,19 @@ DAX_CONT_EXPORT void Sine(
           "Number of array entries neither cells nor points.");
     }
 
-  typedef typename DeviceAdapter::template ExecutionAdapter<Container>
-      ExecAdapter;
+  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
 
   typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
   ExecutionTopologyType execTopology
-      = dax::cont::internal::ExecutionPackageGrid::GetExecutionObject(grid);
+      = dax::cont::internal::ExecutionPackageGrid(grid);
 
-  dax::exec::FieldPointIn<FieldType, ExecAdapter> fieldIn
-      = dax::cont::internal::ExecutionPackageField
-        ::GetExecutionObject<dax::exec::FieldPointIn>(inHandle, fieldSize);
+  dax::exec::FieldIn<FieldType, ExecAdapter> fieldIn
+      = dax::cont::internal::ExecutionPackageField<dax::exec::FieldIn>(
+        inHandle, fieldSize);
 
-  dax::exec::FieldCellOut<FieldType, ExecAdapter> fieldOut
-      = dax::cont::internal::ExecutionPackageField
-        ::GetExecutionObject<dax::exec::FieldCellOut>(outHandle, fieldSize);
+  dax::exec::FieldOut<FieldType, ExecAdapter> fieldOut
+      = dax::cont::internal::ExecutionPackageField<dax::exec::FieldOut>(
+        outHandle, fieldSize);
 
   typedef typename GridType::CellType CellType;
 
@@ -118,11 +118,12 @@ DAX_CONT_EXPORT void Sine(
   parameters.inField = fieldIn;
   parameters.outField = fieldOut;
 
-  DeviceAdapter::Schedule(
+  dax::cont::internal::Schedule(
         dax::exec::internal::kernel::Sine<CellType, FieldType, ExecAdapter>(),
         parameters,
         fieldSize,
-        ExecAdapter());
+        Container(),
+        Adapter());
 }
 
 }

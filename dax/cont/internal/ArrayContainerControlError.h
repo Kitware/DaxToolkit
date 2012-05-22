@@ -13,25 +13,26 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_internal_DeviceAdapterError_h
-#define __dax_cont_internal_DeviceAdapterError_h
+#ifndef __dax_cont_internal_ArrayContainerControlError_h
+#define __dax_cont_internal_ArrayContainerControlError_h
 
-#ifdef DAX_DEFAULT_DEVICE_ADAPTER
-#undef DAX_DEFAULT_DEVICE_ADAPTER
+#ifdef DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
+#undef DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
 #endif
 
-#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::internal::DeviceAdapterTagError
+#define DAX_DEFAULT_ARRAY_CONTAINER_CONTROL \
+  ::dax::cont::internal::ArrayContainerControlTagError
 
 namespace dax {
 namespace cont {
 namespace internal {
 
-/// This is an invalid DeviceAdapter. The point of this class is to include the
-/// header file to make this invalid class the default DeviceAdapter. From that
-/// point, you have to specify an appropriate DeviceAdapter or else get a
-/// compile error.
+/// This is an invalid ArrayContainerControl. The point of this class is to
+/// include the header file to make this invalid class the default
+/// ArrayContainerControl. From that point, you have to specify an appropriate
+/// ArrayContainerControl or else get a compile error.
 ///
-struct DeviceAdapterTagError
+struct ArrayContainerControlTagError
 {
   // Not implemented.
 };
@@ -40,4 +41,4 @@ struct DeviceAdapterTagError
 }
 } // namespace dax::cont::internal
 
-#endif //__dax_cont_internal_DeviceAdapterError_h
+#endif //__dax_cont_internal_ArrayContainerControlError_h

@@ -14,7 +14,12 @@
 //
 //=============================================================================
 
+#include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/DeviceAdapterSerial.h>
+
+// These header files help tease out when the default template arguments to
+// ArrayHandle are inappropriately used.
+#include <dax/cont/internal/ArrayContainerControlError.h>
 #include <dax/cont/internal/DeviceAdapterError.h>
 
 #include <dax/cont/worklet/Sine.h>
@@ -25,6 +30,8 @@
 
 #include <dax/cont/internal/Testing.h>
 
+#include <vector>
+
 namespace {
 
 const dax::Id DIM = 64;
@@ -32,8 +39,8 @@ const dax::Id DIM = 64;
 //-----------------------------------------------------------------------------
 static void TestSine()
 {
-  dax::cont::UniformGrid grid;
-  grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+  dax::cont::UniformGrid<dax::cont::ArrayContainerControlTagBasic,
+                         dax::cont::DeviceAdapterTagSerial> grid;
 
   dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
@@ -43,19 +50,23 @@ static void TestSine()
        pointIndex++)
     {
     field[pointIndex]
-        = dax::dot(grid.GetPointCoordinates(pointIndex), trueGradient);
+        = dax::dot(grid.ComputePointCoordinates(pointIndex), trueGradient);
     }
-  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterSerial>
-      fieldHandle(field.begin(), field.end());
+  dax::cont::ArrayHandle<dax::Scalar,
+                        dax::cont::ArrayContainerControlTagBasic,
+                        dax::cont::DeviceAdapterTagSerial>
+      fieldHandle(&field.front(), (&field.back())+1);
 
-  std::vector<dax::Scalar> sine(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar, dax::cont::DeviceAdapterSerial>
-      sineHandle(sine.begin(), sine.end());
+  dax::cont::ArrayHandle<dax::Scalar,
+                        dax::cont::ArrayContainerControlTagBasic,
+                        dax::cont::DeviceAdapterTagSerial> sineHandle;
 
   std::cout << "Running Sine worklet" << std::endl;
   dax::cont::worklet::Sine(grid, fieldHandle, sineHandle);
 
   std::cout << "Checking result" << std::endl;
+  std::vector<dax::Scalar> sine(grid.GetNumberOfPoints());
+  sineHandle.CopyInto(sine.begin());
   for (dax::Id pointIndex = 0;
        pointIndex < grid.GetNumberOfPoints();
        pointIndex++)

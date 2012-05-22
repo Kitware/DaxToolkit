@@ -20,12 +20,20 @@
 
 namespace dax {
 namespace exec {
+class CellVoxel;
+}
+}
+
+namespace dax {
+namespace exec {
 namespace internal {
 
 /// Contains all the parameters necessary to specify the topology of a uniform
 /// rectilinear grid.
 ///
 struct TopologyUniform {
+  typedef dax::exec::CellVoxel CellType;
+
   Vector3 Origin;
   Vector3 Spacing;
   Extent3 Extent;

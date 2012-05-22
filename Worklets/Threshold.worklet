@@ -110,7 +110,7 @@ DAX_WORKLET void Threshold_Topology(
 {
   //we can ignore the the requested cell Id to generate
   //on the work object since we know for threshold it is a pass through
-  work.SetOutputTopology(work.GetInputTopology());
+  work.SetOutputConnections(work.GetInputConnections());
 }
 
 }

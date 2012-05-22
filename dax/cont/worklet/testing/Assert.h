@@ -20,6 +20,7 @@
 
 #include <dax/Types.h>
 #include <dax/exec/WorkMapField.h>
+#include <dax/exec/internal/ExecutionAdapter.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
@@ -44,10 +45,10 @@ struct Assert
   DAX_EXEC_EXPORT void operator()(
       AssertParameters<CellType, ExecAdapter> &parameters,
       dax::Id index,
-      typename ExecAdapter::ErrorHandler &errorHandler)
+      const ExecAdapter &execAdapter)
   {
     dax::exec::WorkMapField<CellType, ExecAdapter>
-        work(parameters.grid, index, errorHandler);
+        work(parameters.grid, index, execAdapter);
     dax::worklet::testing::Assert(work);
   }
 };
@@ -63,16 +64,15 @@ namespace worklet {
 namespace testing {
 
 template<class GridType,
-         template <typename> class Container,
-         class DeviceAdapter>
+         class Container,
+         class Adapter>
 inline void Assert(const GridType &grid)
 {
-  typedef typename DeviceAdapter::template ExecutionAdapter<Container>
-      ExecAdapter;
+  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
 
   typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
   ExecutionTopologyType execTopology
-      = dax::cont::internal::ExecutionPackageGrid::GetExecutionObject(grid);
+      = dax::cont::internal::ExecutionPackageGrid(grid);
 
   typedef typename GridType::CellType CellType;
 
@@ -82,11 +82,12 @@ inline void Assert(const GridType &grid)
   Parameters parameters;
   parameters.grid = execTopology;
 
-  DeviceAdapter::Schedule(
+  dax::cont::internal::Schedule(
         dax::exec::internal::kernel::Assert<CellType, ExecAdapter>(),
         parameters,
         grid.GetNumberOfPoints(),
-        ExecAdapter());
+        Container(),
+        Adapter());
 }
 
 }
