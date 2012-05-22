@@ -81,7 +81,7 @@ DAX_CONT_EXPORT void CellGradient(
 
   typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
   ExecutionTopologyType execTopology
-      = dax::cont::internal::ExecutionPackageGrid::GetExecutionObject(grid);
+      = dax::cont::internal::ExecutionPackageGrid(grid);
 
   dax::exec::FieldCoordinatesIn<ExecAdapter> fieldCoordinates
       = dax::cont::internal

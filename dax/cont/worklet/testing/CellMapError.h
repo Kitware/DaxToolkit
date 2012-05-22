@@ -72,7 +72,7 @@ inline void CellMapError(const GridType &grid)
 
   typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
   ExecutionTopologyType execTopology
-      = dax::cont::internal::ExecutionPackageGrid::GetExecutionObject(grid);
+      = dax::cont::internal::ExecutionPackageGrid(grid);
 
   typedef typename GridType::CellType CellType;
 

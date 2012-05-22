@@ -26,43 +26,44 @@ namespace dax {
 namespace cont {
 namespace internal {
 
-class ExecutionPackageGrid
+namespace detail {
+
+template<class GridType>
+DAX_CONT_EXPORT static typename GridType::ExecutionTopologyStruct
+ExecutionPackageGridInternal(const GridType &grid,
+                             dax::cont::UnstructuredGridTag)
 {
-private:
-  template<class GridType>
-  DAX_CONT_EXPORT static typename GridType::ExecutionTopologyStruct
-  GetExecutionObject(const GridType &grid, dax::cont::UnstructuredGridTag)
-  {
-    typename GridType::ExecutionTopologyStruct topology;
-    topology.CellConnections
-        = grid.GetCellConnections().PrepareForInput().first;
-    topology.NumberOfPoints = grid.GetNumberOfPoints();
-    topology.NumberOfCells = grid.GetNumberOfCells();
-    return topology;
-  }
+  typename GridType::ExecutionTopologyStruct topology;
+  topology.CellConnections
+      = grid.GetCellConnections().PrepareForInput().first;
+  topology.NumberOfPoints = grid.GetNumberOfPoints();
+  topology.NumberOfCells = grid.GetNumberOfCells();
+  return topology;
+}
 
-  template<class GridType>
-  DAX_CONT_EXPORT static typename dax::exec::internal::TopologyUniform
-  GetExecutionObject(const GridType &grid, dax::cont::UniformGridTag)
-  {
-    dax::exec::internal::TopologyUniform topology;
-    topology.Origin = grid.GetOrigin();
-    topology.Spacing = grid.GetSpacing();
-    topology.Extent = grid.GetExtent();
-    return topology;
-  }
+template<class GridType>
+DAX_CONT_EXPORT static typename dax::exec::internal::TopologyUniform
+ExecutionPackageGridInternal(const GridType &grid, dax::cont::UniformGridTag)
+{
+  dax::exec::internal::TopologyUniform topology;
+  topology.Origin = grid.GetOrigin();
+  topology.Spacing = grid.GetSpacing();
+  topology.Extent = grid.GetExtent();
+  return topology;
+}
 
-public:
-  template<class GridType>
-  DAX_CONT_EXPORT static typename GridType::ExecutionTopologyStruct
-  GetExecutionObject(const GridType &grid)
-  {
-    return GetExecutionObject(grid, typename GridType::GridTypeTag());
-  }
-};
+} // namespace detail
+
+template<class GridType>
+DAX_CONT_EXPORT static typename GridType::ExecutionTopologyStruct
+ExecutionPackageGrid(const GridType &grid)
+{
+  return detail::ExecutionPackageGridInternal(grid,
+                                              typename GridType::GridTypeTag());
+}
 
 }
 }
-}
+} // namespace dax::cont::internal
 
 #endif //__dax_cont_internal_ExecutionPackageGrid_h

@@ -96,7 +96,7 @@ DAX_CONT_EXPORT void Square(
 
   typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
   ExecutionTopologyType execTopology
-      = dax::cont::internal::ExecutionPackageGrid::GetExecutionObject(grid);
+      = dax::cont::internal::ExecutionPackageGrid(grid);
 
   dax::exec::FieldIn<FieldType, ExecAdapter> fieldIn
       = dax::cont::internal::ExecutionPackageField<dax::exec::FieldIn>(
