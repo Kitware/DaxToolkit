@@ -32,10 +32,11 @@ template <typename T>
 struct TemplatedTests
 {
   typedef dax::cont::internal::ArrayManagerExecutionShareWithControl
-      <T, dax::cont::ArrayContainerControlBasic>
+      <T, dax::cont::ArrayContainerControlTagBasic>
       ArrayManagerType;
   typedef typename ArrayManagerType::ValueType ValueType;
-  typedef dax::cont::ArrayContainerControlBasic<T> ArrayContainerType;
+  typedef dax::cont::internal::ArrayContainerControl<
+      T, dax::cont::ArrayContainerControlTagBasic> ArrayContainerType;
 
   void SetContainer(ArrayContainerType &array, ValueType value)
   {
@@ -99,7 +100,7 @@ struct TemplatedTests
     DAX_TEST_ASSERT(CheckArray(copyBack.begin(), copyBack.end(), OUTPUT_VALUE),
                     "Did not get correct array back.");
 
-    executionArray.RetreiveOutputData(controlArray);
+    executionArray.RetrieveOutputData(controlArray);
 
     DAX_TEST_ASSERT(CheckContainer(controlArray, OUTPUT_VALUE),
                     "Did not get the right value in the control container.");

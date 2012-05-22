@@ -25,6 +25,7 @@
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
+#include <dax/exec/internal/ExecutionAdapter.h>
 #include <dax/exec/internal/FieldAccess.h>
 #include <dax/exec/internal/GridTopologies.h>
 #include <dax/exec/internal/WorkEmpty.h>
@@ -36,8 +37,9 @@ namespace
 {
 const dax::Id ARRAY_SIZE = 10;
 
-typedef dax::cont::DeviceAdapterSerial
-    ::ExecutionAdapter<dax::cont::ArrayContainerControlBasic>
+typedef dax::exec::internal::ExecutionAdapter<
+    dax::cont::ArrayContainerControlTagBasic,
+    dax::cont::DeviceAdapterTagSerial>
       ExecutionAdapter;
 
 template<class IteratorType1, class IteratorType2>
@@ -66,12 +68,12 @@ void BasicGridComparison(const GridType &grid, const TopologyType &topology)
                   "Number of cells wrong.");
 }
 
-void TestExecutionGrid(const dax::cont::UniformGrid &grid)
+void TestExecutionGrid(const dax::cont::UniformGrid<> &grid)
 {
   std::cout << "****Test package UniformGrid" << std::endl;
 
   dax::exec::internal::TopologyUniform topology
-      = dax::cont::internal::ExecutionPackageGrid::GetExecutionObject(grid);
+      = dax::cont::internal::ExecutionPackageGrid(grid);
 
   BasicGridComparison(grid, topology);
 
@@ -98,14 +100,9 @@ void TestExecutionGrid(
   dax::exec::internal
       ::TopologyUnstructured<GridType::CellType, GridType::ExecutionAdapter>
       topology
-      = dax::cont::internal::ExecutionPackageGrid::GetExecutionObject(grid);
+      = dax::cont::internal::ExecutionPackageGrid(grid);
 
   BasicGridComparison(grid, topology);
-
-  std::cout << "Check point coordinates." << std::endl;
-  CompareArrays(grid.GetPointCoordinates().GetIteratorConstControlBegin(),
-                grid.GetPointCoordinates().GetIteratorConstControlEnd(),
-                topology.PointCoordinates);
 
   std::cout << "Check cell connections." << std::endl;
   CompareArrays(grid.GetCellConnections().GetIteratorConstControlBegin(),
@@ -124,7 +121,7 @@ void TestExecutionGrid()
 
 void TestExecutionPackageGrid()
 {
-  TestExecutionGrid<dax::cont::UniformGrid>();
+  TestExecutionGrid<dax::cont::UniformGrid<> >();
   TestExecutionGrid<dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> >();
 }
 
@@ -146,12 +143,11 @@ void TestExecutionField(dax::exec::internal::FieldAccessInputTag)
   dax::cont::ArrayHandle<ValueType> inputArray(
         &originalData.front(), (&originalData.back()) + 1);
 
-  FieldType field = dax::cont::internal::ExecutionPackageField
-      ::GetExecutionObject<FieldType>(inputArray, ARRAY_SIZE);
+  FieldType field = dax::cont::internal::ExecutionPackageField<FieldType>(
+        inputArray, ARRAY_SIZE);
 
   dax::exec::internal::WorkEmpty<ExecutionAdapter> dummywork =
-      dax::exec::internal::WorkEmpty<ExecutionAdapter>(
-        typename ExecutionAdapter::ErrorHandler());
+      dax::exec::internal::WorkEmpty<ExecutionAdapter>(ExecutionAdapter());
 
   for(dax::Id i = 0; i < ARRAY_SIZE; i++)
     {
@@ -172,8 +168,8 @@ void TestExecutionField(dax::exec::internal::FieldAccessOutputTag)
   // Create field.
   dax::cont::ArrayHandle<ValueType> array;
 
-  FieldType field = dax::cont::internal::ExecutionPackageField
-      ::GetExecutionObject<FieldType>(array, ARRAY_SIZE);
+  FieldType field = dax::cont::internal::ExecutionPackageField<FieldType>(
+        array, ARRAY_SIZE);
 
   std::cout << "Checking that field create allocated array." << std::endl;
   DAX_TEST_ASSERT(array.GetNumberOfValues() == ARRAY_SIZE,
@@ -181,8 +177,7 @@ void TestExecutionField(dax::exec::internal::FieldAccessOutputTag)
 
   std::cout << "Filling array." << std::endl;
   dax::exec::internal::WorkEmpty<ExecutionAdapter> dummywork =
-      dax::exec::internal::WorkEmpty<ExecutionAdapter>(
-        typename ExecutionAdapter::ErrorHandler());
+      dax::exec::internal::WorkEmpty<ExecutionAdapter>(ExecutionAdapter());
 
   for (dax::Id i = 0; i < ARRAY_SIZE; i++)
     {

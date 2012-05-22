@@ -21,6 +21,7 @@
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
+#include <dax/exec/internal/ExecutionAdapter.h>
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
@@ -33,12 +34,12 @@ namespace internal {
 namespace kernel {
 
 
-template <typename CellType, class ExecutionAdapter>
+template <typename CellType, class ExecAdapter>
 DAX_WORKLET void ExtractCoordinates(
-    const dax::exec::WorkMapField<CellType, ExecutionAdapter> &work,
+    const dax::exec::WorkMapField<CellType, ExecAdapter> &work,
     dax::Id newIndex,
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &pointCoord,
-    const dax::exec::FieldOut<dax::Vector3, ExecutionAdapter> &output)
+    const dax::exec::FieldCoordinatesIn<ExecAdapter> &pointCoord,
+    const dax::exec::FieldOut<dax::Vector3, ExecAdapter> &output)
 {
   dax::Vector3 pointLocation = work.GetFieldValue(pointCoord);
   dax::Vector3* location = output.GetArray().GetPointer();
@@ -80,14 +81,15 @@ namespace internal {
 
 template<
     class GridType,
-    template <typename> class ArrayContainerControl,
-    class DeviceAdapter>
+    class ArrayContainerControlTag,
+    class DeviceAdapterTag>
 DAX_CONT_EXPORT
-dax::cont::ArrayHandle<dax::Vector3, ArrayContainerControl, DeviceAdapter>
+dax::cont::ArrayHandle<dax::Vector3, ArrayContainerControlTag, DeviceAdapterTag>
 ExtractCoordinates(
     const GridType &grid,
-    const dax::cont::ArrayHandle<dax::Id, ArrayContainerControl, DeviceAdapter>
-        &extractIds)
+    const dax::cont::ArrayHandle<dax::Id,
+                                 ArrayContainerControlTag,
+                                 DeviceAdapterTag> &extractIds)
 {
   //Verify the input
   DAX_ASSERT_CONT(grid.GetNumberOfPoints() > 0);
@@ -95,27 +97,26 @@ ExtractCoordinates(
   DAX_ASSERT_CONT(extractIds.GetNumberOfValues() <= grid.GetNumberOfPoints());
 
   const dax::Id outputSize = extractIds.GetNumberOfValues();
-  dax::cont::ArrayHandle<dax::Vector3, ArrayContainerControl, DeviceAdapter>
+  dax::cont::ArrayHandle<dax::Vector3,ArrayContainerControlTag,DeviceAdapterTag>
       coordinates;
 
-  typedef typename DeviceAdapter::template ExecutionAdapter<ArrayContainerControl>
-      ExecutionAdapter;
+  typedef dax::exec::internal
+      ::ExecutionAdapter<ArrayContainerControlTag,DeviceAdapterTag> ExecAdapter;
   typedef typename GridType::ExecutionTopologyStruct TopologyType;
   typedef typename GridType::CellType CellType;
   typedef dax::exec::internal::kernel
-      ::ExtractCoordinatesFunctor<CellType, ExecutionAdapter> FunctorType;
+      ::ExtractCoordinatesFunctor<CellType, ExecAdapter> FunctorType;
 
   dax::exec::internal::kernel::ExtractCoordinatesParameters<
-      TopologyType, ExecutionAdapter> parameters;
-  parameters.grid
-      = dax::cont::internal::ExecutionPackageGrid::GetExecutionObject(grid);
-  parameters.inCoordinates
-      = dax::cont::internal::ExecutionPackageField
-      ::GetExecutionObject<dax::exec::FieldCoordinatesIn>(
+      TopologyType,ExecAdapter> parameters;
+  parameters.grid =
+      dax::cont::internal::ExecutionPackageGrid(grid);
+  parameters.inCoordinates =
+      dax::cont::internal::ExecutionPackageField<dax::exec::FieldCoordinatesIn>(
         grid.GetPointCoordinates(), grid);
-  parameters.outField
-      = dax::cont::internal::ExecutionPackageField
-      ::GetExecutionObject<dax::exec::FieldOut>(coordinates, outputSize);
+  parameters.outField =
+      dax::cont::internal::ExecutionPackageField<dax::exec::FieldOut>(
+        coordinates, outputSize);
 
   dax::cont::internal::ScheduleMap(FunctorType(), parameters, extractIds);
 }
