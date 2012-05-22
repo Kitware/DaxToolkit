@@ -228,6 +228,10 @@ private:
 
   static DAX_CONT_EXPORT void TestOutOfMemory()
   {
+    // Only test out of memory with 64 bit ids.  If there are 32 bit ids on
+    // a 64 bit OS (common), it is simply too hard to get a reliable allocation
+    // that is too much memory.
+#ifdef DAX_USE_64BIT_IDS
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing Out of Memory" << std::endl;
     try
@@ -238,7 +242,8 @@ private:
           bigManager;
       dax::cont::internal::ArrayContainerControl<
           dax::Vector4, ArrayContainerControlTagBasic> supportArray;
-      bigManager.AllocateArrayForOutput(supportArray, -1);
+      const dax::Id bigSize = 0x7FFFFFFFFFFFFFFFLL;
+      bigManager.AllocateArrayForOutput(supportArray, bigSize);
       // It does not seem reasonable to get here.  The previous call should fail.
       DAX_TEST_FAIL("A ridiculously sized allocation succeeded.  Either there "
                     "was a failure that was not reported but should have been "
@@ -249,6 +254,9 @@ private:
       {
       std::cout << "Got the expected error: " << error.GetMessage() << std::endl;
       }
+#else
+    std::cout << "--------- Skiping out of memory test" << std::endl;
+#endif
   }
 
   static DAX_CONT_EXPORT void TestSchedule()
@@ -526,7 +534,7 @@ private:
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
     std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
-    std::cout << "Number of Points in the grid"
+    std::cout << "Number of Points in the grid: "
               <<  grid->GetNumberOfPoints()
               << std::endl;
     for (dax::Id pointIndex = 0;

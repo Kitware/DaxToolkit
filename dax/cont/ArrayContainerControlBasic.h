@@ -103,6 +103,7 @@ public:
       else
         {
         // ReleaseResources should have already set NumberOfValues to 0.
+        DAX_ASSERT_CONT(this->NumberOfValues == 0);
         }
       }
     catch (std::bad_alloc err)
