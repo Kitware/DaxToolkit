@@ -82,12 +82,12 @@ public:
     DAX_ASSERT_EXEC(OutputCellType::NUM_POINTS
                     == OutputPointConnectionsType::NUM_COMPONENTS,
                     *this);
-    for (dax::Id index = this->OutputIndex*OutputCellType::NUM_POINTS;
-         index < (this->OutputIndex+1)*OutputCellType::NUM_POINTS;
-         index++)
+    const dax::Id connectionIndexOffset =
+        this->OutputIndex*OutputCellType::NUM_POINTS;
+    for (dax::Id index = 0; index < OutputCellType::NUM_POINTS; index++)
       {
       dax::exec::internal::FieldAccess::SetField(this->OutputConnectionField,
-                                                 index,
+                                                 index + connectionIndexOffset,
                                                  connections[index],
                                                  *this);
       }
