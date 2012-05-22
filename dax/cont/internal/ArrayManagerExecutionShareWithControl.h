@@ -28,7 +28,7 @@ namespace cont {
 namespace internal {
 
 /// \c ArrayManagerExecutionShareWithControl provides an implementation for a
-/// \c ArrayManagerExecution sublcass of a \c DeviceAdapter when the execution
+/// \c ArrayManagerExecution class for a device adapter when the execution
 /// and control environments share memory. This class basically defers all its
 /// calls to an \c ArrayContainerControl class and uses the array allocated
 /// there.
@@ -45,7 +45,7 @@ public:
   typedef typename ContainerType::IteratorConstType IteratorConstType;
 
   DAX_CONT_EXPORT ArrayManagerExecutionShareWithControl()
-    : IteratorsValid(false) { }
+    : IteratorsValid(false), ConstIteratorsValid(false) { }
 
   /// Saves the given iterators to be returned later.
   ///
