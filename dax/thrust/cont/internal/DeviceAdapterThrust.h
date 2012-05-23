@@ -19,8 +19,6 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
 
-#include <dax/cont/internal/ArrayHandleAccess.h>
-
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 
 #include <thrust/binary_search.h>

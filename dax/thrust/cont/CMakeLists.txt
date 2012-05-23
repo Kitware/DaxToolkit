@@ -15,20 +15,13 @@
 ##=============================================================================
 
 set(headers
-  Copy.h
-  InclusiveScan.h
-  LowerBounds.h
-  ScheduleThrust.h
-  Sort.h
-  StreamCompact.h
-  Unique.h
   )
 
 #-----------------------------------------------------------------------------
 add_subdirectory(internal)
 
 #-----------------------------------------------------------------------------
-dax_declare_headers(${headers})
+#dax_declare_headers(${headers})
 
 #-----------------------------------------------------------------------------
 set(unit_tests
