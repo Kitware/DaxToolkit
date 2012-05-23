@@ -136,12 +136,13 @@ DAX_CONT_EXPORT T InclusiveScan(
       ::IteratorConstExecution IteratorConstType;
 
   dax::Id numberOfValues = input.GetNumberOfValues();
-  if (numberOfValues <= 0) { return 0; }
 
   std::pair<IteratorConstType, IteratorConstType> inputIter
       = input.PrepareForInput();
   std::pair<IteratorType, IteratorType> outputIter =
       output.PrepareForOutput(numberOfValues);
+
+  if (numberOfValues <= 0) { return 0; }
 
   std::partial_sum(inputIter.first, inputIter.second, outputIter.first);
 
@@ -194,7 +195,24 @@ DAX_CONT_EXPORT void LowerBounds(
         &values_output,
     DeviceAdapterTagSerial)
 {
-  LowerBounds(input, values_output, values_output, DeviceAdapterTagSerial());
+  typedef typename dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>
+      ::IteratorConstExecution IteratorConstT;
+  typedef typename dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>
+      ::IteratorExecution IteratorId;
+
+  std::pair<IteratorConstT, IteratorConstT> inputIter
+      = input.PrepareForInput();
+  std::pair<IteratorId, IteratorId> outputIter =
+      values_output.PrepareForInPlace();
+
+  for (IteratorId out = outputIter.first; out != outputIter.second; out++)
+    {
+    // std::lower_bound returns an iterator to the position where you can
+    // insert, but we want the distance from the start.
+    IteratorConstT resultPos
+        = std::lower_bound(inputIter.first, inputIter.second, *out);
+    *out = static_cast<dax::Id>(std::distance(inputIter.first, resultPos));
+    }
 }
 
 namespace detail {
@@ -231,11 +249,11 @@ private:
 template<class Functor,
          class Parameters,
          class ArrayContainerControlTag>
-static void Schedule(Functor functor,
-                     Parameters parameters,
-                     dax::Id numInstances,
-                     ArrayContainerControlTag,
-                     DeviceAdapterTagSerial)
+DAX_CONT_EXPORT void Schedule(Functor functor,
+                              Parameters parameters,
+                              dax::Id numInstances,
+                              ArrayContainerControlTag,
+                              DeviceAdapterTagSerial)
 {
   detail::ScheduleKernelSerial<Functor, Parameters, ArrayContainerControlTag>
       kernel(functor, parameters);

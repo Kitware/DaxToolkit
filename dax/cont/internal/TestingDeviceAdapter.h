@@ -394,9 +394,11 @@ private:
       {
       testData[i]= OFFSET+(i % 50);
       }
-    IdArrayHandle handle(testData, testData + ARRAY_SIZE);
+    IdArrayHandle input(testData, testData + ARRAY_SIZE);
 
+    IdArrayHandle handle;
     IdArrayHandle temp;
+    dax::cont::internal::Copy(input,handle,DeviceAdapterTag());
     dax::cont::internal::Copy(handle,temp,DeviceAdapterTag());
     dax::cont::internal::Sort(temp,DeviceAdapterTag());
     dax::cont::internal::Unique(temp,DeviceAdapterTag());
@@ -421,7 +423,8 @@ private:
     randomData[5]=955;  //3
 
     //change the control structure under the handle
-    handle = IdArrayHandle(randomData, randomData + RANDOMDATA_SIZE);
+    input = IdArrayHandle(randomData, randomData + RANDOMDATA_SIZE);
+    dax::cont::internal::Copy(input,handle,DeviceAdapterTag());
     DAX_TEST_ASSERT(handle.GetNumberOfValues() == RANDOMDATA_SIZE,
                     "Handle incorrect size after setting new control data");
 

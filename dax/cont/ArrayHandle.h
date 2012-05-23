@@ -389,6 +389,14 @@ public:
   DAX_CONT_EXPORT std::pair<IteratorExecution, IteratorExecution>
   PrepareForInPlace()
   {
+    if (this->Internals->UserIteratorValid)
+      {
+      throw dax::cont::ErrorControlBadValue(
+            "In place execution cannot be used with an ArrayHandle that has "
+            "user arrays because this might write data back into user space "
+            "unexpectedly.  Copy the data to a new array first.");
+      }
+
     this->PrepareForInput();
 
     // Invalidate any control arrays. Don't actually release the control array.
