@@ -17,6 +17,7 @@
 set(headers
   ArrayManagerExecutionThrustDevice.h
   ArrayManagerExecutionThrustShare.h
+  DeviceAdapterThrust.h
   )
 
 dax_declare_headers(${headers})

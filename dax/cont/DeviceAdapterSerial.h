@@ -278,8 +278,8 @@ DAX_CONT_EXPORT void Sort(
 }
 
 template<typename T, class Container>
-static void StreamCompact(
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>& input,
+DAX_CONT_EXPORT void StreamCompact(
+    const dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>& stencil,
     dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>& output,
     DeviceAdapterTagSerial)
 {
@@ -288,18 +288,19 @@ static void StreamCompact(
   typedef typename dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>
       ::IteratorExecution IteratorId;
 
-  std::pair<IteratorConstT, IteratorConstT> inputIter = input.PrepareForInput();
+  std::pair<IteratorConstT, IteratorConstT> stencilIter =
+      stencil.PrepareForInput();
 
-  dax::Id size = std::count_if(inputIter.first,
-                               inputIter.second,
+  dax::Id size = std::count_if(stencilIter.first,
+                               stencilIter.second,
                                dax::not_default_constructor<dax::Id>());
 
   std::pair<IteratorId, IteratorId> outputIter = output.PrepareForOutput(size);
 
-  IteratorConstT in = inputIter.first;
+  IteratorConstT in = stencilIter.first;
   IteratorId out = outputIter.first;
   dax::Id index = 0;
-  for (; in != inputIter.second; in++, index++)
+  for (; in != stencilIter.second; in++, index++)
     {
     // Only write index that matches the default constructor of T
     if (dax::not_default_constructor<T>()(*in))

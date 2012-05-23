@@ -128,6 +128,7 @@ public:
   // These features are expected by thrust device adapters to run thrust
   // algorithms (see DeviceAdapterThrust.h).
 
+#if 0
   typedef typename ::thrust::device_vector<ValueType>::iterator
       ThrustIteratorType;
   typedef typename ::thrust::device_vector<ValueType>::const_iterator
@@ -141,6 +142,19 @@ public:
   }
   ThrustIteratorConstType GetThrustIteratorConstEnd() const {
     return this->Array.cend();
+  }
+#endif
+
+  typedef ::thrust::device_ptr<ValueType> ThrustIteratorType;
+  typedef ::thrust::device_ptr<const ValueType> ThrustIteratorConstType;
+
+  DAX_CONT_EXPORT static ThrustIteratorType
+  ThrustIterator(IteratorType iterator) {
+    return ::thrust::device_ptr<ValueType>(iterator);
+  }
+  DAX_CONT_EXPORT static ThrustIteratorConstType
+  ThrustIterator(IteratorConstType iterator) {
+    return ::thrust::device_ptr<const ValueType>(iterator);
   }
 
 private:
