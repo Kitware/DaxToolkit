@@ -36,7 +36,7 @@ namespace internal {
 /// really should only be used when the host and device use different memory
 /// spaces (such as a CUDA backend). If they share the same memory space (such
 /// as an OpenMP or TBB backend), then the device adapter should just use
-/// dax::cont::internal::ArrayManagerExecutionShareWithControl.
+/// ArrayManagerExecutionThrustShare.
 ///
 template<typename T, class ArrayContainerControlTag>
 class ArrayManagerExecutionThrustDevice
@@ -109,11 +109,11 @@ public:
   {
     return this->ThrustIteratorToExecutionIterator(this->Array.end());
   }
-  DAX_CONT_EXPORT IteratorConstType GetIteratorConstBegin()
+  DAX_CONT_EXPORT IteratorConstType GetIteratorConstBegin() const
   {
     return this->ThrustIteratorToExecutionIterator(this->Array.cbegin());
   }
-  DAX_CONT_EXPORT IteratorConstType GetIteratorConstEnd()
+  DAX_CONT_EXPORT IteratorConstType GetIteratorConstEnd() const
   {
     return this->ThrustIteratorToExecutionIterator(this->Array.cend());
   }
@@ -123,6 +123,24 @@ public:
   DAX_CONT_EXPORT void ReleaseResources() {
     this->Array.clear();
     this->Array.shrink_to_fit();
+  }
+
+  // These features are expected by thrust device adapters to run thrust
+  // algorithms (see DeviceAdapterThrust.h).
+
+  typedef typename ::thrust::device_vector<ValueType>::iterator
+      ThrustIteratorType;
+  typedef typename ::thrust::device_vector<ValueType>::const_iterator
+      ThrustIteratorConstType;
+
+  ThrustIteratorType GetThrustIteratorBegin() { return this->Array.begin(); }
+  ThrustIteratorType GetThrustIteratorEnd() { return this->Array.end(); }
+
+  ThrustIteratorConstType GetThrustIteratorConstBegin() const {
+    return this->Array.cbegin();
+  }
+  ThrustIteratorConstType GetThrustIteratorConstEnd() const {
+    return this->Array.cend();
   }
 
 private:
@@ -138,12 +156,12 @@ private:
   // limited contexts. These methods convert a thrust iterator to an iterator
   // used in a Dax execution environment.
   DAX_CONT_EXPORT static IteratorType ThrustIteratorToExecutionIterator(
-      typename ::thrust::device_vector<ValueType>::iterator thrustIterator)
+      ThrustIteratorType thrustIterator)
   {
     return ::thrust::raw_pointer_cast(&(*thrustIterator));
   }
   DAX_CONT_EXPORT static IteratorConstType ThrustIteratorToExecutionIterator(
-     typename ::thrust::device_vector<ValueType>::const_iterator thrustIterator)
+      ThrustIteratorConstType thrustIterator)
   {
     return ::thrust::raw_pointer_cast(&(*thrustIterator));
   }
