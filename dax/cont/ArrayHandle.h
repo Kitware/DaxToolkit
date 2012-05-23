@@ -450,8 +450,6 @@ private:
   }
 
   boost::shared_ptr<InternalStruct> Internals;
-
-  friend class dax::cont::internal::ArrayHandleAccess;
 };
 
 }

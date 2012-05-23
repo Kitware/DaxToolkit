@@ -46,25 +46,6 @@ public:
   // These features are expected by thrust device adapters to run thrust
   // algorithms (see DeviceAdapterThrust.h).
 
-#if 0
-  typedef IteratorType ThrustIteratorType;
-  typedef IteratorConstType ThrustIteratorConstType;
-
-  ThrustIteratorType GetThrustIteratorBegin() {
-    return this->GetIteratorBegin();
-  }
-  ThrustIteratorType GetThrustIteratorEnd() {
-    return this->GetIteratorEnd();
-  }
-
-  ThrustIteratorConstType GetThrustIteratorConstBegin() const {
-    return this->GetIteratorConstBegin();
-  }
-  ThrustIteratorConstType GetThrustIteratorConstEnd() const {
-    return this->GetIteratorConstEnd();
-  }
-#endif
-
   typedef IteratorType ThrustIteratorType;
   typedef IteratorConstType ThrustIteratorConstType;
 

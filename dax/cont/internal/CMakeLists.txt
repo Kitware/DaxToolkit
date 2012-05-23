@@ -16,7 +16,6 @@
 
 set(headers
   ArrayContainerControlError.h
-  ArrayHandleAccess.h
   ArrayManagerExecutionShareWithControl.h
   DeviceAdapterError.h
   ExecutionPackageField.h
@@ -40,7 +39,6 @@ dax_declare_headers(${headers})
 #add_custom_target(daxContInternal ALL DEPENDS daxCont)
 
 set(unit_tests
-  UnitTestArrayHandleAccess.cxx
   UnitTestArrayManagerExecutionShareWithControl.cxx
   UnitTestContTesting.cxx
   UnitTestExecutionPackage.cxx
