@@ -31,7 +31,7 @@ struct ArrayHandleAccess
   template<class T, class Container, class Device>
   DAX_CONT_EXPORT static
   dax::cont::internal::ArrayManagerExecution<T,Container,Device>
-  &GetArrayManageExecution(dax::cont::ArrayHandle<T,Container,Device> &array)
+  &GetArrayManagerExecution(dax::cont::ArrayHandle<T,Container,Device> &array)
   {
     DAX_ASSERT_CONT(array.Internals->ExecutionArrayValid);
     return array.Internals->ExecutionArray;
@@ -40,7 +40,7 @@ struct ArrayHandleAccess
   template<class T, class Container, class Device>
   DAX_CONT_EXPORT static
   const dax::cont::internal::ArrayManagerExecution<T,Container,Device>
-  &GetArrayManageExecution(
+  &GetArrayManagerExecution(
       const dax::cont::ArrayHandle<T,Container,Device> &array)
   {
     DAX_ASSERT_CONT(array.Internals->ExecutionArrayValid);

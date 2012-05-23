@@ -28,7 +28,7 @@ void TestConstAccess(const dax::cont::ArrayHandle<dax::Scalar> &array)
 {
   const dax::cont::internal::ArrayManagerExecutionShareWithControl
       <dax::Scalar, dax::cont::ArrayContainerControlTagBasic> &manager =
-      dax::cont::internal::ArrayHandleAccess::GetArrayManageExecution(array);
+      dax::cont::internal::ArrayHandleAccess::GetArrayManagerExecution(array);
 
   // This manager's iterators should be the same as the control iterators.
   DAX_TEST_ASSERT(array.GetIteratorConstControlBegin()
@@ -43,7 +43,7 @@ void TestAccess()
 
   dax::cont::internal::ArrayManagerExecutionShareWithControl
       <dax::Scalar, dax::cont::ArrayContainerControlTagBasic> &manager =
-      dax::cont::internal::ArrayHandleAccess::GetArrayManageExecution(array);
+      dax::cont::internal::ArrayHandleAccess::GetArrayManagerExecution(array);
 
   // This manager's iterators should be the same as the control iterators.
   DAX_TEST_ASSERT(array.GetIteratorControlBegin() == manager.GetIteratorBegin(),
