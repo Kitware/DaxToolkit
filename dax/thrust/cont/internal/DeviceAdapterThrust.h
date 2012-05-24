@@ -239,7 +239,7 @@ DAX_CONT_EXPORT void Copy(
 }
 
 template<typename T, class Container, class Adapter>
-DAX_CONT_EXPORT void InclusiveScan(
+DAX_CONT_EXPORT T InclusiveScan(
     const dax::cont::ArrayHandle<T,Container,Adapter> &input,
     dax::cont::ArrayHandle<T,Container,Adapter>& output,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)

@@ -43,6 +43,8 @@ public:
   typedef typename Superclass::IteratorType IteratorType;
   typedef typename Superclass::IteratorConstType IteratorConstType;
 
+  ArrayManagerExecutionThrustShare() {  }
+
   // These features are expected by thrust device adapters to run thrust
   // algorithms (see DeviceAdapterThrust.h).
 

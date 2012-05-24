@@ -65,6 +65,7 @@ class ArrayManagerExecution
     : public dax::thrust::cont::internal::ArrayManagerExecutionThrustShare
         <T, ArrayContainerTag>
 {
+public:
   typedef dax::thrust::cont::internal::ArrayManagerExecutionThrustShare
       <T, ArrayContainerTag> Superclass;
   typedef typename Superclass::ValueType ValueType;
