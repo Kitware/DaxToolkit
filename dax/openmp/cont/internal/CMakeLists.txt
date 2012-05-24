@@ -15,13 +15,11 @@
 ##=============================================================================
 
 set(headers
-  ArrayContainerExecutionThrust.h
   SetThrustForOpenMP.h
   )
 
 dax_declare_headers(${headers})
 
 set(unit_tests
-  UnitTestOpenMPArrayContainerExecutionThrust.cxx
   )
-dax_unit_tests(SOURCES ${unit_tests})
+#dax_unit_tests(SOURCES ${unit_tests})
