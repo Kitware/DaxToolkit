@@ -143,19 +143,21 @@ void PrintContentsToStream(dax::cont::UnstructuredGrid<T>& grid, Stream &stream)
     }
   }
 
-void RunDAXPipeline(const dax::cont::UniformGrid &grid)
+void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
 {
   std::cout << "Running pipeline 1: Elevation -> Threshold" << std::endl;
 
   dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> grid2;
 
-  dax::cont::ArrayHandle<dax::Scalar> intermediate1(grid.GetNumberOfPoints());
+  dax::cont::ArrayHandle<dax::Scalar> intermediate1;
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
   dax::Scalar min = 0;
   dax::Scalar max = 100;
 
-  dax::cont::worklet::Elevation(grid, grid.GetPoints(), intermediate1);
+  dax::cont::worklet::Elevation(grid,
+                                grid.GetPointCoordinates(),
+                                intermediate1);
 
   Timer timer;
   dax::cont::worklet::Threshold(grid,grid2,min,max,intermediate1,resultHandle);
@@ -167,10 +169,6 @@ void RunDAXPipeline(const dax::cont::UniformGrid &grid)
   std::cout << "threshold GetNumberOfPoints: " << grid2.GetNumberOfPoints() << std::endl;
   PrintResults(1, time);
 
-  std::vector<dax::Scalar> resultsBuffer(resultHandle.GetNumberOfEntries());
-  resultHandle.SetNewControlData(resultsBuffer.begin(),resultsBuffer.end());
-  resultHandle.CompleteAsOutput(); //fetch back to control
-
 
 
   //rough dump to file
@@ -179,7 +177,8 @@ void RunDAXPipeline(const dax::cont::UniformGrid &grid)
 //  PrintContentsToStream(grid2,file);
 //  file.close();
 
-  CheckValues(resultsBuffer.begin(), resultsBuffer.end());
+  CheckValues(resultHandle.GetIteratorConstControlBegin(),
+              resultHandle.GetIteratorConstControlEnd());
 }
 
 

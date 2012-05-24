@@ -92,80 +92,83 @@ void PrintResults(int pipeline, double time)
             << pipeline << "," << time << std::endl;
 }
 
-void RunPipeline1(const dax::cont::UniformGrid &grid)
+void RunPipeline1(const dax::cont::UniformGrid<> &grid)
 {
   std::cout << "Running pipeline 1: Elevation -> Gradient" << std::endl;
 
-  dax::cont::ArrayHandle<dax::Scalar> intermediate1(grid.GetNumberOfPoints());
+  dax::cont::ArrayHandle<dax::Scalar> intermediate1;
 
-  std::vector<dax::Vector3> resultsBuffer(grid.GetNumberOfCells());
-  dax::cont::ArrayHandle<dax::Vector3> results(resultsBuffer.begin(),
-                                               resultsBuffer.end());
+  dax::cont::ArrayHandle<dax::Vector3> results;
 
   Timer timer;
-  dax::cont::worklet::Elevation(grid, grid.GetPoints(), intermediate1);
+  dax::cont::worklet::Elevation(grid,
+                                grid.GetPointCoordinates(),
+                                intermediate1);
   dax::cont::worklet::CellGradient(grid,
-                                         grid.GetPoints(),
-                                         intermediate1,
-                                         results);
+                                   grid.GetPointCoordinates(),
+                                   intermediate1,
+                                   results);
   double time = timer.elapsed();
 
-  PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
+  PrintCheckValues(results.GetIteratorConstControlBegin(),
+                   results.GetIteratorConstControlEnd());
   PrintResults(1, time);
 }
 
-void RunPipeline2(const dax::cont::UniformGrid &grid)
+void RunPipeline2(const dax::cont::UniformGrid<> &grid)
 {
   std::cout << "Running pipeline 2: Elevation->Gradient->Sine->Square->Cosine"
             << std::endl;
 
-  dax::cont::ArrayHandle<dax::Scalar> intermediate1(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Vector3> intermediate2(grid.GetNumberOfCells());
-  dax::cont::ArrayHandle<dax::Vector3> intermediate3(grid.GetNumberOfCells());
+  dax::cont::ArrayHandle<dax::Scalar> intermediate1;
+  dax::cont::ArrayHandle<dax::Vector3> intermediate2;
+  dax::cont::ArrayHandle<dax::Vector3> intermediate3;
 
-  std::vector<dax::Vector3> resultsBuffer(grid.GetNumberOfCells());
-  dax::cont::ArrayHandle<dax::Vector3> results(resultsBuffer.begin(),
-                                               resultsBuffer.end());
+  dax::cont::ArrayHandle<dax::Vector3> results;
 
   Timer timer;
-  dax::cont::worklet::Elevation(grid, grid.GetPoints(), intermediate1);
+  dax::cont::worklet::Elevation(grid,
+                                grid.GetPointCoordinates(),
+                                intermediate1);
   dax::cont::worklet::CellGradient(grid,
-                                         grid.GetPoints(),
-                                         intermediate1,
-                                         intermediate2);
-  intermediate1.ReleaseExecutionResources();
+                                   grid.GetPointCoordinates(),
+                                   intermediate1,
+                                   intermediate2);
+  intermediate1.ReleaseResources();
   dax::cont::worklet::Sine(grid, intermediate2, intermediate3);
   dax::cont::worklet::Square(grid, intermediate3, intermediate2);
-  intermediate3.ReleaseExecutionResources();
+  intermediate3.ReleaseResources();
   dax::cont::worklet::Cosine(grid, intermediate2, results);
   double time = timer.elapsed();
 
-  PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
+  PrintCheckValues(results.GetIteratorConstControlBegin(),
+                   results.GetIteratorConstControlEnd());
 
   PrintResults(2, time);
 }
 
-void RunPipeline3(const dax::cont::UniformGrid &grid)
+void RunPipeline3(const dax::cont::UniformGrid<> &grid)
 {
   std::cout << "Running pipeline 3: Elevation -> Sine -> Square -> Cosine"
             << std::endl;
 
-  dax::cont::ArrayHandle<dax::Scalar> intermediate1(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar> intermediate2(grid.GetNumberOfPoints());
+  dax::cont::ArrayHandle<dax::Scalar> intermediate1;
+  dax::cont::ArrayHandle<dax::Scalar> intermediate2;
 
-  std::vector<dax::Scalar> resultsBuffer(grid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar> results(resultsBuffer.begin(),
-                                              resultsBuffer.end());
+  dax::cont::ArrayHandle<dax::Scalar> results;
 
   Timer timer;
-  dax::cont::worklet::Elevation(grid, grid.GetPoints(), intermediate1);
+  dax::cont::worklet::Elevation(grid,
+                                grid.GetPointCoordinates(),
+                                intermediate1);
   dax::cont::worklet::Sine(grid, intermediate1, intermediate2);
   dax::cont::worklet::Square(grid, intermediate2, intermediate1);
-  intermediate2.ReleaseExecutionResources();
+  intermediate2.ReleaseResources();
   dax::cont::worklet::Cosine(grid, intermediate1, results);
   double time = timer.elapsed();
 
-  PrintCheckValues(resultsBuffer.begin(), resultsBuffer.end());
+  PrintCheckValues(results.GetIteratorConstControlBegin(),
+                   results.GetIteratorConstControlEnd());
 
   PrintResults(3, time);
 }
