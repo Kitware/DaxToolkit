@@ -21,130 +21,101 @@
 #undef DAX_DEFAULT_DEVICE_ADAPTER
 #endif
 
-#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::openmp::cont::DeviceAdapterOpenMP
+#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::openmp::cont::DeviceAdapterTagOpenMP
 
-#include <dax/openmp/cont/Copy.h>
-#include <dax/openmp/cont/InclusiveScan.h>
-#include <dax/openmp/cont/LowerBounds.h>
-#include <dax/openmp/cont/ScheduleThrust.h>
-#include <dax/openmp/cont/StreamCompact.h>
-#include <dax/openmp/cont/Sort.h>
-#include <dax/openmp/cont/Unique.h>
-#include <dax/openmp/cont/internal/ArrayContainerExecutionThrust.h>
-
+// Forward declaration (before suber DeviceAdapterTagThrust declared).
 namespace dax {
+namespace openmp {
 namespace cont {
-  //forward declare the ArrayHandle before we use it.
-  template< typename OtherT, class OtherDeviceAdapter > class ArrayHandle;
+struct DeviceAdapterTagOpenMP;
 }
 }
+}
+
+#include <dax/openmp/cont/internal/SetThrustForOpenMP.h>
+
+#include <dax/thrust/cont/internal/ArrayManagerExecutionThrustShare.h>
+#include <dax/thrust/cont/internal/DeviceAdapterThrust.h>
 
 namespace dax {
 namespace openmp {
 namespace cont {
 
-/// An implementation of DeviceAdapter that will schedule execution on multiple
-/// CPUs using OpenMP.
+/// A DeviceAdapter that uses OpenMP.  To use this adapter, an OpenMP-compliant
+/// compiler with OpenMP support turned on must be used (duh).
 ///
-struct DeviceAdapterOpenMP
-{
-  template<typename T>
-  class ArrayContainerExecution
-      : public dax::openmp::cont::internal::ArrayContainerExecutionThrust<T>
-  { };
-
-  template<typename T>
-  static void Copy(const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& from,
-                         dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& to)
-    {
-    DAX_ASSERT_CONT(from.hasExecutionArray());
-    DAX_ASSERT_CONT(to.GetNumberOfEntries() >= from.GetNumberOfEntries());
-    to.ReadyAsOutput();
-    dax::openmp::cont::copy(from.GetExecutionArray(),to.GetExecutionArray());
-    }
-
-  template<typename T>
-  static T InclusiveScan(const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP> &input,
-                            dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& output)
-    {
-    DAX_ASSERT_CONT(input.hasExecutionArray());
-    DAX_ASSERT_CONT(output.GetNumberOfEntries() == input.GetNumberOfEntries());
-    output.ReadyAsOutput();
-    return dax::openmp::cont::inclusiveScan(input.GetExecutionArray(),
-                                            output.GetExecutionArray());
-    }
-
-  template<typename T, typename U>
-  static void LowerBounds(const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& input,
-                         const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& values,
-                         dax::cont::ArrayHandle<U,DeviceAdapterOpenMP>& output)
-    {
-    DAX_ASSERT_CONT(input.hasExecutionArray());
-    DAX_ASSERT_CONT(values.hasExecutionArray());
-    DAX_ASSERT_CONT(values.GetNumberOfEntries() <= output.GetNumberOfEntries());
-    output.ReadyAsOutput();
-    dax::openmp::cont::lowerBounds(input.GetExecutionArray(),
-                                   values.GetExecutionArray(),
-                                   output.GetExecutionArray());
-    }
-
-  template<class Functor, class Parameters>
-  static void Schedule(Functor functor,
-                       Parameters parameters,
-                       dax::Id numInstances)
-  {
-    dax::openmp::cont::scheduleThrust(functor, parameters, numInstances);
-  }
-
-  template<typename T>
-  static void Sort(dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& values)
-    {
-    DAX_ASSERT_CONT(values.hasExecutionArray());
-    dax::openmp::cont::sort(values.GetExecutionArray());
-    }
-
-  template<typename T,typename U>
-  static void StreamCompact(
-      const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& input,
-      dax::cont::ArrayHandle<U,DeviceAdapterOpenMP>& output)
-    {
-    //the input array is both the input and the stencil output for the scan
-    //step. In this case the index position is the input and the value at
-    //each index is the stencil value
-    DAX_ASSERT_CONT(input.hasExecutionArray());
-    dax::openmp::cont::streamCompact(input.GetExecutionArray(),
-                                  output.GetExecutionArray());
-    output.UpdateArraySize();
-    }
-
-  template<typename T, typename U>
-  static void StreamCompact(
-      const dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& input,
-      const dax::cont::ArrayHandle<U,DeviceAdapterOpenMP>& stencil,
-      dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& output)
-    {
-    //the input array is both the input and the stencil output for the scan
-    //step. In this case the index position is the input and the value at
-    //each index is the stencil value
-    DAX_ASSERT_CONT(input.hasExecutionArray());
-    DAX_ASSERT_CONT(stencil.hasExecutionArray());
-    dax::openmp::cont::streamCompact(input.GetExecutionArray(),
-                                     stencil.GetExecutionArray(),
-                                     output.GetExecutionArray());
-    output.UpdateArraySize();
-    }
-
-  template<typename T>
-  static void Unique(dax::cont::ArrayHandle<T,DeviceAdapterOpenMP>& values)
-    {
-    DAX_ASSERT_CONT(values.hasExecutionArray());
-    dax::openmp::cont::unique(values.GetExecutionArray());
-    values.UpdateArraySize(); //unique might resize the execution array
-    }
-};
+struct DeviceAdapterTagOpenMP
+    : public dax::thrust::cont::internal::DeviceAdapterTagThrust
+{  };
 
 }
 }
 } // namespace dax::openmp::cont
+
+// These must be placed in the dax::cont::internal namespace so that
+// the template can be found.
+
+namespace dax {
+namespace cont {
+namespace internal {
+
+template <typename T, class ArrayContainerTag>
+class ArrayManagerExecution
+    <T, ArrayContainerTag, dax::openmp::cont::DeviceAdapterTagOpenMP>
+    : public dax::thrust::cont::internal::ArrayManagerExecutionThrustShare
+        <T, ArrayContainerTag>
+{
+  typedef dax::thrust::cont::internal::ArrayManagerExecutionThrustShare
+      <T, ArrayContainerTag> Superclass;
+  typedef typename Superclass::ValueType ValueType;
+  typedef typename Superclass::IteratorType IteratorType;
+  typedef typename Superclass::IteratorConstType IteratorConstType;
+
+  typedef typename Superclass::ThrustIteratorType ThrustIteratorType;
+  typedef typename Superclass::ThrustIteratorConstType ThrustIteratorConstType;
+};
+
+template<class Functor, class Parameters, class Container>
+DAX_CONT_EXPORT void Schedule(Functor functor,
+                              Parameters parameters,
+                              dax::Id numInstances,
+                              Container,
+                              dax::openmp::cont::DeviceAdapterTagOpenMP)
+{
+  dax::thrust::cont::internal::ScheduleThrust(
+        functor,
+        parameters,
+        numInstances,
+        Container(),
+        dax::openmp::cont::DeviceAdapterTagOpenMP());
+}
+
+}
+}
+} // namespace dax::cont::internal
+
+namespace dax {
+namespace exec {
+namespace internal {
+
+template <class ArrayContainerControlTag>
+class ExecutionAdapter<ArrayContainerControlTag,
+                       dax::openmp::cont::DeviceAdapterTagOpenMP>
+    : public dax::thrust::cont::internal::ExecutionAdapterThrust
+        <ArrayContainerControlTag,dax::openmp::cont::DeviceAdapterTagOpenMP>
+{
+public:
+  typedef dax::thrust::cont::internal::ExecutionAdapterThrust
+      <ArrayContainerControlTag,dax::openmp::cont::DeviceAdapterTagOpenMP>
+      Superclass;
+  using Superclass::FieldStructures;
+
+  DAX_EXEC_EXPORT ExecutionAdapter(char *messageBegin, char *messageEnd)
+    : Superclass(messageBegin, messageEnd) {  }
+};
+
+}
+}
+} // namespace dax::exec::internal
 
 #endif //__dax_openmp_cont_DeviceAdapterOpenMP_h

@@ -19,6 +19,8 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
 
+#include <dax/Functional.h>
+
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 
 #include <thrust/binary_search.h>
@@ -123,11 +125,11 @@ template<class Functor,
          class Parameters,
          class Container,
          class Adapter>
-static void ScheduleThrust(Functor functor,
-                           Parameters parameters,
-                           dax::Id numInstances,
-                           Container,
-                           Adapter)
+DAX_CONT_EXPORT void ScheduleThrust(Functor functor,
+                                    Parameters parameters,
+                                    dax::Id numInstances,
+                                    Container,
+                                    Adapter)
 {
   const dax::Id ERROR_ARRAY_SIZE = 1024;
   ::thrust::device_vector<char> errorArray(ERROR_ARRAY_SIZE);
