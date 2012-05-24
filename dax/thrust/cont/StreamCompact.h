@@ -24,7 +24,7 @@
 
 #include <thrust/copy.h>
 #include <thrust/iterator/counting_iterator.h>
-#include <thrust/reduce.h>
+#include <thrust/count.h>
 
 namespace dax {
 namespace thrust {
@@ -45,13 +45,9 @@ inline void RemoveIf(InputIterator valuesFirst,
   //first get the correct size for output. What about the speed
   //between remove_copy_if and copy_if
 
-  //first get the correct size for output
-  //we have to explicitly state accumaltor type to be dax::Id so that
-  //it doesn't use the stencil's type which is generally a char, which will
-  //overflow and migth return a negative number.
-  dax::Id numLeft = ::thrust::reduce(stencil.GetBeginThrustIterator(),
-                                     stencil.GetEndThrustIterator(),
-                                     dax::Id(0));
+  dax::Id numLeft = ::thrust::count_if(stencil.GetBeginThrustIterator(),
+                                       stencil.GetEndThrustIterator(),
+                                       pred);
   output.Allocate(numLeft);
 
   //remove any item that matches the predicate
