@@ -15,8 +15,6 @@
 ##=============================================================================
 
 set(headers
-  ArrayContainerExecutionThrust.h
-  CudaParameters.h
   SetThrustForCuda.h
   Testing.h
   )
@@ -24,6 +22,5 @@ set(headers
 dax_declare_headers(CUDA ${headers})
 
 set(unit_tests
-  UnitTestCudaArrayContainerExecutionThrust.cu
   )
-dax_unit_tests(CUDA SOURCES ${unit_tests})
+#dax_unit_tests(CUDA SOURCES ${unit_tests})

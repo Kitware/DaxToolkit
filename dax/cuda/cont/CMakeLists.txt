@@ -15,15 +15,7 @@
 ##=============================================================================
 
 set(headers
-  Copy.h
   DeviceAdapterCuda.h
-  InclusiveScan.h
-  LowerBounds.h
-  ScheduleCuda.h
-  ScheduleThrust.h
-  StreamCompact.h
-  Sort.h
-  Unique.h
   )
 
 #-----------------------------------------------------------------------------
@@ -37,8 +29,6 @@ dax_declare_headers(CUDA ${headers})
 #-----------------------------------------------------------------------------
 set(unit_tests
   UnitTestCudaMath.cu
-  UnitTestCudaScheduleNative.cu
-  UnitTestCudaScheduleThrust.cu
   UnitTestDeviceAdapterCuda.cu
   )
 dax_unit_tests(CUDA SOURCES ${unit_tests})
