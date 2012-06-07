@@ -33,7 +33,7 @@
 namespace ut_CudaMath {
 
 #define MY_ASSERT(condition, message) \
-  if (!condition) \
+  if (!(condition)) \
     { \
     errorHandler.RaiseError( \
           __FILE__ ":" __DAX_ASSERT_EXEC_STRINGIFY(__LINE__) ": " message \
