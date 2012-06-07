@@ -153,12 +153,12 @@ private:
   // limited contexts. These methods convert a thrust iterator to an iterator
   // used in a Dax execution environment.
   DAX_CONT_EXPORT static IteratorType ThrustIteratorToExecutionIterator(
-      ThrustIteratorType thrustIterator)
+      typename ::thrust::device_vector<ValueType>::iterator thrustIterator)
   {
     return ::thrust::raw_pointer_cast(&(*thrustIterator));
   }
   DAX_CONT_EXPORT static IteratorConstType ThrustIteratorToExecutionIterator(
-      ThrustIteratorConstType thrustIterator)
+      typename ::thrust::device_vector<ValueType>::const_iterator thrustIterator)
   {
     return ::thrust::raw_pointer_cast(&(*thrustIterator));
   }

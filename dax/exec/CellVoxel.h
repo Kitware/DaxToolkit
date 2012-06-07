@@ -45,8 +45,8 @@ private:
 
 public:
   /// Create a cell for the given work.
-  DAX_EXEC_CONT_EXPORT CellVoxel(const dax::exec::internal::TopologyUniform &gs,
-                                 dax::Id index)
+  DAX_EXEC_EXPORT CellVoxel(const dax::exec::internal::TopologyUniform &gs,
+                            dax::Id index)
     : GridTopology(gs), CellIndex(index) { }
 
   /// Get the number of points in the cell.

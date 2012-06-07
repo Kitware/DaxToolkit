@@ -44,7 +44,7 @@ private:
   const PointConnectionsType Connections;
 
   template<class ExecutionAdapter>
-  static PointConnectionsType GetPointConnections(
+  DAX_EXEC_EXPORT static PointConnectionsType GetPointConnections(
       const dax::exec::internal::TopologyUnstructured<
           CellHexahedron,ExecutionAdapter> &topology,
       dax::Id cellIndex)
@@ -67,7 +67,7 @@ private:
 public:
   /// Create a cell for the given work.
   template<class ExecutionAdapter>
-  DAX_EXEC_CONT_EXPORT CellHexahedron(
+  DAX_EXEC_EXPORT CellHexahedron(
       const dax::exec::internal::TopologyUnstructured<
           CellHexahedron,ExecutionAdapter> &topology,
       dax::Id cellIndex)
