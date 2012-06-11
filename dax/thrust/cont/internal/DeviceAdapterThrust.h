@@ -25,9 +25,9 @@
 
 #include <thrust/binary_search.h>
 #include <thrust/copy.h>
+#include <thrust/count.h>
 #include <thrust/device_vector.h>
 #include <thrust/iterator/counting_iterator.h>
-#include <thrust/reduce.h>
 #include <thrust/scan.h>
 #include <thrust/sort.h>
 #include <thrust/unique.h>
@@ -362,12 +362,9 @@ DAX_CONT_EXPORT void RemoveIf(
   std::pair<ThrustIteratorConstT, ThrustIteratorConstT> stencilIter =
       detail::PrepareForInput(stencil);
 
-  //Get the correct size for output.
-  //We have to explicitly state accumaltor type to be dax::Id so that
-  //it doesn't use the stencil's type which is generally a char, which will
-  //overflow and migth return a negative number.
-  dax::Id numLeft =
-      ::thrust::reduce(stencilIter.first, stencilIter.second, dax::Id(0));
+  dax::Id numLeft = ::thrust::count_if(stencilIter.first,
+                                       stencilIter.second,
+                                       dax::not_default_constructor<T>());
 
   std::pair<ThrustIteratorU, ThrustIteratorU> outputIter =
       detail::PrepareForOutput(output, numLeft);

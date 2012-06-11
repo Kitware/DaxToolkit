@@ -19,55 +19,28 @@
 
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
+#include <dax/exec/VectorOperations.h>
 #include <dax/exec/WorkDetermineNewCellCount.h>
 #include <dax/exec/WorkGenerateTopology.h>
 
 namespace dax {
 namespace worklet {
 
-template<int size, typename T>
-struct DoThreshold
-{
-  const T Min;
-  const T Max;
-  DAX_WORKLET DoThreshold(const T &min, const T &max):
-    Min(min), Max(max)
-    {
-    }
-
-  DAX_EXEC_EXPORT char operator()(const dax::Tuple<T,size>& values) const
-  {
-    char valid=1;
-    for(int i=0; i < size; ++i)
-      {
-      valid &= (values[i] > Min) && (values[i] <= Max);
-      }
-    return valid;
-  }
-};
-
 template<typename T>
-struct DoThreshold<8,T>
-{
+
+struct ThresholdFunction {
   const T Min;
   const T Max;
-  DAX_WORKLET DoThreshold(const T &min, const T &max):
-    Min(min), Max(max)
+  int valid;
+
+  DAX_EXEC_EXPORT ThresholdFunction(T& min, T&max):
+    Min(min),Max(max),valid(1)
     {
     }
 
-  DAX_EXEC_EXPORT char operator()(const dax::Tuple<T,8>& values) const
+  DAX_EXEC_EXPORT void operator()(T value)
   {
-    char valid=1;
-    valid &= (values[0] > Min) && (values[0] <= Max);
-    valid &= (values[1] > Min) && (values[1] <= Max);
-    valid &= (values[2] > Min) && (values[2] <= Max);
-    valid &= (values[3] > Min) && (values[3] <= Max);
-    valid &= (values[4] > Min) && (values[4] <= Max);
-    valid &= (values[5] > Min) && (values[5] <= Max);
-    valid &= (values[6] > Min) && (values[6] <= Max);
-    valid &= (values[7] > Min) && (values[7] <= Max);
-    return valid;
+    valid &= (value >= Min) && (value <= Max);
   }
 };
 
@@ -83,8 +56,9 @@ DAX_WORKLET void Threshold_Classify(
   dax::Tuple<FieldType,CellType::NUM_POINTS> fieldValues=
       work.GetFieldValues(inField);
 
-  DoThreshold<CellType::NUM_POINTS,FieldType> threshold(thresholdMin,thresholdMax);
-  work.SetNewCellCount(threshold(fieldValues));
+  ThresholdFunction<FieldType> threshold(thresholdMin,thresholdMax);
+  dax::exec::VectorForEach(fieldValues,threshold);
+  work.SetNewCellCount(threshold.valid);
 }
 
 template<typename InCellType, class ExecutionAdapter>

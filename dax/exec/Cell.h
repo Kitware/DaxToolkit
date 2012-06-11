@@ -27,6 +27,7 @@
 ///   GetPoint(index, field) const;
 
 #include <dax/exec/CellVoxel.h>
+#include <dax/exec/CellTriangle.h>
 #include <dax/exec/CellHexahedron.h>
 
 #endif

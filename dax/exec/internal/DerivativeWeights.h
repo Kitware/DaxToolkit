@@ -22,9 +22,10 @@ namespace dax {
 namespace exec {
 namespace internal {
 
-DAX_EXEC_EXPORT void derivativeWeightsVoxel(const dax::Vector3 &pcoords,
-                                            dax::Vector3 weights[8])
+DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,8>
+derivativeWeightsVoxel(const dax::Vector3 &pcoords)
 {
+  dax::Tuple<dax::Vector3,8> weights;
   dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
 
   weights[0][0] = -rcoords[1]*rcoords[2];
@@ -58,6 +59,20 @@ DAX_EXEC_EXPORT void derivativeWeightsVoxel(const dax::Vector3 &pcoords,
   weights[7][0] = -pcoords[1]*pcoords[2];
   weights[7][1] = rcoords[0]*pcoords[2];
   weights[7][2] = rcoords[0]*pcoords[1];
+
+  return weights;
+}
+
+DAX_EXEC_EXPORT dax::Tuple<dax::Vector2,3>
+  derivativeWeightsTriangle(const dax::Vector3 &pcoords)
+{
+  dax::Tuple<dax::Vector2,3> weights;
+
+  weights[0] = dax::Vector2(-1,-1);
+  weights[1] = dax::Vector2(1,0);
+  weights[2] = dax::Vector2(0,1);
+
+  return weights;
 }
 
 }}}

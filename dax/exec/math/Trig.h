@@ -71,6 +71,9 @@ DAX_SYS_MATH_TEMPLATE(tan)
 DAX_EXEC_EXPORT dax::Scalar Sin(dax::Scalar x) {
   return internal::sin_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 Sin(dax::Vector2 x) {
+  return internal::sin_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 Sin(dax::Vector3 x) {
   return internal::sin_template(x);
 }
@@ -83,6 +86,9 @@ DAX_EXEC_EXPORT dax::Vector4 Sin(dax::Vector4 x) {
 DAX_EXEC_EXPORT dax::Scalar Cos(dax::Scalar x) {
   return internal::cos_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 Cos(dax::Vector2 x) {
+  return internal::cos_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 Cos(dax::Vector3 x) {
   return internal::cos_template(x);
 }
@@ -93,6 +99,9 @@ DAX_EXEC_EXPORT dax::Vector4 Cos(dax::Vector4 x) {
 /// Compute the tangent of \p x.
 ///
 DAX_EXEC_EXPORT dax::Scalar Tan(dax::Scalar x) {
+  return internal::tan_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector2 Tan(dax::Vector2 x) {
   return internal::tan_template(x);
 }
 DAX_EXEC_EXPORT dax::Vector3 Tan(dax::Vector3 x) {
@@ -112,6 +121,9 @@ DAX_SYS_MATH_TEMPLATE(atan)
 DAX_EXEC_EXPORT dax::Scalar ASin(dax::Scalar x) {
   return internal::asin_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 ASin(dax::Vector2 x) {
+  return internal::asin_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 ASin(dax::Vector3 x) {
   return internal::asin_template(x);
 }
@@ -124,6 +136,9 @@ DAX_EXEC_EXPORT dax::Vector4 ASin(dax::Vector4 x) {
 DAX_EXEC_EXPORT dax::Scalar ACos(dax::Scalar x) {
   return internal::acos_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 ACos(dax::Vector2 x) {
+  return internal::acos_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 ACos(dax::Vector3 x) {
   return internal::acos_template(x);
 }
@@ -134,6 +149,9 @@ DAX_EXEC_EXPORT dax::Vector4 ACos(dax::Vector4 x) {
 /// Compute the arc tangent of \p x.
 ///
 DAX_EXEC_EXPORT dax::Scalar ATan(dax::Scalar x) {
+  return internal::atan_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector2 ATan(dax::Vector2 x) {
   return internal::atan_template(x);
 }
 DAX_EXEC_EXPORT dax::Vector3 ATan(dax::Vector3 x) {
@@ -162,6 +180,9 @@ DAX_SYS_MATH_TEMPLATE(tanh)
 DAX_EXEC_EXPORT dax::Scalar SinH(dax::Scalar x) {
   return internal::sinh_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 SinH(dax::Vector2 x) {
+  return internal::sinh_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 SinH(dax::Vector3 x) {
   return internal::sinh_template(x);
 }
@@ -174,6 +195,9 @@ DAX_EXEC_EXPORT dax::Vector4 SinH(dax::Vector4 x) {
 DAX_EXEC_EXPORT dax::Scalar CosH(dax::Scalar x) {
   return internal::cosh_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 CosH(dax::Vector2 x) {
+  return internal::cosh_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 CosH(dax::Vector3 x) {
   return internal::cosh_template(x);
 }
@@ -184,6 +208,9 @@ DAX_EXEC_EXPORT dax::Vector4 CosH(dax::Vector4 x) {
 /// Compute the hyperbolic tangent of \p x.
 ///
 DAX_EXEC_EXPORT dax::Scalar TanH(dax::Scalar x) {
+  return internal::tanh_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector2 TanH(dax::Vector2 x) {
   return internal::tanh_template(x);
 }
 DAX_EXEC_EXPORT dax::Vector3 TanH(dax::Vector3 x) {
@@ -203,6 +230,9 @@ DAX_SYS_MATH_TEMPLATE(atanh)
 DAX_EXEC_EXPORT dax::Scalar ASinH(dax::Scalar x) {
   return internal::asinh_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 ASinH(dax::Vector2 x) {
+  return internal::asinh_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 ASinH(dax::Vector3 x) {
   return internal::asinh_template(x);
 }
@@ -215,6 +245,9 @@ DAX_EXEC_EXPORT dax::Vector4 ASinH(dax::Vector4 x) {
 DAX_EXEC_EXPORT dax::Scalar ACosH(dax::Scalar x) {
   return internal::acosh_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 ACosH(dax::Vector2 x) {
+  return internal::acosh_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 ACosH(dax::Vector3 x) {
   return internal::acosh_template(x);
 }
@@ -225,6 +258,9 @@ DAX_EXEC_EXPORT dax::Vector4 ACosH(dax::Vector4 x) {
 /// Compute the hyperbolic arc tangent of \p x.
 ///
 DAX_EXEC_EXPORT dax::Scalar ATanH(dax::Scalar x) {
+  return internal::atanh_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector2 ATanH(dax::Vector2 x) {
   return internal::atanh_template(x);
 }
 DAX_EXEC_EXPORT dax::Vector3 ATanH(dax::Vector3 x) {

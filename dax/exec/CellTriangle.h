@@ -13,8 +13,9 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_CellHexahedron_h
-#define __dax_exec_CellHexahedron_h
+#ifndef __dax_exec_CellTriangle_h
+#define __dax_exec_CellTriangle_h
+
 
 #include <dax/Types.h>
 #include <dax/exec/internal/TopologyUnstructured.h>
@@ -23,29 +24,29 @@
 
 namespace dax { namespace exec {
 
-class CellHexahedron
+class CellTriangle
 {
 public:
   template<class ExecutionAdapter>
   struct GridStructures
   {
     typedef dax::exec::internal::TopologyUnstructured<
-        CellHexahedron,
+        CellTriangle,
         ExecutionAdapter> TopologyType;
   };
 
-  /// static variable that holds the number of points per cell
-  const static dax::Id NUM_POINTS = 8;
+  /// static variable that returns the number of points per cell
+  const static dax::Id NUM_POINTS = 3;
   typedef dax::Tuple<dax::Id,NUM_POINTS> PointConnectionsType;
 
 private:
-  const dax::Id CellIndex;
-  const PointConnectionsType Connections;
+  dax::Id CellIndex;
+  PointConnectionsType Connections;
 
   template<class ExecutionAdapter>
   DAX_EXEC_EXPORT static PointConnectionsType GetPointConnections(
       const dax::exec::internal::TopologyUnstructured<
-          CellHexahedron,ExecutionAdapter> &topology,
+          CellTriangle,ExecutionAdapter> &topology,
       dax::Id cellIndex)
   {
     PointConnectionsType connections;
@@ -55,20 +56,15 @@ private:
     connections[0] = *(connectionIter);
     connections[1] = *(++connectionIter);
     connections[2] = *(++connectionIter);
-    connections[3] = *(++connectionIter);
-    connections[4] = *(++connectionIter);
-    connections[5] = *(++connectionIter);
-    connections[6] = *(++connectionIter);
-    connections[7] = *(++connectionIter);
     return connections;
   }
 
 public:
   /// Create a cell for the given work.
   template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT CellHexahedron(
+  DAX_EXEC_EXPORT CellTriangle(
       const dax::exec::internal::TopologyUnstructured<
-          CellHexahedron,ExecutionAdapter> &topology,
+          CellTriangle,ExecutionAdapter> &topology,
       dax::Id cellIndex)
     : CellIndex(cellIndex),
       Connections(GetPointConnections(topology, cellIndex))
@@ -88,8 +84,7 @@ public:
   }
 
   /// returns the indices for all the points in the cell.
-  DAX_EXEC_EXPORT
-  const PointConnectionsType &GetPointIndices() const
+  DAX_EXEC_EXPORT PointConnectionsType GetPointIndices() const
   {
     return this->Connections;
   }
@@ -99,4 +94,4 @@ public:
 };
 
 }}
-#endif
+#endif // __dax_exec_CellTriangle_h

@@ -695,8 +695,9 @@ private:
       std::cout << "Doing Worklet tests with UniformGrid" << std::endl;
       WorkletTests<dax::cont::UniformGrid<> >();
 
-      std::cout << "Doing Worklet tests with UnstructuredGrid" << std::endl;
+      std::cout << "Doing Worklet tests with UnstructuredGrid types" << std::endl;
       WorkletTests<dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> >();
+      WorkletTests<dax::cont::UnstructuredGrid<dax::exec::CellTriangle> >();
     }
   };
 

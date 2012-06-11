@@ -197,6 +197,10 @@ dax::Scalar FMod(dax::Scalar numerator, dax::Scalar denominator) {
   return internal::fmod_template(numerator, denominator);
 }
 DAX_EXEC_EXPORT
+dax::Vector2 FMod(dax::Vector2 numerator, dax::Vector2 denominator) {
+  return internal::fmod_template(numerator, denominator);
+}
+DAX_EXEC_EXPORT
 dax::Vector3 FMod(dax::Vector3 numerator, dax::Vector3 denominator) {
   return internal::fmod_template(numerator, denominator);
 }
@@ -232,6 +236,10 @@ DAX_EXEC_EXPORT T remainder_template(T numerator, T denominator)
 ///
 DAX_EXEC_EXPORT
 dax::Scalar Remainder(dax::Scalar numerator, dax::Scalar denominator) {
+  return internal::remainder_template(numerator, denominator);
+}
+DAX_EXEC_EXPORT
+dax::Vector2 Remainder(dax::Vector2 numerator, dax::Vector2 denominator) {
   return internal::remainder_template(numerator, denominator);
 }
 DAX_EXEC_EXPORT
@@ -281,6 +289,12 @@ DAX_EXEC_EXPORT dax::Scalar RemainderQuotient(dax::Scalar numerator,
 {
   return internal::remquo_template(numerator, denominator, quotient);
 }
+DAX_EXEC_EXPORT dax::Vector2 RemainderQuotient(dax::Vector2 numerator,
+                                               dax::Vector2 denominator,
+                                               dax::Vector2 &quotient)
+{
+  return internal::remquo_template(numerator, denominator, quotient);
+}
 DAX_EXEC_EXPORT dax::Vector3 RemainderQuotient(dax::Vector3 numerator,
                                                dax::Vector3 denominator,
                                                dax::Vector3 &quotient)
@@ -322,6 +336,10 @@ DAX_EXEC_EXPORT dax::Scalar ModF(dax::Scalar x, dax::Scalar &integral)
 {
   return internal::modf_template(x, integral);
 }
+DAX_EXEC_EXPORT dax::Vector2 ModF(dax::Vector2 x, dax::Vector2 &integral)
+{
+  return internal::modf_template(x, integral);
+}
 DAX_EXEC_EXPORT dax::Vector3 ModF(dax::Vector3 x, dax::Vector3 &integral)
 {
   return internal::modf_template(x, integral);
@@ -341,6 +359,9 @@ DAX_SYS_MATH_TEMPLATE(round)
 DAX_EXEC_EXPORT dax::Scalar Ceil(dax::Scalar x) {
   return internal::ceil_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 Ceil(dax::Vector2 x) {
+  return internal::ceil_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 Ceil(dax::Vector3 x) {
   return internal::ceil_template(x);
 }
@@ -353,6 +374,9 @@ DAX_EXEC_EXPORT dax::Vector4 Ceil(dax::Vector4 x) {
 DAX_EXEC_EXPORT dax::Scalar Floor(dax::Scalar x) {
   return internal::floor_template(x);
 }
+DAX_EXEC_EXPORT dax::Vector2 Floor(dax::Vector2 x) {
+  return internal::floor_template(x);
+}
 DAX_EXEC_EXPORT dax::Vector3 Floor(dax::Vector3 x) {
   return internal::floor_template(x);
 }
@@ -363,6 +387,9 @@ DAX_EXEC_EXPORT dax::Vector4 Floor(dax::Vector4 x) {
 /// Round \p x to the nearest integral value.
 ///
 DAX_EXEC_EXPORT dax::Scalar Round(dax::Scalar x) {
+  return internal::round_template(x);
+}
+DAX_EXEC_EXPORT dax::Vector2 Round(dax::Vector2 x) {
   return internal::round_template(x);
 }
 DAX_EXEC_EXPORT dax::Vector3 Round(dax::Vector3 x) {
