@@ -119,10 +119,8 @@ public:
   DAX_CONT_EXPORT void Shrink(dax::Id numberOfValues)
   {
     DAX_ASSERT_CONT(this->ConstIteratorsValid);
-
-    dax::Id originalNumberOfValues = std::distance(this->BeginConstIterator,
-                                                   this->EndConstIterator);
-    DAX_ASSERT_CONT(numberOfValues <= originalNumberOfValues);
+    DAX_ASSERT_CONT(numberOfValues <= std::distance(this->BeginConstIterator,
+                                                    this->EndConstIterator));
 
     this->EndConstIterator = this->BeginConstIterator;
     std::advance(this->EndConstIterator, numberOfValues);

@@ -29,13 +29,17 @@
 /// environment and requires the \a work object to raise the error and throw it
 /// in the control environment.
 
+#ifndef NDEBUG
 #define DAX_ASSERT_EXEC(condition, work) \
   if (!(condition)) \
     ::dax::exec::Assert( \
         condition, \
         __FILE__ ":" __DAX_ASSERT_EXEC_STRINGIFY(__LINE__) ": " \
         "Assert Failed (" #condition ")", \
-        work) \
+        work)
+#else
+#define DAX_ASSERT_EXEC(condition, work)
+#endif
 
 namespace dax {
 namespace exec {
