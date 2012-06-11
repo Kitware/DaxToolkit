@@ -29,7 +29,8 @@
 /// environment and throws an ErrorControlAssert object on failure.
 
 #define DAX_ASSERT_CONT(condition) \
-  ::dax::cont::Assert(condition, __FILE__, __LINE__, #condition)
+  if (!(condition)) \
+    ::dax::cont::Assert(condition, __FILE__, __LINE__, #condition)
 
 namespace dax {
 namespace cont {

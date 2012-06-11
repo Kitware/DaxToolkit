@@ -30,11 +30,12 @@
 /// in the control environment.
 
 #define DAX_ASSERT_EXEC(condition, work) \
-  ::dax::exec::Assert( \
-      condition, \
-      __FILE__ ":" __DAX_ASSERT_EXEC_STRINGIFY(__LINE__) ": " \
-      "Assert Failed (" #condition ")", \
-      work)
+  if (!(condition)) \
+    ::dax::exec::Assert( \
+        condition, \
+        __FILE__ ":" __DAX_ASSERT_EXEC_STRINGIFY(__LINE__) ": " \
+        "Assert Failed (" #condition ")", \
+        work) \
 
 namespace dax {
 namespace exec {
