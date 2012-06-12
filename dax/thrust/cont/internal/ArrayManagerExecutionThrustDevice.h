@@ -16,6 +16,8 @@
 #ifndef __dax_thrust_cont_internal_ArrayManagerExecutionThrustDevice_h
 #define __dax_thrust_cont_internal_ArrayManagerExecutionThrustDevice_h
 
+#include <dax/thrust/cont/internal/CheckThrustBackend.h>
+
 #include <dax/cont/ArrayContainerControl.h>
 
 #include <thrust/copy.h>

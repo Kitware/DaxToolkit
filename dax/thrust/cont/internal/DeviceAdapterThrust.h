@@ -16,6 +16,8 @@
 #ifndef __dax_thrust_cont_internal_DeviceAdapterThrust_h
 #define __dax_thrust_cont_internal_DeviceAdapterThrust_h
 
+#include <dax/thrust/cont/internal/CheckThrustBackend.h>
+
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
 

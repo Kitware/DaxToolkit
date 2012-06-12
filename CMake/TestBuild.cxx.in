@@ -1,3 +1,5 @@
+#define DAX_TEST_HEADER_BUILD
+
 #include <@dir_prefix@/@header@>
 
 int @headername@()

@@ -17,6 +17,7 @@
 set(headers
   ArrayManagerExecutionThrustDevice.h
   ArrayManagerExecutionThrustShare.h
+  CheckThrustBackend.h
   DeviceAdapterThrust.h
   )
 
