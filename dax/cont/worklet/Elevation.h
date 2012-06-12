@@ -82,12 +82,12 @@ DAX_CONT_EXPORT void Elevation(
       = dax::cont::internal::ExecutionPackageGrid(grid);
 
   dax::exec::FieldCoordinatesIn<ExecAdapter> fieldCoordinates =
-      dax::cont::internal::ExecutionPackageField<dax::exec::FieldCoordinatesIn>(
-        points, grid);
+      dax::cont::internal::ExecutionPackageFieldGridConst<
+        dax::exec::FieldCoordinatesIn>(points, grid);
 
   dax::exec::FieldPointOut<dax::Scalar, ExecAdapter> fieldOut
-      = dax::cont::internal::ExecutionPackageField<dax::exec::FieldPointOut>(
-        outHandle, grid);
+      = dax::cont::internal::ExecutionPackageFieldGrid<
+        dax::exec::FieldPointOut>(outHandle, grid);
 
   typedef typename GridType::CellType CellType;
 

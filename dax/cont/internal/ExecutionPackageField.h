@@ -118,7 +118,7 @@ template<typename FieldType,
          class Container,
          class DeviceAdapter>
 DAX_CONT_EXPORT
-FieldType ExecutionPackageField(
+FieldType ExecutionPackageFieldArray(
     dax::cont::ArrayHandle<typename FieldType::ValueType,
                            Container,
                            DeviceAdapter> &arrayHandle,
@@ -142,13 +142,13 @@ template<template <typename, class> class FieldType,
 DAX_CONT_EXPORT
 FieldType<ValueType,
           dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter> >
-ExecutionPackageField(
+ExecutionPackageFieldArray(
     dax::cont::ArrayHandle<ValueType, Container, DeviceAdapter> &arrayHandle,
     dax::Id numValues)
 {
   typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
       ExecutionAdapter;
-  return ExecutionPackageField<FieldType<ValueType, ExecutionAdapter> >(
+  return ExecutionPackageFieldArray<FieldType<ValueType, ExecutionAdapter> >(
         arrayHandle, numValues);
 }
 
@@ -161,13 +161,13 @@ template<template <class> class FieldType,
          class DeviceAdapter>
 DAX_CONT_EXPORT
 FieldType<dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter> >
-ExecutionPackageField(
+ExecutionPackageFieldArray(
     dax::cont::ArrayHandle<ValueType, Container, DeviceAdapter> &arrayHandle,
     dax::Id numValues)
 {
   typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
       ExecutionAdapter;
-  return ExecutionPackageField<FieldType<ExecutionAdapter> >(
+  return ExecutionPackageFieldArray<FieldType<ExecutionAdapter> >(
         arrayHandle, numValues);
 }
 
@@ -178,7 +178,7 @@ template<class FieldType,
          class Container,
          class DeviceAdapter>
 DAX_CONT_EXPORT
-FieldType ExecutionPackageField(
+FieldType ExecutionPackageFieldArrayConst(
     const dax::cont::ArrayHandle<
         typename FieldType::ValueType, Container, DeviceAdapter> &arrayHandle,
     dax::Id numValues)
@@ -186,7 +186,8 @@ FieldType ExecutionPackageField(
   BOOST_CONCEPT_ASSERT((detail::FieldIsInput<FieldType>));
 
   return
-      dax::cont::internal::detail::ExecutionPackageFieldInternal<FieldType>(
+      dax::cont::internal::detail
+      ::ExecutionPackageFieldInternal<FieldType,Container,DeviceAdapter>(
         arrayHandle,
         numValues,
         typename FieldType::AccessTag());
@@ -202,16 +203,16 @@ template<template <typename, class> class FieldType,
 DAX_CONT_EXPORT
 FieldType<ValueType,
           dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter> >
-ExecutionPackageField(
+ExecutionPackageFieldArrayConst(
     const dax::cont::ArrayHandle<ValueType, Container, DeviceAdapter>
         &arrayHandle,
     dax::Id numValues)
 {
   typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
       ExecutionAdapter;
-  return ExecutionPackageField<FieldType<ValueType, ExecutionAdapter> >(
-        arrayHandle, numValues);
-  }
+  return ExecutionPackageFieldArrayConst
+        <FieldType<ValueType, ExecutionAdapter> >(arrayHandle, numValues);
+}
 
 /// Given an ArrayHandle, returns a Field object that can be used in the
 /// execution environment.
@@ -222,14 +223,14 @@ template<template <class> class FieldType,
          class DeviceAdapter>
 DAX_CONT_EXPORT
 FieldType<dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter> >
-ExecutionPackageField(
+ExecutionPackageFieldArrayConst(
     const dax::cont::ArrayHandle<ValueType, Container, DeviceAdapter>
         &arrayHandle,
     dax::Id numValues)
 {
   typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
       ExecutionAdapter;
-  return ExecutionPackageField<FieldType<ExecutionAdapter> >(
+  return ExecutionPackageFieldArrayConst<FieldType<ExecutionAdapter> >(
         arrayHandle, numValues);
 }
 
@@ -241,7 +242,7 @@ template<typename FieldType,
          class DeviceAdapter,
          class GridType>
 DAX_CONT_EXPORT
-FieldType ExecutionPackageField(
+FieldType ExecutionPackageFieldGrid(
     dax::cont::ArrayHandle<typename FieldType::ValueType,
                            Container,
                            DeviceAdapter> &arrayHandle,
@@ -249,7 +250,7 @@ FieldType ExecutionPackageField(
 {
   dax::Id numValues
       = detail::GetFieldSize(grid, typename FieldType::AssociationTag());
-  return ExecutionPackageField<FieldType>(arrayHandle, numValues);
+  return ExecutionPackageFieldArray<FieldType>(arrayHandle, numValues);
 }
 
 /// Given an ArrayHandle, returns a Field object that can be used in the
@@ -263,13 +264,13 @@ template<template <typename, class> class FieldType,
 DAX_CONT_EXPORT
 FieldType<ValueType,
           dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter> >
-ExecutionPackageField(
+ExecutionPackageFieldGrid(
     dax::cont::ArrayHandle<ValueType, Container, DeviceAdapter> &arrayHandle,
     const GridType &grid)
 {
   typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
       ExecutionAdapter;
-  return ExecutionPackageField<FieldType<ValueType, ExecutionAdapter> >(
+  return ExecutionPackageFieldGrid<FieldType<ValueType, ExecutionAdapter> >(
         arrayHandle, grid);
 }
 
@@ -283,13 +284,13 @@ template<template <class> class FieldType,
          class GridType>
 DAX_CONT_EXPORT
 FieldType<dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter> >
-ExecutionPackageField(
+ExecutionPackageFieldGrid(
     dax::cont::ArrayHandle<ValueType, Container, DeviceAdapter> &arrayHandle,
     const GridType &grid)
 {
   typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
       ExecutionAdapter;
-  return ExecutionPackageField<FieldType<ExecutionAdapter> >(
+  return ExecutionPackageFieldGrid<FieldType<ExecutionAdapter> >(
         arrayHandle, grid);
 }
 
@@ -301,7 +302,7 @@ template<typename FieldType,
          class DeviceAdapter,
          class GridType>
 DAX_CONT_EXPORT
-FieldType ExecutionPackageField(
+FieldType ExecutionPackageFieldGridConst(
     const dax::cont::ArrayHandle<typename FieldType::ValueType,
                                  Container,
                                  DeviceAdapter> &arrayHandle,
@@ -309,7 +310,7 @@ FieldType ExecutionPackageField(
 {
   dax::Id numValues
       = detail::GetFieldSize(grid, typename FieldType::AssociationTag());
-  return ExecutionPackageField<FieldType>(arrayHandle, numValues);
+  return ExecutionPackageFieldArrayConst<FieldType>(arrayHandle, numValues);
 }
 
 /// Given an ArrayHandle, returns a Field object that can be used in the
@@ -323,15 +324,15 @@ template<template <typename, class> class FieldType,
 DAX_CONT_EXPORT
 FieldType<ValueType,
           dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter> >
-ExecutionPackageField(
+ExecutionPackageFieldGridConst(
     const dax::cont::ArrayHandle<ValueType, Container, DeviceAdapter>
         &arrayHandle,
     const GridType &grid)
 {
   typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
       ExecutionAdapter;
-  return ExecutionPackageField<FieldType<ValueType, ExecutionAdapter> >(
-        arrayHandle, grid);
+  return ExecutionPackageFieldGridConst
+        <FieldType<ValueType, ExecutionAdapter> >(arrayHandle, grid);
 }
 
 /// Given an ArrayHandle, returns a Field object that can be used in the
@@ -344,14 +345,14 @@ template<template <class> class FieldType,
          class GridType>
 DAX_CONT_EXPORT
 FieldType<dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter> >
-ExecutionPackageField(
+ExecutionPackageFieldGridConst(
     const dax::cont::ArrayHandle<ValueType, Container, DeviceAdapter>
         &arrayHandle,
     const GridType &grid)
 {
   typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
       ExecutionAdapter;
-  return ExecutionPackageField<FieldType<ExecutionAdapter> >(
+  return ExecutionPackageFieldGridConst<FieldType<ExecutionAdapter> >(
         arrayHandle, grid);
 }
 
@@ -361,7 +362,7 @@ template<template <typename, class> class FieldType,
 DAX_CONT_EXPORT
 dax::exec::FieldCoordinatesIn<
     dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter> >
-ExecutionPackageField(
+ExecutionPackageFieldGrid(
     const typename dax::cont::UniformGrid<Container, DeviceAdapter>
     ::PointCoordinatesArrayPlaceholder &,
     const dax::cont::UniformGrid<Container, DeviceAdapter> &);
@@ -372,7 +373,7 @@ template<class FieldType, class Container, class DeviceAdapter>
 DAX_CONT_EXPORT
 dax::exec::FieldCoordinatesIn<
     dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter> >
-ExecutionPackageField(
+ExecutionPackageFieldGridConst(
     const typename dax::cont::UniformGrid<Container, DeviceAdapter>
     ::PointCoordinatesArrayPlaceholder &,
     const dax::cont::UniformGrid<Container, DeviceAdapter> &)
@@ -391,14 +392,14 @@ template<template <class> class FieldType, class Container, class DeviceAdapter>
 DAX_CONT_EXPORT
 dax::exec::FieldCoordinatesIn<
     dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter> >
-ExecutionPackageField(
+ExecutionPackageFieldGridConst(
     const typename dax::cont::UniformGrid<Container, DeviceAdapter>
     ::PointCoordinatesArrayPlaceholder &coords,
     const dax::cont::UniformGrid<Container, DeviceAdapter> &grid)
 {
   typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
       ExecutionAdapter;
-  return ExecutionPackageField<FieldType<ExecutionAdapter> >
+  return ExecutionPackageFieldGridConst<FieldType<ExecutionAdapter> >
       (coords, grid);
 }
 

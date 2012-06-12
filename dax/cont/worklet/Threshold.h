@@ -143,8 +143,8 @@ public:
       const GridType& grid, const ExecutionTopologyType& executionTopology)
   {
     this->InputField
-        = dax::cont::internal::ExecutionPackageField<dax::exec::FieldPointIn>(
-          this->InputHandle,grid);
+        = dax::cont::internal::ExecutionPackageFieldGrid<
+          dax::exec::FieldPointIn>(this->InputHandle,grid);
 
     ParametersClassify parameters;
     parameters.grid = executionTopology;

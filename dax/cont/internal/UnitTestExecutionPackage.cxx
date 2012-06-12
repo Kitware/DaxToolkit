@@ -143,7 +143,7 @@ void TestExecutionField(dax::exec::internal::FieldAccessInputTag)
   dax::cont::ArrayHandle<ValueType> inputArray(
         &originalData.front(), (&originalData.back()) + 1);
 
-  FieldType field = dax::cont::internal::ExecutionPackageField<FieldType>(
+  FieldType field = dax::cont::internal::ExecutionPackageFieldArray<FieldType>(
         inputArray, ARRAY_SIZE);
 
   dax::exec::internal::WorkEmpty<ExecutionAdapter> dummywork =
@@ -168,7 +168,7 @@ void TestExecutionField(dax::exec::internal::FieldAccessOutputTag)
   // Create field.
   dax::cont::ArrayHandle<ValueType> array;
 
-  FieldType field = dax::cont::internal::ExecutionPackageField<FieldType>(
+  FieldType field = dax::cont::internal::ExecutionPackageFieldArray<FieldType>(
         array, ARRAY_SIZE);
 
   std::cout << "Checking that field create allocated array." << std::endl;

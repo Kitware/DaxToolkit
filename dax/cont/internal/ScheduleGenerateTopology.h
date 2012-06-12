@@ -187,7 +187,7 @@ protected:
         dax::cont::internal::ExecutionPackageGrid(grid);
 
     this->NewCellCountField =
-        dax::cont::internal::ExecutionPackageField<dax::exec::FieldCellOut>(
+        dax::cont::internal::ExecutionPackageFieldGrid<dax::exec::FieldCellOut>(
           this->NewCellCountHandle, grid);
 
     //we need the control grid to create the parameters struct.
@@ -236,7 +236,7 @@ protected:
     dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTag, DeviceAdapterTag>
         validCellRange;
     dax::exec::FieldOut<dax::Id, ExecutionAdapter> validCellRangeField
-        = dax::cont::internal::ExecutionPackageField<dax::exec::FieldOut>(
+        = dax::cont::internal::ExecutionPackageFieldArray<dax::exec::FieldOut>(
           validCellRange, newNumCells);
     dax::cont::internal::Schedule(
           dax::exec::internal::kernel::LowerBoundsInputFunctor
@@ -259,7 +259,7 @@ protected:
     //now we can determine the size of the topoogy and construct that array
     const dax::Id generatedConnectionSize = OutCellType::NUM_POINTS*newNumCells;
     dax::exec::FieldOut<dax::Id, ExecutionAdapter> generatedConnectionsField
-        = dax::cont::internal::ExecutionPackageField<dax::exec::FieldOut>(
+        = dax::cont::internal::ExecutionPackageFieldArray<dax::exec::FieldOut>(
           this->GeneratedConnectionsHandle,generatedConnectionSize);
 
     TopologyParams parameters;
@@ -278,8 +278,8 @@ protected:
     typedef typename ExecTopology::CellType CellType;
 
     dax::exec::FieldPointOut<dax::Id, ExecutionAdapter> maskPointsField
-        = dax::cont::internal::ExecutionPackageField<dax::exec::FieldPointOut>(
-          this->MaskPointHandle, grid);
+        = dax::cont::internal::ExecutionPackageFieldGrid<
+          dax::exec::FieldPointOut>(this->MaskPointHandle, grid);
 
     //construct the parameters list for the function
     dax::exec::internal::kernel

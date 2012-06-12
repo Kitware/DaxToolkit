@@ -85,14 +85,15 @@ DAX_CONT_EXPORT void CellGradient(
 
   dax::exec::FieldCoordinatesIn<ExecAdapter> fieldCoordinates
       = dax::cont::internal
-      ::ExecutionPackageField<dax::exec::FieldCoordinatesIn>(points, grid);
+      ::ExecutionPackageFieldGridConst<dax::exec::FieldCoordinatesIn>(
+        points, grid);
 
   dax::exec::FieldPointIn<dax::Scalar, ExecAdapter> fieldIn
-      = dax::cont::internal::ExecutionPackageField<dax::exec::FieldPointIn>(
-        inHandle, grid);
+      = dax::cont::internal::ExecutionPackageFieldGridConst
+        <dax::exec::FieldPointIn>(inHandle, grid);
 
   dax::exec::FieldCellOut<dax::Vector3, ExecAdapter> fieldOut
-      = dax::cont::internal::ExecutionPackageField<dax::exec::FieldCellOut>(
+      = dax::cont::internal::ExecutionPackageFieldGrid<dax::exec::FieldCellOut>(
         outHandle, grid);
 
   typedef typename GridType::CellType CellType;

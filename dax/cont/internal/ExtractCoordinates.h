@@ -115,10 +115,10 @@ ExtractCoordinates(
   parameters.grid =
       dax::cont::internal::ExecutionPackageGrid(grid);
   parameters.inCoordinates =
-      dax::cont::internal::ExecutionPackageField<dax::exec::FieldCoordinatesIn>(
-        grid.GetPointCoordinates(), grid);
+      dax::cont::internal::ExecutionPackageFieldGridConst<
+        dax::exec::FieldCoordinatesIn>(grid.GetPointCoordinates(), grid);
   parameters.outField =
-      dax::cont::internal::ExecutionPackageField<dax::exec::FieldOut>(
+      dax::cont::internal::ExecutionPackageFieldArray<dax::exec::FieldOut>(
         coordinates, outputSize);
 
   dax::cont::internal::ScheduleMap(FunctorType(), parameters, extractIds);
