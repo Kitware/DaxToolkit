@@ -14,6 +14,8 @@
 //
 //=============================================================================
 
+#define BOOST_SP_DISABLE_THREADS
+
 // Tests math functions that rely on system math functions in the Cuda runtime
 // environment. Ensures that the Cuda versions of the functions are behaving
 // the same as the standard C math library functions.

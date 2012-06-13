@@ -1,4 +1,5 @@
 #define DAX_TEST_HEADER_BUILD
+#define BOOST_SP_DISABLE_THREADS
 
 #include <@dir_prefix@/@header@>
 
