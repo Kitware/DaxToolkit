@@ -15,27 +15,22 @@
 //=============================================================================
 #include <dax/exec/WorkMapCell.h>
 
+#include <dax/exec/internal/TestExecutionAdapter.h>
+
 #include <dax/internal/Testing.h>
 
 #include <algorithm>
 #include <vector>
 
-extern void TestCellVoxel(const dax::exec::CellVoxel cell,
-                          const dax::internal::TopologyUniform &gridstruct,
-                          dax::Id cellFlatIndex);
+extern void TestCellVoxel(
+    const dax::exec::CellVoxel cell,
+    const dax::exec::internal::TopologyUniform &gridstruct,
+    dax::Id cellFlatIndex);
 
-
-namespace {
-
-/// An (invalid) error handler to pass to work constructors.
-dax::exec::internal::ErrorHandler ErrorHandler
-  = dax::exec::internal::ErrorHandler(dax::internal::DataArray<char>());
-
-}  // Anonymous namespace
 
 static void TestMapCellVoxel(
-  dax::exec::WorkMapCell<dax::exec::CellVoxel> &work,
-  const dax::internal::TopologyUniform &gridstruct,
+  dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter> &work,
+  const dax::exec::internal::TopologyUniform &gridstruct,
   dax::Id cellFlatIndex)
 {
   DAX_TEST_ASSERT(work.GetCellIndex() == cellFlatIndex,
@@ -48,9 +43,8 @@ static void TestMapCellVoxel(
   std::fill(fieldData.begin(), fieldData.end(), -1.0);
   fieldData[cellFlatIndex] = cellFlatIndex;
 
-  dax::internal::DataArray<dax::Scalar> fieldArray(&fieldData.at(0),
-                                                   fieldData.size());
-  dax::exec::FieldCell<dax::Scalar> field(fieldArray);
+  dax::exec::FieldCellOut<dax::Scalar, TestExecutionAdapter>
+      field(&fieldData.at(0));
 
   dax::Scalar scalarValue = work.GetFieldValue(field);
   DAX_TEST_ASSERT(scalarValue == cellFlatIndex,
@@ -68,33 +62,33 @@ static void TestMapCellVoxel()
   std::cout << "Testing WorkMapCell<CellVoxel>" << std::endl;
 
   {
-  dax::internal::TopologyUniform gridstruct;
+  dax::exec::internal::TopologyUniform gridstruct;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
   gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
-  dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0;
-       flatIndex < dax::internal::numberOfCells(gridstruct);
+       flatIndex < dax::exec::internal::numberOfCells(gridstruct);
        flatIndex++)
     {
-    work.SetCellIndex(flatIndex);
+    dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
+        work(gridstruct, flatIndex, TestExecutionAdapter());
     TestMapCellVoxel(work, gridstruct, flatIndex);
     }
   }
 
   {
-  dax::internal::TopologyUniform gridstruct;
+  dax::exec::internal::TopologyUniform gridstruct;
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
   gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
   gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
   gridstruct.Extent.Max = dax::make_Id3(15, 6, 13);
-  dax::exec::WorkMapCell<dax::exec::CellVoxel> work(gridstruct, ErrorHandler);
   for (dax::Id flatIndex = 0;
-       flatIndex < dax::internal::numberOfPoints(gridstruct);
+       flatIndex < dax::exec::internal::numberOfPoints(gridstruct);
        flatIndex++)
     {
-    work.SetCellIndex(flatIndex);
+    dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
+        work(gridstruct, flatIndex, TestExecutionAdapter());
     TestMapCellVoxel(work, gridstruct, flatIndex);
     }
   }

@@ -24,11 +24,11 @@
 namespace dax {
 namespace worklet {
 
-template<class CellType>
+template<class CellType, class ExecutionAdapter>
 DAX_WORKLET void Elevation(
-    DAX_IN dax::exec::WorkMapField<CellType> &work,
-    DAX_IN const dax::exec::FieldCoordinates &pointCoord,
-    DAX_OUT dax::exec::FieldPoint<dax::Scalar> &outField)
+    dax::exec::WorkMapField<CellType, ExecutionAdapter> &work,
+    dax::exec::FieldCoordinatesIn<ExecutionAdapter> &pointCoord,
+    dax::exec::FieldPointOut<dax::Scalar, ExecutionAdapter> &outField)
 {
   dax::Vector3 pointLocation = work.GetFieldValue(pointCoord);
   // TODO: This is not an elevation calculation.  Rather, it is the distance

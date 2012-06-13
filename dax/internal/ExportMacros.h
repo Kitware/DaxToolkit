@@ -40,7 +40,5 @@
 
 // Worklet macros.
 #define DAX_WORKLET DAX_EXEC_EXPORT
-#define DAX_IN
-#define DAX_OUT
 
 #endif //__dax__internal__ExportMacros_h

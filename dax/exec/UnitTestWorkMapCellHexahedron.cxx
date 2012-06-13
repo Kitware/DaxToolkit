@@ -15,6 +15,8 @@
 //=============================================================================
 #include <dax/exec/WorkMapCell.h>
 
+#include <dax/exec/internal/TestExecutionAdapter.h>
+
 #include <dax/internal/Testing.h>
 
 #include <algorithm>
@@ -23,23 +25,15 @@
 extern void TestCellHexahedron(const dax::exec::CellHexahedron cell,
                                const dax::exec::CellVoxel Hexahedron);
 
-extern dax::internal::TopologyUnstructured<dax::exec::CellHexahedron> make_ugrid(
-    const dax::internal::TopologyUniform& uniform,
-    std::vector<dax::Vector3>& points,
-    std::vector<dax::Id>& topology);
-
-namespace {
-
-/// An (invalid) error handler to pass to work constructors.
-dax::exec::internal::ErrorHandler ErrorHandler
-  = dax::exec::internal::ErrorHandler(dax::internal::DataArray<char>());
-
-}  // Anonymous namespace
+extern dax::exec::internal::TopologyUnstructured<dax::exec::CellHexahedron,TestExecutionAdapter>
+make_ugrid(const dax::exec::internal::TopologyUniform& uniform,
+           std::vector<dax::Vector3>& points,
+           std::vector<dax::Id>& topology);
 
 
 static void TestMapCellHexahedron(
-  dax::exec::WorkMapCell<dax::exec::CellHexahedron> &work,
-  const dax::internal::TopologyUniform &gridstruct,
+  dax::exec::WorkMapCell<dax::exec::CellHexahedron, TestExecutionAdapter> &work,
+  const dax::exec::internal::TopologyUniform &gridstruct,
   dax::Id cellFlatIndex)
 {
   DAX_TEST_ASSERT(work.GetCellIndex() == cellFlatIndex,
@@ -52,9 +46,8 @@ static void TestMapCellHexahedron(
   std::fill(fieldData.begin(), fieldData.end(), -1.0);
   fieldData[cellFlatIndex] = cellFlatIndex;
 
-  dax::internal::DataArray<dax::Scalar> fieldArray(&fieldData.at(0),
-                                                   fieldData.size());
-  dax::exec::FieldCell<dax::Scalar> field(fieldArray);
+  dax::exec::FieldCellOut<dax::Scalar, TestExecutionAdapter>
+      field(&fieldData.at(0));
 
   dax::Scalar scalarValue = work.GetFieldValue(field);
   DAX_TEST_ASSERT(scalarValue == cellFlatIndex,
@@ -72,11 +65,12 @@ static void TestMapCellHexahedron()
 {
   std::cout << "Testing WorkMapCell<CellHexahedron>" << std::endl;
 
-  dax::internal::TopologyUniform gridstruct;
+  dax::exec::internal::TopologyUniform gridstruct;
 
   std::vector<dax::Id> topo;
   std::vector<dax::Vector3> points;
-  dax::internal::TopologyUnstructured<dax::exec::CellHexahedron> ugrid;
+  dax::exec::internal::TopologyUnstructured<
+      dax::exec::CellHexahedron, TestExecutionAdapter> ugrid;
 
   {
   gridstruct.Origin = dax::make_Vector3(0, 0, 0);
@@ -85,12 +79,12 @@ static void TestMapCellHexahedron()
   gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
   ugrid = make_ugrid(gridstruct,points,topo);
 
-  dax::exec::WorkMapCell<dax::exec::CellHexahedron> work(ugrid,ErrorHandler);
   for (dax::Id flatIndex = 0;
-       flatIndex < dax::internal::numberOfCells(gridstruct);
+       flatIndex < dax::exec::internal::numberOfCells(gridstruct);
        flatIndex++)
     {
-    work.SetCellIndex(flatIndex);
+    dax::exec::WorkMapCell<dax::exec::CellHexahedron, TestExecutionAdapter>
+        work(ugrid, flatIndex, TestExecutionAdapter());
     TestMapCellHexahedron(work, gridstruct, flatIndex);
     }
   }
@@ -102,12 +96,12 @@ static void TestMapCellHexahedron()
   gridstruct.Extent.Max = dax::make_Id3(15, 6, 13);
   ugrid = make_ugrid(gridstruct,points,topo);
 
-  dax::exec::WorkMapCell<dax::exec::CellHexahedron> work(ugrid,ErrorHandler);
   for (dax::Id flatIndex = 0;
-       flatIndex < dax::internal::numberOfCells(gridstruct);
+       flatIndex < dax::exec::internal::numberOfCells(gridstruct);
        flatIndex++)
     {
-    work.SetCellIndex(flatIndex);
+    dax::exec::WorkMapCell<dax::exec::CellHexahedron, TestExecutionAdapter>
+        work(ugrid, flatIndex, TestExecutionAdapter());
     TestMapCellHexahedron(work, gridstruct, flatIndex);
     }
   }

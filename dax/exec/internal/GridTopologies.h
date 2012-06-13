@@ -13,26 +13,10 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
+#ifndef __dax__exec__internal__GridTopologies_h
+#define __dax__exec__internal__GridTopologies_h
 
-#ifndef __dax_cuda_cont_InclusiveScan_h
-#define __dax_cuda_cont_InclusiveScan_h
+#include <dax/exec/internal/TopologyUniform.h>
+#include <dax/exec/internal/TopologyUnstructured.h>
 
-#include <dax/cuda/cont/internal/SetThrustForCuda.h>
-#include <dax/thrust/cont/InclusiveScan.h>
-
-namespace dax {
-namespace cuda {
-namespace cont {
-
-
-template<typename T>
-DAX_CONT_EXPORT typename T::ValueType inclusiveScan(const T &from, T& to)
-{
-  return dax::thrust::cont::inclusiveScan(from,to);
-}
-
-}
-}
-} // namespace dax::cuda::cont
-
-#endif //__dax_cuda_cont_InclusiveScan_h
+#endif //__dax__internal__GridTopologies_h

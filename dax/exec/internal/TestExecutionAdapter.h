@@ -13,32 +13,25 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
+#ifndef __dax_exec_internal_TestExecutionAdapter_h
+#define __dax_exec_internal_TestExecutionAdapter_h
 
-#ifndef __dax_thrust_cont_Copy_h
-#define __dax_thrust_cont_Copy_h
+#include <dax/internal/Testing.h>
 
-#include <dax/Types.h>
-#include <dax/thrust/cont/internal/ArrayContainerExecutionThrust.h>
-
-#include <thrust/copy.h>
-
-namespace dax {
-namespace thrust {
-namespace cont {
-
-
-template<typename T>
-DAX_CONT_EXPORT void copy(
-    const dax::thrust::cont::internal::ArrayContainerExecutionThrust<T> &from,
-    dax::thrust::cont::internal::ArrayContainerExecutionThrust<T> &to)
+class TestExecutionAdapter
 {
-  ::thrust::copy(from.GetBeginThrustIterator(),
-                 from.GetEndThrustIterator(),
-                 to.GetBeginThrustIterator());
-}
+public:
+  template <typename T>
+  struct FieldStructures
+  {
+    typedef T *IteratorType;
+    typedef const T *IteratorConstType;
+  };
 
-}
-}
-} // namespace dax::thrust::cont
+  void RaiseError(const char *message) const
+  {
+    DAX_TEST_FAIL(message);
+  }
+};
 
-#endif //__dax_thrust_cont_Copy_h
+#endif //__dax_exec_internal_TestExecutionAdapter_h

@@ -15,14 +15,7 @@
 ##=============================================================================
 
 set(headers
-  Copy.h
   DeviceAdapterOpenMP.h
-  InclusiveScan.h
-  LowerBounds.h
-  ScheduleThrust.h
-  StreamCompact.h
-  Sort.h
-  Unique.h
   )
 
 #-----------------------------------------------------------------------------

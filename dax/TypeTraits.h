@@ -54,6 +54,7 @@ template<typename T> struct TypeTraits;
 ///
 template<typename T>
 class TypeTraits {
+  typedef int tag_type; // Shut up, test compile.
 public:
 
   /// \brief A tag to determing whether the type is integer or real.

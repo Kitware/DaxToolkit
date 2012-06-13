@@ -13,31 +13,35 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_internal_ErrorHandler_h
-#define __dax_exec_internal_ErrorHandler_h
+#ifndef __dax_exec_internal_ErrorMessageBuffer_h
+#define __dax_exec_internal_ErrorMessageBuffer_h
 
-#include <dax/internal/DataArray.h>
+#include <dax/Types.h>
 
 namespace dax {
 namespace exec {
 namespace internal {
 
 /// Used to hold an error in the execution environment until the parallel
-/// execution can complete. Currently the ErrorHandler holds an array of
-/// charaters. This string should be global to all threads. If the first entry
-/// in the string is '\0' (the C string terminator), then we consider it as no
-/// error. Otherwise, the array contains the string describing the error.
+/// execution can complete. This can be used in conjunction with a
+/// DeviceAdapter's ExecutionAdapter to implement errors in execution
+/// environments that cannot throw errors. This string should be global to all
+/// threads. If the first entry in the string is '\0' (the C string
+/// terminator), then we consider it as no error. Otherwise, the array contains
+/// the string describing the error.
 ///
 /// Before scheduling worklets, the global array should be cleared to have no
 /// error. This can only be reliably done by the device adapter.
 ///
-class ErrorHandler
+template<class MessageIteratorType = char *>
+class ErrorMessageBuffer
 {
 public:
-  DAX_EXEC_EXPORT ErrorHandler(dax::internal::DataArray<char> m)
-    : Message(m) { }
+  DAX_EXEC_EXPORT ErrorMessageBuffer(MessageIteratorType begin,
+                                     MessageIteratorType end)
+    : MessageBegin(begin), MessageEnd(end) { }
 
-  DAX_EXEC_EXPORT void RaiseError(const char *message)
+  DAX_EXEC_EXPORT void RaiseError(const char *message) const
   {
     // Only raise the error if one has not been raised yet. This check is not
     // guaranteed to work across threads. However, chances are that if two or
@@ -49,26 +53,32 @@ public:
     if (this->IsErrorRaised()) { return; }
 
     // Safely copy message into array.
-    dax::Id index;
-    for (index = 0; index < this->Message.GetNumberOfEntries(); index++)
+    const char *inMessage;
+    MessageIteratorType outMessage;
+    for (inMessage = message, outMessage = this->MessageBegin;
+         outMessage != this->MessageEnd;
+         inMessage++, outMessage++)
       {
-      if (message[index] == '\0') break;
-      this->Message.SetValue(index, message[index]);
+      *outMessage = *inMessage;
+      if (*inMessage == '\0') break;
       }
-    this->Message.SetValue(index, '\0');
+
+    // Make sure message is null terminated.
+    *(this->MessageEnd - 1) = '\0';
   }
 
   DAX_EXEC_EXPORT bool IsErrorRaised() const
   {
-    return (this->Message.GetValue(0) != '\0');
+    return (*(this->MessageBegin) != '\0');
   }
 
 private:
-  dax::internal::DataArray<char> Message;
+  MessageIteratorType MessageBegin;
+  MessageIteratorType MessageEnd;
 };
 
 }
 }
 } // namespace dax::exec::internal
 
-#endif // __dax_exec_internal_ErrorHandler_h
+#endif // __dax_exec_internal_ErrorMessageBuffer_h

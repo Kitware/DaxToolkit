@@ -22,6 +22,6 @@
 int UnitTestDeviceAdapterCuda(int, char *[])
 {
   int result =  dax::cont::internal::TestingDeviceAdapter
-      <dax::cuda::cont::DeviceAdapterCuda>::Run();
+      <dax::cuda::cont::DeviceAdapterTagCuda>::Run();
   return dax::cuda::cont::internal::Testing::CheckCudaBeforeExit(result);
 }

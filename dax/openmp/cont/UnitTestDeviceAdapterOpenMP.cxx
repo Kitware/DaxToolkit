@@ -21,5 +21,5 @@
 int UnitTestDeviceAdapterOpenMP(int, char *[])
 {
   return dax::cont::internal::TestingDeviceAdapter
-      <dax::openmp::cont::DeviceAdapterOpenMP>::Run();
+      <dax::openmp::cont::DeviceAdapterTagOpenMP>::Run();
 }

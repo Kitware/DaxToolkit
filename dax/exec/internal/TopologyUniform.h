@@ -13,18 +13,27 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax__internal__Structured_h
-#define __dax__internal__Structured_h
+#ifndef __dax__exec__internal__TopologyUniform_h
+#define __dax__exec__internal__TopologyUniform_h
 
 #include <dax/Extent.h>
 
 namespace dax {
+namespace exec {
+class CellVoxel;
+}
+}
+
+namespace dax {
+namespace exec {
 namespace internal {
 
 /// Contains all the parameters necessary to specify the topology of a uniform
 /// rectilinear grid.
 ///
 struct TopologyUniform {
+  typedef dax::exec::CellVoxel CellType;
+
   Vector3 Origin;
   Vector3 Spacing;
   Extent3 Extent;
@@ -32,7 +41,7 @@ struct TopologyUniform {
 
 /// Returns the number of points in a uniform rectilinear grid.
 ///
-DAX_EXEC_CONT_EXPORT
+DAX_EXEC_EXPORT
 dax::Id numberOfPoints(const TopologyUniform &GridTopology)
 {
   dax::Id3 dims = dax::extentDimensions(GridTopology.Extent);
@@ -42,7 +51,7 @@ dax::Id numberOfPoints(const TopologyUniform &GridTopology)
 /// Returns the number of cells in a uniform rectilinear grid.
 ///
 template<typename T>
-DAX_EXEC_CONT_EXPORT
+DAX_EXEC_EXPORT
 dax::Id numberOfCells(const T &GridTopology)
 {
   dax::Id3 dims = dax::extentDimensions(GridTopology.Extent)
@@ -53,7 +62,7 @@ dax::Id numberOfCells(const T &GridTopology)
 /// Returns the point position in a structured grid for a given i, j, and k
 /// value stored in /c ijk
 ///
-DAX_EXEC_CONT_EXPORT
+DAX_EXEC_EXPORT
 dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
                               dax::Id3 ijk)
 {
@@ -67,7 +76,7 @@ dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
 /// Returns the point position in a structured grid for a given index
 /// which is represented by /c pointIndex
 ///
-DAX_EXEC_CONT_EXPORT
+DAX_EXEC_EXPORT
 dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
                               dax::Id pointIndex)
 {
@@ -75,6 +84,6 @@ dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
   return pointCoordiantes(grid, ijk);
 }
 
-}  }
+}  }  } //namespace dax::exec::internal
 
-#endif //__dax__internal__Structured_h
+#endif //__dax__exec__internal__TopologyUniform_h

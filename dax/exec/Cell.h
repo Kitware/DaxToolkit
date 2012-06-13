@@ -17,7 +17,6 @@
 #define __dax_exec_Cell_h
 
 #include <dax/Types.h>
-#include <dax/internal/GridTopologys.h>
 
 #include <dax/exec/Field.h>
 

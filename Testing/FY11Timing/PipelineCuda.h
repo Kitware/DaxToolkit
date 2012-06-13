@@ -19,6 +19,6 @@
 
 #include <dax/cont/UniformGrid.h>
 
-void RunPipelineCuda(int pipeline, const dax::cont::UniformGrid &grid);
+void RunPipelineCuda(int pipeline, const dax::cont::UniformGrid<> &grid);
 
 #endif //__PipelineCuda_h

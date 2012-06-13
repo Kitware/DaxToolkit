@@ -19,11 +19,7 @@
 // TODO: This should be auto-generated.
 
 #include <dax/Types.h>
-#include <dax/internal/DataArray.h>
-#include <dax/internal/GridTopologys.h>
 #include <dax/exec/WorkMapField.h>
-#include <dax/exec/internal/ErrorHandler.h>
-#include <dax/exec/internal/FieldBuild.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
@@ -33,54 +29,65 @@
 
 namespace dax {
 namespace exec {
+namespace internal {
 namespace kernel {
 
-template<class CellType>
+template<class CellType, class ExecAdapter>
 struct CellMapErrorParameters
 {
-  typename CellType::TopologyType grid;
+  typename CellType::template GridStructures<ExecAdapter>::TopologyType grid;
 };
 
-template<class CellType>
+template<class CellType, class ExecAdapter>
 struct CellMapError
 {
   DAX_EXEC_EXPORT void operator()(
-      CellMapErrorParameters<CellType> &parameters,
+      CellMapErrorParameters<CellType, ExecAdapter> &parameters,
       dax::Id index,
-      const dax::exec::internal::ErrorHandler &errorHandler)
+      const ExecAdapter &execAdapter)
   {
-    dax::exec::WorkMapCell<CellType> work(parameters.grid, errorHandler);
-    work.SetCellIndex(index);
+    dax::exec::WorkMapCell<CellType, ExecAdapter>
+        work(parameters.grid, index, execAdapter);
     dax::worklet::testing::CellMapError(work);
   }
 };
 
 }
 }
-} // dax::exec::kernel
+}
+} // dax::exec::internal::kernel
 
 namespace dax {
 namespace cont {
 namespace worklet {
 namespace testing {
 
-template<class GridType, class DeviceAdapter>
+template<class GridType,
+         class Container,
+         class DeviceAdapter>
 inline void CellMapError(const GridType &grid)
 {
-  typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
-  GridPackageType gridPackage(grid);
+  typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
+      ExecAdapter;
 
-  typedef typename GridPackageType::ExecutionCellType CellType;
+  typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
+  ExecutionTopologyType execTopology
+      = dax::cont::internal::ExecutionPackageGrid(grid);
 
-  typedef dax::exec::kernel::CellMapErrorParameters<CellType> Parameters;
-  Parameters parameters = {
-    gridPackage.GetExecutionObject()
-  };
+  typedef typename GridType::CellType CellType;
 
-  DeviceAdapter::Schedule(
-        dax::exec::kernel::CellMapError<CellType>(),
+  typedef dax::exec::internal::kernel
+      ::CellMapErrorParameters<CellType, ExecAdapter> Parameters;
+
+  Parameters parameters;
+  parameters.grid = execTopology;
+
+  dax::cont::internal::Schedule(
+        dax::exec::internal::kernel::CellMapError<CellType, ExecAdapter>(),
         parameters,
-        grid.GetNumberOfCells());
+        grid.GetNumberOfCells(),
+        Container(),
+        DeviceAdapter());
 }
 
 }

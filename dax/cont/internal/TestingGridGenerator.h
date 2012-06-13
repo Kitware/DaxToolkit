@@ -25,22 +25,23 @@
 #include <dax/cont/UnstructuredGrid.h>
 #include <vector>
 
+#include <iostream>
+
 namespace dax {
 namespace cont {
 namespace internal {
 
-template<typename T, typename DA>
+template<class GridType,
+         class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
+         class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER>
 struct TestGrid
 {
-  typedef T GridType;
-  typedef DA DeviceAdapter;
-
 private:
   //custom storage container that changes the size based on the grid type
   //so that we don't have to store extra information for uniform grid
   const dax::Id Size;
   GridType Grid;
-  template<typename GridType> struct GridStorage {};
+  template<typename GT> struct GridStorage {};
   template<typename U> struct GridStorage<dax::cont::UnstructuredGrid<U> >
     {
     std::vector<dax::Id> topology;
@@ -58,23 +59,41 @@ public:
     this->BuildGrid(this->Grid);
     }
 
-  // Description:
-  // Enable pointer-like dereference syntax. Returns a pointer to the contained
-  // object.
+  /// Enable pointer-like dereference syntax. Returns a pointer to the
+  /// contained object.
+  ///
   const GridType* operator->() const
     {
     return &this->Grid;
     }
 
-  // Description:
-  // Get a raw pointer to the contained object.
+  /// Get a raw pointer to the contained object.
+  ///
   const GridType& GetRealGrid() const
     {
     return this->Grid;
     }
 
+  /// This convienience function allows you to generate the point coordinate
+  /// field (since there is no consistent way to get it from the grid itself.
+  ///
+  dax::Vector3 GetPointCoordinates(dax::Id index)
+  {
+    // Not an efficient implementation, but it's test code so who cares?
+    dax::cont::UniformGrid<> uniform;
+    this->BuildGrid(uniform);
+    return uniform.ComputePointCoordinates(index);
+  }
+
+  ~TestGrid()
+  {
+    std::cout << "Test grid destroyed.  "
+              << "Any use of the grid after this point is an error."
+              << std::endl;
+  }
+
 private:
-  void BuildGrid(dax::cont::UniformGrid &grid)
+  void BuildGrid(dax::cont::UniformGrid<> &grid)
     {
     grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
     }
@@ -82,14 +101,14 @@ private:
   void BuildGrid(dax::cont::UnstructuredGrid<dax::exec::CellTriangle> &grid)
     {
     //we need to make a volume grid
-    dax::cont::UniformGrid uniform;
+    dax::cont::UniformGrid<> uniform;
     uniform.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
 
     //copy the point info over to the unstructured grid
     this->Info.points.clear();
     for(dax::Id i=0; i <uniform.GetNumberOfPoints(); ++i)
       {
-      this->Info.points.push_back(uniform.GetPointCoordinates(i));
+      this->Info.points.push_back(uniform.ComputePointCoordinates(i));
       }
 
     //copy the cell topology information over
@@ -165,10 +184,10 @@ private:
         }
       }
 
-    dax::cont::ArrayHandle<dax::Vector3,DeviceAdapter> ahPoints(
-          this->Info.points.begin(),this->Info.points.end());
-    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> ahTopo(
-          this->Info.topology.begin(),this->Info.topology.end());
+    dax::cont::ArrayHandle<dax::Vector3,ArrayContainerControlTag,DeviceAdapterTag>
+        ahPoints(&this->Info.points.front(),(&this->Info.points.back()) + 1);
+    dax::cont::ArrayHandle<dax::Id,ArrayContainerControlTag,DeviceAdapterTag>
+        ahTopo(&this->Info.topology.front(),(&this->Info.topology.back()) + 1);
     grid = dax::cont::UnstructuredGrid<dax::exec::CellTriangle>(ahTopo,
                                                                 ahPoints);
     }
@@ -176,14 +195,14 @@ private:
   void BuildGrid(dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> &grid)
     {
     //we need to make a volume grid
-    dax::cont::UniformGrid uniform;
-    uniform.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
+    dax::cont::UniformGrid<> uniform;
+    this->BuildGrid(uniform);
 
     //copy the point info over to the unstructured grid
     this->Info.points.clear();
     for(dax::Id i=0; i <uniform.GetNumberOfPoints(); ++i)
       {
-      this->Info.points.push_back(uniform.GetPointCoordinates(i));
+      this->Info.points.push_back(uniform.ComputePointCoordinates(i));
       }
 
     //copy the cell topology information over
@@ -215,10 +234,12 @@ private:
         }
       }
 
-    dax::cont::ArrayHandle<dax::Vector3,DeviceAdapter> ahPoints(
-          this->Info.points.begin(),this->Info.points.end());
-    dax::cont::ArrayHandle<dax::Id,DeviceAdapter> ahTopo(
-          this->Info.topology.begin(),this->Info.topology.end());
+    dax::cont::ArrayHandle<dax::Vector3,
+                           ArrayContainerControlTag,
+                           DeviceAdapterTag>
+        ahPoints(&this->Info.points.front(), (&this->Info.points.back()) + 1);
+    dax::cont::ArrayHandle<dax::Id,ArrayContainerControlTag,DeviceAdapterTag>
+        ahTopo(&this->Info.topology.front(), (&this->Info.topology.back()) + 1);
     grid = dax::cont::UnstructuredGrid<dax::exec::CellHexahedron>(ahTopo,
                                                                   ahPoints);
     }

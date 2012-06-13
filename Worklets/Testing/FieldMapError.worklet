@@ -25,9 +25,9 @@ namespace dax {
 namespace worklet {
 namespace testing {
 
-template<class CellType>
+template<class CellType, class ExecutionAdapter>
 DAX_WORKLET void FieldMapError(
-    DAX_IN dax::exec::WorkMapField<CellType> &work)
+    dax::exec::WorkMapField<CellType, ExecutionAdapter> &work)
 {
   work.RaiseError("Testing execution error system.");
 }

@@ -15,7 +15,10 @@
 ##=============================================================================
 
 set(headers
-  ArrayContainerExecutionThrust.h
+  ArrayManagerExecutionThrustDevice.h
+  ArrayManagerExecutionThrustShare.h
+  CheckThrustBackend.h
+  DeviceAdapterThrust.h
   )
 
 dax_declare_headers(${headers})

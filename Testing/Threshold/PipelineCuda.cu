@@ -20,7 +20,7 @@
 
 #include "Pipeline.h"
 
-void RunPipelineCuda(int pipeline, const dax::cont::UniformGrid &grid)
+void RunPipelineCuda(int pipeline, const dax::cont::UniformGrid<> &grid)
 {
   RunDAXPipeline(grid);
 }
@@ -30,9 +30,9 @@ void RunPipelineCuda(int pipeline, const dax::cont::UniformGrid &grid)
 
 #include "ArgumentsParser.h"
 
-dax::cont::UniformGrid CreateInputStructure(dax::Id dim)
+dax::cont::UniformGrid<> CreateInputStructure(dax::Id dim)
 {
-  dax::cont::UniformGrid grid;
+  dax::cont::UniformGrid<> grid;
   grid.SetOrigin(dax::make_Vector3(0.0, 0.0, 0.0));
   grid.SetSpacing(dax::make_Vector3(1.0, 1.0, 1.0));
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(dim-1, dim-1, dim-1));
@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
   //init grid vars from parser
   const dax::Id MAX_SIZE = parser.problemSize();
 
-  dax::cont::UniformGrid grid = CreateInputStructure(MAX_SIZE);
+  dax::cont::UniformGrid<> grid = CreateInputStructure(MAX_SIZE);
 
   int pipeline = parser.pipeline();
   std::cout << "Pipeline #" << pipeline << std::endl;

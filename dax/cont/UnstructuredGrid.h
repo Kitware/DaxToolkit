@@ -17,116 +17,97 @@
 #ifndef __dax_cont_UnstructuredGrid_h
 #define __dax_cont_UnstructuredGrid_h
 
-#include <dax/internal/GridTopologys.h>
 #include <dax/cont/ArrayHandle.h>
 
-namespace dax { namespace cont { namespace internal {
-template<class Grid> class ExecutionPackageGrid;
-} } }
-
-namespace dax { namespace exec {
-class CellHexahedron;
-} }
+#include <dax/exec/internal/TopologyUnstructured.h>
 
 namespace dax {
 namespace cont {
 
+/// A tag you can use to identify when grid is an unstructured grid.
+///
+struct UnstructuredGridTag {  };
+
+/// A subtag of UnstructuredGridTag that specifies the type of cell in the grid
+/// through templating.
+///
+template<class CellType>
+struct UnstructuredGridOfCell : UnstructuredGridTag {  };
+
 /// This class defines the topology of an unstructured grid. An unstructured
 /// grid can only contain cells of a single type.
 ///
-template <typename CellT>
+template <typename CellT,
+          class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
+          class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER>
 class UnstructuredGrid
 {
 public:
   typedef CellT CellType;
+  typedef UnstructuredGridOfCell<CellType> GridTypeTag;
 
-  UnstructuredGrid():
-    Topology(),
-    PointsCoordinates()
-    {
-    this->GridTopology = TopologyType();
-    }
+  typedef dax::cont::ArrayHandle<
+      dax::Id, ArrayContainerControlTag, DeviceAdapterTag> CellConnectionsType;
+  typedef dax::cont::ArrayHandle<
+      dax::Vector3, ArrayContainerControlTag, DeviceAdapterTag>
+      PointCoordinatesType;
 
-  UnstructuredGrid(dax::cont::ArrayHandle<dax::Id>& topo,
-                   dax::cont::ArrayHandle<dax::Vector3>& coords):
-    Topology(topo),
-    PointsCoordinates(coords)
-    {
-    if(topo.IsControlArrayValid())
-      {
-      topo.ReadyAsInput();
-      }
-    if(coords.IsControlArrayValid())
-      {
-      coords.ReadyAsInput();
-      }
+  typedef dax::exec::internal
+      ::ExecutionAdapter<ArrayContainerControlTag,DeviceAdapterTag>
+      ExecutionAdapter;
 
-    //I am not happy that the unstructured grid is not placed
-    //in the execution enviornment on object creation
-    this->GridTopology = TopologyType(this->PointsCoordinates.ReadyAsOutput(),
-                                      this->Topology.ReadyAsOutput());
-    }
+  typedef dax::exec::internal::TopologyUnstructured<CellType, ExecutionAdapter>
+      ExecutionTopologyStruct;
 
-  /// A simple class representing the points in an unstructured grid.
-  ///
-  class Points
+private:
+  CellConnectionsType CellConnections;
+  PointCoordinatesType PointCoordinates;
+
+public:
+  UnstructuredGrid() { }
+
+  UnstructuredGrid(CellConnectionsType cellConnections,
+                   PointCoordinatesType pointCoordinates)
+    : CellConnections(cellConnections), PointCoordinates(pointCoordinates)
   {
-  public:
-    Points(const UnstructuredGrid &grid) : GridTopology(grid.GridTopology) { }
-    dax::Vector3 GetCoordinates(dax::Id pointIndex) const {
-      return dax::internal::pointCoordiantes(this->GridTopology, pointIndex);
-    }
-    const dax::internal::TopologyUnstructured<CellType> &GetStructureForExecution() const
-      {
-      return this->GridTopology;
-      }
-  private:
-    dax::internal::TopologyUnstructured<CellType> GridTopology;
-  };
+    DAX_ASSERT_CONT(this->CellConnections.GetNumberOfValues() % CellType::NUM_POINTS == 0);
+  }
 
-  /// Returns an object representing the points in a uniform grid. Most helpful
-  /// in passing point fields to worklets.
+  /// The CellConnections array defines the connectivity of the mesh. The
+  /// length of this array is CellType::NUM_POINTS times more than the number
+  /// of cell. Each cell is represented by this number of points defining the
+  /// structure of the cell.
   ///
-  Points GetPoints() const { return Points(*this); }
+  CellConnectionsType GetCellConnections() const {
+    return this->CellConnections;
+  }
+  void SetCellConnections(CellConnectionsType cellConnections) {
+    this->CellConnections = cellConnections;
+  }
+
+  /// The PointCoordinates array defines the location of each point.  The
+  /// length of this array defines how many points are in the mesh.
+  ///
+  PointCoordinatesType GetPointCoordinates() const {
+    return this->PointCoordinates;
+  }
+  void SetPointCoordinates(PointCoordinatesType pointCoordinates) {
+    this->PointCoordinates = pointCoordinates;
+  }
 
   // Helper functions
 
   /// Get the number of points.
   ///
   dax::Id GetNumberOfPoints() const {
-
-    return this->PointsCoordinates.GetNumberOfEntries();
+    return this->PointCoordinates.GetNumberOfValues();
   }
 
   /// Get the number of cells.
   ///
   dax::Id GetNumberOfCells() const {
-    return this->Topology.GetNumberOfEntries()/CellType::NUM_POINTS;
+    return this->CellConnections.GetNumberOfValues() / CellType::NUM_POINTS;
   }
-
-  /// Gets the coordinates for a given point.
-  ///
-  dax::Vector3 GetPointCoordinates(dax::Id pointIndex) const {
-    return this->PointsCoordinates.GetValue(pointIndex);
-  }
-
-  dax::cont::ArrayHandle<dax::Id>& GetTopologyHandle()
-    { return Topology; }
-  dax::cont::ArrayHandle<dax::Vector3>& GetCoordinatesHandle()
-    { return PointsCoordinates; }
-
-private:
-  friend class Points;
-  friend class dax::cont::internal::ExecutionPackageGrid<UnstructuredGrid>;
-  typedef dax::internal::TopologyUnstructured<CellType> TopologyType;
-
-  TopologyType GridTopology;
-
-
-  //control side topology
-  dax::cont::ArrayHandle<dax::Id> Topology;
-  dax::cont::ArrayHandle<dax::Vector3> PointsCoordinates;
-
 };
 
 }

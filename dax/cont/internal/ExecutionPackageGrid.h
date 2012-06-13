@@ -17,34 +17,53 @@
 #ifndef __dax_cont_internal_ExecutionPackageGrid_h
 #define __dax_cont_internal_ExecutionPackageGrid_h
 
-#include <dax/internal/ExportMacros.h>
+#include <dax/cont/UniformGrid.h>
+#include <dax/cont/UnstructuredGrid.h>
+
+#include <dax/exec/internal/GridTopologies.h>
 
 namespace dax {
 namespace cont {
 namespace internal {
 
-template<class GridT>
-class ExecutionPackageGrid
+namespace detail {
+
+template<class GridType>
+DAX_CONT_EXPORT static typename GridType::ExecutionTopologyStruct
+ExecutionPackageGridInternal(const GridType &grid,
+                             dax::cont::UnstructuredGridTag)
 {
-public:
-  typedef GridT ControlGridType;
-  typedef typename GridT::TopologyType ExecutionGridType;
-  typedef typename GridT::CellType ExecutionCellType;
+  typename GridType::ExecutionTopologyStruct topology;
+  topology.CellConnections
+      = grid.GetCellConnections().PrepareForInput().first;
+  topology.NumberOfPoints = grid.GetNumberOfPoints();
+  topology.NumberOfCells = grid.GetNumberOfCells();
+  return topology;
+}
 
-  ExecutionPackageGrid(const ControlGridType &grid)
-    : GridTopology(grid.GridTopology) { }
+template<class GridType>
+DAX_CONT_EXPORT static typename dax::exec::internal::TopologyUniform
+ExecutionPackageGridInternal(const GridType &grid, dax::cont::UniformGridTag)
+{
+  dax::exec::internal::TopologyUniform topology;
+  topology.Origin = grid.GetOrigin();
+  topology.Spacing = grid.GetSpacing();
+  topology.Extent = grid.GetExtent();
+  return topology;
+}
 
-  ExecutionPackageGrid(const ExecutionGridType &grid) : GridTopology(grid) { }
+} // namespace detail
 
-  const ExecutionGridType &GetExecutionObject() const {
-    return this->GridTopology;
-  }
-private:
-  ExecutionGridType GridTopology;
-};
+template<class GridType>
+DAX_CONT_EXPORT static typename GridType::ExecutionTopologyStruct
+ExecutionPackageGrid(const GridType &grid)
+{
+  return detail::ExecutionPackageGridInternal(grid,
+                                              typename GridType::GridTypeTag());
+}
 
 }
 }
-}
+} // namespace dax::cont::internal
 
 #endif //__dax_cont_internal_ExecutionPackageGrid_h

@@ -21,5 +21,5 @@
 int UnitTestDeviceAdapterSerial(int, char *[])
 {
   return dax::cont::internal::TestingDeviceAdapter
-      <dax::cont::DeviceAdapterSerial>::Run();
+      <dax::cont::DeviceAdapterTagSerial>::Run();
 }

@@ -14,6 +14,9 @@
 //
 //=============================================================================
 
+#include <dax/cont/ArrayContainerControlBasic.h>
+#include <dax/cont/DeviceAdapterSerial.h>
+
 #include <dax/cont/worklet/Threshold.h>
 
 #include <math.h>
@@ -80,7 +83,7 @@ void CheckValues(IteratorType begin, IteratorType end)
 //-----------------------------------------------------------------------------
 static void TestThreshold()
 {
-  dax::cont::UniformGrid grid;
+  dax::cont::UniformGrid<> grid;
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
 
   dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> grid2;
@@ -92,9 +95,10 @@ static void TestThreshold()
        pointIndex++)
     {
     field[pointIndex]
-        = dax::dot(grid.GetPointCoordinates(pointIndex), trueGradient);
+        = dax::dot(grid.ComputePointCoordinates(pointIndex), trueGradient);
     }
-  dax::cont::ArrayHandle<dax::Scalar> fieldHandle(field.begin(), field.end());
+  dax::cont::ArrayHandle<dax::Scalar> fieldHandle(&field.front(),
+                                                  &(field.back())+1);
 
   //unkown size
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
@@ -113,13 +117,11 @@ static void TestThreshold()
     DAX_TEST_ASSERT(true==false,error.GetMessage());
     }
 
-  DAX_TEST_ASSERT(resultHandle.GetNumberOfEntries()==grid2.GetNumberOfPoints(),
+  DAX_TEST_ASSERT(resultHandle.GetNumberOfValues()==grid2.GetNumberOfPoints(),
                   "Incorrect number of points in the result array");
 
-  std::vector<dax::Scalar> result(resultHandle.GetNumberOfEntries());
-  resultHandle.SetNewControlData(result.begin(),result.end());
-  resultHandle.CompleteAsOutput(); //fetch back to control  
-  CheckValues(result.begin(), result.end());
+  CheckValues(resultHandle.GetIteratorConstControlBegin(),
+              resultHandle.GetIteratorConstControlEnd());
 
   //test max < min.
 }

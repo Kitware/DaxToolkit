@@ -19,11 +19,8 @@
 // TODO: This should be auto-generated.
 
 #include <dax/Types.h>
-#include <dax/internal/DataArray.h>
-#include <dax/internal/GridTopologys.h>
+#include <dax/exec/Field.h>
 #include <dax/exec/WorkMapCell.h>
-#include <dax/exec/internal/ErrorHandler.h>
-#include <dax/exec/internal/FieldBuild.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
@@ -33,26 +30,27 @@
 
 namespace dax {
 namespace exec {
+namespace internal {
 namespace kernel {
 
-template<class CellType>
+template<class CellType, class ExecAdapter>
 struct CellGradientParameters
 {
-  typename CellType::TopologyType grid;
-  dax::exec::FieldCoordinates inCoordinates;
-  dax::exec::FieldPoint<dax::Scalar> inField;
-  dax::exec::FieldCell<dax::Vector3> outField;
+  typename CellType::template GridStructures<ExecAdapter>::TopologyType grid;
+  dax::exec::FieldCoordinatesIn<ExecAdapter> inCoordinates;
+  dax::exec::FieldPointIn<dax::Scalar, ExecAdapter> inField;
+  dax::exec::FieldCellOut<dax::Vector3, ExecAdapter> outField;
 };
 
-template<class CellType>
+template<class CellType, class ExecAdapter>
 struct CellGradient {
   DAX_EXEC_EXPORT void operator()(
-      CellGradientParameters<CellType> &parameters,
+      CellGradientParameters<CellType, ExecAdapter> &parameters,
       dax::Id index,
-      const dax::exec::internal::ErrorHandler &errorHandler)
+      const ExecAdapter &execAdapter)
   {
-    dax::exec::WorkMapCell<CellType> work(parameters.grid, errorHandler);
-    work.SetCellIndex(index);
+    dax::exec::WorkMapCell<CellType, ExecAdapter> work(
+          parameters.grid, index, execAdapter);
     dax::worklet::CellGradient(work,
                                parameters.inCoordinates,
                                parameters.inField,
@@ -62,49 +60,59 @@ struct CellGradient {
 
 }
 }
-} // dax::cuda::kernel
+}
+} // dax::exec::internal::kernel
 
 namespace dax {
 namespace cont {
 namespace worklet {
 
-template<class GridType, class DeviceAdapter>
-inline void CellGradient(
+template<class GridType,
+         class Container,
+         class DeviceAdapter>
+DAX_CONT_EXPORT void CellGradient(
     const GridType &grid,
-    const typename GridType::Points &points,
-    dax::cont::ArrayHandle<dax::Scalar, DeviceAdapter> &inHandle,
-    dax::cont::ArrayHandle<dax::Vector3, DeviceAdapter> &outHandle)
+    const typename GridType::PointCoordinatesType &points,
+    dax::cont::ArrayHandle<dax::Scalar, Container, DeviceAdapter> &inHandle,
+    dax::cont::ArrayHandle<dax::Vector3, Container, DeviceAdapter> &outHandle)
 {
-  typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
-  GridPackageType gridPackage(grid);
+  typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
+      ExecAdapter;
 
-  dax::cont::internal::ExecutionPackageFieldCoordinatesInput
-      <GridType, DeviceAdapter>
-      fieldCoordinates(points);
+  typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
+  ExecutionTopologyType execTopology
+      = dax::cont::internal::ExecutionPackageGrid(grid);
 
-  dax::cont::internal::ExecutionPackageFieldPointInput
-      <dax::Scalar, DeviceAdapter>
-      inField(inHandle, grid);
+  dax::exec::FieldCoordinatesIn<ExecAdapter> fieldCoordinates
+      = dax::cont::internal
+      ::ExecutionPackageFieldGridConst<dax::exec::FieldCoordinatesIn>(
+        points, grid);
 
-  dax::cont::internal::ExecutionPackageFieldCellOutput
-      <dax::Vector3, DeviceAdapter>
-      outField(outHandle, grid);
+  dax::exec::FieldPointIn<dax::Scalar, ExecAdapter> fieldIn
+      = dax::cont::internal::ExecutionPackageFieldGridConst
+        <dax::exec::FieldPointIn>(inHandle, grid);
 
-  typedef typename GridPackageType::ExecutionCellType CellType;
+  dax::exec::FieldCellOut<dax::Vector3, ExecAdapter> fieldOut
+      = dax::cont::internal::ExecutionPackageFieldGrid<dax::exec::FieldCellOut>(
+        outHandle, grid);
 
-  typedef dax::exec::kernel::CellGradientParameters<CellType> Parameters;
+  typedef typename GridType::CellType CellType;
 
-  Parameters parameters = {
-    gridPackage.GetExecutionObject(),
-    fieldCoordinates.GetExecutionObject(),
-    inField.GetExecutionObject(),
-    outField.GetExecutionObject()
-  };
+  typedef dax::exec::internal::kernel
+      ::CellGradientParameters<CellType, ExecAdapter> Parameters;
 
-  DeviceAdapter::Schedule(
-        dax::exec::kernel::CellGradient<CellType>(),
+  Parameters parameters;
+  parameters.grid = execTopology;
+  parameters.inCoordinates = fieldCoordinates;
+  parameters.inField = fieldIn;
+  parameters.outField = fieldOut;
+
+  dax::cont::internal::Schedule(
+        dax::exec::internal::kernel::CellGradient<CellType, ExecAdapter>(),
         parameters,
-        grid.GetNumberOfCells());
+        grid.GetNumberOfCells(),
+        Container(),
+        DeviceAdapter());
 }
 
 }

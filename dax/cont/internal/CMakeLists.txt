@@ -15,12 +15,13 @@
 ##=============================================================================
 
 set(headers
-  ArrayContainerExecutionCPU.h
+  ArrayContainerControlError.h
+  ArrayManagerExecutionShareWithControl.h
   DeviceAdapterError.h
   ExecutionPackageField.h
   ExecutionPackageGrid.h
   ExtractCoordinates.h
-  ExtractTopology.h
+  #ExtractTopology.h
   IteratorContainer.h
   IteratorPolymorphic.h
   ScheduleGenerateTopology.h
@@ -38,7 +39,7 @@ dax_declare_headers(${headers})
 #add_custom_target(daxContInternal ALL DEPENDS daxCont)
 
 set(unit_tests
-  UnitTestArrayContainerExecutionCPU.cxx
+  UnitTestArrayManagerExecutionShareWithControl.cxx
   UnitTestContTesting.cxx
   UnitTestExecutionPackage.cxx
   UnitTestIteratorPolymorphic.cxx

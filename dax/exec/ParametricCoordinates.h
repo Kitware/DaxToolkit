@@ -20,34 +20,45 @@
 #include <dax/Types.h>
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
+#include <dax/exec/internal/FieldAccess.h>
 
 #include <dax/exec/WorkMapCell.h>
 namespace dax {
 namespace exec {
 
 //-----------------------------------------------------------------------------
-template<class WorkType>
+template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 parametricCoordinatesToWorldCoordinates(
   const WorkType &work,
   const dax::exec::CellVoxel &cell,
-  const dax::exec::FieldCoordinates &coordField,
+  const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
   const dax::Vector3 pcoords)
 {
   dax::Vector3 spacing = cell.GetSpacing();
   dax::Vector3 cellOffset = spacing * pcoords;
 
-  dax::Vector3 minCoord = work.GetFieldValue(coordField, 0);
+  // This is a cheating way to get the coordinate value for index 0.  This is
+  // a very special case where you would want just one point coordinate because
+  // the rest are implicitly defined.
+  dax::Vector3 minCoord = dax::exec::internal::FieldAccess::GetCoordinates(
+        coordField, cell.GetPointIndex(0), cell.GetGridTopology(), work);
+
   return cellOffset + minCoord;
 }
 
-template<class WorkType>
+template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 worldCoordinatesToParametricCoordinates(
   const WorkType &work,
   const dax::exec::CellVoxel &cell,
-  const dax::exec::FieldCoordinates &coordField,
+  const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
   const dax::Vector3 wcoords)
 {
-  dax::Vector3 minCoord = work.GetFieldValue(coordField, 0);
+  // This is a cheating way to get the coordinate value for index 0.  This is
+  // a very special case where you would want just one point coordinate because
+  // the rest are implicitly defined.
+  dax::Vector3 minCoord = dax::exec::internal::FieldAccess::GetCoordinates(
+        coordField, cell.GetPointIndex(0), cell.GetGridTopology(), work);
+
   dax::Vector3 cellOffset = wcoords - minCoord;
 
   dax::Vector3 spacing = cell.GetSpacing();

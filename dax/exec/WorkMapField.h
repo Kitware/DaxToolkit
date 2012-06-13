@@ -20,8 +20,6 @@
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 
-#include <dax/internal/GridTopologys.h>
-#include <dax/exec/internal/ErrorHandler.h>
 #include <dax/exec/internal/FieldAccess.h>
 
 namespace dax { namespace exec {
@@ -30,57 +28,69 @@ namespace dax { namespace exec {
 /// Work for worklets that map fields without regard to topology or any other
 /// connectivity information.  The template is because the internal accessors
 /// of the cells may change based on type.
-template<class CellT>
+template<class CellT, class ExecutionAdapter>
 class WorkMapField
 {
-  dax::Id Index;
-  dax::exec::internal::ErrorHandler ErrorHandler;
-
 public:
   typedef CellT CellType;
-  typedef typename CellType::TopologyType TopologyType;
+  typedef typename CellType::template GridStructures<ExecutionAdapter>
+      ::TopologyType TopologyType;
 
+private:
   const TopologyType GridTopology;
+  const dax::Id Index;
+  const ExecutionAdapter Adapter;
 
+public:
   DAX_EXEC_CONT_EXPORT WorkMapField(
       const TopologyType &gs,
-      const dax::exec::internal::ErrorHandler &errorHandler)
-    : ErrorHandler(errorHandler),
-      GridTopology(gs){ }
+      dax::Id index,
+      const ExecutionAdapter &executionAdapter)
+    : GridTopology(gs), Index(index), Adapter(executionAdapter)
+  { }
 
-  DAX_EXEC_CONT_EXPORT WorkMapField(
-      const dax::exec::internal::ErrorHandler &errorHandler)
-    : ErrorHandler(errorHandler),
-      GridTopology(){ }
-
-  template<typename T>
-  DAX_EXEC_EXPORT const T &GetFieldValue(const dax::exec::Field<T> &field) const
+  template<typename T, class Access, class Assoc>
+  DAX_EXEC_EXPORT T GetFieldValue(
+      dax::exec::internal::FieldBase<
+          Access, Assoc, T, ExecutionAdapter> field) const
   {
-    return dax::exec::internal::fieldAccessNormalGet(field, this->GetIndex());
+    return dax::exec::internal::FieldAccess::GetField(field,
+                                                      this->GetIndex(),
+                                                      *this);
   }
 
-  template<typename T>
-  DAX_EXEC_EXPORT void SetFieldValue(dax::exec::Field<T> &field, const T &value)
+  template<typename T, class Assoc>
+  DAX_EXEC_EXPORT void SetFieldValue(
+      dax::exec::internal::FieldBase<
+          dax::exec::internal::FieldAccessOutputTag,
+          Assoc,
+          T,
+          ExecutionAdapter> field,
+      T value) const
   {
-    dax::exec::internal::fieldAccessNormalSet(field, this->GetIndex(), value);
+    dax::exec::internal::FieldAccess::SetField(field,
+                                               this->GetIndex(),
+                                               value,
+                                               *this);
   }
 
   DAX_EXEC_EXPORT dax::Vector3 GetFieldValue(
-    const dax::exec::FieldCoordinates &)
+      dax::exec::internal::FieldBase<
+          dax::exec::internal::FieldAccessInputTag,
+          dax::exec::internal::FieldAssociationCoordinatesTag,
+          dax::Vector3,
+          ExecutionAdapter> field) const
   {
-    // Special case.  Point coordiantes are determined implicitly by index.
-    return dax::exec::internal::fieldAccessUniformCoordinatesGet(
-          this->GridTopology,
-          this->GetIndex());
+    // Special case.  Point coordiantes can bedetermined implicitly by index.
+    return dax::exec::internal::FieldAccess::GetCoordinates(
+          field, this->GetIndex(), this->GridTopology, *this);
   }
 
   DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->Index; }
 
-  DAX_EXEC_EXPORT void SetIndex(dax::Id index) { this->Index = index; }
-
-  DAX_EXEC_EXPORT void RaiseError(const char *message)
+  DAX_EXEC_EXPORT void RaiseError(const char *message) const
   {
-    this->ErrorHandler.RaiseError(message);
+    this->Adapter.RaiseError(message);
   }
 };
 

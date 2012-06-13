@@ -20,7 +20,7 @@
 #undef DAX_DEFAULT_DEVICE_ADAPTER
 #endif
 
-#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::internal::DeviceAdapterError
+#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::internal::DeviceAdapterTagError
 
 namespace dax {
 namespace cont {
@@ -31,7 +31,7 @@ namespace internal {
 /// point, you have to specify an appropriate DeviceAdapter or else get a
 /// compile error.
 ///
-struct DeviceAdapterError
+struct DeviceAdapterTagError
 {
   // Not implemented.
 };

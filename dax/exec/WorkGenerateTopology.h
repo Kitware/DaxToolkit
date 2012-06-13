@@ -22,8 +22,6 @@
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapCell.h>
 
-#include <dax/internal/GridTopologys.h>
-#include <dax/exec/internal/ErrorHandler.h>
 #include <dax/exec/internal/FieldAccess.h>
 
 namespace dax {
@@ -37,66 +35,73 @@ namespace exec {
 /// There are different versions for different cell types, which might have
 /// different constructors because they identify topology differently.
 
-template<class ICT, class OCT> class WorkGenerateTopology
+template<class ICT, class OCT, class ExecutionAdapter>
+class WorkGenerateTopology
 {
 public:
   typedef ICT InputCellType;
   typedef OCT OutputCellType;
 
-  typedef typename InputCellType::TopologyType TopologyType;
-  typedef typename InputCellType::PointIds InputPointIds;
-  typedef typename OutputCellType::PointIds OutputPointIds;
+  typedef typename InputCellType::template GridStructures<ExecutionAdapter>
+      ::TopologyType InputTopologyType;
+
+  typedef typename InputCellType::PointConnectionsType
+       InputPointConnectionsType;
+  typedef typename OutputCellType::PointConnectionsType
+       OutputPointConnectionsType;
 
 private:
-  InputCellType InputCell;
-  dax::Id OutputIndex;
-  dax::exec::Field<dax::Id> OutputTopology;
-  dax::exec::internal::ErrorHandler ErrorHandler;
+  const InputCellType InputCell;
+  const dax::Id OutputIndex;
+  const dax::exec::FieldOut<dax::Id, ExecutionAdapter> OutputConnectionField;
+  const ExecutionAdapter Adapter;
 public:
 
   DAX_EXEC_EXPORT WorkGenerateTopology(
-    const TopologyType &gridStructure,
-    const dax::exec::Field<dax::Id> &outTopology,
-    const dax::exec::internal::ErrorHandler &errorHandler)
-    : InputCell(gridStructure, 0),
-      OutputIndex(0),
-      OutputTopology(outTopology),
-      ErrorHandler(errorHandler)
+      const InputTopologyType &gridStructure,
+      dax::Id inputIndex,
+      const dax::exec::FieldOut<dax::Id, ExecutionAdapter> &outConnectionField,
+      dax::Id outputIndex,
+      const ExecutionAdapter &executionAdapter)
+    : InputCell(gridStructure, inputIndex),
+      OutputIndex(outputIndex),
+      OutputConnectionField(outConnectionField),
+      Adapter(executionAdapter)
     { }
 
   /// Get the topology of the input cell
-  DAX_EXEC_EXPORT InputPointIds GetInputTopology() const
+  DAX_EXEC_EXPORT InputPointConnectionsType GetInputConnections() const
   {
     return this->InputCell.GetPointIndices();
   }
 
   /// Set the topology of one of the output cells
-  DAX_EXEC_EXPORT void SetOutputTopology(const OutputPointIds &topology)
+  DAX_EXEC_EXPORT
+  void SetOutputConnections(const OutputPointConnectionsType &connections) const
   {
-    dax::exec::internal::fieldAccessNormalSet(this->OutputTopology,
-                                              this->OutputIndex*OutputCellType::NUM_POINTS, //needs to be the index into the topology array
-                                              topology);
+    DAX_ASSERT_EXEC(OutputCellType::NUM_POINTS
+                    == OutputPointConnectionsType::NUM_COMPONENTS,
+                    *this);
+    const dax::Id connectionIndexOffset =
+        this->OutputIndex*OutputCellType::NUM_POINTS;
+    for (dax::Id index = 0; index < OutputCellType::NUM_POINTS; index++)
+      {
+      dax::exec::internal::FieldAccess::SetField(this->OutputConnectionField,
+                                                 index + connectionIndexOffset,
+                                                 connections[index],
+                                                 *this);
+      }
   }
 
-  DAX_EXEC_EXPORT void SetCellIndex(dax::Id cellIndex)
-  {
-    this->InputCell.SetIndex(cellIndex);
-  }
-
-  DAX_EXEC_EXPORT void SetOutputCellIndex(dax::Id cellIndex)
-  {
-  this->OutputIndex = cellIndex;
-  }
-
-  DAX_EXEC_EXPORT dax::Id GetOutputCellIndex()
+  DAX_EXEC_EXPORT dax::Id GetOutputCellIndex() const
   {
   return this->OutputIndex;
   }
 
-  DAX_EXEC_EXPORT void RaiseError(const char* message)
+  DAX_EXEC_EXPORT void RaiseError(const char* message) const
   {
-    this->ErrorHandler.RaiseError(message);
-  }  
+    this->Adapter.RaiseError(message);
+  }
 };
 
 

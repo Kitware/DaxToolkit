@@ -28,8 +28,13 @@
 /// then an error is raised.  This macro is meant to work in the Dax control
 /// environment and throws an ErrorControlAssert object on failure.
 
+#ifndef NDEBUG
 #define DAX_ASSERT_CONT(condition) \
-  ::dax::cont::Assert(condition, __FILE__, __LINE__, #condition)
+  if (!(condition)) \
+    ::dax::cont::Assert(condition, __FILE__, __LINE__, #condition)
+#else
+#define DAX_ASSERT_CONT(condition)
+#endif
 
 namespace dax {
 namespace cont {

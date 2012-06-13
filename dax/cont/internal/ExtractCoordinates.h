@@ -21,6 +21,8 @@
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
+#include <dax/exec/internal/ExecutionAdapter.h>
+#include <dax/exec/internal/FieldAccess.h>
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
@@ -29,39 +31,42 @@
 
 namespace dax {
 namespace exec {
-namespace kernel {
 namespace internal {
+namespace kernel {
 
 
-template <typename CellType>
-DAX_WORKLET void ExtractCoordinates(dax::exec::WorkMapField<CellType> work,
-                                    dax::Id newIndex,
-                                    const dax::exec::FieldCoordinates &pointCoord,
-                                    dax::exec::Field<dax::Vector3> &output)
+template <typename CellType, class ExecAdapter>
+DAX_WORKLET void ExtractCoordinates(
+    const dax::exec::WorkMapField<CellType, ExecAdapter> &work,
+    dax::Id newIndex,
+    const dax::exec::FieldCoordinatesIn<ExecAdapter> &pointCoord,
+    const dax::exec::FieldOut<dax::Vector3, ExecAdapter> &output)
 {
   dax::Vector3 pointLocation = work.GetFieldValue(pointCoord);
-  dax::Vector3* location = output.GetArray().GetPointer();
-  location[newIndex]=pointLocation;
+  dax::exec::internal::FieldAccess::SetField(
+        output, newIndex, pointLocation, work);
 }
 
-template<class CellType>
+template<class TopologyType, class ExecutionAdapter>
 struct ExtractCoordinatesParameters
 {
-  typename CellType::TopologyType grid;
-  dax::exec::FieldCoordinates inCoordinates;
-  dax::exec::Field<dax::Vector3> outField;
+  TopologyType grid;
+  dax::exec::FieldCoordinatesIn<ExecutionAdapter> inCoordinates;
+  dax::exec::FieldOut<dax::Vector3, ExecutionAdapter> outField;
 };
 
-template<class CellType>
+template<class CellType, class ExecutionAdapter>
 struct ExtractCoordinatesFunctor {
+  typedef typename CellType::template GridStructures<ExecutionAdapter>
+      ::TopologyType TopologyType;
   DAX_EXEC_EXPORT void operator()(
-      ExtractCoordinatesParameters<CellType> &parameters,
+      ExtractCoordinatesParameters<TopologyType, ExecutionAdapter> &parameters,
       dax::Id key, dax::Id value,
-      const dax::exec::internal::ErrorHandler &errorHandler)
+      const ExecutionAdapter &execAdapter) const
   {
-    dax::exec::WorkMapField<CellType> work(parameters.grid, errorHandler);
-    work.SetIndex(value);
-    dax::exec::kernel::internal::ExtractCoordinates(work,
+    dax::exec::WorkMapField<CellType, ExecutionAdapter>
+        work(parameters.grid, value, execAdapter);
+    dax::exec::internal::kernel::ExtractCoordinates(work,
                                                     key,
                                                     parameters.inCoordinates,
                                                     parameters.outField);
@@ -71,19 +76,67 @@ struct ExtractCoordinatesFunctor {
 }
 }
 }
-} //dax::exec::kernel::internal
+} //dax::exec::internal::kernel
 
 namespace dax {
 namespace cont {
 namespace internal {
 
+template<
+    class GridType,
+    class ArrayContainerControlTag,
+    class DeviceAdapterTag>
+DAX_CONT_EXPORT
+dax::cont::ArrayHandle<dax::Vector3, ArrayContainerControlTag, DeviceAdapterTag>
+ExtractCoordinates(
+    const GridType &grid,
+    const dax::cont::ArrayHandle<dax::Id,
+                                 ArrayContainerControlTag,
+                                 DeviceAdapterTag> &extractIds)
+{
+  //Verify the input
+  DAX_ASSERT_CONT(grid.GetNumberOfPoints() > 0);
+  DAX_ASSERT_CONT(extractIds.GetNumberOfValues() > 0);
+  DAX_ASSERT_CONT(extractIds.GetNumberOfValues() <= grid.GetNumberOfPoints());
+
+  const dax::Id outputSize = extractIds.GetNumberOfValues();
+  dax::cont::ArrayHandle<dax::Vector3,ArrayContainerControlTag,DeviceAdapterTag>
+      coordinates;
+
+  typedef dax::exec::internal
+      ::ExecutionAdapter<ArrayContainerControlTag,DeviceAdapterTag> ExecAdapter;
+  typedef typename GridType::ExecutionTopologyStruct TopologyType;
+  typedef typename GridType::CellType CellType;
+  typedef dax::exec::internal::kernel
+      ::ExtractCoordinatesFunctor<CellType, ExecAdapter> FunctorType;
+
+  dax::exec::internal::kernel::ExtractCoordinatesParameters<
+      TopologyType,ExecAdapter> parameters;
+  parameters.grid =
+      dax::cont::internal::ExecutionPackageGrid(grid);
+  parameters.inCoordinates =
+      dax::cont::internal::ExecutionPackageFieldGridConst<
+        dax::exec::FieldCoordinatesIn>(grid.GetPointCoordinates(), grid);
+  parameters.outField =
+      dax::cont::internal::ExecutionPackageFieldArray<dax::exec::FieldOut>(
+        coordinates, outputSize);
+
+  dax::cont::internal::ScheduleMap(FunctorType(), parameters, extractIds);
+
+  DAX_ASSERT_CONT(
+        coordinates.GetNumberOfValues() == extractIds.GetNumberOfValues());
+  return coordinates;
+}
+
+#if 0
 template<typename DeviceAdapter, typename GridType>
 class ExtractCoordinates
 {
 public:
   /// Extract a subset of the cells Coordinates.
-  ExtractCoordinates(const GridType& grid,
-                  dax::cont::ArrayHandle<dax::Id,DeviceAdapter> &extractIds)
+  ExtractCoordinates(
+      const GridType& grid,
+      dax::cont::ArrayHandle<dax::Id,DeviceAdapter> &extractIds)
     {
     //verify the input
     DAX_ASSERT_CONT(grid.GetNumberOfPoints() > 0);
@@ -144,6 +197,7 @@ inline void ExtractCoordinates<DeviceAdapter,GridType>::DoExtract(
         extractIds);
 
 }
+#endif
 
 
 }

@@ -22,176 +22,205 @@
 #include <boost/shared_ptr.hpp>
 
 #include <dax/Types.h>
-#include <dax/internal/DataArray.h>
-#include <dax/internal/GridTopologys.h>
-#include <dax/exec/internal/FieldBuild.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ExecutionPackageField.h>
 #include <dax/cont/internal/ExecutionPackageGrid.h>
 
+#include <dax/exec/Field.h>
 #include <dax/exec/WorkDetermineNewCellCount.h>
+#include <dax/exec/internal/ExecutionAdapter.h>
+
 #include <dax/cont/internal/ScheduleGenerateTopology.h>
 
 #include <Worklets/Threshold.worklet>
 
 namespace dax {
 namespace exec {
+namespace internal {
 namespace kernel {
 
-template<class CT, class FT>
+template<class CellType, class FieldType, class Container, class Adapter>
 struct ThresholdClassifyParameters
 {
-  typedef CT CellType;
-  typedef FT FieldType;
-  typedef typename CellType::TopologyType GridType;
-
-  GridType grid;
-  dax::exec::FieldCell<dax::Id> newCellCount;
-
+  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
+  typename CellType::template GridStructures<ExecAdapter>::TopologyType grid;
+  dax::exec::FieldCellOut<dax::Id, ExecAdapter> newCellCount;
   FieldType min;
   FieldType max;
-  dax::exec::FieldPoint<FieldType> inField;
+  dax::exec::FieldPointIn<FieldType, ExecAdapter> inField;
 };
 
-template<class CT, class FT>
+template<class CellType, class FieldType, class Container, class Adapter>
 struct ThresholdClassifyFunctor
 {
+  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
   DAX_EXEC_EXPORT void operator()(
-      dax::exec::kernel::ThresholdClassifyParameters<CT,FT> &parameters,
+      ThresholdClassifyParameters<CellType,FieldType,Container,Adapter>
+        &parameters,
       dax::Id index,
-      const dax::exec::internal::ErrorHandler &errorHandler)
+      const ExecAdapter &execAdapter) const
   {
-  dax::exec::WorkDetermineNewCellCount<CT> work(parameters.grid,
-                                     parameters.newCellCount,
-                                     errorHandler);
-  work.SetCellIndex(index);
+  dax::exec::WorkDetermineNewCellCount<CellType,ExecAdapter>
+      work(parameters.grid, index, parameters.newCellCount, execAdapter);
   dax::worklet::Threshold_Classify(work,
-                          parameters.min,
-                          parameters.max,
-                          parameters.inField);
+                                   parameters.min,
+                                   parameters.max,
+                                   parameters.inField);
     }
 };
 
-template<class ICT, class OCT>
+template<class InputCellType,
+         class OutputCellType,
+         class Container,
+         class Adapter>
 struct GenerateTopologyFunctor
 {
+  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
   template<typename Parameters>
   DAX_EXEC_EXPORT void operator()(
-      Parameters &parameters,
-      dax::Id key, dax::Id value,
-      const dax::exec::internal::ErrorHandler &errorHandler)
+      const Parameters &parameters,
+      dax::Id key,
+      dax::Id value,
+      const ExecAdapter &execAdapter) const
   {
-  dax::exec::WorkGenerateTopology<ICT,OCT> work(parameters.grid,
-                                           parameters.outputTopology,
-                                           errorHandler);
-  work.SetCellIndex(value);
-  work.SetOutputCellIndex(key);
+  dax::exec::WorkGenerateTopology<InputCellType,OutputCellType,ExecAdapter>
+      work(parameters.grid,
+           value,
+           parameters.outputConnections,
+           key,
+           execAdapter);
   dax::worklet::Threshold_Topology(work);
   }
 };
 
-template<class ParametersClassify,
-         class FunctorClassify,
-         class FunctorTopology,
-         class DeviceAdapter>
+template<class InCellType,
+         class InFieldType,
+         class OutCellType,
+         class Container,
+         class Adapter>
 class Threshold : public dax::cont::internal::ScheduleGenerateTopology
     <
-    Threshold<ParametersClassify,
-              FunctorClassify,
-              FunctorTopology,
-              DeviceAdapter>,
-    FunctorClassify,
-    FunctorTopology,
-    DeviceAdapter>
+    Threshold<InCellType,
+              InFieldType,
+              OutCellType,
+              Container,
+              Adapter>,
+    ThresholdClassifyFunctor<InCellType,InFieldType,Container,Adapter>,
+    GenerateTopologyFunctor<InCellType,OutCellType,Container,Adapter>,
+    Container,
+    Adapter>
 {
 public:
-    typedef typename ParametersClassify::FieldType ValueType;
+  typedef InFieldType ValueType;
+  typedef dax::cont::ArrayHandle<ValueType,Container,Adapter>
+      ValueTypeArrayHandle;
+  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
 
-    //constructor that is passed all the user decided parts of the worklet too
-    Threshold(const ValueType& min, const ValueType& max,
-              dax::cont::ArrayHandle<ValueType,DeviceAdapter>& thresholdField,
-              dax::cont::ArrayHandle<ValueType,DeviceAdapter>& outputField):
-      Min(min),
+  typedef ThresholdClassifyParameters<InCellType,InFieldType,Container,Adapter>
+      ParametersClassify;
+  typedef ThresholdClassifyFunctor<InCellType,InFieldType,Container,Adapter>
+      FunctorClassify;
+  typedef GenerateTopologyFunctor<InCellType,OutCellType,Container,Adapter>
+      FunctorTopology;
+
+  //constructor that is passed all the user decided parts of the worklet too
+  Threshold(const ValueType& min,
+            const ValueType& max,
+            const ValueTypeArrayHandle& thresholdField,
+            ValueTypeArrayHandle& outputField)
+    : Min(min),
       Max(max),
-      InputField(thresholdField),
-      OutputField(outputField)
-      {
+      InputHandle(thresholdField),
+      OutputHandle(outputField)
+  {
 
-      }
+  }
 
-    //generate the parameters for the classification worklet
-    template <typename GridType, typename PackagedGrid>
-    ParametersClassify GenerateClassificationParameters(const GridType& grid,
-                                                PackagedGrid& pgrid)
-      {
-      this->PackageField = PackageFieldInputPtr(new PackageFieldInput(
-                                                  this->InputField, grid));
-      ParametersClassify parameters = {pgrid.GetExecutionObject(),
-                               this->PackageCellCount->GetExecutionObject(),
-                               this->Min,
-                               this->Max,
-                               this->PackageField->GetExecutionObject()};
-      return parameters;
-      }
+  //generate the parameters for the classification worklet
+  template <typename GridType, typename ExecutionTopologyType>
+  ParametersClassify GenerateClassificationParameters(
+      const GridType& grid, const ExecutionTopologyType& executionTopology)
+  {
+    this->InputField
+        = dax::cont::internal::ExecutionPackageFieldGrid<
+          dax::exec::FieldPointIn>(this->InputHandle,grid);
 
-    //threshold any fields that are needed
-    void GenerateOutputFields()
-      {
-      //we know that the threshold is being done on a point field
-      DeviceAdapter::StreamCompact(this->InputField,
-                                   this->MaskPointHandle,
-                                   this->OutputField);
-      this->OutputField.CompleteAsOutput();
-      }
+    ParametersClassify parameters;
+    parameters.grid = executionTopology;
+    parameters.newCellCount = this->NewCellCountField;
+    parameters.min = this->Min;
+    parameters.max = this->Max;
+    parameters.inField = this->InputField;
+
+    return parameters;
+  }
+
+  //threshold any fields that are needed
+  void GenerateOutputFields()
+  {
+    //we know that the threshold is being done on a point field
+    dax::cont::internal::StreamCompact(this->InputHandle,
+                                       this->MaskPointHandle,
+                                       this->OutputHandle,
+                                       Adapter());
+  }
 
 private:
   ValueType Min;
   ValueType Max;
 
-  typedef dax::cont::internal::ExecutionPackageFieldPointInput<
-                                ValueType,DeviceAdapter> PackageFieldInput;
-  typedef  boost::shared_ptr< PackageFieldInput > PackageFieldInputPtr;
-
-  PackageFieldInputPtr PackageField;
-  dax::cont::ArrayHandle<ValueType,DeviceAdapter> InputField;
-  dax::cont::ArrayHandle<ValueType,DeviceAdapter> OutputField;
+  ValueTypeArrayHandle InputHandle;
+  dax::exec::FieldPointIn<InFieldType, ExecAdapter> InputField;
+  ValueTypeArrayHandle OutputHandle;
 };
-}
-}
-}
 
+}
+}
+}
+} //namespace dax::exec::internal::kernel
 
 
 namespace dax {
 namespace cont {
 namespace worklet {
 
-template<class GridType, class OutGridType, typename FieldType, class DeviceAdapter>
+template<class InGridType,
+         class OutGridType,
+         typename FieldType,
+         class Container,
+         class Adapter>
 inline void Threshold(
-    const GridType &inGrid,
+    const InGridType &inGrid,
     OutGridType &outGeom,
     FieldType thresholdMin,
     FieldType thresholdMax,
-    dax::cont::ArrayHandle<FieldType, DeviceAdapter> &thresholdHandle,
-    dax::cont::ArrayHandle<FieldType, DeviceAdapter> &thresholdResult)
+    const dax::cont::ArrayHandle<FieldType,Container,Adapter> &thresholdHandle,
+    dax::cont::ArrayHandle<FieldType,Container,Adapter> &thresholdResult)
 {
-  typedef dax::cont::internal::ExecutionPackageGrid<GridType> GridPackageType;
-  typedef typename GridPackageType::ExecutionCellType CellType;
+  typedef typename InGridType::ExecutionTopologyStruct InExecutionTopologyType;
+  typedef typename InGridType::CellType InCellType;
 
-  typedef dax::cont::internal::ExecutionPackageGrid<OutGridType> OutGridPackageType;
-  typedef typename OutGridPackageType::ExecutionCellType OutCellType;
+  typedef typename OutGridType::ExecutionTopologyStruct OutExecutionTopologyType;
+  typedef typename OutGridType::CellType OutCellType;
 
-  typedef dax::exec::kernel::ThresholdClassifyParameters<CellType,FieldType> ParametersClassify;
-  typedef dax::exec::kernel::ThresholdClassifyFunctor<CellType,FieldType> FunctorClassify;
-  typedef dax::exec::kernel::GenerateTopologyFunctor<CellType,OutCellType> FunctorTopology;
+  typedef dax::exec::internal::kernel
+      ::ThresholdClassifyParameters<InCellType,FieldType,Container,Adapter>
+      ParametersClassify;
+  typedef dax::exec::internal::kernel
+      ::ThresholdClassifyFunctor<InCellType,FieldType,Container,Adapter>
+      FunctorClassify;
+  typedef dax::exec::internal::kernel
+      ::GenerateTopologyFunctor<InCellType,OutCellType,Container,Adapter>
+      FunctorTopology;
 
-  dax::exec::kernel::Threshold<
-                              ParametersClassify,
-                              FunctorClassify,
-                              FunctorTopology,
-                              DeviceAdapter
-                              >
+  dax::exec::internal::kernel::Threshold<
+                                         InCellType,
+                                         FieldType,
+                                         OutCellType,
+                                         Container,
+                                         Adapter
+                                         >
   threshold(thresholdMin,thresholdMax,thresholdHandle,thresholdResult);
   threshold.run(inGrid,outGeom);
 }

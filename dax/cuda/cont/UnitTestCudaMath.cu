@@ -27,33 +27,24 @@
 #include <dax/exec/math/Trig.h>
 
 #include <dax/exec/Assert.h>
-#include <dax/exec/internal/ErrorHandler.h>
 
-#include <dax/cont/internal/Testing.h>
+#include <dax/cuda/cont/internal/Testing.h>
 
 namespace ut_CudaMath {
 
-DAX_EXEC_EXPORT void MyAssert(bool condition,
-                              const char *message,
-                              dax::exec::internal::ErrorHandler errorHandler)
-{
-  if (!condition)
-    {
-    errorHandler.RaiseError(message);
-    }
-}
-
 #define MY_ASSERT(condition, message) \
-  MyAssert(condition, \
-           __FILE__ ":" __DAX_ASSERT_EXEC_STRINGIFY(__LINE__) ": " message \
-           " (" #condition ")", \
-           errorHandler); \
-  if (errorHandler.IsErrorRaised()) { return; }
+  if (!(condition)) \
+    { \
+    errorHandler.RaiseError( \
+          __FILE__ ":" __DAX_ASSERT_EXEC_STRINGIFY(__LINE__) ": " message \
+          " (" #condition ")"); \
+    return; \
+    }
 
 struct TestCompareKernel
 {
-  DAX_EXEC_EXPORT void operator()(
-      int, dax::Id, dax::exec::internal::ErrorHandler errorHandler)
+  template<class ErrorHandler>
+  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
   {
     MY_ASSERT(dax::exec::math::Min(3, 8) == 3, "Got wrong min.");
     MY_ASSERT(dax::exec::math::Min(-0.1f, -0.7f) == -0.7f, "Got wrong min.");
@@ -64,8 +55,8 @@ struct TestCompareKernel
 
 struct TestExpKernel
 {
-  DAX_EXEC_EXPORT void operator()(
-      int, dax::Id, dax::exec::internal::ErrorHandler errorHandler)
+  template<class ErrorHandler>
+  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
   {
     MY_ASSERT(test_equal(dax::exec::math::Pow(0.25, 2.0), dax::Scalar(0.0625)),
               "Bad power result.");
@@ -114,8 +105,8 @@ struct TestExpKernel
 
 struct TestPrecisionKernel
 {
-  DAX_EXEC_EXPORT void operator()(
-      int, dax::Id, dax::exec::internal::ErrorHandler errorHandler)
+  template<class ErrorHandler>
+  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
   {
     dax::Scalar zero = 0.0;
     dax::Scalar finite = 1.0;
@@ -179,8 +170,8 @@ struct TestPrecisionKernel
 
 struct TestSignKernel
 {
-  DAX_EXEC_EXPORT void operator()(
-      int, dax::Id, dax::exec::internal::ErrorHandler errorHandler)
+  template<class ErrorHandler>
+  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
   {
     MY_ASSERT(dax::exec::math::Abs(-1) == 1, "Bad abs.");
     MY_ASSERT(dax::exec::math::Abs(dax::Scalar(-0.25)) == 0.25, "Bad abs.");
@@ -193,8 +184,8 @@ struct TestSignKernel
 
 struct TestTrigKernel
 {
-  DAX_EXEC_EXPORT void operator()(
-      int, dax::Id, dax::exec::internal::ErrorHandler errorHandler)
+  template<class ErrorHandler>
+  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
   {
     MY_ASSERT(test_equal(dax::exec::math::Pi(), dax::Scalar(3.14159265)),
               "Pi not correct.");
@@ -241,22 +232,32 @@ struct TestTrigKernel
   }
 };
 
+template<class Functor>
+void TestSchedule(Functor functor)
+{
+  dax::cont::internal::Schedule(functor,
+                                0,
+                                1,
+                                DAX_DEFAULT_ARRAY_CONTAINER_CONTROL(),
+                                dax::cuda::cont::DeviceAdapterTagCuda());
+}
+
 void TestCudaMath()
 {
   std::cout << "Compare functions" << std::endl;
-  dax::cuda::cont::DeviceAdapterCuda::Schedule(TestCompareKernel(), 0, 1);
+  TestSchedule(TestCompareKernel());
 
   std::cout << "Exponential functions" << std::endl;
-  dax::cuda::cont::DeviceAdapterCuda::Schedule(TestExpKernel(), 0, 1);
+  TestSchedule(TestExpKernel());
 
   std::cout << "Precision functions" << std::endl;
-  dax::cuda::cont::DeviceAdapterCuda::Schedule(TestPrecisionKernel(), 0, 1);
+  TestSchedule(TestPrecisionKernel());
 
   std::cout << "Sign functions" << std::endl;
-  dax::cuda::cont::DeviceAdapterCuda::Schedule(TestSignKernel(), 0, 1);
+  TestSchedule(TestSignKernel());
 
   std::cout << "Trig functions" << std::endl;
-  dax::cuda::cont::DeviceAdapterCuda::Schedule(TestTrigKernel(), 0, 1);
+  TestSchedule(TestTrigKernel());
 }
 
 } // namespace ut_CudaMath
@@ -264,5 +265,5 @@ void TestCudaMath()
 //-----------------------------------------------------------------------------
 int UnitTestCudaMath(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(ut_CudaMath::TestCudaMath);
+  return dax::cuda::cont::internal::Testing::Run(ut_CudaMath::TestCudaMath);
 }
