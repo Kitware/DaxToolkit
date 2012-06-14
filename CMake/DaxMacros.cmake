@@ -51,6 +51,10 @@ function(dax_add_header_build_test name dir_prefix use_cuda)
     cuda_add_library(TestBuild_${name} ${cxxfiles} ${hfiles})
   else (use_cuda)
     add_library(TestBuild_${name} ${cxxfiles} ${hfiles})
+    if(DAX_EXTRA_COMPILER_WARNINGS)
+      set_target_properties(TestBuild_${name}
+        PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS_WARN_EXTRA})
+    endif(DAX_EXTRA_COMPILER_WARNINGS)
   endif (use_cuda)
   set_source_files_properties(${hfiles}
     PROPERTIES HEADER_FILE_ONLY TRUE
@@ -98,6 +102,10 @@ function(dax_unit_tests)
       cuda_add_executable(${test_prog} ${TestSources})
     else (DAX_UT_CUDA)
       add_executable(${test_prog} ${TestSources})
+      if(DAX_EXTRA_COMPILER_WARNINGS)
+        set_target_properties(${test_prog}
+          PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS_WARN_EXTRA})
+      endif(DAX_EXTRA_COMPILER_WARNINGS)
     endif (DAX_UT_CUDA)
     target_link_libraries(${test_prog} ${DAX_UT_LIBRARIES})
     foreach (test ${DAX_UT_SOURCES})
