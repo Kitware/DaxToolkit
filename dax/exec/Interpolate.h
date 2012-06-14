@@ -27,7 +27,7 @@ namespace dax { namespace exec {
 template<class WorkType, class T, class ExecutionAdapter>
 DAX_EXEC_EXPORT T cellInterpolate(
     const WorkType &work,
-    const dax::exec::CellVoxel &cell,
+    const dax::exec::CellVoxel &,
     const dax::Vector3 &pcoords,
     const dax::exec::FieldPointIn<T, ExecutionAdapter> &point_field)
 {

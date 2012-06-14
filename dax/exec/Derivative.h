@@ -126,8 +126,8 @@ DAX_EXEC_EXPORT dax::Tuple<dax::Vector2, 2> make_InvertedJacobian(
 template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
     const WorkType &work,
-    const dax::exec::CellTriangle &,
-    const dax::Vector3 &pcoords,
+    const dax::exec::CellTriangle &/*cell*/,
+    const dax::Vector3 &/*pcoords*/,
     const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
     const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
 {
@@ -147,7 +147,7 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
   }
 
   DerivWeights derivativeWeights =
-      dax::exec::internal::derivativeWeightsTriangle(pcoords);
+      dax::exec::internal::derivativeWeightsTriangle();
 
   //compute sum
   dax::Vector2 sum = dax::make_Vector2(0.0, 0.0);
