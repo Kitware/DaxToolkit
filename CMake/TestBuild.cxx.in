@@ -3,7 +3,7 @@
 
 #include <@dir_prefix@/@header@>
 
-int @headername@()
+int Test_Build_For_@headername@()
 {
   return 0;
 }

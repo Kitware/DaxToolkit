@@ -63,8 +63,7 @@ derivativeWeightsVoxel(const dax::Vector3 &pcoords)
   return weights;
 }
 
-DAX_EXEC_EXPORT dax::Tuple<dax::Vector2,3>
-  derivativeWeightsTriangle(const dax::Vector3 &pcoords)
+DAX_EXEC_EXPORT dax::Tuple<dax::Vector2,3> derivativeWeightsTriangle()
 {
   dax::Tuple<dax::Vector2,3> weights;
 
