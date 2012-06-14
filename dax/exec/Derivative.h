@@ -111,11 +111,12 @@ DAX_EXEC_EXPORT dax::Tuple<dax::Vector2, 2> make_InvertedJacobian(
   dax::Vector2 dotResult(dax::dot(len2,len1),dax::dot(len2,crossResult));
 
   //invert the matrix drop b*c since b is zero
-  dax::Scalar det = 1.0/(dotResult[1] * lenX);
+  dax::Scalar det = dax::Scalar(1.0)/(dotResult[1] * lenX);
 
   //compute the jacobian 2x2 matrix
   dax::Tuple<dax::Vector2, 2> invertedJacobain;
-  invertedJacobain[0] = dax::make_Vector2(det * dotResult[1], det * -dotResult[0]);
+  invertedJacobain[0] = dax::make_Vector2(det * dotResult[1],
+                                          det * (-dotResult[0]));
   invertedJacobain[1] = dax::make_Vector2(0,det * lenX);
   return invertedJacobain;
   }
