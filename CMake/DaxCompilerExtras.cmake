@@ -28,7 +28,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   # Addtional warnings for GCC
   set(CMAKE_CXX_FLAGS_WARN_EXTRA "-Wno-long-long -ansi -Wcast-align -Wchar-subscripts -Wextra -Wpointer-arith -Wformat-security -Wshadow -Wunused-parameter -fno-common")
   # Set up the debug CXX_FLAGS for extra warnings
-  option(DAX_EXTRA_COMPILER_WARNINGS "Add compiler flags to do stricter checking when building debug." OFF)
+  option(DAX_EXTRA_COMPILER_WARNINGS "Add compiler flags to do stricter checking when building debug." ON)
   # We used to add the compiler flags globally, but this caused problems with
   # the CUDA compiler (and its lack of support for GCC pragmas).  Instead,
   # the dax_declare_headers and dax_unit_tests CMake functions add these flags
