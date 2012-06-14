@@ -14,6 +14,8 @@
 //
 //=============================================================================
 
+#define BOOST_SP_DISABLE_THREADS
+
 #include <dax/cuda/cont/DeviceAdapterCuda.h>
 
 #include <dax/cont/internal/TestingDeviceAdapter.h>

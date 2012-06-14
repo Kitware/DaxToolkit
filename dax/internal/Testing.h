@@ -285,7 +285,8 @@ DAX_EXEC_CONT_EXPORT bool test_equal(VectorType vector1,
       continue;
       }
     dax::Scalar ratio = value1/value2;
-    if ((ratio < 1.0 - tolerance) || (ratio > 1.0 + tolerance))
+    if ((ratio < dax::Scalar(1.0) - tolerance)
+        || (ratio > dax::Scalar(1.0) + tolerance))
       {
       return false;
       }
