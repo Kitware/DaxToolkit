@@ -104,6 +104,25 @@ public:
   /// Get the coordinates from a point coordinate field (which may require
   /// some computations on the topology).
   ///
+  template<class ExecutionAdapter, class CellType, class WorkType>
+  DAX_EXEC_EXPORT static
+  dax::Vector3 GetCoordinates(
+      dax::exec::internal::FieldBase<
+          FieldAccessInputTag,
+          dax::exec::internal::FieldAssociationCoordinatesTag,
+          dax::Vector3,
+          ExecutionAdapter> field,
+      dax::Id index,
+      const dax::exec::internal::TopologyUnstructured<
+          CellType,ExecutionAdapter> &,
+      WorkType work)
+  {
+    return GetField(field, index, work);
+  }
+
+  /// Get the coordinates from a point coordinate field (which may require
+  /// some computations on the topology).
+  ///
   template<int Size, class ExecutionAdapter, class WorkType>
   DAX_EXEC_EXPORT static
   dax::Tuple<dax::Vector3,Size> GetCoordinatesMultiple(
@@ -127,7 +146,7 @@ public:
   /// Get the coordinates from a point coordinate field (which may require
   /// some computations on the topology).
   ///
-  template<int Size, class ExecutionAdapter, class TopologyType, class WorkType>
+  template<int Size, class ExecutionAdapter, class CellType, class WorkType>
   DAX_EXEC_EXPORT static
   dax::Tuple<dax::Vector3,Size> GetCoordinatesMultiple(
       dax::exec::internal::FieldBase<
@@ -136,7 +155,8 @@ public:
           dax::Vector3,
           ExecutionAdapter> field,
       dax::Tuple<dax::Id,Size> indices,
-      const TopologyType &,
+      const dax::exec::internal::TopologyUnstructured<
+          CellType,ExecutionAdapter> &,
       WorkType work)
   {
     return GetMultiple(field, indices, work);

@@ -22,6 +22,7 @@ set(headers
   GridTopologies.h
   InterpolationWeights.h
   TestExecutionAdapter.h
+  TestingTopologyGenerator.h
   TopologyUniform.h
   TopologyUnstructured.h
   WorkEmpty.h
@@ -33,5 +34,6 @@ set(unit_tests
   UnitTestDerivativeWeights.cxx
   UnitTestInterpolationWeights.cxx
   UnitTestGridTopologies.cxx
+  UnitTestTopologyGenerator.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
