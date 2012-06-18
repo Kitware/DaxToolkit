@@ -115,9 +115,54 @@ static void TestDerivativeWeightsVoxel()
     }
 }
 
+static void TestDerivativeWeightsHexahedron()
+{
+  std::cout << "In TestDerivativeWeightsHexahedron" << std::endl;
+
+  const dax::Vector3 cellVertexToParametricCoords[8] = {
+    dax::make_Vector3(0, 0, 0),
+    dax::make_Vector3(1, 0, 0),
+    dax::make_Vector3(1, 1, 0),
+    dax::make_Vector3(0, 1, 0),
+    dax::make_Vector3(0, 0, 1),
+    dax::make_Vector3(1, 0, 1),
+    dax::make_Vector3(1, 1, 1),
+    dax::make_Vector3(0, 1, 1)
+  };
+
+  // Check Derivative at each corner.
+  for (dax::Id vertexIndex = 0; vertexIndex < 8; vertexIndex++)
+    {
+    dax::Vector3 pcoords = cellVertexToParametricCoords[vertexIndex];
+
+    dax::Tuple<dax::Vector3,8> weights =
+        dax::exec::internal::derivativeWeightsHexahedron(pcoords);
+
+    for (dax::Id weightIndex = 0; weightIndex < 8; weightIndex++)
+      {
+      dax::Vector3 vertexPCoords = cellVertexToParametricCoords[weightIndex];
+
+      TestWeightOnVertex(weights[weightIndex], pcoords, vertexPCoords);
+      }
+    }
+
+  // Check for Derivative at middle.
+  dax::Tuple<dax::Vector3,8> weights =
+      dax::exec::internal::derivativeWeightsHexahedron(dax::make_Vector3(0.5,0.5,0.5));
+  for (dax::Id weightIndex = 0; weightIndex < 8; weightIndex++)
+    {
+    dax::Vector3 vertexPCoords = cellVertexToParametricCoords[weightIndex];
+
+    TestWeightInMiddle(weights[weightIndex][0], vertexPCoords[0]);
+    TestWeightInMiddle(weights[weightIndex][1], vertexPCoords[1]);
+    TestWeightInMiddle(weights[weightIndex][2], vertexPCoords[2]);
+    }
+}
+
 void TestDerivativeWeights()
 {
   TestDerivativeWeightsVoxel();
+  TestDerivativeWeightsHexahedron();
 }
 
 } // Anonymous namespace

@@ -19,6 +19,7 @@
 
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
+#include <dax/exec/math/Matrix.h>
 #include <dax/exec/math/VectorAnalysis.h>
 #include <dax/exec/internal/DerivativeWeights.h>
 
@@ -52,6 +53,38 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
 }
 
 //-----------------------------------------------------------------------------
+namespace detail {
+dax::exec::math::Matrix<dax::Scalar,3,3> make_InvertedJacobianForHexahedron(
+    const dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS>
+    &derivativeWeights,
+    const dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS>
+    &pointCoordinates)
+{
+  const int NUM_POINTS = dax::exec::CellHexahedron::NUM_POINTS;
+  dax::exec::math::Matrix<dax::Scalar,3,3> jacobian(0);
+  for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
+    {
+    const dax::Vector3 &dweight = derivativeWeights[pointIndex];
+    const dax::Vector3 &pcoord = pointCoordinates[pointIndex];
+
+    jacobian(0,0) += pcoord[0] * dweight[0];
+    jacobian(1,0) += pcoord[0] * dweight[1];
+    jacobian(2,0) += pcoord[0] * dweight[2];
+
+    jacobian(0,1) += pcoord[1] * dweight[0];
+    jacobian(1,1) += pcoord[1] * dweight[1];
+    jacobian(2,1) += pcoord[1] * dweight[2];
+
+    jacobian(0,2) += pcoord[2] * dweight[0];
+    jacobian(1,2) += pcoord[2] * dweight[1];
+    jacobian(2,2) += pcoord[2] * dweight[2];
+    }
+
+  bool valid;  // Ignored.
+  return dax::exec::math::MatrixInverse(jacobian, valid);
+}
+}
+
 template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
     const WorkType &work,
@@ -66,36 +99,25 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
   const dax::Id NUM_POINTS  = dax::exec::CellHexahedron::NUM_POINTS;
   typedef dax::Tuple<dax::Vector3,NUM_POINTS> DerivWeights;
 
-  DerivWeights derivativeWeights = dax::exec::internal::derivativeWeightsVoxel(
-                                     pcoords);
+  DerivWeights derivativeWeights =
+      dax::exec::internal::derivativeWeightsHexahedron(pcoords);
+  dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS> allCoords =
+      work.GetFieldValues(fcoords);
 
-  dax::Vector3 spacing;
-    {
-    dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS> allCoords;
-    allCoords = work.GetFieldValues(fcoords);
-    dax::Vector3 x0 = allCoords[0];
-    dax::Vector3 x1 = allCoords[1];
-    dax::Vector3 x2 = allCoords[2];
-    dax::Vector3 x4 = allCoords[4];
-    spacing = make_Vector3(x1[0] - x0[0],
-                           x2[1] - x0[1],
-                           x4[2] - x0[2]);
-    }
+  dax::exec::math::Matrix<dax::Scalar,3,3> inverseJacobian =
+      detail::make_InvertedJacobianForHexahedron(derivativeWeights, allCoords);
 
-  dax::Vector3 sum = dax::make_Vector3(0.0, 0.0, 0.0);
   dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
       work.GetFieldValues(point_scalar);
-
-  for (dax::Id vertexId = 0; vertexId < NUM_POINTS; vertexId++)
+  dax::Vector3 sum(dax::Scalar(0));
+  for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
     {
-    sum = sum + fieldValues[vertexId] * derivativeWeights[vertexId];
+    sum = sum + derivativeWeights[pointIndex] * fieldValues[pointIndex];
     }
-
-
-  return sum/spacing;
+  return dax::exec::math::MatrixMultiply(inverseJacobian, sum);
 }
 
-namespace internal {
+namespace detail {
 
 //make this a seperate function so that these temporary values
 //are scoped to be removed once we generate the matrix
@@ -142,8 +164,8 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
     const dax::Vector3 crossResult = dax::normal(x[0],x[1],x[2]);
     len1 = x[1] - x[0];
     len2 = x[2] - x[0];
-    invertedJacobain = dax::exec::internal::make_InvertedJacobian(len1,len2,
-                                                                  crossResult);
+    invertedJacobain = dax::exec::detail::make_InvertedJacobian(len1,len2,
+                                                                crossResult);
   }
 
   DerivWeights derivativeWeights =
