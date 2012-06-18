@@ -68,7 +68,8 @@ public:
         FieldCoordinatesIn<ExecutionAdapter>(&this->CoordinatesArray.front());
   }
 
-  dax::Tuple<dax::Id, CellType::NUM_POINTS> GetCellConnections(dax::Id cellId)
+  dax::Tuple<dax::Id, CellType::NUM_POINTS>
+  GetCellConnections(dax::Id cellId) const
   {
     return TestTopology::GetCellConnectionsImpl(this->Topology, cellId);
   }
