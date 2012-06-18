@@ -86,7 +86,7 @@ struct TestMapCellFunctor
   }
 };
 
-static void TestMapCell()
+void TestMapCell()
 {
   dax::exec::internal::TryAllTopologyTypes(TestMapCellFunctor());
 }

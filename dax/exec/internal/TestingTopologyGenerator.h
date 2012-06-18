@@ -304,6 +304,13 @@ CreateField(const TopologyGenType &topology, std::vector<T> &array){
 }
 
 template<class TopologyGenType>
+typename TopologyGenType::CellType CreateCell(const TopologyGenType &topology,
+                                              dax::Id cellIndex)
+{
+  return typename TopologyGenType::CellType(topology.GetTopology(), cellIndex);
+}
+
+template<class TopologyGenType>
 dax::exec::WorkMapField<typename TopologyGenType::CellType,
                         typename TopologyGenType::ExecutionAdapter>
 CreateWorkMapField(const TopologyGenType &topology, dax::Id index) {
