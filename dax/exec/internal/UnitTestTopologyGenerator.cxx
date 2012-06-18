@@ -56,18 +56,22 @@ void TestUnstructuredGrid()
   TopologyType topology = generator.GetTopology();
 
   DAX_TEST_ASSERT(topology.NumberOfPoints > 0, "Bad number of points");
-  DAX_TEST_ASSERT(topology.NumberOfCells > 0, "Band number of cells");
+  DAX_TEST_ASSERT(topology.NumberOfCells > 0, "Bad number of cells");
 
   // Check that all cell connections are to valid points.
   TestExecutionAdapter::FieldStructures<dax::Id>::IteratorConstType
       cellConnections = topology.CellConnections;
   for (dax::Id cellIndex=0; cellIndex < topology.NumberOfCells; cellIndex++)
     {
+    dax::Tuple<dax::Id, CellType::NUM_POINTS> expectedConnections =
+        generator.GetCellConnections(cellIndex);
     for (dax::Id pointIndex=0; pointIndex < CellType::NUM_POINTS; pointIndex++)
       {
       dax::Id connection = *cellConnections;
       DAX_TEST_ASSERT(connection >= 0, "Bad cell connection");
       DAX_TEST_ASSERT(connection < topology.NumberOfPoints,
+                      "Bad cell connection");
+      DAX_TEST_ASSERT(connection == expectedConnections[pointIndex],
                       "Bad cell connection");
       cellConnections++;
       }
