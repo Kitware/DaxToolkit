@@ -15,94 +15,118 @@
 //=============================================================================
 #include <dax/exec/WorkMapField.h>
 
-#include <dax/exec/internal/TestExecutionAdapter.h>
+#include <dax/exec/Field.h>
+
+#include <dax/exec/internal/TestingTopologyGenerator.h>
 
 #include <dax/internal/Testing.h>
 
 #include <algorithm>
 #include <vector>
 
-static void TestMapFieldVoxel(
-  dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter> work,
-  const dax::exec::internal::TopologyUniform &gridstruct,
-  dax::Id pointFlatIndex)
+namespace {
+
+template <class TopologyGenType>
+void BasicTestMapField(const TopologyGenType &topology)
 {
-  DAX_TEST_ASSERT(work.GetIndex() == pointFlatIndex,
-                  "Work object returned wrong index.");
+  typedef typename TopologyGenType::CellType CellType;
+  typedef typename TopologyGenType::ExecutionAdapter ExecutionAdapter;
 
-  dax::Id3 pointIjkIndex = dax::flatIndexToIndex3(pointFlatIndex,
-                                                  gridstruct.Extent);
+  std::cout << "Basic field test." << std::endl;
 
-  dax::Id3 dim = dax::extentDimensions(gridstruct.Extent);
-  dax::Id numPoints = dim[0]*dim[1]*dim[2];
-
+  dax::Id numPoints = topology.GetNumberOfPoints();
   std::vector<dax::Scalar> fieldData(numPoints);
-  std::fill(fieldData.begin(), fieldData.end(), -1.0);
-  fieldData[pointFlatIndex] = pointFlatIndex;
 
-  dax::exec::FieldPointOut<dax::Scalar, TestExecutionAdapter>
-      field(&fieldData.at(0));
+  dax::exec::FieldPointOut<dax::Scalar,ExecutionAdapter> field =
+      dax::exec::internal::CreateField<dax::exec::FieldPointOut>(topology,
+                                                                 fieldData);
 
-  dax::Scalar scalarValue = work.GetFieldValue(field);
-  DAX_TEST_ASSERT(scalarValue == pointFlatIndex,
-                  "Did not get expected data value.");
-
-  work.SetFieldValue(field, static_cast<dax::Scalar>(-2));
-  DAX_TEST_ASSERT(fieldData[pointFlatIndex] == -2,
-                  "Field value did not set as expected.");
-
-  dax::Vector3 expectedCoords
-      = dax::make_Vector3(static_cast<dax::Scalar>(pointIjkIndex[0]),
-                          static_cast<dax::Scalar>(pointIjkIndex[1]),
-                          static_cast<dax::Scalar>(pointIjkIndex[2]));
-  expectedCoords = gridstruct.Origin + expectedCoords * gridstruct.Spacing;
-
-  dax::exec::FieldCoordinatesIn<TestExecutionAdapter> fieldCoords;
-  dax::Vector3 coords = work.GetFieldValue(fieldCoords);
-
-  DAX_TEST_ASSERT(expectedCoords == coords,
-                  "Did not get expected point coordinates.");
-}
-
-static void TestMapFieldVoxel()
-{
-  std::cout << "Testing WorkMapField<CellVoxel>" << std::endl;
-
-  {
-  dax::exec::internal::TopologyUniform gridstruct;
-  gridstruct.Origin = dax::make_Vector3(0, 0, 0);
-  gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
-  gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
-  gridstruct.Extent.Max = dax::make_Id3(9, 9, 9);
-  for (dax::Id flatIndex = 0; flatIndex < 1000; flatIndex++)
+  for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
     {
-    dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter>
-        work(gridstruct, flatIndex, TestExecutionAdapter());
-    TestMapFieldVoxel(work, gridstruct, flatIndex);
-    }
-  }
+    // Clear out field array so we can check it.
+    std::fill(fieldData.begin(), fieldData.end(), -1.0);
+    fieldData[pointIndex] = pointIndex;
 
-  {
-  dax::exec::internal::TopologyUniform gridstruct;
-  gridstruct.Origin = dax::make_Vector3(0, 0, 0);
-  gridstruct.Spacing = dax::make_Vector3(1, 1, 1);
-  gridstruct.Extent.Min = dax::make_Id3(5, -9, 3);
-  gridstruct.Extent.Max = dax::make_Id3(14, 5, 12);
-  for (dax::Id flatIndex = 0; flatIndex < 1500; flatIndex++)
-    {
-    dax::exec::WorkMapField<dax::exec::CellVoxel, TestExecutionAdapter>
-        work(gridstruct, flatIndex, TestExecutionAdapter());
-    TestMapFieldVoxel(work, gridstruct, flatIndex);
+    dax::exec::WorkMapField<CellType,ExecutionAdapter> work =
+        dax::exec::internal::CreateWorkMapField(topology, pointIndex);
+
+    DAX_TEST_ASSERT(work.GetIndex() == pointIndex,
+                    "Work object returned wrong index.");
+
+    dax::Scalar scalarValue = work.GetFieldValue(field);
+    DAX_TEST_ASSERT(scalarValue == pointIndex,
+                    "Did not get expected scalar value");
+
+    work.SetFieldValue(field, dax::Scalar(-2));
+    DAX_TEST_ASSERT(fieldData[pointIndex] == -2,
+                    "Field value not set as expected.");
     }
-  }
 }
 
-static void TestMapField()
+template<class TopologyGenType>
+void TestMapField(const TopologyGenType &topology)
 {
-  TestMapFieldVoxel();
+  BasicTestMapField(topology);
 }
+
+// Specialization for regular grids so we can also check coordinate compute.
+template<>
+void TestMapField(const dax::exec::internal::TestTopology<
+                      dax::exec::internal::TopologyUniform> &topology)
+{
+  BasicTestMapField(topology);
+
+  std::cout << "Test coordinates" << std::endl;
+
+  typedef dax::exec::internal::TestTopology<
+      dax::exec::internal::TopologyUniform> TopologyGenType;
+  typedef TopologyGenType::CellType CellType;
+  typedef TopologyGenType::ExecutionAdapter ExecutionAdapter;
+
+  const dax::exec::internal::TopologyUniform gridstruct =topology.GetTopology();
+
+  dax::exec::FieldCoordinatesIn<ExecutionAdapter> fieldCoords
+      = topology.GetCoordinates();
+
+  dax::Id numPoints = topology.GetNumberOfPoints();
+  for (dax::Id pointFlatIndex = 0; pointFlatIndex < numPoints; pointFlatIndex++)
+    {
+    dax::Id3 pointIjkIndex = dax::flatIndexToIndex3(pointFlatIndex,
+                                                    gridstruct.Extent);
+
+    dax::Vector3 expectedCoords
+        = dax::make_Vector3(static_cast<dax::Scalar>(pointIjkIndex[0]),
+                            static_cast<dax::Scalar>(pointIjkIndex[1]),
+                            static_cast<dax::Scalar>(pointIjkIndex[2]));
+    expectedCoords = gridstruct.Origin + expectedCoords * gridstruct.Spacing;
+
+    dax::exec::WorkMapField<CellType,ExecutionAdapter> work =
+        dax::exec::internal::CreateWorkMapField(topology, pointFlatIndex);
+
+    dax::Vector3 coords = work.GetFieldValue(fieldCoords);
+
+    DAX_TEST_ASSERT(expectedCoords == coords,
+                    "Did not get expected point coordinates.");
+    }
+}
+
+struct TestMapFieldFunctor
+{
+  template<class TopologyGenType>
+  void operator()(const TopologyGenType &topology) const
+  {
+    TestMapField(topology);
+  }
+};
+
+void RunTestMapField()
+{
+  dax::exec::internal::TryAllTopologyTypes(TestMapFieldFunctor());
+}
+
+} // anonymous namespace
 
 int UnitTestWorkMapField(int, char *[])
 {
-  return dax::internal::Testing::Run(TestMapField);
+  return dax::internal::Testing::Run(RunTestMapField);
 }
