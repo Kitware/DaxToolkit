@@ -256,6 +256,18 @@ DAX_EXEC_CONT_EXPORT dax::Id3 make_Id3(dax::Id x, dax::Id y, dax::Id z)
   return dax::Id3(x, y, z);
 }
 
+template<typename T, int Size>
+DAX_EXEC_CONT_EXPORT T dot(const dax::Tuple<T,Size> &a,
+                           const dax::Tuple<T,Size> &b)
+{
+  T result = a[0]*b[0];
+  for (int componentIndex = 1; componentIndex < Size; componentIndex++)
+    {
+    result += a[componentIndex]*b[componentIndex];
+    }
+  return result;
+}
+
 DAX_EXEC_CONT_EXPORT dax::Id dot(dax::Id a, dax::Id b)
 {
   return a * b;
@@ -291,6 +303,89 @@ DAX_EXEC_CONT_EXPORT dax::Vector4::ComponentType dot(const dax::Vector4 &a,
 }
 
 } // End of namespace dax
+
+template<typename T, int Size>
+DAX_EXEC_CONT_EXPORT dax::Tuple<T,Size> operator+(const dax::Tuple<T,Size> &a,
+                                                  const dax::Tuple<T,Size> &b)
+{
+  dax::Tuple<T,Size> result;
+  for (int componentIndex = 0; componentIndex < Size; componentIndex++)
+    {
+    result[componentIndex] = a[componentIndex] + b[componentIndex];
+    }
+  return result;
+}
+template<typename T, int Size>
+DAX_EXEC_CONT_EXPORT dax::Tuple<T,Size> operator-(const dax::Tuple<T,Size> &a,
+                                                  const dax::Tuple<T,Size> &b)
+{
+  dax::Tuple<T,Size> result;
+  for (int componentIndex = 0; componentIndex < Size; componentIndex++)
+    {
+    result[componentIndex] = a[componentIndex] - b[componentIndex];
+    }
+  return result;
+}
+template<typename T, int Size>
+DAX_EXEC_CONT_EXPORT dax::Tuple<T,Size> operator*(const dax::Tuple<T,Size> &a,
+                                                  const dax::Tuple<T,Size> &b)
+{
+  dax::Tuple<T,Size> result;
+  for (int componentIndex = 0; componentIndex < Size; componentIndex++)
+    {
+    result[componentIndex] = a[componentIndex] * b[componentIndex];
+    }
+  return result;
+}
+template<typename T, int Size>
+DAX_EXEC_CONT_EXPORT dax::Tuple<T,Size> operator/(const dax::Tuple<T,Size> &a,
+                                                  const dax::Tuple<T,Size> &b)
+{
+  dax::Tuple<T,Size> result;
+  for (int componentIndex = 0; componentIndex < Size; componentIndex++)
+    {
+    result[componentIndex] = a[componentIndex] / b[componentIndex];
+    }
+  return result;
+}
+template<typename T, int Size>
+DAX_EXEC_CONT_EXPORT bool operator==(const dax::Tuple<T,Size> &a,
+                                     const dax::Tuple<T,Size> &b)
+{
+  for (int componentIndex = 0; componentIndex < Size; componentIndex++)
+    {
+    if (a[componentIndex] != b[componentIndex]) return false;
+    }
+  return true;
+}
+template<typename T, int Size>
+DAX_EXEC_CONT_EXPORT bool operator!=(const dax::Tuple<T,Size> &a,
+                                     const dax::Tuple<T,Size> &b)
+{
+  return !(a == b);
+}
+template<typename T, int Size>
+DAX_EXEC_CONT_EXPORT dax::Tuple<T,Size> operator*(const dax::Tuple<T,Size> &a,
+                                                  const T &b)
+{
+  dax::Tuple<T,Size> result;
+  for (int componentIndex = 0; componentIndex < Size; componentIndex++)
+    {
+    result[componentIndex] = a[componentIndex] * b;
+    }
+  return result;
+}
+template<typename T, int Size>
+DAX_EXEC_CONT_EXPORT dax::Tuple<T,Size> operator*(const T &a,
+                                                  const dax::Tuple<T,Size> &b)
+{
+  dax::Tuple<T,Size> result;
+  for (int componentIndex = 0; componentIndex < Size; componentIndex++)
+    {
+    result[componentIndex] = a * b[componentIndex];
+    }
+  return result;
+}
 
 DAX_EXEC_CONT_EXPORT dax::Id3 operator+(const dax::Id3 &a,
                                         const dax::Id3 &b)
