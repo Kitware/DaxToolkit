@@ -70,6 +70,12 @@ void MatrixTest()
     DAX_TEST_ASSERT(const_matrix[row][col] == MAT_VALUE(row,col),
                     "Bad set or retreive.");
     }
+  DAX_TEST_ASSERT(matrix == const_matrix,
+                  "Equal test operator not working.");
+  DAX_TEST_ASSERT(!(matrix != const_matrix),
+                  "Not-Equal test operator not working.");
+  DAX_TEST_ASSERT(test_equal(matrix, const_matrix),
+                  "Vector-based equal test not working.");
 
   std::cout << "Access by row or column" << std::endl;
   FOR_ROW_COL
@@ -93,7 +99,7 @@ void MatrixTest()
     }
 
   std::cout << "Set a column." << std::endl;
-  for (int col = 0; col < NUM_ROWS; col++)
+  for (int col = 0; col < NUM_COLS; col++)
     {
     ColumnType colvec =
         dax::exec::math::MatrixColumn(const_matrix, NUM_COLS-col-1);

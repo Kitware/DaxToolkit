@@ -17,6 +17,8 @@
 #define __dax_exec_math_Matrix_h
 
 #include <dax/Types.h>
+#include <dax/TypeTraits.h>
+#include <dax/VectorTraits.h>
 
 namespace dax {
 namespace exec {
@@ -121,5 +123,77 @@ void MatrixSetColumn(dax::exec::math::Matrix<T,NumRow,NumCol> &matrix,
 }
 }
 } // namespace dax::exec::math
+
+// Implementations of traits for matrices.
+
+namespace dax {
+
+/// Tag used to identify 2 dimensional types (matrices). A TypeTraits class
+/// will typedef this class to DimensionalityTag.
+///
+struct TypeTraitsMatrixTag {};
+
+template<typename T, int NumRow, int NumCol>
+struct TypeTraits<dax::exec::math::Matrix<T, NumRow, NumCol> > {
+  typedef typename TypeTraits<T>::NumericTag NumericTag;
+  typedef TypeTraitsMatrixTag DimensionalityTag;
+};
+
+/// A matrix has vector traits to implement component-wise operations.
+///
+template<typename T, int NumRow, int NumCol>
+struct VectorTraits<dax::exec::math::Matrix<T, NumRow, NumCol> > {
+private:
+  typedef dax::exec::math::Matrix<T, NumRow, NumCol> MatrixType;
+public:
+  typedef T ComponentType;
+  static const int NUM_COMPONENTS = NumRow*NumCol;
+  typedef dax::VectorTraitsTagMultipleComponents HasMultipleComponents;
+
+  DAX_EXEC_EXPORT static const ComponentType &GetComponent(
+      const MatrixType &matrix, int component) {
+    int colIndex = component % NumCol;
+    int rowIndex = component / NumCol;
+    return matrix(rowIndex,colIndex);
+  }
+  DAX_EXEC_EXPORT static ComponentType &GetComponent(
+      MatrixType &matrix, int component) {
+    int colIndex = component % NumCol;
+    int rowIndex = component / NumCol;
+    return matrix(rowIndex,colIndex);
+  }
+  DAX_EXEC_EXPORT static void SetComponent(MatrixType &matrix,
+                                           int component,
+                                           T value)
+  {
+    GetComponent(matrix, component) = value;
+  }
+};
+
+} // namespace dax
+
+// Basic comparison operators.
+
+template<typename T, int NumRow, int NumCol>
+DAX_EXEC_EXPORT bool operator==(
+    const dax::exec::math::Matrix<T,NumRow,NumCol> &a,
+    const dax::exec::math::Matrix<T,NumRow,NumCol> &b)
+{
+  for (int colIndex = 0; colIndex < NumCol; colIndex++)
+    {
+    for (int rowIndex = 0; rowIndex < NumRow; rowIndex++)
+      {
+      if (a(rowIndex, colIndex) != b(rowIndex, colIndex)) return false;
+      }
+    }
+  return true;
+}
+template<typename T, int NumRow, int NumCol>
+DAX_EXEC_EXPORT bool operator!=(
+    const dax::exec::math::Matrix<T,NumRow,NumCol> &a,
+    const dax::exec::math::Matrix<T,NumRow,NumCol> &b)
+{
+  return !(a == b);
+}
 
 #endif //__dax_exec_math_Matrix_h
