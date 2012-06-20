@@ -78,7 +78,7 @@ private:
 /// matrix.
 ///
 template<typename T, int NumRow, int NumCol>
-const dax::Tuple<T, NumCol> &MatrixRow(
+DAX_EXEC_EXPORT const dax::Tuple<T, NumCol> &MatrixRow(
     const dax::exec::math::Matrix<T,NumRow,NumCol> &matrix, int rowIndex)
 {
   return matrix[rowIndex];
@@ -88,7 +88,7 @@ const dax::Tuple<T, NumCol> &MatrixRow(
 /// matrix.  Might not be as efficient as the Row function.
 ///
 template<typename T, int NumRow, int NumCol>
-dax::Tuple<T, NumRow> MatrixColumn(
+DAX_EXEC_EXPORT dax::Tuple<T, NumRow> MatrixColumn(
     const dax::exec::math::Matrix<T,NumRow,NumCol> &matrix, int columnIndex)
 {
   dax::Tuple<T, NumRow> columnValues;
@@ -102,6 +102,7 @@ dax::Tuple<T, NumRow> MatrixColumn(
 /// Convenience function for setting a row of a matrix.
 ///
 template<typename T, int NumRow, int NumCol>
+DAX_EXEC_EXPORT
 void MatrixSetRow(dax::exec::math::Matrix<T,NumRow,NumCol> &matrix,
                   int rowIndex,
                   dax::Tuple<T,NumCol> rowValues)
@@ -112,6 +113,7 @@ void MatrixSetRow(dax::exec::math::Matrix<T,NumRow,NumCol> &matrix,
 /// Convenience function for setting a column of a matrix.
 ///
 template<typename T, int NumRow, int NumCol>
+DAX_EXEC_EXPORT
 void MatrixSetColumn(dax::exec::math::Matrix<T,NumRow,NumCol> &matrix,
                      int columnIndex,
                      dax::Tuple<T,NumRow> columnValues)
@@ -125,6 +127,7 @@ void MatrixSetColumn(dax::exec::math::Matrix<T,NumRow,NumCol> &matrix,
 /// Standard matrix multiplication.
 ///
 template<typename T, int NumRow, int NumCol, int NumInternal>
+DAX_EXEC_EXPORT
 dax::exec::math::Matrix<T,NumRow,NumCol> MatrixMultiply(
     const dax::exec::math::Matrix<T,NumRow,NumInternal> &leftFactor,
     const dax::exec::math::Matrix<T,NumInternal,NumCol> &rightFactor)
@@ -146,9 +149,45 @@ dax::exec::math::Matrix<T,NumRow,NumCol> MatrixMultiply(
   return result;
 }
 
+/// Standard matrix-vector multiplication.
+///
+template<typename T, int NumRow, int NumCol>
+DAX_EXEC_EXPORT
+dax::Tuple<T,NumRow> MatrixMultiply(
+    const dax::exec::math::Matrix<T,NumRow,NumCol> &leftFactor,
+    const dax::Tuple<T,NumCol> &rightFactor)
+{
+  dax::Tuple<T,NumRow> product;
+  for (int rowIndex = 0; rowIndex < NumRow; rowIndex++)
+    {
+    product[rowIndex] =
+        dax::dot(dax::exec::math::MatrixRow(leftFactor,rowIndex), rightFactor);
+    }
+  return product;
+}
+
+/// Standard vector-matrix multiplication
+///
+template<typename T, int NumRow, int NumCol>
+DAX_EXEC_EXPORT
+dax::Tuple<T,NumCol> MatrixMultiply(
+    const dax::Tuple<T,NumRow> &leftFactor,
+    const dax::exec::math::Matrix<T,NumRow,NumCol> &rightFactor)
+{
+  dax::Tuple<T,NumCol> product;
+  for (int colIndex = 0; colIndex < NumCol; colIndex++)
+    {
+    product[colIndex] =
+        dax::dot(leftFactor,
+                 dax::exec::math::MatrixColumn(rightFactor, colIndex));
+    }
+  return product;
+}
+
 /// Returns the identity matrix.
 ///
 template<typename T, int Size>
+DAX_EXEC_EXPORT
 dax::exec::math::Matrix<T,Size,Size> MatrixIdentity()
 {
   dax::exec::math::Matrix<T,Size,Size> result(0);
@@ -162,6 +201,7 @@ dax::exec::math::Matrix<T,Size,Size> MatrixIdentity()
 /// Fills the given matrix with the identity matrix.
 ///
 template<typename T, int Size>
+DAX_EXEC_EXPORT
 void MatrixIdentity(dax::exec::math::Matrix<T,Size,Size> &matrix)
 {
   matrix = dax::exec::math::MatrixIdentity<T,Size>();
@@ -170,6 +210,7 @@ void MatrixIdentity(dax::exec::math::Matrix<T,Size,Size> &matrix)
 /// Returns the transpose of the given matrix.
 ///
 template<typename T, int NumRows, int NumCols>
+DAX_EXEC_EXPORT
 dax::exec::math::Matrix<T,NumCols,NumRows> MatrixTranspose(
     const dax::exec::math::Matrix<T,NumRows,NumCols> &matrix)
 {
@@ -185,6 +226,7 @@ namespace detail {
 
 // Used with MatrixLUPFactor.
 template<int Size>
+DAX_EXEC_EXPORT
 void MatrixLUPFactorFindPivot(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
                               dax::Tuple<int,Size> &permutation,
                               int topCornerIndex,
@@ -223,6 +265,7 @@ void MatrixLUPFactorFindPivot(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
 
 // Used with MatrixLUPFactor
 template<int Size>
+DAX_EXEC_EXPORT
 void MatrixLUPFactorFindUpperTriangleElements(
     dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
     int topCornerIndex)
@@ -269,6 +312,7 @@ void MatrixLUPFactorFindUpperTriangleElements(
 /// Otherwise, valid is set to false and the result is indeterminant.
 ///
 template<int Size>
+DAX_EXEC_EXPORT
 void MatrixLUPFactor(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
                      dax::Tuple<int,Size> &permutation,
                      bool &valid)

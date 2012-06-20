@@ -163,6 +163,8 @@ public:
     dax::Tuple<dax::Scalar, 2>(value){}
   DAX_EXEC_CONT_EXPORT explicit Vector2(const dax::Scalar* values):
     dax::Tuple<dax::Scalar, 2>(values) { }
+  DAX_EXEC_CONT_EXPORT Vector2(const dax::Tuple<dax::Scalar,2> &values)
+    : dax::Tuple<dax::Scalar, 2>(values) { }
 
   DAX_EXEC_CONT_EXPORT Vector2(ComponentType x, ComponentType y) {
     this->Components[0] = x;
@@ -179,6 +181,8 @@ public:
     dax::Tuple<dax::Scalar, 3>(value){}
   DAX_EXEC_CONT_EXPORT explicit Vector3(const dax::Scalar* values):
     dax::Tuple<dax::Scalar, 3>(values) { }
+  DAX_EXEC_CONT_EXPORT Vector3(const dax::Tuple<dax::Scalar,3> &values)
+    : dax::Tuple<dax::Scalar, 3>(values) { }
 
   DAX_EXEC_CONT_EXPORT
   Vector3(ComponentType x, ComponentType y, ComponentType z) {
@@ -197,6 +201,8 @@ public:
     dax::Tuple<dax::Scalar, 4>(value){}
   DAX_EXEC_CONT_EXPORT explicit Vector4(const dax::Scalar* values):
     dax::Tuple<dax::Scalar, 4>(values) { }
+  DAX_EXEC_CONT_EXPORT Vector4(const dax::Tuple<dax::Scalar,4> &values)
+    : dax::Tuple<dax::Scalar, 4>(values) { }
 
   DAX_EXEC_CONT_EXPORT
   Vector4(ComponentType x, ComponentType y, ComponentType z, ComponentType w) {
@@ -218,6 +224,8 @@ public:
     dax::Tuple<dax::Id, 3>(value){}
   DAX_EXEC_CONT_EXPORT explicit Id3(const dax::Id* values):
     dax::Tuple<dax::Id, 3>(values) { }
+  DAX_EXEC_CONT_EXPORT Id3(const dax::Tuple<dax::Id,3> &values)
+    : dax::Tuple<dax::Id, 3>(values) { }
 
   DAX_EXEC_CONT_EXPORT Id3(ComponentType x, ComponentType y, ComponentType z) {
     this->Components[0] = x;

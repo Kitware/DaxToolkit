@@ -162,6 +162,33 @@ struct MatrixTest
                                  dax::dot(leftVector,rightVector)),
                       "Matrix multiple wrong.");
       }
+
+    std::cout << "Vector multiply." << std::endl;
+    MatrixType matrixFactor;
+    dax::Tuple<T,NUM_ROWS> leftVector(2);
+    dax::Tuple<T,NUM_COLS> rightVector;
+    FOR_ROW_COL(matrixFactor)
+      {
+      matrixFactor(row,col) = row + 1;
+      rightVector[col] = col + 1;
+      }
+
+    dax::Tuple<T,NUM_COLS> leftResult =
+        dax::exec::math::MatrixMultiply(leftVector, matrixFactor);
+    for (int index = 0; index < NUM_COLS; index++)
+      {
+      DAX_TEST_ASSERT(test_equal(leftResult[index], T(NUM_ROWS*(NUM_ROWS+1))),
+                      "Vector/matrix multiple wrong.");
+      }
+
+    dax::Tuple<T,NUM_ROWS> rightResult =
+        dax::exec::math::MatrixMultiply(matrixFactor, rightVector);
+    for (int index = 0; index < NUM_ROWS; index++)
+      {
+      DAX_TEST_ASSERT(test_equal(rightResult[index],
+                                 T(((index+1)*NUM_COLS*(NUM_COLS+1))/2)),
+                      "Matrix/vector multiple wrong.");
+      }
   }
 
   static void Identity()
@@ -294,6 +321,32 @@ struct MatrixTestFunctor
   }
 };
 
+struct VectorMultFunctor
+{
+  template<class VectorType>
+  void operator()(const VectorType &) const {
+    // This is mostly to make sure the compile can convert from Tuples
+    // to vectors.
+    const int SIZE = dax::VectorTraits<VectorType>::NUM_COMPONENTS;
+    typedef typename dax::VectorTraits<VectorType>::ComponentType ComponentType;
+
+    dax::exec::math::Matrix<ComponentType,SIZE,SIZE> matrix(0);
+    VectorType inVec;
+    VectorType outVec;
+    for (int index = 0; index < SIZE; index++)
+      {
+      matrix(index,index) = 1;
+      inVec[index] = index+1;
+      }
+
+    outVec = dax::exec::math::MatrixMultiply(matrix,inVec);
+    DAX_TEST_ASSERT(test_equal(inVec, outVec), "Bad identity multiply.");
+
+    outVec = dax::exec::math::MatrixMultiply(inVec,matrix);
+    DAX_TEST_ASSERT(test_equal(inVec, outVec), "Bad identity multiply.");
+  }
+};
+
 void TestMatrices()
 {
   std::cout << "****** Rectangle tests" << std::endl;
@@ -306,6 +359,10 @@ void TestMatrices()
   SquareMatrixTest<3>::Run();
   SquareMatrixTest<4>::Run();
   SquareMatrixTest<5>::Run();
+
+  std::cout << "***** Vector multiply tests" << std::endl;
+  dax::internal::Testing::TryAllTypes(
+        VectorMultFunctor(), dax::internal::Testing::TypeCheckVector());
 }
 
 } // anonymous namespace
