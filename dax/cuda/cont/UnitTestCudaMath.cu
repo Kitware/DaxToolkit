@@ -115,6 +115,7 @@ struct TestPrecisionKernel
     dax::Scalar nan = dax::exec::math::Nan();
     dax::Scalar inf = dax::exec::math::Infinity();
     dax::Scalar neginf = dax::exec::math::NegativeInfinity();
+    dax::Scalar epsilon = dax::exec::math::Epsilon();
 
     // General behavior.
     MY_ASSERT(nan != nan, "Nan not equal itself.");
@@ -126,8 +127,11 @@ struct TestPrecisionKernel
     MY_ASSERT(neginf < inf, "Infinity big");
     MY_ASSERT(zero < inf, "Infinity big");
     MY_ASSERT(finite < inf, "Infinity big");
-    MY_ASSERT(zero > -inf, "-Infinity small");
-    MY_ASSERT(finite > -inf, "-Infinity small");
+    MY_ASSERT(zero > neginf, "-Infinity small");
+    MY_ASSERT(finite > neginf, "-Infinity small");
+
+    MY_ASSERT(zero < epsilon, "Negative epsilon");
+    MY_ASSERT(finite > epsilon, "Large epsilon");
 
     // Math check functions.
     MY_ASSERT(!dax::exec::math::IsNan(zero), "Bad IsNan check.");
@@ -135,18 +139,21 @@ struct TestPrecisionKernel
     MY_ASSERT(dax::exec::math::IsNan(nan), "Bad IsNan check.");
     MY_ASSERT(!dax::exec::math::IsNan(inf), "Bad IsNan check.");
     MY_ASSERT(!dax::exec::math::IsNan(neginf), "Bad IsNan check.");
+    MY_ASSERT(!dax::exec::math::IsNan(epsilon), "Bad IsNan check.");
 
     MY_ASSERT(!dax::exec::math::IsInf(zero), "Bad infinity check.");
     MY_ASSERT(!dax::exec::math::IsInf(finite), "Bad infinity check.");
     MY_ASSERT(!dax::exec::math::IsInf(nan), "Bad infinity check.");
     MY_ASSERT(dax::exec::math::IsInf(inf), "Bad infinity check.");
     MY_ASSERT(dax::exec::math::IsInf(neginf), "Bad infinity check.");
+    MY_ASSERT(!dax::exec::math::IsInf(epsilon), "Bad infinity check.");
 
     MY_ASSERT(dax::exec::math::IsFinite(zero), "Bad finite check.");
     MY_ASSERT(dax::exec::math::IsFinite(finite), "Bad finite check.");
     MY_ASSERT(!dax::exec::math::IsFinite(nan), "Bad finite check.");
     MY_ASSERT(!dax::exec::math::IsFinite(inf), "Bad finite check.");
     MY_ASSERT(!dax::exec::math::IsFinite(neginf), "Bad finite check.");
+    MY_ASSERT(dax::exec::math::IsFinite(epsilon), "Bad finite check.");
 
     MY_ASSERT(test_equal(dax::exec::math::FMod(6.5, 2.3), dax::Scalar(1.9)),
               "Bad fmod.");
