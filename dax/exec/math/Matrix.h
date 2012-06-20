@@ -20,6 +20,8 @@
 #include <dax/TypeTraits.h>
 #include <dax/VectorTraits.h>
 
+#include <dax/exec/math/Sign.h>
+
 namespace dax {
 namespace exec {
 namespace math {
@@ -178,6 +180,111 @@ dax::exec::math::Matrix<T,NumCols,NumRows> MatrixTranspose(
     }
   return result;
 }
+
+namespace detail {
+
+// Used with MatrixLUPFactor.
+template<int Size>
+void MatrixLUPFactorFindPivot(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
+                              dax::Tuple<int,Size> &permutation,
+                              int topCornerIndex,
+                              bool &valid)
+{
+  int maxRowIndex = topCornerIndex;
+  dax::Scalar maxValue = A(maxRowIndex, topCornerIndex);
+  for (int rowIndex = topCornerIndex + 1; rowIndex < Size; rowIndex++)
+    {
+    dax::Scalar compareValue = A(rowIndex, topCornerIndex);
+    if (maxValue < compareValue)
+      {
+      maxValue = compareValue;
+      maxRowIndex = rowIndex;
+      }
+    }
+
+  if (maxValue == dax::Scalar(0.0)) { valid = false; }
+
+  if (maxRowIndex != topCornerIndex)
+    {
+    // Swap rows in matrix.
+    dax::Tuple<dax::Scalar,Size> maxRow =
+        dax::exec::math::MatrixRow(A, maxRowIndex);
+    dax::exec::math::MatrixSetRow(A,
+                                  maxRowIndex,
+                                  dax::exec::math::MatrixRow(A,topCornerIndex));
+    dax::exec::math::MatrixSetRow(A, topCornerIndex, maxRow);
+
+    // Record change in permutation matrix.
+    int maxOriginalRowIndex = permutation[maxRowIndex];
+    permutation[maxRowIndex] = permutation[topCornerIndex];
+    permutation[topCornerIndex] = maxOriginalRowIndex;
+    }
+}
+
+// Used with MatrixLUPFactor
+template<int Size>
+void MatrixLUPFactorFindUpperTriangleElements(
+    dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
+    int topCornerIndex)
+{
+  // Compute values for upper triangle on row topCornerIndex
+  for (int colIndex = topCornerIndex+1; colIndex < Size; colIndex++)
+    {
+    A(topCornerIndex,colIndex) /= A(topCornerIndex,topCornerIndex);
+    }
+
+  // Update the rest of the matrix for calculations on subsequent rows
+  for (int rowIndex = topCornerIndex+1; rowIndex < Size; rowIndex++)
+    {
+    for (int colIndex = topCornerIndex+1; colIndex < Size; colIndex++)
+      {
+      A(rowIndex,colIndex) -=
+          A(rowIndex,topCornerIndex)*A(topCornerIndex,colIndex);
+      }
+    }
+}
+
+/// Performs an LUP-factorization on the given matrix using Crout's method. The
+/// LU-factorization takes a matrix A and decomposes it into a lower triangular
+/// matrix L and upper triangular matrix U such that A = LU. The
+/// LUP-factorization also allows permutation of A, which makes the
+/// decomposition always posible so long as A is not singular. In addition to
+/// matrices L and U, LUP also finds permutation matrix P containing all zeros
+/// except one 1 per row and column such that PA = LU.
+///
+/// The result is done in place such that the lower triangular matrix, L, is
+/// stored in the lower-left triangle of A including the diagonal. The upper
+/// triangular matrix, U, is stored in the upper-right triangle of L not
+/// including the diagonal. The diagonal of U in Crout's method is all 1's (and
+/// therefore not explicitly stored).
+///
+/// The permutation matrix P is represented by the permutation vector. If
+/// permutation[i] = j then row j in the original matrix A has been moved to
+/// row i in the resulting matrices. The permutation matrix P can be
+/// represented by a matrix with p_i,j = 1 if permutation[i] = j and 0
+/// otherwise.
+///
+/// Not all matrices (specifically singular matrices) have an
+/// LUP-factorization. If the LUP-factorization succeeds, valid is set to true.
+/// Otherwise, valid is set to false and the result is indeterminant.
+///
+template<int Size>
+void MatrixLUPFactor(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
+                     dax::Tuple<int,Size> &permutation,
+                     bool &valid)
+{
+  // Initialize permutation.
+  for (int index = 0; index < Size; index++) { permutation[index] = index; }
+  valid = true;
+
+  for (int rowIndex = 0; rowIndex < Size; rowIndex++)
+    {
+    MatrixLUPFactorFindPivot(A, permutation, rowIndex, valid);
+    MatrixLUPFactorFindUpperTriangleElements(A, rowIndex);
+    }
+}
+
+} // namespace detail
 
 }
 }
