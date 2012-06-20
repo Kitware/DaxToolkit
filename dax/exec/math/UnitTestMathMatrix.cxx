@@ -250,17 +250,59 @@ void MatrixTest1()
 }
 
 template<int Size>
+void NonSingularMatrix(dax::exec::math::Matrix<dax::Scalar,Size,Size> &matrix);
+
+template<>
+void NonSingularMatrix<1>(dax::exec::math::Matrix<dax::Scalar,1,1> &matrix)
+{
+  matrix(0,0) = 1;
+}
+
+template<>
+void NonSingularMatrix<2>(dax::exec::math::Matrix<dax::Scalar,2,2> &matrix)
+{
+  matrix(0,0) = -5;  matrix(0,1) =  6;
+  matrix(1,0) = -7;  matrix(1,1) = -2;
+}
+
+template<>
+void NonSingularMatrix<3>(dax::exec::math::Matrix<dax::Scalar,3,3> &matrix)
+{
+  matrix(0,0) =  1;  matrix(0,1) = -2;  matrix(0,2) =  3;
+  matrix(1,0) =  6;  matrix(1,1) =  7;  matrix(1,2) = -1;
+  matrix(2,0) = -3;  matrix(2,1) =  1;  matrix(2,2) =  4;
+}
+
+template<>
+void NonSingularMatrix<4>(dax::exec::math::Matrix<dax::Scalar,4,4> &matrix)
+{
+  matrix(0,0) =  2;  matrix(0,1) =  1;  matrix(0,2) =  0;  matrix(0,3) =  3;
+  matrix(1,0) = -1;  matrix(1,1) =  0;  matrix(1,2) =  2;  matrix(1,3) =  4;
+  matrix(2,0) =  4;  matrix(2,1) = -2;  matrix(2,2) =  7;  matrix(2,3) =  0;
+  matrix(3,0) = -4;  matrix(3,1) =  3;  matrix(3,2) =  5;  matrix(3,3) =  1;
+}
+
+template<>
+void NonSingularMatrix<5>(dax::exec::math::Matrix<dax::Scalar,5,5> &mat)
+{
+  mat(0,0) = 2;  mat(0,1) = 1;  mat(0,2) = 3;  mat(0,3) = 7;  mat(0,4) = 5;
+  mat(1,0) = 3;  mat(1,1) = 8;  mat(1,2) = 7;  mat(1,3) = 9;  mat(1,4) = 8;
+  mat(2,0) = 3;  mat(2,1) = 4;  mat(2,2) = 1;  mat(2,3) = 6;  mat(2,4) = 2;
+  mat(3,0) = 4;  mat(3,1) = 0;  mat(3,2) = 2;  mat(3,3) = 2;  mat(3,4) = 3;
+  mat(4,0) = 7;  mat(4,1) = 9;  mat(4,2) = 1;  mat(4,3) = 5;  mat(4,4) = 4;
+}
+
+template<int Size>
 struct SquareMatrixTest {
   static const int SIZE = Size;
   typedef dax::exec::math::Matrix<dax::Scalar,SIZE,SIZE> MatrixType;
 
   static void LUPFactor()
   {
+    std::cout << "Test LUP-factorization" << std::endl;
+
     MatrixType A;
-    FOR_ROW_COL(A)
-      {
-      A(row,col) = 2*col*col-((row+col)*row)+3;
-      }
+    NonSingularMatrix(A);
     const MatrixType originalMatrix = A;
     dax::Tuple<int,SIZE> permutationVector;
     bool valid;
@@ -319,12 +361,14 @@ struct SquareMatrixTest {
 
   static void SolveLinearSystem()
   {
+    std::cout << "Solve a linear system" << std::endl;
+
     MatrixType A;
     dax::Tuple<dax::Scalar,SIZE> b;
-    FOR_ROW_COL(A)
+    NonSingularMatrix(A);
+    for (int index = 0; index < SIZE; index++)
       {
-      A(row,col) = 2*col*col-((row+col)*row)+3;
-      b[row] = row+1;
+      b[index] = index+1;
       }
     bool valid;
 
@@ -355,12 +399,49 @@ struct SquareMatrixTest {
     DAX_TEST_ASSERT(!valid, "Expected matrix to be declared singular.");
   }
 
+  static void Invert()
+  {
+    std::cout << "Invert a matrix." << std::endl;
+
+    MatrixType A;
+    NonSingularMatrix(A);
+    bool valid;
+
+    dax::exec::math::Matrix<dax::Scalar,SIZE,SIZE> inverse =
+        dax::exec::math::MatrixInverse(A, valid);
+    DAX_TEST_ASSERT(valid, "Matrix declared singular?");
+
+    // Check result.
+    dax::exec::math::Matrix<dax::Scalar,SIZE,SIZE> product =
+        dax::exec::math::MatrixMultiply(A, inverse);
+    DAX_TEST_ASSERT(
+          test_equal(product,
+                     dax::exec::math::MatrixIdentity<dax::Scalar,SIZE>()),
+          "Matrix inverse did not give identity.");
+
+    // Check that a singular matrix is identified.
+    MatrixType singularMatrix;
+    FOR_ROW_COL(singularMatrix)
+      {
+      singularMatrix(row,col) = row+col;
+      }
+    if (Size > 1)
+      {
+      dax::exec::math::MatrixSetRow(singularMatrix,
+                                    0,
+                                    dax::exec::math::MatrixRow(singularMatrix,
+                                                               (Size+1)/2));
+      }
+    dax::exec::math::MatrixInverse(singularMatrix, valid);
+  }
+
   static void Run()
   {
     std::cout << "-- " << SIZE << " x " << SIZE << std::endl;
 
     LUPFactor();
     SolveLinearSystem();
+    Invert();
   }
 
 private:

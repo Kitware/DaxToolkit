@@ -20,6 +20,7 @@
 #include <dax/TypeTraits.h>
 #include <dax/VectorTraits.h>
 
+#include <dax/exec/math/Precision.h>
 #include <dax/exec/math/Sign.h>
 
 namespace dax {
@@ -233,10 +234,11 @@ void MatrixLUPFactorFindPivot(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
                               bool &valid)
 {
   int maxRowIndex = topCornerIndex;
-  dax::Scalar maxValue = A(maxRowIndex, topCornerIndex);
+  dax::Scalar maxValue = dax::exec::math::Abs(A(maxRowIndex, topCornerIndex));
   for (int rowIndex = topCornerIndex + 1; rowIndex < Size; rowIndex++)
     {
-    dax::Scalar compareValue = A(rowIndex, topCornerIndex);
+    dax::Scalar compareValue =
+        dax::exec::math::Abs(A(rowIndex, topCornerIndex));
     if (maxValue < compareValue)
       {
       maxValue = compareValue;
@@ -244,7 +246,7 @@ void MatrixLUPFactorFindPivot(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
       }
     }
 
-  if (maxValue == dax::Scalar(0.0)) { valid = false; }
+  if (maxValue < dax::exec::math::Epsilon()) { valid = false; }
 
   if (maxRowIndex != topCornerIndex)
     {
@@ -328,22 +330,17 @@ void MatrixLUPFactor(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
     }
 }
 
-} // namespace detail
-
-/// Solve the linear system Ax = b for x. If a single solution is found, valid
-/// is set to true, false otherwise.
+/// Use a previous factorization done with MatrixLUPFactor to solve the
+/// system Ax = b.  Instead of A, this method takes in the LU and P
+/// matrices calculated by MatrixLUPFactor from A.
 ///
 template<int Size>
-dax::Tuple<dax::Scalar,Size> SolveLinearSystem(
-    const dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
-    const dax::Tuple<dax::Scalar,Size> &b,
-    bool &valid)
+DAX_EXEC_EXPORT
+void MatrixLUPSolve(const dax::exec::math::Matrix<dax::Scalar,Size,Size> &LU,
+                    const dax::Tuple<int,Size> &permutation,
+                    const dax::Tuple<dax::Scalar,Size> &b,
+                    dax::Tuple<dax::Scalar,Size> &x)
 {
-  // First, we will make an LUP-factorization to help us.
-  dax::exec::math::Matrix<dax::Scalar,Size,Size> LU = A;
-  dax::Tuple<int,Size> permutation;
-  dax::exec::math::detail::MatrixLUPFactor(LU, permutation, valid);
-
   // The LUP-factorization gives us PA = LU or equivalently A = inv(P)LU.
   // Substituting into Ax = b gives us inv(P)LUx = b or LUx = Pb.
   // Now consider the intermediate vector y = Ux.
@@ -363,7 +360,6 @@ dax::Tuple<dax::Scalar,Size> SolveLinearSystem(
     }
 
   // Now that we have y, we can easily solve Ux = y for x.
-  dax::Tuple<dax::Scalar,Size> x;
   for (int rowIndex = Size-1; rowIndex >= 0; rowIndex--)
     {
     x[rowIndex] = y[rowIndex];
@@ -374,8 +370,59 @@ dax::Tuple<dax::Scalar,Size> SolveLinearSystem(
       x[rowIndex] -= LU(rowIndex,colIndex)*x[colIndex];
       }
     }
+}
 
+} // namespace detail
+
+/// Solve the linear system Ax = b for x. If a single solution is found, valid
+/// is set to true, false otherwise.
+///
+template<int Size>
+DAX_EXEC_EXPORT
+dax::Tuple<dax::Scalar,Size> SolveLinearSystem(
+    const dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
+    const dax::Tuple<dax::Scalar,Size> &b,
+    bool &valid)
+{
+  // First, we will make an LUP-factorization to help us.
+  dax::exec::math::Matrix<dax::Scalar,Size,Size> LU = A;
+  dax::Tuple<int,Size> permutation;
+  dax::exec::math::detail::MatrixLUPFactor(LU, permutation, valid);
+
+  // Next, use the decomposition to solve the system.
+  dax::Tuple<dax::Scalar,Size> x;
+  dax::exec::math::detail::MatrixLUPSolve(LU, permutation, b, x);
   return x;
+}
+
+/// Find and return the inverse of the given matrix. If the matrix is singular,
+/// the inverse will not be correct and valid will be set to false.
+///
+template<int Size>
+DAX_EXEC_EXPORT
+dax::exec::math::Matrix<dax::Scalar,Size,Size> MatrixInverse(
+    const dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
+    bool &valid)
+{
+  // First, we will make an LUP-factorization to help us.
+  dax::exec::math::Matrix<dax::Scalar,Size,Size> LU = A;
+  dax::Tuple<int,Size> permutation;
+  dax::exec::math::detail::MatrixLUPFactor(LU, permutation, valid);
+
+  // We will use the decomposition to solve AX = I for X where X is
+  // clearly the inverse of A.  Our solve method only works for vectors,
+  // so we solve for one column of invA at a time.
+  dax::exec::math::Matrix<dax::Scalar,Size,Size> invA;
+  dax::Tuple<dax::Scalar,Size> ICol(dax::Scalar(0));
+  dax::Tuple<dax::Scalar,Size> invACol;
+  for (int colIndex = 0; colIndex < Size; colIndex++)
+    {
+    ICol[colIndex] = 1;
+    dax::exec::math::detail::MatrixLUPSolve(LU, permutation, ICol, invACol);
+    ICol[colIndex] = 0;
+    dax::exec::math::MatrixSetColumn(invA, colIndex, invACol);
+    }
+  return invA;
 }
 
 }
