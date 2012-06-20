@@ -16,6 +16,8 @@
 
 #include <dax/exec/math/Matrix.h>
 
+#include <dax/VectorTraits.h>
+
 #include <dax/internal/Testing.h>
 
 namespace {
@@ -109,6 +111,48 @@ void MatrixTest()
     {
     DAX_TEST_ASSERT(matrix(row,NUM_COLS-col-1) == const_matrix(row,col),
                     "Columns not set right.");
+    }
+
+  std::cout << "Try multiply." << std::endl;
+    {
+    dax::exec::math::Matrix<T,NUM_COLS,4> rightFactor;
+    for (int index = 0; index < NUM_COLS*4; index++)
+      {
+      dax::VectorTraits<dax::exec::math::Matrix<T,NUM_COLS,4> >::SetComponent(
+            rightFactor, index, index);
+      }
+    dax::exec::math::Matrix<T,NUM_ROWS,4> product
+        = dax::exec::math::MatrixMultiply(const_matrix, rightFactor);
+    for (int rowIndex = 0; rowIndex < NUM_ROWS; rowIndex++)
+      {
+      for (int colIndex = 0; colIndex < 4; colIndex++)
+        {
+        dax::Tuple<T,NUM_COLS> leftVector
+            = dax::exec::math::MatrixRow(const_matrix, rowIndex);
+        dax::Tuple<T,NUM_COLS> rightVector
+            = dax::exec::math::MatrixColumn(rightFactor, colIndex);
+        DAX_TEST_ASSERT(test_equal(product(rowIndex,colIndex),
+                                   dax::dot(leftVector,rightVector)),
+                        "Matrix multiple wrong.");
+        }
+      }
+    }
+
+  std::cout << "Check identity" << std::endl;
+  matrix = dax::exec::math::MatrixMultiply(
+        const_matrix, dax::exec::math::MatrixIdentity<T,NUM_COLS>());
+  DAX_TEST_ASSERT(test_equal(matrix, const_matrix),
+                  "Identity is not really identity.");
+
+  std::cout << "Check transpose" << std::endl;
+    {
+    dax::exec::math::Matrix<T,NUM_COLS,NUM_ROWS> trans =
+        dax::exec::math::MatrixTranspose(const_matrix);
+    FOR_ROW_COL
+      {
+      DAX_TEST_ASSERT(const_matrix(row,col) == trans(col,row),
+                      "Transpose wrong.");
+      }
     }
 }
 

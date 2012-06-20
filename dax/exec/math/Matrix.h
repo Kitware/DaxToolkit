@@ -120,6 +120,65 @@ void MatrixSetColumn(dax::exec::math::Matrix<T,NumRow,NumCol> &matrix,
     }
 }
 
+/// Standard matrix multiplication.
+///
+template<typename T, int NumRow, int NumCol, int NumInternal>
+dax::exec::math::Matrix<T,NumRow,NumCol> MatrixMultiply(
+    const dax::exec::math::Matrix<T,NumRow,NumInternal> &leftFactor,
+    const dax::exec::math::Matrix<T,NumInternal,NumCol> &rightFactor)
+{
+  dax::exec::math::Matrix<T,NumRow,NumCol> result;
+  for (int rowIndex = 0; rowIndex < NumRow; rowIndex++)
+    {
+    for (int colIndex = 0; colIndex < NumCol; colIndex++)
+      {
+      T sum = leftFactor(rowIndex, 0) * rightFactor(0, colIndex);
+      for (int internalIndex = 1; internalIndex < NumInternal; internalIndex++)
+        {
+        sum += leftFactor(rowIndex, internalIndex)
+            * rightFactor(internalIndex, colIndex);
+        }
+      result(rowIndex, colIndex) = sum;
+      }
+    }
+  return result;
+}
+
+/// Returns the identity matrix.
+///
+template<typename T, int Size>
+dax::exec::math::Matrix<T,Size,Size> MatrixIdentity()
+{
+  dax::exec::math::Matrix<T,Size,Size> result(0);
+  for (int index = 0; index < Size; index++)
+    {
+    result(index,index) = 1.0;
+    }
+  return result;
+}
+
+/// Fills the given matrix with the identity matrix.
+///
+template<typename T, int Size>
+void MatrixIdentity(dax::exec::math::Matrix<T,Size,Size> &matrix)
+{
+  matrix = dax::exec::math::MatrixIdentity<T,Size>();
+}
+
+/// Returns the transpose of the given matrix.
+///
+template<typename T, int NumRows, int NumCols>
+dax::exec::math::Matrix<T,NumCols,NumRows> MatrixTranspose(
+    const dax::exec::math::Matrix<T,NumRows,NumCols> &matrix)
+{
+  dax::exec::math::Matrix<T,NumCols,NumRows> result;
+  for (int index = 0; index < NumRows; index++)
+    {
+    dax::exec::math::MatrixSetColumn(result, index, matrix[index]);
+    }
+  return result;
+}
+
 }
 }
 } // namespace dax::exec::math
