@@ -297,6 +297,62 @@ struct SquareMatrixTest {
     MatrixType productMatrix = dax::exec::math::MatrixMultiply(L,U);
     DAX_TEST_ASSERT(test_equal(permutedMatrix, productMatrix),
                     "LUP-factorization gave inconsistent answer.");
+
+    // Check that a singular matrix is identified.
+    MatrixType singularMatrix;
+    FOR_ROW_COL(singularMatrix)
+      {
+      singularMatrix(row,col) = row+col;
+      }
+    if (Size > 1)
+      {
+      dax::exec::math::MatrixSetRow(singularMatrix,
+                                    0,
+                                    dax::exec::math::MatrixRow(singularMatrix,
+                                                               (Size+1)/2));
+      }
+    dax::exec::math::detail::MatrixLUPFactor(singularMatrix,
+                                             permutationVector,
+                                             valid);
+    DAX_TEST_ASSERT(!valid, "Expected matrix to be declared singular.");
+  }
+
+  static void SolveLinearSystem()
+  {
+    MatrixType A;
+    dax::Tuple<dax::Scalar,SIZE> b;
+    FOR_ROW_COL(A)
+      {
+      A(row,col) = 2*col*col-((row+col)*row)+3;
+      b[row] = row+1;
+      }
+    bool valid;
+
+    dax::Tuple<dax::Scalar,SIZE> x =
+        dax::exec::math::SolveLinearSystem(A, b, valid);
+    DAX_TEST_ASSERT(valid, "Matrix declared singular?");
+
+    // Check result.
+    dax::Tuple<dax::Scalar,SIZE> check =
+        dax::exec::math::MatrixMultiply(A,x);
+    DAX_TEST_ASSERT(test_equal(b, check),
+                    "Linear solution does not solve equation.");
+
+    // Check that a singular matrix is identified.
+    MatrixType singularMatrix;
+    FOR_ROW_COL(singularMatrix)
+      {
+      singularMatrix(row,col) = row+col;
+      }
+    if (Size > 1)
+      {
+      dax::exec::math::MatrixSetRow(singularMatrix,
+                                    0,
+                                    dax::exec::math::MatrixRow(singularMatrix,
+                                                               (Size+1)/2));
+      }
+    dax::exec::math::SolveLinearSystem(singularMatrix, b, valid);
+    DAX_TEST_ASSERT(!valid, "Expected matrix to be declared singular.");
   }
 
   static void Run()
@@ -304,6 +360,7 @@ struct SquareMatrixTest {
     std::cout << "-- " << SIZE << " x " << SIZE << std::endl;
 
     LUPFactor();
+    SolveLinearSystem();
   }
 
 private:

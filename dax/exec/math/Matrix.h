@@ -330,6 +330,54 @@ void MatrixLUPFactor(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
 
 } // namespace detail
 
+/// Solve the linear system Ax = b for x. If a single solution is found, valid
+/// is set to true, false otherwise.
+///
+template<int Size>
+dax::Tuple<dax::Scalar,Size> SolveLinearSystem(
+    const dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
+    const dax::Tuple<dax::Scalar,Size> &b,
+    bool &valid)
+{
+  // First, we will make an LUP-factorization to help us.
+  dax::exec::math::Matrix<dax::Scalar,Size,Size> LU = A;
+  dax::Tuple<int,Size> permutation;
+  dax::exec::math::detail::MatrixLUPFactor(LU, permutation, valid);
+
+  // The LUP-factorization gives us PA = LU or equivalently A = inv(P)LU.
+  // Substituting into Ax = b gives us inv(P)LUx = b or LUx = Pb.
+  // Now consider the intermediate vector y = Ux.
+  // Substituting in the previous two equations yields Ly = Pb.
+  // Solving Ly = Pb is easy because L is triangular and P is just a
+  // permutation.
+  dax::Tuple<dax::Scalar,Size> y;
+  for (int rowIndex = 0; rowIndex < Size; rowIndex++)
+    {
+    y[rowIndex] = b[permutation[rowIndex]];
+    // Recall that L is stored in the lower triangle of LU including diagonal.
+    for (int colIndex = 0; colIndex < rowIndex; colIndex++)
+      {
+      y[rowIndex] -= LU(rowIndex,colIndex)*y[colIndex];
+      }
+    y[rowIndex] /= LU(rowIndex,rowIndex);
+    }
+
+  // Now that we have y, we can easily solve Ux = y for x.
+  dax::Tuple<dax::Scalar,Size> x;
+  for (int rowIndex = Size-1; rowIndex >= 0; rowIndex--)
+    {
+    x[rowIndex] = y[rowIndex];
+    // Recall that U is stored in the upper triangle of LU with the diagonal
+    // implicitly all 1's.
+    for (int colIndex = rowIndex+1; colIndex < Size; colIndex++)
+      {
+      x[rowIndex] -= LU(rowIndex,colIndex)*x[colIndex];
+      }
+    }
+
+  return x;
+}
+
 }
 }
 } // namespace dax::exec::math
