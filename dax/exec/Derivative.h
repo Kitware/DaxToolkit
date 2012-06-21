@@ -19,7 +19,7 @@
 
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
-#include <dax/exec/math/LinearAlgebra.h>
+#include <dax/exec/math/VectorAnalysis.h>
 #include <dax/exec/internal/DerivativeWeights.h>
 
 namespace dax { namespace exec {

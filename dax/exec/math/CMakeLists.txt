@@ -21,7 +21,7 @@ set(headers
   Precision.h
   Sign.h
   Trig.h
-  LinearAlgebra.h
+  VectorAnalysis.h
   )
 
 dax_declare_headers(${headers})
@@ -30,10 +30,10 @@ dax_declare_headers(${headers})
 set(unit_tests
   UnitTestMathCompare.cxx
   UnitTestMathExp.cxx
-  UnitTestMathLinearAlgebra.cxx
   UnitTestMathMatrix.cxx
   UnitTestMathPrecision.cxx
   UnitTestMathSign.cxx
   UnitTestMathTrig.cxx
+  UnitTestMathVectorAnalysis.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

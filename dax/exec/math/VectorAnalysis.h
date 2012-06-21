@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_math_LinearAlgebra_h
-#define __dax_exec_math_LinearAlgebra_h
+#ifndef __dax_exec_math_VectorAnalysis_h
+#define __dax_exec_math_VectorAnalysis_h
 
 // This header file defines math functions that deal with linear albegra funcitons
 
@@ -98,4 +98,4 @@ DAX_EXEC_EXPORT dax::Scalar Norm( const dax::Vector4 &x ) {
 #undef DAX_SYS_MATH_FUNCTOR
 #undef DAX_SYS_MATH_TEMPLATE
 
-#endif //__dax_exec_math_LinearAlgebra_h
+#endif //__dax_exec_math_VectorAnalysis_h

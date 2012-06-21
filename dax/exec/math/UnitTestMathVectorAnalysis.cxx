@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/exec/math/LinearAlgebra.h>
+#include <dax/exec/math/VectorAnalysis.h>
 
 #include<dax/Types.h>
 #include <dax/exec/VectorOperations.h>
@@ -80,12 +80,12 @@ void TestVector(const VectorType& vector)
 
 const dax::Id MAX_VECTOR_SIZE = 4;
 
-struct LinearAlgInitStruct {
+struct VectorAnalInitStruct {
   dax::Scalar zero;
   dax::Scalar normalized;
   dax::Scalar positive;
   dax::Scalar negative;
-}  LinearAlgInit[MAX_VECTOR_SIZE] = {
+}  VectorAnalInit[MAX_VECTOR_SIZE] = {
   { 0, 1, 0.13, -2 },
   { 0, 1, 8, -4 },
   { 0, 1, 3.0, -1 },
@@ -101,10 +101,10 @@ struct TestLinearFunctor
     T zeroVector,normalizedVector,posVec,negVec;
     for (int index = 0; index < Traits::NUM_COMPONENTS; index++)
       {
-      Traits::SetComponent(zeroVector, index, LinearAlgInit[index].zero);
-      Traits::SetComponent(normalizedVector, index, LinearAlgInit[index].normalized);
-      Traits::SetComponent(posVec, index, LinearAlgInit[index].positive);
-      Traits::SetComponent(negVec, index, LinearAlgInit[index].negative);
+      Traits::SetComponent(zeroVector, index, VectorAnalInit[index].zero);
+      Traits::SetComponent(normalizedVector, index, VectorAnalInit[index].normalized);
+      Traits::SetComponent(posVec, index, VectorAnalInit[index].positive);
+      Traits::SetComponent(negVec, index, VectorAnalInit[index].negative);
       }
     TestVector(zeroVector);
     TestVector(normalizedVector);
@@ -113,7 +113,7 @@ struct TestLinearFunctor
   }
 };
 
-void TestLinearAlgebra()
+void TestVectorAnalysis()
 {
   dax::internal::Testing::TryAllTypes(TestLinearFunctor(),
                                       dax::internal::Testing::TypeCheckReal());
@@ -121,7 +121,7 @@ void TestLinearAlgebra()
 
 } // anonymous namespace
 
-int UnitTestMathLinearAlgebra(int, char *[])
+int UnitTestMathVectorAnalysis(int, char *[])
 {
-  return dax::internal::Testing::Run(TestLinearAlgebra);
+  return dax::internal::Testing::Run(TestVectorAnalysis);
 }
