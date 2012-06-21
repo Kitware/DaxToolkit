@@ -25,6 +25,15 @@
 #ifndef DAX_CUDA
 #include <math.h>
 #include <limits>
+
+// These nonfinite test functions are usually defined as macros, and boost
+// seems to want to undefine those macros so that it can implement the C99
+// templates and other implementations of the same name. Get around the problem
+// by using the boost version when compiling for a CPU.
+#include <boost/math/special_functions/fpclassify.hpp>
+using boost::math::isnan;
+using boost::math::isinf;
+using boost::math::isfinite;
 #endif
 
 namespace dax {
