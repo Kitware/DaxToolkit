@@ -25,6 +25,13 @@
 #ifndef DAX_CUDA
 #include <math.h>
 #include <stdlib.h>
+
+// signbit is usually defined as a macro, and boost seems to want to undefine
+// that macro so that it can implement the C99 templates and other
+// implementations of the same name. Get around the problem by using the boost
+// version when compiling for a CPU.
+#include <boost/math/special_functions/sign.hpp>
+using boost::math::signbit;
 #endif
 
 namespace dax {

@@ -79,8 +79,8 @@ static void TestVectorType(const T &vector)
         typename dax::VectorTraits<T>::HasMultipleComponents());
 }
 
-static const dax::Id MAX_VECTOR_SIZE = 4;
-static const dax::Id VectorInit[MAX_VECTOR_SIZE] = { 42, 54, 67, 12 };
+static const dax::Id MAX_VECTOR_SIZE = 5;
+static const dax::Id VectorInit[MAX_VECTOR_SIZE] = { 42, 54, 67, 12, 78 };
 
 struct TestVectorTypeFunctor
 {
@@ -135,7 +135,10 @@ static void TestScalarComponentsTag()
 
 void TestVectorTraits()
 {
-  dax::internal::Testing::TryAllTypes(TestVectorTypeFunctor());
+  TestVectorTypeFunctor test;
+  dax::internal::Testing::TryAllTypes(test);
+  std::cout << "dax::Tuple<dax::Scalar, 5>" << std::endl;
+  test(dax::Tuple<dax::Scalar,5>());
 
   TestVectorComponentsTag<dax::Id3>();
   TestVectorComponentsTag<dax::Vector3>();

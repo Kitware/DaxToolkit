@@ -64,7 +64,10 @@ private:
 
 static void TestTypeTraits()
 {
-  dax::internal::Testing::TryAllTypes(TypeTraitTest());
+  TypeTraitTest test;
+  dax::internal::Testing::TryAllTypes(test);
+  std::cout << "dax::Tuple<dax::Scalar, 5>" << std::endl;
+  test(dax::Tuple<dax::Scalar, 5>());
 }
 
 } // anonymous namespace

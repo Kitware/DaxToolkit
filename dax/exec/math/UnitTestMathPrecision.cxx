@@ -29,6 +29,7 @@ void TestNonFinites()
   dax::Scalar nan = dax::exec::math::Nan();
   dax::Scalar inf = dax::exec::math::Infinity();
   dax::Scalar neginf = dax::exec::math::NegativeInfinity();
+  dax::Scalar epsilon = dax::exec::math::Epsilon();
 
   // General behavior.
   DAX_TEST_ASSERT(nan != nan, "Nan not equal itself.");
@@ -45,24 +46,30 @@ void TestNonFinites()
   DAX_TEST_ASSERT(zero > neginf, "-Infinity small");
   DAX_TEST_ASSERT(finite > neginf, "-Infinity small");
 
+  DAX_TEST_ASSERT(zero < epsilon, "Negative epsilon");
+  DAX_TEST_ASSERT(finite > epsilon, "Large epsilon");
+
   // Math check functions.
   DAX_TEST_ASSERT(!dax::exec::math::IsNan(zero), "Bad IsNan check.");
   DAX_TEST_ASSERT(!dax::exec::math::IsNan(finite), "Bad IsNan check.");
   DAX_TEST_ASSERT(dax::exec::math::IsNan(nan), "Bad IsNan check.");
   DAX_TEST_ASSERT(!dax::exec::math::IsNan(inf), "Bad IsNan check.");
   DAX_TEST_ASSERT(!dax::exec::math::IsNan(neginf), "Bad IsNan check.");
+  DAX_TEST_ASSERT(!dax::exec::math::IsNan(epsilon), "Bad IsNan check.");
 
   DAX_TEST_ASSERT(!dax::exec::math::IsInf(zero), "Bad infinity check.");
   DAX_TEST_ASSERT(!dax::exec::math::IsInf(finite), "Bad infinity check.");
   DAX_TEST_ASSERT(!dax::exec::math::IsInf(nan), "Bad infinity check.");
   DAX_TEST_ASSERT(dax::exec::math::IsInf(inf), "Bad infinity check.");
   DAX_TEST_ASSERT(dax::exec::math::IsInf(neginf), "Bad infinity check.");
+  DAX_TEST_ASSERT(!dax::exec::math::IsInf(epsilon), "Bad infinity check.");
 
   DAX_TEST_ASSERT(dax::exec::math::IsFinite(zero), "Bad finite check.");
   DAX_TEST_ASSERT(dax::exec::math::IsFinite(finite), "Bad finite check.");
   DAX_TEST_ASSERT(!dax::exec::math::IsFinite(nan), "Bad finite check.");
   DAX_TEST_ASSERT(!dax::exec::math::IsFinite(inf), "Bad finite check.");
   DAX_TEST_ASSERT(!dax::exec::math::IsFinite(neginf), "Bad finite check.");
+  DAX_TEST_ASSERT(dax::exec::math::IsFinite(epsilon), "Bad finite check.");
 }
 
 template<typename VectorType>
