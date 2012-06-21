@@ -106,7 +106,7 @@ DAX_EXEC_EXPORT dax::Tuple<dax::Vector2, 2> make_InvertedJacobian(
   {
   //ripped from VTK
   //dot product
-  dax::Scalar lenX = dax::exec::math::Norm( len1 );
+  dax::Scalar lenX = dax::exec::math::Magnitude( len1 );
   dax::exec::math::Normalize(len1);
   dax::Vector2 dotResult(dax::dot(len2,len1),dax::dot(len2,crossResult));
 

@@ -27,7 +27,7 @@ namespace {
 namespace internal{
 
 template<typename VectorType>
-dax::Scalar norm(const VectorType& vt)
+dax::Scalar mag(const VectorType& vt)
 {
   typedef dax::VectorTraits<VectorType> Traits;
   double total = 0.0;
@@ -39,7 +39,7 @@ dax::Scalar norm(const VectorType& vt)
 }
 
 template<typename VectorType>
-VectorType normalized(const VectorType& vt)
+VectorType normal(const VectorType& vt)
 {
   typedef dax::VectorTraits<VectorType> Traits;
   double total = 0.0;
@@ -64,18 +64,64 @@ VectorType normalized(const VectorType& vt)
 template<typename VectorType>
 void TestVector(const VectorType& vector)
 {
-  //to do have to implement a norm and normalized call to verify the math ones
-  //agianst
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Norm(vector), internal::norm(vector)),
-                  "Norm on zero length vector failed test.");
+  std::cout << "Testing " << vector << std::endl;
 
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Normalized(vector), internal::normalized(vector)),
+  //to do have to implement a norm and normalized call to verify the math ones
+  //against
+  dax::Scalar magnitude = dax::exec::math::Magnitude(vector);
+  dax::Scalar magnitudeCompare = internal::mag(vector);
+  DAX_TEST_ASSERT(test_equal(magnitude, magnitudeCompare),
+                  "Magnitude failed test.");
+
+  dax::Scalar magnitudeSquared = dax::exec::math::MagnitudeSquared(vector);
+  DAX_TEST_ASSERT(test_equal(magnitude*magnitude, magnitudeSquared),
+                  "Magnitude squared test failed.");
+
+  dax::Scalar rmagnitude = dax::exec::math::RMagnitude(vector);
+  DAX_TEST_ASSERT(test_equal(1/magnitude, rmagnitude),
+                  "Reciprical magnitude failed.");
+
+  DAX_TEST_ASSERT(test_equal(dax::exec::math::Normal(vector),
+                             internal::normal(vector)),
                   "Normalized vector failed test.");
 
   VectorType normalizedVector=vector;
   dax::exec::math::Normalize(normalizedVector);
-  DAX_TEST_ASSERT(test_equal(normalizedVector, internal::normalized(vector)),
+  DAX_TEST_ASSERT(test_equal(normalizedVector, internal::normal(vector)),
                   "Inplace Normalized vector failed test.");
+}
+
+void TestCross(const dax::Vector3 &x, const dax::Vector3 &y)
+{
+  dax::Vector3 cross = dax::exec::math::Cross(x, y);
+
+  std::cout << "Testing " << x << " x " << y << " = " << cross << std::endl;
+
+  // The cross product result should be perpendicular to input vectors.
+  DAX_TEST_ASSERT(test_equal(dax::dot(cross,x),dax::Scalar(0.0)),
+                  "Cross product not perpendicular.");
+  DAX_TEST_ASSERT(test_equal(dax::dot(cross,y),dax::Scalar(0.0)),
+                  "Cross product not perpendicular.");
+
+  // The length of cross product should be the lengths of the input vectors
+  // times the sin of the angle between them.
+  dax::Scalar sinAngle =
+      dax::exec::math::Magnitude(cross)
+      * dax::exec::math::RMagnitude(x)
+      * dax::exec::math::RMagnitude(y);
+
+  // The dot product is likewise the lengths of the input vectors times the
+  // cos of the angle between them.
+  dax::Scalar cosAngle =
+      dax::dot(x,y)
+      * dax::exec::math::RMagnitude(x)
+      * dax::exec::math::RMagnitude(y);
+
+  // Test that these are the actual sin and cos of the same angle with a
+  // basic trigonometric identity.
+  DAX_TEST_ASSERT(test_equal(sinAngle*sinAngle+cosAngle*cosAngle,
+                             dax::Scalar(1.0)),
+                  "Bad cross product length.");
 }
 
 const dax::Id MAX_VECTOR_SIZE = 4;
@@ -117,6 +163,9 @@ void TestVectorAnalysis()
 {
   dax::internal::Testing::TryAllTypes(TestLinearFunctor(),
                                       dax::internal::Testing::TypeCheckReal());
+  TestCross(dax::make_Vector3(1.0,0.0,0.0), dax::make_Vector3(0.0,1.0,0.0));
+  TestCross(dax::make_Vector3(1.0,2.0,3.0), dax::make_Vector3(-3.0,-1.0,1.0));
+  TestCross(dax::make_Vector3(0.0,0.0,1.0), dax::make_Vector3(0.001,0.01,2.0));
 }
 
 } // anonymous namespace

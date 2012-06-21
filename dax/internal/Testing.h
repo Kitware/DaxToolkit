@@ -294,4 +294,18 @@ DAX_EXEC_CONT_EXPORT bool test_equal(VectorType vector1,
   return true;
 }
 
+/// Helper function for printing out vectors during testing.
+///
+template<typename T, int Size>
+DAX_EXEC_CONT_EXPORT
+std::ostream &operator<<(std::ostream &stream, const dax::Tuple<T,Size> &tuple)
+{
+  stream << "[";
+  for (int component = 0; component < Size-1; component++)
+    {
+    stream << tuple[component] << ",";
+    }
+  return stream << tuple[Size-1] << "]";
+}
+
 #endif //__dax_internal_Testing_h
