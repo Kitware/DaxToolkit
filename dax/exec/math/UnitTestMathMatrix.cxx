@@ -293,6 +293,68 @@ void NonSingularMatrix<5>(dax::exec::math::Matrix<dax::Scalar,5,5> &mat)
 }
 
 template<int Size>
+void SingularMatrix(
+    dax::exec::math::Matrix<dax::Scalar,Size,Size> &singularMatrix)
+{
+  FOR_ROW_COL(singularMatrix)
+    {
+    singularMatrix(row,col) = row+col;
+    }
+  if (Size > 1)
+    {
+    dax::exec::math::MatrixSetRow(singularMatrix,
+                                  0,
+                                  dax::exec::math::MatrixRow(singularMatrix,
+                                                             (Size+1)/2));
+    }
+}
+
+// A simple but slow implementation of finding a determinant for comparison
+// purposes.
+template<int Size>
+dax::Scalar RecursiveDeterminant(
+    const dax::exec::math::Matrix<dax::Scalar,Size,Size> &A)
+{
+  dax::exec::math::Matrix<dax::Scalar,Size-1,Size-1> cofactorMatrix;
+  dax::Scalar sum = 0.0;
+  dax::Scalar sign = 1.0;
+  for (int rowIndex = 0; rowIndex < Size; rowIndex++)
+    {
+    // Create the cofactor matrix for entry A(rowIndex,0)
+    for (int cofactorRowIndex = 0;
+         cofactorRowIndex < rowIndex;
+         cofactorRowIndex++)
+      {
+      for (int colIndex = 1; colIndex < Size; colIndex++)
+        {
+        cofactorMatrix(cofactorRowIndex,colIndex-1) =
+            A(cofactorRowIndex,colIndex);
+        }
+      }
+    for (int cofactorRowIndex = rowIndex+1;
+         cofactorRowIndex < Size;
+         cofactorRowIndex++)
+      {
+      for (int colIndex = 1; colIndex < Size; colIndex++)
+        {
+        cofactorMatrix(cofactorRowIndex-1,colIndex-1) =
+            A(cofactorRowIndex,colIndex);
+        }
+      }
+    sum += sign * A(rowIndex,0) * RecursiveDeterminant(cofactorMatrix);
+    sign = -sign;
+    }
+  return sum;
+}
+
+template<>
+dax::Scalar RecursiveDeterminant<1>(
+    const dax::exec::math::Matrix<dax::Scalar,1,1> &A)
+{
+  return A(0,0);
+}
+
+template<int Size>
 struct SquareMatrixTest {
   static const int SIZE = Size;
   typedef dax::exec::math::Matrix<dax::Scalar,SIZE,SIZE> MatrixType;
@@ -305,9 +367,13 @@ struct SquareMatrixTest {
     NonSingularMatrix(A);
     const MatrixType originalMatrix = A;
     dax::Tuple<int,SIZE> permutationVector;
+    dax::Scalar inversionParity;
     bool valid;
 
-    dax::exec::math::detail::MatrixLUPFactor(A, permutationVector, valid);
+    dax::exec::math::detail::MatrixLUPFactor(A,
+                                             permutationVector,
+                                             inversionParity,
+                                             valid);
     DAX_TEST_ASSERT(valid, "Matrix declared singular?");
 
     // Reconstruct L and U matrices from A.
@@ -326,6 +392,21 @@ struct SquareMatrixTest {
         }
       }
 
+    // Check parity of permutation.
+    dax::Scalar computedParity = 1.0;
+    for (int i = 0; i < SIZE; i++)
+      {
+      for (int j = i+1; j < SIZE; j++)
+        {
+        if (permutationVector[i] > permutationVector[j])
+          {
+          computedParity = -computedParity;
+          }
+        }
+      }
+    DAX_TEST_ASSERT(inversionParity == computedParity,
+                    "Got bad inversion parity.");
+
     // Reconstruct permutation matrix P.
     MatrixType P(0);
     for (int index = 0; index < Size; index++)
@@ -342,19 +423,10 @@ struct SquareMatrixTest {
 
     // Check that a singular matrix is identified.
     MatrixType singularMatrix;
-    FOR_ROW_COL(singularMatrix)
-      {
-      singularMatrix(row,col) = row+col;
-      }
-    if (Size > 1)
-      {
-      dax::exec::math::MatrixSetRow(singularMatrix,
-                                    0,
-                                    dax::exec::math::MatrixRow(singularMatrix,
-                                                               (Size+1)/2));
-      }
+    SingularMatrix(singularMatrix);
     dax::exec::math::detail::MatrixLUPFactor(singularMatrix,
                                              permutationVector,
+                                             inversionParity,
                                              valid);
     DAX_TEST_ASSERT(!valid, "Expected matrix to be declared singular.");
   }
@@ -384,17 +456,7 @@ struct SquareMatrixTest {
 
     // Check that a singular matrix is identified.
     MatrixType singularMatrix;
-    FOR_ROW_COL(singularMatrix)
-      {
-      singularMatrix(row,col) = row+col;
-      }
-    if (Size > 1)
-      {
-      dax::exec::math::MatrixSetRow(singularMatrix,
-                                    0,
-                                    dax::exec::math::MatrixRow(singularMatrix,
-                                                               (Size+1)/2));
-      }
+    SingularMatrix(singularMatrix);
     dax::exec::math::SolveLinearSystem(singularMatrix, b, valid);
     DAX_TEST_ASSERT(!valid, "Expected matrix to be declared singular.");
   }
@@ -421,18 +483,31 @@ struct SquareMatrixTest {
 
     // Check that a singular matrix is identified.
     MatrixType singularMatrix;
-    FOR_ROW_COL(singularMatrix)
-      {
-      singularMatrix(row,col) = row+col;
-      }
-    if (Size > 1)
-      {
-      dax::exec::math::MatrixSetRow(singularMatrix,
-                                    0,
-                                    dax::exec::math::MatrixRow(singularMatrix,
-                                                               (Size+1)/2));
-      }
+    SingularMatrix(singularMatrix);
     dax::exec::math::MatrixInverse(singularMatrix, valid);
+    DAX_TEST_ASSERT(!valid, "Expected matrix to be declared singular.");
+  }
+
+  static void Determinant()
+  {
+    std::cout << "Compute a determinant." << std::endl;
+
+    MatrixType A;
+    NonSingularMatrix(A);
+
+    dax::Scalar determinant = dax::exec::math::MatrixDeterminant(A);
+
+    // Check result.
+    dax::Scalar determinantCheck = RecursiveDeterminant(A);
+    DAX_TEST_ASSERT(test_equal(determinant, determinantCheck),
+                    "Determinant computations do not agree.");
+
+    // Check that a singular matrix has a zero determinant.
+    MatrixType singularMatrix;
+    SingularMatrix(singularMatrix);
+    determinant = dax::exec::math::MatrixDeterminant(singularMatrix);
+    DAX_TEST_ASSERT(test_equal(determinant, dax::Scalar(0.0)),
+                    "Non-zero determinant for singular matrix.");
   }
 
   static void Run()
@@ -442,6 +517,7 @@ struct SquareMatrixTest {
     LUPFactor();
     SolveLinearSystem();
     Invert();
+    Determinant();
   }
 
 private:

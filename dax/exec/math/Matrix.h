@@ -231,6 +231,7 @@ DAX_EXEC_EXPORT
 void MatrixLUPFactorFindPivot(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
                               dax::Tuple<int,Size> &permutation,
                               int topCornerIndex,
+                              dax::Scalar &inversionParity,
                               bool &valid)
 {
   int maxRowIndex = topCornerIndex;
@@ -262,6 +263,9 @@ void MatrixLUPFactorFindPivot(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
     int maxOriginalRowIndex = permutation[maxRowIndex];
     permutation[maxRowIndex] = permutation[topCornerIndex];
     permutation[topCornerIndex] = maxOriginalRowIndex;
+
+    // Keep track of inversion parity.
+    inversionParity = -inversionParity;
     }
 }
 
@@ -307,7 +311,13 @@ void MatrixLUPFactorFindUpperTriangleElements(
 /// permutation[i] = j then row j in the original matrix A has been moved to
 /// row i in the resulting matrices. The permutation matrix P can be
 /// represented by a matrix with p_i,j = 1 if permutation[i] = j and 0
-/// otherwise.
+/// otherwise. If using LUP-factorization to compute a determinant, you also
+/// need to know the parity (whether there is an odd or even amount) of
+/// inversions. An inversion is an instance of a smaller number appearing after
+/// a larger number in permutation. Although you can compute the inversion
+/// parity after the fact, this function keeps track of it with much less
+/// compute resources. The parameter inversionParity is set to 1.0 for even
+/// parity and -1.0 for odd parity.
 ///
 /// Not all matrices (specifically singular matrices) have an
 /// LUP-factorization. If the LUP-factorization succeeds, valid is set to true.
@@ -317,15 +327,17 @@ template<int Size>
 DAX_EXEC_EXPORT
 void MatrixLUPFactor(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
                      dax::Tuple<int,Size> &permutation,
+                     dax::Scalar &inversionParity,
                      bool &valid)
 {
   // Initialize permutation.
   for (int index = 0; index < Size; index++) { permutation[index] = index; }
+  inversionParity = 1;
   valid = true;
 
   for (int rowIndex = 0; rowIndex < Size; rowIndex++)
     {
-    MatrixLUPFactorFindPivot(A, permutation, rowIndex, valid);
+    MatrixLUPFactorFindPivot(A, permutation, rowIndex, inversionParity, valid);
     MatrixLUPFactorFindUpperTriangleElements(A, rowIndex);
     }
 }
@@ -387,7 +399,11 @@ dax::Tuple<dax::Scalar,Size> SolveLinearSystem(
   // First, we will make an LUP-factorization to help us.
   dax::exec::math::Matrix<dax::Scalar,Size,Size> LU = A;
   dax::Tuple<int,Size> permutation;
-  dax::exec::math::detail::MatrixLUPFactor(LU, permutation, valid);
+  dax::Scalar inversionParity;  // Unused.
+  dax::exec::math::detail::MatrixLUPFactor(LU,
+                                           permutation,
+                                           inversionParity,
+                                           valid);
 
   // Next, use the decomposition to solve the system.
   dax::Tuple<dax::Scalar,Size> x;
@@ -407,7 +423,11 @@ dax::exec::math::Matrix<dax::Scalar,Size,Size> MatrixInverse(
   // First, we will make an LUP-factorization to help us.
   dax::exec::math::Matrix<dax::Scalar,Size,Size> LU = A;
   dax::Tuple<int,Size> permutation;
-  dax::exec::math::detail::MatrixLUPFactor(LU, permutation, valid);
+  dax::Scalar inversionParity;  // Unused
+  dax::exec::math::detail::MatrixLUPFactor(LU,
+                                           permutation,
+                                           inversionParity,
+                                           valid);
 
   // We will use the decomposition to solve AX = I for X where X is
   // clearly the inverse of A.  Our solve method only works for vectors,
@@ -423,6 +443,67 @@ dax::exec::math::Matrix<dax::Scalar,Size,Size> MatrixInverse(
     dax::exec::math::MatrixSetColumn(invA, colIndex, invACol);
     }
   return invA;
+}
+
+/// Compute the determinant of a matrix.
+///
+template<int Size>
+DAX_EXEC_EXPORT
+dax::Scalar MatrixDeterminant(
+    const dax::exec::math::Matrix<dax::Scalar,Size,Size> &A)
+{
+  // First, we will make an LUP-factorization to help us.
+  dax::exec::math::Matrix<dax::Scalar,Size,Size> LU = A;
+  dax::Tuple<int,Size> permutation;
+  dax::Scalar inversionParity;
+  bool valid;
+  dax::exec::math::detail::MatrixLUPFactor(LU,
+                                           permutation,
+                                           inversionParity,
+                                           valid);
+
+  // If the matrix is singular, the factorization is invalid, but in that
+  // case we know that the determinant is 0.
+  if (!valid) { return 0; }
+
+  // The determinant is equal to the product of the diagonal of the L matrix,
+  // possibly negated depending on the parity of the inversion. The
+  // inversionParity variable is set to 1.0 and -1.0 for even and odd parity,
+  // respectively. This sign determines whether the product should be negated.
+  dax::Scalar product = inversionParity;
+  for (int index = 0; index < Size; index++)
+    {
+    product *= LU(index,index);
+    }
+  return product;
+}
+
+// Specializations for common small determinants.
+
+template<>
+DAX_EXEC_EXPORT
+dax::Scalar MatrixDeterminant<1>(
+    const dax::exec::math::Matrix<dax::Scalar,1,1> &A)
+{
+  return A(0,0);
+}
+
+template<>
+DAX_EXEC_EXPORT
+dax::Scalar MatrixDeterminant<2>(
+    const dax::exec::math::Matrix<dax::Scalar,2,2> &A)
+{
+  return A(0,0)*A(1,1) - A(1,0)*A(0,1);
+}
+
+template<>
+DAX_EXEC_EXPORT
+dax::Scalar MatrixDeterminant<3>(
+    const dax::exec::math::Matrix<dax::Scalar,3,3> &A)
+{
+  return A(0,0) * A(1,1) * A(2,2) + A(1,0) * A(2,1) * A(0,2) +
+         A(2,0) * A(0,1) * A(1,2) - A(0,0) * A(2,1) * A(1,2) -
+         A(1,0) * A(0,1) * A(2,2) - A(2,0) * A(1,1) * A(0,2);
 }
 
 }
