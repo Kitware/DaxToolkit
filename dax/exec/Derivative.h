@@ -161,7 +161,8 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
   dax::Vector3 len1, len2;
   {
     const dax::Tuple<dax::Vector3,NUM_POINTS> x = work.GetFieldValues(fcoords);
-    const dax::Vector3 crossResult = dax::normal(x[0],x[1],x[2]);
+    const dax::Vector3 crossResult =
+        dax::exec::math::TriangleNormal(x[0],x[1],x[2]);
     len1 = x[1] - x[0];
     len2 = x[2] - x[0];
     invertedJacobain = dax::exec::detail::make_InvertedJacobian(len1,len2,

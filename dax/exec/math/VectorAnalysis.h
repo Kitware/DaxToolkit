@@ -169,6 +169,20 @@ DAX_EXEC_EXPORT dax::Vector3 Cross(const dax::Vector3 &x, const dax::Vector3 &y)
                            x[0]*y[1] - x[1]*y[0]);
 }
 
+//-----------------------------------------------------------------------------
+/// \brief Find the normal of a triangle.
+///
+/// Given three coordinates in space, which, unless degenerate, uniquely define
+/// a triangle and the plane the triangle is on, returns a vector perpendicular
+/// to that triangle/plane.
+///
+DAX_EXEC_EXPORT dax::Vector3 TriangleNormal(const dax::Vector3 &a,
+                                            const dax::Vector3 &b,
+                                            const dax::Vector3 &c)
+{
+  return dax::exec::math::Cross(b-a, c-a);
+}
+
 }
 }
 } // namespace dax::exec::math
