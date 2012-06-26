@@ -562,22 +562,4 @@ DAX_EXEC_CONT_EXPORT dax::Vector4 operator*(const dax::Vector4 &a,
 {
   return dax::make_Vector4(a[0]*b, a[1]*b, a[2]*b, a[3]*b);
 }
-
-namespace dax
-{
-DAX_EXEC_CONT_EXPORT dax::Vector3 cross(const dax::Vector3 &a,
-                                        const dax::Vector3 &b)
-{
-  return dax::make_Vector3 (a[1]*b[2] - a[2]*b[1],
-                            a[2]*b[0] - a[0]*b[2],
-                            a[0]*b[1] - a[1]*b[0]);
-}
-
-DAX_EXEC_CONT_EXPORT dax::Vector3 normal(const dax::Vector3 &a,
-                                         const dax::Vector3 &b,
-                                         const dax::Vector3 &c)
-{
-  return dax::cross ( c-b, a-b );
-}
-}
 #endif

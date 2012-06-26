@@ -122,6 +122,12 @@ void TestCross(const dax::Vector3 &x, const dax::Vector3 &y)
   DAX_TEST_ASSERT(test_equal(sinAngle*sinAngle+cosAngle*cosAngle,
                              dax::Scalar(1.0)),
                   "Bad cross product length.");
+
+  // Test finding the normal to a triangle (similar to cross product).
+  dax::Vector3 normal =
+      dax::exec::math::TriangleNormal(x, y, dax::make_Vector3(0, 0, 0));
+  DAX_TEST_ASSERT(test_equal(dax::dot(normal, x-y), dax::Scalar(0.0)),
+                  "Triangle normal is not really normal.");
 }
 
 const dax::Id MAX_VECTOR_SIZE = 4;
