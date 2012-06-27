@@ -27,6 +27,64 @@ namespace dax {
 namespace exec {
 
 //-----------------------------------------------------------------------------
+/// Defines the parametric coordinates for special locations in cells.
+///
+template<class CellType>
+struct ParametricCoordinates
+#ifdef DAX_DOXYGEN_ONLY
+{
+  /// The location of parametric center.
+  ///
+  static dax::Vector3 Center();
+
+  /// The location of each vertex.
+  ///
+  static dax::Tuple<dax::Vector3, CellType::NUM_POINTS> Vertex();
+};
+#else //DAX_DOXYGEN_ONLY
+    ;
+#endif
+
+template<>
+struct ParametricCoordinates<dax::exec::CellHexahedron>
+{
+  static dax::Vector3 Center() { return dax::make_Vector3(0.5, 0.5, 0.5); }
+  static dax::Tuple<dax::Vector3, 8> Vertex() {
+    const dax::Vector3 cellVertexToParametricCoords[8] = {
+      dax::make_Vector3(0, 0, 0),
+      dax::make_Vector3(1, 0, 0),
+      dax::make_Vector3(1, 1, 0),
+      dax::make_Vector3(0, 1, 0),
+      dax::make_Vector3(0, 0, 1),
+      dax::make_Vector3(1, 0, 1),
+      dax::make_Vector3(1, 1, 1),
+      dax::make_Vector3(0, 1, 1)
+    };
+    return dax::Tuple<dax::Vector3, 8>(cellVertexToParametricCoords);
+  }
+};
+
+template<>
+struct ParametricCoordinates<dax::exec::CellVoxel>
+    : public ParametricCoordinates<dax::exec::CellHexahedron> {  };
+
+template<>
+struct ParametricCoordinates<dax::exec::CellTriangle>
+{
+  static dax::Vector3 Center() {
+    return dax::make_Vector3(1.0/3.0, 1.0/3.0, 0.0);
+  }
+  static dax::Tuple<dax::Vector3, 3> Vertex() {
+    const dax::Vector3 cellVertexToParametricCoords[3] = {
+      dax::make_Vector3(0, 0, 0),
+      dax::make_Vector3(1, 0, 0),
+      dax::make_Vector3(0, 1, 0)
+    };
+    return dax::Tuple<dax::Vector3, 3>(cellVertexToParametricCoords);
+  }
+};
+
+//-----------------------------------------------------------------------------
 template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 parametricCoordinatesToWorldCoordinates(
   const WorkType &work,

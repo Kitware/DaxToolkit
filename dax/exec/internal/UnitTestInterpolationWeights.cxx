@@ -16,34 +16,30 @@
 
 #include <dax/exec/internal/InterpolationWeights.h>
 
+#include <dax/exec/ParametricCoordinates.h>
+
 #include <dax/internal/Testing.h>
 
 namespace {
 
-static void TestInterpolationWeightsVoxel()
+template<class CellType>
+void CheckVertexWeights(
+    )
 {
-  std::cout << "In TestInterpolationWeightsVoxel" << std::endl;
+  std::cout << "  Checking weights of vertices." << std::endl;
 
-  const dax::Vector3 cellVertexToParametricCoords[8] = {
-    dax::make_Vector3(0, 0, 0),
-    dax::make_Vector3(1, 0, 0),
-    dax::make_Vector3(1, 1, 0),
-    dax::make_Vector3(0, 1, 0),
-    dax::make_Vector3(0, 0, 1),
-    dax::make_Vector3(1, 0, 1),
-    dax::make_Vector3(1, 1, 1),
-    dax::make_Vector3(0, 1, 1)
-  };
+  const dax::Id NUM_POINTS = CellType::NUM_POINTS;
+  dax::Tuple<dax::Vector3,NUM_POINTS> vertexParametricCoords =
+      dax::exec::ParametricCoordinates<CellType>::Vertex();
 
-  // Check interpolation at each corner.
-  for (dax::Id vertexIndex = 0; vertexIndex < 8; vertexIndex++)
+  for (dax::Id vertexIndex = 0; vertexIndex < NUM_POINTS; vertexIndex++)
     {
-    dax::Vector3 pcoords = cellVertexToParametricCoords[vertexIndex];
+    dax::Vector3 pcoords = vertexParametricCoords[vertexIndex];
 
-    dax::Scalar weights[8];
-    dax::exec::internal::interpolationWeightsVoxel(pcoords, weights);
+    dax::Tuple<dax::Scalar, NUM_POINTS> weights =
+        dax::exec::internal::InterpolationWeights<CellType>(pcoords);
 
-    for (dax::Id weightIndex = 0; weightIndex < 8; weightIndex++)
+    for (dax::Id weightIndex = 0; weightIndex < NUM_POINTS; weightIndex++)
       {
       if (weightIndex == vertexIndex)
         {
@@ -57,21 +53,68 @@ static void TestInterpolationWeightsVoxel()
         }
       }
     }
+}
 
-  // Check for interpolation at middle.
-  dax::Scalar weights[8];
-  dax::exec::internal::interpolationWeightsVoxel(dax::make_Vector3(0.5,0.5,0.5),
-                                                 weights);
-  for (dax::Id weightIndex = 0; weightIndex < 8; weightIndex++)
+template<class CellType>
+void CheckCenterWeight()
+{
+  std::cout << "Checking weight at center." << std::endl;
+
+  const dax::Id NUM_POINTS = CellType::NUM_POINTS;
+
+  dax::Tuple<dax::Scalar, NUM_POINTS> weights =
+      dax::exec::internal::InterpolationWeights<CellType>(
+        dax::exec::ParametricCoordinates<CellType>::Center());
+
+  for (dax::Id weightIndex = 0; weightIndex < NUM_POINTS; weightIndex++)
     {
-    DAX_TEST_ASSERT(weights[weightIndex] == 0.125,
+    DAX_TEST_ASSERT(test_equal(weights[weightIndex],
+                               dax::Scalar(1.0/NUM_POINTS)),
                     "Got bad interpolation weight");
     }
+}
+
+//-----------------------------------------------------------------------------
+void TestInterpolationWeightsVoxel()
+{
+  std::cout << "In TestInterpolationWeightsVoxel" << std::endl;
+
+  typedef dax::exec::CellVoxel CellType;
+
+  CheckVertexWeights<CellType>();
+
+  CheckCenterWeight<CellType>();
+}
+
+//-----------------------------------------------------------------------------
+void TestInterpolationWeightsHexahedron()
+{
+  std::cout << "In TestInterpolationWeightsHexahedron" << std::endl;
+
+  typedef dax::exec::CellHexahedron CellType;
+
+  CheckVertexWeights<CellType>();
+
+  CheckCenterWeight<CellType>();
+}
+
+//-----------------------------------------------------------------------------
+void TestInterpolationWeightsTriangle()
+{
+  std::cout << "In TestInterpolationWeightsTriangle" << std::endl;
+
+  typedef dax::exec::CellTriangle CellType;
+
+  CheckVertexWeights<CellType>();
+
+  CheckCenterWeight<CellType>();
 }
 
 void TestInterpolationWeights()
 {
   TestInterpolationWeightsVoxel();
+  TestInterpolationWeightsHexahedron();
+  TestInterpolationWeightsTriangle();
 }
 
 }
