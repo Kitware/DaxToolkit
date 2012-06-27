@@ -66,6 +66,32 @@ CreatePointField(const TopologyGenType &topology,
                                                                    fieldArray);
 }
 
+template<class CellType>
+void TestGradientResult(
+    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &,
+    const dax::Vector3 computedDerivative,
+    const LinearField &fieldValues)
+{
+  DAX_TEST_ASSERT(test_equal(computedDerivative, fieldValues.Gradient),
+                  "Bad derivative");
+}
+
+template<>
+void TestGradientResult<dax::exec::CellTriangle>(
+    const dax::Tuple<dax::Vector3, dax::exec::CellTriangle::NUM_POINTS>
+        &pointCoordinates,
+    const dax::Vector3 computedDerivative,
+    const LinearField &fieldValues)
+{
+  dax::Vector3 normal = dax::exec::math::TriangleNormal(
+        pointCoordinates[0], pointCoordinates[1], pointCoordinates[2]);
+  dax::exec::math::Normalize(normal);
+  dax::Vector3 expectedGradient =
+      fieldValues.Gradient - dax::dot(fieldValues.Gradient,normal)*normal;
+  DAX_TEST_ASSERT(test_equal(computedDerivative, expectedGradient),
+                  "Bad derivative");
+}
+
 template<class CellType, class ExecutionAdapter>
 void TestDerivativeCell(
     const dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
@@ -88,8 +114,9 @@ void TestDerivativeCell(
                                         pcoords,
                                         coordField,
                                         scalarField);
-        DAX_TEST_ASSERT(computedDerivative == fieldValues.Gradient,
-                        "Bad derivative");
+        TestGradientResult<CellType>(work.GetFieldValues(coordField),
+                                     computedDerivative,
+                                     fieldValues);
         }
       }
     }
