@@ -190,8 +190,8 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
     pcoords = pcoords - deltaPCoords;
 
     if ((dax::exec::math::Abs(deltaPCoords[0]) < CONVERGE_DIFFERENCE)
-        || (dax::exec::math::Abs(deltaPCoords[1]) < CONVERGE_DIFFERENCE)
-        || (dax::exec::math::Abs(deltaPCoords[2]) < CONVERGE_DIFFERENCE))
+        && (dax::exec::math::Abs(deltaPCoords[1]) < CONVERGE_DIFFERENCE)
+        && (dax::exec::math::Abs(deltaPCoords[2]) < CONVERGE_DIFFERENCE))
       {
       converged = true;
       }
