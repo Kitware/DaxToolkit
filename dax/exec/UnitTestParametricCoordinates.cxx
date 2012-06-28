@@ -88,11 +88,48 @@ void TestPCoordsSpecial(
 }
 
 template<class CellType, class ExecutionAdapter>
+void TestPCoordsSample(
+    const dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
+    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField)
+{
+  CellType cell = work.GetCell();
+
+  dax::Vector3 pcoords;
+  for (pcoords[2] = 0.0;
+       pcoords[2] <= ((CellType::TOPOLOGICAL_DIMENSIONS > 2) ? 1.0 : 0.0);
+       pcoords[2] += 0.25)
+    {
+    for (pcoords[1] = 0.0; pcoords[1] <= 1.0; pcoords[1] += 0.25)
+      {
+      for (pcoords[0] = 0.0; pcoords[0] <= 1.0; pcoords[0] += 0.25)
+        {
+        // If you convert to world coordinates and back, you should get the
+        // same value.
+        dax::Vector3 wcoords =
+            dax::exec::ParametricCoordinatesToWorldCoordinates(work,
+                                                               cell,
+                                                               coordField,
+                                                               pcoords);
+        dax::Vector3 computedPCoords =
+            dax::exec::WorldCoordinatesToParametricCoordinates(work,
+                                                               cell,
+                                                               coordField,
+                                                               wcoords);
+
+        DAX_TEST_ASSERT(test_equal(pcoords, computedPCoords, 0.01),
+                        "pcoord/wcoord transform not symmetrical");
+        }
+      }
+    }
+}
+
+template<class CellType, class ExecutionAdapter>
 static void TestPCoords(
   const dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
   const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField)
 {
   TestPCoordsSpecial(work, coordField);
+  TestPCoordsSample(work, coordField);
 }
 
 struct TestPCoordsFunctor
