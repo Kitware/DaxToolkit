@@ -25,6 +25,7 @@
 
 #include <dax/exec/math/Matrix.h>
 #include <dax/exec/math/Sign.h>
+#include <dax/exec/math/VectorAnalysis.h>
 
 #include <dax/exec/internal/FieldAccess.h>
 
@@ -204,12 +205,90 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   const WorkType &work,
-  const dax::exec::CellTriangle &cell,
+  const dax::exec::CellTriangle &,
   const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
   const dax::Vector3 wcoords)
 {
-  // Not implemented yet.
-  return dax::make_Vector3(-1,-1,-1);
+  // We will solve the world to parametric coordinates problem geometrically.
+  // Consider the parallelogram formed by wcoords and p0 of the triangle and
+  // the two adjacent edges. This parallelogram is equivalent to the
+  // axis-aligned rectangle centered at the origin of parametric space.
+  //
+  //   p2 |\                 (1,0) |\                                        //
+  //      | \                      |  \                                      //
+  //      |  \                     |    \                                    //
+  //     |    \                    |      \                                  //
+  //     |     \                   |        \                                //
+  //     |      \                  |    (u,v) \                              //
+  //    | ---    \                 |-------*    \                            //
+  //    |    ---*wcoords           |       |      \                          //
+  //    |       |  \               |       |        \                        //
+  // p0 *---    |   \        (0,0) *------------------\ (1,0)                //
+  //        ---|     \                                                       //
+  //           x--    \                                                      //
+  //              ---  \                                                     //
+  //                 ---\ p1                                                 //
+  //
+  // In this diagram, the distance between p0 and the point marked x divided by
+  // the length of the edge it is on is equal, by proportionality, to the u
+  // parametric coordiante. (The v coordinate follows the other edge
+  // accordingly.) Thus, if we can find the interesection at x (or more
+  // specifically the distance between p0 and x), then we can find that
+  // parametric coordinate.
+  //
+  // Because the triangle is in 3-space, we are actually going to intersect the
+  // edge with a plane that is parallel to the opposite edge of p0 and
+  // perpendicular to the triangle. This is partially because it is easy to
+  // find the intersection between a plane and a line and partially because the
+  // computation will work for points not on the plane. (The result is
+  // equivalent to a point projected on the plane.)
+  //
+  // First, we define an implicit plane as:
+  //
+  // dot((p - wcoords), planeNormal) = 0
+  //
+  // where planeNormal is the normal to the plane (easily computed from the
+  // triangle), and p is any point in the plane. Next, we define the parametric
+  // form of the line:
+  //
+  // p(d) = (p1 - p0)d + p0
+  //
+  // Where d is the fraction of distance from p0 toward p1. Note that d is
+  // actually equal to the parametric coordinate we are trying to find. Once we
+  // compute it, we are done. We can skip the part about finding the actual
+  // coordinates of the intersection.
+  //
+  // Solving for the interesection is as simple as substituting the line's
+  // definition of p(d) into p for the plane equation. With some basic algebra
+  // you get:
+  //
+  // d = dot((wcoords - p0), planeNormal)/dot((p1-p0), planeNormal)
+  //
+  // From here, the u coordiante is simply d/mag(p1-p0).  The v coordinate
+  // follows similarly.
+  //
+
+  dax::Vector3 pcoords(dax::Scalar(0));
+  dax::Tuple<dax::Vector3, 3> vertexCoords = work.GetFieldValues(coordField);
+  dax::Vector3 triangleNormal =
+      dax::exec::math::TriangleNormal(vertexCoords[0],
+                                      vertexCoords[1],
+                                      vertexCoords[2]);
+
+  for (int dimension = 0; dimension < 2; dimension++)
+    {
+    const dax::Vector3 &p0 = vertexCoords[0];
+    const dax::Vector3 &p1 = vertexCoords[dimension+1];
+    const dax::Vector3 &p2 = vertexCoords[2-dimension];
+    dax::Vector3 planeNormal = dax::exec::math::Cross(triangleNormal, p2-p0);
+
+    dax::Scalar d =
+        dax::dot(wcoords - p0, planeNormal)/dax::dot(p1 - p0, planeNormal);
+
+    pcoords[dimension] = d;
+    }
+
+  return pcoords;
 }
 
 }
