@@ -86,7 +86,7 @@ struct ParametricCoordinates<dax::exec::CellTriangle>
 
 //-----------------------------------------------------------------------------
 template<class WorkType, class ExecutionAdapter>
-DAX_EXEC_EXPORT dax::Vector3 parametricCoordinatesToWorldCoordinates(
+DAX_EXEC_EXPORT dax::Vector3 ParametricCoordinatesToWorldCoordinates(
   const WorkType &work,
   const dax::exec::CellVoxel &cell,
   const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
@@ -105,7 +105,7 @@ DAX_EXEC_EXPORT dax::Vector3 parametricCoordinatesToWorldCoordinates(
 }
 
 template<class WorkType, class ExecutionAdapter>
-DAX_EXEC_EXPORT dax::Vector3 worldCoordinatesToParametricCoordinates(
+DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   const WorkType &work,
   const dax::exec::CellVoxel &cell,
   const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
@@ -121,6 +121,52 @@ DAX_EXEC_EXPORT dax::Vector3 worldCoordinatesToParametricCoordinates(
 
   dax::Vector3 spacing = cell.GetSpacing();
   return cellOffset / spacing;
+}
+
+//-----------------------------------------------------------------------------
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 ParametricCoordinatesToWorldCoordinates(
+  const WorkType &work,
+  const dax::exec::CellHexahedron &cell,
+  const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
+  const dax::Vector3 pcoords)
+{
+  // Not implemented yet.
+  return dax::make_Vector3(-1,-1,-1);
+}
+
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
+  const WorkType &work,
+  const dax::exec::CellHexahedron &cell,
+  const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
+  const dax::Vector3 wcoords)
+{
+  // Not implemented yet.
+  return dax::make_Vector3(-1,-1,-1);
+}
+
+//-----------------------------------------------------------------------------
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 ParametricCoordinatesToWorldCoordinates(
+  const WorkType &work,
+  const dax::exec::CellTriangle &cell,
+  const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
+  const dax::Vector3 pcoords)
+{
+  // Not implemented yet.
+  return dax::make_Vector3(-1,-1,-1);
+}
+
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
+  const WorkType &work,
+  const dax::exec::CellTriangle &cell,
+  const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
+  const dax::Vector3 wcoords)
+{
+  // Not implemented yet.
+  return dax::make_Vector3(-1,-1,-1);
 }
 
 }

@@ -93,9 +93,6 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
     const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
     const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
 {
-  //for now we are considering that a cell hexahedron
-  //is actually a voxel in an unstructured grid.
-  //ToDo: use a proper derivative calculation.
   const dax::Id NUM_POINTS  = dax::exec::CellHexahedron::NUM_POINTS;
   typedef dax::Tuple<dax::Vector3,NUM_POINTS> DerivWeights;
 
