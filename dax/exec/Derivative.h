@@ -54,7 +54,8 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
 
 //-----------------------------------------------------------------------------
 namespace detail {
-dax::exec::math::Matrix<dax::Scalar,3,3> make_InvertedJacobianForHexahedron(
+DAX_EXEC_EXPORT
+dax::exec::math::Matrix<dax::Scalar,3,3> make_JacobianForHexahedron(
     const dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS>
     &derivativeWeights,
     const dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS>
@@ -80,8 +81,7 @@ dax::exec::math::Matrix<dax::Scalar,3,3> make_InvertedJacobianForHexahedron(
     jacobian(2,2) += pcoord[2] * dweight[2];
     }
 
-  bool valid;  // Ignored.
-  return dax::exec::math::MatrixInverse(jacobian, valid);
+  return jacobian;
 }
 }
 
@@ -101,17 +101,24 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
   dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS> allCoords =
       work.GetFieldValues(fcoords);
 
-  dax::exec::math::Matrix<dax::Scalar,3,3> inverseJacobian =
-      detail::make_InvertedJacobianForHexahedron(derivativeWeights, allCoords);
+  dax::exec::math::Matrix<dax::Scalar,3,3> jacobian =
+      detail::make_JacobianForHexahedron(derivativeWeights, allCoords);
 
+  // Find the derivative of the field in parametric coordinate space.
   dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
       work.GetFieldValues(point_scalar);
-  dax::Vector3 sum(dax::Scalar(0));
+  dax::Vector3 parametricDerivative(dax::Scalar(0));
   for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
     {
-    sum = sum + derivativeWeights[pointIndex] * fieldValues[pointIndex];
+    parametricDerivative =
+        parametricDerivative
+        + derivativeWeights[pointIndex] * fieldValues[pointIndex];
     }
-  return dax::exec::math::MatrixMultiply(inverseJacobian, sum);
+
+  bool valid;  // Ignored.
+  return dax::exec::math::SolveLinearSystem(jacobian,
+                                            parametricDerivative,
+                                            valid);
 }
 
 

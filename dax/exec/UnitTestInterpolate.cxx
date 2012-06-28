@@ -91,7 +91,7 @@ void TestInterpolateSpecial(
     dax::Vector3 pcoords =
         dax::exec::ParametricCoordinates<CellType>::Vertex()[vertexIndex];
     dax::Scalar interpolatedValue =
-        dax::exec::CellInterpolate(work, cell, pcoords, scalarField);
+        dax::exec::CellInterpolate(work, cell, scalarField, pcoords);
     dax::Scalar expectedValue = values[vertexIndex];
     DAX_TEST_ASSERT(test_equal(interpolatedValue, expectedValue),
                     "Interpolation wrong on vertex.");
@@ -101,8 +101,8 @@ void TestInterpolateSpecial(
       dax::exec::CellInterpolate(
         work,
         cell,
-        dax::exec::ParametricCoordinates<CellType>::Center(),
-        scalarField);
+        scalarField,
+        dax::exec::ParametricCoordinates<CellType>::Center());
   dax::Scalar expectedValue = dax::exec::VectorReduce(values, Add())/NUM_POINTS;
   DAX_TEST_ASSERT(test_equal(interpolatedValue, expectedValue),
                   "Interpolation wrong at center.");
@@ -125,10 +125,10 @@ void TestInterpolateSample(
       for (pcoords[0] = 0.0; pcoords[0] <= 1.0; pcoords[0] += 0.25)
         {
         dax::Scalar interpolatedValue
-            = dax::exec::CellInterpolate(work, cell, pcoords, scalarField);
+            = dax::exec::CellInterpolate(work, cell, scalarField, pcoords);
 
         dax::Vector3 wcoords
-            = dax::exec::CellInterpolate(work, cell, pcoords, coordField);
+            = dax::exec::CellInterpolate(work, cell, coordField, pcoords);
 
         dax::Scalar trueValue = fieldValues.GetValue(wcoords);
 

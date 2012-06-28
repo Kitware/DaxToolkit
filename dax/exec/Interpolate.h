@@ -28,8 +28,8 @@ template<class WorkType, class FieldType>
 DAX_EXEC_EXPORT typename FieldType::ValueType CellInterpolate(
     const WorkType &work,
     const typename WorkType::CellType &, // Should we get rid of the parameter?
-    const dax::Vector3 &pcoords,
-    const FieldType &point_field)
+    const FieldType &point_field,
+  const dax::Vector3 &pcoords)
 {
   typedef typename WorkType::CellType CellType;
   typedef typename FieldType::ValueType ValueType;

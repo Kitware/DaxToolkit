@@ -37,7 +37,7 @@ static void CompareCoordinates(
                                                            cell,
                                                            coordField,
                                                            truePCoords);
-  DAX_TEST_ASSERT(computedWCoords == trueWCoords,
+  DAX_TEST_ASSERT(test_equal(computedWCoords, trueWCoords),
                   "Computed wrong world coords from parametric coords.");
 
   dax::Vector3 computedPCoords
@@ -45,7 +45,7 @@ static void CompareCoordinates(
                                                            cell,
                                                            coordField,
                                                            trueWCoords);
-  DAX_TEST_ASSERT(computedPCoords == truePCoords,
+  DAX_TEST_ASSERT(test_equal(computedPCoords, truePCoords, 0.01),
                   "Computed wrong parametric coords from world coords.");
 }
 
