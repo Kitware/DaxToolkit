@@ -55,14 +55,14 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
 //-----------------------------------------------------------------------------
 namespace detail {
 DAX_EXEC_EXPORT
-dax::exec::math::Matrix<dax::Scalar,3,3> make_JacobianForHexahedron(
+dax::exec::math::Matrix3x3 make_JacobianForHexahedron(
     const dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS>
     &derivativeWeights,
     const dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS>
     &pointCoordinates)
 {
   const int NUM_POINTS = dax::exec::CellHexahedron::NUM_POINTS;
-  dax::exec::math::Matrix<dax::Scalar,3,3> jacobian(0);
+  dax::exec::math::Matrix3x3 jacobian(0);
   for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
     {
     const dax::Vector3 &dweight = derivativeWeights[pointIndex];
@@ -101,7 +101,7 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
   dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS> allCoords =
       work.GetFieldValues(fcoords);
 
-  dax::exec::math::Matrix<dax::Scalar,3,3> jacobian =
+  dax::exec::math::Matrix3x3 jacobian =
       detail::make_JacobianForHexahedron(derivativeWeights, allCoords);
 
   // Find the derivative of the field in parametric coordinate space.
@@ -162,7 +162,7 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
   dax::Vector3 v1 = p[2] - p[0];
   dax::Vector3 n = dax::exec::math::Cross(v0, v1);
 
-  dax::exec::math::Matrix<dax::Scalar,3,3> A;
+  dax::exec::math::Matrix3x3 A;
   dax::exec::math::MatrixSetRow(A, 0, v0);
   dax::exec::math::MatrixSetRow(A, 1, v1);
   dax::exec::math::MatrixSetRow(A, 2, n);

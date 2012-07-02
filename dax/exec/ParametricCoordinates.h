@@ -172,7 +172,7 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
     // The subtraction on the right side simply makes the target of the
     // solve at zero, which is what Newton's method solves for.
 
-    dax::exec::math::Matrix<dax::Scalar,3,3> jacobian
+    dax::exec::math::Matrix3x3 jacobian
         = dax::exec::detail::make_JacobianForHexahedron(
             dax::exec::internal::derivativeWeightsHexahedron(pcoords),
             vertexCoords);
