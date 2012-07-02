@@ -75,6 +75,42 @@ private:
   dax::Tuple<dax::Tuple<ComponentType, NUM_COLUMNS>, NUM_ROWS> Components;
 };
 
+/// A common square matrix.
+///
+class Matrix2x2 : public Matrix<dax::Scalar, 2, 2> {
+  typedef Matrix<dax::Scalar, 2, 2> Superclass;
+public:
+  DAX_EXEC_EXPORT Matrix2x2() {  }
+  DAX_EXEC_EXPORT explicit Matrix2x2(const dax::Scalar &value)
+    : Superclass(value) {  }
+  DAX_EXEC_EXPORT Matrix2x2(const Matrix<dax::Scalar, 2, 2> &values)
+    : Superclass(values) {  }
+};
+
+/// A common square matrix.
+///
+class Matrix3x3 : public Matrix<dax::Scalar, 3, 3> {
+  typedef Matrix<dax::Scalar, 3, 3> Superclass;
+public:
+  DAX_EXEC_EXPORT Matrix3x3() {  }
+  DAX_EXEC_EXPORT explicit Matrix3x3(const dax::Scalar &value)
+    : Superclass(value) {  }
+  DAX_EXEC_EXPORT Matrix3x3(const Matrix<dax::Scalar, 3, 3> &values)
+    : Superclass(values) {  }
+};
+
+/// A common square matrix.
+///
+class Matrix4x4 : public Matrix<dax::Scalar, 4, 4> {
+  typedef Matrix<dax::Scalar, 4, 4> Superclass;
+public:
+  DAX_EXEC_EXPORT Matrix4x4() {  }
+  DAX_EXEC_EXPORT explicit Matrix4x4(const dax::Scalar &value)
+    : Superclass(value) {  }
+  DAX_EXEC_EXPORT Matrix4x4(const Matrix<dax::Scalar, 4, 4> &values)
+    : Superclass(values) {  }
+};
+
 /// Returns a tuple containing the given row (indexed from 0) of the given
 /// matrix.
 ///
@@ -525,6 +561,22 @@ struct TypeTraits<dax::exec::math::Matrix<T, NumRow, NumCol> > {
   typedef TypeTraitsMatrixTag DimensionalityTag;
 };
 
+template<>
+struct TypeTraits<dax::exec::math::Matrix2x2> {
+  typedef TypeTraits<dax::Scalar>::NumericTag NumericTag;
+  typedef TypeTraitsMatrixTag DimensionalityTag;
+};
+template<>
+struct TypeTraits<dax::exec::math::Matrix3x3> {
+  typedef TypeTraits<dax::Scalar>::NumericTag NumericTag;
+  typedef TypeTraitsMatrixTag DimensionalityTag;
+};
+template<>
+struct TypeTraits<dax::exec::math::Matrix4x4> {
+  typedef TypeTraits<dax::Scalar>::NumericTag NumericTag;
+  typedef TypeTraitsMatrixTag DimensionalityTag;
+};
+
 /// A matrix has vector traits to implement component-wise operations.
 ///
 template<typename T, int NumRow, int NumCol>
@@ -554,6 +606,25 @@ public:
   {
     GetComponent(matrix, component) = value;
   }
+};
+
+template<>
+struct VectorTraits<dax::exec::math::Matrix2x2>
+    : public VectorTraits<dax::exec::math::Matrix<dax::Scalar,2,2> > {
+  typedef dax::Scalar ComponentType;
+  typedef dax::VectorTraitsTagMultipleComponents HasMultipleComponents;
+};
+template<>
+struct VectorTraits<dax::exec::math::Matrix3x3>
+    : public VectorTraits<dax::exec::math::Matrix<dax::Scalar,3,3> > {
+  typedef dax::Scalar ComponentType;
+  typedef dax::VectorTraitsTagMultipleComponents HasMultipleComponents;
+};
+template<>
+struct VectorTraits<dax::exec::math::Matrix4x4>
+    : public VectorTraits<dax::exec::math::Matrix<dax::Scalar,4,4> > {
+  typedef dax::Scalar ComponentType;
+  typedef dax::VectorTraitsTagMultipleComponents HasMultipleComponents;
 };
 
 } // namespace dax

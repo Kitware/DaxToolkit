@@ -354,10 +354,16 @@ dax::Scalar RecursiveDeterminant<1>(
   return A(0,0);
 }
 
-template<int Size>
+template<class MatrixType, int Size>
 struct SquareMatrixTest {
   static const int SIZE = Size;
-  typedef dax::exec::math::Matrix<dax::Scalar,SIZE,SIZE> MatrixType;
+
+  static void CheckMatrixSize()
+  {
+    std::cout << "Check reported matrix size." << std::endl;
+    DAX_TEST_ASSERT(MatrixType::NUM_ROWS == SIZE, "Matrix has wrong size.");
+    DAX_TEST_ASSERT(MatrixType::NUM_COLUMNS == SIZE, "Matrix has wrong size.");
+  }
 
   static void LUPFactor()
   {
@@ -514,6 +520,7 @@ struct SquareMatrixTest {
   {
     std::cout << "-- " << SIZE << " x " << SIZE << std::endl;
 
+    CheckMatrixSize();
     LUPFactor();
     SolveLinearSystem();
     Invert();
@@ -523,6 +530,18 @@ struct SquareMatrixTest {
 private:
   SquareMatrixTest();  // Not implemented
 };
+
+template<int Size>
+void RunSquareMatrixTest()
+{
+  SquareMatrixTest<dax::exec::math::Matrix<dax::Scalar,Size,Size>,Size>::Run();
+}
+
+template<class MatrixType, int Size>
+void RunKnownSquareMatrixTest()
+{
+  SquareMatrixTest<MatrixType, Size>::Run();
+}
 
 struct MatrixTestFunctor
 {
@@ -568,11 +587,16 @@ void TestMatrices()
         MatrixTestFunctor(), dax::internal::Testing::TypeCheckScalar());
 
   std::cout << "****** Square tests" << std::endl;
-  SquareMatrixTest<1>::Run();
-  SquareMatrixTest<2>::Run();
-  SquareMatrixTest<3>::Run();
-  SquareMatrixTest<4>::Run();
-  SquareMatrixTest<5>::Run();
+  RunSquareMatrixTest<1>();
+  RunSquareMatrixTest<2>();
+  RunSquareMatrixTest<3>();
+  RunSquareMatrixTest<4>();
+  RunSquareMatrixTest<5>();
+
+  std::cout << "***** Common square types" << std::endl;
+  RunKnownSquareMatrixTest<dax::exec::math::Matrix2x2,2>();
+  RunKnownSquareMatrixTest<dax::exec::math::Matrix3x3,3>();
+  RunKnownSquareMatrixTest<dax::exec::math::Matrix4x4,4>();
 
   std::cout << "***** Vector multiply tests" << std::endl;
   dax::internal::Testing::TryAllTypes(
