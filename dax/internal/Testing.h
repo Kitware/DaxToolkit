@@ -285,8 +285,15 @@ DAX_EXEC_CONT_EXPORT bool test_equal(VectorType vector1,
       continue;
       }
     dax::Scalar ratio = value1/value2;
-    if ((ratio < dax::Scalar(1.0) - tolerance)
-        || (ratio > dax::Scalar(1.0) + tolerance))
+    if ((ratio > dax::Scalar(1.0) - tolerance)
+        && (ratio < dax::Scalar(1.0) + tolerance))
+      {
+      // This component is OK. The condition is checked in this way to
+      // correctly handle non-finites that fail all comparisons. Thus, if a
+      // non-finite is encountered, this condition will fail and false will be
+      // returned.
+      }
+    else
       {
       return false;
       }

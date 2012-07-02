@@ -77,18 +77,21 @@ void TestVector(const VectorType& vector)
   DAX_TEST_ASSERT(test_equal(magnitude*magnitude, magnitudeSquared),
                   "Magnitude squared test failed.");
 
-  dax::Scalar rmagnitude = dax::exec::math::RMagnitude(vector);
-  DAX_TEST_ASSERT(test_equal(1/magnitude, rmagnitude),
-                  "Reciprical magnitude failed.");
+  if (magnitudeSquared > 0)
+    {
+    dax::Scalar rmagnitude = dax::exec::math::RMagnitude(vector);
+    DAX_TEST_ASSERT(test_equal(1/magnitude, rmagnitude),
+                    "Reciprical magnitude failed.");
 
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Normal(vector),
-                             internal::normal(vector)),
-                  "Normalized vector failed test.");
+    DAX_TEST_ASSERT(test_equal(dax::exec::math::Normal(vector),
+                               internal::normal(vector)),
+                    "Normalized vector failed test.");
 
-  VectorType normalizedVector=vector;
-  dax::exec::math::Normalize(normalizedVector);
-  DAX_TEST_ASSERT(test_equal(normalizedVector, internal::normal(vector)),
-                  "Inplace Normalized vector failed test.");
+    VectorType normalizedVector=vector;
+    dax::exec::math::Normalize(normalizedVector);
+    DAX_TEST_ASSERT(test_equal(normalizedVector, internal::normal(vector)),
+                    "Inplace Normalized vector failed test.");
+    }
 }
 
 void TestCross(const dax::Vector3 &x, const dax::Vector3 &y)
