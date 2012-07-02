@@ -54,6 +54,17 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
 
 //-----------------------------------------------------------------------------
 namespace detail {
+// This returns the Jacobian of a hexahedron's coordinates with respect to
+// parametric coordinates.  Explicitly, this is (d is partial derivative):
+//
+//   |                     |
+//   | dx/du  dx/dv  dx/dw |
+//   |                     |
+//   | dy/du  dy/dv  dy/dw |
+//   |                     |
+//   | dz/du  dz/dv  dz/dw |
+//   |                     |
+//
 DAX_EXEC_EXPORT
 dax::exec::math::Matrix3x3 make_JacobianForHexahedron(
     const dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS>
@@ -69,15 +80,15 @@ dax::exec::math::Matrix3x3 make_JacobianForHexahedron(
     const dax::Vector3 &pcoord = pointCoordinates[pointIndex];
 
     jacobian(0,0) += pcoord[0] * dweight[0];
-    jacobian(1,0) += pcoord[0] * dweight[1];
-    jacobian(2,0) += pcoord[0] * dweight[2];
+    jacobian(0,1) += pcoord[0] * dweight[1];
+    jacobian(0,2) += pcoord[0] * dweight[2];
 
-    jacobian(0,1) += pcoord[1] * dweight[0];
+    jacobian(1,0) += pcoord[1] * dweight[0];
     jacobian(1,1) += pcoord[1] * dweight[1];
-    jacobian(2,1) += pcoord[1] * dweight[2];
+    jacobian(1,2) += pcoord[1] * dweight[2];
 
-    jacobian(0,2) += pcoord[2] * dweight[0];
-    jacobian(1,2) += pcoord[2] * dweight[1];
+    jacobian(2,0) += pcoord[2] * dweight[0];
+    jacobian(2,1) += pcoord[2] * dweight[1];
     jacobian(2,2) += pcoord[2] * dweight[2];
     }
 
@@ -101,10 +112,14 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
   dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS> allCoords =
       work.GetFieldValues(fcoords);
 
-  dax::exec::math::Matrix3x3 jacobian =
-      detail::make_JacobianForHexahedron(derivativeWeights, allCoords);
+  // For reasons that should become apparent in a moment, we actually want
+  // the transpose of the Jacobian.
+  dax::exec::math::Matrix3x3 jacobianTranspose =
+      dax::exec::math::MatrixTranspose(
+        detail::make_JacobianForHexahedron(derivativeWeights, allCoords));
 
-  // Find the derivative of the field in parametric coordinate space.
+  // Find the derivative of the field in parametric coordinate space. That is,
+  // find the vector [ds/du, ds/dv, ds/dw].
   dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
       work.GetFieldValues(point_scalar);
   dax::Vector3 parametricDerivative(dax::Scalar(0));
@@ -115,8 +130,23 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
         + derivativeWeights[pointIndex] * fieldValues[pointIndex];
     }
 
+  // If we write out the matrices below, it should become clear that the
+  // Jacobian transpose times the field derivative in world space equals
+  // the field derivative in parametric space.
+  //
+  //   |                     |  |       |     |       |
+  //   | dx/du  dy/du  dz/du |  | ds/dx |     | ds/du |
+  //   |                     |  |       |     |       |
+  //   | dx/dv  dy/dv  dz/dv |  | ds/dy |  =  | ds/dv |
+  //   |                     |  |       |     |       |
+  //   | dx/dw  dy/dw  dz/dw |  | ds/dz |     | ds/dw |
+  //   |                     |  |       |     |       |
+  //
+  // Now we just need to solve this linear system to find the derivative in
+  // world space.
+
   bool valid;  // Ignored.
-  return dax::exec::math::SolveLinearSystem(jacobian,
+  return dax::exec::math::SolveLinearSystem(jacobianTranspose,
                                             parametricDerivative,
                                             valid);
 }
