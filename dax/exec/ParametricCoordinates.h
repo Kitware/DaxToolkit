@@ -76,6 +76,23 @@ struct ParametricCoordinates<dax::exec::CellVoxel>
     : public ParametricCoordinates<dax::exec::CellHexahedron> {  };
 
 template<>
+struct ParametricCoordinates<dax::exec::CellTetrahedron>
+{
+  static dax::Vector3 Center() {
+    return dax::make_Vector3(0.25, 0.25, 0.25);
+  }
+  static dax::Tuple<dax::Vector3, 4> Vertex() {
+    const dax::Vector3 cellToParametricCoords[4] = {
+      dax::make_Vector3(0, 0, 0),
+      dax::make_Vector3(1, 0, 0),
+      dax::make_Vector3(0, 1, 0),
+      dax::make_Vector3(0, 0, 1)
+    };
+    return dax::Tuple<dax::Vector3, 4>(cellToParametricCoords);
+  }
+};
+
+template<>
 struct ParametricCoordinates<dax::exec::CellTriangle>
 {
   static dax::Vector3 Center() {
@@ -205,6 +222,56 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 //-----------------------------------------------------------------------------
 template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
+    const WorkType &work,
+    const dax::exec::CellTetrahedron &,
+    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
+    const dax::Vector3 wcoords)
+{
+  // We solve the world to parametric coordinates problem for tetrahedra
+  // similarly to that for triangles. Before understanding this code, you
+  // should understand the triangle code. Go ahead. Read it now.
+  //
+  // The tetrahedron code is an obvious extension of the triangle code by
+  // considering the parallelpiped formed by wcoords and p0 of the triangle
+  // and the three adjacent faces.  This parallelpiped is equivalent to the
+  // axis-aligned cuboid anchored at the origin of parametric space.
+  //
+  // Just like the triangle, we compute the parametric coordinate for each axis
+  // by intersecting a plane with each edge emanating from p0. The plane is
+  // defined by the one that goes through wcoords (duh) and is parallel to the
+  // plane formed by the other two edges emanating from p0 (as dictated by the
+  // aforementioned parallelpiped).
+  //
+  // In review, by parameterizing the line by fraction of distance the distance
+  // from p0 to the adjacent point (which is itself the parametric coordinate
+  // we are after), we get the following definition for the intersection.
+  //
+  // d = dot((wcoords - p0), planeNormal)/dot((p1-p0), planeNormal)
+  //
+
+  dax::Vector3 pcoords(dax::Scalar(0));
+  dax::Tuple<dax::Vector3, 4> vertexCoords = work.GetFieldValues(coordField);
+
+  const dax::Vector3 vec0 = vertexCoords[1] - vertexCoords[0];
+  const dax::Vector3 vec1 = vertexCoords[2] - vertexCoords[0];
+  const dax::Vector3 vec2 = vertexCoords[3] - vertexCoords[0];
+  const dax::Vector3 coordVec = wcoords - vertexCoords[0];
+
+  dax::Vector3 planeNormal = dax::exec::math::Cross(vec1, vec2);
+  pcoords[0] = dax::dot(coordVec, planeNormal)/dax::dot(vec0, planeNormal);
+
+  planeNormal = dax::exec::math::Cross(vec0, vec2);
+  pcoords[1] = dax::dot(coordVec, planeNormal)/dax::dot(vec1, planeNormal);
+
+  planeNormal = dax::exec::math::Cross(vec0, vec1);
+  pcoords[2] = dax::dot(coordVec, planeNormal)/dax::dot(vec2, planeNormal);
+
+  return pcoords;
+}
+
+//-----------------------------------------------------------------------------
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   const WorkType &work,
   const dax::exec::CellTriangle &,
   const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
@@ -213,7 +280,7 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   // We will solve the world to parametric coordinates problem geometrically.
   // Consider the parallelogram formed by wcoords and p0 of the triangle and
   // the two adjacent edges. This parallelogram is equivalent to the
-  // axis-aligned rectangle centered at the origin of parametric space.
+  // axis-aligned rectangle anchored at the origin of parametric space.
   //
   //   p2 |\                 (1,0) |\                                        //
   //      | \                      |  \                                      //
@@ -265,8 +332,8 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   //
   // d = dot((wcoords - p0), planeNormal)/dot((p1-p0), planeNormal)
   //
-  // From here, the u coordiante is simply d/mag(p1-p0).  The v coordinate
-  // follows similarly.
+  // From here, the u coordiante is simply d. The v coordinate follows
+  // similarly.
   //
 
   dax::Vector3 pcoords(dax::Scalar(0));

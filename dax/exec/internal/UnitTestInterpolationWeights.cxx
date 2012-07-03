@@ -58,7 +58,7 @@ void CheckVertexWeights(
 template<class CellType>
 void CheckCenterWeight()
 {
-  std::cout << "Checking weight at center." << std::endl;
+  std::cout << "  Checking weight at center." << std::endl;
 
   const dax::Id NUM_POINTS = CellType::NUM_POINTS;
 
@@ -99,6 +99,18 @@ void TestInterpolationWeightsHexahedron()
 }
 
 //-----------------------------------------------------------------------------
+void TestInterpolationWeightsTetrahedron()
+{
+  std::cout << "In TestInterpolationWeightsTetrahedron" << std::endl;
+
+  typedef dax::exec::CellTetrahedron CellType;
+
+  CheckVertexWeights<CellType>();
+
+  CheckCenterWeight<CellType>();
+}
+
+//-----------------------------------------------------------------------------
 void TestInterpolationWeightsTriangle()
 {
   std::cout << "In TestInterpolationWeightsTriangle" << std::endl;
@@ -114,6 +126,7 @@ void TestInterpolationWeights()
 {
   TestInterpolationWeightsVoxel();
   TestInterpolationWeightsHexahedron();
+  TestInterpolationWeightsTetrahedron();
   TestInterpolationWeightsTriangle();
 }
 
