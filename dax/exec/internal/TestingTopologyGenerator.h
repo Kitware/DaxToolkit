@@ -256,6 +256,98 @@ private:
 
     topology.CellConnections = &connectArray.front();
   }
+
+  static dax::Tuple<dax::Id,4> GetCellConnectionsImpl(
+      const dax::exec::internal::TopologyUnstructured<
+          dax::exec::CellTetrahedron,TestExecutionAdapter> &,
+      dax::Id cellIndex)
+  {
+    // Tetrahedron meshes are a Freudenthal subdivision of hexahedra.
+    dax::Tuple<dax::Id,8> hexConnections =
+        TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
+                                             cellIndex/6);
+    dax::Tuple<dax::Id,4> tetConnections;
+    switch (cellIndex%6)
+      {
+      case 0:
+        tetConnections[0] = hexConnections[0];
+        tetConnections[1] = hexConnections[1];
+        tetConnections[2] = hexConnections[2];
+        tetConnections[3] = hexConnections[4];
+        break;
+      case 1:
+        tetConnections[0] = hexConnections[1];
+        tetConnections[1] = hexConnections[5];
+        tetConnections[2] = hexConnections[2];
+        tetConnections[3] = hexConnections[4];
+        break;
+      case 2:
+        tetConnections[0] = hexConnections[5];
+        tetConnections[1] = hexConnections[6];
+        tetConnections[2] = hexConnections[2];
+        tetConnections[3] = hexConnections[4];
+        break;
+      case 3:
+        tetConnections[0] = hexConnections[6];
+        tetConnections[1] = hexConnections[7];
+        tetConnections[2] = hexConnections[2];
+        tetConnections[3] = hexConnections[4];
+        break;
+      case 4:
+        tetConnections[0] = hexConnections[7];
+        tetConnections[1] = hexConnections[3];
+        tetConnections[2] = hexConnections[2];
+        tetConnections[3] = hexConnections[4];
+        break;
+      case 5:
+        tetConnections[0] = hexConnections[3];
+        tetConnections[1] = hexConnections[0];
+        tetConnections[2] = hexConnections[2];
+        tetConnections[3] = hexConnections[4];
+        break;
+      }
+    return tetConnections;
+  }
+
+  static void BuildTopology(dax::exec::internal::TopologyUnstructured
+                            <dax::exec::CellTetrahedron, TestExecutionAdapter>
+                            &topology,
+                            std::vector<dax::Vector3> &coordArray,
+                            std::vector<dax::Id> &connectArray)
+  {
+    // Base this topology on the hexahedron topology.
+    dax::exec::internal::TopologyUnstructured<
+        dax::exec::CellHexahedron,TestExecutionAdapter> hexTopology;
+    std::vector<dax::Id> hexConnections;
+    BuildTopology(hexTopology, coordArray, hexConnections);
+
+    typedef dax::exec::CellTetrahedron CellType;
+
+    // Our tetrahedron mesh will be a Freudenthal tetrahedronization of a
+    // hexahedron mesh.  This results in 6 tetrahedra for each hexahedron.
+    // It is not minimal, but good enough for tests.
+    topology.NumberOfCells = hexTopology.NumberOfCells * 6;
+    topology.NumberOfPoints = hexTopology.NumberOfPoints;
+
+    // Make connections.
+    connectArray.reserve(topology.NumberOfCells*CellType::NUM_POINTS);
+
+    for (dax::Id cellIndex = 0; cellIndex < topology.NumberOfCells; cellIndex++)
+      {
+      dax::Tuple<dax::Id,CellType::NUM_POINTS> pointConnections
+          = TestTopology::GetCellConnectionsImpl(topology, cellIndex);
+
+      connectArray.push_back(pointConnections[0]);
+      connectArray.push_back(pointConnections[1]);
+      connectArray.push_back(pointConnections[2]);
+      connectArray.push_back(pointConnections[3]);
+      }
+    DAX_TEST_ASSERT(dax::Id(connectArray.size())
+                    == topology.NumberOfCells*CellType::NUM_POINTS,
+                    "Bad connection array size.");
+
+    topology.CellConnections = &connectArray.front();
+  }
 };
 
 template<class FunctionType>
@@ -269,6 +361,11 @@ void TryAllTopologyTypes(FunctionType function)
   TestTopology<dax::exec::internal::TopologyUnstructured
       <dax::exec::CellHexahedron,TestExecutionAdapter> > hexahedronTopology;
   function(hexahedronTopology);
+
+  std::cout << "--- dax::exec::CellTetrahedron" << std::endl;
+  TestTopology<dax::exec::internal::TopologyUnstructured
+      <dax::exec::CellTetrahedron,TestExecutionAdapter> > tetrahedronTopology;
+  function(tetrahedronTopology);
 
   std::cout << "--- dax::exec::CellTriangle" << std::endl;
   TestTopology<dax::exec::internal::TopologyUnstructured
