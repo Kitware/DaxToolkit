@@ -18,6 +18,7 @@ set(headers
   Assert.h
   Cell.h
   CellHexahedron.h
+  CellTetrahedron.h
   CellTriangle.h
   CellVoxel.h
   Derivative.h
