@@ -18,7 +18,7 @@
 #include <dax/exec/WorkMapCell.h>
 #include <dax/exec/WorkMapField.h>
 #include <dax/exec/internal/GridTopologies.h>
-#include <dax/exec/internal/TestExecutionAdapter.h>
+#include <dax/exec/internal/TestingTopologyGenerator.h>
 
 #include <dax/internal/Testing.h>
 
@@ -36,40 +36,64 @@ struct LinearField {
   }
 };
 
-} // Anonymous namespace
-
-const dax::Id bufferSize = 1024*1024;
-static dax::Scalar fieldBuffer[bufferSize];
-
-template<class CellType>
-static dax::exec::FieldPointIn<dax::Scalar, TestExecutionAdapter>
-CreatePointField(
-    const typename CellType::template GridStructures<TestExecutionAdapter>::TopologyType &topology,
-    const dax::exec::FieldCoordinatesIn<TestExecutionAdapter> &coordField,
-    const LinearField &fieldValues,
-    dax::Id numPoints)
+template<class TopologyGenType>
+dax::exec::FieldPointIn<dax::Scalar, typename TopologyGenType::ExecutionAdapter>
+CreatePointField(const TopologyGenType &topology,
+                 const LinearField &fieldValues,
+                 std::vector<dax::Scalar> &fieldArray)
 {
-  DAX_TEST_ASSERT(bufferSize >= numPoints,
-                  "Internal test error.  Buffer not large enough");
+  typedef typename TopologyGenType::CellType CellType;
+  typedef typename TopologyGenType::ExecutionAdapter ExecutionAdapter;
 
-  // Fill field.
+  dax::exec::FieldCoordinatesIn<ExecutionAdapter> coordField
+      = topology.GetCoordinates();
+
+  dax::exec::FieldPointOut<dax::Scalar, ExecutionAdapter> field
+      = dax::exec::internal::CreateField<dax::exec::FieldPointOut>(topology,
+                                                                   fieldArray);
+
+  dax::Id numPoints = topology.GetNumberOfPoints();
   for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
     {
-    dax::exec::WorkMapField<CellType, TestExecutionAdapter>
-        work(topology, pointIndex, TestExecutionAdapter());
+    dax::exec::WorkMapField<CellType, ExecutionAdapter> work =
+        dax::exec::internal::CreateWorkMapField(topology, pointIndex);
     dax::Vector3 coordinates = work.GetFieldValue(coordField);
-    dax::Scalar fieldValue = fieldValues.GetValue(coordinates);
-    fieldBuffer[pointIndex] = fieldValue;
+    dax::Scalar value = fieldValues.GetValue(coordinates);
+    work.SetFieldValue(field, value);
     }
 
-  // Create field object.
-  dax::exec::FieldPointIn<dax::Scalar, TestExecutionAdapter> field(fieldBuffer);
+  return dax::exec::internal::CreateField<dax::exec::FieldPointIn>(topology,
+                                                                   fieldArray);
+}
 
-  return field;
+template<class CellType>
+void TestGradientResult(
+    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &,
+    const dax::Vector3 computedDerivative,
+    const LinearField &fieldValues)
+{
+  DAX_TEST_ASSERT(test_equal(computedDerivative, fieldValues.Gradient),
+                  "Bad derivative");
+}
+
+template<>
+void TestGradientResult<dax::exec::CellTriangle>(
+    const dax::Tuple<dax::Vector3, dax::exec::CellTriangle::NUM_POINTS>
+        &pointCoordinates,
+    const dax::Vector3 computedDerivative,
+    const LinearField &fieldValues)
+{
+  dax::Vector3 normal = dax::exec::math::TriangleNormal(
+        pointCoordinates[0], pointCoordinates[1], pointCoordinates[2]);
+  dax::exec::math::Normalize(normal);
+  dax::Vector3 expectedGradient =
+      fieldValues.Gradient - dax::dot(fieldValues.Gradient,normal)*normal;
+  DAX_TEST_ASSERT(test_equal(computedDerivative, expectedGradient),
+                  "Bad derivative");
 }
 
 template<class CellType, class ExecutionAdapter>
-static void TestDerivativeCell(
+void TestDerivativeCell(
     const dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
     const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
     const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &scalarField,
@@ -90,71 +114,68 @@ static void TestDerivativeCell(
                                         pcoords,
                                         coordField,
                                         scalarField);
-        DAX_TEST_ASSERT(computedDerivative == fieldValues.Gradient,
-                        "Bad derivative");
+        TestGradientResult<CellType>(work.GetFieldValues(coordField),
+                                     computedDerivative,
+                                     fieldValues);
         }
       }
     }
 }
 
-static void TestDerivativeVoxel(
-    const dax::exec::internal::TopologyUniform &gridstruct,
-    const LinearField &fieldValues)
+template<class TopologyGenType>
+void TestDerivatives(const TopologyGenType &topology,
+                     const LinearField &fieldValues)
 {
-  dax::exec::FieldCoordinatesIn<TestExecutionAdapter> coordField;
-  dax::Id numPoints = dax::exec::internal::numberOfPoints(gridstruct);
-  dax::exec::FieldPointIn<dax::Scalar, TestExecutionAdapter> scalarField =
-      CreatePointField<dax::exec::CellVoxel>(
-        gridstruct, coordField, fieldValues, numPoints);
+  typedef typename TopologyGenType::CellType CellType;
+  typedef typename TopologyGenType::ExecutionAdapter ExecutionAdapter;
 
-  dax::Id numCells = dax::exec::internal::numberOfCells(gridstruct);
+  dax::exec::FieldCoordinatesIn<ExecutionAdapter> coordField =
+      topology.GetCoordinates();
+
+  std::vector<dax::Scalar> fieldArray;
+  dax::exec::FieldPointIn<dax::Scalar,ExecutionAdapter> scalarField
+      = CreatePointField(topology, fieldValues, fieldArray);
+
+  dax::Id numCells = topology.GetNumberOfCells();
   for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
     {
-    dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
-        workCell(gridstruct, cellIndex, TestExecutionAdapter());
-    TestDerivativeCell(workCell, coordField, scalarField, fieldValues);
+    dax::exec::WorkMapCell<CellType,ExecutionAdapter> work =
+        dax::exec::internal::CreateWorkMapCell(topology, cellIndex);
+    TestDerivativeCell(work, coordField, scalarField, fieldValues);
     }
 }
 
-static void TestDerivativeVoxel()
+struct TestDerivativesFunctor
 {
-  dax::exec::internal::TopologyUniform gridstruct;
-  LinearField fieldValues;
+  template<class TopologyGenType>
+  void operator()(const TopologyGenType &topology) {
+    LinearField fieldValues;
 
-  std::cout << "Very simple field." << std::endl;
-  gridstruct.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
-  gridstruct.Spacing = dax::make_Vector3(1.0, 1.0, 1.0);
-  gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
-  gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
-  fieldValues.Gradient = dax::make_Vector3(1.0, 1.0, 1.0);
-  fieldValues.OriginValue = 0.0;
-  TestDerivativeVoxel(gridstruct, fieldValues);
+    std::cout << "Very simple field." << std::endl;
+    fieldValues.Gradient = dax::make_Vector3(1.0, 1.0, 1.0);
+    fieldValues.OriginValue = 0.0;
+    TestDerivatives(topology, fieldValues);
 
-  std::cout << "Uneven spacing/gradient." << std::endl;
-  gridstruct.Origin = dax::make_Vector3(1.0, -0.5, 13.0);
-  gridstruct.Spacing = dax::make_Vector3(2.5, 6.25, 1.0);
-  gridstruct.Extent.Min = dax::make_Id3(5, -2, -7);
-  gridstruct.Extent.Max = dax::make_Id3(20, 4, 10);
-  fieldValues.Gradient = dax::make_Vector3(0.25, 14.0, 11.125);
-  fieldValues.OriginValue = -7.0;
-  TestDerivativeVoxel(gridstruct, fieldValues);
+    std::cout << "Uneven gradient." << std::endl;
+    fieldValues.Gradient = dax::make_Vector3(0.25, 14.0, 11.125);
+    fieldValues.OriginValue = -7.0;
+    TestDerivatives(topology, fieldValues);
 
-  std::cout << "Negative gradient directions." << std::endl;
-  gridstruct.Origin = dax::make_Vector3(-5.0, -5.0, -5.0);
-  gridstruct.Spacing = dax::make_Vector3(1.0, 1.0, 1.0);
-  gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
-  gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
-  fieldValues.Gradient = dax::make_Vector3(-11.125, -0.25, 14.0);
-  fieldValues.OriginValue = 5.0;
-  TestDerivativeVoxel(gridstruct, fieldValues);
+    std::cout << "Negative gradient directions." << std::endl;
+    fieldValues.Gradient = dax::make_Vector3(-11.125, -0.25, 14.0);
+    fieldValues.OriginValue = 5.0;
+    TestDerivatives(topology, fieldValues);
+  }
+};
+
+static void TestAllDerivatives()
+{
+  dax::exec::internal::TryAllTopologyTypes(TestDerivativesFunctor());
 }
 
-static void TestDerivatives()
-{
-  TestDerivativeVoxel();
-}
+} // Anonymous namespace
 
 int UnitTestDerivative(int, char *[])
 {
-  return dax::internal::Testing::Run(TestDerivatives);
+  return dax::internal::Testing::Run(TestAllDerivatives);
 }

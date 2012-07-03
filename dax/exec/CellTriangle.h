@@ -38,6 +38,7 @@ public:
   /// static variable that returns the number of points per cell
   const static dax::Id NUM_POINTS = 3;
   typedef dax::Tuple<dax::Id,NUM_POINTS> PointConnectionsType;
+  const static dax::Id TOPOLOGICAL_DIMENSIONS = 2;
 
 private:
   dax::Id CellIndex;

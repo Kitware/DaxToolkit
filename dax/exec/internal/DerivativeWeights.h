@@ -22,6 +22,10 @@ namespace dax {
 namespace exec {
 namespace internal {
 
+/// Returns the partial derivatives in the r, s, and t directions of the
+/// interpolation weights (see InterpolationWeights.h) at the parametric
+/// coordinates.
+///
 DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,8>
 derivativeWeightsVoxel(const dax::Vector3 &pcoords)
 {
@@ -61,6 +65,13 @@ derivativeWeightsVoxel(const dax::Vector3 &pcoords)
   weights[7][2] = rcoords[0]*pcoords[1];
 
   return weights;
+}
+
+DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,8>
+derivativeWeightsHexahedron(const dax::Vector3 &pcoords)
+{
+  // Same as voxel
+  return derivativeWeightsVoxel(pcoords);
 }
 
 DAX_EXEC_EXPORT dax::Tuple<dax::Vector2,3> derivativeWeightsTriangle()

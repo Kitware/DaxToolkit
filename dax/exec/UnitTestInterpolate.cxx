@@ -16,10 +16,11 @@
 #include <dax/exec/Interpolate.h>
 
 #include <dax/exec/ParametricCoordinates.h>
+#include <dax/exec/VectorOperations.h>
 #include <dax/exec/WorkMapCell.h>
 #include <dax/exec/WorkMapField.h>
 #include <dax/exec/internal/GridTopologies.h>
-#include <dax/exec/internal/TestExecutionAdapter.h>
+#include <dax/exec/internal/TestingTopologyGenerator.h>
 
 #include <dax/internal/Testing.h>
 
@@ -37,40 +38,78 @@ struct LinearField {
   }
 };
 
-} // Anonymous namespace
-
-const dax::Id bufferSize = 1024*1024;
-static dax::Scalar fieldBuffer[bufferSize];
-
-template<class CellType>
-static dax::exec::FieldPointIn<dax::Scalar, TestExecutionAdapter>
-CreatePointField(
-    const typename CellType::template GridStructures<TestExecutionAdapter>::TopologyType &topology,
-    const dax::exec::FieldCoordinatesIn<TestExecutionAdapter> &coordField,
-    const LinearField &fieldValues,
-    dax::Id numPoints)
+template<class TopologyGenType>
+dax::exec::FieldPointIn<dax::Scalar, typename TopologyGenType::ExecutionAdapter>
+CreatePointField(const TopologyGenType &topology,
+                 const LinearField &fieldValues,
+                 std::vector<dax::Scalar> &fieldArray)
 {
-  DAX_TEST_ASSERT(bufferSize >= numPoints,
-                  "Internal test error.  Buffer not large enough");
+  typedef typename TopologyGenType::CellType CellType;
+  typedef typename TopologyGenType::ExecutionAdapter ExecutionAdapter;
 
-  // Fill field.
+  dax::exec::FieldCoordinatesIn<ExecutionAdapter> coordField
+      = topology.GetCoordinates();
+
+  dax::exec::FieldPointOut<dax::Scalar, ExecutionAdapter> field
+      = dax::exec::internal::CreateField<dax::exec::FieldPointOut>(topology,
+                                                                   fieldArray);
+
+  dax::Id numPoints = topology.GetNumberOfPoints();
   for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
     {
-    dax::exec::WorkMapField<CellType, TestExecutionAdapter>
-        work(topology, pointIndex, TestExecutionAdapter());
+    dax::exec::WorkMapField<CellType, ExecutionAdapter> work =
+        dax::exec::internal::CreateWorkMapField(topology, pointIndex);
     dax::Vector3 coordinates = work.GetFieldValue(coordField);
-    dax::Scalar fieldValue = fieldValues.GetValue(coordinates);
-    fieldBuffer[pointIndex] = fieldValue;
+    dax::Scalar value = fieldValues.GetValue(coordinates);
+    work.SetFieldValue(field, value);
     }
 
-  // Create object.
-  dax::exec::FieldPointIn<dax::Scalar, TestExecutionAdapter> field(fieldBuffer);
+  return dax::exec::internal::CreateField<dax::exec::FieldPointIn>(topology,
+                                                                   fieldArray);
+}
 
-  return field;
+struct Add
+{
+  template<typename T>
+  T operator()(const T &a, const T &b) const {
+    return a + b;
+  }
+};
+
+template<class CellType, class ExecutionAdapter>
+void TestInterpolateSpecial(
+    const dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
+    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &scalarField)
+{
+  const dax::Id NUM_POINTS = CellType::NUM_POINTS;
+
+  CellType cell = work.GetCell();
+  dax::Tuple<dax::Scalar, NUM_POINTS> values = work.GetFieldValues(scalarField);
+
+  for (dax::Id vertexIndex = 0; vertexIndex < NUM_POINTS; vertexIndex++)
+    {
+    dax::Vector3 pcoords =
+        dax::exec::ParametricCoordinates<CellType>::Vertex()[vertexIndex];
+    dax::Scalar interpolatedValue =
+        dax::exec::CellInterpolate(work, cell, scalarField, pcoords);
+    dax::Scalar expectedValue = values[vertexIndex];
+    DAX_TEST_ASSERT(test_equal(interpolatedValue, expectedValue),
+                    "Interpolation wrong on vertex.");
+    }
+
+  dax::Scalar interpolatedValue =
+      dax::exec::CellInterpolate(
+        work,
+        cell,
+        scalarField,
+        dax::exec::ParametricCoordinates<CellType>::Center());
+  dax::Scalar expectedValue = dax::exec::VectorReduce(values, Add())/NUM_POINTS;
+  DAX_TEST_ASSERT(test_equal(interpolatedValue, expectedValue),
+                  "Interpolation wrong at center.");
 }
 
 template<class CellType, class ExecutionAdapter>
-static void TestInterpolateCell(
+void TestInterpolateSample(
     const dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
     const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
     const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &scalarField,
@@ -86,80 +125,85 @@ static void TestInterpolateCell(
       for (pcoords[0] = 0.0; pcoords[0] <= 1.0; pcoords[0] += 0.25)
         {
         dax::Scalar interpolatedValue
-            = dax::exec::cellInterpolate(work, cell, pcoords, scalarField);
+            = dax::exec::CellInterpolate(work, cell, scalarField, pcoords);
 
         dax::Vector3 wcoords
-            = dax::exec::parametricCoordinatesToWorldCoordinates(work,
-                                                                 cell,
-                                                                 coordField,
-                                                                 pcoords);
+            = dax::exec::CellInterpolate(work, cell, coordField, pcoords);
+
         dax::Scalar trueValue = fieldValues.GetValue(wcoords);
 
-        DAX_TEST_ASSERT(interpolatedValue == trueValue,
+        DAX_TEST_ASSERT(test_equal(interpolatedValue, trueValue),
                         "Bad interpolated value");
         }
       }
     }
 }
 
-static void TestInterpolateVoxel(
-    const dax::exec::internal::TopologyUniform &gridstruct,
+template<class CellType, class ExecutionAdapter>
+void TestInterpolateCell(
+    const dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
+    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
+    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &scalarField,
     const LinearField &fieldValues)
 {
-  dax::exec::FieldCoordinatesIn<TestExecutionAdapter> coordField;
-  dax::Id numPoints = dax::exec::internal::numberOfPoints(gridstruct);
-  dax::exec::FieldPointIn<dax::Scalar, TestExecutionAdapter> scalarField =
-      CreatePointField<dax::exec::CellVoxel>(
-        gridstruct, coordField, fieldValues, numPoints);
+  TestInterpolateSpecial(work, scalarField);
+  TestInterpolateSample(work, coordField, scalarField, fieldValues);
+}
 
-  dax::Id numCells = dax::exec::internal::numberOfCells(gridstruct);
+template<class TopologyGenType>
+void TestInterpolate(const TopologyGenType &topology,
+                     const LinearField &fieldValues)
+{
+  typedef typename TopologyGenType::CellType CellType;
+  typedef typename TopologyGenType::ExecutionAdapter ExecutionAdapter;
+
+  dax::exec::FieldCoordinatesIn<ExecutionAdapter> coordField =
+      topology.GetCoordinates();
+
+  std::vector<dax::Scalar> fieldArray;
+  dax::exec::FieldPointIn<dax::Scalar,ExecutionAdapter> scalarField
+      = CreatePointField(topology, fieldValues, fieldArray);
+
+  dax::Id numCells = topology.GetNumberOfCells();
   for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
     {
-    dax::exec::WorkMapCell<dax::exec::CellVoxel, TestExecutionAdapter>
-        workCell(gridstruct, cellIndex, TestExecutionAdapter());
-    TestInterpolateCell(workCell, coordField, scalarField, fieldValues);
+    dax::exec::WorkMapCell<CellType,ExecutionAdapter> work =
+        dax::exec::internal::CreateWorkMapCell(topology, cellIndex);
+    TestInterpolateCell(work, coordField, scalarField, fieldValues);
     }
 }
 
-static void TestInterpolateVoxel()
+struct TestInterpolateFunctor
 {
-  dax::exec::internal::TopologyUniform gridstruct;
-  LinearField fieldValues;
+  template<class TopologyGenType>
+  void operator()(const TopologyGenType &topology) {
+    LinearField fieldValues;
 
-  std::cout << "Very simple field." << std::endl;
-  gridstruct.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
-  gridstruct.Spacing = dax::make_Vector3(1.0, 1.0, 1.0);
-  gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
-  gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
-  fieldValues.Gradient = dax::make_Vector3(1.0, 1.0, 1.0);
-  fieldValues.OriginValue = 0.0;
-  TestInterpolateVoxel(gridstruct, fieldValues);
+    std::cout << "Very simple field." << std::endl;
+    fieldValues.Gradient = dax::make_Vector3(1.0, 1.0, 1.0);
+    fieldValues.OriginValue = 0.0;
+    TestInterpolate(topology, fieldValues);
 
-  std::cout << "Uneven spacing/gradient." << std::endl;
-  gridstruct.Origin = dax::make_Vector3(1.0, -0.5, 13.0);
-  gridstruct.Spacing = dax::make_Vector3(2.5, 6.25, 1.0);
-  gridstruct.Extent.Min = dax::make_Id3(5, -2, -7);
-  gridstruct.Extent.Max = dax::make_Id3(20, 4, 10);
-  fieldValues.Gradient = dax::make_Vector3(0.25, 14.0, 11.125);
-  fieldValues.OriginValue = -7.0;
-  TestInterpolateVoxel(gridstruct, fieldValues);
+    std::cout << "Uneven gradient." << std::endl;
+    fieldValues.Gradient = dax::make_Vector3(0.25, 14.0, 11.125);
+    fieldValues.OriginValue = -7.0;
+    TestInterpolate(topology, fieldValues);
 
-  std::cout << "Negative gradient directions." << std::endl;
-  gridstruct.Origin = dax::make_Vector3(-5.0, -5.0, -5.0);
-  gridstruct.Spacing = dax::make_Vector3(1.0, 1.0, 1.0);
-  gridstruct.Extent.Min = dax::make_Id3(0, 0, 0);
-  gridstruct.Extent.Max = dax::make_Id3(10, 10, 10);
-  fieldValues.Gradient = dax::make_Vector3(-11.125, -0.25, 14.0);
-  fieldValues.OriginValue = 5.0;
-  TestInterpolateVoxel(gridstruct, fieldValues);
+    std::cout << "Negative gradient directions." << std::endl;
+    fieldValues.Gradient = dax::make_Vector3(-11.125, -0.25, 14.0);
+    fieldValues.OriginValue = 5.0;
+    TestInterpolate(topology, fieldValues);
+  }
+};
+
+void TestAllInterpolate()
+{
+  dax::exec::internal::TryAllTopologyTypes(TestInterpolateFunctor());
 }
 
-static void TestInterpolate()
-{
-  TestInterpolateVoxel();
-}
+} // Anonymous namespace
 
 int UnitTestInterpolate(int, char *[])
 {
-  return dax::internal::Testing::Run(TestInterpolate);
+  return dax::internal::Testing::Run(TestAllInterpolate);
 }

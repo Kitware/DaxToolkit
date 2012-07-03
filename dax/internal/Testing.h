@@ -285,13 +285,34 @@ DAX_EXEC_CONT_EXPORT bool test_equal(VectorType vector1,
       continue;
       }
     dax::Scalar ratio = value1/value2;
-    if ((ratio < dax::Scalar(1.0) - tolerance)
-        || (ratio > dax::Scalar(1.0) + tolerance))
+    if ((ratio > dax::Scalar(1.0) - tolerance)
+        && (ratio < dax::Scalar(1.0) + tolerance))
+      {
+      // This component is OK. The condition is checked in this way to
+      // correctly handle non-finites that fail all comparisons. Thus, if a
+      // non-finite is encountered, this condition will fail and false will be
+      // returned.
+      }
+    else
       {
       return false;
       }
     }
   return true;
+}
+
+/// Helper function for printing out vectors during testing.
+///
+template<typename T, int Size>
+DAX_EXEC_CONT_EXPORT
+std::ostream &operator<<(std::ostream &stream, const dax::Tuple<T,Size> &tuple)
+{
+  stream << "[";
+  for (int component = 0; component < Size-1; component++)
+    {
+    stream << tuple[component] << ",";
+    }
+  return stream << tuple[Size-1] << "]";
 }
 
 #endif //__dax_internal_Testing_h

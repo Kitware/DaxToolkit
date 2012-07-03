@@ -123,6 +123,13 @@ DAX_VECTOR_TYPE(dax::Vector4, TypeTraitsRealTag);
 
 #undef DAX_VECTOR_TYPE
 
+/// Traits for tuples.
+///
+template<typename T, int Size> struct TypeTraits<dax::Tuple<T, Size> > {
+  typedef typename TypeTraits<T>::NumericTag NumericTag;
+  typedef TypeTraitsVectorTag DimensionalityTag;
+};
+
 } // namespace dax
 
 #endif //__dax__TypeTraits_h

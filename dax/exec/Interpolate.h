@@ -24,24 +24,26 @@
 namespace dax { namespace exec {
 
 //-----------------------------------------------------------------------------
-template<class WorkType, class T, class ExecutionAdapter>
-DAX_EXEC_EXPORT T cellInterpolate(
+template<class WorkType, class FieldType>
+DAX_EXEC_EXPORT typename FieldType::ValueType CellInterpolate(
     const WorkType &work,
-    const dax::exec::CellVoxel &,
-    const dax::Vector3 &pcoords,
-    const dax::exec::FieldPointIn<T, ExecutionAdapter> &point_field)
+    const typename WorkType::CellType &, // Should we get rid of the parameter?
+    const FieldType &point_field,
+  const dax::Vector3 &pcoords)
 {
-  const dax::Id numVerts = dax::exec::CellVoxel::NUM_POINTS;
-  typedef dax::Tuple<T,numVerts> FieldTuple;
+  typedef typename WorkType::CellType CellType;
+  typedef typename FieldType::ValueType ValueType;
+  const dax::Id numVerts = CellType::NUM_POINTS;
+  typedef dax::Tuple<ValueType,numVerts> FieldTuple;
 
-  dax::Scalar weights[numVerts];
-  dax::exec::internal::interpolationWeightsVoxel(pcoords, weights);
+  dax::Tuple<dax::Scalar, numVerts> weights =
+      dax::exec::internal::InterpolationWeights<CellType>(pcoords);
 
   FieldTuple values = work.GetFieldValues(point_field);
-  T result = 0;
-  for (dax::Id vertexId = 0; vertexId < numVerts; vertexId++)
+  ValueType result = values[0] * weights[0];
+  for (dax::Id vertexId = 1; vertexId < numVerts; vertexId++)
     {
-    result += values[vertexId] * weights[vertexId];
+    result = result + values[vertexId] * weights[vertexId];
     }
 
   return result;

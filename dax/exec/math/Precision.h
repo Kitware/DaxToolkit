@@ -25,6 +25,15 @@
 #ifndef DAX_CUDA
 #include <math.h>
 #include <limits>
+
+// These nonfinite test functions are usually defined as macros, and boost
+// seems to want to undefine those macros so that it can implement the C99
+// templates and other implementations of the same name. Get around the problem
+// by using the boost version when compiling for a CPU.
+#include <boost/math/special_functions/fpclassify.hpp>
+using boost::math::isnan;
+using boost::math::isinf;
+using boost::math::isfinite;
 #endif
 
 namespace dax {
@@ -72,6 +81,7 @@ union IEEE754Bits {
 #define DAX_NAN_BITS      0x7FC00000
 #define DAX_INF_BITS      0x7F800000
 #define DAX_NEG_INF_BITS  0xFF800000
+#define DAX_EPSILON       1e-5f
 #elif DAX_SIZE_SCALAR == 8
 union IEEE754Bits {
   dax::internal::UInt64Type bits;
@@ -80,6 +90,7 @@ union IEEE754Bits {
 #define DAX_NAN_BITS      0x7FF8000000000000LL
 #define DAX_INF_BITS      0x7FF0000000000000LL
 #define DAX_NEG_INF_BITS  0xFFF0000000000000LL
+#define DAX_EPSILON       1e-9
 #else
 #error Unknown scalar size
 #endif
@@ -113,6 +124,14 @@ DAX_EXEC_EXPORT dax::Scalar NegativeInfinity()
   return NegInfBits.scalar;
 }
 
+/// Returns the difference between 1 and the least value greater than 1
+/// that is representable.
+///
+DAX_EXEC_EXPORT dax::Scalar Epsilon()
+{
+  return DAX_EPSILON;
+}
+
 #else // !DAX_USE_IEEE_NONFINITE
 
 /// Returns the scalar representation for not-a-number (NaN).
@@ -134,6 +153,14 @@ DAX_EXEC_EXPORT dax::Scalar Infinity()
 DAX_EXEC_EXPORT dax::Scalar NegativeInfinity()
 {
   return -std::numeric_limits<dax::Scalar>::infinity();
+}
+
+/// Returns the difference between 1 and the least value greater than 1
+/// that is representable.
+///
+DAX_EXEC_EXPORT dax::Scalar Epsilon()
+{
+  return std::numeric_limits<dax::Scalar>::epsilon();
 }
 
 #endif // !DAX_USE_IEEE_NONFINITE
