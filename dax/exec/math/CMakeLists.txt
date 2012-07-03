@@ -18,6 +18,7 @@ set(headers
   Compare.h
   Exp.h
   Matrix.h
+  Numerical.h
   Precision.h
   Sign.h
   Trig.h
@@ -31,6 +32,7 @@ set(unit_tests
   UnitTestMathCompare.cxx
   UnitTestMathExp.cxx
   UnitTestMathMatrix.cxx
+  UnitTestMathNumerical.cxx
   UnitTestMathPrecision.cxx
   UnitTestMathSign.cxx
   UnitTestMathTrig.cxx
