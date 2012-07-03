@@ -74,17 +74,6 @@ derivativeWeightsHexahedron(const dax::Vector3 &pcoords)
   return derivativeWeightsVoxel(pcoords);
 }
 
-DAX_EXEC_EXPORT dax::Tuple<dax::Vector2,3> derivativeWeightsTriangle()
-{
-  dax::Tuple<dax::Vector2,3> weights;
-
-  weights[0] = dax::Vector2(-1,-1);
-  weights[1] = dax::Vector2(1,0);
-  weights[2] = dax::Vector2(0,1);
-
-  return weights;
-}
-
 }}}
 
 #endif //__dax__exec__internal__DerviativeWeights_h

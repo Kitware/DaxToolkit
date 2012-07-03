@@ -156,6 +156,70 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
 template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
     const WorkType &work,
+    const dax::exec::CellTetrahedron&/*cell*/,
+    const dax::Vector3 &/*pcoords*/,
+    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
+    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &scalarField)
+{
+  const dax::Id NUM_POINTS = dax::exec::CellTetrahedron::NUM_POINTS;
+
+  // The scalar values of the four points in a tetrahedron completely specify a
+  // linear field (with constant gradient). The field, defined by the 3-vector
+  // gradient g and scalar value s_origin, can be found with this set of 4
+  // equations and 4 unknowns.
+  //
+  // dot(p0, g) + s_origin = s0
+  // dot(p1, g) + s_origin = s1
+  // dot(p2, g) + s_origin = s2
+  // dot(p3, g) + s_origin = s3
+  //
+  // Where the p's are point coordinates. But we don't really care about
+  // s_origin. We just want to find the gradient g. With some simple
+  // elimination we, we can get rid of s_origin and be left with 3 equations
+  // and 3 unknowns.
+  //
+  // dot(p1-p0, g) = s1 - s0
+  // dot(p2-p0, g) = s2 - s0
+  // dot(p3-p0, g) = s3 - s0
+  //
+  // We'll solve this by putting this in matrix form Ax = b where the rows of A
+  // are the differences in points and normal, b has the scalar differences,
+  // and x is really the gradient g.
+  //
+  dax::Tuple<dax::Vector3, NUM_POINTS> p = work.GetFieldValues(coordField);
+  dax::Vector3 v0 = p[1] - p[0];
+  dax::Vector3 v1 = p[2] - p[0];
+  dax::Vector3 v2 = p[3] - p[0];
+
+  dax::exec::math::Matrix3x3 A;
+  dax::exec::math::MatrixSetRow(A, 0, v0);
+  dax::exec::math::MatrixSetRow(A, 1, v1);
+  dax::exec::math::MatrixSetRow(A, 2, v2);
+
+  dax::Tuple<dax::Scalar, NUM_POINTS> s = work.GetFieldValues(scalarField);
+  dax::Vector3 b(s[1]-s[0], s[2]-s[0], s[3]-s[0]);
+
+  // If we want to later change this method to take the gradient of multiple
+  // values (for example, to find the Jacobian of a vector field), then there
+  // are more efficient ways solve them all than independently solving this
+  // equation for each component of the field.  You could find the inverse of
+  // matrix A.  Or you could alter the functions in dax::exec::math to
+  // simultaneously solve multiple equations.
+
+  // If the tetrahedron is degenerate, then valid will be false. For now we are
+  // ignoring it. We could detect it if we determine we need to although I have
+  // seen singular matrices missed due to floating point error.
+  //
+  bool valid;
+
+  return dax::exec::math::SolveLinearSystem(A, b, valid);
+}
+
+
+//-----------------------------------------------------------------------------
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
+    const WorkType &work,
     const dax::exec::CellTriangle &/*cell*/,
     const dax::Vector3 &/*pcoords*/,
     const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
