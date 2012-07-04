@@ -68,26 +68,28 @@ CreatePointField(const TopologyGenType &topology,
 
 template<class CellType>
 void TestGradientResult(
-    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &,
+    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &pointCoordinates,
     const dax::Vector3 computedDerivative,
     const LinearField &fieldValues)
 {
-  DAX_TEST_ASSERT(test_equal(computedDerivative, fieldValues.Gradient),
-                  "Bad derivative");
-}
+  dax::Vector3 expectedGradient;
+  if (CellType::TOPOLOGICAL_DIMENSIONS == 3)
+    {
+    expectedGradient = fieldValues.Gradient;
+    }
+  else if (CellType::TOPOLOGICAL_DIMENSIONS == 2)
+    {
+    dax::Vector3 normal = dax::exec::math::TriangleNormal(
+          pointCoordinates[0], pointCoordinates[1], pointCoordinates[2]);
+    dax::exec::math::Normalize(normal);
+    expectedGradient =
+        fieldValues.Gradient - dax::dot(fieldValues.Gradient,normal)*normal;
+    }
+  else
+    {
+    DAX_TEST_FAIL("Unknown cell dimension.");
+    }
 
-template<>
-void TestGradientResult<dax::exec::CellTriangle>(
-    const dax::Tuple<dax::Vector3, dax::exec::CellTriangle::NUM_POINTS>
-        &pointCoordinates,
-    const dax::Vector3 computedDerivative,
-    const LinearField &fieldValues)
-{
-  dax::Vector3 normal = dax::exec::math::TriangleNormal(
-        pointCoordinates[0], pointCoordinates[1], pointCoordinates[2]);
-  dax::exec::math::Normalize(normal);
-  dax::Vector3 expectedGradient =
-      fieldValues.Gradient - dax::dot(fieldValues.Gradient,normal)*normal;
   DAX_TEST_ASSERT(test_equal(computedDerivative, expectedGradient),
                   "Bad derivative");
 }
@@ -109,7 +111,7 @@ void TestDerivativeCell(
       for (pcoords[0] = 0.0; pcoords[0] <= 1.0; pcoords[0] += 0.25)
         {
         dax::Vector3 computedDerivative
-            = dax::exec::cellDerivative(work,
+            = dax::exec::CellDerivative(work,
                                         cell,
                                         pcoords,
                                         coordField,

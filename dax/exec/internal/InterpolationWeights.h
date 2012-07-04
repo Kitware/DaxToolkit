@@ -34,7 +34,7 @@ DAX_EXEC_EXPORT
 dax::Tuple<dax::Scalar, 8>
 InterpolationWeights<dax::exec::CellVoxel>(const dax::Vector3 &pcoords)
 {
-  dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
+  const dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
 
   dax::Tuple<dax::Scalar, 8> weights;
   weights[0] = rcoords[0] * rcoords[1] * rcoords[2];
@@ -80,6 +80,22 @@ InterpolationWeights<dax::exec::CellTriangle>(const dax::Vector3 &pcoords)
   weights[0] = 1 - pcoords[0] - pcoords[1];
   weights[1] = pcoords[0];
   weights[2] = pcoords[1];
+  return weights;
+}
+
+template<>
+DAX_EXEC_EXPORT
+dax::Tuple<dax::Scalar, 4>
+InterpolationWeights<dax::exec::CellQuadrilateral>(const dax::Vector3 &pcoords)
+{
+  const dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
+
+  dax::Tuple<dax::Scalar, 4> weights;
+  weights[0] = rcoords[0] * rcoords[1];
+  weights[1] = pcoords[0] * rcoords[1];
+  weights[2] = pcoords[0] * pcoords[1];
+  weights[3] = rcoords[0] * pcoords[1];
+
   return weights;
 }
 

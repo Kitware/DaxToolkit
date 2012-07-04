@@ -30,7 +30,7 @@ DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,8>
 derivativeWeightsVoxel(const dax::Vector3 &pcoords)
 {
   dax::Tuple<dax::Vector3,8> weights;
-  dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
+  const dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
 
   weights[0][0] = -rcoords[1]*rcoords[2];
   weights[0][1] = -rcoords[0]*rcoords[2];
@@ -72,6 +72,37 @@ derivativeWeightsHexahedron(const dax::Vector3 &pcoords)
 {
   // Same as voxel
   return derivativeWeightsVoxel(pcoords);
+}
+
+DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,4>
+derivativeWeightsQuadrilateral(const dax::Vector2 &pcoords)
+{
+  const dax::Vector2 rcoords = dax::make_Vector2(1, 1) - pcoords;
+  dax::Tuple<dax::Vector3,4> weights;
+
+  weights[0][0] = -rcoords[1];
+  weights[0][1] = -rcoords[0];
+  weights[0][2] = 0.0;
+
+  weights[1][0] = rcoords[1];
+  weights[1][1] = -pcoords[0];
+  weights[1][2] = 0.0;
+
+  weights[2][0] = pcoords[1];
+  weights[2][1] = pcoords[0];
+  weights[2][2] = 0.0;
+
+  weights[3][0] = -pcoords[1];
+  weights[3][1] = rcoords[0];
+  weights[3][2] = 0.0;
+
+  return weights;
+}
+DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,4>
+derivativeWeightsQuadrilateral(const dax::Vector3 &pcoords)
+{
+  return derivativeWeightsQuadrilateral(dax::make_Vector2(pcoords[0],
+                                                          pcoords[1]));
 }
 
 }}}

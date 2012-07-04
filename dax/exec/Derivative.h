@@ -27,7 +27,7 @@ namespace dax { namespace exec {
 
 //-----------------------------------------------------------------------------
 template<class WorkType, class ExecutionAdapter>
-DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
+DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const WorkType &work,
     const dax::exec::CellVoxel &cell,
     const dax::Vector3 &pcoords,
@@ -97,7 +97,7 @@ dax::exec::math::Matrix3x3 make_JacobianForHexahedron(
 }
 
 template<class WorkType, class ExecutionAdapter>
-DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
+DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const WorkType &work,
     const dax::exec::CellHexahedron &,
     const dax::Vector3 &pcoords,
@@ -154,7 +154,7 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
 
 //-----------------------------------------------------------------------------
 template<class WorkType, class ExecutionAdapter>
-DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
+DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const WorkType &work,
     const dax::exec::CellTetrahedron&/*cell*/,
     const dax::Vector3 &/*pcoords*/,
@@ -218,7 +218,7 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
 
 //-----------------------------------------------------------------------------
 template<class WorkType, class ExecutionAdapter>
-DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
+DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const WorkType &work,
     const dax::exec::CellTriangle &/*cell*/,
     const dax::Vector3 &/*pcoords*/,
@@ -279,6 +279,146 @@ DAX_EXEC_EXPORT dax::Vector3 cellDerivative(
 
   return dax::exec::math::SolveLinearSystem(A, b, valid);
 }
+
+//-----------------------------------------------------------------------------
+namespace detail {
+// This returns the Jacobian of a quadrilaterals's coordinates with respect to
+// parametric coordinates.  Explicitly, this is (d is partial derivative):
+//
+//   |              |
+//   | da/du  da/dv |
+//   |              |
+//   | db/du  db/dv |
+//   |              |
+//
+// where a and b are each one of x, y, or z. Because the system is
+// overdetermined, this method picks two dimension specified by the first two
+// entries in deminsionSwizzle (that are best picked to be closest to the plane
+// of the quad) and uses those for a and b.
+//
+DAX_EXEC_EXPORT
+dax::exec::math::Matrix2x2 make_JacobianForQuadrilateral(
+    const dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS>
+    &derivativeWeights,
+    const dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS>
+    &pointCoordinates,
+    const dax::Id3 &dimensionSwizzle)
+{
+  const int NUM_POINTS = dax::exec::CellQuadrilateral::NUM_POINTS;
+
+  dax::exec::math::Matrix2x2 jacobian(0);
+  for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
+    {
+    const dax::Vector3 &dweight = derivativeWeights[pointIndex];
+    const dax::Vector3 &coord = pointCoordinates[pointIndex];
+
+    jacobian(0,0) += coord[dimensionSwizzle[0]] * dweight[0];
+    jacobian(0,1) += coord[dimensionSwizzle[0]] * dweight[1];
+
+    jacobian(1,0) += coord[dimensionSwizzle[1]] * dweight[0];
+    jacobian(1,1) += coord[dimensionSwizzle[1]] * dweight[1];
+    }
+
+  return jacobian;
+}
+}
+
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
+    const WorkType &work,
+    const dax::exec::CellQuadrilateral &,
+    const dax::Vector3 &pcoords,
+    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
+    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
+{
+  const dax::Id NUM_POINTS  = dax::exec::CellQuadrilateral::NUM_POINTS;
+  typedef dax::Tuple<dax::Vector3,NUM_POINTS> DerivWeights;
+
+  DerivWeights derivativeWeights =
+      dax::exec::internal::derivativeWeightsQuadrilateral(pcoords);
+  dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS> allCoords =
+      work.GetFieldValues(fcoords);
+
+  // We have an overconstrained system, so just pick two coordinates to work
+  // with (the two most different from the normal).  We will do this by
+  // creating a dimension swizzle and using the first two dimensions.
+
+  dax::Id3 dimensionSwizzle;
+  dax::Vector3 normal = dax::exec::math::TriangleNormal(allCoords[0],
+                                                        allCoords[1],
+                                                        allCoords[2]);
+  dax::Vector3 absNormal = dax::exec::math::Abs(normal);
+  if (absNormal[0] < absNormal[1])
+    {
+    dimensionSwizzle = dax::make_Id3(0, 1, 2);
+    }
+  else
+    {
+    dimensionSwizzle = dax::make_Id3(1, 0, 2);
+    }
+  if (absNormal[dimensionSwizzle[1]] < absNormal[2])
+    {
+    // Everything is fine.
+    }
+  else
+    {
+    dimensionSwizzle[2] = dimensionSwizzle[1];
+    dimensionSwizzle[1] = 2;
+    }
+
+  // For reasons that should become apparent in a moment, we actually want
+  // the transpose of the Jacobian.
+  dax::exec::math::Matrix2x2 jacobianTranspose =
+      dax::exec::math::MatrixTranspose(
+        detail::make_JacobianForQuadrilateral(derivativeWeights,
+                                              allCoords,
+                                              dimensionSwizzle));
+
+  // Find the derivative of the field in parametric coordinate space. That is,
+  // find the vector [ds/du, ds/dv].
+  dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
+      work.GetFieldValues(point_scalar);
+  dax::Vector2 parametricDerivative(dax::Scalar(0));
+  for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
+    {
+    parametricDerivative[0] +=
+        derivativeWeights[pointIndex][0] * fieldValues[pointIndex];
+    parametricDerivative[1] +=
+        derivativeWeights[pointIndex][1] * fieldValues[pointIndex];
+    }
+
+  // If we write out the matrices below, it should become clear that the
+  // Jacobian transpose times the field derivative in world space equals
+  // the field derivative in parametric space.
+  //
+  //   |              |  |       |     |       |
+  //   | da/du  db/du |  | ds/da |     | ds/du |
+  //   |              |  |       |     |       |
+  //   | da/dv  db/dv |  | ds/db |  =  | ds/dv |
+  //   |              |  |       |     |       |
+  //
+  // Now we just need to solve this linear system to find the derivative in
+  // world space.
+
+  bool valid;  // Ignored.
+  dax::Vector2 gradient2D =
+      dax::exec::math::SolveLinearSystem(jacobianTranspose,
+                                         parametricDerivative,
+                                         valid);
+
+  // We now know the gradient in 2 of three dimensions. Use the assumption that
+  // the gradient is 0 in the normal direction to get the third coordinate.
+  dax::Vector3 gradient3D;
+  gradient3D[dimensionSwizzle[0]] = gradient2D[0];
+  gradient3D[dimensionSwizzle[1]] = gradient2D[1];
+  gradient3D[dimensionSwizzle[2]] =
+      -(gradient2D[0]*normal[dimensionSwizzle[0]]
+        + gradient2D[1]*normal[dimensionSwizzle[1]])
+      /normal[dimensionSwizzle[2]];
+
+  return gradient3D;
+}
+
 
 }};
 

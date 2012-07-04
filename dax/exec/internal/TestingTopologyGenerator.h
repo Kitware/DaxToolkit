@@ -188,75 +188,6 @@ private:
     topology.CellConnections = &connectArray.front();
   }
 
-  static dax::Tuple<dax::Id,3> GetCellConnectionsImpl(
-      const dax::exec::internal::TopologyUnstructured<
-          dax::exec::CellTriangle,TestExecutionAdapter> &,
-      dax::Id cellIndex)
-  {
-    // Triangle meshes are based on hex meshes.  They have 2x the cells.
-    // See the comment in BuildTopology.
-    dax::Tuple<dax::Id,8> hexConnections =
-        TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
-                                             cellIndex/2);
-    dax::Tuple<dax::Id,3> triConnections;
-    if (cellIndex%2 == 0)
-      {
-      triConnections[0] = hexConnections[0];
-      triConnections[1] = hexConnections[5];
-      triConnections[2] = hexConnections[7];
-      }
-    else // cellIndex%2 == 1
-      {
-      triConnections[0] = hexConnections[6];
-      triConnections[1] = hexConnections[3];
-      triConnections[2] = hexConnections[1];
-      }
-    return triConnections;
-  }
-
-  static void BuildTopology(dax::exec::internal::TopologyUnstructured
-                            <dax::exec::CellTriangle, TestExecutionAdapter>
-                            &topology,
-                            std::vector<dax::Vector3> &coordArray,
-                            std::vector<dax::Id> &connectArray)
-  {
-    // Base this topology on the hexahedron topology.
-    dax::exec::internal::TopologyUnstructured<
-        dax::exec::CellHexahedron,TestExecutionAdapter> hexTopology;
-    std::vector<dax::Id> hexConnections;
-    BuildTopology(hexTopology, coordArray, hexConnections);
-
-    typedef dax::exec::CellTriangle CellType;
-
-    // Our triangle mesh will have two triangles for each hexahedron. The edges
-    // of the triangles come from diagonals of the faces. The two triangles do
-    // not touch either and (as follows by pigeonhole principle) all faces have
-    // exactly one diagonal that contributes to one triangle. The diagonals are
-    // consistent between neighboring hexahedrons so that triangles from
-    // different hexahedrons have conformal connections that form planar
-    // meshes.
-    topology.NumberOfCells = hexTopology.NumberOfCells * 2;
-    topology.NumberOfPoints = hexTopology.NumberOfPoints;
-
-    // Make connections.
-    connectArray.reserve(topology.NumberOfCells*CellType::NUM_POINTS);
-
-    for (dax::Id cellIndex = 0; cellIndex < topology.NumberOfCells; cellIndex++)
-      {
-      dax::Tuple<dax::Id,CellType::NUM_POINTS> pointConnections
-          = TestTopology::GetCellConnectionsImpl(topology, cellIndex);
-
-      connectArray.push_back(pointConnections[0]);
-      connectArray.push_back(pointConnections[1]);
-      connectArray.push_back(pointConnections[2]);
-      }
-    DAX_TEST_ASSERT(dax::Id(connectArray.size())
-                    == topology.NumberOfCells*CellType::NUM_POINTS,
-                    "Bad connection array size.");
-
-    topology.CellConnections = &connectArray.front();
-  }
-
   static dax::Tuple<dax::Id,4> GetCellConnectionsImpl(
       const dax::exec::internal::TopologyUnstructured<
           dax::exec::CellTetrahedron,TestExecutionAdapter> &,
@@ -348,6 +279,133 @@ private:
 
     topology.CellConnections = &connectArray.front();
   }
+
+  static dax::Tuple<dax::Id,3> GetCellConnectionsImpl(
+      const dax::exec::internal::TopologyUnstructured<
+          dax::exec::CellTriangle,TestExecutionAdapter> &,
+      dax::Id cellIndex)
+  {
+    // Triangle meshes are based on hex meshes.  They have 2x the cells.
+    // See the comment in BuildTopology.
+    dax::Tuple<dax::Id,8> hexConnections =
+        TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
+                                             cellIndex/2);
+    dax::Tuple<dax::Id,3> triConnections;
+    if (cellIndex%2 == 0)
+      {
+      triConnections[0] = hexConnections[0];
+      triConnections[1] = hexConnections[5];
+      triConnections[2] = hexConnections[7];
+      }
+    else // cellIndex%2 == 1
+      {
+      triConnections[0] = hexConnections[6];
+      triConnections[1] = hexConnections[3];
+      triConnections[2] = hexConnections[1];
+      }
+    return triConnections;
+  }
+
+  static void BuildTopology(dax::exec::internal::TopologyUnstructured
+                            <dax::exec::CellTriangle, TestExecutionAdapter>
+                            &topology,
+                            std::vector<dax::Vector3> &coordArray,
+                            std::vector<dax::Id> &connectArray)
+  {
+    // Base this topology on the hexahedron topology.
+    dax::exec::internal::TopologyUnstructured<
+        dax::exec::CellHexahedron,TestExecutionAdapter> hexTopology;
+    std::vector<dax::Id> hexConnections;
+    BuildTopology(hexTopology, coordArray, hexConnections);
+
+    typedef dax::exec::CellTriangle CellType;
+
+    // Our triangle mesh will have two triangles for each hexahedron. The edges
+    // of the triangles come from diagonals of the faces. The two triangles do
+    // not touch either and (as follows by pigeonhole principle) all faces have
+    // exactly one diagonal that contributes to one triangle. The diagonals are
+    // consistent between neighboring hexahedrons so that triangles from
+    // different hexahedrons have conformal connections that form planar
+    // meshes.
+    topology.NumberOfCells = hexTopology.NumberOfCells * 2;
+    topology.NumberOfPoints = hexTopology.NumberOfPoints;
+
+    // Make connections.
+    connectArray.reserve(topology.NumberOfCells*CellType::NUM_POINTS);
+
+    for (dax::Id cellIndex = 0; cellIndex < topology.NumberOfCells; cellIndex++)
+      {
+      dax::Tuple<dax::Id,CellType::NUM_POINTS> pointConnections
+          = TestTopology::GetCellConnectionsImpl(topology, cellIndex);
+
+      connectArray.push_back(pointConnections[0]);
+      connectArray.push_back(pointConnections[1]);
+      connectArray.push_back(pointConnections[2]);
+      }
+    DAX_TEST_ASSERT(dax::Id(connectArray.size())
+                    == topology.NumberOfCells*CellType::NUM_POINTS,
+                    "Bad connection array size.");
+
+    topology.CellConnections = &connectArray.front();
+  }
+
+  static dax::Tuple<dax::Id,4> GetCellConnectionsImpl(
+      const dax::exec::internal::TopologyUnstructured<
+          dax::exec::CellQuadrilateral,TestExecutionAdapter> &,
+      dax::Id cellIndex)
+  {
+    // Quadrilateral meshes are based on hex meshes.
+    dax::Tuple<dax::Id,8> hexConnections =
+        TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
+                                             cellIndex);
+    dax::Tuple<dax::Id,4> quadConnections;
+    quadConnections[0] = hexConnections[0];
+    quadConnections[1] = hexConnections[2];
+    quadConnections[2] = hexConnections[6];
+    quadConnections[3] = hexConnections[4];
+
+    return quadConnections;
+  }
+
+  static void BuildTopology(dax::exec::internal::TopologyUnstructured
+                            <dax::exec::CellQuadrilateral, TestExecutionAdapter>
+                            &topology,
+                            std::vector<dax::Vector3> &coordArray,
+                            std::vector<dax::Id> &connectArray)
+  {
+    // Base this topology on the hexahedron topology.
+    dax::exec::internal::TopologyUnstructured<
+        dax::exec::CellHexahedron,TestExecutionAdapter> hexTopology;
+    std::vector<dax::Id> hexConnections;
+    BuildTopology(hexTopology, coordArray, hexConnections);
+
+    typedef dax::exec::CellQuadrilateral CellType;
+
+    // Our mesh will have one quadrilateral for each hexahedron that cuts the
+    // hexahedron diagonally in the x-y direction.
+
+    topology.NumberOfCells = hexTopology.NumberOfCells;
+    topology.NumberOfPoints = hexTopology.NumberOfPoints;
+
+    // Make connections.
+    connectArray.reserve(topology.NumberOfCells*CellType::NUM_POINTS);
+
+    for (dax::Id cellIndex = 0; cellIndex < topology.NumberOfCells; cellIndex++)
+      {
+      dax::Tuple<dax::Id,CellType::NUM_POINTS> pointConnections
+          = TestTopology::GetCellConnectionsImpl(topology, cellIndex);
+
+      connectArray.push_back(pointConnections[0]);
+      connectArray.push_back(pointConnections[1]);
+      connectArray.push_back(pointConnections[2]);
+      connectArray.push_back(pointConnections[3]);
+      }
+    DAX_TEST_ASSERT(dax::Id(connectArray.size())
+                    == topology.NumberOfCells*CellType::NUM_POINTS,
+                    "Bad connection array size.");
+
+    topology.CellConnections = &connectArray.front();
+  }
 };
 
 template<class FunctionType>
@@ -371,6 +429,12 @@ void TryAllTopologyTypes(FunctionType function)
   TestTopology<dax::exec::internal::TopologyUnstructured
       <dax::exec::CellTriangle,TestExecutionAdapter> > triangleTopology;
   function(triangleTopology);
+
+  std::cout << "--- dax::exec::CellQuadrilateral" << std::endl;
+  TestTopology<dax::exec::internal::TopologyUnstructured
+      <dax::exec::CellQuadrilateral,TestExecutionAdapter> >
+      quadrilateralTopology;
+  function(quadrilateralTopology);
 }
 
 namespace detail {

@@ -108,6 +108,23 @@ struct ParametricCoordinates<dax::exec::CellTriangle>
   }
 };
 
+template<>
+struct ParametricCoordinates<dax::exec::CellQuadrilateral>
+{
+  static dax::Vector3 Center() {
+    return dax::make_Vector3(0.5, 0.5, 0.0);
+  }
+  static dax::Tuple<dax::Vector3, 4> Vertex() {
+    const dax::Vector3 cellVertexToParametricCoords[4] = {
+      dax::make_Vector3(0, 0, 0),
+      dax::make_Vector3(1, 0, 0),
+      dax::make_Vector3(1, 1, 0),
+      dax::make_Vector3(0, 1, 0)
+    };
+    return dax::Tuple<dax::Vector3, 4>(cellVertexToParametricCoords);
+  }
+};
+
 //-----------------------------------------------------------------------------
 template<class WorkType, class CellType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 ParametricCoordinatesToWorldCoordinates(
@@ -357,6 +374,109 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
     }
 
   return pcoords;
+}
+
+//-----------------------------------------------------------------------------
+namespace detail {
+
+class QuadrilateralJacobianFunctor {
+  const dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS>
+      &VertexCoordinates;
+  const dax::Id3 &DimensionSwizzle;
+public:
+  DAX_EXEC_EXPORT
+  QuadrilateralJacobianFunctor(
+      const dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS>
+      &vertexCoords,
+      const dax::Id3 &dimensionSwizzle)
+    : VertexCoordinates(vertexCoords), DimensionSwizzle(dimensionSwizzle) {  }
+  DAX_EXEC_EXPORT
+  dax::exec::math::Matrix2x2 operator()(dax::Vector2 pcoords) const {
+    return dax::exec::detail::make_JacobianForQuadrilateral(
+          dax::exec::internal::derivativeWeightsQuadrilateral(pcoords),
+          this->VertexCoordinates,
+          this->DimensionSwizzle);
+  }
+};
+
+template<class WorkType, class ExecutionAdapter>
+class QuadrilateralCoodinatesFunctor {
+  const WorkType &Work;
+  const dax::exec::CellQuadrilateral &Cell;
+  const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &CoordField;
+  const dax::Id3 &DimensionSwizzle;
+public:
+  DAX_EXEC_EXPORT
+  QuadrilateralCoodinatesFunctor(
+      const WorkType &work,
+      const dax::exec::CellQuadrilateral &cell,
+      const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
+      const dax::Id3 &dimensionSwizzle)
+    : Work(work),
+      Cell(cell),
+      CoordField(coordField),
+      DimensionSwizzle(dimensionSwizzle) {  }
+  DAX_EXEC_EXPORT
+  dax::Vector2 operator()(dax::Vector2 pcoords) const {
+    dax::Vector3 pcoords3D(pcoords[0], pcoords[1], 0);
+    dax::Vector3 wcoords =
+        dax::exec::ParametricCoordinatesToWorldCoordinates(this->Work,
+                                                           this->Cell,
+                                                           this->CoordField,
+                                                           pcoords3D);
+    return dax::make_Vector2(wcoords[this->DimensionSwizzle[0]],
+                             wcoords[this->DimensionSwizzle[1]]);
+  }
+};
+
+} // Namespace detail
+
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
+  const WorkType &work,
+  const dax::exec::CellQuadrilateral &cell,
+  const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
+  const dax::Vector3 wcoords)
+{
+  dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS> vertexCoords
+      = work.GetFieldValues(coordField);
+
+  // We have an overconstrained system, so just pick two coordinates to work
+  // with (the two most different from the normal).  We will do this by
+  // creating a dimension swizzle and using the first two dimensions.
+
+  dax::Id3 dimensionSwizzle;
+  dax::Vector3 normal = dax::exec::math::TriangleNormal(vertexCoords[0],
+                                                        vertexCoords[1],
+                                                        vertexCoords[2]);
+  dax::Vector3 absNormal = dax::exec::math::Abs(normal);
+  if (absNormal[0] < absNormal[1])
+    {
+    dimensionSwizzle = dax::make_Id3(0, 1, 2);
+    }
+  else
+    {
+    dimensionSwizzle = dax::make_Id3(1, 0, 2);
+    }
+  if (absNormal[dimensionSwizzle[1]] < absNormal[2])
+    {
+    // Everything is fine.
+    }
+  else
+    {
+    dimensionSwizzle[2] = dimensionSwizzle[1];
+    dimensionSwizzle[1] = 2;
+    }
+
+  dax::Vector2 pcoords =
+      dax::exec::math::NewtonsMethod(
+        detail::QuadrilateralJacobianFunctor(vertexCoords, dimensionSwizzle),
+        detail::QuadrilateralCoodinatesFunctor<
+             WorkType,ExecutionAdapter>(work,cell,coordField, dimensionSwizzle),
+        dax::make_Vector2(wcoords[dimensionSwizzle[0]], wcoords[dimensionSwizzle[1]]),
+        dax::make_Vector2(0.5, 0.5));
+
+  return dax::make_Vector3(pcoords[0], pcoords[1], 0);
 }
 
 }

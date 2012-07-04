@@ -122,12 +122,25 @@ void TestInterpolationWeightsTriangle()
   CheckCenterWeight<CellType>();
 }
 
+//-----------------------------------------------------------------------------
+void TestInterpolationWeightsQuadrilateral()
+{
+  std::cout << "In TestInterpolationWeightsQuadrilateral" << std::endl;
+
+  typedef dax::exec::CellQuadrilateral CellType;
+
+  CheckVertexWeights<CellType>();
+
+  CheckCenterWeight<CellType>();
+}
+
 void TestInterpolationWeights()
 {
   TestInterpolationWeightsVoxel();
   TestInterpolationWeightsHexahedron();
   TestInterpolationWeightsTetrahedron();
   TestInterpolationWeightsTriangle();
+  TestInterpolationWeightsQuadrilateral();
 }
 
 }

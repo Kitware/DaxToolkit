@@ -17,11 +17,11 @@
 #define __dax_exec_Cell_h
 
 #include <dax/exec/CellHexahedron.h>
+#include <dax/exec/CellQuadrilateral.h>
 #include <dax/exec/CellTetrahedron.h>
 #include <dax/exec/CellTriangle.h>
 #include <dax/exec/CellVoxel.h>
 
-#define DAX_DOXYGEN_ONLY
 #ifdef DAX_DOXYGEN_ONLY
 
 namespace dax {
