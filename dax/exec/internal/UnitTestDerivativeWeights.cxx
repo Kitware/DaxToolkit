@@ -18,6 +18,8 @@
 
 #include <dax/exec/ParametricCoordinates.h>
 
+#include <dax/exec/internal/TestingTopologyGenerator.h>
+
 #include <dax/internal/Testing.h>
 
 namespace {
@@ -84,154 +86,88 @@ static void TestWeightInMiddle(dax::Scalar weight,
     }
 }
 
-static void TestDerivativeWeightsVoxel()
-{
-  std::cout << "In TestDerivativeWeightsVoxel" << std::endl;
-  typedef dax::exec::CellVoxel CellType;
-
-  // Check Derivative at each corner.
-  for (dax::Id vertexIndex = 0; vertexIndex < CellType::NUM_POINTS; vertexIndex++)
-    {
-    dax::Vector3 pcoords =
-        dax::exec::ParametricCoordinates<CellType>::Vertex()[vertexIndex];
-
-    dax::Tuple<dax::Vector3,CellType::NUM_POINTS> weights =
-        dax::exec::internal::derivativeWeightsVoxel(pcoords);
-
-    for (dax::Id weightIndex = 0; weightIndex < CellType::NUM_POINTS; weightIndex++)
-      {
-      dax::Vector3 vertexPCoords =
-          dax::exec::ParametricCoordinates<CellType>::Vertex()[weightIndex];
-
-      TestWeightOnVertex(weights[weightIndex],
-                         pcoords,
-                         vertexPCoords,
-                         CellType::TOPOLOGICAL_DIMENSIONS);
-      }
-    }
-
-  // Check for Derivative at middle.
-  dax::Tuple<dax::Vector3,CellType::NUM_POINTS> weights =
-      dax::exec::internal::derivativeWeightsVoxel(
-        dax::exec::ParametricCoordinates<CellType>::Center());
-  for (dax::Id weightIndex = 0; weightIndex < CellType::NUM_POINTS; weightIndex++)
-    {
-    dax::Vector3 vertexPCoords =
-        dax::exec::ParametricCoordinates<CellType>::Vertex()[weightIndex];
-
-    TestWeightInMiddle(weights[weightIndex][0],
-                       vertexPCoords[0],
-                       CellType::TOPOLOGICAL_DIMENSIONS);
-    TestWeightInMiddle(weights[weightIndex][1],
-                       vertexPCoords[1],
-                       CellType::TOPOLOGICAL_DIMENSIONS);
-    TestWeightInMiddle(weights[weightIndex][2],
-                       vertexPCoords[2],
-                       CellType::TOPOLOGICAL_DIMENSIONS);
-    }
-}
-
-static void TestDerivativeWeightsHexahedron()
-{
-  std::cout << "In TestDerivativeWeightsHexahedron" << std::endl;
-  typedef dax::exec::CellHexahedron CellType;
-
-  // Check Derivative at each corner.
-  for (dax::Id vertexIndex = 0; vertexIndex < CellType::NUM_POINTS; vertexIndex++)
-    {
-    dax::Vector3 pcoords =
-        dax::exec::ParametricCoordinates<CellType>::Vertex()[vertexIndex];
-
-    dax::Tuple<dax::Vector3,CellType::NUM_POINTS> weights =
-        dax::exec::internal::derivativeWeightsHexahedron(pcoords);
-
-    for (dax::Id weightIndex = 0; weightIndex < CellType::NUM_POINTS; weightIndex++)
-      {
-      dax::Vector3 vertexPCoords =
-          dax::exec::ParametricCoordinates<CellType>::Vertex()[weightIndex];
-
-      TestWeightOnVertex(weights[weightIndex],
-                         pcoords,
-                         vertexPCoords,
-                         CellType::TOPOLOGICAL_DIMENSIONS);
-      }
-    }
-
-  // Check for Derivative at middle.
-  dax::Tuple<dax::Vector3,CellType::NUM_POINTS> weights =
-      dax::exec::internal::derivativeWeightsHexahedron(
-        dax::exec::ParametricCoordinates<CellType>::Center());
-  for (dax::Id weightIndex = 0; weightIndex < CellType::NUM_POINTS; weightIndex++)
-    {
-    dax::Vector3 vertexPCoords =
-        dax::exec::ParametricCoordinates<CellType>::Vertex()[weightIndex];
-
-    TestWeightInMiddle(weights[weightIndex][0],
-                       vertexPCoords[0],
-                       CellType::TOPOLOGICAL_DIMENSIONS);
-    TestWeightInMiddle(weights[weightIndex][1],
-                       vertexPCoords[1],
-                       CellType::TOPOLOGICAL_DIMENSIONS);
-    TestWeightInMiddle(weights[weightIndex][2],
-                       vertexPCoords[2],
-                       CellType::TOPOLOGICAL_DIMENSIONS);
-    }
-}
-
-static void TestDerivativeWeightsQuadrilateral()
-{
-  std::cout << "In TestDerivativeWeightsQuadrilateral" << std::endl;
-  typedef dax::exec::CellQuadrilateral CellType;
-
-  // Check Derivative at each corner.
-  for (dax::Id vertexIndex = 0; vertexIndex < CellType::NUM_POINTS; vertexIndex++)
-    {
-    dax::Vector3 pcoords =
-        dax::exec::ParametricCoordinates<CellType>::Vertex()[vertexIndex];
-
-    dax::Tuple<dax::Vector3,CellType::NUM_POINTS> weights =
-        dax::exec::internal::derivativeWeightsQuadrilateral(pcoords);
-
-    for (dax::Id weightIndex = 0; weightIndex < CellType::NUM_POINTS; weightIndex++)
-      {
-      dax::Vector3 vertexPCoords =
-          dax::exec::ParametricCoordinates<CellType>::Vertex()[weightIndex];
-
-      TestWeightOnVertex(weights[weightIndex],
-                         pcoords,
-                         vertexPCoords,
-                         CellType::TOPOLOGICAL_DIMENSIONS);
-      }
-    }
-
-  // Check for Derivative at middle.
-  dax::Tuple<dax::Vector3,CellType::NUM_POINTS> weights =
-      dax::exec::internal::derivativeWeightsQuadrilateral(
-        dax::exec::ParametricCoordinates<CellType>::Center());
-  for (dax::Id weightIndex = 0; weightIndex < CellType::NUM_POINTS; weightIndex++)
-    {
-    dax::Vector3 vertexPCoords =
-        dax::exec::ParametricCoordinates<CellType>::Vertex()[weightIndex];
-
-    TestWeightInMiddle(weights[weightIndex][0],
-                       vertexPCoords[0],
-                       CellType::TOPOLOGICAL_DIMENSIONS);
-    TestWeightInMiddle(weights[weightIndex][1],
-                       vertexPCoords[1],
-                       CellType::TOPOLOGICAL_DIMENSIONS);
-    }
-}
-
+template<class CellType>
 void TestDerivativeWeights()
 {
-  TestDerivativeWeightsVoxel();
-  TestDerivativeWeightsHexahedron();
-  TestDerivativeWeightsQuadrilateral();
+  // Check Derivative at each corner.
+  for (dax::Id vertexIndex = 0;
+       vertexIndex < CellType::NUM_POINTS;
+       vertexIndex++)
+    {
+    dax::Vector3 pcoords =
+        dax::exec::ParametricCoordinates<CellType>::Vertex()[vertexIndex];
+
+    dax::Tuple<dax::Vector3,CellType::NUM_POINTS> weights =
+        dax::exec::internal::DerivativeWeights<CellType>(pcoords);
+
+    for (dax::Id weightIndex = 0;
+         weightIndex < CellType::NUM_POINTS;
+         weightIndex++)
+      {
+      dax::Vector3 vertexPCoords =
+          dax::exec::ParametricCoordinates<CellType>::Vertex()[weightIndex];
+
+      TestWeightOnVertex(weights[weightIndex],
+                         pcoords,
+                         vertexPCoords,
+                         CellType::TOPOLOGICAL_DIMENSIONS);
+      }
+    }
+
+  // Check for Derivative at middle.
+  dax::Tuple<dax::Vector3,CellType::NUM_POINTS> weights =
+      dax::exec::internal::DerivativeWeights<CellType>(
+        dax::exec::ParametricCoordinates<CellType>::Center());
+  for (dax::Id weightIndex = 0; weightIndex < CellType::NUM_POINTS; weightIndex++)
+    {
+    dax::Vector3 vertexPCoords =
+        dax::exec::ParametricCoordinates<CellType>::Vertex()[weightIndex];
+
+    TestWeightInMiddle(weights[weightIndex][0],
+                       vertexPCoords[0],
+                       CellType::TOPOLOGICAL_DIMENSIONS);
+    TestWeightInMiddle(weights[weightIndex][1],
+                       vertexPCoords[1],
+                       CellType::TOPOLOGICAL_DIMENSIONS);
+    if (CellType::TOPOLOGICAL_DIMENSIONS > 2)
+      {
+      TestWeightInMiddle(weights[weightIndex][2],
+                         vertexPCoords[2],
+                         CellType::TOPOLOGICAL_DIMENSIONS);
+      }
+    }
+}
+
+// Special cases for totally linear cells with a different type of weighting.
+// They don't have implementations for DerivativeWeights, and the checks in
+// this test would be wrong if they did.
+template<>
+void TestDerivativeWeights<dax::exec::CellTetrahedron>()
+{
+  std::cout << "  No derivative weights for tetrahedra.  Skiping." << std::endl;
+}
+template<>
+void TestDerivativeWeights<dax::exec::CellTriangle>()
+{
+  std::cout << "  No derivative weights for triangles.  Skiping." << std::endl;
+}
+
+struct TestDerivativeWeightsFunctor
+{
+  template<class TopologyGenType>
+  void operator()(const TopologyGenType &) const {
+    TestDerivativeWeights<typename TopologyGenType::CellType>();
+  }
+};
+
+void TestAllDerivativeWeights()
+{
+  dax::exec::internal::TryAllTopologyTypes(TestDerivativeWeightsFunctor());
 }
 
 } // Anonymous namespace
 
 int UnitTestDerivativeWeights(int, char *[])
 {
-  return dax::internal::Testing::Run(TestDerivativeWeights);
+  return dax::internal::Testing::Run(TestAllDerivativeWeights);
 }

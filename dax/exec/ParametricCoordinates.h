@@ -190,7 +190,8 @@ public:
   DAX_EXEC_EXPORT
   dax::exec::math::Matrix3x3 operator()(dax::Vector3 pcoords) const {
     return dax::exec::detail::make_JacobianForHexahedron(
-          dax::exec::internal::derivativeWeightsHexahedron(pcoords),
+          dax::exec::internal::DerivativeWeights<dax::exec::CellHexahedron>(
+            pcoords),
           this->VertexCoordinates);
   }
 };
@@ -396,7 +397,7 @@ public:
 
     const dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS>
         derivativeWeights =
-        dax::exec::internal::derivativeWeightsQuadrilateral(pcoords);
+        dax::exec::internal::DerivativeWeightsQuadrilateral(pcoords);
 
     // Create the Jacobian matrix of the form
     //

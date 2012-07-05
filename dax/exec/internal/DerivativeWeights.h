@@ -18,6 +18,8 @@
 
 #include <dax/Types.h>
 
+#include <dax/exec/Cell.h>
+
 namespace dax {
 namespace exec {
 namespace internal {
@@ -26,8 +28,14 @@ namespace internal {
 /// interpolation weights (see InterpolationWeights.h) at the parametric
 /// coordinates.
 ///
+template<class CellType>
+DAX_EXEC_EXPORT
+dax::Tuple<dax::Vector3, CellType::NUM_POINTS>
+DerivativeWeights(const dax::Vector3 &pcoords);
+
+template<>
 DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,8>
-derivativeWeightsVoxel(const dax::Vector3 &pcoords)
+DerivativeWeights<dax::exec::CellVoxel>(const dax::Vector3 &pcoords)
 {
   dax::Tuple<dax::Vector3,8> weights;
   const dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
@@ -67,15 +75,16 @@ derivativeWeightsVoxel(const dax::Vector3 &pcoords)
   return weights;
 }
 
+template<>
 DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,8>
-derivativeWeightsHexahedron(const dax::Vector3 &pcoords)
+DerivativeWeights<dax::exec::CellHexahedron>(const dax::Vector3 &pcoords)
 {
   // Same as voxel
-  return derivativeWeightsVoxel(pcoords);
+  return DerivativeWeights<dax::exec::CellVoxel>(pcoords);
 }
 
 DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,4>
-derivativeWeightsQuadrilateral(const dax::Vector2 &pcoords)
+DerivativeWeightsQuadrilateral(const dax::Vector2 &pcoords)
 {
   const dax::Vector2 rcoords = dax::make_Vector2(1, 1) - pcoords;
   dax::Tuple<dax::Vector3,4> weights;
@@ -98,10 +107,12 @@ derivativeWeightsQuadrilateral(const dax::Vector2 &pcoords)
 
   return weights;
 }
+
+template<>
 DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,4>
-derivativeWeightsQuadrilateral(const dax::Vector3 &pcoords)
+DerivativeWeights<dax::exec::CellQuadrilateral>(const dax::Vector3 &pcoords)
 {
-  return derivativeWeightsQuadrilateral(dax::make_Vector2(pcoords[0],
+  return DerivativeWeightsQuadrilateral(dax::make_Vector2(pcoords[0],
                                                           pcoords[1]));
 }
 

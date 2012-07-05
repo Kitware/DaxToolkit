@@ -37,8 +37,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   const dax::Id NUM_POINTS  = dax::exec::CellVoxel::NUM_POINTS;
   typedef dax::Tuple<dax::Vector3,NUM_POINTS> DerivWeights;
 
-  DerivWeights derivativeWeights = dax::exec::internal::derivativeWeightsVoxel(
-                                     pcoords);
+  DerivWeights derivativeWeights =
+      dax::exec::internal::DerivativeWeights<dax::exec::CellVoxel>(pcoords);
 
   dax::Vector3 sum = dax::make_Vector3(0.0, 0.0, 0.0);
   dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
@@ -108,7 +108,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   typedef dax::Tuple<dax::Vector3,NUM_POINTS> DerivWeights;
 
   DerivWeights derivativeWeights =
-      dax::exec::internal::derivativeWeightsHexahedron(pcoords);
+      dax::exec::internal::DerivativeWeights<dax::exec::CellHexahedron>(
+        pcoords);
   dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS> allCoords =
       work.GetFieldValues(fcoords);
 
@@ -370,7 +371,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   typedef dax::Tuple<dax::Vector3,NUM_POINTS> DerivWeights;
 
   DerivWeights derivativeWeights =
-      dax::exec::internal::derivativeWeightsQuadrilateral(pcoords);
+      dax::exec::internal::DerivativeWeights<dax::exec::CellQuadrilateral>(
+        pcoords);
   dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS> allCoords =
       work.GetFieldValues(fcoords);
 
