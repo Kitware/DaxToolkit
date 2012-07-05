@@ -21,6 +21,7 @@
 #include <dax/exec/CellTetrahedron.h>
 #include <dax/exec/CellTriangle.h>
 #include <dax/exec/CellVoxel.h>
+#include <dax/exec/CellWedge.h>
 
 #ifdef DAX_DOXYGEN_ONLY
 

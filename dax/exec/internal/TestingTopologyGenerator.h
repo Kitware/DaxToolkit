@@ -280,6 +280,79 @@ private:
     topology.CellConnections = &connectArray.front();
   }
 
+  static dax::Tuple<dax::Id,6> GetCellConnectionsImpl(
+      const dax::exec::internal::TopologyUnstructured<
+          dax::exec::CellWedge,TestExecutionAdapter> &,
+      dax::Id cellIndex)
+  {
+    // Wedge meshes are based on hex meshes.  They have 2x the cells.
+    // See the comment in BuildTopology.
+    dax::Tuple<dax::Id,8> hexConnections =
+        TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
+                                             cellIndex/2);
+    dax::Tuple<dax::Id,6> wedgeConnections;
+    if (cellIndex%2 == 0)
+      {
+      wedgeConnections[0] = hexConnections[0];
+      wedgeConnections[1] = hexConnections[3];
+      wedgeConnections[2] = hexConnections[2];
+      wedgeConnections[3] = hexConnections[4];
+      wedgeConnections[4] = hexConnections[7];
+      wedgeConnections[5] = hexConnections[6];
+      }
+    else // cellIndex%2 == 1
+      {
+      wedgeConnections[0] = hexConnections[0];
+      wedgeConnections[1] = hexConnections[2];
+      wedgeConnections[2] = hexConnections[1];
+      wedgeConnections[3] = hexConnections[4];
+      wedgeConnections[4] = hexConnections[6];
+      wedgeConnections[5] = hexConnections[5];
+      }
+    return wedgeConnections;
+  }
+
+  static void BuildTopology(dax::exec::internal::TopologyUnstructured
+                            <dax::exec::CellWedge, TestExecutionAdapter>
+                            &topology,
+                            std::vector<dax::Vector3> &coordArray,
+                            std::vector<dax::Id> &connectArray)
+  {
+    // Base this topology on the hexahedron topology.
+    dax::exec::internal::TopologyUnstructured<
+        dax::exec::CellHexahedron,TestExecutionAdapter> hexTopology;
+    std::vector<dax::Id> hexConnections;
+    BuildTopology(hexTopology, coordArray, hexConnections);
+
+    typedef dax::exec::CellWedge CellType;
+
+    // Our wedge mesh will have two wedges for each hexahedron. The wedges are
+    // formed by cutting the hexahedron along the x/y diagonal.
+    topology.NumberOfCells = hexTopology.NumberOfCells * 2;
+    topology.NumberOfPoints = hexTopology.NumberOfPoints;
+
+    // Make connections.
+    connectArray.reserve(topology.NumberOfCells*CellType::NUM_POINTS);
+
+    for (dax::Id cellIndex = 0; cellIndex < topology.NumberOfCells; cellIndex++)
+      {
+      dax::Tuple<dax::Id,CellType::NUM_POINTS> pointConnections
+          = TestTopology::GetCellConnectionsImpl(topology, cellIndex);
+
+      connectArray.push_back(pointConnections[0]);
+      connectArray.push_back(pointConnections[1]);
+      connectArray.push_back(pointConnections[2]);
+      connectArray.push_back(pointConnections[3]);
+      connectArray.push_back(pointConnections[4]);
+      connectArray.push_back(pointConnections[5]);
+      }
+    DAX_TEST_ASSERT(dax::Id(connectArray.size())
+                    == topology.NumberOfCells*CellType::NUM_POINTS,
+                    "Bad connection array size.");
+
+    topology.CellConnections = &connectArray.front();
+  }
+
   static dax::Tuple<dax::Id,3> GetCellConnectionsImpl(
       const dax::exec::internal::TopologyUnstructured<
           dax::exec::CellTriangle,TestExecutionAdapter> &,
@@ -424,6 +497,11 @@ void TryAllTopologyTypes(FunctionType function)
   TestTopology<dax::exec::internal::TopologyUnstructured
       <dax::exec::CellTetrahedron,TestExecutionAdapter> > tetrahedronTopology;
   function(tetrahedronTopology);
+
+  std::cout << "--- dax::exec::CellWedge" << std::endl;
+  TestTopology<dax::exec::internal::TopologyUnstructured
+      <dax::exec::CellWedge,TestExecutionAdapter> > wedgeTopology;
+  function(wedgeTopology);
 
   std::cout << "--- dax::exec::CellTriangle" << std::endl;
   TestTopology<dax::exec::internal::TopologyUnstructured

@@ -73,6 +73,21 @@ InterpolationWeights<dax::exec::CellTetrahedron>(const dax::Vector3 &pcoords)
 
 template<>
 DAX_EXEC_EXPORT
+dax::Tuple<dax::Scalar, 6>
+InterpolationWeights<dax::exec::CellWedge>(const dax::Vector3 &pcoords)
+{
+  dax::Tuple<dax::Scalar, 6> weights;
+  weights[0] = (1 - pcoords[0] - pcoords[1]) * (1 - pcoords[2]);
+  weights[1] = pcoords[1] * (1 - pcoords[2]);
+  weights[2] = pcoords[0] * (1 - pcoords[2]);
+  weights[3] = (1 - pcoords[0] - pcoords[1]) * pcoords[2];
+  weights[4] = pcoords[1] * pcoords[2];
+  weights[5] = pcoords[0] * pcoords[2];
+  return weights;
+}
+
+template<>
+DAX_EXEC_EXPORT
 dax::Tuple<dax::Scalar, 3>
 InterpolationWeights<dax::exec::CellTriangle>(const dax::Vector3 &pcoords)
 {

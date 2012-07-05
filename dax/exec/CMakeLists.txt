@@ -22,6 +22,7 @@ set(headers
   CellTetrahedron.h
   CellTriangle.h
   CellVoxel.h
+  CellWedge.h
   Derivative.h
   Field.h
   Interpolate.h

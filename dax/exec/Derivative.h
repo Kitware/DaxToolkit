@@ -54,8 +54,10 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
 
 //-----------------------------------------------------------------------------
 namespace detail {
-// This returns the Jacobian of a hexahedron's coordinates with respect to
-// parametric coordinates.  Explicitly, this is (d is partial derivative):
+
+// This returns the Jacobian of a hexahedron's (or other 3D cell's coordinates
+// with respect to parametric coordinates. Explicitly, this is (d is partial
+// derivative):
 //
 //   |                     |
 //   | dx/du  dx/dv  dx/dw |
@@ -65,14 +67,12 @@ namespace detail {
 //   | dz/du  dz/dv  dz/dw |
 //   |                     |
 //
+template<int NUM_POINTS>
 DAX_EXEC_EXPORT
-dax::exec::math::Matrix3x3 make_JacobianForHexahedron(
-    const dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS>
-    &derivativeWeights,
-    const dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS>
-    &pointCoordinates)
+dax::exec::math::Matrix3x3 make_JacobianFor3DCell(
+    const dax::Tuple<dax::Vector3,NUM_POINTS> &derivativeWeights,
+    const dax::Tuple<dax::Vector3,NUM_POINTS> &pointCoordinates)
 {
-  const int NUM_POINTS = dax::exec::CellHexahedron::NUM_POINTS;
   dax::exec::math::Matrix3x3 jacobian(0);
   for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
     {
@@ -94,30 +94,27 @@ dax::exec::math::Matrix3x3 make_JacobianForHexahedron(
 
   return jacobian;
 }
-}
 
 template<class WorkType, class ExecutionAdapter>
-DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
+DAX_EXEC_EXPORT dax::Vector3 CellDerivativeFor3DCell(
     const WorkType &work,
-    const dax::exec::CellHexahedron &,
     const dax::Vector3 &pcoords,
     const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
     const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
 {
-  const dax::Id NUM_POINTS  = dax::exec::CellHexahedron::NUM_POINTS;
+  typedef typename WorkType::CellType CellType;
+  const dax::Id NUM_POINTS  = CellType::NUM_POINTS;
   typedef dax::Tuple<dax::Vector3,NUM_POINTS> DerivWeights;
 
   DerivWeights derivativeWeights =
-      dax::exec::internal::DerivativeWeights<dax::exec::CellHexahedron>(
-        pcoords);
-  dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS> allCoords =
-      work.GetFieldValues(fcoords);
+      dax::exec::internal::DerivativeWeights<CellType>(pcoords);
+  dax::Tuple<dax::Vector3,NUM_POINTS> allCoords = work.GetFieldValues(fcoords);
 
   // For reasons that should become apparent in a moment, we actually want
   // the transpose of the Jacobian.
   dax::exec::math::Matrix3x3 jacobianTranspose =
       dax::exec::math::MatrixTranspose(
-        detail::make_JacobianForHexahedron(derivativeWeights, allCoords));
+        detail::make_JacobianFor3DCell(derivativeWeights, allCoords));
 
   // Find the derivative of the field in parametric coordinate space. That is,
   // find the vector [ds/du, ds/dv, ds/dw].
@@ -150,6 +147,30 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   return dax::exec::math::SolveLinearSystem(jacobianTranspose,
                                             parametricDerivative,
                                             valid);
+}
+
+}
+
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
+    const WorkType &work,
+    const dax::exec::CellHexahedron &,
+    const dax::Vector3 &pcoords,
+    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
+    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
+{
+  return detail::CellDerivativeFor3DCell(work, pcoords, fcoords, point_scalar);
+}
+
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
+    const WorkType &work,
+    const dax::exec::CellWedge &,
+    const dax::Vector3 &pcoords,
+    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
+    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
+{
+  return detail::CellDerivativeFor3DCell(work, pcoords, fcoords, point_scalar);
 }
 
 

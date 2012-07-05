@@ -93,6 +93,25 @@ struct ParametricCoordinates<dax::exec::CellTetrahedron>
 };
 
 template<>
+struct ParametricCoordinates<dax::exec::CellWedge>
+{
+  static dax::Vector3 Center() {
+    return dax::make_Vector3(1.0/3.0, 1.0/3.0, 0.5);
+  }
+  static dax::Tuple<dax::Vector3, 6> Vertex() {
+    const dax::Vector3 cellToParametricCoords[6] = {
+      dax::make_Vector3(0, 0, 0),
+      dax::make_Vector3(0, 1, 0),
+      dax::make_Vector3(1, 0, 0),
+      dax::make_Vector3(0, 0, 1),
+      dax::make_Vector3(0, 1, 1),
+      dax::make_Vector3(1, 0, 1)
+    };
+    return dax::Tuple<dax::Vector3, 6>(cellToParametricCoords);
+  }
+};
+
+template<>
 struct ParametricCoordinates<dax::exec::CellTriangle>
 {
   static dax::Vector3 Center() {
@@ -178,34 +197,34 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 //-----------------------------------------------------------------------------
 namespace detail {
 
-class HexahedronJacobianFunctor {
-  const dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS>
+template<class CellType>
+class JacobianFunctor3DCell {
+  const dax::Tuple<dax::Vector3,CellType::NUM_POINTS>
       &VertexCoordinates;
 public:
   DAX_EXEC_EXPORT
-  HexahedronJacobianFunctor(
-      const dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS>
+  JacobianFunctor3DCell(
+      const dax::Tuple<dax::Vector3,CellType::NUM_POINTS>
       &vertexCoords)
     : VertexCoordinates(vertexCoords) {  }
   DAX_EXEC_EXPORT
   dax::exec::math::Matrix3x3 operator()(dax::Vector3 pcoords) const {
-    return dax::exec::detail::make_JacobianForHexahedron(
-          dax::exec::internal::DerivativeWeights<dax::exec::CellHexahedron>(
-            pcoords),
+    return dax::exec::detail::make_JacobianFor3DCell(
+          dax::exec::internal::DerivativeWeights<CellType>(pcoords),
           this->VertexCoordinates);
   }
 };
 
 template<class WorkType, class ExecutionAdapter>
-class HexahedronCoodinatesFunctor {
+class CoodinatesFunctor3DCell {
   const WorkType &Work;
-  const dax::exec::CellHexahedron &Cell;
+  const typename WorkType::CellType &Cell;
   const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &CoordField;
 public:
   DAX_EXEC_EXPORT
-  HexahedronCoodinatesFunctor(
+  CoodinatesFunctor3DCell(
       const WorkType &work,
-      const dax::exec::CellHexahedron &cell,
+      const typename WorkType::CellType &cell,
       const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField)
     : Work(work), Cell(cell), CoordField(coordField) {  }
   DAX_EXEC_EXPORT
@@ -230,8 +249,26 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
       work.GetFieldValues(coordField);
 
   return dax::exec::math::NewtonsMethod(
-        detail::HexahedronJacobianFunctor(vertexCoords),
-        detail::HexahedronCoodinatesFunctor<
+        detail::JacobianFunctor3DCell<dax::exec::CellHexahedron>(vertexCoords),
+        detail::CoodinatesFunctor3DCell<
+             WorkType,ExecutionAdapter>(work,cell,coordField),
+        wcoords,
+        dax::make_Vector3(0.5, 0.5, 0.5));
+}
+
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
+  const WorkType &work,
+  const dax::exec::CellWedge &cell,
+  const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
+  const dax::Vector3 wcoords)
+{
+  dax::Tuple<dax::Vector3,dax::exec::CellWedge::NUM_POINTS> vertexCoords =
+      work.GetFieldValues(coordField);
+
+  return dax::exec::math::NewtonsMethod(
+        detail::JacobianFunctor3DCell<dax::exec::CellWedge>(vertexCoords),
+        detail::CoodinatesFunctor3DCell<
              WorkType,ExecutionAdapter>(work,cell,coordField),
         wcoords,
         dax::make_Vector3(0.5, 0.5, 0.5));

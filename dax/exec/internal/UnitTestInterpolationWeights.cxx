@@ -111,6 +111,18 @@ void TestInterpolationWeightsTetrahedron()
 }
 
 //-----------------------------------------------------------------------------
+void TestInterpolationWeightsWedge()
+{
+  std::cout << "In TestInterpolationWeightsWedge" << std::endl;
+
+  typedef dax::exec::CellWedge CellType;
+
+  CheckVertexWeights<CellType>();
+
+  CheckCenterWeight<CellType>();
+}
+
+//-----------------------------------------------------------------------------
 void TestInterpolationWeightsTriangle()
 {
   std::cout << "In TestInterpolationWeightsTriangle" << std::endl;

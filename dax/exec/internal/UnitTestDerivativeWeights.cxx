@@ -24,13 +24,13 @@
 
 namespace {
 
-static void TestWeightOnVertex(dax::Vector3 weight,
-                               dax::Vector3 derivativePCoord,
-                               dax::Vector3 vertexPCoord,
-                               int dimensions)
+template<class CellType>
+void TestWeightOnVertex(dax::Vector3 weight,
+                        dax::Vector3 derivativePCoord,
+                        dax::Vector3 vertexPCoord)
 {
   dax::Vector3 signs = 2.0*vertexPCoord - dax::make_Vector3(1.0, 1.0, 1.0);
-  if (dimensions < 3) { signs[2] = 0.0; }
+  if (CellType::TOPOLOGICAL_DIMENSIONS < 3) { signs[2] = 0.0; }
 
   if (vertexPCoord == derivativePCoord)
     {
@@ -64,25 +64,100 @@ static void TestWeightOnVertex(dax::Vector3 weight,
     }
 }
 
-static void TestWeightInMiddle(dax::Scalar weight,
-                               dax::Scalar vertexPCoord,
-                               int dimensions)
+// Wedge is linear in two dimensions and nonlinear in third.  Has
+// weird derivatives.
+template<>
+void TestWeightOnVertex<dax::exec::CellWedge>(dax::Vector3 weight,
+                                              dax::Vector3 derivativePCoord,
+                                              dax::Vector3 vertexPCoord)
+{
+  dax::Scalar zFactor = ((vertexPCoord[2] == 0.0)
+                         ? (1.0 - derivativePCoord[2]): derivativePCoord[2]);
+  dax::Scalar zSign = ((vertexPCoord[2] == 0.0) ? -1.0 : 1.0);
+  if ((vertexPCoord[0] == 0.0) && (vertexPCoord[1] == 0.0))
+    {
+    DAX_TEST_ASSERT(weight[0] == -zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[1] == -zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(
+          weight[2] == (1 - derivativePCoord[0] - derivativePCoord[1]) * zSign,
+          "Bad vertex weight.");
+    }
+  else if ((vertexPCoord[0] == 0.0) && (vertexPCoord[1] == 1.0))
+    {
+    DAX_TEST_ASSERT(weight[0] == 0.0, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[1] == zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[2] == derivativePCoord[1]*zSign,
+                    "Bad vertex weight.");
+    }
+  else if ((vertexPCoord[0] == 1.0) && (vertexPCoord[1] == 0.0))
+    {
+    DAX_TEST_ASSERT(weight[0] == zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[1] == 0.0, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[2] == derivativePCoord[0]*zSign,
+                    "Bad vertex weight.");
+    }
+  else
+    {
+    DAX_TEST_FAIL(
+          "Got parametric coordinates that do not seem to be on a vertex.");
+    }
+}
+
+template<class CellType>
+void TestWeightInMiddle(dax::Vector3 weight,
+                        dax::Vector3 vertexPCoord)
 {
   dax::Scalar expectedWeight = 0.0;
-  switch (dimensions)
+  switch (CellType::TOPOLOGICAL_DIMENSIONS)
     {
     case 3:  expectedWeight = 0.25;  break;
     case 2:  expectedWeight = 0.5;   break;
     default: DAX_TEST_FAIL("Unknown dimensions.");
     }
 
-  if (vertexPCoord < 0.5)
+  for (int component = 0;
+       component < CellType::TOPOLOGICAL_DIMENSIONS;
+       component++)
     {
-    DAX_TEST_ASSERT(weight == -expectedWeight, "Bad middle weight");
+    if (vertexPCoord[component] < 0.5)
+      {
+      DAX_TEST_ASSERT(weight[component] == -expectedWeight,"Bad middle weight");
+      }
+    else
+      {
+      DAX_TEST_ASSERT(weight[component] == expectedWeight, "Bad middle weight");
+      }
+    }
+}
+
+template<>
+void TestWeightInMiddle<dax::exec::CellWedge>(dax::Vector3 weight,
+                                              dax::Vector3 vertexPCoord)
+{
+  dax::Scalar zFactor = 0.5;
+  dax::Scalar zSign = ((vertexPCoord[2] == 0.0) ? -1.0 : 1.0);
+  if ((vertexPCoord[0] == 0.0) && (vertexPCoord[1] == 0.0))
+    {
+    DAX_TEST_ASSERT(weight[0] == -zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[1] == -zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(test_equal(weight[2], zSign/3), "Bad vertex weight.");
+    }
+  else if ((vertexPCoord[0] == 0.0) && (vertexPCoord[1] == 1.0))
+    {
+    DAX_TEST_ASSERT(weight[0] == 0.0, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[1] == zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(test_equal(weight[2], zSign/3), "Bad vertex weight.");
+    }
+  else if ((vertexPCoord[0] == 1.0) && (vertexPCoord[1] == 0.0))
+    {
+    DAX_TEST_ASSERT(weight[0] == zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[1] == 0.0, "Bad vertex weight.");
+    DAX_TEST_ASSERT(test_equal(weight[2], zSign/3), "Bad vertex weight.");
     }
   else
     {
-    DAX_TEST_ASSERT(weight == expectedWeight, "Bad middle weight");
+    DAX_TEST_FAIL(
+          "Got parametric coordinates that do not seem to be on a vertex.");
     }
 }
 
@@ -107,10 +182,9 @@ void TestDerivativeWeights()
       dax::Vector3 vertexPCoords =
           dax::exec::ParametricCoordinates<CellType>::Vertex()[weightIndex];
 
-      TestWeightOnVertex(weights[weightIndex],
-                         pcoords,
-                         vertexPCoords,
-                         CellType::TOPOLOGICAL_DIMENSIONS);
+      TestWeightOnVertex<CellType>(weights[weightIndex],
+                                   pcoords,
+                                   vertexPCoords);
       }
     }
 
@@ -123,18 +197,8 @@ void TestDerivativeWeights()
     dax::Vector3 vertexPCoords =
         dax::exec::ParametricCoordinates<CellType>::Vertex()[weightIndex];
 
-    TestWeightInMiddle(weights[weightIndex][0],
-                       vertexPCoords[0],
-                       CellType::TOPOLOGICAL_DIMENSIONS);
-    TestWeightInMiddle(weights[weightIndex][1],
-                       vertexPCoords[1],
-                       CellType::TOPOLOGICAL_DIMENSIONS);
-    if (CellType::TOPOLOGICAL_DIMENSIONS > 2)
-      {
-      TestWeightInMiddle(weights[weightIndex][2],
-                         vertexPCoords[2],
-                         CellType::TOPOLOGICAL_DIMENSIONS);
-      }
+    TestWeightInMiddle<CellType>(weights[weightIndex],
+                                 vertexPCoords);
     }
 }
 

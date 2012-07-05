@@ -83,6 +83,40 @@ DerivativeWeights<dax::exec::CellHexahedron>(const dax::Vector3 &pcoords)
   return DerivativeWeights<dax::exec::CellVoxel>(pcoords);
 }
 
+template<>
+DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,6>
+DerivativeWeights<dax::exec::CellWedge>(const dax::Vector3 &pcoords)
+{
+  dax::Tuple<dax::Vector3,6> weights;
+  const dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
+
+  weights[0][0] = -1.0 + pcoords[2];
+  weights[0][1] = -1.0 + pcoords[2];
+  weights[0][2] = -1.0 + pcoords[0] + pcoords[1];
+
+  weights[1][0] = 0.0;
+  weights[1][1] = 1.0 - pcoords[2];
+  weights[1][2] = -pcoords[1];
+
+  weights[2][0] = 1.0 - pcoords[2];
+  weights[2][1] = 0.0;
+  weights[2][2] = -pcoords[0];
+
+  weights[3][0] = -pcoords[2];
+  weights[3][1] = -pcoords[2];
+  weights[3][2] = 1.0 - pcoords[0] - pcoords[1];
+
+  weights[4][0] = 0.0;
+  weights[4][1] = pcoords[2];
+  weights[4][2] = pcoords[1];
+
+  weights[5][0] = pcoords[2];
+  weights[5][1] = 0.0;
+  weights[5][2] = pcoords[0];
+
+  return weights;
+}
+
 DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,4>
 DerivativeWeightsQuadrilateral(const dax::Vector2 &pcoords)
 {
