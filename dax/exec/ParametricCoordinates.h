@@ -392,10 +392,37 @@ public:
     : VertexCoordinates(vertexCoords), DimensionSwizzle(dimensionSwizzle) {  }
   DAX_EXEC_EXPORT
   dax::exec::math::Matrix2x2 operator()(dax::Vector2 pcoords) const {
-    return dax::exec::detail::make_JacobianForQuadrilateral(
-          dax::exec::internal::derivativeWeightsQuadrilateral(pcoords),
-          this->VertexCoordinates,
-          this->DimensionSwizzle);
+    const int NUM_POINTS = dax::exec::CellQuadrilateral::NUM_POINTS;
+
+    const dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS>
+        derivativeWeights =
+        dax::exec::internal::derivativeWeightsQuadrilateral(pcoords);
+
+    // Create the Jacobian matrix of the form
+    //
+    //   |              |
+    //   | da/du  da/dv |
+    //   |              |
+    //   | db/du  db/dv |
+    //   |              |
+    //
+    // a and b are some arbitrary dimensions choosen from the first two
+    // dimension indices in DimensionSwizzle.  (d is partial derivative)
+
+    dax::exec::math::Matrix2x2 jacobian(0);
+    for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
+      {
+      const dax::Vector3 &dweight = derivativeWeights[pointIndex];
+      const dax::Vector3 &coord = this->VertexCoordinates[pointIndex];
+
+      jacobian(0,0) += coord[this->DimensionSwizzle[0]] * dweight[0];
+      jacobian(0,1) += coord[this->DimensionSwizzle[0]] * dweight[1];
+
+      jacobian(1,0) += coord[this->DimensionSwizzle[1]] * dweight[0];
+      jacobian(1,1) += coord[this->DimensionSwizzle[1]] * dweight[1];
+      }
+
+    return jacobian;
   }
 };
 

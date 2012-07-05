@@ -282,45 +282,6 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
 
 //-----------------------------------------------------------------------------
 namespace detail {
-// This returns the Jacobian of a quadrilaterals's coordinates with respect to
-// parametric coordinates.  Explicitly, this is (d is partial derivative):
-//
-//   |              |
-//   | da/du  da/dv |
-//   |              |
-//   | db/du  db/dv |
-//   |              |
-//
-// where a and b are each one of x, y, or z. Because the system is
-// overdetermined, this method picks two dimension specified by the first two
-// entries in deminsionSwizzle (that are best picked to be closest to the plane
-// of the quad) and uses those for a and b.
-//
-DAX_EXEC_EXPORT
-dax::exec::math::Matrix2x2 make_JacobianForQuadrilateral(
-    const dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS>
-    &derivativeWeights,
-    const dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS>
-    &pointCoordinates,
-    const dax::Id3 &dimensionSwizzle)
-{
-  const int NUM_POINTS = dax::exec::CellQuadrilateral::NUM_POINTS;
-
-  dax::exec::math::Matrix2x2 jacobian(0);
-  for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
-    {
-    const dax::Vector3 &dweight = derivativeWeights[pointIndex];
-    const dax::Vector3 &coord = pointCoordinates[pointIndex];
-
-    jacobian(0,0) += coord[dimensionSwizzle[0]] * dweight[0];
-    jacobian(0,1) += coord[dimensionSwizzle[0]] * dweight[1];
-
-    jacobian(1,0) += coord[dimensionSwizzle[1]] * dweight[0];
-    jacobian(1,1) += coord[dimensionSwizzle[1]] * dweight[1];
-    }
-
-  return jacobian;
-}
 
 struct QuadrilateralSpace
 {
