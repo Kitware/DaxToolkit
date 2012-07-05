@@ -18,6 +18,8 @@
 
 #include <dax/exec/ParametricCoordinates.h>
 
+#include <dax/exec/internal/TestingTopologyGenerator.h>
+
 #include <dax/internal/Testing.h>
 
 namespace {
@@ -75,89 +77,31 @@ void CheckCenterWeight()
 }
 
 //-----------------------------------------------------------------------------
-void TestInterpolationWeightsVoxel()
-{
-  std::cout << "In TestInterpolationWeightsVoxel" << std::endl;
-
-  typedef dax::exec::CellVoxel CellType;
-
-  CheckVertexWeights<CellType>();
-
-  CheckCenterWeight<CellType>();
-}
-
-//-----------------------------------------------------------------------------
-void TestInterpolationWeightsHexahedron()
-{
-  std::cout << "In TestInterpolationWeightsHexahedron" << std::endl;
-
-  typedef dax::exec::CellHexahedron CellType;
-
-  CheckVertexWeights<CellType>();
-
-  CheckCenterWeight<CellType>();
-}
-
-//-----------------------------------------------------------------------------
-void TestInterpolationWeightsTetrahedron()
-{
-  std::cout << "In TestInterpolationWeightsTetrahedron" << std::endl;
-
-  typedef dax::exec::CellTetrahedron CellType;
-
-  CheckVertexWeights<CellType>();
-
-  CheckCenterWeight<CellType>();
-}
-
-//-----------------------------------------------------------------------------
-void TestInterpolationWeightsWedge()
-{
-  std::cout << "In TestInterpolationWeightsWedge" << std::endl;
-
-  typedef dax::exec::CellWedge CellType;
-
-  CheckVertexWeights<CellType>();
-
-  CheckCenterWeight<CellType>();
-}
-
-//-----------------------------------------------------------------------------
-void TestInterpolationWeightsTriangle()
-{
-  std::cout << "In TestInterpolationWeightsTriangle" << std::endl;
-
-  typedef dax::exec::CellTriangle CellType;
-
-  CheckVertexWeights<CellType>();
-
-  CheckCenterWeight<CellType>();
-}
-
-//-----------------------------------------------------------------------------
-void TestInterpolationWeightsQuadrilateral()
-{
-  std::cout << "In TestInterpolationWeightsQuadrilateral" << std::endl;
-
-  typedef dax::exec::CellQuadrilateral CellType;
-
-  CheckVertexWeights<CellType>();
-
-  CheckCenterWeight<CellType>();
-}
-
+template<class CellType>
 void TestInterpolationWeights()
 {
-  TestInterpolationWeightsVoxel();
-  TestInterpolationWeightsHexahedron();
-  TestInterpolationWeightsTetrahedron();
-  TestInterpolationWeightsTriangle();
-  TestInterpolationWeightsQuadrilateral();
+  CheckVertexWeights<CellType>();
+
+  CheckCenterWeight<CellType>();
 }
 
+//-----------------------------------------------------------------------------
+struct TestInterpolationWeightsFunctor
+{
+  template<class TopologyGenType>
+  void operator()(const TopologyGenType &) const {
+    TestInterpolationWeights<typename TopologyGenType::CellType>();
+  }
+};
+
+void TestAllInterpolationWeights()
+{
+  dax::exec::internal::TryAllTopologyTypes(TestInterpolationWeightsFunctor());
 }
+
+} // anonymous namespace
 
 int UnitTestInterpolationWeights(int, char *[])
 {
-  return dax::internal::Testing::Run(TestInterpolationWeights);
+  return dax::internal::Testing::Run(TestAllInterpolationWeights);
 }
