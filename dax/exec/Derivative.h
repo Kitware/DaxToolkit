@@ -321,7 +321,81 @@ dax::exec::math::Matrix2x2 make_JacobianForQuadrilateral(
 
   return jacobian;
 }
+
+struct QuadrilateralSpace
+{
+  dax::Vector3 Origin;
+  dax::Vector3 Basis0;
+  dax::Vector3 Basis1;
+};
+
+// The gradient is overconstrained for a quadrilateral. To get around the
+// problem, we build a 2D space (different from parametric space) in the same
+// plane as the quadrilateral and is linearlly consistant so that we can
+// validly compute the gradient in this space and convert back to real space.
+// For convienience, we also put the origin at the first point of the
+// quadrilateral and place the "x" axis on the first edge of the quadrilateral.
+//
+DAX_EXEC_EXPORT
+void make_SpaceForQuadrilateral(
+    const dax::Tuple<dax::Vector3, dax::exec::CellQuadrilateral::NUM_POINTS>
+    &pointCoordinates,
+    QuadrilateralSpace &space,
+    dax::Tuple<dax::Vector2, dax::exec::CellQuadrilateral::NUM_POINTS>
+    &pointCoordinates2D)
+{
+  space.Origin = pointCoordinates[0];
+
+  dax::Vector3 vec1 = pointCoordinates[1] - space.Origin;
+  dax::Scalar lengthX = dax::exec::math::Magnitude(vec1);
+  space.Basis0 = vec1 * (1/lengthX);
+
+  dax::Vector3 vec2 = pointCoordinates[2] - space.Origin;
+  dax::Vector3 normal = dax::exec::math::Cross(vec1, vec2);
+  space.Basis1 =
+      dax::exec::math::Normal(dax::exec::math::Cross(space.Basis0, normal));
+
+  pointCoordinates2D[0] = dax::make_Vector2(0, 0);
+  pointCoordinates2D[1] = dax::make_Vector2(lengthX, 0);
+  pointCoordinates2D[2] = dax::make_Vector2(dax::dot(space.Basis0, vec2),
+                                            dax::dot(space.Basis1, vec2));
+  dax::Vector3 vec3 = pointCoordinates[3] - space.Origin;
+  pointCoordinates2D[3] = dax::make_Vector2(dax::dot(space.Basis0, vec3),
+                                            dax::dot(space.Basis1, vec3));
 }
+
+// Derivatives in quadrilaterals are computed in much the same way as
+// hexahedra.  Review the documentation for hexahedra derivatives for details
+// on the math.  The major difference is that the equations are performed in
+// a 2D space built with make_SpaceForQuadrilateral.
+//
+DAX_EXEC_EXPORT
+dax::exec::math::Matrix2x2 make_JacobianForQuadrilateral(
+    const dax::Tuple<dax::Vector3, dax::exec::CellQuadrilateral::NUM_POINTS>
+    &derivativeWeights,
+    const dax::Tuple<dax::Vector2, dax::exec::CellQuadrilateral::NUM_POINTS>
+    &pointCoordinates2D)
+{
+  const int NUM_POINTS = dax::exec::CellQuadrilateral::NUM_POINTS;
+
+  dax::exec::math::Matrix2x2 jacobian(0);
+
+  for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
+    {
+    const dax::Vector3 &dweight = derivativeWeights[pointIndex];
+    const dax::Vector2 coord = pointCoordinates2D[pointIndex];
+
+    jacobian(0,0) += coord[0] * dweight[0];
+    jacobian(0,1) += coord[0] * dweight[1];
+
+    jacobian(1,0) += coord[1] * dweight[0];
+    jacobian(1,1) += coord[1] * dweight[1];
+    }
+
+  return jacobian;
+}
+
+} // namespace detail
 
 template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
@@ -339,40 +413,18 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS> allCoords =
       work.GetFieldValues(fcoords);
 
-  // We have an overconstrained system, so just pick two coordinates to work
-  // with (the two most different from the normal).  We will do this by
-  // creating a dimension swizzle and using the first two dimensions.
+  // We have an overconstrained system, so create a 2D space in the plane
+  // that the quadrilateral sits.
 
-  dax::Id3 dimensionSwizzle;
-  dax::Vector3 normal = dax::exec::math::TriangleNormal(allCoords[0],
-                                                        allCoords[1],
-                                                        allCoords[2]);
-  dax::Vector3 absNormal = dax::exec::math::Abs(normal);
-  if (absNormal[0] < absNormal[1])
-    {
-    dimensionSwizzle = dax::make_Id3(0, 1, 2);
-    }
-  else
-    {
-    dimensionSwizzle = dax::make_Id3(1, 0, 2);
-    }
-  if (absNormal[dimensionSwizzle[1]] < absNormal[2])
-    {
-    // Everything is fine.
-    }
-  else
-    {
-    dimensionSwizzle[2] = dimensionSwizzle[1];
-    dimensionSwizzle[1] = 2;
-    }
+  detail::QuadrilateralSpace space;
+  dax::Tuple<dax::Vector2,dax::exec::CellQuadrilateral::NUM_POINTS> allCoords2D;
+  detail::make_SpaceForQuadrilateral(allCoords, space, allCoords2D);
 
   // For reasons that should become apparent in a moment, we actually want
   // the transpose of the Jacobian.
   dax::exec::math::Matrix2x2 jacobianTranspose =
       dax::exec::math::MatrixTranspose(
-        detail::make_JacobianForQuadrilateral(derivativeWeights,
-                                              allCoords,
-                                              dimensionSwizzle));
+        detail::make_JacobianForQuadrilateral(derivativeWeights,allCoords2D));
 
   // Find the derivative of the field in parametric coordinate space. That is,
   // find the vector [ds/du, ds/dv].
@@ -391,11 +443,11 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   // Jacobian transpose times the field derivative in world space equals
   // the field derivative in parametric space.
   //
-  //   |              |  |       |     |       |
-  //   | da/du  db/du |  | ds/da |     | ds/du |
-  //   |              |  |       |     |       |
-  //   | da/dv  db/dv |  | ds/db |  =  | ds/dv |
-  //   |              |  |       |     |       |
+  //   |                |  |        |     |       |
+  //   | db0/du  db1/du |  | ds/db0 |     | ds/du |
+  //   |                |  |        |     |       |
+  //   | db0/dv  db1/dv |  | ds/db1 |  =  | ds/dv |
+  //   |                |  |        |     |       |
   //
   // Now we just need to solve this linear system to find the derivative in
   // world space.
@@ -406,16 +458,9 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
                                          parametricDerivative,
                                          valid);
 
-  // We now know the gradient in 2 of three dimensions. Use the assumption that
-  // the gradient is 0 in the normal direction to get the third coordinate.
-  dax::Vector3 gradient3D;
-  gradient3D[dimensionSwizzle[0]] = gradient2D[0];
-  gradient3D[dimensionSwizzle[1]] = gradient2D[1];
-  gradient3D[dimensionSwizzle[2]] =
-      -(gradient2D[0]*normal[dimensionSwizzle[0]]
-        + gradient2D[1]*normal[dimensionSwizzle[1]])
-      /normal[dimensionSwizzle[2]];
-
+  // We now know the gradient in our 2D space.  Convert that back to 3D space.
+  dax::Vector3 gradient3D =
+      space.Basis0 * gradient2D[0] + space.Basis1 * gradient2D[1];
   return gradient3D;
 }
 
