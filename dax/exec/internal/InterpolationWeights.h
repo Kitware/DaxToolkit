@@ -114,6 +114,17 @@ InterpolationWeights<dax::exec::CellQuadrilateral>(const dax::Vector3 &pcoords)
   return weights;
 }
 
+template<>
+DAX_EXEC_EXPORT
+dax::Tuple<dax::Scalar, 2>
+InterpolationWeights<dax::exec::CellLine>(const dax::Vector3 &pcoords)
+{
+  dax::Tuple<dax::Scalar, 2> weights;
+  weights[0] = 1 - pcoords[0];
+  weights[1] = pcoords[0];
+  return weights;
+}
+
 }}}
 
 #endif //__dax__exec__internal__InterpolationWeights_h

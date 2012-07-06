@@ -479,11 +479,89 @@ private:
 
     topology.CellConnections = &connectArray.front();
   }
+
+  static dax::Tuple<dax::Id,2> GetCellConnectionsImpl(
+      const dax::exec::internal::TopologyUnstructured<
+          dax::exec::CellLine,TestExecutionAdapter> &,
+      dax::Id cellIndex)
+  {
+    // Line meshes are based on hex meshes.  They have 7x the cells.
+    // See the comment in BuildTopology.
+    dax::Tuple<dax::Id,8> hexConnections =
+        TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
+                                             cellIndex/7);
+    dax::Tuple<dax::Id,2> lineConnections;
+    switch (cellIndex%7)
+      {
+      case 0: lineConnections[0] = 0;  lineConnections[1] = 1;  break;
+      case 1: lineConnections[0] = 0;  lineConnections[1] = 3;  break;
+      case 2: lineConnections[0] = 0;  lineConnections[1] = 4;  break;
+      case 3: lineConnections[0] = 0;  lineConnections[1] = 6;  break;
+      case 4: lineConnections[0] = 1;  lineConnections[1] = 7;  break;
+      case 5: lineConnections[0] = 2;  lineConnections[1] = 4;  break;
+      case 6: lineConnections[0] = 3;  lineConnections[1] = 5;  break;
+      }
+    return lineConnections;
+  }
+
+  static void BuildTopology(dax::exec::internal::TopologyUnstructured
+                            <dax::exec::CellLine, TestExecutionAdapter>
+                            &topology,
+                            std::vector<dax::Vector3> &coordArray,
+                            std::vector<dax::Id> &connectArray)
+  {
+    // Base this topology on the hexahedron topology.
+    dax::exec::internal::TopologyUnstructured<
+        dax::exec::CellHexahedron,TestExecutionAdapter> hexTopology;
+    std::vector<dax::Id> hexConnections;
+    BuildTopology(hexTopology, coordArray, hexConnections);
+
+    typedef dax::exec::CellLine CellType;
+
+    // Our line mesh will have 7 lines for each hexahedron.  One line for
+    // each of the 3 edges connected to vertex 0 and one line for each
+    // of the 4 major diagonals.
+    topology.NumberOfCells = hexTopology.NumberOfCells * 7;
+    topology.NumberOfPoints = hexTopology.NumberOfPoints;
+
+    // Make connections.
+    connectArray.reserve(topology.NumberOfCells*CellType::NUM_POINTS);
+
+    for (dax::Id cellIndex = 0; cellIndex < topology.NumberOfCells; cellIndex++)
+      {
+      dax::Tuple<dax::Id,CellType::NUM_POINTS> pointConnections
+          = TestTopology::GetCellConnectionsImpl(topology, cellIndex);
+
+      connectArray.push_back(pointConnections[0]);
+      connectArray.push_back(pointConnections[1]);
+      }
+    DAX_TEST_ASSERT(dax::Id(connectArray.size())
+                    == topology.NumberOfCells*CellType::NUM_POINTS,
+                    "Bad connection array size.");
+
+    topology.CellConnections = &connectArray.front();
+  }
 };
 
 template<class FunctionType>
 void TryAllTopologyTypes(FunctionType function)
 {
+  std::cout << "--- dax::exec::CellLine" << std::endl;
+  TestTopology<dax::exec::internal::TopologyUnstructured
+      <dax::exec::CellLine,TestExecutionAdapter> > lineTopology;
+  function(lineTopology);
+
+  std::cout << "--- dax::exec::CellTriangle" << std::endl;
+  TestTopology<dax::exec::internal::TopologyUnstructured
+      <dax::exec::CellTriangle,TestExecutionAdapter> > triangleTopology;
+  function(triangleTopology);
+
+  std::cout << "--- dax::exec::CellQuadrilateral" << std::endl;
+  TestTopology<dax::exec::internal::TopologyUnstructured
+      <dax::exec::CellQuadrilateral,TestExecutionAdapter> >
+      quadrilateralTopology;
+  function(quadrilateralTopology);
+
   std::cout << "--- dax::exec::CellVoxel" << std::endl;
   TestTopology<dax::exec::internal::TopologyUniform> voxelTopology;
   function(voxelTopology);
@@ -502,17 +580,6 @@ void TryAllTopologyTypes(FunctionType function)
   TestTopology<dax::exec::internal::TopologyUnstructured
       <dax::exec::CellWedge,TestExecutionAdapter> > wedgeTopology;
   function(wedgeTopology);
-
-  std::cout << "--- dax::exec::CellTriangle" << std::endl;
-  TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::exec::CellTriangle,TestExecutionAdapter> > triangleTopology;
-  function(triangleTopology);
-
-  std::cout << "--- dax::exec::CellQuadrilateral" << std::endl;
-  TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::exec::CellQuadrilateral,TestExecutionAdapter> >
-      quadrilateralTopology;
-  function(quadrilateralTopology);
 }
 
 namespace detail {

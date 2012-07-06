@@ -144,6 +144,21 @@ struct ParametricCoordinates<dax::exec::CellQuadrilateral>
   }
 };
 
+template<>
+struct ParametricCoordinates<dax::exec::CellLine>
+{
+  static dax::Vector3 Center() {
+    return dax::make_Vector3(0.5, 0.0, 0.0);
+  }
+  static dax::Tuple<dax::Vector3, 2> Vertex() {
+    const dax::Vector3 cellVertexToParametricCoords[2] = {
+      dax::make_Vector3(0, 0, 0),
+      dax::make_Vector3(1, 0, 0)
+    };
+    return dax::Tuple<dax::Vector3, 2>(cellVertexToParametricCoords);
+  }
+};
+
 //-----------------------------------------------------------------------------
 template<class WorkType, class CellType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 ParametricCoordinatesToWorldCoordinates(
@@ -542,6 +557,32 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
         dax::make_Vector2(0.5, 0.5));
 
   return dax::make_Vector3(pcoords[0], pcoords[1], 0);
+}
+
+//-----------------------------------------------------------------------------
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
+  const WorkType &work,
+  const dax::exec::CellLine &,
+  const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
+  const dax::Vector3 wcoords)
+{
+  dax::Tuple<dax::Vector3, 2> vertexCoords = work.GetFieldValues(coordField);
+
+  // Because this is a line, there is only one vaild parametric coordinate. Let
+  // vec be the vector from the first point to the second point
+  // (vertexCoords[1] - vertexCoords[0]), which is the direction of the line.
+  // dot(vec,wcoords-vertexCoords[0])/mag(vec) is the orthoginal projection of
+  // wcoords on the line and represents the distance between the orthoginal
+  // projection and vertexCoords[0]. The parametric coordinate is the fraction
+  // of this over the length of the segment, which is mag(vec). Thus, the
+  // parametric coordinate is dot(vec,wcoords-vertexCoords[0])/mag(vec)^2.
+
+  dax::Vector3 vec = vertexCoords[1] - vertexCoords[0];
+  dax::Scalar numerator = dax::dot(vec, wcoords - vertexCoords[0]);
+  dax::Scalar denominator = dax::exec::math::MagnitudeSquared(vec);
+
+  return dax::make_Vector3(numerator/denominator, 0.0, 0.0);
 }
 
 }

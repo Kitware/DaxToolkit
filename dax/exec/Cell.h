@@ -17,6 +17,7 @@
 #define __dax_exec_Cell_h
 
 #include <dax/exec/CellHexahedron.h>
+#include <dax/exec/CellLine.h>
 #include <dax/exec/CellQuadrilateral.h>
 #include <dax/exec/CellTetrahedron.h>
 #include <dax/exec/CellTriangle.h>

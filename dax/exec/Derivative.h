@@ -449,6 +449,28 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
 }
 
 
+//-----------------------------------------------------------------------------
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
+    const WorkType &work,
+    const dax::exec::CellLine &,
+    const dax::Vector3 &,
+    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
+    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
+{
+  const int NUM_POINTS = dax::exec::CellLine::NUM_POINTS;
+  dax::Tuple<dax::Vector3,NUM_POINTS> allCoords = work.GetFieldValues(fcoords);
+  dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
+      work.GetFieldValues(point_scalar);
+
+  dax::Scalar deltaField = fieldValues[1] - fieldValues[0];
+  dax::Vector3 vec = allCoords[1] - allCoords[0];
+
+  return dax::make_Vector3((vec[0] != 0) ? deltaField/vec[0] : 0,
+                           (vec[1] != 0) ? deltaField/vec[1] : 0,
+                           (vec[2] != 0) ? deltaField/vec[2] : 0);
+}
+
 }};
 
 #endif //__dax_exec_Derivative_h

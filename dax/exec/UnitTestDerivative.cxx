@@ -85,6 +85,12 @@ void TestGradientResult(
     expectedGradient =
         fieldValues.Gradient - dax::dot(fieldValues.Gradient,normal)*normal;
     }
+  else if (CellType::TOPOLOGICAL_DIMENSIONS == 1)
+    {
+    dax::Vector3 direction =
+        dax::exec::math::Normal(pointCoordinates[1]-pointCoordinates[0]);
+    expectedGradient = direction * dax::dot(direction, fieldValues.Gradient);
+    }
   else
     {
     DAX_TEST_FAIL("Unknown cell dimension.");

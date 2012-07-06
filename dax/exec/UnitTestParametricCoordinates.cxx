@@ -99,7 +99,9 @@ void TestPCoordsSample(
        pcoords[2] <= ((CellType::TOPOLOGICAL_DIMENSIONS > 2) ? 1.0 : 0.0);
        pcoords[2] += 0.25)
     {
-    for (pcoords[1] = 0.0; pcoords[1] <= 1.0; pcoords[1] += 0.25)
+    for (pcoords[1] = 0.0;
+         pcoords[1] <= ((CellType::TOPOLOGICAL_DIMENSIONS > 1) ? 1.0 : 0.0);
+         pcoords[1] += 0.25)
       {
       for (pcoords[0] = 0.0; pcoords[0] <= 1.0; pcoords[0] += 0.25)
         {
