@@ -220,6 +220,11 @@ void TestDerivativeWeights<dax::exec::CellLine>()
 {
   std::cout << "  No derivative weights for lines.  Skiping." << std::endl;
 }
+template<>
+void TestDerivativeWeights<dax::exec::CellVertex>()
+{
+  std::cout << "  No derivative weights for vertices.  Skiping." << std::endl;
+}
 
 struct TestDerivativeWeightsFunctor
 {

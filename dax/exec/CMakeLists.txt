@@ -22,6 +22,7 @@ set(headers
   CellQuadrilateral.h
   CellTetrahedron.h
   CellTriangle.h
+  CellVertex.h
   CellVoxel.h
   CellWedge.h
   Derivative.h

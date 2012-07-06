@@ -159,6 +159,20 @@ struct ParametricCoordinates<dax::exec::CellLine>
   }
 };
 
+template<>
+struct ParametricCoordinates<dax::exec::CellVertex>
+{
+  static dax::Vector3 Center() {
+    return dax::make_Vector3(0.0, 0.0, 0.0);
+  }
+  static dax::Tuple<dax::Vector3, 1> Vertex() {
+    const dax::Vector3 cellVertexToParametricCoords[1] = {
+      dax::make_Vector3(0, 0, 0)
+    };
+    return dax::Tuple<dax::Vector3, 1>(cellVertexToParametricCoords);
+  }
+};
+
 //-----------------------------------------------------------------------------
 template<class WorkType, class CellType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 ParametricCoordinatesToWorldCoordinates(
@@ -583,6 +597,17 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   dax::Scalar denominator = dax::exec::math::MagnitudeSquared(vec);
 
   return dax::make_Vector3(numerator/denominator, 0.0, 0.0);
+}
+
+//-----------------------------------------------------------------------------
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
+  const WorkType &,
+  const dax::exec::CellVertex &,
+  const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &,
+  const dax::Vector3)
+{
+  return dax::make_Vector3(0.0, 0.0, 0.0);
 }
 
 }

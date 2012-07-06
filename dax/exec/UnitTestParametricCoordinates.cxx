@@ -103,7 +103,9 @@ void TestPCoordsSample(
          pcoords[1] <= ((CellType::TOPOLOGICAL_DIMENSIONS > 1) ? 1.0 : 0.0);
          pcoords[1] += 0.25)
       {
-      for (pcoords[0] = 0.0; pcoords[0] <= 1.0; pcoords[0] += 0.25)
+      for (pcoords[0] = 0.0;
+           pcoords[0] <= ((CellType::TOPOLOGICAL_DIMENSIONS > 0) ? 1.0 : 0.0);
+           pcoords[0] += 0.25)
         {
         // If you convert to world coordinates and back, you should get the
         // same value.

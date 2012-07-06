@@ -125,6 +125,15 @@ InterpolationWeights<dax::exec::CellLine>(const dax::Vector3 &pcoords)
   return weights;
 }
 
+template<>
+DAX_EXEC_EXPORT
+dax::Tuple<dax::Scalar, 1>
+InterpolationWeights<dax::exec::CellVertex>(const dax::Vector3 &)
+{
+  dax::Tuple<dax::Scalar, 1> weights(dax::Scalar(1));
+  return weights;
+}
+
 }}}
 
 #endif //__dax__exec__internal__InterpolationWeights_h

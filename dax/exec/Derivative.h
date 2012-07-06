@@ -458,6 +458,11 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
     const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
 {
+  // The derivative of a line is in the direction of the line. Its length is
+  // equal to the difference of the scalar field divided by the length of the
+  // line segment. Thus, the derivative is characterized by
+  // (deltaField*vec)/mag(vec)^2.
+
   const int NUM_POINTS = dax::exec::CellLine::NUM_POINTS;
   dax::Tuple<dax::Vector3,NUM_POINTS> allCoords = work.GetFieldValues(fcoords);
   dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
@@ -466,9 +471,20 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   dax::Scalar deltaField = fieldValues[1] - fieldValues[0];
   dax::Vector3 vec = allCoords[1] - allCoords[0];
 
-  return dax::make_Vector3((vec[0] != 0) ? deltaField/vec[0] : 0,
-                           (vec[1] != 0) ? deltaField/vec[1] : 0,
-                           (vec[2] != 0) ? deltaField/vec[2] : 0);
+  return (deltaField/dax::exec::math::MagnitudeSquared(vec))*vec;
+}
+
+
+//-----------------------------------------------------------------------------
+template<class WorkType, class ExecutionAdapter>
+DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
+    const WorkType &,
+    const dax::exec::CellVertex &,
+    const dax::Vector3 &,
+    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &,
+    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &)
+{
+  return dax::make_Vector3(0, 0, 0);
 }
 
 }};
