@@ -31,7 +31,7 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const WorkType &work,
     const dax::exec::CellVoxel &cell,
     const dax::Vector3 &pcoords,
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &, //Not used for voxels
+    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &daxNotUsed(fcoords),
     const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
 {
   const dax::Id NUM_POINTS  = dax::exec::CellVoxel::NUM_POINTS;
@@ -242,8 +242,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
 template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const WorkType &work,
-    const dax::exec::CellTriangle &/*cell*/,
-    const dax::Vector3 &/*pcoords*/,
+    const dax::exec::CellTriangle &daxNotUsed(cell),
+    const dax::Vector3 &daxNotUsed(pcoords),
     const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
     const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &scalarField)
 {

@@ -357,7 +357,7 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   const WorkType &work,
-  const dax::exec::CellTriangle &,
+  const dax::exec::CellTriangle &daxNotUsed(cell),
   const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
   const dax::Vector3 wcoords)
 {

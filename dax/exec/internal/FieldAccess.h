@@ -114,7 +114,7 @@ public:
           ExecutionAdapter> field,
       dax::Id index,
       const dax::exec::internal::TopologyUnstructured<
-          CellType,ExecutionAdapter> &,
+          CellType,ExecutionAdapter> &daxNotUsed(topology),
       WorkType work)
   {
     return GetField(field, index, work);
@@ -156,7 +156,7 @@ public:
           ExecutionAdapter> field,
       dax::Tuple<dax::Id,Size> indices,
       const dax::exec::internal::TopologyUnstructured<
-          CellType,ExecutionAdapter> &,
+          CellType,ExecutionAdapter> &daxNotUsed(topology),
       WorkType work)
   {
     return GetMultiple(field, indices, work);
