@@ -607,9 +607,19 @@ private:
       {
       std::cout << "Skipping.  Too hard to check gradient "
                 << "on cells with topological dimension < 3" << std::endl;
-      return;
       }
+    else
+      {
+      // Calling a separate Impl function because the CUDA compiler is good
+      // enough to optimize the if statement as a constant expression and
+      // then complains about unreachable statements after a return.
+      TestWorkletMapCellImpl<GridType>();
+      }
+  }
 
+  template<typename GridType>
+  static DAX_CONT_EXPORT void TestWorkletMapCellImpl()
+  {
     dax::cont::internal
         ::TestGrid<GridType,ArrayContainerControlTagBasic,DeviceAdapterTag>
         grid(DIM);
