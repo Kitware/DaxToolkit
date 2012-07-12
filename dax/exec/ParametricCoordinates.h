@@ -42,11 +42,11 @@ struct ParametricCoordinates
 {
   /// The location of parametric center.
   ///
-  static dax::Vector3 Center();
+  DAX_EXEC_EXPORT static dax::Vector3 Center();
 
   /// The location of each vertex.
   ///
-  static dax::Tuple<dax::Vector3, CellType::NUM_POINTS> Vertex();
+  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3,CellType::NUM_POINTS> Vertex();
 };
 #else //DAX_DOXYGEN_ONLY
     ;
@@ -55,8 +55,10 @@ struct ParametricCoordinates
 template<>
 struct ParametricCoordinates<dax::exec::CellHexahedron>
 {
-  static dax::Vector3 Center() { return dax::make_Vector3(0.5, 0.5, 0.5); }
-  static dax::Tuple<dax::Vector3, 8> Vertex() {
+  DAX_EXEC_EXPORT static dax::Vector3 Center() {
+    return dax::make_Vector3(0.5, 0.5, 0.5);
+  }
+  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 8> Vertex() {
     const dax::Vector3 cellVertexToParametricCoords[8] = {
       dax::make_Vector3(0, 0, 0),
       dax::make_Vector3(1, 0, 0),
@@ -78,10 +80,10 @@ struct ParametricCoordinates<dax::exec::CellVoxel>
 template<>
 struct ParametricCoordinates<dax::exec::CellTetrahedron>
 {
-  static dax::Vector3 Center() {
+  DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(0.25, 0.25, 0.25);
   }
-  static dax::Tuple<dax::Vector3, 4> Vertex() {
+  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 4> Vertex() {
     const dax::Vector3 cellToParametricCoords[4] = {
       dax::make_Vector3(0, 0, 0),
       dax::make_Vector3(1, 0, 0),
@@ -95,10 +97,10 @@ struct ParametricCoordinates<dax::exec::CellTetrahedron>
 template<>
 struct ParametricCoordinates<dax::exec::CellWedge>
 {
-  static dax::Vector3 Center() {
+  DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(1.0/3.0, 1.0/3.0, 0.5);
   }
-  static dax::Tuple<dax::Vector3, 6> Vertex() {
+  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 6> Vertex() {
     const dax::Vector3 cellToParametricCoords[6] = {
       dax::make_Vector3(0, 0, 0),
       dax::make_Vector3(0, 1, 0),
@@ -114,10 +116,10 @@ struct ParametricCoordinates<dax::exec::CellWedge>
 template<>
 struct ParametricCoordinates<dax::exec::CellTriangle>
 {
-  static dax::Vector3 Center() {
+  DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(1.0/3.0, 1.0/3.0, 0.0);
   }
-  static dax::Tuple<dax::Vector3, 3> Vertex() {
+  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 3> Vertex() {
     const dax::Vector3 cellVertexToParametricCoords[3] = {
       dax::make_Vector3(0, 0, 0),
       dax::make_Vector3(1, 0, 0),
@@ -130,10 +132,10 @@ struct ParametricCoordinates<dax::exec::CellTriangle>
 template<>
 struct ParametricCoordinates<dax::exec::CellQuadrilateral>
 {
-  static dax::Vector3 Center() {
+  DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(0.5, 0.5, 0.0);
   }
-  static dax::Tuple<dax::Vector3, 4> Vertex() {
+  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 4> Vertex() {
     const dax::Vector3 cellVertexToParametricCoords[4] = {
       dax::make_Vector3(0, 0, 0),
       dax::make_Vector3(1, 0, 0),
@@ -147,10 +149,10 @@ struct ParametricCoordinates<dax::exec::CellQuadrilateral>
 template<>
 struct ParametricCoordinates<dax::exec::CellLine>
 {
-  static dax::Vector3 Center() {
+  DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(0.5, 0.0, 0.0);
   }
-  static dax::Tuple<dax::Vector3, 2> Vertex() {
+  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 2> Vertex() {
     const dax::Vector3 cellVertexToParametricCoords[2] = {
       dax::make_Vector3(0, 0, 0),
       dax::make_Vector3(1, 0, 0)
@@ -162,10 +164,10 @@ struct ParametricCoordinates<dax::exec::CellLine>
 template<>
 struct ParametricCoordinates<dax::exec::CellVertex>
 {
-  static dax::Vector3 Center() {
+  DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(0.0, 0.0, 0.0);
   }
-  static dax::Tuple<dax::Vector3, 1> Vertex() {
+  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 1> Vertex() {
     const dax::Vector3 cellVertexToParametricCoords[1] = {
       dax::make_Vector3(0, 0, 0)
     };
