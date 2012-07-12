@@ -82,8 +82,9 @@ public:
 
   /// Allocates the array to the given size.
   ///
-  DAX_CONT_EXPORT void AllocateArrayForOutput(ContainerType &,
-                                              dax::Id numberOfValues)
+  DAX_CONT_EXPORT void AllocateArrayForOutput(
+      ContainerType &daxNotUsed(container),
+      dax::Id numberOfValues)
   {
     // This call is a bit wasteful in that it sets all the values of the
     // array to the default value.

@@ -118,15 +118,15 @@ private:
   }
 
   static void BuildTopology(dax::exec::internal::TopologyUniform &topology,
-                            std::vector<dax::Vector3> &/*coords*/,
-                            std::vector<dax::Id> &/*connections*/)
+                            std::vector<dax::Vector3> &daxNotUsed(coords),
+                            std::vector<dax::Id> &daxNotUsed(connections))
   {
     topology = TestTopology::GetCoreTopology();
   }
 
   static dax::Tuple<dax::Id,8> GetCellConnectionsImpl(
       const dax::exec::internal::TopologyUnstructured<
-          dax::exec::CellHexahedron,TestExecutionAdapter> &,
+          dax::exec::CellHexahedron,TestExecutionAdapter> &daxNotUsed(topology),
       dax::Id cellIndex)
   {
     return TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
@@ -190,7 +190,7 @@ private:
 
   static dax::Tuple<dax::Id,3> GetCellConnectionsImpl(
       const dax::exec::internal::TopologyUnstructured<
-          dax::exec::CellTriangle,TestExecutionAdapter> &,
+          dax::exec::CellTriangle,TestExecutionAdapter> &daxNotUsed(topology),
       dax::Id cellIndex)
   {
     // Triangle meshes are based on hex meshes.  They have 2x the cells.
