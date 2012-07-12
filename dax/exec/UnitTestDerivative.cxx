@@ -68,7 +68,8 @@ CreatePointField(const TopologyGenType &topology,
 
 template<class CellType>
 void TestGradientResult(
-    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &,
+    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS>
+        &daxNotUsed(pointCoordinates),
     const dax::Vector3 computedDerivative,
     const LinearField &fieldValues)
 {

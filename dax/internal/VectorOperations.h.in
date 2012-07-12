@@ -180,7 +180,7 @@ template<class VectorType, class FunctorType>
 @DAX_VECTOR_OPERATIONS_EXPORT@
 typename dax::VectorTraits<VectorType>::ComponentType
 VectorReduceImpl(const VectorType &vector,
-                 const FunctorType &,
+                 const FunctorType &daxNotUsed(functor),
                  dax::VectorTraitsTagSingleComponent)
 {
   return dax::VectorTraits<VectorType>::GetComponent(vector, 0);

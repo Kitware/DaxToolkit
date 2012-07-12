@@ -38,6 +38,13 @@
 
 #define DAX_CONT_EXPORT inline
 
+/// Simple macro to identify a parameter as unused. This allows you to name a
+/// parameter that is not used. There are several instances where you might
+/// want to do this. For example, when using a parameter to overload or
+/// template a function but do not actually use the parameter. Another example
+/// is providing a specialization that does not need that parameter.
+#define daxNotUsed(parameter_name)
+
 // Worklet macros.
 #define DAX_WORKLET DAX_EXEC_EXPORT
 

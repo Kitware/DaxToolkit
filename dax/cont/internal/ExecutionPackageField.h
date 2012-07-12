@@ -364,8 +364,8 @@ dax::exec::FieldCoordinatesIn<
     dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter> >
 ExecutionPackageFieldGrid(
     const typename dax::cont::UniformGrid<Container, DeviceAdapter>
-    ::PointCoordinatesArrayPlaceholder &,
-    const dax::cont::UniformGrid<Container, DeviceAdapter> &);
+    ::PointCoordinatesArrayPlaceholder &daxNotUsed(arrayPlaceholder),
+    const dax::cont::UniformGrid<Container, DeviceAdapter> &daxNotUsed(grid));
 
 /// Special case for uniform grid.
 ///
@@ -375,8 +375,8 @@ dax::exec::FieldCoordinatesIn<
     dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter> >
 ExecutionPackageFieldGridConst(
     const typename dax::cont::UniformGrid<Container, DeviceAdapter>
-    ::PointCoordinatesArrayPlaceholder &,
-    const dax::cont::UniformGrid<Container, DeviceAdapter> &)
+    ::PointCoordinatesArrayPlaceholder &daxNotUsed(arrayPlaceholder),
+    const dax::cont::UniformGrid<Container, DeviceAdapter> &daxNotUsed(grid))
 {
   BOOST_CONCEPT_ASSERT((detail::FieldIsInput<FieldType>));
   BOOST_CONCEPT_ASSERT((detail::FieldIsCoordinates<FieldType>));

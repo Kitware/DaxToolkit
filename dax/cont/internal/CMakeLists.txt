@@ -21,9 +21,6 @@ set(headers
   ExecutionPackageField.h
   ExecutionPackageGrid.h
   ExtractCoordinates.h
-  #ExtractTopology.h
-  IteratorContainer.h
-  IteratorPolymorphic.h
   ScheduleGenerateTopology.h
   ScheduleMapAdapter.h
   Testing.h
@@ -42,6 +39,5 @@ set(unit_tests
   UnitTestArrayManagerExecutionShareWithControl.cxx
   UnitTestContTesting.cxx
   UnitTestExecutionPackage.cxx
-  UnitTestIteratorPolymorphic.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
