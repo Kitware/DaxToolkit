@@ -552,7 +552,7 @@ private:
     ScalarArrayHandle squareHandle;
 
     std::cout << "Running Square worklet" << std::endl;
-    dax::cont::worklet::Square(grid.GetRealGrid(), fieldHandle, squareHandle);
+    dax::cont::worklet::Square(fieldHandle, squareHandle);
 
     std::vector<dax::Scalar> square(grid->GetNumberOfPoints());
     squareHandle.CopyInto(square.begin());

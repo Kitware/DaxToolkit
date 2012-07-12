@@ -63,7 +63,7 @@ static void TestSquare()
                         dax::cont::DeviceAdapterTagSerial> squareHandle;
 
   std::cout << "Running Square worklet" << std::endl;
-  dax::cont::worklet::Square(grid, fieldHandle, squareHandle);
+  dax::cont::worklet::Square(fieldHandle, squareHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> square(grid.GetNumberOfPoints());

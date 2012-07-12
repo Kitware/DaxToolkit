@@ -23,15 +23,11 @@
 namespace dax {
 namespace worklet {
 
-template<class CellType, class FieldType, class ExecutionAdapter>
-DAX_WORKLET void Square(
-    dax::exec::WorkMapField<CellType, ExecutionAdapter> &work,
-    dax::exec::FieldIn<FieldType, ExecutionAdapter> &inField,
-    dax::exec::FieldOut<FieldType, ExecutionAdapter> &outField)
+template<class FieldType>
+DAX_WORKLET void Square(const FieldType &inValue,
+                        FieldType &outValue)
 {
-  FieldType inValue = work.GetFieldValue(inField);
-  FieldType outValue = inValue * inValue;
-  work.SetFieldValue(outField, outValue);
+  outValue = inValue * inValue;
 }
 
 }

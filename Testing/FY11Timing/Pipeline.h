@@ -136,7 +136,7 @@ void RunPipeline2(const dax::cont::UniformGrid<> &grid)
                                    intermediate2);
   intermediate1.ReleaseResources();
   dax::cont::worklet::Sine(grid, intermediate2, intermediate3);
-  dax::cont::worklet::Square(grid, intermediate3, intermediate2);
+  dax::cont::worklet::Square(intermediate3, intermediate2);
   intermediate3.ReleaseResources();
   dax::cont::worklet::Cosine(grid, intermediate2, results);
   double time = timer.elapsed();
@@ -162,7 +162,7 @@ void RunPipeline3(const dax::cont::UniformGrid<> &grid)
                                 grid.GetPointCoordinates(),
                                 intermediate1);
   dax::cont::worklet::Sine(grid, intermediate1, intermediate2);
-  dax::cont::worklet::Square(grid, intermediate2, intermediate1);
+  dax::cont::worklet::Square(intermediate2, intermediate1);
   intermediate2.ReleaseResources();
   dax::cont::worklet::Cosine(grid, intermediate1, results);
   double time = timer.elapsed();

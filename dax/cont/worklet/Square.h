@@ -34,28 +34,21 @@ namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class CellType, typename FieldType, class ExecAdapter>
-struct SquareParameters
-{
-  typename CellType::template GridStructures<ExecAdapter>::TopologyType grid;
-  dax::exec::FieldIn<FieldType, ExecAdapter> inField;
-  dax::exec::FieldOut<FieldType, ExecAdapter> outField;
-};
-
-template<class CellType, typename FieldType, class ExecAdapter>
+template<class IteratorType1, class IteratorType2>
 struct Square
 {
-  DAX_EXEC_EXPORT void operator()(
-      SquareParameters<CellType, FieldType, ExecAdapter> parameters,
-      dax::Id index,
-      const ExecAdapter &execAdapter) const
+  Square(IteratorType1 inValueArray, IteratorType2 outValueArray)
+    : InValueArray(inValueArray), OutValueArray(outValueArray) {  }
+
+  template<class A, class B>
+  DAX_EXEC_EXPORT void operator()(A, dax::Id index, B) const
   {
-    dax::exec::WorkMapField<CellType, ExecAdapter>
-        work(parameters.grid, index, execAdapter);
-    dax::worklet::Square(work,
-                         parameters.inField,
-                         parameters.outField);
+    dax::worklet::Square(*(this->InValueArray + index),
+                         *(this->OutValueArray + index));
   }
+private:
+  IteratorType1 InValueArray;
+  IteratorType2 OutValueArray;
 };
 
 }
@@ -67,61 +60,28 @@ namespace dax {
 namespace cont {
 namespace worklet {
 
-template<class GridType,
-         typename FieldType,
-         class Container,
+template<typename FieldType,
+         class Container1,
+         class Container2,
          class DeviceAdapter>
 DAX_CONT_EXPORT void Square(
-    const GridType &grid,
-    const dax::cont::ArrayHandle<FieldType,Container,DeviceAdapter> &inHandle,
-    dax::cont::ArrayHandle<FieldType,Container,DeviceAdapter> &outHandle)
+    const dax::cont::ArrayHandle<FieldType,Container1,DeviceAdapter> &inHandle,
+    dax::cont::ArrayHandle<FieldType,Container2,DeviceAdapter> &outHandle)
 {
-  dax::Id fieldSize;
-  if (inHandle.GetNumberOfValues() == grid.GetNumberOfPoints())
-    {
-    fieldSize = grid.GetNumberOfPoints();
-    }
-  else if (inHandle.GetNumberOfValues() == grid.GetNumberOfCells())
-    {
-    fieldSize = grid.GetNumberOfCells();
-    }
-  else
-    {
-    throw dax::cont::ErrorControlBadValue(
-          "Number of array entries neither cells nor points.");
-    }
+  dax::Id fieldSize = inHandle.GetNumberOfValues();
 
-  typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
-      ExecAdapter;
+  dax::exec::internal::kernel::Square<
+      typename dax::cont::ArrayHandle<FieldType,Container1,DeviceAdapter>::IteratorConstExecution,
+      typename dax::cont::ArrayHandle<FieldType,Container2,DeviceAdapter>::IteratorExecution>
+      kernel(
+        inHandle.PrepareForInput().first,
+        outHandle.PrepareForOutput(fieldSize).first);
 
-  typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
-  ExecutionTopologyType execTopology
-      = dax::cont::internal::ExecutionPackageGrid(grid);
-
-  dax::exec::FieldIn<FieldType, ExecAdapter> fieldIn =
-      dax::cont::internal::ExecutionPackageFieldArrayConst<dax::exec::FieldIn>(
-        inHandle, fieldSize);
-
-  dax::exec::FieldOut<FieldType, ExecAdapter> fieldOut
-      = dax::cont::internal::ExecutionPackageFieldArray<dax::exec::FieldOut>(
-        outHandle, fieldSize);
-
-  typedef typename GridType::CellType CellType;
-
-  typedef dax::exec::internal::kernel
-      ::SquareParameters<CellType,FieldType,ExecAdapter> Parameters;
-
-  Parameters parameters;
-  parameters.grid = execTopology;
-  parameters.inField = fieldIn;
-  parameters.outField = fieldOut;
-
-  dax::cont::internal::Schedule(
-        dax::exec::internal::kernel::Square<CellType, FieldType, ExecAdapter>(),
-        parameters,
-        fieldSize,
-        Container(),
-        DeviceAdapter());
+  dax::cont::internal::Schedule(kernel,
+                                0,
+                                fieldSize,
+                                Container1(),
+                                DeviceAdapter());
 }
 
 }
