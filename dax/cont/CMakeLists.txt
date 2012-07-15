@@ -31,6 +31,7 @@ set(headers
   ErrorControlBadValue.h
   ErrorControlOutOfMemory.h
   ErrorExecution.h
+  IteratorFromArrayPortal.h
   UniformGrid.h
   UnstructuredGrid.h
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
@@ -57,6 +58,7 @@ set(unit_tests
   UnitTestArrayHandle.cxx
   UnitTestArrayPortalFromIterators.cxx
   UnitTestDeviceAdapterSerial.cxx
+  UnitTestIteratorFromArrayPortal.cxx
   UnitTestVectorOperations.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
