@@ -20,6 +20,8 @@ set(headers
   ArrayContainerControl.h
   ArrayContainerControlBasic.h
   ArrayHandle.h
+  ArrayPortal.h
+  ArrayPortalFromIterators.h
   Assert.h
   DeviceAdapter.h
   DeviceAdapterSerial.h
@@ -53,6 +55,7 @@ configure_file(
 set(unit_tests
   UnitTestArrayContainerControlBasic.cxx
   UnitTestArrayHandle.cxx
+  UnitTestArrayPortalFromIterators.cxx
   UnitTestDeviceAdapterSerial.cxx
   UnitTestVectorOperations.cxx
   )
