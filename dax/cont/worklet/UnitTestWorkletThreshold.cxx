@@ -80,6 +80,13 @@ void CheckValues(IteratorType begin, IteratorType end)
     }
 }
 
+template<typename T, class Container, class Device>
+void CheckValues(dax::cont::ArrayHandle<T,Container,Device> arrayHandle)
+{
+  CheckValues(arrayHandle.GetPortalConstControl().GetIteratorBegin(),
+              arrayHandle.GetPortalConstControl().GetIteratorEnd());
+}
+
 //-----------------------------------------------------------------------------
 static void TestThreshold()
 {
@@ -97,8 +104,8 @@ static void TestThreshold()
     field[pointIndex]
         = dax::dot(grid.ComputePointCoordinates(pointIndex), trueGradient);
     }
-  dax::cont::ArrayHandle<dax::Scalar> fieldHandle(&field.front(),
-                                                  &(field.back())+1);
+  dax::cont::ArrayHandle<dax::Scalar> fieldHandle =
+      dax::cont::make_ArrayHandle(field);
 
   //unkown size
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
@@ -120,8 +127,7 @@ static void TestThreshold()
   DAX_TEST_ASSERT(resultHandle.GetNumberOfValues()==grid2.GetNumberOfPoints(),
                   "Incorrect number of points in the result array");
 
-  CheckValues(resultHandle.GetIteratorConstControlBegin(),
-              resultHandle.GetIteratorConstControlEnd());
+  CheckValues(resultHandle);
 
   //test max < min.
 }
