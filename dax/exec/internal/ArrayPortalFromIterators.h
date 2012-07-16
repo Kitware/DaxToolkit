@@ -34,6 +34,8 @@ public:
   typedef IteratorT IteratorType;
   typedef typename std::iterator_traits<IteratorType>::value_type ValueType;
 
+  DAX_EXEC_EXPORT ArrayPortalFromIterators() {  }
+
   DAX_EXEC_EXPORT
   ArrayPortalFromIterators(IteratorType begin, IteratorType end)
     : BeginIterator(begin), EndIterator(end) {  }

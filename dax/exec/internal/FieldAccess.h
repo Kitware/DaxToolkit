@@ -26,11 +26,6 @@ namespace dax { namespace exec { namespace internal {
 
 struct FieldAccess
 {
-private:
-  template <typename T>
-  DAX_EXEC_EXPORT static bool NotDefaultConstructor(T &x) { return (x != T()); }
-
-public:
   /// Using normal field semantics (that is, a field is just a pointer to an
   /// array), get the value at the given index.
   ///
@@ -44,8 +39,8 @@ public:
       dax::Id index,
       WorkType work)
   {
-    DAX_ASSERT_EXEC(NotDefaultConstructor(field.BeginIterator), work);
-    return *(field.BeginIterator + index);
+    DAX_ASSERT_EXEC(field.Portal.GetNumberOfValues() > 0, work);
+    return field.Portal.Get(index);
   }
 
   /// Using normal field semantics (that is, a field is just a pointer to an
@@ -62,8 +57,8 @@ public:
       T value,
       WorkType work)
   {
-    DAX_ASSERT_EXEC(NotDefaultConstructor(field.BeginIterator), work);
-    *(field.BeginIterator + index) = value;
+    DAX_ASSERT_EXEC(field.Portal.GetNumberOfValues() > 0, work);
+    field.Portal.Set(index, value);
   }
 
   /// Using normal field semantics (that is, a field is just a pointer to an

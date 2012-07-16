@@ -37,8 +37,8 @@ class ExecutionAdapter
 #ifdef DAX_DOXYGEN_ONLY
 {
 public:
-  /// This structure contains iterators that can be used to access the arrays
-  /// representing fields.  The funny templating of the structure containing
+  /// This structure contains portals that can be used to access the arrays
+  /// representing fields. The funny templating of the structure containing
   /// iterators is to handle the case of iterators that are pointers, which
   /// cannot be partially templated (at least before C++11, which is not yet
   /// widely adopted).
@@ -46,8 +46,9 @@ public:
   template <typename T>
   struct FieldStructures
   {
-    typedef T *IteratorType;
-    typedef const T *IteratorConstType;
+    typedef dax::exec::internal::ArrayPortalFromIterators<T *> PortalType;
+    typedef dax::exec::internal::ArrayPortalFromIterators<const T *>
+        PortalConstType;
   };
 
   /// This method is used in work objects so that they can raise errors. The

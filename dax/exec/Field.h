@@ -44,7 +44,7 @@ struct FieldAccessPolicy<FieldAccessInputTag, T, ExecutionAdapter>
 {
   typedef T ValueType;
   typedef typename ExecutionAdapter::template FieldStructures<ValueType>
-      ::IteratorConstType IteratorType;
+      ::PortalConstType PortalType;
 };
 
 template<typename T, class ExecutionAdapter>
@@ -52,7 +52,7 @@ struct FieldAccessPolicy<FieldAccessOutputTag, T, ExecutionAdapter>
 {
   typedef T ValueType;
   typedef typename ExecutionAdapter::template FieldStructures<ValueType>
-      ::IteratorType IteratorType;
+      ::PortalType PortalType;
 };
 
 /// A tag to determine the association (points, cells, etc.) of a field.
@@ -84,14 +84,14 @@ public:
   typedef FieldAccessPolicy<AccessTag, T, ExecutionAdapter> AccessPolicy;
 
   typedef typename AccessPolicy::ValueType ValueType;
-  typedef typename AccessPolicy::IteratorType IteratorType;
+  typedef typename AccessPolicy::PortalType PortalType;
 
-  DAX_EXEC_EXPORT FieldBase(IteratorType beginIterator)
-    : BeginIterator(beginIterator)
+  DAX_EXEC_EXPORT FieldBase(PortalType portal)
+    : Portal(portal)
   { }
 
 private:
-  IteratorType BeginIterator;
+  PortalType Portal;
 
   friend class FieldAccess;
 };
@@ -117,10 +117,10 @@ public: \
   typedef typename BaseType::AssociationTag AssociationTag; \
   typedef typename BaseType::AccessPolicy AccessPolicy; \
   typedef typename BaseType::ValueType ValueType; \
-  typedef typename BaseType::IteratorType IteratorType; \
+  typedef typename BaseType::PortalType PortalType; \
  \
-  DAX_EXEC_EXPORT name(IteratorType beginIterator = IteratorType()) \
-    : BaseType(beginIterator) \
+  DAX_EXEC_EXPORT name(PortalType portal = PortalType()) \
+    : BaseType(portal) \
   { \
   } \
 }
@@ -197,10 +197,10 @@ public:
   typedef typename BaseType::AssociationTag AssociationTag;
   typedef typename BaseType::AccessPolicy AccessPolicy;
   typedef typename BaseType::ValueType ValueType;
-  typedef typename BaseType::IteratorType IteratorType;
+  typedef typename BaseType::PortalType PortalType;
 
-  DAX_EXEC_EXPORT FieldCoordinatesIn(IteratorType beginIterator=IteratorType())
-    : BaseType(beginIterator)
+  DAX_EXEC_EXPORT FieldCoordinatesIn(PortalType portal = PortalType())
+    : BaseType(portal)
   {
   }
 };
@@ -229,10 +229,10 @@ public:
   typedef typename BaseType::AssociationTag AssociationTag;
   typedef typename BaseType::AccessPolicy AccessPolicy;
   typedef typename BaseType::ValueType ValueType;
-  typedef typename BaseType::IteratorType IteratorType;
+  typedef typename BaseType::PortalType PortalType;
 
-  DAX_EXEC_EXPORT FieldCoordinatesOut(IteratorType beginIterator=IteratorType())
-    : BaseType(beginIterator)
+  DAX_EXEC_EXPORT FieldCoordinatesOut(PortalType portal = PortalType())
+    : BaseType(portal)
   {
   }
 };

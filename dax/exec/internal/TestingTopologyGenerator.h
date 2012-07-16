@@ -64,8 +64,9 @@ public:
   TopologyType GetTopology() const { return this->Topology; }
 
   FieldCoordinatesIn<ExecutionAdapter> GetCoordinates() const {
-    return
-        FieldCoordinatesIn<ExecutionAdapter>(&this->CoordinatesArray.front());
+    typename FieldCoordinatesIn<ExecutionAdapter>::PortalType coordPortal(
+          &this->CoordinatesArray.front(), &this->CoordinatesArray.back() + 1);
+    return FieldCoordinatesIn<ExecutionAdapter>(coordPortal);
   }
 
   dax::Tuple<dax::Id, CellType::NUM_POINTS>
@@ -185,7 +186,9 @@ private:
                     == topology.NumberOfCells*CellType::NUM_POINTS,
                     "Bad connection array size.");
 
-    topology.CellConnections = &connectArray.front();
+    topology.CellConnections =
+        dax::exec::internal::ArrayPortalFromIterators<const dax::Id *>(
+          &connectArray.front(), &connectArray.back() + 1);
   }
 
   static dax::Tuple<dax::Id,3> GetCellConnectionsImpl(
@@ -254,7 +257,9 @@ private:
                     == topology.NumberOfCells*CellType::NUM_POINTS,
                     "Bad connection array size.");
 
-    topology.CellConnections = &connectArray.front();
+    topology.CellConnections =
+        dax::exec::internal::ArrayPortalFromIterators<const dax::Id *>(
+          &connectArray.front(), &connectArray.back() + 1);
   }
 };
 
@@ -300,7 +305,8 @@ FieldType<T, typename TopologyGenType::ExecutionAdapter>
 CreateField(const TopologyGenType &topology, std::vector<T> &array){
   typedef FieldType<T, typename TopologyGenType::ExecutionAdapter> FieldClass;
   detail::SetArraySize(topology, array, typename FieldClass::AssociationTag());
-  return FieldClass(&array.front());
+  typename FieldClass::PortalType arrayPortal(&array.front(), &array.back()+1);
+  return FieldClass(arrayPortal);
 }
 
 template<class TopologyGenType>

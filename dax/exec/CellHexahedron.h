@@ -50,17 +50,15 @@ private:
       dax::Id cellIndex)
   {
     PointConnectionsType connections;
-    typename GridStructures<ExecutionAdapter>::TopologyType
-        ::CellConnectionsIteratorType connectionIter
-          = topology.CellConnections + cellIndex*NUM_POINTS;
-    connections[0] = *(connectionIter);
-    connections[1] = *(++connectionIter);
-    connections[2] = *(++connectionIter);
-    connections[3] = *(++connectionIter);
-    connections[4] = *(++connectionIter);
-    connections[5] = *(++connectionIter);
-    connections[6] = *(++connectionIter);
-    connections[7] = *(++connectionIter);
+    dax::Id offset = cellIndex*NUM_POINTS;
+    connections[0] = topology.CellConnections.Get(offset + 0);
+    connections[1] = topology.CellConnections.Get(offset + 1);
+    connections[2] = topology.CellConnections.Get(offset + 2);
+    connections[3] = topology.CellConnections.Get(offset + 3);
+    connections[4] = topology.CellConnections.Get(offset + 4);
+    connections[5] = topology.CellConnections.Get(offset + 5);
+    connections[6] = topology.CellConnections.Get(offset + 6);
+    connections[7] = topology.CellConnections.Get(offset + 7);
     return connections;
   }
 
