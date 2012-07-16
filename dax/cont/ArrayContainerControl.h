@@ -68,35 +68,27 @@ public:
   ///
   typedef T ValueType;
 
-  /// \brief The type of iterator objects for the array.
+  /// \brief The type of portal objects for the array.
   ///
-  /// The actual iterator object may be more complicated, much like the
-  /// iterators in STL containers.
+  /// The actual portal object can take any form. This is a simple example of a
+  /// portal to a C array.
   ///
-  typedef ValueType *IteratorType;
+  typedef dax::cont::ArrayPortalFromIterators<ValueType*> PortalType;
 
-  /// \brief The type of iterator objects (const version) for the array.
+  /// \brief The type of portal objects (const version) for the array.
   ///
-  /// The actual iterator object may be more complicated, much like the
-  /// iterators in STL containers.
+  /// The actual portal object can take any form. This is a simple example of a
+  /// portal to a C array.
   ///
-  typedef const ValueType *IteratorConstType;
+  typedef dax::cont::ArrayPortalFromIterators<const ValueType*> PortalConstType;
 
-  /// Returns the iterator at the beginning of the array.
+  /// Returns a portal to the array.
   ///
-  IteratorType GetIteratorBegin();
+  PortalType GetPortal();
 
-  /// Returns the iterator at the end of the array.
+  /// Returns a portal to the array with immutable values.
   ///
-  IteratorType GetIteratorEnd();
-
-  /// Returns the const iterator at the beginning of the array.
-  ///
-  IteratorConstType GetIteratorConstBegin() const;
-
-  /// Returns the const iterator at the end of the array.
-  ///
-  IteratorConstType GetIteratorConstEnd() const;
+  PortalConstType GetPortalConst() const;
 
   /// Retuns the number of entries allocated in the array.
   dax::Id GetNumberOfValues() const;

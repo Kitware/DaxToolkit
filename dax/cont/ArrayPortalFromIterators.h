@@ -18,6 +18,7 @@
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayPortal.h>
+#include <dax/cont/Assert.h>
 
 #include <iterator>
 
@@ -34,9 +35,25 @@ public:
   typedef IteratorT IteratorType;
   typedef typename std::iterator_traits<IteratorType>::value_type ValueType;
 
+  DAX_CONT_EXPORT ArrayPortalFromIterators() {  }
+
   DAX_CONT_EXPORT
   ArrayPortalFromIterators(IteratorType begin, IteratorType end)
-    : BeginIterator(begin), EndIterator(end) {  }
+    : BeginIterator(begin), EndIterator(end)
+  {
+    DAX_ASSERT_CONT(this->GetNumberOfValues() >= 0);
+  }
+
+  /// Copy constructor for any other ArrayPortalFromIterators with an iterator
+  /// type that can be copied to this iterator type. This allows us to do any
+  /// type casting that the iterators do (like the non-const to const cast).
+  ///
+  template<class OtherIteratorT>
+  DAX_CONT_EXPORT
+  ArrayPortalFromIterators(const ArrayPortalFromIterators<OtherIteratorT> &src)
+    : BeginIterator(src.GetIteratorBegin()),
+      EndIterator(src.GetIteratorEnd())
+  {  }
 
   DAX_CONT_EXPORT
   dax::Id GetNumberOfValues() const {
@@ -65,6 +82,9 @@ private:
 
   DAX_CONT_EXPORT
   IteratorType IteratorAt(dax::Id index) const {
+    DAX_ASSERT_CONT(index >= 0);
+    DAX_ASSERT_CONT(index < this->GetNumberOfValues());
+
     IteratorType position = this->BeginIterator;
     std::advance(position, index);
     return position;

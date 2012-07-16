@@ -43,7 +43,7 @@ class ArrayHandle;
 #include <boost/concept_check.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-#include <utility>
+#include <vector>
 
 namespace dax {
 namespace cont {
@@ -85,50 +85,48 @@ private:
       ArrayManagerExecutionType;
 public:
   typedef T ValueType;
-  typedef typename ArrayContainerControlType::IteratorType IteratorControl;
-  typedef typename ArrayContainerControlType::IteratorConstType
-      IteratorConstControl;
-  typedef typename ArrayManagerExecutionType::IteratorType IteratorExecution;
-  typedef typename ArrayManagerExecutionType::IteratorConstType
-      IteratorConstExecution;
+  typedef typename ArrayContainerControlType::PortalType PortalControl;
+  typedef typename ArrayContainerControlType::PortalConstType
+      PortalConstControl;
+  typedef typename ArrayManagerExecutionType::PortalType PortalExecution;
+  typedef typename ArrayManagerExecutionType::PortalConstType
+      PortalConstExecution;
 
   /// Constructs an empty ArrayHandle. Typically used for output or
   /// intermediate arrays that will be filled by a Dax algorithm.
   ///
   DAX_CONT_EXPORT ArrayHandle() : Internals(new InternalStruct)
   {
-    this->Internals->UserIteratorValid = false;
+    this->Internals->UserPortalValid = false;
     this->Internals->ControlArrayValid = false;
     this->Internals->ExecutionArrayValid = false;
   }
 
-  /// Constructs an ArrayHandle pointing to the data in the given iterators.
+  /// Constructs an ArrayHandle pointing to the data in the given array portal.
   ///
-  DAX_CONT_EXPORT ArrayHandle(IteratorConstControl userDataBegin,
-                              IteratorConstControl userDataEnd)
+  DAX_CONT_EXPORT ArrayHandle(PortalConstControl userData)
     : Internals(new InternalStruct)
   {
-    this->Internals->UserIteratorBegin = userDataBegin;
-    this->Internals->UserIteratorEnd = userDataEnd;
-    this->Internals->UserIteratorValid = true;
+    this->Internals->UserPortal = userData;
+    this->Internals->UserPortalValid = true;
 
     this->Internals->ControlArrayValid = false;
     this->Internals->ExecutionArrayValid = false;
   }
 
-  /// The begin iterator of the control array.
+  /// Get the array portal of the control array.
   ///
-  DAX_CONT_EXPORT IteratorControl GetIteratorControlBegin()
+  DAX_CONT_EXPORT PortalControl GetPortalControl()
   {
     this->SyncControlArray();
-    if (this->Internals->UserIteratorValid)
+    if (this->Internals->UserPortalValid)
       {
       throw dax::cont::ErrorControlBadValue(
-            "ArrayHandle has a read-only control iterator.");
+            "ArrayHandle has a read-only control portal.");
       }
     else if (this->Internals->ControlArrayValid)
       {
-      return this->Internals->ControlArray.GetIteratorBegin();
+      return this->Internals->ControlArray.GetPortal();
       }
     else
       {
@@ -136,57 +134,18 @@ public:
       }
   }
 
-  /// The end iterator of the control array.
+  /// Get the array portal of the control array.
   ///
-  DAX_CONT_EXPORT IteratorControl GetIteratorControlEnd()
+  DAX_CONT_EXPORT PortalConstControl GetPortalConstControl() const
   {
     this->SyncControlArray();
-    if (this->Internals->UserIteratorValid)
+    if (this->Internals->UserPortalValid)
       {
-      throw dax::cont::ErrorControlBadValue(
-            "ArrayHandle has a read-only control iterator.");
+      return this->Internals->UserPortal;
       }
     else if (this->Internals->ControlArrayValid)
       {
-      return this->Internals->ControlArray.GetIteratorEnd();
-      }
-    else
-      {
-      throw dax::cont::ErrorControlBadValue("ArrayHandle contains no data.");
-      }
-  }
-
-  /// The begin iterator of the control array.
-  ///
-  DAX_CONT_EXPORT IteratorConstControl GetIteratorConstControlBegin() const
-  {
-    this->SyncControlArray();
-    if (this->Internals->UserIteratorValid)
-      {
-      return this->Internals->UserIteratorBegin;
-      }
-    else if (this->Internals->ControlArrayValid)
-      {
-      return this->Internals->ControlArray.GetIteratorConstBegin();
-      }
-    else
-      {
-      throw dax::cont::ErrorControlBadValue("ArrayHandle contains no data.");
-      }
-  }
-
-  /// The end iterator of the control array.
-  ///
-  DAX_CONT_EXPORT IteratorConstControl GetIteratorConstControlEnd() const
-  {
-    this->SyncControlArray();
-    if (this->Internals->UserIteratorValid)
-      {
-      return this->Internals->UserIteratorEnd;
-      }
-    else if (this->Internals->ControlArrayValid)
-      {
-      return this->Internals->ControlArray.GetIteratorConstEnd();
+      return this->Internals->ControlArray.GetPortalConst();
       }
     else
       {
@@ -198,10 +157,9 @@ public:
   ///
   DAX_CONT_EXPORT dax::Id GetNumberOfValues() const
   {
-    if (this->Internals->UserIteratorValid)
+    if (this->Internals->UserPortalValid)
       {
-      return std::distance(this->Internals->UserIteratorBegin,
-                           this->Internals->UserIteratorEnd);
+      return this->Internals->UserPortal.GetNumberOfValues();
       }
     else if (this->Internals->ControlArrayValid)
       {
@@ -210,8 +168,7 @@ public:
     else if (this->Internals->ExecutionArrayValid)
       {
       return
-          std::distance(this->Internals->ExecutionArray.GetIteratorConstBegin(),
-                        this->Internals->ExecutionArray.GetIteratorConstEnd());
+          this->Internals->ExecutionArray.GetPortalConst().GetNumberOfValues();
       }
     else
       {
@@ -233,9 +190,8 @@ public:
       }
     else
       {
-      std::copy(this->GetIteratorConstControlBegin(),
-                this->GetIteratorConstControlEnd(),
-                dest);
+      PortalConstControl portal = this->GetPortalConstControl();
+      std::copy(portal.GetIteratorBegin(), portal.GetIteratorEnd(), dest);
       }
   }
 
@@ -253,10 +209,10 @@ public:
 
     if (numberOfValues < originalNumberOfValues)
       {
-      if (this->Internals->UserIteratorValid)
+      if (this->Internals->UserPortalValid)
         {
-        this->Internals->UserIteratorEnd = this->Internals->UserIteratorBegin;
-        std::advance(this->Internals->UserIteratorEnd, numberOfValues);
+        throw dax::cont::ErrorControlBadValue(
+              "ArrayHandle has a read-only control portal.");
         }
       if (this->Internals->ControlArrayValid)
         {
@@ -299,7 +255,7 @@ public:
     this->ReleaseResourcesExecution();
 
     // Forget about any user iterators.
-    this->Internals->UserIteratorValid = false;
+    this->Internals->UserPortalValid = false;
 
     if (this->Internals->ControlArrayValid)
       {
@@ -311,29 +267,27 @@ public:
   /// Prepares this array to be used as an input to an operation in the
   /// execution environment. If necessary, copies data to the execution
   /// environment. Can throw an exception if this array does not yet contain
-  /// any data. Returns a pair of begin/end iterators that can be used in code
-  /// running in the execution environment.
+  /// any data. Returns a portal that can be used in code running in the
+  /// execution environment.
   ///
-  DAX_CONT_EXPORT std::pair<IteratorConstExecution, IteratorConstExecution>
-  PrepareForInput() const
+  DAX_CONT_EXPORT
+  PortalConstExecution PrepareForInput() const
   {
     if (this->Internals->ExecutionArrayValid)
       {
       // Nothing to do, data already loaded.
       }
-    else if (this->Internals->UserIteratorValid)
+    else if (this->Internals->UserPortalValid)
       {
       DAX_ASSERT_CONT(!this->Internals->ControlArrayValid);
       this->Internals->ExecutionArray.LoadDataForInput(
-            this->Internals->UserIteratorBegin,
-            this->Internals->UserIteratorEnd);
+            this->Internals->UserPortal);
       this->Internals->ExecutionArrayValid = true;
       }
     else if (this->Internals->ControlArrayValid)
       {
       this->Internals->ExecutionArray.LoadDataForInput(
-            this->Internals->ControlArray.GetIteratorConstBegin(),
-            this->Internals->ControlArray.GetIteratorConstEnd());
+            this->Internals->ControlArray.GetPortalConst());
       this->Internals->ExecutionArrayValid = true;
       }
     else
@@ -341,55 +295,52 @@ public:
       throw dax::cont::ErrorControlBadValue(
             "ArrayHandle has no data when PrepareForInput called.");
       }
-    return std::make_pair(
-          this->Internals->ExecutionArray.GetIteratorConstBegin(),
-          this->Internals->ExecutionArray.GetIteratorConstEnd());
+    return this->Internals->ExecutionArray.GetPortalConst();
   }
 
   /// Prepares (allocates) this array to be used as an output from an operation
   /// in the execution environment. The internal state of this class is set to
   /// have valid data in the execution array with the assumption that the array
   /// will be filled soon (i.e. before any other methods of this object are
-  /// called). Returns a pair of begin/end iterators that can be used in code
-  /// running in the execution environment.
+  /// called). Returns a portal that can be used in code running in the
+  /// execution environment.
   ///
-  DAX_CONT_EXPORT std::pair<IteratorExecution, IteratorExecution>
-  PrepareForOutput(dax::Id numberOfValues)
+  DAX_CONT_EXPORT
+  PortalExecution PrepareForOutput(dax::Id numberOfValues)
   {
     // Invalidate any control arrays.
-    // Should the control array resource be released? Probably not be a good
+    // Should the control array resource be released? Probably not a good
     // idea when shared with execution.
-    this->Internals->UserIteratorValid = false;
+    this->Internals->UserPortalValid = false;
     this->Internals->ControlArrayValid = false;
 
     this->Internals->ExecutionArray.AllocateArrayForOutput(
           this->Internals->ControlArray, numberOfValues);
 
     // We are assuming that the calling code will fill the array using the
-    // iterators we are returning, so go ahead ad mark the execution array as
+    // iterators we are returning, so go ahead and mark the execution array as
     // having valid data. (A previous version of this class had a separate call
     // to mark the array as filled, but that was onerous to call at the the
     // right time and rather pointless since it is basically always the case
     // that the array is going to be filled before anything else. In this
     // implementation the only access to the array is through the iterators
     // returned from this method, so you would have to work to invalidate this
-    // assumption anyway.
+    // assumption anyway.)
     this->Internals->ExecutionArrayValid = true;
 
-    return std::make_pair(this->Internals->ExecutionArray.GetIteratorBegin(),
-                          this->Internals->ExecutionArray.GetIteratorEnd());
+    return this->Internals->ExecutionArray.GetPortal();
   }
 
   /// Prepares this array to be used in an in-place operation (both as input
   /// and output) in the execution environment. If necessary, copies data to
   /// the execution environment. Can throw an exception if this array does not
-  /// yet contain any data. Returns a a pair of begin/end iterators that can be
-  /// used in code running in the execution environment.
+  /// yet contain any data. Returns a portal that can be used in code running
+  /// in the execution environment.
   ///
-  DAX_CONT_EXPORT std::pair<IteratorExecution, IteratorExecution>
-  PrepareForInPlace()
+  DAX_CONT_EXPORT
+  PortalExecution PrepareForInPlace()
   {
-    if (this->Internals->UserIteratorValid)
+    if (this->Internals->UserPortalValid)
       {
       throw dax::cont::ErrorControlBadValue(
             "In place execution cannot be used with an ArrayHandle that has "
@@ -399,20 +350,19 @@ public:
 
     this->PrepareForInput();
 
-    // Invalidate any control arrays. Don't actually release the control array.
-    // It may be shared as the execution array.
-    this->Internals->UserIteratorValid = false;
+    // Invalidate any control arrays since their data will become invalid when
+    // the execution data is overwritten. Don't actually release the control
+    // array. It may be shared as the execution array.
+    this->Internals->UserPortalValid = false;
     this->Internals->ControlArrayValid = false;
 
-    return std::make_pair(this->Internals->ExecutionArray.GetIteratorBegin(),
-                          this->Internals->ExecutionArray.GetIteratorEnd());
+    return this->Internals->ExecutionArray.GetPortal();
   }
 
 private:
   struct InternalStruct {
-    IteratorConstControl UserIteratorBegin;
-    IteratorConstControl UserIteratorEnd;
-    bool UserIteratorValid;
+    PortalConstControl UserPortal;
+    bool UserPortalValid;
 
     ArrayContainerControlType ControlArray;
     bool ControlArrayValid;
@@ -423,13 +373,13 @@ private:
 
   /// Synchronizes the control array with the execution array. If either the
   /// user array or control array is already valid, this method does nothing
-  /// (because the data is already available in the control environment.
+  /// (because the data is already available in the control environment).
   /// Although the internal state of this class can change, the method is
   /// declared const because logically the data does not.
   ///
   DAX_CONT_EXPORT void SyncControlArray() const
   {
-    if (   !this->Internals->UserIteratorValid
+    if (   !this->Internals->UserPortalValid
         && !this->Internals->ControlArrayValid)
       {
       // Need to change some state that does not change the logical state from
@@ -443,7 +393,7 @@ private:
       {
       // It should never be the case that both the user and control array are
       // valid.
-      DAX_ASSERT_CONT(!this->Internals->UserIteratorValid
+      DAX_ASSERT_CONT(!this->Internals->UserPortalValid
                       || !this->Internals->ControlArrayValid);
       // Nothing to do.
       }
@@ -451,6 +401,86 @@ private:
 
   boost::shared_ptr<InternalStruct> Internals;
 };
+
+/// A convenience function for creating an ArrayHandle from a standard C
+/// array.  Unless properly specialized, this only works with container types
+/// that use an array portal that accepts a pair of pointers to signify the
+/// beginning and end of the array.
+///
+template<typename T, class ArrayContainerControlTag, class DeviceAdapterTag>
+DAX_CONT_EXPORT
+dax::cont::ArrayHandle<T, ArrayContainerControlTag, DeviceAdapterTag>
+make_ArrayHandle(const T *array,
+                 dax::Id length,
+                 ArrayContainerControlTag,
+                 DeviceAdapterTag)
+{
+  typedef dax::cont::ArrayHandle<T, ArrayContainerControlTag, DeviceAdapterTag>
+      ArrayHandleType;
+  typedef typename ArrayHandleType::PortalConstControl PortalType;
+  return ArrayHandleType(PortalType(array, array+length));
+}
+template<typename T, class ArrayContainerControlTag>
+DAX_CONT_EXPORT
+dax::cont::ArrayHandle<T, ArrayContainerControlTag, DAX_DEFAULT_DEVICE_ADAPTER>
+make_ArrayHandle(const T *array, dax::Id length, ArrayContainerControlTag)
+{
+  return make_ArrayHandle(array,
+                          length,
+                          ArrayContainerControlTag(),
+                          DAX_DEFAULT_DEVICE_ADAPTER());
+}
+template<typename T>
+DAX_CONT_EXPORT
+dax::cont::ArrayHandle<
+     T, DAX_DEFAULT_ARRAY_CONTAINER_CONTROL, DAX_DEFAULT_DEVICE_ADAPTER>
+make_ArrayHandle(const T *array, dax::Id length)
+{
+  return make_ArrayHandle(array,
+                          length,
+                          DAX_DEFAULT_ARRAY_CONTAINER_CONTROL(),
+                          DAX_DEFAULT_DEVICE_ADAPTER());
+}
+
+/// A convenience function for creating an ArrayHandle from an std::vector.
+/// Unless properly specialized, this only works with container types that use
+/// an array portal that accepts a pair of pointers to signify the beginning
+/// and end of the array.
+///
+template<typename T,
+         class ArrayContainerControlTag,
+         class DeviceAdapterTag>
+DAX_CONT_EXPORT
+dax::cont::ArrayHandle<T, ArrayContainerControlTag, DeviceAdapterTag>
+make_ArrayHandle(const std::vector<T> &array,
+                 ArrayContainerControlTag,
+                 DeviceAdapterTag)
+{
+  typedef dax::cont::ArrayHandle<T, ArrayContainerControlTag, DeviceAdapterTag>
+      ArrayHandleType;
+  typedef typename ArrayHandleType::PortalConstControl PortalType;
+  return ArrayHandleType(PortalType(&array.front(), &array.back() + 1));
+}
+template<typename T,
+         class ArrayContainerControlTag>
+DAX_CONT_EXPORT
+dax::cont::ArrayHandle<T, ArrayContainerControlTag, DAX_DEFAULT_DEVICE_ADAPTER>
+make_ArrayHandle(const std::vector<T> &array, ArrayContainerControlTag)
+{
+  return make_ArrayHandle(array,
+                          ArrayContainerControlTag(),
+                          DAX_DEFAULT_DEVICE_ADAPTER());
+}
+template<typename T>
+DAX_CONT_EXPORT
+dax::cont::ArrayHandle<
+    T, DAX_DEFAULT_ARRAY_CONTAINER_CONTROL, DAX_DEFAULT_DEVICE_ADAPTER>
+make_ArrayHandle(const std::vector<T> &array)
+{
+  return make_ArrayHandle(array,
+                          DAX_DEFAULT_ARRAY_CONTAINER_CONTROL(),
+                          DAX_DEFAULT_DEVICE_ADAPTER());
+}
 
 }
 }

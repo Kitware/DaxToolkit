@@ -57,9 +57,9 @@ private:
       DeviceAdapterTag> ExecutionAdapter;
 
   typedef typename ExecutionAdapter::template FieldStructures<dax::Id>
-      ::IteratorType IdIteratorType;
+      ::PortalType IdPortalType;
   typedef typename ExecutionAdapter::template FieldStructures<dax::Id>
-      ::IteratorConstType IdIteratorConstType;
+      ::PortalConstType IdPortalConstType;
 
   typedef dax::cont
       ::ArrayHandle<dax::Id, ArrayContainerControlTagBasic, DeviceAdapterTag>
@@ -83,52 +83,52 @@ public:
   struct CopyArrayKernel
   {
     DAX_EXEC_EXPORT void operator()(
-        std::pair<IdIteratorConstType, IdIteratorType> arrays,
+        std::pair<IdPortalConstType, IdPortalType> arrays,
         dax::Id index,
         const dax::exec::internal
         ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
     const
     {
-      *(arrays.second + index) = *(arrays.first + index);
+      arrays.second.Set(index, arrays.first.Get(index));
     }
   };
 
   struct ClearArrayKernel
   {
     DAX_EXEC_EXPORT void operator()(
-        IdIteratorType array,
+        IdPortalType array,
         dax::Id index,
         const dax::exec::internal
         ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
     const
     {
-      *(array + index) = OFFSET;
+      array.Set(index, OFFSET);
     }
   };
 
   struct ClearArrayMapKernel
   {
     DAX_EXEC_EXPORT void operator()(
-        IdIteratorType array,
+        IdPortalType array,
         dax::Id, dax::Id value,
         const dax::exec::internal
         ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
     const
     {
-      *(array + value) = OFFSET;
+      array.Set(value, OFFSET);
     }
   };
 
   struct AddArrayKernel
   {
     DAX_EXEC_EXPORT void operator()(
-        IdIteratorType array,
+        IdPortalType array,
         dax::Id index,
         const dax::exec::internal
         ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
     const
     {
-      *(array + index) += index;
+      array.Set(index, array.Get(index) + index);
     }
   };
 
@@ -164,30 +164,51 @@ public:
   struct OffsetPlusIndexKernel
   {
     DAX_EXEC_EXPORT void operator()(
-        IdIteratorType array,
+        IdPortalType array,
         dax::Id index,
         const dax::exec::internal
         ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
     const
     {
-      *(array + index) = OFFSET + index;
+      array.Set(index, OFFSET + index);
     }
   };
 
   struct MarkOddNumbersKernel
   {
     DAX_EXEC_EXPORT void operator()(
-        IdIteratorType array,
+        IdPortalType array,
         dax::Id index,
         const dax::exec::internal
         ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
     const
     {
-      *(array + index) = index%2;
+      array.Set(index, index%2);
     }
   };
 
 private:
+
+  template<typename T>
+  static DAX_CONT_EXPORT
+  dax::cont::ArrayHandle<T, ArrayContainerControlTagBasic, DeviceAdapterTag>
+  MakeArrayHandle(const T *array, dax::Id length)
+  {
+    return dax::cont::make_ArrayHandle(array,
+                                       length,
+                                       ArrayContainerControlTagBasic(),
+                                       DeviceAdapterTag());
+  }
+
+  template<typename T>
+  static DAX_CONT_EXPORT
+  dax::cont::ArrayHandle<T, ArrayContainerControlTagBasic, DeviceAdapterTag>
+  MakeArrayHandle(const std::vector<T> array)
+  {
+    return dax::cont::make_ArrayHandle(array,
+                                       ArrayContainerControlTagBasic(),
+                                       DeviceAdapterTag());
+  }
 
   // Note: this test does not actually test to make sure the data is available
   // in the execution environment. It tests to make sure data gets to the array
@@ -208,8 +229,10 @@ private:
       {
       inputArray[index] = index;
       }
+    dax::cont::ArrayPortalFromIterators<dax::Scalar *>
+        inputPortal(inputArray, inputArray+ARRAY_SIZE*2);
     ArrayManagerExecution inputManager;
-    inputManager.LoadDataForInput(inputArray, inputArray+ARRAY_SIZE*2);
+    inputManager.LoadDataForInput(inputPortal);
 
     // Change size.
     inputManager.Shrink(ARRAY_SIZE);
@@ -271,14 +294,14 @@ private:
 
     std::cout << "Running clear." << std::endl;
     dax::cont::internal::Schedule(ClearArrayKernel(),
-                                  manager.GetIteratorBegin(),
+                                  manager.GetPortal(),
                                   ARRAY_SIZE,
                                   ArrayContainerControlTagBasic(),
                                   DeviceAdapterTag());
 
     std::cout << "Running add." << std::endl;
     dax::cont::internal::Schedule(AddArrayKernel(),
-                                  manager.GetIteratorBegin(),
+                                  manager.GetPortal(),
                                   ARRAY_SIZE,
                                   ArrayContainerControlTagBasic(),
                                   DeviceAdapterTag());
@@ -288,7 +311,7 @@ private:
 
     for (dax::Id index = 0; index < ARRAY_SIZE; index++)
       {
-      dax::Id value = *(container.GetIteratorConstBegin() + index);
+      dax::Id value = container.GetPortalConst().Get(index);
       DAX_TEST_ASSERT(value == index + OFFSET,
                       "Got bad value for scheduled kernels.");
       }
@@ -297,17 +320,17 @@ private:
     const dax::Id RAWSUBSET_SIZE = 4;
     dax::Id rawsubset[RAWSUBSET_SIZE];
     rawsubset[0]=0;rawsubset[1]=10;rawsubset[2]=30;rawsubset[3]=20;
-    IdArrayHandle subset(rawsubset, rawsubset + RAWSUBSET_SIZE);
+    IdArrayHandle subset = MakeArrayHandle(rawsubset, RAWSUBSET_SIZE);
 
     std::cout << "Running clear on subset." << std::endl;
     dax::cont::internal::ScheduleMap(ClearArrayMapKernel(),
-                                     manager.GetIteratorBegin(),
+                                     manager.GetPortal(),
                                      subset);
     manager.RetrieveOutputData(container);
 
     for (dax::Id index = 0; index < 4; index++)
       {
-      dax::Id value = *(container.GetIteratorConstBegin() + rawsubset[index]);
+      dax::Id value = container.GetPortalConst().Get(rawsubset[index]);
       DAX_TEST_ASSERT(value == OFFSET,
                       "Got bad value for subset scheduled kernel.");
       }
@@ -327,7 +350,7 @@ private:
     //construct the index array
 
     dax::cont::internal::Schedule(MarkOddNumbersKernel(),
-                                  array.PrepareForOutput(ARRAY_SIZE).first,
+                                  array.PrepareForOutput(ARRAY_SIZE),
                                   ARRAY_SIZE,
                                   ArrayContainerControlTagBasic(),
                                   DeviceAdapterTag());
@@ -336,13 +359,9 @@ private:
     DAX_TEST_ASSERT(result.GetNumberOfValues() == array.GetNumberOfValues()/2,
                     "result of compacation has an incorrect size");
 
-    dax::Id index = 0;
-    for (typename IdArrayHandle::IteratorConstControl iter
-         = result.GetIteratorConstControlBegin();
-         iter != result.GetIteratorConstControlEnd();
-         iter++, index++)
+    for (dax::Id index = 0; index < result.GetNumberOfValues(); index++)
       {
-      const dax::Id value = *iter;
+      const dax::Id value = result.GetPortalConstControl().Get(index);
       DAX_TEST_ASSERT(value == (index*2)+1,
                       "Incorrect value in compaction results.");
       }
@@ -359,12 +378,12 @@ private:
 
     //construct the index array
     dax::cont::internal::Schedule(OffsetPlusIndexKernel(),
-                                  array.PrepareForOutput(ARRAY_SIZE).first,
+                                  array.PrepareForOutput(ARRAY_SIZE),
                                   ARRAY_SIZE,
                                   ArrayContainerControlTagBasic(),
                                   DeviceAdapterTag());
     dax::cont::internal::Schedule(MarkOddNumbersKernel(),
-                                  stencil.PrepareForOutput(ARRAY_SIZE).first,
+                                  stencil.PrepareForOutput(ARRAY_SIZE),
                                   ARRAY_SIZE,
                                   ArrayContainerControlTagBasic(),
                                   DeviceAdapterTag());
@@ -373,13 +392,9 @@ private:
     DAX_TEST_ASSERT(result.GetNumberOfValues() == array.GetNumberOfValues()/2,
                     "result of compacation has an incorrect size");
 
-    dax::Id index = 0;
-    for (typename IdArrayHandle::IteratorConstControl iter
-         = result.GetIteratorConstControlBegin();
-         iter != result.GetIteratorConstControlEnd();
-         iter++, index++)
+    for (dax::Id index = 0; index < result.GetNumberOfValues(); index++)
       {
-      const dax::Id value = *iter;
+      const dax::Id value = result.GetPortalConstControl().Get(index);
       DAX_TEST_ASSERT(value == (OFFSET + (index*2)+1),
                   "Incorrect value in compaction result.");
       }
@@ -394,7 +409,7 @@ private:
       {
       testData[i]= OFFSET+(i % 50);
       }
-    IdArrayHandle input(testData, testData + ARRAY_SIZE);
+    IdArrayHandle input = MakeArrayHandle(testData, ARRAY_SIZE);
 
     IdArrayHandle handle;
     IdArrayHandle temp;
@@ -407,7 +422,7 @@ private:
 
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
       {
-      dax::Id value = *(handle.GetIteratorConstControlBegin() + i);
+      dax::Id value = handle.GetPortalConstControl().Get(i);
       DAX_TEST_ASSERT(value == i % 50, "Got bad value");
       }
 
@@ -423,7 +438,7 @@ private:
     randomData[5]=955;  //3
 
     //change the control structure under the handle
-    input = IdArrayHandle(randomData, randomData + RANDOMDATA_SIZE);
+    input = MakeArrayHandle(randomData, RANDOMDATA_SIZE);
     dax::cont::internal::Copy(input,handle,DeviceAdapterTag());
     DAX_TEST_ASSERT(handle.GetNumberOfValues() == RANDOMDATA_SIZE,
                     "Handle incorrect size after setting new control data");
@@ -455,7 +470,7 @@ private:
     //construct the index array
     IdArrayHandle array;
     dax::cont::internal::Schedule(ClearArrayKernel(),
-                                  array.PrepareForOutput(ARRAY_SIZE).first,
+                                  array.PrepareForOutput(ARRAY_SIZE),
                                   ARRAY_SIZE,
                                   ArrayContainerControlTagBasic(),
                                   DeviceAdapterTag());
@@ -465,7 +480,8 @@ private:
     dax::Id sum = dax::cont::internal::InclusiveScan(array,
                                                      array,
                                                      DeviceAdapterTag());
-    DAX_TEST_ASSERT(sum == OFFSET * ARRAY_SIZE, "Got bad sum from Inclusive Scan");
+    DAX_TEST_ASSERT(sum == OFFSET * ARRAY_SIZE,
+                    "Got bad sum from Inclusive Scan");
 
     //each value should be equal to the Triangle Number of that index
     //ie 1, 3, 6, 10, 15, 21 ...
@@ -473,10 +489,11 @@ private:
     dax::Id triangleNumber = 0;
     for(unsigned int i=0, pos=1; i < ARRAY_SIZE; ++i, ++pos)
       {
-      const dax::Id value = *(array.GetIteratorConstControlBegin() + i);
+      const dax::Id value = array.GetPortalConstControl().Get(i);
       partialSum += value;
       triangleNumber = ((pos*(pos+1))/2);
-      DAX_TEST_ASSERT(partialSum == triangleNumber * OFFSET, "Incorrect partial sum");
+      DAX_TEST_ASSERT(partialSum == triangleNumber * OFFSET,
+                      "Incorrect partial sum");
       }
   }
 
@@ -547,7 +564,7 @@ private:
       dax::Vector3 coordinates = grid.GetPointCoordinates(pointIndex);
       field[pointIndex] = dax::dot(coordinates, trueGradient);
       }
-    ScalarArrayHandle fieldHandle(&field.front(), &field.back() + 1);
+    ScalarArrayHandle fieldHandle = MakeArrayHandle(field);
 
     ScalarArrayHandle squareHandle;
 
@@ -624,7 +641,7 @@ private:
       dax::Vector3 coordinates = grid.GetPointCoordinates(pointIndex);
       field[pointIndex] = dax::dot(coordinates, trueGradient);
       }
-    ScalarArrayHandle fieldHandle(&field.front(), &field.back() + 1);
+    ScalarArrayHandle fieldHandle = MakeArrayHandle(field);
 
     Vector3ArrayHandle gradientHandle;
 

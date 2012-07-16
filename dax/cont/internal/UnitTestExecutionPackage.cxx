@@ -55,6 +55,16 @@ void CompareArrays(IteratorType1 begin1,
     }
 }
 
+template<class PortalType1, class PortalType2>
+void CompareArrayPortals(PortalType1 portal1, PortalType2 portal2)
+{
+  DAX_TEST_ASSERT(portal1.GetNumberOfValues() == portal2.GetNumberOfValues(),
+                  "Arrays have different sizes.");
+  CompareArrays(portal1.GetIteratorBegin(),
+                portal1.GetIteratorEnd(),
+                portal2.GetIteratorBegin());
+}
+
 template<class GridType, class TopologyType>
 void BasicGridComparison(const GridType &grid, const TopologyType &topology)
 {
@@ -105,9 +115,8 @@ void TestExecutionGrid(
   BasicGridComparison(grid, topology);
 
   std::cout << "Check cell connections." << std::endl;
-  CompareArrays(grid.GetCellConnections().GetIteratorConstControlBegin(),
-                grid.GetCellConnections().GetIteratorConstControlEnd(),
-                topology.CellConnections);
+  CompareArrayPortals(grid.GetCellConnections().GetPortalConstControl(),
+                      topology.CellConnections);
 
   std::cout << "Done testing UnstructuredGrid" << std::endl;
 }
@@ -140,8 +149,8 @@ void TestExecutionField(dax::exec::internal::FieldAccessInputTag)
     {
     originalData[i] = ValueType(10*i + 0.01*(i+1));
     }
-  dax::cont::ArrayHandle<ValueType> inputArray(
-        &originalData.front(), (&originalData.back()) + 1);
+  dax::cont::ArrayHandle<ValueType> inputArray =
+      dax::cont::make_ArrayHandle(originalData);
 
   FieldType field = dax::cont::internal::ExecutionPackageFieldArray<FieldType>(
         inputArray, ARRAY_SIZE);
@@ -185,16 +194,12 @@ void TestExecutionField(dax::exec::internal::FieldAccessOutputTag)
     }
 
   std::cout << "Checking that field comes back to control." << std::endl;
-  typedef typename dax::cont::ArrayHandle<ValueType>::IteratorConstControl
-      IteratorType;
-  dax::Id i = 0;
-  for (IteratorType iter = array.GetIteratorConstControlBegin();
-       iter != array.GetIteratorConstControlEnd();
-       iter++)
+  typename dax::cont::ArrayHandle<ValueType>::PortalConstControl arrayPortal =
+      array.GetPortalConstControl();
+  for (dax::Id index = 0; index < ARRAY_SIZE; index++)
     {
-    DAX_TEST_ASSERT(*iter == ValueType(i),
+    DAX_TEST_ASSERT(arrayPortal.Get(index) == ValueType(index),
                     "Did not get back right values in control.");
-    i++;
     }
 }
 
