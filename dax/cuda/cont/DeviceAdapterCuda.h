@@ -23,7 +23,7 @@
 
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cuda::cont::DeviceAdapterTagCuda
 
-// Forward declaration (before suber DeviceAdapterTagThrust declared).
+// Forward declaration (before super DeviceAdapterTagThrust declared).
 namespace dax {
 namespace cuda {
 namespace cont {
@@ -69,8 +69,8 @@ public:
   typedef dax::thrust::cont::internal::ArrayManagerExecutionThrustDevice
       <T, ArrayContainerTag> Superclass;
   typedef typename Superclass::ValueType ValueType;
-  typedef typename Superclass::IteratorType IteratorType;
-  typedef typename Superclass::IteratorConstType IteratorConstType;
+  typedef typename Superclass::PortalType PortalType;
+  typedef typename Superclass::PortalConstType PortalConstType;
 
   typedef typename Superclass::ThrustIteratorType ThrustIteratorType;
   typedef typename Superclass::ThrustIteratorConstType ThrustIteratorConstType;

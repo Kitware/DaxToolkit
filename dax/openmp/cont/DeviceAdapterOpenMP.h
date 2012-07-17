@@ -69,8 +69,8 @@ public:
   typedef dax::thrust::cont::internal::ArrayManagerExecutionThrustShare
       <T, ArrayContainerTag> Superclass;
   typedef typename Superclass::ValueType ValueType;
-  typedef typename Superclass::IteratorType IteratorType;
-  typedef typename Superclass::IteratorConstType IteratorConstType;
+  typedef typename Superclass::PortalType PortalType;
+  typedef typename Superclass::PortalConstType PortalConstType;
 
   typedef typename Superclass::ThrustIteratorType ThrustIteratorType;
   typedef typename Superclass::ThrustIteratorConstType ThrustIteratorConstType;

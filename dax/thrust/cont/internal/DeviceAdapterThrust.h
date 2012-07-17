@@ -82,9 +82,9 @@ public:
   struct FieldStructures
   {
     typedef typename dax::cont::internal::ArrayManagerExecution
-        <T,Container,Adapter>::IteratorType IteratorType;
+        <T,Container,Adapter>::PortalType PortalType;
     typedef typename dax::cont::internal::ArrayManagerExecution
-        <T,Container,Adapter>::IteratorConstType IteratorConstType;
+        <T,Container,Adapter>::PortalConstType PortalConstType;
   };
 
   DAX_EXEC_EXPORT ExecutionAdapterThrust(char *messageBegin, char *messageEnd)
@@ -184,55 +184,55 @@ namespace internal {
 namespace detail {
 
 template<typename T, class Container, class Adapter>
-std::pair<
-typename dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorConstType,
-typename dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorConstType>
+std::pair<typename dax::cont::internal::
+            ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorConstType,
+          typename dax::cont::internal::
+            ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorConstType>
 PrepareForInput(const dax::cont::ArrayHandle<T,Container,Adapter> &array)
 {
   typedef dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>
       Manager;
-  typedef typename Manager::IteratorConstType IteratorConstType;
+  typedef typename Manager::PortalConstType PortalConstType;
   typedef typename Manager::ThrustIteratorConstType ThrustIteratorConstType;
 
-  std::pair<IteratorConstType, IteratorConstType> iterators =
-      array.PrepareForInput();
-  return std::make_pair(Manager::ThrustIterator(iterators.first),
-                        Manager::ThrustIterator(iterators.second));
+  PortalConstType portal = array.PrepareForInput();
+  return std::make_pair(Manager::ThrustIteratorBegin(portal),
+                        Manager::ThrustIteratorEnd(portal));
 }
 
 template<typename T, class Container, class Adapter>
-std::pair<
-typename dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorType,
-typename dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorType>
+std::pair<typename dax::cont::internal::
+            ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorType,
+          typename dax::cont::internal::
+            ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorType>
 PrepareForOutput(dax::cont::ArrayHandle<T,Container,Adapter> &array,
                  dax::Id numberOfValues)
 {
   typedef dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>
       Manager;
-  typedef typename Manager::IteratorType IteratorType;
+  typedef typename Manager::PortalType PortalType;
   typedef typename Manager::ThrustIteratorType ThrustIteratorType;
 
-  std::pair<IteratorType, IteratorType> iterators =
-      array.PrepareForOutput(numberOfValues);
-  return std::make_pair(Manager::ThrustIterator(iterators.first),
-                        Manager::ThrustIterator(iterators.second));
+  PortalType portal = array.PrepareForOutput(numberOfValues);
+  return std::make_pair(Manager::ThrustIteratorBegin(portal),
+                        Manager::ThrustIteratorEnd(portal));
 }
 
 template<typename T, class Container, class Adapter>
-std::pair<
-typename dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorType,
-typename dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorType>
+std::pair<typename dax::cont::internal::
+            ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorType,
+          typename dax::cont::internal::
+            ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorType>
 PrepareForInPlace(dax::cont::ArrayHandle<T,Container,Adapter> &array)
 {
   typedef dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>
       Manager;
-  typedef typename Manager::IteratorType IteratorType;
+  typedef typename Manager::PortalType PortalType;
   typedef typename Manager::ThrustIteratorType ThrustIteratorType;
 
-  std::pair<IteratorType, IteratorType> iterators =
-      array.PrepareForInPlace();
-  return std::make_pair(Manager::ThrustIterator(iterators.first),
-                        Manager::ThrustIterator(iterators.second));
+  PortalType portal = array.PrepareForInPlace();
+  return std::make_pair(Manager::ThrustIteratorBegin(portal),
+                        Manager::ThrustIteratorEnd(portal));
 }
 
 } // namespace detail
