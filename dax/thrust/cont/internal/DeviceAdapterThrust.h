@@ -17,6 +17,7 @@
 #define __dax_thrust_cont_internal_DeviceAdapterThrust_h
 
 #include <dax/thrust/cont/internal/CheckThrustBackend.h>
+#include <dax/thrust/cont/internal/DeviceAdapterThrustTag.h>
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
@@ -55,24 +56,6 @@ namespace dax {
 namespace thrust {
 namespace cont {
 namespace internal {
-
-/// This is an incomplete implementation of a device adapter. Specifically, it
-/// is missing the ArrayManagerExecution and ExecutionAdapter classes and the
-/// schedule function. This is why it is declared in an internal namespace.
-/// However, all device adapters based on thrust should have their tags inherit
-/// from this tag. This will make the implementation of the device adapter
-/// algorithms automatically use those defined here.
-///
-/// The thrust namespace contains basic implementations of all missing parts.
-/// The ArrayManagerExecution should be a trivial subclass of either
-/// ArrayManagerExecutionThrustDevice or ArrayManagerExecutionThrustShare.
-/// There is a basic type for ExecutionAdapter called ExecutionAdapterThrust
-/// that thrust implementations should publicly subclass. Likewise, there is a
-/// function called ScheduleThrust that implementations should trivially call
-/// for their schedule implementation.
-///
-struct DeviceAdapterTagThrust {  };
-
 
 template<class Container, class Adapter>
 class ExecutionAdapterThrust
