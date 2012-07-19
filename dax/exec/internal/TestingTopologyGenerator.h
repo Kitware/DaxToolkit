@@ -280,7 +280,9 @@ private:
                     == topology.NumberOfCells*CellType::NUM_POINTS,
                     "Bad connection array size.");
 
-    topology.CellConnections = &connectArray.front();
+    topology.CellConnections =
+        dax::exec::internal::ArrayPortalFromIterators<const dax::Id *>(
+          &connectArray.front(), &connectArray.back() + 1);
   }
 
   static dax::Tuple<dax::Id,6> GetCellConnectionsImpl(
@@ -353,7 +355,9 @@ private:
                     == topology.NumberOfCells*CellType::NUM_POINTS,
                     "Bad connection array size.");
 
-    topology.CellConnections = &connectArray.front();
+    topology.CellConnections =
+        dax::exec::internal::ArrayPortalFromIterators<const dax::Id *>(
+          &connectArray.front(), &connectArray.back() + 1);
   }
 
   static dax::Tuple<dax::Id,3> GetCellConnectionsImpl(
@@ -482,7 +486,9 @@ private:
                     == topology.NumberOfCells*CellType::NUM_POINTS,
                     "Bad connection array size.");
 
-    topology.CellConnections = &connectArray.front();
+    topology.CellConnections =
+        dax::exec::internal::ArrayPortalFromIterators<const dax::Id *>(
+          &connectArray.front(), &connectArray.back() + 1);
   }
 
   static dax::Tuple<dax::Id,2> GetCellConnectionsImpl(
@@ -565,7 +571,9 @@ private:
                     == topology.NumberOfCells*CellType::NUM_POINTS,
                     "Bad connection array size.");
 
-    topology.CellConnections = &connectArray.front();
+    topology.CellConnections =
+        dax::exec::internal::ArrayPortalFromIterators<const dax::Id *>(
+          &connectArray.front(), &connectArray.back() + 1);
   }
 
   static dax::Tuple<dax::Id,1> GetCellConnectionsImpl(
@@ -617,7 +625,9 @@ private:
                     == topology.NumberOfCells*CellType::NUM_POINTS,
                     "Bad connection array size.");
 
-    topology.CellConnections = &connectArray.front();
+    topology.CellConnections =
+        dax::exec::internal::ArrayPortalFromIterators<const dax::Id *>(
+          &connectArray.front(), &connectArray.back() + 1);
   }
 };
 
