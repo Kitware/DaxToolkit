@@ -84,6 +84,13 @@ void TestHexahedronGrid()
   TestUnstructuredGrid<CellType>();
 }
 
+void TestTetrahedronGrid()
+{
+  std::cout << "Testing tetrahedron grid." << std::endl;
+  typedef dax::exec::CellTetrahedron CellType;
+  TestUnstructuredGrid<CellType>();
+}
+
 void TestTriangleGrid()
 {
   std::cout << "Testing triangle grid." << std::endl;
@@ -160,6 +167,7 @@ void TestTopologyGenerator()
   std::cout << "*** Independent grid tests." << std::endl;
   TestVoxelGrid();
   TestHexahedronGrid();
+  TestTetrahedronGrid();
   TestTriangleGrid();
 
   std::cout << "*** Templated grid tests." << std::endl;

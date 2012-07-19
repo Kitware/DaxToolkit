@@ -23,7 +23,7 @@ namespace dax {
 namespace cont {
 
 #ifdef DAX_DOXYGEN_ONLY
-/// \brief A tag specifying the interface between the contorl and execution environments.
+/// \brief A tag specifying the interface between the control and execution environments.
 ///
 /// A DeviceAdapter tag specifies a set of functions and classes that provide
 /// mechanisms to run algorithms on a type of parallel device. The tag
