@@ -34,21 +34,24 @@ namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class IteratorType1, class IteratorType2>
+template<class PortalType1, class PortalType2>
 struct Square
 {
-  Square(IteratorType1 inValueArray, IteratorType2 outValueArray)
+  Square(PortalType1 inValueArray, PortalType2 outValueArray)
     : InValueArray(inValueArray), OutValueArray(outValueArray) {  }
 
   template<class A, class B>
   DAX_EXEC_EXPORT void operator()(A, dax::Id index, B) const
   {
-    dax::worklet::Square(*(this->InValueArray + index),
-                         *(this->OutValueArray + index));
+    const typename PortalType1::ValueType inValue =
+        this->InValueArray.Get(index);
+    typename PortalType2::ValueType outValue;
+    dax::worklet::Square(inValue, outValue);
+    this->OutValueArray.Set(index, outValue);
   }
 private:
-  IteratorType1 InValueArray;
-  IteratorType2 OutValueArray;
+  PortalType1 InValueArray;
+  PortalType2 OutValueArray;
 };
 
 }
@@ -71,11 +74,10 @@ DAX_CONT_EXPORT void Square(
   dax::Id fieldSize = inHandle.GetNumberOfValues();
 
   dax::exec::internal::kernel::Square<
-      typename dax::cont::ArrayHandle<FieldType,Container1,DeviceAdapter>::IteratorConstExecution,
-      typename dax::cont::ArrayHandle<FieldType,Container2,DeviceAdapter>::IteratorExecution>
-      kernel(
-        inHandle.PrepareForInput().first,
-        outHandle.PrepareForOutput(fieldSize).first);
+      typename dax::cont::ArrayHandle<FieldType,Container1,DeviceAdapter>::PortalConstExecution,
+      typename dax::cont::ArrayHandle<FieldType,Container2,DeviceAdapter>::PortalExecution>
+      kernel(inHandle.PrepareForInput(),
+             outHandle.PrepareForOutput(fieldSize));
 
   dax::cont::internal::Schedule(kernel,
                                 0,
