@@ -19,25 +19,19 @@
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
-#include <dax/exec/math/Exp.h>
+#include <dax/exec/math/VectorAnalysis.h>
 
 namespace dax {
 namespace worklet {
 
-template<class CellType, class ExecutionAdapter>
-DAX_WORKLET void Elevation(
-    dax::exec::WorkMapField<CellType, ExecutionAdapter> &work,
-    dax::exec::FieldCoordinatesIn<ExecutionAdapter> &pointCoord,
-    dax::exec::FieldPointOut<dax::Scalar, ExecutionAdapter> &outField)
+DAX_WORKLET void Elevation(const dax::Vector3 &inCoordinates,
+                           dax::Scalar &elevation)
 {
-  dax::Vector3 pointLocation = work.GetFieldValue(pointCoord);
   // TODO: This is not an elevation calculation.  Rather, it is the distance
   // to the origin, which is different.  However, I am leaving like this
   // for now because this is the old calculation, and I want to measure
   // consistent timings for now.
-  dax::Scalar elevation
-      = dax::exec::math::Sqrt(dax::dot(pointLocation, pointLocation));
-  work.SetFieldValue(outField, elevation);
+  elevation = dax::exec::math::Magnitude(inCoordinates);
 }
 
 }

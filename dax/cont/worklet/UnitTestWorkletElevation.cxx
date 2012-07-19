@@ -47,8 +47,7 @@ static void TestElevation()
                          dax::cont::DeviceAdapterTagSerial> elevationHandle;
 
   std::cout << "Running Elevation worklet" << std::endl;
-  dax::cont::worklet::Elevation(grid,
-                                grid.GetPointCoordinates(),
+  dax::cont::worklet::Elevation(grid.GetPointCoordinates(),
                                 elevationHandle);
 
   std::cout << "Checking result" << std::endl;

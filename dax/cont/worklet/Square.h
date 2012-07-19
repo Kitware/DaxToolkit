@@ -24,8 +24,6 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ErrorControlBadValue.h>
-#include <dax/cont/internal/ExecutionPackageField.h>
-#include <dax/cont/internal/ExecutionPackageGrid.h>
 
 #include <Worklets/Square.worklet>
 
@@ -37,6 +35,7 @@ namespace kernel {
 template<class PortalType1, class PortalType2>
 struct Square
 {
+  DAX_CONT_EXPORT
   Square(PortalType1 inValueArray, PortalType2 outValueArray)
     : InValueArray(inValueArray), OutValueArray(outValueArray) {  }
 
