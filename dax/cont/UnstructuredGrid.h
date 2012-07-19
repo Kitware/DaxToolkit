@@ -59,13 +59,10 @@ public:
   typedef dax::exec::internal::TopologyUnstructured<CellType, ExecutionAdapter>
       ExecutionTopologyStruct;
 
-private:
-  CellConnectionsType CellConnections;
-  PointCoordinatesType PointCoordinates;
-
-public:
+  DAX_CONT_EXPORT
   UnstructuredGrid() { }
 
+  DAX_CONT_EXPORT
   UnstructuredGrid(CellConnectionsType cellConnections,
                    PointCoordinatesType pointCoordinates)
     : CellConnections(cellConnections), PointCoordinates(pointCoordinates)
@@ -78,6 +75,7 @@ public:
   /// of cell. Each cell is represented by this number of points defining the
   /// structure of the cell.
   ///
+  DAX_CONT_EXPORT
   CellConnectionsType GetCellConnections() const {
     return this->CellConnections;
   }
@@ -88,9 +86,11 @@ public:
   /// The PointCoordinates array defines the location of each point.  The
   /// length of this array defines how many points are in the mesh.
   ///
+  DAX_CONT_EXPORT
   PointCoordinatesType GetPointCoordinates() const {
     return this->PointCoordinates;
   }
+  DAX_CONT_EXPORT
   void SetPointCoordinates(PointCoordinatesType pointCoordinates) {
     this->PointCoordinates = pointCoordinates;
   }
@@ -99,15 +99,21 @@ public:
 
   /// Get the number of points.
   ///
+  DAX_CONT_EXPORT
   dax::Id GetNumberOfPoints() const {
     return this->PointCoordinates.GetNumberOfValues();
   }
 
   /// Get the number of cells.
   ///
+  DAX_CONT_EXPORT
   dax::Id GetNumberOfCells() const {
     return this->CellConnections.GetNumberOfValues() / CellType::NUM_POINTS;
   }
+
+private:
+  CellConnectionsType CellConnections;
+  PointCoordinatesType PointCoordinates;
 };
 
 }

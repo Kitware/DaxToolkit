@@ -19,6 +19,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 set(headers
   ArrayContainerControl.h
   ArrayContainerControlBasic.h
+  ArrayContainerControlImplicit.h
   ArrayHandle.h
   ArrayPortal.h
   ArrayPortalFromIterators.h

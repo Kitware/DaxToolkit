@@ -29,12 +29,12 @@ set(headers
 dax_declare_headers(${headers})
 
 set(unit_tests
-  UnitTestWorkletCellGradient.cxx
+#  UnitTestWorkletCellGradient.cxx
   UnitTestWorkletCosine.cxx
-  UnitTestWorkletElevation.cxx
+#  UnitTestWorkletElevation.cxx
   UnitTestWorkletSine.cxx
   UnitTestWorkletSquare.cxx
-  UnitTestWorkletThreshold.cxx
+#  UnitTestWorkletThreshold.cxx
   UnitTestWorkletAssert.cxx
   UnitTestWorkletMapCellError.cxx
   UnitTestWorkletMapFieldError.cxx
