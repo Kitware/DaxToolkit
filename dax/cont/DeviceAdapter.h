@@ -216,32 +216,34 @@ public:
   ///
   typedef T ValueType;
 
-  /// An iterator that can be used in the execution environment to access
-  /// portions of the arrays. This example defines the iterator as a pointer,
-  /// but any random access iterator is valid.
+  /// An array portal that can be used in the execution environment to access
+  /// portions of the arrays. This example defines the portal with a pointer,
+  /// but any portal with methods that can be called and data that can be
+  /// accessed from the execution environment can be used.
   ///
-  typedef ValueType *IteratorType;
+  typedef dax::exec::internal::ArrayPortalFromIterators<ValueType*> PortalType;
 
-  /// Const version of IteratorType.
+  /// Const version of PortalType.  You must be able to cast PortalType to
+  /// PortalConstType.
   ///
-  typedef const ValueType *IteratorConstType;
+  typedef dax::exec::internal::ArrayPortalFromIterators<const ValueType*>
+      PortalConstType;
 
   /// Allocates a large enough array in the execution environment and copies
   /// the given data to that array. The allocated array can later be accessed
-  /// via the GetIteratorBegin method. If control and execution share arrays,
-  /// then this method may save the iterators to be returned in the \c
-  /// GetIterator* methods.
+  /// via the GetPortal method. If control and execution share arrays, then
+  /// this method may save the iterators to be returned in the \c GetPortal*
+  /// methods.
   ///
   DAX_CONT_EXPORT void LoadDataForInput(
-      typename ContainerType::IteratorType beginIterator,
-      typename ContainerType::IteratorType endIterator);
+      typename ContainerType::PortalType portal);
 
-  /// Const version of LoadDataForInput.  Functionally equivalent to the
-  /// non-const version except that the non-const versions of GetIterator*
-  /// may not be available.
+  /// Const version of LoadDataForInput. Functionally equivalent to the
+  /// non-const version except that the non-const versions of GetPortal may not
+  /// be available.
+  ///
   DAX_CONT_EXPORT void LoadDataForInput(
-      typename ContainerType::IteratorConstType beginIterator,
-      typename ContainerType::IteratorConstType endIterator);
+      typename ContainerType::PortalConstType portal);
 
   /// Allocates an array in the execution environment of the specified size.
   /// If control and execution share arrays, then this class can allocate
@@ -279,27 +281,16 @@ public:
   ///
   DAX_CONT_EXPORT void Shrink(dax::Id numberOfValues);
 
-  /// Returns an iterator that can be used in the execution environment. This
-  /// iterator was defined in either LoadDataForInput or
+  /// Returns an array portal that can be used in the execution environment.
+  /// This portal was defined in either LoadDataForInput or
   /// AllocateArrayForOutput. If control and environment share memory space,
   /// this class may return the iterator from the \c controlArray.
   ///
-  DAX_CONT_EXPORT IteratorType GetIteratorBegin();
+  DAX_CONT_EXPORT PortalType GetPortal();
 
-  /// Returns an iterator that can be used in the execution environment. This
-  /// iterator was defined in either LoadDataForInput or
-  /// AllocateArrayForOutput. If control and environment share memory space,
-  /// this class may return the iterator from the \c controlArray.
+  /// Const version of GetPortal.
   ///
-  DAX_CONT_EXPORT IteratorType GetIteratorEnd();
-
-  /// Const version of GetIteratorBegin.
-  ///
-  DAX_CONT_EXPORT IteratorConstType GetIteratorConstBegin() const;
-
-  /// Const version of GetIteratorEnd.
-  ///
-  DAX_CONT_EXPORT IteratorConstType GetIteratorConstEnd() const;
+  DAX_CONT_EXPORT PortalConstType GetPortalConst() const;
 
   /// Frees any resources (i.e. memory) allocated for the exeuction
   /// environment, if any.

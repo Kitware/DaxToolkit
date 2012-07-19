@@ -16,6 +16,8 @@
 #ifndef __dax_exec_internal_TestExecutionAdapter_h
 #define __dax_exec_internal_TestExecutionAdapter_h
 
+#include <dax/exec/internal/ArrayPortalFromIterators.h>
+
 #include <dax/internal/Testing.h>
 
 class TestExecutionAdapter
@@ -24,8 +26,9 @@ public:
   template <typename T>
   struct FieldStructures
   {
-    typedef T *IteratorType;
-    typedef const T *IteratorConstType;
+    typedef dax::exec::internal::ArrayPortalFromIterators<T *> PortalType;
+    typedef dax::exec::internal::ArrayPortalFromIterators<const T *>
+        PortalConstType;
   };
 
   void RaiseError(const char *message) const

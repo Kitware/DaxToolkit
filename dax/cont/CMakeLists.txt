@@ -20,6 +20,8 @@ set(headers
   ArrayContainerControl.h
   ArrayContainerControlBasic.h
   ArrayHandle.h
+  ArrayPortal.h
+  ArrayPortalFromIterators.h
   Assert.h
   DeviceAdapter.h
   DeviceAdapterSerial.h
@@ -29,6 +31,7 @@ set(headers
   ErrorControlBadValue.h
   ErrorControlOutOfMemory.h
   ErrorExecution.h
+  IteratorFromArrayPortal.h
   UniformGrid.h
   UnstructuredGrid.h
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
@@ -53,7 +56,9 @@ configure_file(
 set(unit_tests
   UnitTestArrayContainerControlBasic.cxx
   UnitTestArrayHandle.cxx
+  UnitTestArrayPortalFromIterators.cxx
   UnitTestDeviceAdapterSerial.cxx
+  UnitTestIteratorFromArrayPortal.cxx
   UnitTestVectorOperations.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

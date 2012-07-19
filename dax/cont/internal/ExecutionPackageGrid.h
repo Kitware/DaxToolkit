@@ -34,8 +34,7 @@ ExecutionPackageGridInternal(const GridType &grid,
                              dax::cont::UnstructuredGridTag)
 {
   typename GridType::ExecutionTopologyStruct topology;
-  topology.CellConnections
-      = grid.GetCellConnections().PrepareForInput().first;
+  topology.CellConnections = grid.GetCellConnections().PrepareForInput();
   topology.NumberOfPoints = grid.GetNumberOfPoints();
   topology.NumberOfCells = grid.GetNumberOfCells();
   return topology;

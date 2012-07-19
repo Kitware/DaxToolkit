@@ -96,8 +96,11 @@ static void TestUnstructuredGrid()
       }
     }
 
+  dax::exec::internal::ArrayPortalFromIterators<const dax::Id *> connectPortal(
+        &connections.front(), &connections.back() + 1);
+
   dax::exec::internal::TopologyUnstructured<
-      dax::exec::CellHexahedron, TestExecutionAdapter> ugrid(&connections[0],
+      dax::exec::CellHexahedron, TestExecutionAdapter> ugrid(connectPortal,
                                                              numPoints,
                                                              numCells);
 

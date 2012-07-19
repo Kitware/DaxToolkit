@@ -25,11 +25,11 @@ namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class Functor, class ExecutionIteratorType>
+template<class Functor, class ExecutionArrayPortalType>
 struct ScheduleMappingAdapter
 {
   DAX_CONT_EXPORT ScheduleMappingAdapter(const Functor& functor,
-                                         ExecutionIteratorType lookup)
+                                         ExecutionArrayPortalType lookup)
     : Function(functor), LookupTable(lookup) { }
 
   template<class Parameters, class ExecHandler>
@@ -41,12 +41,12 @@ struct ScheduleMappingAdapter
 
     this->Function(parameters,
                    index,
-                   *(this->LookupTable + index),
+                   this->LookupTable.Get(index),
                    execHandler);
   }
 private:
   const Functor Function;
-  const ExecutionIteratorType LookupTable;
+  const ExecutionArrayPortalType LookupTable;
 };
 
 }
@@ -75,14 +75,14 @@ DAX_CONT_EXPORT void ScheduleMap(
       ::ExecutionAdapter<ArrayContainerControlTag,DeviceAdapterTag>
       ExecutionAdapter;
   typedef typename ExecutionAdapter
-      ::template FieldStructures<dax::Id>::IteratorType IteratorType;
+      ::template FieldStructures<dax::Id>::PortalType PortalType;
   typedef typename ExecutionAdapter
-      ::template FieldStructures<dax::Id>::IteratorConstType IteratorConstType;
+      ::template FieldStructures<dax::Id>::PortalConstType PortalConstType;
 
-  dax::exec::internal::kernel::ScheduleMappingAdapter<Functor,IteratorConstType>
+  dax::exec::internal::kernel::ScheduleMappingAdapter<Functor,PortalConstType>
       mapFunctor(
         functor,
-        values.PrepareForInput().first);
+        values.PrepareForInput());
 
   dax::cont::internal::Schedule(mapFunctor,
                                 parameters,

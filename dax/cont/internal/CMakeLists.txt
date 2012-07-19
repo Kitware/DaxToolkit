@@ -17,6 +17,7 @@
 set(headers
   ArrayContainerControlError.h
   ArrayManagerExecutionShareWithControl.h
+  ArrayPortalShrink.h
   DeviceAdapterError.h
   ExecutionPackageField.h
   ExecutionPackageGrid.h

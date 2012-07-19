@@ -38,10 +38,10 @@ struct TopologyUnstructured
 {
   typedef T CellType;
   typedef typename ExecutionAdapter::template FieldStructures<dax::Id>
-      ::IteratorConstType CellConnectionsIteratorType;
+      ::PortalConstType CellConnectionsPortalType;
 
   TopologyUnstructured()
-    : CellConnections(CellConnectionsIteratorType()),
+    : CellConnections(CellConnectionsPortalType()),
       NumberOfPoints(0),
       NumberOfCells(0)
     {
@@ -55,7 +55,7 @@ struct TopologyUnstructured
   /// should be \c numberOfCells times \c CellType::NUM_POINTS.
   /// \param numberOfCells The number of cells in the grid.
   ///
-  TopologyUnstructured(CellConnectionsIteratorType cellConnections,
+  TopologyUnstructured(CellConnectionsPortalType cellConnections,
                        dax::Id numberOfPoints,
                        dax::Id numberOfCells)
     : CellConnections(cellConnections),
@@ -63,7 +63,7 @@ struct TopologyUnstructured
   {
   }
 
-  CellConnectionsIteratorType CellConnections;
+  CellConnectionsPortalType CellConnections;
   dax::Id NumberOfPoints;
   dax::Id NumberOfCells;
 };
@@ -84,18 +84,6 @@ DAX_EXEC_EXPORT
 dax::Id numberOfPoints(const TopologyUnstructured<T,ExecutionAdapter> &topology)
 {
   return topology.NumberOfPoints;
-}
-
-/// Returns the point position in a structured grid for a given index
-/// which is represented by /c pointIndex
-///
-template<typename T, class ExecutionAdapter>
-DAX_EXEC_EXPORT
-dax::Vector3 pointCoordiantes(
-    const TopologyUnstructured<T, ExecutionAdapter> &topology,
-    dax::Id pointIndex)
-{
-  return *(topology.PointCoordinates + pointIndex);
 }
 
 } //internal

@@ -54,8 +54,10 @@ static void TestSine()
     }
   dax::cont::ArrayHandle<dax::Scalar,
                         dax::cont::ArrayContainerControlTagBasic,
-                        dax::cont::DeviceAdapterTagSerial>
-      fieldHandle(&field.front(), (&field.back())+1);
+                        dax::cont::DeviceAdapterTagSerial> fieldHandle =
+      dax::cont::make_ArrayHandle(field,
+                                  dax::cont::ArrayContainerControlTagBasic(),
+                                  dax::cont::DeviceAdapterTagSerial());
 
   dax::cont::ArrayHandle<dax::Scalar,
                         dax::cont::ArrayContainerControlTagBasic,

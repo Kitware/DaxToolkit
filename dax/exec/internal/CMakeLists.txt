@@ -15,6 +15,7 @@
 ##=============================================================================
 
 set(headers
+  ArrayPortalFromIterators.h
   DerivativeWeights.h
   ErrorMessageBuffer.h
   ExecutionAdapter.h
@@ -31,6 +32,7 @@ set(headers
 dax_declare_headers(${headers})
 
 set(unit_tests
+  UnitTestArrayPortalFromIteratorsExec.cxx
   UnitTestDerivativeWeights.cxx
   UnitTestInterpolationWeights.cxx
   UnitTestGridTopologies.cxx

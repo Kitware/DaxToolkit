@@ -68,10 +68,10 @@ dax::Id GetFieldSize(const GridType &grid,
 
 template<class FieldType, class ArrayHandleType>
 DAX_CONT_EXPORT
-typename FieldType::IteratorType
-ExecutionFieldIterator(const ArrayHandleType &arrayHandle,
-                       dax::Id numValues,
-                       dax::exec::internal::FieldAccessInputTag)
+typename FieldType::PortalType
+ExecutionFieldPortal(const ArrayHandleType &arrayHandle,
+                     dax::Id numValues,
+                     dax::exec::internal::FieldAccessInputTag)
 {
   if (arrayHandle.GetNumberOfValues() != numValues)
     {
@@ -79,16 +79,16 @@ ExecutionFieldIterator(const ArrayHandleType &arrayHandle,
           "Received an array that is the wrong size to represent the field "
           "that it is associated with.");
     }
-  return arrayHandle.PrepareForInput().first;
+  return arrayHandle.PrepareForInput();
 }
 template<class FieldType, class ArrayHandleType>
 DAX_CONT_EXPORT
-typename FieldType::IteratorType
-ExecutionFieldIterator(ArrayHandleType &arrayHandle,
-                       dax::Id numValues,
-                       dax::exec::internal::FieldAccessOutputTag)
+typename FieldType::PortalType
+ExecutionFieldPortal(ArrayHandleType &arrayHandle,
+                     dax::Id numValues,
+                     dax::exec::internal::FieldAccessOutputTag)
 {
-  return arrayHandle.PrepareForOutput(numValues).first;
+  return arrayHandle.PrepareForOutput(numValues);
 }
 
 template<class FieldType,
@@ -102,11 +102,11 @@ FieldType ExecutionPackageFieldInternal(
     dax::Id numValues,
     dax::exec::internal::FieldAccessInputTag)
 {
-  typename FieldType::IteratorType fieldIterator
-      = ExecutionFieldIterator<FieldType>(arrayHandle,
-                                          numValues,
-                                          typename FieldType::AccessTag());
-  return FieldType(fieldIterator);
+  typename FieldType::PortalType fieldPortal
+      = ExecutionFieldPortal<FieldType>(arrayHandle,
+                                        numValues,
+                                        typename FieldType::AccessTag());
+  return FieldType(fieldPortal);
 }
 
 } // namespace detail
@@ -124,12 +124,12 @@ FieldType ExecutionPackageFieldArray(
                            DeviceAdapter> &arrayHandle,
     dax::Id numValues)
 {
-  typename FieldType::IteratorType fieldIterator
-      = dax::cont::internal::detail::ExecutionFieldIterator<FieldType>(
+  typename FieldType::PortalType fieldPortal
+      = dax::cont::internal::detail::ExecutionFieldPortal<FieldType>(
         arrayHandle,
         numValues,
         typename FieldType::AccessTag());
-  return FieldType(fieldIterator);
+  return FieldType(fieldPortal);
 }
 
 /// Given an ArrayHandle, returns a Field object that can be used in the

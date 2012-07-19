@@ -93,6 +93,15 @@ public:
   }
 
 private:
+  template<typename T>
+  dax::cont::ArrayHandle<T, ArrayContainerControlTag, DeviceAdapterTag>
+  MakeArrayHandle(const std::vector<T> &array)
+  {
+    return dax::cont::make_ArrayHandle(array,
+                                       ArrayContainerControlTag(),
+                                       DeviceAdapterTag());
+  }
+
   void BuildGrid(dax::cont::UniformGrid<> &grid)
     {
     grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
@@ -184,12 +193,9 @@ private:
         }
       }
 
-    dax::cont::ArrayHandle<dax::Vector3,ArrayContainerControlTag,DeviceAdapterTag>
-        ahPoints(&this->Info.points.front(),(&this->Info.points.back()) + 1);
-    dax::cont::ArrayHandle<dax::Id,ArrayContainerControlTag,DeviceAdapterTag>
-        ahTopo(&this->Info.topology.front(),(&this->Info.topology.back()) + 1);
-    grid = dax::cont::UnstructuredGrid<dax::exec::CellTriangle>(ahTopo,
-                                                                ahPoints);
+    grid = dax::cont::UnstructuredGrid<dax::exec::CellTriangle>(
+          this->MakeArrayHandle(this->Info.topology),
+          this->MakeArrayHandle(this->Info.points));
     }
 
   void BuildGrid(dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> &grid)
@@ -234,14 +240,9 @@ private:
         }
       }
 
-    dax::cont::ArrayHandle<dax::Vector3,
-                           ArrayContainerControlTag,
-                           DeviceAdapterTag>
-        ahPoints(&this->Info.points.front(), (&this->Info.points.back()) + 1);
-    dax::cont::ArrayHandle<dax::Id,ArrayContainerControlTag,DeviceAdapterTag>
-        ahTopo(&this->Info.topology.front(), (&this->Info.topology.back()) + 1);
-    grid = dax::cont::UnstructuredGrid<dax::exec::CellHexahedron>(ahTopo,
-                                                                  ahPoints);
+    grid = dax::cont::UnstructuredGrid<dax::exec::CellHexahedron>(
+          this->MakeArrayHandle(this->Info.topology),
+          this->MakeArrayHandle(this->Info.points));
     }
 };
 
