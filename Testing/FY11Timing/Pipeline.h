@@ -85,6 +85,13 @@ void PrintCheckValues(IteratorType begin, IteratorType end)
     }
 }
 
+template<typename T, class Container, class Device>
+void PrintCheckValues(const dax::cont::ArrayHandle<T,Container,Device> &array)
+{
+  PrintCheckValues(array.GetPortalConstControl().GetIteratorBegin(),
+                   array.GetPortalConstControl().GetIteratorEnd());
+}
+
 void PrintResults(int pipeline, double time)
 {
   std::cout << "Elapsed time: " << time << " seconds." << std::endl;
@@ -110,8 +117,7 @@ void RunPipeline1(const dax::cont::UniformGrid<> &grid)
                                    results);
   double time = timer.elapsed();
 
-  PrintCheckValues(results.GetIteratorConstControlBegin(),
-                   results.GetIteratorConstControlEnd());
+  PrintCheckValues(results);
   PrintResults(1, time);
 }
 
@@ -141,8 +147,7 @@ void RunPipeline2(const dax::cont::UniformGrid<> &grid)
   dax::cont::worklet::Cosine(grid, intermediate2, results);
   double time = timer.elapsed();
 
-  PrintCheckValues(results.GetIteratorConstControlBegin(),
-                   results.GetIteratorConstControlEnd());
+  PrintCheckValues(results);
 
   PrintResults(2, time);
 }
@@ -167,8 +172,7 @@ void RunPipeline3(const dax::cont::UniformGrid<> &grid)
   dax::cont::worklet::Cosine(grid, intermediate1, results);
   double time = timer.elapsed();
 
-  PrintCheckValues(results.GetIteratorConstControlBegin(),
-                   results.GetIteratorConstControlEnd());
+  PrintCheckValues(results);
 
   PrintResults(3, time);
 }

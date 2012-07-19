@@ -75,6 +75,13 @@ void CheckValues(IteratorType begin, IteratorType end)
     }
 }
 
+template<typename T, class Container, class Device>
+void CheckValues(const dax::cont::ArrayHandle<T,Container,Device> &array)
+{
+  CheckValues(array.GetPortalConstControl().GetIteratorBegin(),
+              array.GetPortalConstControl().GetIteratorEnd());
+}
+
 void PrintResults(int pipeline, double time)
 {
   std::cout << "Elapsed time: " << time << " seconds." << std::endl;
@@ -177,8 +184,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
 //  PrintContentsToStream(grid2,file);
 //  file.close();
 
-  CheckValues(resultHandle.GetIteratorConstControlBegin(),
-              resultHandle.GetIteratorConstControlEnd());
+  CheckValues(resultHandle);
 }
 
 
