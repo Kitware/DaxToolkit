@@ -29,7 +29,7 @@ set(headers
 dax_declare_headers(${headers})
 
 set(unit_tests
-#  UnitTestWorkletCellGradient.cxx
+  UnitTestWorkletCellGradient.cxx
   UnitTestWorkletCosine.cxx
   UnitTestWorkletElevation.cxx
   UnitTestWorkletSine.cxx

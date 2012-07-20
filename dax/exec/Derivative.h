@@ -26,23 +26,22 @@
 namespace dax { namespace exec {
 
 //-----------------------------------------------------------------------------
-template<class WorkType, class ExecutionAdapter>
+
+// Special version of CellDerivative for Voxels that does not require point
+// coords.
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
-    const WorkType &work,
     const dax::exec::CellVoxel &cell,
-    const dax::Vector3 &pcoords,
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &daxNotUsed(fcoords),
-    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
+    const dax::Vector3 &parametricCoords,
+    const dax::Tuple<dax::Scalar,CellVoxel::NUM_POINTS> &fieldValues)
 {
   const dax::Id NUM_POINTS  = dax::exec::CellVoxel::NUM_POINTS;
   typedef dax::Tuple<dax::Vector3,NUM_POINTS> DerivWeights;
 
   DerivWeights derivativeWeights =
-      dax::exec::internal::DerivativeWeights<dax::exec::CellVoxel>(pcoords);
+      dax::exec::internal::DerivativeWeights<dax::exec::CellVoxel>(
+        parametricCoords);
 
   dax::Vector3 sum = dax::make_Vector3(0.0, 0.0, 0.0);
-  dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
-      work.GetFieldValues(point_scalar);
 
   for (dax::Id vertexId = 0; vertexId < NUM_POINTS; vertexId++)
     {
@@ -50,6 +49,15 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     }
 
   return sum/cell.GetSpacing();
+}
+
+DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
+    const dax::exec::CellVoxel &cell,
+    const dax::Vector3 &parametricCoords,
+    const dax::Tuple<dax::Vector3,CellVoxel::NUM_POINTS>&daxNotUsed(vertCoords),
+    const dax::Tuple<dax::Scalar,CellVoxel::NUM_POINTS> &fieldValues)
+{
+  return CellDerivative(cell, parametricCoords, fieldValues);
 }
 
 //-----------------------------------------------------------------------------
@@ -71,13 +79,13 @@ template<int NUM_POINTS>
 DAX_EXEC_EXPORT
 dax::exec::math::Matrix3x3 make_JacobianFor3DCell(
     const dax::Tuple<dax::Vector3,NUM_POINTS> &derivativeWeights,
-    const dax::Tuple<dax::Vector3,NUM_POINTS> &pointCoordinates)
+    const dax::Tuple<dax::Vector3,NUM_POINTS> &vertCoords)
 {
   dax::exec::math::Matrix3x3 jacobian(0);
   for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
     {
     const dax::Vector3 &dweight = derivativeWeights[pointIndex];
-    const dax::Vector3 &pcoord = pointCoordinates[pointIndex];
+    const dax::Vector3 &pcoord = vertCoords[pointIndex];
 
     jacobian(0,0) += pcoord[0] * dweight[0];
     jacobian(0,1) += pcoord[0] * dweight[1];
@@ -95,37 +103,33 @@ dax::exec::math::Matrix3x3 make_JacobianFor3DCell(
   return jacobian;
 }
 
-template<class WorkType, class ExecutionAdapter>
+template<class CellType>
 DAX_EXEC_EXPORT dax::Vector3 CellDerivativeFor3DCell(
-    const WorkType &work,
-    const dax::Vector3 &pcoords,
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
-    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
+    const CellType &daxNotUsed(cell),
+    const dax::Vector3 &parametricCoords,
+    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &vertCoords,
+    const dax::Tuple<dax::Scalar,CellType::NUM_POINTS> &fieldValues)
 {
-  typedef typename WorkType::CellType CellType;
   const dax::Id NUM_POINTS  = CellType::NUM_POINTS;
   typedef dax::Tuple<dax::Vector3,NUM_POINTS> DerivWeights;
 
   DerivWeights derivativeWeights =
-      dax::exec::internal::DerivativeWeights<CellType>(pcoords);
-  dax::Tuple<dax::Vector3,NUM_POINTS> allCoords = work.GetFieldValues(fcoords);
+      dax::exec::internal::DerivativeWeights<CellType>(parametricCoords);
 
   // For reasons that should become apparent in a moment, we actually want
   // the transpose of the Jacobian.
   dax::exec::math::Matrix3x3 jacobianTranspose =
       dax::exec::math::MatrixTranspose(
-        detail::make_JacobianFor3DCell(derivativeWeights, allCoords));
+        detail::make_JacobianFor3DCell(derivativeWeights, vertCoords));
 
   // Find the derivative of the field in parametric coordinate space. That is,
   // find the vector [ds/du, ds/dv, ds/dw].
-  dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
-      work.GetFieldValues(point_scalar);
   dax::Vector3 parametricDerivative(dax::Scalar(0));
   for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
     {
     parametricDerivative =
         parametricDerivative
-        + derivativeWeights[pointIndex] * fieldValues[pointIndex];
+        + (fieldValues[pointIndex] * derivativeWeights[pointIndex]);
     }
 
   // If we write out the matrices below, it should become clear that the
@@ -151,40 +155,34 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivativeFor3DCell(
 
 }
 
-template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
-    const WorkType &work,
-    const dax::exec::CellHexahedron &,
-    const dax::Vector3 &pcoords,
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
-    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
+    const dax::exec::CellHexahedron &cell,
+    const dax::Vector3 &parametricCoords,
+    const dax::Tuple<dax::Vector3,CellHexahedron::NUM_POINTS> &vertCoords,
+    const dax::Tuple<dax::Scalar,CellHexahedron::NUM_POINTS> &fieldValues)
 {
-  return detail::CellDerivativeFor3DCell(work, pcoords, fcoords, point_scalar);
+  return detail::CellDerivativeFor3DCell(
+        cell, parametricCoords, vertCoords, fieldValues);
 }
 
-template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
-    const WorkType &work,
-    const dax::exec::CellWedge &,
-    const dax::Vector3 &pcoords,
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
-    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
+    const dax::exec::CellWedge &cell,
+    const dax::Vector3 &parametricCoords,
+    const dax::Tuple<dax::Vector3,CellWedge::NUM_POINTS> &vertCoords,
+    const dax::Tuple<dax::Scalar,CellWedge::NUM_POINTS> &fieldValues)
 {
-  return detail::CellDerivativeFor3DCell(work, pcoords, fcoords, point_scalar);
+  return detail::CellDerivativeFor3DCell(
+        cell, parametricCoords, vertCoords, fieldValues);
 }
 
 
 //-----------------------------------------------------------------------------
-template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
-    const WorkType &work,
-    const dax::exec::CellTetrahedron&/*cell*/,
-    const dax::Vector3 &/*pcoords*/,
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
-    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &scalarField)
+    const dax::exec::CellTetrahedron &daxNotUsed(cell),
+    const dax::Vector3 &daxNotUsed(parametricCoords),
+    const dax::Tuple<dax::Vector3,CellTetrahedron::NUM_POINTS> &vertCoords,
+    const dax::Tuple<dax::Scalar,CellTetrahedron::NUM_POINTS> &fieldValues)
 {
-  const dax::Id NUM_POINTS = dax::exec::CellTetrahedron::NUM_POINTS;
-
   // The scalar values of the four points in a tetrahedron completely specify a
   // linear field (with constant gradient). The field, defined by the 3-vector
   // gradient g and scalar value s_origin, can be found with this set of 4
@@ -208,18 +206,18 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   // are the differences in points and normal, b has the scalar differences,
   // and x is really the gradient g.
   //
-  dax::Tuple<dax::Vector3, NUM_POINTS> p = work.GetFieldValues(coordField);
-  dax::Vector3 v0 = p[1] - p[0];
-  dax::Vector3 v1 = p[2] - p[0];
-  dax::Vector3 v2 = p[3] - p[0];
+  dax::Vector3 v0 = vertCoords[1] - vertCoords[0];
+  dax::Vector3 v1 = vertCoords[2] - vertCoords[0];
+  dax::Vector3 v2 = vertCoords[3] - vertCoords[0];
 
   dax::exec::math::Matrix3x3 A;
   dax::exec::math::MatrixSetRow(A, 0, v0);
   dax::exec::math::MatrixSetRow(A, 1, v1);
   dax::exec::math::MatrixSetRow(A, 2, v2);
 
-  dax::Tuple<dax::Scalar, NUM_POINTS> s = work.GetFieldValues(scalarField);
-  dax::Vector3 b(s[1]-s[0], s[2]-s[0], s[3]-s[0]);
+  dax::Vector3 b(fieldValues[1]-fieldValues[0],
+                 fieldValues[2]-fieldValues[0],
+                 fieldValues[3]-fieldValues[0]);
 
   // If we want to later change this method to take the gradient of multiple
   // values (for example, to find the Jacobian of a vector field), then there
@@ -239,16 +237,12 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
 
 
 //-----------------------------------------------------------------------------
-template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
-    const WorkType &work,
     const dax::exec::CellTriangle &daxNotUsed(cell),
-    const dax::Vector3 &daxNotUsed(pcoords),
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
-    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &scalarField)
+    const dax::Vector3 &daxNotUsed(parametricCoords),
+    const dax::Tuple<dax::Vector3,CellTriangle::NUM_POINTS> &vertCoords,
+    const dax::Tuple<dax::Scalar,CellTriangle::NUM_POINTS> &fieldValues)
 {
-  const dax::Id NUM_POINTS = dax::exec::CellTriangle::NUM_POINTS;
-
   // The scalar values of the three points in a triangle completely specify a
   // linear field (with constant gradient) assuming the field is constant in
   // the normal direction to the triangle. The field, defined by the 3-vector
@@ -273,9 +267,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   // are the differences in points and normal, b has the scalar differences,
   // and x is really the gradient g.
   //
-  dax::Tuple<dax::Vector3, NUM_POINTS> p = work.GetFieldValues(coordField);
-  dax::Vector3 v0 = p[1] - p[0];
-  dax::Vector3 v1 = p[2] - p[0];
+  dax::Vector3 v0 = vertCoords[1] - vertCoords[0];
+  dax::Vector3 v1 = vertCoords[2] - vertCoords[0];
   dax::Vector3 n = dax::exec::math::Cross(v0, v1);
 
   dax::exec::math::Matrix3x3 A;
@@ -283,8 +276,9 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   dax::exec::math::MatrixSetRow(A, 1, v1);
   dax::exec::math::MatrixSetRow(A, 2, n);
 
-  dax::Tuple<dax::Scalar, NUM_POINTS> s = work.GetFieldValues(scalarField);
-  dax::Vector3 b(s[1]-s[0], s[2]-s[0], 0);
+  dax::Vector3 b(fieldValues[1]-fieldValues[0],
+                 fieldValues[2]-fieldValues[0],
+                 0);
 
   // If we want to later change this method to take the gradient of multiple
   // values (for example, to find the Jacobian of a vector field), then there
@@ -322,28 +316,28 @@ struct QuadrilateralSpace
 DAX_EXEC_EXPORT
 void make_SpaceForQuadrilateral(
     const dax::Tuple<dax::Vector3, dax::exec::CellQuadrilateral::NUM_POINTS>
-    &pointCoordinates,
+    &vertCoords,
     QuadrilateralSpace &space,
     dax::Tuple<dax::Vector2, dax::exec::CellQuadrilateral::NUM_POINTS>
-    &pointCoordinates2D)
+    &vertCoords2D)
 {
-  space.Origin = pointCoordinates[0];
+  space.Origin = vertCoords[0];
 
-  dax::Vector3 vec1 = pointCoordinates[1] - space.Origin;
+  dax::Vector3 vec1 = vertCoords[1] - space.Origin;
   dax::Scalar lengthX = dax::exec::math::Magnitude(vec1);
   space.Basis0 = vec1 * (1/lengthX);
 
-  dax::Vector3 vec2 = pointCoordinates[2] - space.Origin;
+  dax::Vector3 vec2 = vertCoords[2] - space.Origin;
   dax::Vector3 normal = dax::exec::math::Cross(vec1, vec2);
   space.Basis1 =
       dax::exec::math::Normal(dax::exec::math::Cross(space.Basis0, normal));
 
-  pointCoordinates2D[0] = dax::make_Vector2(0, 0);
-  pointCoordinates2D[1] = dax::make_Vector2(lengthX, 0);
-  pointCoordinates2D[2] = dax::make_Vector2(dax::dot(space.Basis0, vec2),
+  vertCoords2D[0] = dax::make_Vector2(0, 0);
+  vertCoords2D[1] = dax::make_Vector2(lengthX, 0);
+  vertCoords2D[2] = dax::make_Vector2(dax::dot(space.Basis0, vec2),
                                             dax::dot(space.Basis1, vec2));
-  dax::Vector3 vec3 = pointCoordinates[3] - space.Origin;
-  pointCoordinates2D[3] = dax::make_Vector2(dax::dot(space.Basis0, vec3),
+  dax::Vector3 vec3 = vertCoords[3] - space.Origin;
+  vertCoords2D[3] = dax::make_Vector2(dax::dot(space.Basis0, vec3),
                                             dax::dot(space.Basis1, vec3));
 }
 
@@ -357,7 +351,7 @@ dax::exec::math::Matrix2x2 make_JacobianForQuadrilateral(
     const dax::Tuple<dax::Vector3, dax::exec::CellQuadrilateral::NUM_POINTS>
     &derivativeWeights,
     const dax::Tuple<dax::Vector2, dax::exec::CellQuadrilateral::NUM_POINTS>
-    &pointCoordinates2D)
+    &vertCoords2D)
 {
   const int NUM_POINTS = dax::exec::CellQuadrilateral::NUM_POINTS;
 
@@ -366,7 +360,7 @@ dax::exec::math::Matrix2x2 make_JacobianForQuadrilateral(
   for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
     {
     const dax::Vector3 &dweight = derivativeWeights[pointIndex];
-    const dax::Vector2 coord = pointCoordinates2D[pointIndex];
+    const dax::Vector2 coord = vertCoords2D[pointIndex];
 
     jacobian(0,0) += coord[0] * dweight[0];
     jacobian(0,1) += coord[0] * dweight[1];
@@ -380,40 +374,34 @@ dax::exec::math::Matrix2x2 make_JacobianForQuadrilateral(
 
 } // namespace detail
 
-template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
-    const WorkType &work,
-    const dax::exec::CellQuadrilateral &,
-    const dax::Vector3 &pcoords,
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
-    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
+    const dax::exec::CellQuadrilateral &daxNotUsed(cell),
+    const dax::Vector3 &parametricCoords,
+    const dax::Tuple<dax::Vector3,CellQuadrilateral::NUM_POINTS> &vertCoords,
+    const dax::Tuple<dax::Scalar,CellQuadrilateral::NUM_POINTS> &fieldValues)
 {
   const dax::Id NUM_POINTS  = dax::exec::CellQuadrilateral::NUM_POINTS;
   typedef dax::Tuple<dax::Vector3,NUM_POINTS> DerivWeights;
 
   DerivWeights derivativeWeights =
       dax::exec::internal::DerivativeWeights<dax::exec::CellQuadrilateral>(
-        pcoords);
-  dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS> allCoords =
-      work.GetFieldValues(fcoords);
+        parametricCoords);
 
   // We have an overconstrained system, so create a 2D space in the plane
   // that the quadrilateral sits.
 
   detail::QuadrilateralSpace space;
-  dax::Tuple<dax::Vector2,dax::exec::CellQuadrilateral::NUM_POINTS> allCoords2D;
-  detail::make_SpaceForQuadrilateral(allCoords, space, allCoords2D);
+  dax::Tuple<dax::Vector2,dax::exec::CellQuadrilateral::NUM_POINTS> vertCoords2D;
+  detail::make_SpaceForQuadrilateral(vertCoords, space, vertCoords2D);
 
   // For reasons that should become apparent in a moment, we actually want
   // the transpose of the Jacobian.
   dax::exec::math::Matrix2x2 jacobianTranspose =
       dax::exec::math::MatrixTranspose(
-        detail::make_JacobianForQuadrilateral(derivativeWeights,allCoords2D));
+        detail::make_JacobianForQuadrilateral(derivativeWeights,vertCoords2D));
 
   // Find the derivative of the field in parametric coordinate space. That is,
   // find the vector [ds/du, ds/dv].
-  dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
-      work.GetFieldValues(point_scalar);
   dax::Vector2 parametricDerivative(dax::Scalar(0));
   for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
     {
@@ -450,39 +438,30 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
 
 
 //-----------------------------------------------------------------------------
-template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
-    const WorkType &work,
-    const dax::exec::CellLine &,
-    const dax::Vector3 &,
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &fcoords,
-    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_scalar)
+    const dax::exec::CellLine &daxNotUsed(cell),
+    const dax::Vector3 &daxNotUsed(parametricCoords),
+    const dax::Tuple<dax::Vector3,CellLine::NUM_POINTS> &vertCoords,
+    const dax::Tuple<dax::Scalar,CellLine::NUM_POINTS> &fieldValues)
 {
   // The derivative of a line is in the direction of the line. Its length is
   // equal to the difference of the scalar field divided by the length of the
   // line segment. Thus, the derivative is characterized by
   // (deltaField*vec)/mag(vec)^2.
 
-  const int NUM_POINTS = dax::exec::CellLine::NUM_POINTS;
-  dax::Tuple<dax::Vector3,NUM_POINTS> allCoords = work.GetFieldValues(fcoords);
-  dax::Tuple<dax::Scalar,NUM_POINTS> fieldValues =
-      work.GetFieldValues(point_scalar);
-
   dax::Scalar deltaField = fieldValues[1] - fieldValues[0];
-  dax::Vector3 vec = allCoords[1] - allCoords[0];
+  dax::Vector3 vec = vertCoords[1] - vertCoords[0];
 
   return (deltaField/dax::exec::math::MagnitudeSquared(vec))*vec;
 }
 
 
 //-----------------------------------------------------------------------------
-template<class WorkType, class ExecutionAdapter>
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
-    const WorkType &,
-    const dax::exec::CellVertex &,
-    const dax::Vector3 &,
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &,
-    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &)
+    const dax::exec::CellVertex &daxNotUsed(cell),
+    const dax::Vector3 &daxNotUsed(parametricCoords),
+    const dax::Tuple<dax::Vector3,CellVertex::NUM_POINTS> &daxNotUsed(vertCoords),
+    const dax::Tuple<dax::Scalar,CellVertex::NUM_POINTS> &daxNotUsed(fieldValues))
 {
   return dax::make_Vector3(0, 0, 0);
 }

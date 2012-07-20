@@ -29,6 +29,7 @@
 #include <dax/internal/Testing.h>
 
 // This use of the STL vector only works in non-CUDA unit tests.
+#include <iterator>
 #include <vector>
 
 namespace dax {
@@ -75,6 +76,56 @@ public:
     return TestTopology::GetCellConnectionsImpl(this->Topology, cellId);
   }
 
+  CellType GetCell(dax::Id cellId) const
+  {
+    return CellType(this->Topology, cellId);
+  }
+
+  dax::Vector3 GetPointCoordinates(dax::Id pointIndex) const {
+    return this->CoordinatesArray[pointIndex];
+  }
+
+  dax::Tuple<dax::Vector3,CellType::NUM_POINTS>
+  GetCellVertexCoordinates(dax::Id cellIndex) const {
+    dax::Tuple<dax::Id, CellType::NUM_POINTS> cellConnections =
+        this->GetCellConnections(cellIndex);
+    dax::Tuple<dax::Vector3,CellType::NUM_POINTS> coordinates;
+    for (dax::Id index = 0; index < CellType::NUM_POINTS; index++)
+      {
+      coordinates[index] = this->GetPointCoordinates(cellConnections[index]);
+      }
+    return coordinates;
+  }
+
+  template<class ArrayPortalType>
+  dax::Tuple<typename ArrayPortalType::ValueType, CellType::NUM_POINTS>
+  GetFieldValues(dax::Id cellId, const ArrayPortalType &portal) const {
+    typedef typename ArrayPortalType::ValueType ValueType;
+    dax::Tuple<dax::Id, CellType::NUM_POINTS> cellConnections =
+        this->GetCellConnections(cellId);
+    dax::Tuple<ValueType,CellType::NUM_POINTS> fieldValues;
+    for (dax::Id index = 0; index < CellType::NUM_POINTS; index++)
+      {
+      fieldValues[index] = portal.Get(cellConnections[index]);
+      }
+    return fieldValues;
+  }
+
+  template<class IteratorType>
+  dax::Tuple<typename std::iterator_traits<IteratorType>::value_type,
+             CellType::NUM_POINTS>
+  GetFieldValuesIterator(dax::Id cellId, IteratorType begin) const {
+    typedef typename std::iterator_traits<IteratorType>::value_type ValueType;
+    dax::Tuple<dax::Id, CellType::NUM_POINTS> cellConnections =
+        this->GetCellConnections(cellId);
+    dax::Tuple<ValueType,CellType::NUM_POINTS> fieldValues;
+    for (dax::Id index = 0; index < CellType::NUM_POINTS; index++)
+      {
+      fieldValues[index] = *(begin + cellConnections[index]);
+      }
+    return fieldValues;
+  }
+
 private:
   static dax::exec::internal::TopologyUniform GetCoreTopology()
   {
@@ -119,10 +170,17 @@ private:
   }
 
   static void BuildTopology(dax::exec::internal::TopologyUniform &topology,
-                            std::vector<dax::Vector3> &daxNotUsed(coords),
+                            std::vector<dax::Vector3> &coords,
                             std::vector<dax::Id> &daxNotUsed(connections))
   {
     topology = TestTopology::GetCoreTopology();
+
+    dax::Id numPoints = dax::exec::internal::numberOfPoints(topology);
+    coords.resize(numPoints);
+    for (dax::Id index = 0; index < numPoints; index++)
+      {
+      coords[index] = dax::exec::internal::pointCoordiantes(topology, index);
+      }
   }
 
   static dax::Tuple<dax::Id,8> GetCellConnectionsImpl(

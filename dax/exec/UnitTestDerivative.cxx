@@ -37,33 +37,20 @@ struct LinearField {
 };
 
 template<class TopologyGenType>
-dax::exec::FieldPointIn<dax::Scalar, typename TopologyGenType::ExecutionAdapter>
-CreatePointField(const TopologyGenType &topology,
-                 const LinearField &fieldValues,
-                 std::vector<dax::Scalar> &fieldArray)
+void CreatePointField(const TopologyGenType &topology,
+                      const LinearField &fieldValues,
+                      std::vector<dax::Scalar> &fieldArray)
 {
   typedef typename TopologyGenType::CellType CellType;
-  typedef typename TopologyGenType::ExecutionAdapter ExecutionAdapter;
-
-  dax::exec::FieldCoordinatesIn<ExecutionAdapter> coordField
-      = topology.GetCoordinates();
-
-  dax::exec::FieldPointOut<dax::Scalar, ExecutionAdapter> field
-      = dax::exec::internal::CreateField<dax::exec::FieldPointOut>(topology,
-                                                                   fieldArray);
 
   dax::Id numPoints = topology.GetNumberOfPoints();
+  fieldArray.resize(numPoints);
   for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
     {
-    dax::exec::WorkMapField<CellType, ExecutionAdapter> work =
-        dax::exec::internal::CreateWorkMapField(topology, pointIndex);
-    dax::Vector3 coordinates = work.GetFieldValue(coordField);
+    dax::Vector3 coordinates = topology.GetPointCoordinates(pointIndex);
     dax::Scalar value = fieldValues.GetValue(coordinates);
-    work.SetFieldValue(field, value);
+    fieldArray[pointIndex] = value;
     }
-
-  return dax::exec::internal::CreateField<dax::exec::FieldPointIn>(topology,
-                                                                   fieldArray);
 }
 
 template<class CellType>
@@ -104,15 +91,13 @@ void TestGradientResult(
                   "Bad derivative");
 }
 
-template<class CellType, class ExecutionAdapter>
+template<class CellType>
 void TestDerivativeCell(
-    const dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
-    const dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &scalarField,
+    const CellType &cell,
+    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> vertCoords,
+    const dax::Tuple<dax::Scalar,CellType::NUM_POINTS> scalarField,
     const LinearField &fieldValues)
 {
-  CellType cell = work.GetCell();
-
   dax::Vector3 pcoords;
   for (pcoords[2] = 0.0; pcoords[2] <= 1.0; pcoords[2] += 0.25)
     {
@@ -121,12 +106,11 @@ void TestDerivativeCell(
       for (pcoords[0] = 0.0; pcoords[0] <= 1.0; pcoords[0] += 0.25)
         {
         dax::Vector3 computedDerivative
-            = dax::exec::CellDerivative(work,
-                                        cell,
+            = dax::exec::CellDerivative(cell,
                                         pcoords,
-                                        coordField,
+                                        vertCoords,
                                         scalarField);
-        TestGradientResult<CellType>(work.GetFieldValues(coordField),
+        TestGradientResult<CellType>(vertCoords,
                                      computedDerivative,
                                      fieldValues);
         }
@@ -145,15 +129,16 @@ void TestDerivatives(const TopologyGenType &topology,
       topology.GetCoordinates();
 
   std::vector<dax::Scalar> fieldArray;
-  dax::exec::FieldPointIn<dax::Scalar,ExecutionAdapter> scalarField
-      = CreatePointField(topology, fieldValues, fieldArray);
+  CreatePointField(topology, fieldValues, fieldArray);
 
   dax::Id numCells = topology.GetNumberOfCells();
   for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
     {
-    dax::exec::WorkMapCell<CellType,ExecutionAdapter> work =
-        dax::exec::internal::CreateWorkMapCell(topology, cellIndex);
-    TestDerivativeCell(work, coordField, scalarField, fieldValues);
+    TestDerivativeCell(topology.GetCell(cellIndex),
+                       topology.GetCellVertexCoordinates(cellIndex),
+                       topology.GetFieldValuesIterator(cellIndex,
+                                                       fieldArray.begin()),
+                       fieldValues);
     }
 }
 
