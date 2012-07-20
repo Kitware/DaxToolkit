@@ -23,7 +23,6 @@
 #include <dax/exec/WorkMapField.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/ErrorControlBadValue.h>
 
 #include <Worklets/Square.worklet>
 

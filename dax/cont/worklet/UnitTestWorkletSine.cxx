@@ -64,7 +64,7 @@ static void TestSine()
                         dax::cont::DeviceAdapterTagSerial> sineHandle;
 
   std::cout << "Running Sine worklet" << std::endl;
-  dax::cont::worklet::Sine(grid, fieldHandle, sineHandle);
+  dax::cont::worklet::Sine(fieldHandle, sineHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> sine(grid.GetNumberOfPoints());

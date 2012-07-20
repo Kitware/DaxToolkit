@@ -24,15 +24,11 @@
 namespace dax {
 namespace worklet {
 
-template<class CellType, class FieldType, class ExecutionAdapter>
-DAX_WORKLET void Cosine(
-    dax::exec::WorkMapField<CellType, ExecutionAdapter> &work,
-    dax::exec::FieldIn<FieldType, ExecutionAdapter> &inField,
-    dax::exec::FieldOut<FieldType, ExecutionAdapter> &outField)
+template<class ValueType>
+DAX_WORKLET void Cosine(const ValueType &inValue,
+                        ValueType &outValue)
 {
-  FieldType inValue = work.GetFieldValue(inField);
-  FieldType outValue = dax::exec::math::Cos(inValue);
-  work.SetFieldValue(outField, outValue);
+  outValue = dax::exec::math::Cos(inValue);
 }
 
 }

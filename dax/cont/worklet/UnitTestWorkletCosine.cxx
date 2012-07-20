@@ -64,7 +64,7 @@ static void TestCosine()
                         dax::cont::DeviceAdapterTagSerial> cosineHandle;
 
   std::cout << "Running Cosine worklet" << std::endl;
-  dax::cont::worklet::Cosine(grid, fieldHandle, cosineHandle);
+  dax::cont::worklet::Cosine(fieldHandle, cosineHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> cosine(grid.GetNumberOfPoints());

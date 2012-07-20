@@ -21,12 +21,8 @@
 #include <dax/Types.h>
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
-#include <dax/exec/internal/ExecutionAdapter.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/ErrorControlBadValue.h>
-#include <dax/cont/internal/ExecutionPackageField.h>
-#include <dax/cont/internal/ExecutionPackageGrid.h>
 
 #include <Worklets/Cosine.worklet>
 
@@ -35,28 +31,26 @@ namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class CellType, typename FieldType, class ExecAdapter>
-struct CosineParameters
-{
-  typename CellType::template GridStructures<ExecAdapter>::TopologyType grid;
-  dax::exec::FieldIn<FieldType, ExecAdapter> inField;
-  dax::exec::FieldOut<FieldType, ExecAdapter> outField;
-};
-
-template<class CellType, typename FieldType, class ExecAdapter>
+template<class PortalType1, class PortalType2>
 struct Cosine
 {
-  DAX_EXEC_EXPORT void operator()(
-      CosineParameters<CellType, FieldType, ExecAdapter> &parameters,
-      dax::Id index,
-      const ExecAdapter &execAdapter) const
+  DAX_CONT_EXPORT
+  Cosine(PortalType1 inValueArray, PortalType2 outValueArray)
+    : InValueArray(inValueArray), OutValueArray(outValueArray) {  }
+
+  template<class A, class B>
+  DAX_EXEC_EXPORT void operator()(A, dax::Id index, B) const
   {
-    dax::exec::WorkMapField<CellType, ExecAdapter>
-        work(parameters.grid, index, execAdapter);
-    dax::worklet::Cosine(work,
-                         parameters.inField,
-                         parameters.outField);
+    const typename PortalType1::ValueType inValue =
+        this->InValueArray.Get(index);
+    typename PortalType2::ValueType outValue;
+    dax::worklet::Cosine(inValue, outValue);
+    this->OutValueArray.Set(index, outValue);
   }
+
+private:
+  PortalType1 InValueArray;
+  PortalType2 OutValueArray;
 };
 
 }
@@ -68,60 +62,27 @@ namespace dax {
 namespace cont {
 namespace worklet {
 
-template<class GridType,
-         typename FieldType,
-         class Container,
+template<typename ValueType,
+         class Container1,
+         class Container2,
          class Adapter>
 DAX_CONT_EXPORT void Cosine(
-    const GridType &grid,
-    const dax::cont::ArrayHandle<FieldType, Container, Adapter> &inHandle,
-    dax::cont::ArrayHandle<FieldType, Container, Adapter> &outHandle)
+    const dax::cont::ArrayHandle<ValueType, Container1, Adapter> &inHandle,
+    dax::cont::ArrayHandle<ValueType, Container2, Adapter> &outHandle)
 {
-  dax::Id fieldSize;
-  if (inHandle.GetNumberOfValues() == grid.GetNumberOfPoints())
-    {
-    fieldSize = grid.GetNumberOfPoints();
-    }
-  else if (inHandle.GetNumberOfValues() == grid.GetNumberOfCells())
-    {
-    fieldSize = grid.GetNumberOfCells();
-    }
-  else
-    {
-    throw dax::cont::ErrorControlBadValue(
-          "Number of array entries neither cells nor points.");
-    }
+  dax::Id fieldSize = inHandle.GetNumberOfValues();
 
-  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
+  dax::exec::internal::kernel::Cosine<
+      typename dax::cont::ArrayHandle<ValueType,Container1,Adapter>::PortalConstExecution,
+      typename dax::cont::ArrayHandle<ValueType,Container2,Adapter>::PortalExecution>
+      kernel(inHandle.PrepareForInput(),
+             outHandle.PrepareForOutput(fieldSize));
 
-  typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
-  ExecutionTopologyType execTopology
-      = dax::cont::internal::ExecutionPackageGrid(grid);
-
-  dax::exec::FieldIn<FieldType, ExecAdapter> fieldIn =
-      dax::cont::internal::ExecutionPackageFieldArrayConst<dax::exec::FieldIn>(
-        inHandle, fieldSize);
-
-  dax::exec::FieldOut<FieldType, ExecAdapter> fieldOut
-      = dax::cont::internal::ExecutionPackageFieldArray<dax::exec::FieldOut>(
-        outHandle, fieldSize);
-
-  typedef typename GridType::CellType CellType;
-
-  typedef dax::exec::internal::kernel::CosineParameters<
-      CellType, FieldType, ExecAdapter> Parameters;
-
-  Parameters parameters;
-  parameters.grid = execTopology;
-  parameters.inField = fieldIn;
-  parameters.outField = fieldOut;
-
-  dax::cont::internal::Schedule(
-        dax::exec::internal::kernel::Cosine<CellType,FieldType,ExecAdapter>(),
-        parameters,
-        fieldSize,
-        Container(),
-        Adapter());
+  dax::cont::internal::Schedule(kernel,
+                                0,
+                                fieldSize,
+                                Container1(),
+                                Adapter());
 }
 
 }
