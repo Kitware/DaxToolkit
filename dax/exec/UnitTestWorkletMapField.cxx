@@ -13,7 +13,7 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#include <dax/exec/WorkMapField.h>
+#include <dax/exec/WorkletMapField.h>
 
 #include <dax/exec/internal/TestingTopologyGenerator.h>
 
@@ -128,7 +128,7 @@ void RunTestMapField()
 
 #endif
 
-int UnitTestWorkMapField(int, char *[])
+int UnitTestWorkletMapField(int, char *[])
 {
 //  return dax::internal::Testing::Run(RunTestMapField);
   std::cout << "Disabled during state of flux." << std::endl;

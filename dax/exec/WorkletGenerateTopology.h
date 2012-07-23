@@ -13,14 +13,11 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_WorkDetermineNewCellCount_h
-#define __dax_exec_WorkDetermineNewCellCount_h
 
-#include <dax/Types.h>
-#include <dax/exec/Cell.h>
-#include <dax/exec/WorkMapCell.h>
+#ifndef __dax_exec_WorkletGenerateTopology_h
+#define __dax_exec_WorkletGenerateTopology_h
 
-#include <dax/exec/internal/FieldAccess.h>
+#include <dax/exec/WorkletMapCell.h>
 
 namespace dax {
 namespace exec {
@@ -30,30 +27,15 @@ namespace exec {
 /// from it with the same topology.
 /// This worklet is based on the WorkMapCell type so you have access to
 /// "CellArray" information i.e. information about what points form a cell.
-/// There are different versions for different cell types, which might have
-/// different constructors because they identify topology differently.
 
-template<class ExecutionAdapter>
-class WorkDetermineNewCellCount
+class WorkletGenerateTopology : public dax::exec::WorkletMapCell
 {
 public:
-
-  DAX_EXEC_EXPORT WorkDetermineNewCellCount(
-      const ExecutionAdapter &executionAdapter)
-    : Adapter(executionAdapter)
-    { }
-
-  DAX_EXEC_EXPORT void RaiseError(const char* message)
-  {
-    this->Adapter.RaiseError(message);
-  }
-
-private:
-  const ExecutionAdapter Adapter;
+  DAX_EXEC_EXPORT WorkletGenerateTopology() { }
 };
 
 
 }
 }
 
-#endif //__dax_exec_WorkDetermineNewCellCount_h
+#endif //__dax_exec_WorkletGenerateTopology_h

@@ -36,6 +36,9 @@ namespace internal {
 class ErrorMessageBuffer
 {
 public:
+  DAX_EXEC_EXPORT ErrorMessageBuffer()
+    : MessageBuffer(), MessageBufferSize(0) {  }
+
   DAX_EXEC_EXPORT ErrorMessageBuffer(char *messageBuffer, dax::Id bufferSize)
     : MessageBuffer(messageBuffer), MessageBufferSize(bufferSize) { }
 
@@ -63,7 +66,15 @@ public:
 
   DAX_EXEC_EXPORT bool IsErrorRaised() const
   {
-    return (this->MessageBuffer[0] != '\0');
+    if (this->MessageBufferSize > 0)
+      {
+      return (this->MessageBuffer[0] != '\0');
+      }
+    else
+      {
+      // If there is no buffer set, then always report an error.
+      return true;
+      }
   }
 
 private:

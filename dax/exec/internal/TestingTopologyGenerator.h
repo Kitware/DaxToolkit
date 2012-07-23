@@ -19,8 +19,6 @@
 #include <dax/Types.h>
 
 #include <dax/exec/Cell.h>
-#include <dax/exec/WorkMapCell.h>
-#include <dax/exec/WorkMapField.h>
 
 #include <dax/exec/internal/ArrayPortalFromIterators.h>
 #include <dax/exec/internal/GridTopologies.h>

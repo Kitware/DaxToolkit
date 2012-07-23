@@ -28,10 +28,10 @@ set(headers
   Derivative.h
   Interpolate.h
   ParametricCoordinates.h
-  WorkDetermineNewCellCount.h
-  WorkGenerateTopology.h
-  WorkMapCell.h
-  WorkMapField.h
+  WorkletDetermineNewCellCount.h
+  WorkletGenerateTopology.h
+  WorkletMapCell.h
+  WorkletMapField.h
 
 
   ${Dax_BINARY_DIR}/dax/exec/VectorOperations.h
@@ -59,7 +59,7 @@ set(unit_tests
   UnitTestDerivative.cxx
   UnitTestInterpolate.cxx
   UnitTestParametricCoordinates.cxx
-  UnitTestWorkMapCell.cxx
-  UnitTestWorkMapField.cxx
+  UnitTestWorkletMapCell.cxx
+  UnitTestWorkletMapField.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

@@ -17,8 +17,6 @@
 
 #include <dax/exec/ParametricCoordinates.h>
 #include <dax/exec/VectorOperations.h>
-#include <dax/exec/WorkMapCell.h>
-#include <dax/exec/WorkMapField.h>
 #include <dax/exec/internal/GridTopologies.h>
 #include <dax/exec/internal/TestingTopologyGenerator.h>
 

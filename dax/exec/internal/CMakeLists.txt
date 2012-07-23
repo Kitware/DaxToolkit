@@ -24,7 +24,7 @@ set(headers
   TestingTopologyGenerator.h
   TopologyUniform.h
   TopologyUnstructured.h
-  WorkEmpty.h
+  WorkletBase.h
   )
 
 dax_declare_headers(${headers})

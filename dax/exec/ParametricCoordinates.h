@@ -26,9 +26,6 @@
 #include <dax/exec/math/Numerical.h>
 #include <dax/exec/math/VectorAnalysis.h>
 
-#include <dax/exec/internal/FieldAccess.h>
-
-#include <dax/exec/WorkMapCell.h>
 namespace dax {
 namespace exec {
 
