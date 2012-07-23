@@ -24,26 +24,23 @@
 
 namespace {
 
-template<class WorkType, class CellType, class ExecutionAdapter>
+template<class CellType>
 static void CompareCoordinates(
-    const WorkType &work,
     const CellType &cell,
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField,
+    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &vertexCoords,
     dax::Vector3 truePCoords,
     dax::Vector3 trueWCoords)
 {
   dax::Vector3 computedWCoords
-      = dax::exec::ParametricCoordinatesToWorldCoordinates(work,
-                                                           cell,
-                                                           coordField,
+      = dax::exec::ParametricCoordinatesToWorldCoordinates(cell,
+                                                           vertexCoords,
                                                            truePCoords);
   DAX_TEST_ASSERT(test_equal(computedWCoords, trueWCoords),
                   "Computed wrong world coords from parametric coords.");
 
   dax::Vector3 computedPCoords
-      = dax::exec::WorldCoordinatesToParametricCoordinates(work,
-                                                           cell,
-                                                           coordField,
+      = dax::exec::WorldCoordinatesToParametricCoordinates(cell,
+                                                           vertexCoords,
                                                            trueWCoords);
   DAX_TEST_ASSERT(test_equal(computedPCoords, truePCoords, 0.01),
                   "Computed wrong parametric coords from world coords.");
@@ -57,43 +54,36 @@ struct Add
   }
 };
 
-template<class CellType, class ExecutionAdapter>
+template<class CellType>
 void TestPCoordsSpecial(
-    const dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField)
+    const CellType &cell,
+    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &vertexCoords)
 {
   const dax::Id NUM_POINTS = CellType::NUM_POINTS;
-
-  CellType cell = work.GetCell();
-  dax::Tuple<dax::Vector3, NUM_POINTS> worldCoordinates =
-      work.GetFieldValues(coordField);
 
   for (dax::Id vertexIndex = 0; vertexIndex < NUM_POINTS; vertexIndex++)
     {
     dax::Vector3 pcoords =
         dax::exec::ParametricCoordinates<CellType>::Vertex()[vertexIndex];
-    dax::Vector3 wcoords = worldCoordinates[vertexIndex];
-    CompareCoordinates(work, cell, coordField, pcoords, wcoords);
+    dax::Vector3 wcoords = vertexCoords[vertexIndex];
+    CompareCoordinates(cell, vertexCoords, pcoords, wcoords);
     }
 
   dax::Vector3 wcoords =
-      dax::exec::VectorReduce(worldCoordinates, Add())
+      dax::exec::VectorReduce(vertexCoords, Add())
       * (dax::Scalar(1)/NUM_POINTS);
 
-  CompareCoordinates(work,
-                     cell,
-                     coordField,
+  CompareCoordinates(cell,
+                     vertexCoords,
                      dax::exec::ParametricCoordinates<CellType>::Center(),
                      wcoords);
 }
 
-template<class CellType, class ExecutionAdapter>
+template<class CellType>
 void TestPCoordsSample(
-    const dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
-    const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField)
+    const CellType &cell,
+    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &vertexCoords)
 {
-  CellType cell = work.GetCell();
-
   dax::Vector3 pcoords;
   for (pcoords[2] = 0.0;
        pcoords[2] <= ((CellType::TOPOLOGICAL_DIMENSIONS > 2) ? 1.0 : 0.0);
@@ -110,14 +100,12 @@ void TestPCoordsSample(
         // If you convert to world coordinates and back, you should get the
         // same value.
         dax::Vector3 wcoords =
-            dax::exec::ParametricCoordinatesToWorldCoordinates(work,
-                                                               cell,
-                                                               coordField,
+            dax::exec::ParametricCoordinatesToWorldCoordinates(cell,
+                                                               vertexCoords,
                                                                pcoords);
         dax::Vector3 computedPCoords =
-            dax::exec::WorldCoordinatesToParametricCoordinates(work,
-                                                               cell,
-                                                               coordField,
+            dax::exec::WorldCoordinatesToParametricCoordinates(cell,
+                                                               vertexCoords,
                                                                wcoords);
 
         DAX_TEST_ASSERT(test_equal(pcoords, computedPCoords, 0.01),
@@ -127,31 +115,24 @@ void TestPCoordsSample(
     }
 }
 
-template<class CellType, class ExecutionAdapter>
+template<class CellType>
 static void TestPCoords(
-  const dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
-  const dax::exec::FieldCoordinatesIn<ExecutionAdapter> &coordField)
+    const CellType &cell,
+    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &vertexCoords)
 {
-  TestPCoordsSpecial(work, coordField);
-  TestPCoordsSample(work, coordField);
+  TestPCoordsSpecial(cell, vertexCoords);
+  TestPCoordsSample(cell, vertexCoords);
 }
 
 struct TestPCoordsFunctor
 {
   template<class TopologyGenType>
   void operator()(const TopologyGenType &topology) {
-    typedef typename TopologyGenType::CellType CellType;
-    typedef typename TopologyGenType::ExecutionAdapter ExecutionAdapter;
-
-    dax::exec::FieldCoordinatesIn<TestExecutionAdapter> coordField =
-        topology.GetCoordinates();
-
     dax::Id numCells = topology.GetNumberOfCells();
     for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
       {
-      dax::exec::WorkMapCell<CellType,ExecutionAdapter> work =
-          dax::exec::internal::CreateWorkMapCell(topology, cellIndex);
-      TestPCoords(work, coordField);
+      TestPCoords(topology.GetCell(cellIndex),
+                  topology.GetCellVertexCoordinates(cellIndex));
       }
   }
 };

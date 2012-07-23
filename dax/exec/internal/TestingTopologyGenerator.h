@@ -19,7 +19,6 @@
 #include <dax/Types.h>
 
 #include <dax/exec/Cell.h>
-#include <dax/exec/Field.h>
 #include <dax/exec/WorkMapCell.h>
 #include <dax/exec/WorkMapField.h>
 
@@ -63,12 +62,6 @@ public:
   }
 
   TopologyType GetTopology() const { return this->Topology; }
-
-  FieldCoordinatesIn<ExecutionAdapter> GetCoordinates() const {
-    typename FieldCoordinatesIn<ExecutionAdapter>::PortalType coordPortal(
-          &this->CoordinatesArray.front(), &this->CoordinatesArray.back() + 1);
-    return FieldCoordinatesIn<ExecutionAdapter>(coordPortal);
-  }
 
   dax::Tuple<dax::Id, CellType::NUM_POINTS>
   GetCellConnections(dax::Id cellId) const
@@ -733,34 +726,7 @@ void TryAllTopologyTypes(FunctionType function)
   function(wedgeTopology);
 }
 
-namespace detail {
-
-template<class TopologyType, typename T>
-void SetArraySize(const TopologyType &topology,
-                  std::vector<T> &array,
-                  dax::exec::internal::FieldAssociationPointTag) {
-  array.resize(topology.GetNumberOfPoints());
-}
-template<class TopologyType, typename T>
-void SetArraySize(const TopologyType &topology,
-                  std::vector<T> &array,
-                  dax::exec::internal::FieldAssociationCellTag) {
-  array.resize(topology.GetNumberOfCells());
-}
-
-} // namespace details
-
-template<template <typename, class> class FieldType,
-         class TopologyGenType,
-         typename T>
-FieldType<T, typename TopologyGenType::ExecutionAdapter>
-CreateField(const TopologyGenType &topology, std::vector<T> &array){
-  typedef FieldType<T, typename TopologyGenType::ExecutionAdapter> FieldClass;
-  detail::SetArraySize(topology, array, typename FieldClass::AssociationTag());
-  typename FieldClass::PortalType arrayPortal(&array.front(), &array.back()+1);
-  return FieldClass(arrayPortal);
-}
-
+#if 0
 template<class TopologyGenType>
 typename TopologyGenType::CellType CreateCell(const TopologyGenType &topology,
                                               dax::Id cellIndex)
@@ -769,11 +735,9 @@ typename TopologyGenType::CellType CreateCell(const TopologyGenType &topology,
 }
 
 template<class TopologyGenType>
-dax::exec::WorkMapField<typename TopologyGenType::CellType,
-                        typename TopologyGenType::ExecutionAdapter>
+dax::exec::WorkMapField<typename TopologyGenType::ExecutionAdapter>
 CreateWorkMapField(const TopologyGenType &topology, dax::Id index) {
-  typedef dax::exec::WorkMapField<typename TopologyGenType::CellType,
-                                  typename TopologyGenType::ExecutionAdapter>
+  typedef dax::exec::WorkMapField<typename TopologyGenType::ExecutionAdapter>
       WorkType;
   return WorkType(topology.GetTopology(),
                   index,
@@ -781,16 +745,15 @@ CreateWorkMapField(const TopologyGenType &topology, dax::Id index) {
 }
 
 template<class TopologyGenType>
-dax::exec::WorkMapCell<typename TopologyGenType::CellType,
-                       typename TopologyGenType::ExecutionAdapter>
+dax::exec::WorkMapCell<typename TopologyGenType::ExecutionAdapter>
 CreateWorkMapCell(const TopologyGenType &topology, dax::Id cellIndex) {
-  typedef dax::exec::WorkMapCell<typename TopologyGenType::CellType,
-                                 typename TopologyGenType::ExecutionAdapter>
+  typedef dax::exec::WorkMapCell<typename TopologyGenType::ExecutionAdapter>
       WorkType;
   return WorkType(topology.GetTopology(),
                   cellIndex,
                   typename TopologyGenType::ExecutionAdapter());
 }
+#endif
 
 }
 }

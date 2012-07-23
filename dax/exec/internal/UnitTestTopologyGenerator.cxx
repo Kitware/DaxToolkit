@@ -17,7 +17,6 @@
 #include <dax/exec/internal/TestingTopologyGenerator.h>
 
 #include <dax/exec/Cell.h>
-#include <dax/exec/Field.h>
 
 #include <dax/exec/internal/GridTopologies.h>
 
@@ -100,7 +99,11 @@ void TestTriangleGrid()
 
 struct TestTemplatedTopology {
   template<class TopologyGenerator>
-  void operator()(TopologyGenerator &topologyGenerator) const {
+  void operator()(TopologyGenerator &daxNotUsed(topologyGenerator)) const {
+    std::cout << "Test disabled.  Original test checked created fields and "
+              << "work objects.  When fields objects were removed, these "
+              << "features ceased to exist." << std::endl;
+#if 0
     typedef typename TopologyGenerator::ExecutionAdapter ExecutionAdapter;
     std::vector<dax::Vector3> pointArray;
 
@@ -133,7 +136,9 @@ struct TestTemplatedTopology {
             fieldCoord,
             fieldIn);
       }
+#endif
   }
+#if 0
 private:
   template<class WorkType, class FieldInType, class FieldOutType>
   void CopyField(const WorkType &work,
@@ -160,6 +165,7 @@ private:
                       "Did not get same coordinates in different work type.");
       }
   }
+#endif
 };
 
 void TestTopologyGenerator()

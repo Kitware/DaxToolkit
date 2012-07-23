@@ -15,14 +15,14 @@
 //=============================================================================
 #include <dax/exec/WorkMapCell.h>
 
-#include <dax/exec/Field.h>
-
 #include <dax/exec/internal/TestingTopologyGenerator.h>
 
 #include <dax/internal/Testing.h>
 
 #include <algorithm>
 #include <vector>
+
+#if 0
 
 namespace {
 
@@ -92,8 +92,11 @@ void TestMapCell()
 }
 
 } // anonymous namespace
+#endif
 
 int UnitTestWorkMapCell(int, char *[])
 {
-  return dax::internal::Testing::Run(TestMapCell);
+//  return dax::internal::Testing::Run(TestMapCell);
+  std::cout << "Disabled during state of flux." << std::endl;
+  return 1;
 }

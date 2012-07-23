@@ -18,7 +18,6 @@
 #define __dax_exec_Derivative_h
 
 #include <dax/exec/Cell.h>
-#include <dax/exec/Field.h>
 #include <dax/exec/math/Matrix.h>
 #include <dax/exec/math/VectorAnalysis.h>
 #include <dax/exec/internal/DerivativeWeights.h>

@@ -16,148 +16,62 @@
 #ifndef __dax_exec_internal_FieldAccess_h
 #define __dax_exec_internal_FieldAccess_h
 
-#include <dax/exec/Field.h>
-
 #include <dax/exec/internal/GridTopologies.h>
 
 namespace dax { namespace exec { class CellVoxel; }}
 
 namespace dax { namespace exec { namespace internal {
 
-struct FieldAccess
+template<class PortalType, class WorkType>
+DAX_EXEC_EXPORT
+typename PortalType::ValueType
+FieldGet(const PortalType &arrayPortal, dax::Id index, const WorkType &work)
 {
-  /// Using normal field semantics (that is, a field is just a pointer to an
-  /// array), get the value at the given index.
-  ///
-  template<class T,
-           class ExecutionAdapter,
-           class Access,
-           class Association,
-           class WorkType>
-  DAX_EXEC_EXPORT static T GetField(
-      dax::exec::internal::FieldBase<Access, Association, T, ExecutionAdapter> field,
-      dax::Id index,
-      WorkType work)
-  {
-    DAX_ASSERT_EXEC(field.Portal.GetNumberOfValues() > 0, work);
-    return field.Portal.Get(index);
-  }
+  DAX_ASSERT_EXEC(index >= 0, work);
+  DAX_ASSERT_EXEC(index < arrayPortal.GetNumberOfValues(), work);
+  return arrayPortal.Get(index);
+}
 
-  /// Using normal field semantics (that is, a field is just a pointer to an
-  /// array), set the value at the given index.
-  ///
-  template<class T, class ExecAdapter, class Association, class WorkType>
-  DAX_EXEC_EXPORT static void SetField(
-      dax::exec::internal::FieldBase<
-          dax::exec::internal::FieldAccessOutputTag,
-          Association,
-          T,
-          ExecAdapter> field,
-      dax::Id index,
-      T value,
-      WorkType work)
-  {
-    DAX_ASSERT_EXEC(field.Portal.GetNumberOfValues() > 0, work);
-    field.Portal.Set(index, value);
-  }
+template<class PortalType, class WorkType>
+DAX_EXEC_EXPORT
+void FieldSet(const PortalType &arrayPortal,
+              dax::Id index,
+              typename PortalType::ValueType value,
+              const WorkType &work)
+{
+  DAX_ASSERT_EXEC(index >= 0, work);
+  DAX_ASSERT_EXEC(index < arrayPortal.GetNumberOfValues(), work);
+  arrayPortal.Set(index, value);
+}
 
-  /// Using normal field semantics (that is, a field is just a pointer to an
-  /// array), get several values from the field.
-  ///
-  template<int Size, class T, class ExecutionAdapter, class Access, class Association, class WorkType>
-  DAX_EXEC_EXPORT static dax::Tuple<T, Size> GetMultiple(
-      dax::exec::internal::FieldBase<Access, Association, T, ExecutionAdapter> field,
-      dax::Tuple<dax::Id,Size> indices,
-      WorkType work)
-  {
-    dax::Tuple<T, Size> result;
-    for (int i = 0; i < Size; i++)
-      {
-      result[i] = GetField(field, indices[i], work);
-      }
-    return result;
-  }
+template<class PortalType, class WorkType, int Size>
+DAX_EXEC_EXPORT
+dax::Tuple<typename PortalType::ValueType, Size>
+FieldGetMultiple(const PortalType &arrayPortal,
+                 dax::Tuple<dax::Id,Size> indices,
+                 const WorkType &work)
+{
+  dax::Tuple<typename PortalType::ValueType,Size> values;
+  for (int i = 0; i < Size; i++)
+    {
+    values[i] = FieldGet(arrayPortal, indices[i], work);
+    }
+  return values;
+}
 
-  /// Get the coordinates from a point coordinate field (which may require
-  /// some computations on the topology).
-  ///
-  template<class ExecutionAdapter, class WorkType>
-  DAX_EXEC_EXPORT static
-  dax::Vector3 GetCoordinates(
-      dax::exec::internal::FieldBase<
-          FieldAccessInputTag,
-          dax::exec::internal::FieldAssociationCoordinatesTag,
-          dax::Vector3,
-          ExecutionAdapter>,
-      dax::Id index,
-      const dax::exec::internal::TopologyUniform &topology,
-      WorkType)
-  {
-    return dax::exec::internal::pointCoordiantes(topology, index);
-  }
+// This function may prove to be inefficient if called multiple times,
+// particularly for voxels as the connections array is recomputed for each
+// call.
+template<class PortalType, class CellType, class WorkType>
+DAX_EXEC_EXPORT
+dax::Tuple<typename PortalType::ValueType, CellType::NUM_POINTS>
+FieldGetPointsForCell(const PortalType &arrayPortal,
+                      const CellType &cell,
+                      const WorkType &work)
+{
+  return FieldGetMultiple(arrayPortal, cell.GetPointIndices(), work);
+}
 
-  /// Get the coordinates from a point coordinate field (which may require
-  /// some computations on the topology).
-  ///
-  template<class ExecutionAdapter, class CellType, class WorkType>
-  DAX_EXEC_EXPORT static
-  dax::Vector3 GetCoordinates(
-      dax::exec::internal::FieldBase<
-          FieldAccessInputTag,
-          dax::exec::internal::FieldAssociationCoordinatesTag,
-          dax::Vector3,
-          ExecutionAdapter> field,
-      dax::Id index,
-      const dax::exec::internal::TopologyUnstructured<
-          CellType,ExecutionAdapter> &daxNotUsed(topology),
-      WorkType work)
-  {
-    return GetField(field, index, work);
-  }
-
-  /// Get the coordinates from a point coordinate field (which may require
-  /// some computations on the topology).
-  ///
-  template<int Size, class ExecutionAdapter, class WorkType>
-  DAX_EXEC_EXPORT static
-  dax::Tuple<dax::Vector3,Size> GetCoordinatesMultiple(
-      dax::exec::internal::FieldBase<
-          FieldAccessInputTag,
-          dax::exec::internal::FieldAssociationCoordinatesTag,
-          dax::Vector3,
-          ExecutionAdapter> field,
-      dax::Tuple<dax::Id,Size> indices,
-      const dax::exec::internal::TopologyUniform &topology,
-      WorkType work)
-  {
-    dax::Tuple<dax::Vector3,Size> result;
-    for (int i = 0; i < Size; i++)
-      {
-      result[i] = GetCoordinates(field, indices[i], topology, work);
-      }
-    return result;
-  }
-
-  /// Get the coordinates from a point coordinate field (which may require
-  /// some computations on the topology).
-  ///
-  template<int Size, class ExecutionAdapter, class CellType, class WorkType>
-  DAX_EXEC_EXPORT static
-  dax::Tuple<dax::Vector3,Size> GetCoordinatesMultiple(
-      dax::exec::internal::FieldBase<
-          FieldAccessInputTag,
-          dax::exec::internal::FieldAssociationCoordinatesTag,
-          dax::Vector3,
-          ExecutionAdapter> field,
-      dax::Tuple<dax::Id,Size> indices,
-      const dax::exec::internal::TopologyUnstructured<
-          CellType,ExecutionAdapter> &daxNotUsed(topology),
-      WorkType work)
-  {
-    return GetMultiple(field, indices, work);
-  }
-};
-
-}}}
+}}} // namespace dax::exec::internal
 
 #endif //__dax_exec_internal_FieldAccess_h

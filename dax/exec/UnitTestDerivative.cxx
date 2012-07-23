@@ -125,9 +125,6 @@ void TestDerivatives(const TopologyGenType &topology,
   typedef typename TopologyGenType::CellType CellType;
   typedef typename TopologyGenType::ExecutionAdapter ExecutionAdapter;
 
-  dax::exec::FieldCoordinatesIn<ExecutionAdapter> coordField =
-      topology.GetCoordinates();
-
   std::vector<dax::Scalar> fieldArray;
   CreatePointField(topology, fieldValues, fieldArray);
 

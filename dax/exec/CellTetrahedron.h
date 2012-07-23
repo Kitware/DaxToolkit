@@ -20,8 +20,6 @@
 #include <dax/Types.h>
 #include <dax/exec/internal/TopologyUnstructured.h>
 
-#include <dax/exec/Field.h>
-
 namespace dax { namespace exec {
 
 class CellTetrahedron
