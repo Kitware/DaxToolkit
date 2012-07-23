@@ -41,7 +41,7 @@ struct DeviceAdapterTagSerial {  };
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/internal/ArrayManagerExecutionShareWithControl.h>
 
-#include <dax/exec/internal/ExecutionAdapter.h>
+#include <dax/exec/internal/ErrorMessageBuffer.h>
 
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -69,36 +69,6 @@ public:
 }
 }
 } // namespace dax::cont::internal
-
-namespace dax {
-namespace exec {
-namespace internal {
-
-template <class ArrayContainerControlTag>
-class ExecutionAdapter<ArrayContainerControlTag,
-                       dax::cont::DeviceAdapterTagSerial>
-{
-public:
-  template <typename T>
-  struct FieldStructures
-  {
-    typedef typename dax::cont::internal::ArrayManagerExecution<
-        T,ArrayContainerControlTag,dax::cont::DeviceAdapterTagSerial>
-        ::PortalType PortalType;
-    typedef typename dax::cont::internal::ArrayManagerExecution<
-        T,ArrayContainerControlTag,dax::cont::DeviceAdapterTagSerial>
-        ::PortalConstType PortalConstType;
-  };
-
-  DAX_EXEC_EXPORT void RaiseError(const char *message) const
-  {
-    throw dax::cont::ErrorExecution(message);
-  }
-};
-
-}
-}
-} // namespace dax::exec::internal
 
 namespace dax {
 namespace cont {
@@ -222,45 +192,39 @@ DAX_CONT_EXPORT void LowerBounds(
 namespace detail {
 
 // This runs in the execution environment.
-template<class FunctorType,
-         class ParametersType,
-         class ArrayContainerControlTag>
+template<class FunctorType>
 class ScheduleKernelSerial
 {
 public:
   ScheduleKernelSerial(
       const FunctorType &functor,
-      const ParametersType &parameters)
-    : Functor(functor),
-      Parameters(parameters) {  }
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+    : Functor(functor), ErrorMessage(errorMessage) {  }
 
   //needed for when calling from schedule on a range
   DAX_EXEC_EXPORT void operator()(dax::Id index)
   {
-    this->Functor(this->Parameters,
-                  index,
-                  dax::exec::internal::ExecutionAdapter<
-                      ArrayContainerControlTag,DeviceAdapterTagSerial>());
+    this->Functor(index, this->ErrorMessage);
   }
 
 private:
   FunctorType Functor;
-  ParametersType Parameters;
+  const dax::exec::internal::ErrorMessageBuffer &ErrorMessage;
 };
 
 } // namespace detail
 
-template<class Functor,
-         class Parameters,
-         class ArrayContainerControlTag>
+template<class Functor>
 DAX_CONT_EXPORT void Schedule(Functor functor,
-                              Parameters parameters,
                               dax::Id numInstances,
-                              ArrayContainerControlTag,
                               DeviceAdapterTagSerial)
 {
-  detail::ScheduleKernelSerial<Functor, Parameters, ArrayContainerControlTag>
-      kernel(functor, parameters);
+  const dax::Id MESSAGE_SIZE = 1024;
+  char *errorString[MESSAGE_SIZE];
+  dax::exec::internal::ErrorMessageBuffer
+      errorMessage(errorString, MESSAGE_SIZE);
+
+  detail::ScheduleKernelSerial<Functor> kernel(functor, errorMessage);
 
   std::for_each(
         ::boost::counting_iterator<dax::Id>(0),

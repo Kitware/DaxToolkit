@@ -17,8 +17,6 @@
 #ifndef __dax_cont_DeviceAdapter_h
 #define __dax_cont_DeviceAdapter_h
 
-#include <dax/exec/internal/ExecutionAdapter.h>
-
 namespace dax {
 namespace cont {
 
@@ -108,23 +106,18 @@ DAX_CONT_EXPORT void LowerBounds(
 /// Calls the \c functor on several threads. This is the function used in the
 /// control environment to spawn activity in the execution environment. \c
 /// functor is a function-like object that can be invoked with the calling
-/// specification <tt>functor(Parameters parameters, dax::Id index,
-/// ExecutionAdapter adapter)</tt>. This last parameter of the functor should
-/// be templated and can be used to create execution objects like work and
-/// field.
+/// specification <tt>functor(dax::Id index, const
+/// dax::exec::internal::ErrorMessageBuffer &errorMessage)</tt>.
 ///
-/// The first argument is the \c parameters passed through. The second argument
-/// uniquely identifies the thread or instance of the invocation. There should
-/// be one invocation for each index in the range [0, \c numInstances]. The
-/// third argment contains an ErrorHandler that can be used to raise an error
-/// in the functor. The final argument is not used for anything but indirectly
-/// specifying the template paramters.
+/// The first argument of the invoked functor uniquely identifies the thread or
+/// instance of the invocation. There should be one invocation for each index
+/// in the range [0, \c numInstances]. The second parameter of the functor is
+/// used to report errors. If RaiseError is called on \c errorMessage with a
+/// non-empty string, an ErrorExecution will be thrown from Schedule.
 ///
 template<class Functor, class Parameters, class Container>
 DAX_CONT_EXPORT void Schedule(Functor functor,
-                              Parameters parameters,
                               dax::Id numInstances,
-                              Container,
                               DeviceAdapterTag___);
 
 /// \brief Unstable ascending sort of input array.

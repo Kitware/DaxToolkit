@@ -52,11 +52,8 @@ public:
       dax::Vector3, ArrayContainerControlTag, DeviceAdapterTag>
       PointCoordinatesType;
 
-  typedef dax::exec::internal
-      ::ExecutionAdapter<ArrayContainerControlTag,DeviceAdapterTag>
-      ExecutionAdapter;
-
-  typedef dax::exec::internal::TopologyUnstructured<CellType, ExecutionAdapter>
+  typedef dax::exec::internal::TopologyUnstructured<
+      CellType, typename CellConnectionsType::PortalConstExecution>
       ExecutionTopologyStruct;
 
   DAX_CONT_EXPORT
