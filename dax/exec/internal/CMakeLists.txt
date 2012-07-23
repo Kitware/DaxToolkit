@@ -18,11 +18,9 @@ set(headers
   ArrayPortalFromIterators.h
   DerivativeWeights.h
   ErrorMessageBuffer.h
-  ExecutionAdapter.h
   FieldAccess.h
   GridTopologies.h
   InterpolationWeights.h
-  TestExecutionAdapter.h
   TestingTopologyGenerator.h
   TopologyUniform.h
   TopologyUnstructured.h
@@ -34,6 +32,7 @@ dax_declare_headers(${headers})
 set(unit_tests
   UnitTestArrayPortalFromIteratorsExec.cxx
   UnitTestDerivativeWeights.cxx
+  UnitTestErrorMessageBuffer.cxx
   UnitTestInterpolationWeights.cxx
   UnitTestGridTopologies.cxx
   UnitTestTopologyGenerator.cxx

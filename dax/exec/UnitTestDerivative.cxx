@@ -123,7 +123,6 @@ void TestDerivatives(const TopologyGenType &topology,
                      const LinearField &fieldValues)
 {
   typedef typename TopologyGenType::CellType CellType;
-  typedef typename TopologyGenType::ExecutionAdapter ExecutionAdapter;
 
   std::vector<dax::Scalar> fieldArray;
   CreatePointField(topology, fieldValues, fieldArray);

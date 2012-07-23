@@ -18,6 +18,7 @@
 
 #include <dax/exec/Cell.h>
 
+#include <dax/exec/internal/ArrayPortalFromIterators.h>
 #include <dax/exec/internal/GridTopologies.h>
 
 #include <dax/internal/Testing.h>
@@ -48,8 +49,10 @@ void TestVoxelGrid()
 template<class CellType>
 void TestUnstructuredGrid()
 {
+  typedef dax::exec::internal::ArrayPortalFromIterators<
+      std::vector<dax::Id>::iterator> ConnectionsPortal;
   typedef dax::exec::internal::TopologyUnstructured
-      <CellType,TestExecutionAdapter> TopologyType;
+      <CellType,ConnectionsPortal> TopologyType;
 
   dax::exec::internal::TestTopology<TopologyType> generator;
   TopologyType topology = generator.GetTopology();

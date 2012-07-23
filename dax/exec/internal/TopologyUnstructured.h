@@ -33,12 +33,11 @@ namespace internal {
 /// invalid states (as well as get around problems with const vs. non-const
 /// arrays).
 ///
-template<typename T, class ExecutionAdapter>
+template<typename T, class ConnectionsPortalT>
 struct TopologyUnstructured
 {
   typedef T CellType;
-  typedef typename ExecutionAdapter::template FieldStructures<dax::Id>
-      ::PortalConstType CellConnectionsPortalType;
+  typedef ConnectionsPortalT CellConnectionsPortalType;
 
   TopologyUnstructured()
     : CellConnections(CellConnectionsPortalType()),
@@ -49,10 +48,10 @@ struct TopologyUnstructured
 
   /// Create a topology with the given descriptive arrays.
   ///
-  /// \param numberOfPoints The number of points in the grid.
   /// \param cellConnections An array containing a list for each cell giving
   /// the point index for each vertex of the cell.  The length of this array
   /// should be \c numberOfCells times \c CellType::NUM_POINTS.
+  /// \param numberOfPoints The number of points in the grid.
   /// \param numberOfCells The number of cells in the grid.
   ///
   TopologyUnstructured(CellConnectionsPortalType cellConnections,

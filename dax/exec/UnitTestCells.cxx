@@ -29,7 +29,6 @@ struct TestCellFunctor
   void operator()(const TopologyGenType &topology)
   {
     typedef typename TopologyGenType::CellType CellType;
-    typedef typename TopologyGenType::ExecutionAdapter ExecutionAdapter;
     typedef typename CellType::PointConnectionsType PointConnectionsType;
 
     dax::Id numCells = topology.GetNumberOfCells();
