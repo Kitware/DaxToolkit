@@ -96,36 +96,38 @@ struct TestThresholdWorklet
   template<typename GridType>
   void operator()(const GridType&) const
     {
-    this->GridThreshold<GridType,GridType>();
+    dax::cont::internal::TestGrid<GridType> in(DIM);
+    GridType out;
+
+    this->GridThreshold(in.GetRealGrid(),out);
     }
 
   //----------------------------------------------------------------------------
   void operator()(const dax::cont::UniformGrid<>&) const
     {
-    this->GridThreshold<dax::cont::UniformGrid<>,
-        dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> >();
+    dax::cont::internal::TestGrid<dax::cont::UniformGrid<> > in(DIM);
+    dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> out;
+
+    this->GridThreshold(in.GetRealGrid(),out);
     }
 
   //----------------------------------------------------------------------------
   template <typename InGridType,
             typename OutGridType>
-  void GridThreshold() const
+  void GridThreshold(const InGridType& inGrid, OutGridType& outGrid) const
     {
-    dax::cont::internal::TestGrid<InGridType> grid(DIM);
-    dax::cont::internal::TestGrid<OutGridType>grid2(0);
-
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
-    std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
+    std::vector<dax::Scalar> field(inGrid.GetNumberOfPoints());
     for (dax::Id pointIndex = 0;
-         pointIndex < grid->GetNumberOfPoints();
+         pointIndex < inGrid.GetNumberOfPoints();
          pointIndex++)
       {
-      dax::Vector3 coordinates = grid->ComputePointCoordinates(pointIndex);
+      dax::Vector3 coordinates = inGrid.ComputePointCoordinates(pointIndex);
       field[pointIndex] = dax::dot(coordinates, trueGradient);
       }
 
     dax::cont::ArrayHandle<dax::Scalar> fieldHandle(&field[0],
-                                                    &field[grid->GetNumberOfPoints()]);
+                                                    &field[inGrid.GetNumberOfPoints()]);
 
     //unkown size
     dax::cont::ArrayHandle<dax::Scalar> resultHandle;
@@ -136,7 +138,9 @@ struct TestThresholdWorklet
 
     try
       {
-      dax::cont::worklet::Threshold(grid,grid2,min,max,fieldHandle,resultHandle);
+      dax::cont::worklet::Threshold(inGrid,
+                                    outGrid,
+                                    min,max,fieldHandle,resultHandle);
       }
     catch (dax::cont::ErrorControl error)
       {
@@ -144,7 +148,7 @@ struct TestThresholdWorklet
       DAX_TEST_ASSERT(true==false,error.GetMessage());
       }
 
-    DAX_TEST_ASSERT(resultHandle.GetNumberOfValues()==grid2->GetNumberOfPoints(),
+    DAX_TEST_ASSERT(resultHandle.GetNumberOfValues()==outGrid.GetNumberOfPoints(),
                     "Incorrect number of points in the result array");
 
     CheckValues(resultHandle.GetIteratorConstControlBegin(),
