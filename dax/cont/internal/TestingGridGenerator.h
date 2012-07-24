@@ -15,7 +15,7 @@
 //=============================================================================
 
 #ifndef __dax_cont_internal_TestingGridGenerator_h
-#define  __dax_cont_internal_TestingGridGenerator_h
+#define __dax_cont_internal_TestingGridGenerator_h
 
 #include <dax/Types.h>
 
