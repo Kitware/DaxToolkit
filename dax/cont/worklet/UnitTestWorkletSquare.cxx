@@ -61,7 +61,7 @@ struct TestSquareWorklet
     dax::cont::ArrayHandle<dax::Scalar,
         dax::cont::ArrayContainerControlTagBasic,
         dax::cont::DeviceAdapterTagSerial>
-        fieldHandle(field.begin(),field.end());
+        fieldHandle(&field.front(), (&field.back()) + 1);
 
     dax::cont::ArrayHandle<dax::Scalar,
         dax::cont::ArrayContainerControlTagBasic,
