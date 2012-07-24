@@ -18,8 +18,13 @@ set(headers
   Assert.h
   Cell.h
   CellHexahedron.h
+  CellLine.h
+  CellQuadrilateral.h
+  CellTetrahedron.h
   CellTriangle.h
+  CellVertex.h
   CellVoxel.h
+  CellWedge.h
   Derivative.h
   Field.h
   Interpolate.h
