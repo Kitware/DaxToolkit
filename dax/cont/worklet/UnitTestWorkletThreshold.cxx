@@ -14,8 +14,17 @@
 //
 //=============================================================================
 
+
+// These header files help tease out when the default template arguments to
+// ArrayHandle are inappropriately used.
+#include <dax/cont/internal/ArrayContainerControlError.h>
+#include <dax/cont/internal/DeviceAdapterError.h>
+
 #include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/DeviceAdapterSerial.h>
+
+#include <dax/cont/internal/TestingGridGenerator.h>
+#include <dax/cont/internal/Testing.h>
 
 #include <dax/cont/worklet/Threshold.h>
 
@@ -48,20 +57,20 @@ public:
   void operator()(dax::Scalar value) {
     if ((value < MIN_THRESHOLD) || (value > MAX_THRESHOLD)) {
       this->Valid = false; }
-  }
+    }
 private:
   bool Valid;
 };
 
 void PrintScalarValue(dax::Scalar value)
-{
+  {
   std::cout << " " << value;
-}
+  }
 
 
 template<class IteratorType>
 void CheckValues(IteratorType begin, IteratorType end)
-{
+  {
   typedef typename std::iterator_traits<IteratorType>::value_type VectorType;
 
   CheckValid isValid;
@@ -78,54 +87,78 @@ void CheckValues(IteratorType begin, IteratorType end)
       break;
       }
     }
-}
+  }
 
 //-----------------------------------------------------------------------------
-static void TestThreshold()
+struct TestThresholdWorklet
 {
-  dax::cont::UniformGrid<> grid;
-  grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
-
-  dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> grid2;
-  dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
-
-  std::vector<dax::Scalar> field(grid.GetNumberOfPoints());
-  for (dax::Id pointIndex = 0;
-       pointIndex < grid.GetNumberOfPoints();
-       pointIndex++)
+  //----------------------------------------------------------------------------
+  template<typename GridType>
+  void operator()(const GridType&) const
     {
-    field[pointIndex]
-        = dax::dot(grid.ComputePointCoordinates(pointIndex), trueGradient);
-    }
-  dax::cont::ArrayHandle<dax::Scalar> fieldHandle(&field.front(),
-                                                  &(field.back())+1);
-
-  //unkown size
-  dax::cont::ArrayHandle<dax::Scalar> resultHandle;
-
-  std::cout << "Running Threshold worklet" << std::endl;
-  dax::Scalar min = MIN_THRESHOLD;
-  dax::Scalar max = MAX_THRESHOLD;
-
-  try
-    {
-    dax::cont::worklet::Threshold(grid,grid2,min,max,fieldHandle,resultHandle);
-    }
-  catch (dax::cont::ErrorControl error)
-    {
-    std::cout << "Got error: " << error.GetMessage() << std::endl;
-    DAX_TEST_ASSERT(true==false,error.GetMessage());
+    this->GridThreshold<GridType,GridType>();
     }
 
-  DAX_TEST_ASSERT(resultHandle.GetNumberOfValues()==grid2.GetNumberOfPoints(),
-                  "Incorrect number of points in the result array");
+  //----------------------------------------------------------------------------
+  void operator()(const dax::cont::UniformGrid<>&) const
+    {
+    this->GridThreshold<dax::cont::UniformGrid<>,
+        dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> >();
+    }
 
-  CheckValues(resultHandle.GetIteratorConstControlBegin(),
-              resultHandle.GetIteratorConstControlEnd());
+  //----------------------------------------------------------------------------
+  template <typename InGridType,
+            typename OutGridType>
+  void GridThreshold() const
+    {
+    dax::cont::internal::TestGrid<InGridType> grid(DIM);
+    dax::cont::internal::TestGrid<OutGridType>grid2(0);
 
-  //test max < min.
-}
+    dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
+    std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
+    for (dax::Id pointIndex = 0;
+         pointIndex < grid->GetNumberOfPoints();
+         pointIndex++)
+      {
+      dax::Vector3 coordinates = grid->ComputePointCoordinates(pointIndex);
+      field[pointIndex] = dax::dot(coordinates, trueGradient);
+      }
 
+    dax::cont::ArrayHandle<dax::Scalar> fieldHandle(&field[0],
+                                                    &field[grid->GetNumberOfPoints()]);
+
+    //unkown size
+    dax::cont::ArrayHandle<dax::Scalar> resultHandle;
+
+    std::cout << "Running Threshold worklet" << std::endl;
+    dax::Scalar min = MIN_THRESHOLD;
+    dax::Scalar max = MAX_THRESHOLD;
+
+    try
+      {
+      dax::cont::worklet::Threshold(grid,grid2,min,max,fieldHandle,resultHandle);
+      }
+    catch (dax::cont::ErrorControl error)
+      {
+      std::cout << "Got error: " << error.GetMessage() << std::endl;
+      DAX_TEST_ASSERT(true==false,error.GetMessage());
+      }
+
+    DAX_TEST_ASSERT(resultHandle.GetNumberOfValues()==grid2->GetNumberOfPoints(),
+                    "Incorrect number of points in the result array");
+
+    CheckValues(resultHandle.GetIteratorConstControlBegin(),
+                resultHandle.GetIteratorConstControlEnd());
+    //test max < min.
+    }
+};
+
+
+//-----------------------------------------------------------------------------
+void TestThreshold()
+  {
+  dax::cont::internal::GridTesting::TryAllGridTypes(TestThresholdWorklet());
+  }
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
@@ -133,4 +166,3 @@ int UnitTestWorkletThreshold(int, char *[])
 {
   return dax::cont::internal::Testing::Run(TestThreshold);
 }
-

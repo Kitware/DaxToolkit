@@ -14,13 +14,16 @@
 //
 //=============================================================================
 
-#include <dax/cont/ArrayContainerControlBasic.h>
-#include <dax/cont/DeviceAdapterSerial.h>
-
 // These header files help tease out when the default template arguments to
 // ArrayHandle are inappropriately used.
 #include <dax/cont/internal/ArrayContainerControlError.h>
 #include <dax/cont/internal/DeviceAdapterError.h>
+
+#include <dax/cont/ArrayContainerControlBasic.h>
+#include <dax/cont/DeviceAdapterSerial.h>
+
+#include <dax/cont/internal/TestingGridGenerator.h>
+#include <dax/cont/internal/Testing.h>
 
 #include <dax/cont/worklet/Square.h>
 
@@ -37,47 +40,56 @@ namespace {
 const dax::Id DIM = 64;
 
 //-----------------------------------------------------------------------------
-static void TestSquare()
+struct TestSquareWorklet
 {
-  dax::cont::UniformGrid<dax::cont::ArrayContainerControlTagBasic,
-                         dax::cont::DeviceAdapterTagSerial> grid;
-  grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
-
-  dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
-
-  std::vector<dax::Scalar> field(grid.GetNumberOfPoints());
-  for (dax::Id pointIndex = 0;
-       pointIndex < grid.GetNumberOfPoints();
-       pointIndex++)
+  //----------------------------------------------------------------------------
+  template<typename GridType>
+  void operator()(const GridType&) const
     {
-    field[pointIndex]
-        = dax::dot(grid.ComputePointCoordinates(pointIndex), trueGradient);
+    dax::cont::internal::TestGrid<GridType> grid(DIM);
+
+    dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
+
+    std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
+    for (dax::Id pointIndex = 0;
+         pointIndex < grid->GetNumberOfPoints();
+         pointIndex++)
+      {
+      field[pointIndex]
+          = dax::dot(grid->ComputePointCoordinates(pointIndex), trueGradient);
+      }
+    dax::cont::ArrayHandle<dax::Scalar,
+        dax::cont::ArrayContainerControlTagBasic,
+        dax::cont::DeviceAdapterTagSerial>
+        fieldHandle(field.begin(),field.end());
+
+    dax::cont::ArrayHandle<dax::Scalar,
+        dax::cont::ArrayContainerControlTagBasic,
+        dax::cont::DeviceAdapterTagSerial> squareHandle;
+
+    std::cout << "Running Square worklet" << std::endl;
+    dax::cont::worklet::Square(grid.GetRealGrid(), fieldHandle, squareHandle);
+
+    std::cout << "Checking result" << std::endl;
+    std::vector<dax::Scalar> square(grid->GetNumberOfPoints());
+    squareHandle.CopyInto(square.begin());
+    for (dax::Id pointIndex = 0;
+         pointIndex < grid->GetNumberOfPoints();
+         pointIndex++)
+      {
+      dax::Scalar squareValue = square[pointIndex];
+      dax::Scalar squareTrue = field[pointIndex]*field[pointIndex];
+      DAX_TEST_ASSERT(test_equal(squareValue, squareTrue),
+                      "Got bad square");
+      }
     }
-  dax::cont::ArrayHandle<dax::Scalar,
-                        dax::cont::ArrayContainerControlTagBasic,
-                        dax::cont::DeviceAdapterTagSerial>
-      fieldHandle(&field.front(), &(field.back())+1);
+};
 
-  dax::cont::ArrayHandle<dax::Scalar,
-                        dax::cont::ArrayContainerControlTagBasic,
-                        dax::cont::DeviceAdapterTagSerial> squareHandle;
-
-  std::cout << "Running Square worklet" << std::endl;
-  dax::cont::worklet::Square(grid, fieldHandle, squareHandle);
-
-  std::cout << "Checking result" << std::endl;
-  std::vector<dax::Scalar> square(grid.GetNumberOfPoints());
-  squareHandle.CopyInto(square.begin());
-  for (dax::Id pointIndex = 0;
-       pointIndex < grid.GetNumberOfPoints();
-       pointIndex++)
-    {
-    dax::Scalar squareValue = square[pointIndex];
-    dax::Scalar squareTrue = field[pointIndex]*field[pointIndex];
-    DAX_TEST_ASSERT(test_equal(squareValue, squareTrue),
-                    "Got bad square");
-    }
-}
+//-----------------------------------------------------------------------------
+void TestSquare()
+  {
+  dax::cont::internal::GridTesting::TryAllGridTypes(TestSquareWorklet());
+  }
 
 } // Anonymous namespace
 
