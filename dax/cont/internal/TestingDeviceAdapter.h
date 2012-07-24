@@ -52,29 +52,25 @@ template<class DeviceAdapterTag>
 struct TestingDeviceAdapter
 {
 private:
-  typedef dax::exec::internal::ExecutionAdapter<
-      ArrayContainerControlTagBasic,
-      DeviceAdapterTag> ExecutionAdapter;
-
-  typedef typename ExecutionAdapter::template FieldStructures<dax::Id>
-      ::PortalType IdPortalType;
-  typedef typename ExecutionAdapter::template FieldStructures<dax::Id>
-      ::PortalConstType IdPortalConstType;
+  typedef dax::cont::ArrayContainerControlTagBasic ArrayContainerControlTag;
 
   typedef dax::cont
-      ::ArrayHandle<dax::Id, ArrayContainerControlTagBasic, DeviceAdapterTag>
+      ::ArrayHandle<dax::Id, ArrayContainerControlTag, DeviceAdapterTag>
         IdArrayHandle;
   typedef dax::cont::internal::ArrayManagerExecution<
-      dax::Id, ArrayContainerControlTagBasic, DeviceAdapterTag>
+      dax::Id, ArrayContainerControlTag, DeviceAdapterTag>
       IdArrayManagerExecution;
-  typedef ArrayContainerControl<dax::Id, ArrayContainerControlTagBasic>
+  typedef ArrayContainerControl<dax::Id, ArrayContainerControlTag>
       IdContainer;
 
+  typedef typename IdArrayHandle::PortalExecution IdPortalType;
+  typedef typename IdArrayHandle::PortalConstExecution IdPortalConstType;
+
   typedef dax::cont
-      ::ArrayHandle<dax::Scalar,ArrayContainerControlTagBasic,DeviceAdapterTag>
+      ::ArrayHandle<dax::Scalar,ArrayContainerControlTag,DeviceAdapterTag>
       ScalarArrayHandle;
   typedef dax::cont
-      ::ArrayHandle<dax::Vector3,ArrayContainerControlTagBasic,DeviceAdapterTag>
+      ::ArrayHandle<dax::Vector3,ArrayContainerControlTag,DeviceAdapterTag>
       Vector3ArrayHandle;
 
 public:
@@ -82,68 +78,77 @@ public:
 
   struct CopyArrayKernel
   {
+    DAX_CONT_EXPORT
+    CopyArrayKernel(const IdPortalConstType &input,
+                    const IdPortalType &output)
+      : InputArray(input), OutputArray(output) {  }
+
     DAX_EXEC_EXPORT void operator()(
-        std::pair<IdPortalConstType, IdPortalType> arrays,
         dax::Id index,
-        const dax::exec::internal
-        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
-    const
+        const dax::exec::internal::ErrorMessageBuffer &) const
     {
-      arrays.second.Set(index, arrays.first.Get(index));
+      this->OutputArray.Set(index, this->InputArray.Get(index));
     }
+
+    const IdPortalConstType &InputArray;
+    const IdPortalType &OutputArray;
   };
 
   struct ClearArrayKernel
   {
+    DAX_CONT_EXPORT
+    ClearArrayKernel(const IdPortalType &array) : Array(array) {  }
+
     DAX_EXEC_EXPORT void operator()(
-        IdPortalType array,
         dax::Id index,
-        const dax::exec::internal
-        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
-    const
+        const dax::exec::internal::ErrorMessageBuffer &) const
     {
-      array.Set(index, OFFSET);
+      this->Array.Set(index, OFFSET);
     }
+
+    const IdPortalType &Array;
   };
 
   struct ClearArrayMapKernel
   {
+    DAX_CONT_EXPORT
+    ClearArrayMapKernel(const IdPortalType &array) : Array(array) {  }
+
     DAX_EXEC_EXPORT void operator()(
-        IdPortalType array,
-        dax::Id, dax::Id value,
-        const dax::exec::internal
-        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
-    const
+        dax::Id,
+        dax::Id value,
+        const dax::exec::internal::ErrorMessageBuffer &) const
     {
-      array.Set(value, OFFSET);
+      this->Array.Set(value, OFFSET);
     }
+
+    const IdPortalType &Array;
   };
 
   struct AddArrayKernel
   {
+    DAX_CONT_EXPORT
+    AddArrayKernel(const IdPortalType &array) : Array(array) {  }
+
     DAX_EXEC_EXPORT void operator()(
-        IdPortalType array,
         dax::Id index,
-        const dax::exec::internal
-        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
-    const
+        const dax::exec::internal::ErrorMessageBuffer &) const
     {
-      array.Set(index, array.Get(index) + index);
+      this->Array.Set(index, this->Array.Get(index) + index);
     }
+
+    const IdPortalType &Array;
   };
 
   struct OneErrorKernel
   {
     DAX_EXEC_EXPORT void operator()(
-        dax::Id,
         dax::Id index,
-        const dax::exec::internal
-        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag>
-        &adapter) const
+        const dax::exec::internal::ErrorMessageBuffer &errorMessage) const
     {
       if (index == ARRAY_SIZE/2)
         {
-        adapter.RaiseError(ERROR_MESSAGE);
+        errorMessage.RaiseError(ERROR_MESSAGE);
         }
     }
   };
@@ -151,40 +156,41 @@ public:
   struct AllErrorKernel
   {
     DAX_EXEC_EXPORT void operator()(
-        dax::Id,
-        dax::Id,
-        const dax::exec::internal
-        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag>
-        &adapter) const
+        dax::Id daxNotUsed(index),
+        const dax::exec::internal::ErrorMessageBuffer &errorMessage) const
     {
-      adapter.RaiseError(ERROR_MESSAGE);
+      errorMessage.RaiseError(ERROR_MESSAGE);
     }
   };
 
   struct OffsetPlusIndexKernel
   {
+    DAX_CONT_EXPORT
+    OffsetPlusIndexKernel(const IdPortalType &array) : Array(array) {  }
+
     DAX_EXEC_EXPORT void operator()(
-        IdPortalType array,
         dax::Id index,
-        const dax::exec::internal
-        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
-    const
+        const dax::exec::internal::ErrorMessageBuffer &) const
     {
-      array.Set(index, OFFSET + index);
+      this->Array.Set(index, OFFSET + index);
     }
+
+    const IdPortalType &Array;
   };
 
   struct MarkOddNumbersKernel
   {
+    DAX_CONT_EXPORT
+    MarkOddNumbersKernel(const IdPortalType &array) : Array(array) {  }
+
     DAX_EXEC_EXPORT void operator()(
-        IdPortalType array,
         dax::Id index,
-        const dax::exec::internal
-        ::ExecutionAdapter<ArrayContainerControlTagBasic,DeviceAdapterTag> &)
-    const
+        const dax::exec::internal::ErrorMessageBuffer &) const
     {
-      array.Set(index, index%2);
+      this->Array.Set(index, index%2);
     }
+
+    const IdPortalType &Array;
   };
 
 private:
@@ -293,17 +299,13 @@ private:
     manager.AllocateArrayForOutput(container, ARRAY_SIZE);
 
     std::cout << "Running clear." << std::endl;
-    dax::cont::internal::Schedule(ClearArrayKernel(),
-                                  manager.GetPortal(),
+    dax::cont::internal::Schedule(ClearArrayKernel(manager.GetPortal()),
                                   ARRAY_SIZE,
-                                  ArrayContainerControlTagBasic(),
                                   DeviceAdapterTag());
 
     std::cout << "Running add." << std::endl;
-    dax::cont::internal::Schedule(AddArrayKernel(),
-                                  manager.GetPortal(),
+    dax::cont::internal::Schedule(AddArrayKernel(manager.GetPortal()),
                                   ARRAY_SIZE,
-                                  ArrayContainerControlTagBasic(),
                                   DeviceAdapterTag());
 
     std::cout << "Checking results." << std::endl;
@@ -323,8 +325,7 @@ private:
     IdArrayHandle subset = MakeArrayHandle(rawsubset, RAWSUBSET_SIZE);
 
     std::cout << "Running clear on subset." << std::endl;
-    dax::cont::internal::ScheduleMap(ClearArrayMapKernel(),
-                                     manager.GetPortal(),
+    dax::cont::internal::ScheduleMap(ClearArrayMapKernel(manager.GetPortal()),
                                      subset);
     manager.RetrieveOutputData(container);
 
@@ -349,11 +350,10 @@ private:
 
     //construct the index array
 
-    dax::cont::internal::Schedule(MarkOddNumbersKernel(),
-                                  array.PrepareForOutput(ARRAY_SIZE),
-                                  ARRAY_SIZE,
-                                  ArrayContainerControlTagBasic(),
-                                  DeviceAdapterTag());
+    dax::cont::internal::Schedule(
+          MarkOddNumbersKernel(array.PrepareForOutput(ARRAY_SIZE)),
+          ARRAY_SIZE,
+          DeviceAdapterTag());
 
     dax::cont::internal::StreamCompact(array, result, DeviceAdapterTag());
     DAX_TEST_ASSERT(result.GetNumberOfValues() == array.GetNumberOfValues()/2,
@@ -377,16 +377,14 @@ private:
     IdArrayHandle result;
 
     //construct the index array
-    dax::cont::internal::Schedule(OffsetPlusIndexKernel(),
-                                  array.PrepareForOutput(ARRAY_SIZE),
-                                  ARRAY_SIZE,
-                                  ArrayContainerControlTagBasic(),
-                                  DeviceAdapterTag());
-    dax::cont::internal::Schedule(MarkOddNumbersKernel(),
-                                  stencil.PrepareForOutput(ARRAY_SIZE),
-                                  ARRAY_SIZE,
-                                  ArrayContainerControlTagBasic(),
-                                  DeviceAdapterTag());
+    dax::cont::internal::Schedule(
+          OffsetPlusIndexKernel(array.PrepareForOutput(ARRAY_SIZE)),
+          ARRAY_SIZE,
+          DeviceAdapterTag());
+    dax::cont::internal::Schedule(
+          MarkOddNumbersKernel(stencil.PrepareForOutput(ARRAY_SIZE)),
+          ARRAY_SIZE,
+          DeviceAdapterTag());
 
     dax::cont::internal::StreamCompact(array,stencil,result,DeviceAdapterTag());
     DAX_TEST_ASSERT(result.GetNumberOfValues() == array.GetNumberOfValues()/2,
@@ -469,11 +467,10 @@ private:
 
     //construct the index array
     IdArrayHandle array;
-    dax::cont::internal::Schedule(ClearArrayKernel(),
-                                  array.PrepareForOutput(ARRAY_SIZE),
-                                  ARRAY_SIZE,
-                                  ArrayContainerControlTagBasic(),
-                                  DeviceAdapterTag());
+    dax::cont::internal::Schedule(
+          ClearArrayKernel(array.PrepareForOutput(ARRAY_SIZE)),
+          ARRAY_SIZE,
+          DeviceAdapterTag());
 
     //we know have an array whose sum is equal to OFFSET * ARRAY_SIZE,
     //let's validate that
@@ -507,9 +504,7 @@ private:
     try
       {
       dax::cont::internal::Schedule(OneErrorKernel(),
-                                    0,
                                     ARRAY_SIZE,
-                                    ArrayContainerControlTagBasic(),
                                     DeviceAdapterTag());
       }
     catch (dax::cont::ErrorExecution error)
@@ -525,9 +520,7 @@ private:
     try
       {
       dax::cont::internal::Schedule(AllErrorKernel(),
-                                    0,
                                     ARRAY_SIZE,
-                                    ArrayContainerControlTagBasic(),
                                     DeviceAdapterTag());
       }
     catch (dax::cont::ErrorExecution error)
@@ -600,9 +593,8 @@ private:
     bool gotError = false;
     try
       {
-      dax::cont::worklet::testing::FieldMapError
-          <GridType, ArrayContainerControlTagBasic, DeviceAdapterTag>
-          (grid.GetRealGrid());
+      dax::cont::worklet::testing::FieldMapError(
+            grid.GetRealGrid().GetPointCoordinates());
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -689,9 +681,8 @@ private:
     bool gotError = false;
     try
       {
-      dax::cont::worklet::testing::CellMapError
-          <GridType, ArrayContainerControlTagBasic, DeviceAdapterTag>
-          (grid.GetRealGrid());
+      dax::cont::worklet::testing::CellMapError(grid.GetRealGrid(),
+                                                DeviceAdapterTag());
       }
     catch (dax::cont::ErrorExecution error)
       {

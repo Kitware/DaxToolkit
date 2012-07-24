@@ -210,6 +210,19 @@ public:
     return PointCoordinatesType(portal);
   }
 
+  /// Prepares this topology to be used as an input to an operation in the
+  /// execution environment.  Returns a structure that can be used directly
+  /// in the execution environment.
+  ///
+  DAX_CONT_EXPORT
+  ExecutionTopologyStruct PrepareForInput() const {
+    ExecutionTopologyStruct topology;
+    topology.Origin = this->Origin;
+    topology.Spacing = this->Spacing;
+    topology.Extent = this->Extent;
+    return topology;
+  }
+
 private:
   dax::Vector3 Origin;
   dax::Vector3 Spacing;

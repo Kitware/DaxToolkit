@@ -16,6 +16,8 @@
 #ifndef __dax_exec_internal_FieldAccess_h
 #define __dax_exec_internal_FieldAccess_h
 
+#include <dax/exec/Assert.h>
+
 #include <dax/exec/internal/GridTopologies.h>
 
 namespace dax { namespace exec { class CellVoxel; }}

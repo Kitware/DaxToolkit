@@ -220,7 +220,8 @@ DAX_CONT_EXPORT void Schedule(Functor functor,
                               DeviceAdapterTagSerial)
 {
   const dax::Id MESSAGE_SIZE = 1024;
-  char *errorString[MESSAGE_SIZE];
+  char errorString[MESSAGE_SIZE];
+  errorString[0] = '\0';
   dax::exec::internal::ErrorMessageBuffer
       errorMessage(errorString, MESSAGE_SIZE);
 
@@ -230,6 +231,11 @@ DAX_CONT_EXPORT void Schedule(Functor functor,
         ::boost::counting_iterator<dax::Id>(0),
         ::boost::counting_iterator<dax::Id>(numInstances),
         kernel);
+
+  if (errorMessage.IsErrorRaised())
+    {
+    throw dax::cont::ErrorExecution(errorString);
+    }
 }
 
 

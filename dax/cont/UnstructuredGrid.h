@@ -108,6 +108,17 @@ public:
     return this->CellConnections.GetNumberOfValues() / CellType::NUM_POINTS;
   }
 
+  /// Prepares this topology to be used as an input to an operation in the
+  /// execution environment.  Returns a structure that can be used directly
+  /// in the execution environment.
+  ///
+  DAX_CONT_EXPORT
+  ExecutionTopologyStruct PrepareForInput() const {
+    return ExecutionTopologyStruct(this->CellConnections.PrepareForInput(),
+                                   this->GetNumberOfPoints(),
+                                   this->GetNumberOfCells());
+  }
+
 private:
   CellConnectionsType CellConnections;
   PointCoordinatesType PointCoordinates;

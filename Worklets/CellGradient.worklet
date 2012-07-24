@@ -18,32 +18,34 @@
 
 #include <dax/exec/Cell.h>
 #include <dax/exec/Derivative.h>
-#include <dax/exec/Field.h>
 #include <dax/exec/ParametricCoordinates.h>
-#include <dax/exec/WorkMapCell.h>
+#include <dax/exec/WorkletMapCell.h>
 
 
 namespace dax {
 namespace worklet {
 
-template<class CellType, class ExecutionAdapter>
-DAX_WORKLET void CellGradient(
-    dax::exec::WorkMapCell<CellType, ExecutionAdapter> &work,
-    dax::exec::FieldCoordinatesIn<ExecutionAdapter> points,
-    dax::exec::FieldPointIn<dax::Scalar, ExecutionAdapter> &point_attribute,
-    dax::exec::FieldCellOut<dax::Vector3, ExecutionAdapter> &cell_attribute)
+class CellGradient : public dax::exec::WorkletMapCell
 {
-  dax::Vector3 parametricCellCenter =
-      dax::exec::ParametricCoordinates<CellType>::Center();
-  CellType cell = work.GetCell();
+public:
+  template<class CellType>
+  DAX_EXEC_EXPORT
+  void operator()(
+      const CellType &cell,
+      const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &coords,
+      const dax::Tuple<dax::Scalar,CellType::NUM_POINTS> &pointField,
+      dax::Vector3 &gradient) const
+  {
+    dax::Vector3 parametricCellCenter =
+        dax::exec::ParametricCoordinates<CellType>::Center();
+    gradient = dax::exec::CellDerivative(cell,
+                                         parametricCellCenter,
+                                         coords,
+                                         pointField);
+  }
+};
 
-  dax::Vector3 value = dax::exec::CellDerivative(work,
-                                                 cell,
-                                                 parametricCellCenter,
-                                                 points,
-                                                 point_attribute);
-  work.SetFieldValue(cell_attribute, value);
 }
-}
-}
+} // namespace dax::worklet
+
 #endif
