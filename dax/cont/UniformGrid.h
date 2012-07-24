@@ -88,8 +88,7 @@ private:
 /// aligned and has uniform spacing between grid points in every dimension. The
 /// grid can be shifted and scaled in space by defining and origin and spacing.
 ///
-template <class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
-          class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER>
+template <class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER>
 class UniformGrid
 {
 public:

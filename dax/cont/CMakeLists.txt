@@ -60,6 +60,8 @@ set(unit_tests
   UnitTestArrayPortalFromIterators.cxx
   UnitTestDeviceAdapterSerial.cxx
   UnitTestIteratorFromArrayPortal.cxx
+  UnitTestUniformGrid.cxx
+  UnitTestUnstructuredGrid.cxx
   UnitTestVectorOperations.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
