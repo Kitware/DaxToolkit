@@ -88,7 +88,7 @@ DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,6>
 DerivativeWeights<dax::exec::CellWedge>(const dax::Vector3 &pcoords)
 {
   dax::Tuple<dax::Vector3,6> weights;
-  const dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
+  //const dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
 
   weights[0][0] = -1.0 + pcoords[2];
   weights[0][1] = -1.0 + pcoords[2];
