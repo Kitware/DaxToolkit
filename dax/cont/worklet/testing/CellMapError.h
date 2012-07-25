@@ -75,7 +75,7 @@ template<class GridType,
 inline void CellMapError(const GridType &grid, DeviceAdapter)
 {
   dax::exec::internal::kernel::CellMapError<
-      typename GridType::ExecutionTopologyStruct>
+      typename GridType::TopologyStructConstExecution>
       kernel(dax::worklet::testing::CellMapError(),
              grid.PrepareForInput());
 

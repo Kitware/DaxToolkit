@@ -52,10 +52,6 @@ public:
       dax::Vector3, ArrayContainerControlTag, DeviceAdapterTag>
       PointCoordinatesType;
 
-  typedef dax::exec::internal::TopologyUnstructured<
-      CellType, typename CellConnectionsType::PortalConstExecution>
-      ExecutionTopologyStruct;
-
   DAX_CONT_EXPORT
   UnstructuredGrid() { }
 
@@ -108,15 +104,40 @@ public:
     return this->CellConnections.GetNumberOfValues() / CellType::NUM_POINTS;
   }
 
+  typedef dax::exec::internal::TopologyUnstructured<
+      CellType, typename CellConnectionsType::PortalConstExecution>
+      TopologyStructConstExecution;
+
   /// Prepares this topology to be used as an input to an operation in the
-  /// execution environment.  Returns a structure that can be used directly
-  /// in the execution environment.
+  /// execution environment. Returns a structure that can be used directly in
+  /// the execution environment.
   ///
   DAX_CONT_EXPORT
-  ExecutionTopologyStruct PrepareForInput() const {
-    return ExecutionTopologyStruct(this->CellConnections.PrepareForInput(),
-                                   this->GetNumberOfPoints(),
-                                   this->GetNumberOfCells());
+  TopologyStructConstExecution PrepareForInput() const {
+    return TopologyStructConstExecution(this->CellConnections.PrepareForInput(),
+                                        this->GetNumberOfPoints(),
+                                        this->GetNumberOfCells());
+  }
+
+  typedef dax::exec::internal::TopologyUnstructured<
+      CellType, typename CellConnectionsType::PortalExecution>
+      TopologyStructExecution;
+
+  /// Prepares this topology to be used as an output to an operation that
+  /// generates topology connections. Returns a structure that has a
+  /// connections array that can be set. Point coordinates are not considered
+  /// here and have to be set separately.
+  ///
+  DAX_CONT_EXPORT
+  TopologyStructExecution PrepareForOutput(dax::Id numberOfCells) {
+    // Set the number of points to 0 since we really don't know better. Now
+    // that I consider it, I wonder what the point of having the number of
+    // points field in the first place. The number of cells fields seems pretty
+    // redundant, too.
+    return TopologyStructExecution(
+          this->CellConnections.PrepareForOutput(numberOfCells),
+          0,
+          numberOfCells);
   }
 
 private:

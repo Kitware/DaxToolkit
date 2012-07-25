@@ -95,8 +95,6 @@ public:
   typedef dax::exec::CellVoxel CellType;
   typedef UniformGridTag GridTypeTag;
 
-  typedef dax::exec::internal::TopologyUniform ExecutionTopologyStruct;
-
   DAX_CONT_EXPORT
   UniformGrid()
     : Origin(dax::make_Vector3(0.0, 0.0, 0.0)),
@@ -209,13 +207,16 @@ public:
     return PointCoordinatesType(portal);
   }
 
+  typedef dax::exec::internal::TopologyUniform TopologyStructConstExecution;
+  typedef dax::exec::internal::TopologyUniform TopologyStructExecution;
+
   /// Prepares this topology to be used as an input to an operation in the
   /// execution environment.  Returns a structure that can be used directly
   /// in the execution environment.
   ///
   DAX_CONT_EXPORT
-  ExecutionTopologyStruct PrepareForInput() const {
-    ExecutionTopologyStruct topology;
+  TopologyStructConstExecution PrepareForInput() const {
+    TopologyStructConstExecution topology;
     topology.Origin = this->Origin;
     topology.Spacing = this->Spacing;
     topology.Extent = this->Extent;

@@ -116,7 +116,7 @@ DAX_CONT_EXPORT void CellGradient(
     }
 
   dax::exec::internal::kernel::CellGradient<
-      typename GridType::ExecutionTopologyStruct,
+      typename GridType::TopologyStructConstExecution,
       typename dax::cont::ArrayHandle<dax::Vector3,Container1,DeviceAdapter>::PortalConstExecution,
       typename dax::cont::ArrayHandle<dax::Scalar,Container2,DeviceAdapter>::PortalConstExecution,
       typename dax::cont::ArrayHandle<dax::Vector3,Container3,DeviceAdapter>::PortalExecution>

@@ -83,7 +83,7 @@ void TestUniformGrid()
     }
 
   std::cout << "Test PrepareForInput" << std::endl;
-  dax::cont::UniformGrid<>::ExecutionTopologyStruct topology =
+  dax::cont::UniformGrid<>::TopologyStructConstExecution topology =
       grid.PrepareForInput();
   DAX_TEST_ASSERT(topology.Origin == grid.GetOrigin(),
                   "Topology origin wrong.");

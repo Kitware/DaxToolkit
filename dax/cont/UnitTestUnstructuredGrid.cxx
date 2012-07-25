@@ -38,8 +38,7 @@ void TestUnstructuredGrid()
                   "Wrong number of points.");
 
   std::cout << "Test execution structure." << std::endl;
-  GridType::ExecutionTopologyStruct topology =
-      grid.PrepareForInput();
+  GridType::TopologyStructConstExecution topology = grid.PrepareForInput();
   DAX_TEST_ASSERT(grid.GetNumberOfCells() == topology.NumberOfCells,
                   "Execution structure has wrong number of cells.");
   DAX_TEST_ASSERT(grid.GetNumberOfPoints() == topology.NumberOfPoints,
