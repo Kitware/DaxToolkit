@@ -19,110 +19,128 @@
 
 // TODO: This should be auto-generated.
 
+#include <Worklets/Threshold.worklet>
+
 #include <boost/shared_ptr.hpp>
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/internal/ExecutionPackageField.h>
-#include <dax/cont/internal/ExecutionPackageGrid.h>
-
-#include <dax/exec/Field.h>
-#include <dax/exec/WorkDetermineNewCellCount.h>
-#include <dax/exec/internal/ExecutionAdapter.h>
 
 #include <dax/cont/internal/ScheduleGenerateTopology.h>
 
-#include <Worklets/Threshold.worklet>
+#include <dax/exec/internal/FieldAccess.h>
 
 namespace dax {
 namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class CellType, class FieldType, class Container, class Adapter>
-struct ThresholdClassifyParameters
-{
-  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
-  typename CellType::template GridStructures<ExecAdapter>::TopologyType grid;
-  dax::exec::FieldCellOut<dax::Id, ExecAdapter> newCellCount;
-  FieldType min;
-  FieldType max;
-  dax::exec::FieldPointIn<FieldType, ExecAdapter> inField;
-};
-
-template<class CellType, class FieldType, class Container, class Adapter>
+template<class InputTopologyType, class ValuesPortalType, class CountPortalType>
 struct ThresholdClassifyFunctor
 {
-  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
+  typedef typename ValuesPortalType::ValueType ValueType;
+  typedef typename InputTopologyType::CellType CellType;
+
+  DAX_CONT_EXPORT
+  ThresholdClassifyFunctor(
+      const dax::worklet::ThresholdClassify<ValueType> &worklet,
+      const InputTopologyType &inputTopology,
+      const ValuesPortalType &values,
+      const CountPortalType &newCellCount)
+    : Worklet(worklet),
+      InputTopology(inputTopology),
+      Values(values),
+      NewCellCount(newCellCount) {  }
+
   DAX_EXEC_EXPORT void operator()(
-      ThresholdClassifyParameters<CellType,FieldType,Container,Adapter>
-        &parameters,
-      dax::Id index,
-      const ExecAdapter &execAdapter) const
+      dax::Id cellIndex,
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
   {
-  dax::exec::WorkDetermineNewCellCount<CellType,ExecAdapter>
-      work(parameters.grid, index, parameters.newCellCount, execAdapter);
-  dax::worklet::Threshold_Classify(work,
-                                   parameters.min,
-                                   parameters.max,
-                                   parameters.inField);
-    }
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
+    const dax::worklet::ThresholdClassify<ValueType> &
+        constWorklet = this->Worklet;
+
+    CellType cell(this->InputTopology, cellIndex);
+    dax::Id newCellCount;
+
+    constWorklet(cell,
+                 dax::exec::internal::FieldGetPointsForCell(this->Values,
+                                                            cell,
+                                                            constWorklet),
+                 newCellCount);
+
+    dax::exec::internal::FieldSet(this->NewCellCount,
+                                  cellIndex,
+                                  newCellCount,
+                                  constWorklet);
+  }
+
+private:
+  dax::worklet::ThresholdClassify<ValueType> Worklet;
+  const InputTopologyType &InputTopology;
+  const ValuesPortalType &Values;
+  const CountPortalType &NewCellCount;
 };
 
-template<class InputCellType,
-         class OutputCellType,
-         class Container,
-         class Adapter>
+template<class InputTopologyType, class OutputTopologyType>
 struct GenerateTopologyFunctor
 {
-  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
-  template<typename Parameters>
+  typedef typename InputTopologyType::CellType InputCellType;
+  typedef typename OutputTopologyType::CellType OutputCellType;
+
+  DAX_CONT_EXPORT GenerateTopologyFunctor(
+      const dax::worklet::ThresholdTopology &worklet,
+      const InputTopologyType &inputTopology,
+      OutputTopologyType &outputTopology)
+    : Worklet(worklet),
+      InputTopology(inputTopology),
+      OutputTopology(outputTopology) {  }
+
   DAX_EXEC_EXPORT void operator()(
-      const Parameters &parameters,
-      dax::Id key,
-      dax::Id value,
-      const ExecAdapter &execAdapter) const
+      dax::Id outputCellIndex,
+      dax::Id inputCellIndex,
+      dax::exec::internal::ErrorMessageBuffer &errorMessage) const
   {
-  dax::exec::WorkGenerateTopology<InputCellType,OutputCellType,ExecAdapter>
-      work(parameters.grid,
-           value,
-           parameters.outputConnections,
-           key,
-           execAdapter);
-  dax::worklet::Threshold_Topology(work);
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
+    const dax::worklet::ThresholdTopology &constWorklet = this->Worklet;
+
+    InputCellType inputCell(this->InputTopology, inputCellIndex);
+    typedef OutputCellType::PointConnectionsType outputCellConnections;
+
+    constWorklet(inputCell, outputCellConnections);
+
+    // Write cell connections back to cell array.
+    dax::Id index = outputCellIndex * OutputCellType::NUM_POINTS;
+    for (int localIndex = 0;
+         localIndex < OutputCellType::NUM_POINTS;
+         localIndex++)
+      {
+      // This only actually works if OutputTopologyType is TopologyUnstructured.
+      dax::exec::internal::FieldSet(this->OutputTopology.CellConnections,
+                                    index,
+                                    outputCellConnections[localIndex],
+                                    constWorklet);
+      }
   }
+
+private:
+  dax::worklet::ThresholdTopology Worklet;
+  const InputTopologyType &InputTopology;
+  OutputTopologyType &OutputTopology;
 };
 
-template<class InCellType,
-         class InFieldType,
-         class OutCellType,
+template<class ValueType,
          class Container,
          class Adapter>
 class Threshold : public dax::cont::internal::ScheduleGenerateTopology
     <
-    Threshold<InCellType,
-              InFieldType,
-              OutCellType,
-              Container,
-              Adapter>,
-    ThresholdClassifyFunctor<InCellType,InFieldType,Container,Adapter>,
-    GenerateTopologyFunctor<InCellType,OutCellType,Container,Adapter>,
-    Container,
+    Threshold<ValuePortalType>,
     Adapter>
 {
 public:
-  typedef InFieldType ValueType;
   typedef dax::cont::ArrayHandle<ValueType,Container,Adapter>
       ValueTypeArrayHandle;
-  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
-
-  typedef ThresholdClassifyParameters<InCellType,InFieldType,Container,Adapter>
-      ParametersClassify;
-  typedef ThresholdClassifyFunctor<InCellType,InFieldType,Container,Adapter>
-      FunctorClassify;
-  typedef GenerateTopologyFunctor<InCellType,OutCellType,Container,Adapter>
-      FunctorTopology;
 
   //constructor that is passed all the user decided parts of the worklet too
   Threshold(const ValueType& min,
@@ -137,31 +155,60 @@ public:
 
   }
 
-  //generate the parameters for the classification worklet
-  template <typename GridType, typename ExecutionTopologyType>
-  ParametersClassify GenerateClassificationParameters(
-      const GridType& grid, const ExecutionTopologyType& executionTopology)
+  //generate the functor for the classification worklet
+  template <class InputGridType>
+  ThresholdClassifyFunctor<
+      typename InputGridType::TopologyStructConstExecution,
+      typename ValueTypeArrayHandle::PortalConstExecution,
+      typename ArrayHandleId::PortalExecution>
+  CreateClassificationFunctor(const InputGridType &grid,
+                              ArrayHandleId &cellCountOutput)
   {
-    this->InputField
-        = dax::cont::internal::ExecutionPackageFieldGrid<
-          dax::exec::FieldPointIn>(this->InputHandle,grid);
+    typedef ThresholdClassifyFunctor<
+        typename InputGridType::TopologyStructConstExecution,
+        typename ValueTypeArrayHandle::PortalConstExecution,
+        typename ArrayHandleId::PortalExecution> FunctorType;
 
-    ParametersClassify parameters;
-    parameters.grid = executionTopology;
-    parameters.newCellCount = this->NewCellCountField;
-    parameters.min = this->Min;
-    parameters.max = this->Max;
-    parameters.inField = this->InputField;
+    dax::worklet::ThresholdClassify<ValueType> worklet(this->Min, this->Max);
 
-    return parameters;
+    FunctorType functor(
+          worklet,
+          grid.PrepareForInput(),
+          this->InputHandle.PrepareForInput(),
+          cellCountOutput.PrepareForOutput(grid.GetNumberOfCells()));
+
+    return functor;
+  }
+
+  //generate the functor for the topology generation worklet
+  template<class InputGridType, class OutputGridType>
+  GenerateTopologyFunctor<
+      typename InputGridType::TopologyStructConstExecution,
+      typename OutputGridType::TopologyStructExecution>
+  CreateTopologyFunctor(const InputGridType &inputGrid,
+                        OutputGridType &outputGrid,
+                        dax::Id outputGridSize)
+  {
+    typedef GenerateTopologyFunctor<
+        typename InputGridType::TopologyStructConstExecution,
+        typename OutputGridType::TopologyStructExecution> FunctorType;
+
+    dax::worklet::ThresholdTopology worklet();
+
+    FunctorType functor(
+          worklet,
+          inputGrid.PrepareForInput(),
+          outputGrid.PrepareForOutput(outputGridSize));
+
+    return functor;
   }
 
   //threshold any fields that are needed
-  void GenerateOutputFields()
+  void GenerateOutputFields(const ArrayHandleMask &pointMask)
   {
     //we know that the threshold is being done on a point field
     dax::cont::internal::StreamCompact(this->InputHandle,
-                                       this->MaskPointHandle,
+                                       pointMask,
                                        this->OutputHandle,
                                        Adapter());
   }
@@ -170,9 +217,8 @@ private:
   ValueType Min;
   ValueType Max;
 
-  ValueTypeArrayHandle InputHandle;
-  dax::exec::FieldPointIn<InFieldType, ExecAdapter> InputField;
-  ValueTypeArrayHandle OutputHandle;
+  const ValueTypeArrayHandle &InputHandle;
+  ValueTypeArrayHandle &OutputHandle;
 };
 
 }

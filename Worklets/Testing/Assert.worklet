@@ -16,7 +16,7 @@
 #ifndef __Assert_worklet_
 #define __Assert_worklet_
 
-#include <dax/exec/WorkMapField.h>
+#include <dax/exec/WorkletMapField.h>
 
 #include <dax/exec/Assert.h>
 
@@ -24,12 +24,16 @@ namespace dax {
 namespace worklet {
 namespace testing {
 
-template<class CellType, class ExecutionAdapter>
-DAX_WORKLET void Assert(
-    dax::exec::WorkMapField<CellType, ExecutionAdapter> &work)
+class Assert : public dax::exec::WorkletMapField
 {
-  DAX_ASSERT_EXEC(0 == 1, work);
-}
+public:
+  template<typename ValueType>
+  DAX_EXEC_EXPORT
+  void operator()(const ValueType &) const
+  {
+    DAX_ASSERT_EXEC(0 == 1, *this);
+  }
+};
 
 }
 }

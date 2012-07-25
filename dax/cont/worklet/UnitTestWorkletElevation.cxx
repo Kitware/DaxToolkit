@@ -38,8 +38,7 @@ const dax::Id DIM = 64;
 //-----------------------------------------------------------------------------
 static void TestElevation()
 {
-  dax::cont::UniformGrid<dax::cont::ArrayContainerControlTagBasic,
-                         dax::cont::DeviceAdapterTagSerial> grid;
+  dax::cont::UniformGrid<dax::cont::DeviceAdapterTagSerial> grid;
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
 
   dax::cont::ArrayHandle<dax::Scalar,
@@ -48,7 +47,9 @@ static void TestElevation()
 
   std::cout << "Running Elevation worklet" << std::endl;
   dax::cont::worklet::Elevation(grid.GetPointCoordinates(),
-                                elevationHandle);
+                                elevationHandle,
+                                dax::make_Vector3(DIM, DIM, DIM),
+                                dax::make_Vector3(0.0, 0.0, 0.0));
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> elevation(grid.GetNumberOfPoints());
@@ -64,8 +65,9 @@ static void TestElevation()
         dax::Scalar elevationValue = elevation[pointIndex];
         dax::Vector3 pointCoordinates =grid.ComputePointCoordinates(pointIndex);
         // Wrong, but what is currently computed.
-        dax::Scalar elevationExpected
-            = sqrt(dax::dot(pointCoordinates, pointCoordinates));
+        dax::Scalar elevationExpected =
+            1.0 - (dax::dot(pointCoordinates, dax::make_Vector3(1.0, 1.0, 1.0))
+                   /(3*DIM));
         DAX_TEST_ASSERT(test_equal(elevationValue, elevationExpected),
                         "Got bad elevation.");
         }

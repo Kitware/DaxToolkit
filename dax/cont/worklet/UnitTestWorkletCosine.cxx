@@ -38,8 +38,7 @@ const dax::Id DIM = 64;
 //-----------------------------------------------------------------------------
 static void TestCosine()
 {
-  dax::cont::UniformGrid<dax::cont::ArrayContainerControlTagBasic,
-                         dax::cont::DeviceAdapterTagSerial> grid;
+  dax::cont::UniformGrid<dax::cont::DeviceAdapterTagSerial> grid;
   grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
 
   dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);

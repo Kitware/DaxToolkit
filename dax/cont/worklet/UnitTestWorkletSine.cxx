@@ -39,8 +39,7 @@ const dax::Id DIM = 64;
 //-----------------------------------------------------------------------------
 static void TestSine()
 {
-  dax::cont::UniformGrid<dax::cont::ArrayContainerControlTagBasic,
-                         dax::cont::DeviceAdapterTagSerial> grid;
+  dax::cont::UniformGrid<dax::cont::DeviceAdapterTagSerial> grid;
 
   dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 

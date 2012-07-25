@@ -18,13 +18,11 @@
 
 // TODO: This should be auto-generated.
 
+#include <Worklets/Sine.worklet>
+
 #include <dax/Types.h>
-#include <dax/exec/Field.h>
-#include <dax/exec/WorkMapField.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-
-#include <Worklets/Sine.worklet>
 
 namespace dax {
 namespace exec {
@@ -35,22 +33,33 @@ template<class PortalType1, class PortalType2>
 struct Sine
 {
   DAX_CONT_EXPORT
-  Sine(PortalType1 inValueArray, PortalType2 outValueArray)
-    : InValueArray(inValueArray), OutValueArray(outValueArray) {  }
+  Sine(const dax::worklet::Sine &worklet,
+         PortalType1 inValueArray,
+         PortalType2 outValueArray)
+    : Worklet(worklet),
+      InValueArray(inValueArray),
+      OutValueArray(outValueArray) {  }
 
-  template<class A, class B>
-  DAX_EXEC_EXPORT void operator()(A, dax::Id index, B) const
+  DAX_EXEC_EXPORT void operator()(
+      dax::Id index,
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
   {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
+    const dax::worklet::Sine &constWorklet = this->Worklet;
+
     const typename PortalType1::ValueType inValue =
         this->InValueArray.Get(index);
     typename PortalType2::ValueType outValue;
-    dax::worklet::Sine(inValue, outValue);
+
+    constWorklet(inValue, outValue);
+
     this->OutValueArray.Set(index, outValue);
   }
 
 private:
-  PortalType1 InValueArray;
-  PortalType2 OutValueArray;
+  dax::worklet::Sine Worklet;
+  const PortalType1 &InValueArray;
+  const PortalType2 &OutValueArray;
 };
 
 }
@@ -75,14 +84,11 @@ DAX_CONT_EXPORT void Sine(
   dax::exec::internal::kernel::Sine<
       typename dax::cont::ArrayHandle<ValueType,Container1,Adapter>::PortalConstExecution,
       typename dax::cont::ArrayHandle<ValueType,Container2,Adapter>::PortalExecution>
-      kernel(inHandle.PrepareForInput(),
+      kernel(dax::worklet::Sine(),
+             inHandle.PrepareForInput(),
              outHandle.PrepareForOutput(fieldSize));
 
-  dax::cont::internal::Schedule(kernel,
-                                0,
-                                fieldSize,
-                                Container1(),
-                                Adapter());
+  dax::cont::internal::Schedule(kernel, fieldSize, Adapter());
 }
 
 }
