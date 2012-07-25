@@ -19,18 +19,14 @@
 
 #include <dax/Types.h>
 #include <dax/exec/Cell.h>
-#include <dax/exec/Field.h>
-#include <dax/exec/WorkGenerateTopology.h>
+#include <dax/exec/WorkletGenerateTopology.h>
 
-#include <dax/exec/internal/ExecutionAdapter.h>
+#include <dax/exec/internal/ErrorMessageBuffer.h>
 #include <dax/exec/internal/FieldAccess.h>
 #include <dax/exec/internal/GridTopologies.h>
-#include <dax/exec/internal/WorkEmpty.h>
 
+#include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/internal/ExecutionPackageField.h>
-#include <dax/cont/internal/ExecutionPackageGrid.h>
-#include <dax/cont/internal/ExtractCoordinates.h>
 #include <dax/cont/internal/ScheduleMapAdapter.h>
 
 namespace dax {
@@ -38,68 +34,70 @@ namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class MaskType, class ExecAdapter>
-struct GetUsedPointsParameters
-{
-  dax::exec::FieldPointOut<MaskType, ExecAdapter> outField;
-};
-
-template<class MaskType, class ExecAdapter>
+template<class MaskPortalType>
 struct ClearUsedPointsFunctor
 {
+  DAX_CONT_EXPORT
+  ClearUsedPointsFunctor(const MaskPortalType &outMask)
+    : OutMask(outMask) {  }
+
   DAX_EXEC_EXPORT void operator()(
-      const GetUsedPointsParameters<MaskType, ExecAdapter> &parameters,
       dax::Id index,
-      const ExecAdapter &execAdapter)
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
   {
-    dax::exec::internal::WorkEmpty<ExecAdapter> dummywork(execAdapter);
-    dax::exec::internal::FieldAccess::SetField(parameters.outField,
-                                               index,
-                                               static_cast<MaskType>(0),
-                                               dummywork);
+    typedef typename MaskPortalType::ValueType MaskType;
+    dax::exec::internal::FieldSet(this->OutMask,
+                                  index,
+                                  static_cast<MaskType>(0),
+                                  errorMessage);
   }
+
+private:
+  const MaskPortalType &OutMask;
 };
 
-template<class MaskType, class ExecAdapter>
-struct GetUsedPointsFunctor {
-  DAX_EXEC_EXPORT void operator()(
-      const GetUsedPointsParameters<MaskType, ExecAdapter> &parameters,
-      dax::Id /*key*/,
-      dax::Id value,
-      const ExecAdapter &execAdapter) const
-  {
-    dax::exec::internal::WorkEmpty<ExecAdapter> dummywork(execAdapter);
-    dax::exec::internal::FieldAccess::SetField(parameters.outField,
-                                               value,
-                                               static_cast<MaskType>(1),
-                                               dummywork);
-  }
-};
-
-template<class ICT, class OCT, class ExecAdapter>
-struct GenerateTopologyParameters
+template<class MaskPortalType>
+struct GetUsedPointsFunctor
 {
-  typedef ICT CellType;
-  typedef OCT OutCellType;
-  typedef typename CellType::template GridStructures<ExecAdapter>::TopologyType
-      GridType;
+  DAX_CONT_EXPORT
+  GetUsedPointsFunctor(const MaskPortalType &outMask)
+    : OutMask(outMask) {  }
 
-  GridType grid;
-  dax::exec::FieldOut<dax::Id, ExecAdapter> outputConnections;
+  DAX_EXEC_EXPORT void operator()(
+      dax::Id daxNotUsed(key),
+      dax::Id value,
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    typedef typename MaskPortalType::ValueType MaskType;
+    dax::exec::internal::FieldSet(this->OutMask,
+                                  value,
+                                  static_cast<MaskType>(1),
+                                  errorMessage);
+  }
+
+private:
+  const MaskPortalType &OutMask;
 };
 
 
-template<class ExecAdapter>
+template<class ArrayPortalType>
 struct LowerBoundsInputFunctor
 {
-DAX_EXEC_EXPORT void operator()(
-    dax::exec::FieldOut<dax::Id, ExecAdapter> field,
-    dax::Id index,
-    const ExecAdapter &execAdapter) const
-{
-  dax::exec::internal::WorkEmpty<ExecAdapter> dummywork(execAdapter);
-  dax::exec::internal::FieldAccess::SetField(field, index, index+1, dummywork);
-}
+  DAX_CONT_EXPORT LowerBoundsInputFunctor(const ArrayPortalType &array)
+    : Array(array) {  }
+
+  DAX_EXEC_EXPORT void operator()(
+      dax::Id index,
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage) const
+  {
+    dax::exec::internal::FieldSet(this->Array,
+                                  index,
+                                  index + 1,
+                                  errorMessage);
+  }
+
+private:
+  const ArrayPortalType &Array;
 };
 
 }
@@ -121,129 +119,122 @@ namespace internal {
 /// Since ScheduleGenerateTopology uses CRTP, every worklet needs to construct
 /// a class that inherits from this class and define GenerateParameters.
 ///
-template<class Derived,
-         class FunctorClassify,
-         class FunctorTopology,
-         class ArrayContainerControlTag,
-         class DeviceAdapterTag
-         >
+template<class Derived, class DeviceAdapterTag>
 class ScheduleGenerateTopology
 {
 public:
   typedef dax::Id MaskType;
 
-  /// Executes the ScheduleGenerateTopology algorithm on the inputGrid and places
-  /// the resulting unstructured grid in outGrid
+protected:
+  typedef dax::cont::ArrayHandle<
+       dax::Id, ArrayContainerControlTagBasic, DeviceAdapterTag> ArrayHandleId;
+  typedef dax::cont::ArrayHandle<
+       MaskType, ArrayContainerControlTagBasic, DeviceAdapterTag>
+       ArrayHandleMask;
+
+public:
+  /// Executes the ScheduleGenerateTopology algorithm on the inputGrid and
+  /// places the resulting unstructured grid in outGrid
+  ///
   template<typename InGridType, typename OutGridType>
-  void run(const InGridType& inGrid,
+  DAX_EXEC_EXPORT
+  void Run(const InGridType& inGrid,
            OutGridType& outGrid)
     {
-    this->ScheduleClassification(inGrid);
+    ArrayHandleId newCellCount = this->ScheduleClassification(inGrid);
 
-    this->ScheduleTopology(inGrid,outGrid);
+    this->ScheduleTopology(inGrid, outGrid, newCellCount);
+    newCellCount.ReleaseResources();
 
     //GeneratePointMask uses the topology that schedule topology generates
-    this->GeneratePointMask(inGrid);
+    ArrayHandleMask pointMask = this->GeneratePointMask(inGrid, outGrid);
 
-    this->GenerateCompactedTopology(inGrid,outGrid);
+    this->GenerateCompactedTopology(inGrid,outGrid,pointMask);
 
     //now that the topology has been fully thresholded,
     //lets ask our derived class if they need to threshold anything
-    static_cast<Derived*>(this)->GenerateOutputFields();
+    static_cast<Derived*>(this)->GenerateOutputFields(pointMask);
     }
 
 #ifdef DAX_DOXYGEN_ONLY
 
   /// \brief Abstract method that inherited classes must implement.
   ///
-  /// The method must return the populated parameters struct with all the
-  /// information needed for the ScheduleGenerateTopology class to execute the
-  /// classification \c Functor.
+  /// This method must return a fully constructed functor object ready to be
+  /// passed to dax::cont::internal::Schedule. The functor should populate
+  /// cellCountOutput with the number of cells to be constructed in the output
+  /// for each cell in the input.
   ///
-  template <typename GridType, typename ExecutionTopologyType>
-  ParametersClassify GenerateClassificationParameters(
-      const GridType& grid,
-      const ExecutionTopologyType& executionTopology);
+  template<class GridType>
+  FunctorClassify CreateClassificationFunctor(const GridType& grid,
+                                              ArrayHandleId &cellCountOutput);
+
+  /// \brief Abstract method that inherited classes must implement.
+  ///
+  /// This method must return a fully constructed functor object ready to be
+  /// passed to dax::cont::internal::ScheduleMap. The functor should populate
+  /// the connections array in outputGrid. In the schedule map the "key" is the
+  /// output cell index and the "value" is the input cell index.
+  ///
+  template<class InputGridType, class OutputGridType>
+  FunctorTopology CreateTopologyFunctor(const InputGridType &inputGrid,
+                                        OutputGridType &outputGrid,
+                                        dax::Id outputGridSize);
 
   /// \brief Abstract method that inherited classes must implement.
   ///
   /// The method is called after the new grids points and topology have been
-  /// generated. This allows dervied classes the ability to use the
-  /// MaskCellHandle and MaskPointHandle To generate a new field arrays for the
-  /// output grid
+  /// generated. \c pointMask has an entry for every point in the input grid
+  /// and a positive flag for every entry that corresponds to an output point.
+  /// It can be used with dax::cont::internal::StreamCompact.
   ///
-  void GenerateOutputFields();
+  void GenerateOutputFields(const ArrayHandleMask &pointMask);
 
 #endif //DAX_DOXYGEN_ONLY
 
-protected:
+private:
 
   //constructs everything needed to call the user defined worklet
   template<typename InGridType>
-  void ScheduleClassification(const InGridType &grid)
+  ArrayHandleId ScheduleClassification(const InGridType &grid)
   {
-    typedef typename InGridType::ExecutionTopologyStruct InExecTopology;
-    InExecTopology execTopology =
-        dax::cont::internal::ExecutionPackageGrid(grid);
-
-    this->NewCellCountField =
-        dax::cont::internal::ExecutionPackageFieldGrid<dax::exec::FieldCellOut>(
-          this->NewCellCountHandle, grid);
+    ArrayHandleId newCellCount;
 
     //we need the control grid to create the parameters struct.
     //So pass those objects to the derived class and let it populate the
-    //parameters struct with all the user defined information letting the user
+    //functor struct with all the user defined information letting the user
     //defined class do this work allows us to easily extend this class
     //for an arbitrary number of input parameters
-    //Actually run the FunctorClassify which is the user worklet with the
-    //correct parameters
     dax::cont::internal::Schedule(
-          FunctorClassify(),
-          static_cast<Derived*>(this)
-          ->GenerateClassificationParameters(grid, execTopology),
+          static_cast<Derived*>(this)->CreateClassificationFunctor(
+            grid, newCellCount),
           grid.GetNumberOfCells(),
-          ArrayContainerControlTag(),
           DeviceAdapterTag());
+
+    return newCellCount;
   }
 
   template<typename InGridType, typename OutGridType>
-  void ScheduleTopology(const InGridType& inGrid, const OutGridType& )
+  void ScheduleTopology(const InGridType& inGrid,
+                        OutGridType& outGrid,
+                        const ArrayHandleId newCellCount)
   {
-    typedef typename InGridType::ExecutionTopologyStruct InExecTopology;
-    typedef typename InExecTopology::CellType InCellType;
-
-    typedef typename OutGridType::ExecutionTopologyStruct OutExecTopology;
-    typedef typename OutExecTopology::CellType OutCellType;
-
-    typedef dax::exec::internal::kernel
-        ::GenerateTopologyParameters<InCellType,OutCellType,ExecutionAdapter>
-        TopologyParams;
-
-    InExecTopology inExecTopology
-        = dax::cont::internal::ExecutionPackageGrid(inGrid);
-
     //do an inclusive scan of the cell count / cell mask to get the number
     //of cells in the output
-    dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTag, DeviceAdapterTag>
-        scannedNewCellCounts;
-    const dax::Id newNumCells =
-        dax::cont::internal::InclusiveScan(this->NewCellCountHandle,
+    ArrayHandleId scannedNewCellCounts;
+    const dax::Id numNewCells =
+        dax::cont::internal::InclusiveScan(newCellCount,
                                            scannedNewCellCounts,
                                            DeviceAdapterTag());
 
     //fill the validCellRange with the values from 1 to size+1, this is used
     //for the lower bounds to compute the right indices
-    dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTag, DeviceAdapterTag>
-        validCellRange;
-    dax::exec::FieldOut<dax::Id, ExecutionAdapter> validCellRangeField
-        = dax::cont::internal::ExecutionPackageFieldArray<dax::exec::FieldOut>(
-          validCellRange, newNumCells);
+    ArrayHandleId validCellRange;
     dax::cont::internal::Schedule(
           dax::exec::internal::kernel::LowerBoundsInputFunctor
-              <ExecutionAdapter>(),
-          validCellRangeField,
-          newNumCells,
-          ArrayContainerControlTag(),
+              <typename ArrayHandleId::PortalExecution>(
+                validCellRange.PrepareForOutput(numNewCells)),
+          numNewCells,
           DeviceAdapterTag());
 
     //now do the lower bounds of the cell indices so that we figure out
@@ -256,107 +247,71 @@ protected:
     scannedNewCellCounts.ReleaseResources();
 
     //now call the user topology generation worklet
-    //now we can determine the size of the topoogy and construct that array
-    const dax::Id generatedConnectionSize = OutCellType::NUM_POINTS*newNumCells;
-    dax::exec::FieldOut<dax::Id, ExecutionAdapter> generatedConnectionsField
-        = dax::cont::internal::ExecutionPackageFieldArray<dax::exec::FieldOut>(
-          this->GeneratedConnectionsHandle,generatedConnectionSize);
-
-    TopologyParams parameters;
-    parameters.grid = inExecTopology;
-    parameters.outputConnections = generatedConnectionsField;
-
-    dax::cont::internal::ScheduleMap(FunctorTopology(),
-                                     parameters,
-                                     validCellRange);
+    dax::cont::internal::ScheduleMap(
+          static_cast<Derived*>(this)->CreateTopologyFunctor(inGrid,
+                                                             outGrid,
+                                                             numNewCells),
+          validCellRange);
   }
 
-  template<typename GridType>
-  void GeneratePointMask(const GridType &grid)
+  template<class InGridType, class OutGridType>
+  ArrayHandleMask GeneratePointMask(const InGridType &inGrid,
+                                    const OutGridType &outGrid)
     {
-    typedef typename GridType::ExecutionTopologyStruct ExecTopology;
-    typedef typename ExecTopology::CellType CellType;
+    typedef typename ArrayHandleMask::PortalExecution MaskPortalType;
 
-    dax::exec::FieldPointOut<dax::Id, ExecutionAdapter> maskPointsField
-        = dax::cont::internal::ExecutionPackageFieldGrid<
-          dax::exec::FieldPointOut>(this->MaskPointHandle, grid);
+    ArrayHandleMask pointMask;
 
-    //construct the parameters list for the function
-    dax::exec::internal::kernel
-        ::GetUsedPointsParameters<MaskType, ExecutionAdapter> parameters;
-    parameters.outField = maskPointsField;
-
-    //clear out the mask
+    // Clear out the mask
     dax::cont::internal::Schedule(
-          dax::exec::internal::kernel::ClearUsedPointsFunctor<MaskType,ExecutionAdapter>(),
-          parameters,
-          grid.GetNumberOfPoints(),
-          ArrayContainerControlTag(),
+          dax::exec::internal::kernel::ClearUsedPointsFunctor<MaskPortalType>(
+            pointMask),
+          inGrid.GetNumberOfPoints(),
           DeviceAdapterTag());
 
+    // Mark every point that is used at least once.
+    // This only works when outGrid is an UnstructuredGrid.
     dax::cont::internal::ScheduleMap(
-          dax::exec::internal::kernel::GetUsedPointsFunctor<MaskType, ExecutionAdapter>(),
-          parameters,
-          this->GeneratedConnectionsHandle);
+          dax::exec::internal::kernel::GetUsedPointsFunctor<MaskPortalType>(
+            pointMask),
+          outGrid.GetCellConnections());
   }
 
   template<typename InGridType,typename OutGridType>
-  void GenerateCompactedTopology(const InGridType &inGrid, OutGridType& outGrid)
+  void GenerateCompactedTopology(const InGridType &inGrid,
+                                 OutGridType& outGrid,
+                                 const ArrayHandleMask &pointMask)
     {
-    //generate the point mask using the new topology that has been generated
-    dax::cont::ArrayHandle<dax::Id,ArrayContainerControlTag,DeviceAdapterTag>
-        usedPointIds;
-    dax::cont::internal::StreamCompact(this->MaskPointHandle,
-                                       usedPointIds,
-                                       DeviceAdapterTag());
+    // Here we are assuming OutGridType is an UnstructuredGrid so that we
+    // can set point and connectivity information.
 
     //extract the point coordinates that we need for the new topology
-    dax::cont::ArrayHandle<
-        dax::Vector3,ArrayContainerControlTag,DeviceAdapterTag>
-        coordinates = dax::cont::internal::ExtractCoordinates(inGrid,
-                                                              usedPointIds);
+    dax::cont::internal::StreamCompact(inGrid.GetPointCoordinates(),
+                                       pointMask,
+                                       outGrid.GetPointCoordinates(),
+                                       DeviceAdapterTag());
+
+    typedef typename OutGridType::CellConnectionsType CellConnectionsType;
+    typedef typename OutGridType::PointCoordinatesType PointCoordinatesType;
 
     //compact the topology array to reference the extracted
     //coordinates ids
     {
-    dax::cont::ArrayHandle<dax::Id,ArrayContainerControlTag,DeviceAdapterTag>
-        temp;
-    dax::cont::internal::Copy(this->GeneratedConnectionsHandle,
-                              temp,
+    // Make usedPointIds become a sorted array of used point indices.
+    // If entry i in usedPointIndices is j, then point index i in the
+    // output corresponds to point index j in the input.
+    ArrayHandleId usedPointIndices;
+    dax::cont::internal::Copy(outGrid.GetCellConnections(),
+                              usedPointIndices,
                               DeviceAdapterTag());
-    dax::cont::internal::Sort(temp, DeviceAdapterTag());
-    dax::cont::internal::Unique(temp, DeviceAdapterTag());
-    dax::cont::internal::LowerBounds(temp,
-                                     this->GeneratedConnectionsHandle,
+    dax::cont::internal::Sort(usedPointIndices, DeviceAdapterTag());
+    dax::cont::internal::Unique(usedPointIndices, DeviceAdapterTag());
+    // Modify the connections of outGrid to point to compacted points.
+    dax::cont::internal::LowerBounds(usedPointIndices,
+                                     outGrid.GetCellConnections(),
                                      DeviceAdapterTag());
     }
-
-    //set the handles to the geometery, this actually changes the output
-    //geometery
-    outGrid.SetCellConnections(this->GeneratedConnectionsHandle);
-    outGrid.SetPointCoordinates(coordinates);
     }
-
-protected:
-  bool CompactTopology;
-
-  typedef dax::exec::internal
-      ::ExecutionAdapter<ArrayContainerControlTag, DeviceAdapterTag>
-        ExecutionAdapter;
-
-  //Holds the new cell count per old cell, this can be used
-  //as the Mask for cell arrays
-  dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTag, DeviceAdapterTag>
-      NewCellCountHandle;
-
-  dax::exec::FieldCellOut<dax::Id, ExecutionAdapter> NewCellCountField;
-
-  dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTag, DeviceAdapterTag>
-      GeneratedConnectionsHandle;
-
-  //Holds the mask for point Arrays
-  dax::cont::ArrayHandle<MaskType, ArrayContainerControlTag, DeviceAdapterTag>
-      MaskPointHandle;
 };
 
 
