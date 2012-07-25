@@ -57,8 +57,8 @@ struct Square
   }
 private:
   dax::worklet::Square Worklet;
-  const PortalType1 &InValueArray;
-  const PortalType2 &OutValueArray;
+  PortalType1 InValueArray;
+  PortalType2 OutValueArray;
 };
 
 }

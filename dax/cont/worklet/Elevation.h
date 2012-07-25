@@ -34,8 +34,8 @@ struct Elevation
 {
   DAX_CONT_EXPORT
   Elevation(const dax::worklet::Elevation &worklet,
-            PortalType1 inCoordinates,
-            PortalType2 outField)
+            const PortalType1 &inCoordinates,
+            const PortalType2 &outField)
     : Worklet(worklet), InCoordinates(inCoordinates), OutField(outField) {  }
 
   DAX_EXEC_EXPORT

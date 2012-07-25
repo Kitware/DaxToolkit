@@ -34,8 +34,8 @@ struct Sine
 {
   DAX_CONT_EXPORT
   Sine(const dax::worklet::Sine &worklet,
-         PortalType1 inValueArray,
-         PortalType2 outValueArray)
+       const PortalType1 &inValueArray,
+       const PortalType2 &outValueArray)
     : Worklet(worklet),
       InValueArray(inValueArray),
       OutValueArray(outValueArray) {  }
@@ -58,8 +58,8 @@ struct Sine
 
 private:
   dax::worklet::Sine Worklet;
-  const PortalType1 &InValueArray;
-  const PortalType2 &OutValueArray;
+  PortalType1 InValueArray;
+  PortalType2 OutValueArray;
 };
 
 }

@@ -77,10 +77,10 @@ struct CellGradient {
 
 private:
   dax::worklet::CellGradient Worklet;
-  const TopologyType &Topology;
-  const CoordsPortalType &Coords;
-  const PointFieldPortalType &PointField;
-  const GradientPortalType &Gradient;
+  TopologyType Topology;
+  CoordsPortalType Coords;
+  PointFieldPortalType PointField;
+  GradientPortalType Gradient;
 };
 
 }

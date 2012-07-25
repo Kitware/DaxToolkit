@@ -78,9 +78,9 @@ struct ThresholdClassifyFunctor
 
 private:
   dax::worklet::ThresholdClassify<ValueType> Worklet;
-  const InputTopologyType &InputTopology;
-  const ValuesPortalType &Values;
-  const CountPortalType &NewCellCount;
+  InputTopologyType InputTopology;
+  ValuesPortalType Values;
+  CountPortalType NewCellCount;
 };
 
 template<class InputTopologyType, class OutputTopologyType>
@@ -126,8 +126,8 @@ struct GenerateTopologyFunctor
 
 private:
   dax::worklet::ThresholdTopology Worklet;
-  const InputTopologyType &InputTopology;
-  OutputTopologyType &OutputTopology;
+  InputTopologyType InputTopology;
+  OutputTopologyType OutputTopology;
 };
 
 template<class ValueType,
