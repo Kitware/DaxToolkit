@@ -28,7 +28,7 @@ public:
   template<class ValueType>
   DAX_EXEC_EXPORT
   void operator()(const ValueType &inValue,
-                  ValueType outValue) const
+                  ValueType &outValue) const
   {
     outValue = dax::exec::math::Sin(inValue);
   }
