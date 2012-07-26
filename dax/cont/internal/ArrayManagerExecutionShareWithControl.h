@@ -50,6 +50,13 @@ public:
   DAX_CONT_EXPORT ArrayManagerExecutionShareWithControl()
     : PortalValid(false), ConstPortalValid(false) { }
 
+  /// Returns the size of the saved portal.
+  ///
+  DAX_CONT_EXPORT dax::Id GetNumberOfValues() const {
+    DAX_ASSERT_CONT(this->ConstPortalValid);
+    return this->ConstPortal.GetNumberOfValues();
+  }
+
   /// Saves the given iterators to be returned later.
   ///
   DAX_CONT_EXPORT void LoadDataForInput(PortalConstType portal)

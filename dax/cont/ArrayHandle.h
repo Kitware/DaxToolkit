@@ -168,7 +168,7 @@ public:
     else if (this->Internals->ExecutionArrayValid)
       {
       return
-          this->Internals->ExecutionArray.GetPortalConst().GetNumberOfValues();
+          this->Internals->ExecutionArray.GetNumberOfValues();
       }
     else
       {

@@ -74,6 +74,12 @@ public:
 
   DAX_CONT_EXPORT ArrayManagerExecutionThrustDevice() {  }
 
+  /// Returns the size of the array.
+  ///
+  DAX_CONT_EXPORT dax::Id GetNumberOfValues() const {
+    return this->Array.size();
+  }
+
   /// Allocates the appropriate size of the array and copies the given data
   /// into the array.
   ///
@@ -111,7 +117,7 @@ public:
   DAX_CONT_EXPORT void RetrieveOutputData(ContainerType &controlArray) const
   {
     controlArray.Allocate(this->Array.size());
-    this->CopyInto(controlArray.GetIteratorBegin());
+    this->CopyInto(controlArray.GetPortal().GetIteratorBegin());
   }
 
   /// Resizes the device vector.
