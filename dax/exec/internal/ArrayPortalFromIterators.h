@@ -56,10 +56,10 @@ public:
     *this->IteratorAt(index) = value;
   }
 
-  DAX_EXEC_EXPORT
+  DAX_CONT_EXPORT
   IteratorType GetIteratorBegin() const { return this->BeginIterator; }
 
-  DAX_EXEC_EXPORT
+  DAX_CONT_EXPORT
   IteratorType GetIteratorEnd() const { return this->EndIterator; }
 
 private:
