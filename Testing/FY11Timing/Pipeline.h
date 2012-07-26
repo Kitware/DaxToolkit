@@ -41,7 +41,7 @@ public:
   CheckValid() : Valid(true) { }
   operator bool() { return this->Valid; }
   void operator()(dax::Scalar value) {
-    if ((value < -1) || (value > 1)) { this->Valid = false; }
+    if ((value < -1) || (value > 2)) { this->Valid = false; }
   }
 private:
   bool Valid;
@@ -77,7 +77,7 @@ void PrintCheckValues(IteratorType begin, IteratorType end)
         std::cout << index << ":";
         dax::cont::VectorForEach(vector, PrintScalarValue);
         std::cout << std::endl;
-        break;
+        exit(1);
         }
       }
 
@@ -108,9 +108,12 @@ void RunPipeline1(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Vector3> results;
 
   Timer timer;
-  dax::cont::worklet::Elevation(grid,
-                                grid.GetPointCoordinates(),
-                                intermediate1);
+  dax::cont::worklet::Elevation(
+        grid.GetPointCoordinates(),
+        intermediate1,
+        grid.ComputePointCoordinates(grid.GetExtent().Min),
+        grid.ComputePointCoordinates(grid.GetExtent().Max),
+        dax::make_Vector2(grid.GetExtent().Min[0], 5*grid.GetExtent().Max[0]));
   dax::cont::worklet::CellGradient(grid,
                                    grid.GetPointCoordinates(),
                                    intermediate1,
@@ -133,18 +136,21 @@ void RunPipeline2(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Vector3> results;
 
   Timer timer;
-  dax::cont::worklet::Elevation(grid,
-                                grid.GetPointCoordinates(),
-                                intermediate1);
+  dax::cont::worklet::Elevation(
+        grid.GetPointCoordinates(),
+        intermediate1,
+        grid.ComputePointCoordinates(grid.GetExtent().Min),
+        grid.ComputePointCoordinates(grid.GetExtent().Max),
+        dax::make_Vector2(grid.GetExtent().Min[0], 5*grid.GetExtent().Max[0]));
   dax::cont::worklet::CellGradient(grid,
                                    grid.GetPointCoordinates(),
                                    intermediate1,
                                    intermediate2);
   intermediate1.ReleaseResources();
-  dax::cont::worklet::Sine(grid, intermediate2, intermediate3);
+  dax::cont::worklet::Sine(intermediate2, intermediate3);
   dax::cont::worklet::Square(intermediate3, intermediate2);
   intermediate3.ReleaseResources();
-  dax::cont::worklet::Cosine(grid, intermediate2, results);
+  dax::cont::worklet::Cosine(intermediate2, results);
   double time = timer.elapsed();
 
   PrintCheckValues(results);
@@ -163,13 +169,16 @@ void RunPipeline3(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Scalar> results;
 
   Timer timer;
-  dax::cont::worklet::Elevation(grid,
-                                grid.GetPointCoordinates(),
-                                intermediate1);
-  dax::cont::worklet::Sine(grid, intermediate1, intermediate2);
+  dax::cont::worklet::Elevation(
+        grid.GetPointCoordinates(),
+        intermediate1,
+        grid.ComputePointCoordinates(grid.GetExtent().Min),
+        grid.ComputePointCoordinates(grid.GetExtent().Max),
+        dax::make_Vector2(grid.GetExtent().Min[0], 5*grid.GetExtent().Max[0]));
+  dax::cont::worklet::Sine(intermediate1, intermediate2);
   dax::cont::worklet::Square(intermediate2, intermediate1);
   intermediate2.ReleaseResources();
-  dax::cont::worklet::Cosine(grid, intermediate1, results);
+  dax::cont::worklet::Cosine(intermediate1, results);
   double time = timer.elapsed();
 
   PrintCheckValues(results);

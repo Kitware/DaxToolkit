@@ -37,12 +37,18 @@
 namespace
 {
 
+dax::Scalar THRESHOLD_MIN = -0.25;
+dax::Scalar THRESHOLD_MAX = 0.5;
+
 class CheckValid {
 public:
   CheckValid() : Valid(true) { }
   operator bool() { return this->Valid; }
   void operator()(dax::Scalar value) {
-    if ((value < 0) || (value > 100)) { this->Valid = false; }
+    if ((value < THRESHOLD_MIN) || (value > THRESHOLD_MAX))
+      {
+      this->Valid = false;
+      }
   }
 private:
   bool Valid;
@@ -70,7 +76,7 @@ void CheckValues(IteratorType begin, IteratorType end)
       std::cout << std::distance(begin,iter) << ":";
       dax::cont::VectorForEach(vector, PrintScalarValue);
       std::cout << std::endl;
-      break;
+      exit(1);
       }
     }
 }
@@ -159,15 +165,20 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Scalar> intermediate1;
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
-  dax::Scalar min = 0;
-  dax::Scalar max = 100;
-
-  dax::cont::worklet::Elevation(grid,
-                                grid.GetPointCoordinates(),
-                                intermediate1);
+  dax::cont::worklet::Elevation(
+        grid.GetPointCoordinates(),
+        intermediate1,
+        grid.ComputePointCoordinates(grid.GetExtent().Min),
+        grid.ComputePointCoordinates(grid.GetExtent().Max),
+        dax::make_Vector2(-1.0, 1.0));
 
   Timer timer;
-  dax::cont::worklet::Threshold(grid,grid2,min,max,intermediate1,resultHandle);
+  dax::cont::worklet::Threshold(grid,
+                                grid2,
+                                THRESHOLD_MIN,
+                                THRESHOLD_MAX,
+                                intermediate1,
+                                resultHandle);
   double time = timer.elapsed();
   std::cout << "original GetNumberOfCells: " << grid.GetNumberOfCells() << std::endl;
   std::cout << "threshold GetNumberOfCells: " << grid2.GetNumberOfCells() << std::endl;
