@@ -69,7 +69,11 @@ public:
   /// structure of the cell.
   ///
   DAX_CONT_EXPORT
-  CellConnectionsType GetCellConnections() const {
+  const CellConnectionsType &GetCellConnections() const {
+    return this->CellConnections;
+  }
+  DAX_CONT_EXPORT
+  CellConnectionsType &GetCellConnections() {
     return this->CellConnections;
   }
   void SetCellConnections(CellConnectionsType cellConnections) {
@@ -80,7 +84,11 @@ public:
   /// length of this array defines how many points are in the mesh.
   ///
   DAX_CONT_EXPORT
-  PointCoordinatesType GetPointCoordinates() const {
+  const PointCoordinatesType &GetPointCoordinates() const {
+    return this->PointCoordinates;
+  }
+  DAX_CONT_EXPORT
+  PointCoordinatesType &GetPointCoordinates() {
     return this->PointCoordinates;
   }
   DAX_CONT_EXPORT
@@ -135,7 +143,8 @@ public:
     // points field in the first place. The number of cells fields seems pretty
     // redundant, too.
     return TopologyStructExecution(
-          this->CellConnections.PrepareForOutput(numberOfCells),
+          this->CellConnections.PrepareForOutput(
+            numberOfCells*CellType::NUM_POINTS),
           0,
           numberOfCells);
   }
