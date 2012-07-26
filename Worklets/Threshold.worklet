@@ -32,7 +32,7 @@ struct ThresholdFunction {
   const T Max;
   int valid;
 
-  DAX_EXEC_EXPORT ThresholdFunction(T& min, T&max):
+  DAX_EXEC_EXPORT ThresholdFunction(const T& min, const T&max):
     Min(min),Max(max),valid(1)
     {
     }
@@ -80,7 +80,7 @@ public:
   template<class InputCellType, int OutputCellSize>
   DAX_EXEC_EXPORT
   void operator()(const InputCellType &inputCell,
-                  dax::Tuple<dax::Id,OutputCellSize> &outputConnections)
+                  dax::Tuple<dax::Id,OutputCellSize> &outputConnections) const
   {
     //we can ignore the the requested cell Id to generate
     //on the work object since we know for threshold it is a pass through

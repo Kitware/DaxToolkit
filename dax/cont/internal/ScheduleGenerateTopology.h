@@ -53,7 +53,7 @@ struct ClearUsedPointsFunctor
   }
 
 private:
-  const MaskPortalType &OutMask;
+  MaskPortalType OutMask;
 };
 
 template<class MaskPortalType>
@@ -66,7 +66,7 @@ struct GetUsedPointsFunctor
   DAX_EXEC_EXPORT void operator()(
       dax::Id daxNotUsed(key),
       dax::Id value,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage) const
   {
     typedef typename MaskPortalType::ValueType MaskType;
     dax::exec::internal::FieldSet(this->OutMask,
@@ -76,7 +76,7 @@ struct GetUsedPointsFunctor
   }
 
 private:
-  const MaskPortalType &OutMask;
+  MaskPortalType OutMask;
 };
 
 
@@ -97,7 +97,7 @@ struct LowerBoundsInputFunctor
   }
 
 private:
-  const ArrayPortalType &Array;
+  ArrayPortalType Array;
 };
 
 }
@@ -265,7 +265,7 @@ private:
     // Clear out the mask
     dax::cont::internal::Schedule(
           dax::exec::internal::kernel::ClearUsedPointsFunctor<MaskPortalType>(
-            pointMask),
+            pointMask.PrepareForOutput(inGrid.GetNumberOfPoints())),
           inGrid.GetNumberOfPoints(),
           DeviceAdapterTag());
 
@@ -273,8 +273,10 @@ private:
     // This only works when outGrid is an UnstructuredGrid.
     dax::cont::internal::ScheduleMap(
           dax::exec::internal::kernel::GetUsedPointsFunctor<MaskPortalType>(
-            pointMask),
+            pointMask.PrepareForInPlace()),
           outGrid.GetCellConnections());
+
+    return pointMask;
   }
 
   template<typename InGridType,typename OutGridType>

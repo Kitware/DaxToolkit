@@ -415,7 +415,7 @@ private:
     dax::cont::internal::Copy(handle,temp,DeviceAdapterTag());
     dax::cont::internal::Sort(temp,DeviceAdapterTag());
     dax::cont::internal::Unique(temp,DeviceAdapterTag());
-    dax::cont::internal::LowerBounds(temp,handle,DeviceAdapterTag());
+    dax::cont::internal::LowerBounds(temp,input,handle,DeviceAdapterTag());
     temp.ReleaseResources();
 
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)

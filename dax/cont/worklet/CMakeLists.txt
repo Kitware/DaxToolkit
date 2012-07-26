@@ -34,7 +34,7 @@ set(unit_tests
   UnitTestWorkletElevation.cxx
   UnitTestWorkletSine.cxx
   UnitTestWorkletSquare.cxx
-#  UnitTestWorkletThreshold.cxx
+  UnitTestWorkletThreshold.cxx
   UnitTestWorkletAssert.cxx
   UnitTestWorkletMapCellError.cxx
   UnitTestWorkletMapFieldError.cxx

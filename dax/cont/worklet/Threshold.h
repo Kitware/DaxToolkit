@@ -92,7 +92,7 @@ struct GenerateTopologyFunctor
   DAX_CONT_EXPORT GenerateTopologyFunctor(
       const dax::worklet::ThresholdTopology &worklet,
       const InputTopologyType &inputTopology,
-      OutputTopologyType &outputTopology)
+      const OutputTopologyType &outputTopology)
     : Worklet(worklet),
       InputTopology(inputTopology),
       OutputTopology(outputTopology) {  }
@@ -100,13 +100,13 @@ struct GenerateTopologyFunctor
   DAX_EXEC_EXPORT void operator()(
       dax::Id outputCellIndex,
       dax::Id inputCellIndex,
-      dax::exec::internal::ErrorMessageBuffer &errorMessage) const
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
   {
     this->Worklet.SetErrorMessageBuffer(errorMessage);
     const dax::worklet::ThresholdTopology &constWorklet = this->Worklet;
 
     InputCellType inputCell(this->InputTopology, inputCellIndex);
-    typedef OutputCellType::PointConnectionsType outputCellConnections;
+    typename OutputCellType::PointConnectionsType outputCellConnections;
 
     constWorklet(inputCell, outputCellConnections);
 
@@ -121,6 +121,7 @@ struct GenerateTopologyFunctor
                                     index,
                                     outputCellConnections[localIndex],
                                     constWorklet);
+      index++;
       }
   }
 
@@ -131,22 +132,27 @@ private:
 };
 
 template<class ValueType,
-         class Container,
+         class Container1,
+         class Container2,
          class Adapter>
 class Threshold : public dax::cont::internal::ScheduleGenerateTopology
     <
-    Threshold<ValuePortalType>,
+    Threshold<ValueType,Container1,Container2,Adapter>,
     Adapter>
 {
-public:
-  typedef dax::cont::ArrayHandle<ValueType,Container,Adapter>
-      ValueTypeArrayHandle;
+protected:
+  typedef dax::cont::internal::ScheduleGenerateTopology<
+      Threshold<ValueType,Container1,Container2,Adapter>, Adapter> Superclass;
+  typedef typename Superclass::ArrayHandleId ArrayHandleId;
+  typedef typename Superclass::ArrayHandleMask ArrayHandleMask;
 
+public:
   //constructor that is passed all the user decided parts of the worklet too
-  Threshold(const ValueType& min,
-            const ValueType& max,
-            const ValueTypeArrayHandle& thresholdField,
-            ValueTypeArrayHandle& outputField)
+  Threshold(
+     const ValueType& min,
+     const ValueType& max,
+     const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &thresholdField,
+     dax::cont::ArrayHandle<ValueType,Container2,Adapter> &outputField)
     : Min(min),
       Max(max),
       InputHandle(thresholdField),
@@ -159,14 +165,14 @@ public:
   template <class InputGridType>
   ThresholdClassifyFunctor<
       typename InputGridType::TopologyStructConstExecution,
-      typename ValueTypeArrayHandle::PortalConstExecution,
+      typename dax::cont::ArrayHandle<ValueType,Container1,Adapter>::PortalConstExecution,
       typename ArrayHandleId::PortalExecution>
   CreateClassificationFunctor(const InputGridType &grid,
                               ArrayHandleId &cellCountOutput)
   {
     typedef ThresholdClassifyFunctor<
         typename InputGridType::TopologyStructConstExecution,
-        typename ValueTypeArrayHandle::PortalConstExecution,
+        typename dax::cont::ArrayHandle<ValueType,Container1,Adapter>::PortalConstExecution,
         typename ArrayHandleId::PortalExecution> FunctorType;
 
     dax::worklet::ThresholdClassify<ValueType> worklet(this->Min, this->Max);
@@ -193,7 +199,7 @@ public:
         typename InputGridType::TopologyStructConstExecution,
         typename OutputGridType::TopologyStructExecution> FunctorType;
 
-    dax::worklet::ThresholdTopology worklet();
+    dax::worklet::ThresholdTopology worklet;
 
     FunctorType functor(
           worklet,
@@ -217,8 +223,8 @@ private:
   ValueType Min;
   ValueType Max;
 
-  const ValueTypeArrayHandle &InputHandle;
-  ValueTypeArrayHandle &OutputHandle;
+  const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &InputHandle;
+  dax::cont::ArrayHandle<ValueType,Container2,Adapter> &OutputHandle;
 };
 
 }
@@ -233,42 +239,25 @@ namespace worklet {
 
 template<class InGridType,
          class OutGridType,
-         typename FieldType,
-         class Container,
+         typename ValueType,
+         class Container1,
+         class Container2,
          class Adapter>
 inline void Threshold(
     const InGridType &inGrid,
     OutGridType &outGeom,
-    FieldType thresholdMin,
-    FieldType thresholdMax,
-    const dax::cont::ArrayHandle<FieldType,Container,Adapter> &thresholdHandle,
-    dax::cont::ArrayHandle<FieldType,Container,Adapter> &thresholdResult)
+    ValueType thresholdMin,
+    ValueType thresholdMax,
+    const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &thresholdHandle,
+    dax::cont::ArrayHandle<ValueType,Container2,Adapter> &thresholdResult)
 {
-  typedef typename InGridType::ExecutionTopologyStruct InExecutionTopologyType;
-  typedef typename InGridType::CellType InCellType;
-
-  typedef typename OutGridType::ExecutionTopologyStruct OutExecutionTopologyType;
-  typedef typename OutGridType::CellType OutCellType;
-
-  typedef dax::exec::internal::kernel
-      ::ThresholdClassifyParameters<InCellType,FieldType,Container,Adapter>
-      ParametersClassify;
-  typedef dax::exec::internal::kernel
-      ::ThresholdClassifyFunctor<InCellType,FieldType,Container,Adapter>
-      FunctorClassify;
-  typedef dax::exec::internal::kernel
-      ::GenerateTopologyFunctor<InCellType,OutCellType,Container,Adapter>
-      FunctorTopology;
-
   dax::exec::internal::kernel::Threshold<
-                                         InCellType,
-                                         FieldType,
-                                         OutCellType,
-                                         Container,
-                                         Adapter
-                                         >
-  threshold(thresholdMin,thresholdMax,thresholdHandle,thresholdResult);
-  threshold.run(inGrid,outGeom);
+      ValueType,Container1,Container2,Adapter> threshold(thresholdMin,
+                                                         thresholdMax,
+                                                         thresholdHandle,
+                                                         thresholdResult);
+
+  threshold.Run(inGrid, outGeom);
 }
 
 }

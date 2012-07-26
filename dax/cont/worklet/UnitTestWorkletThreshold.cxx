@@ -36,7 +36,7 @@
 
 
 namespace {
-const dax::Id DIM = 64;
+const dax::Id DIM = 26;
 const dax::Id MIN_THRESHOLD = 70;
 const dax::Id MAX_THRESHOLD = 82;
 
@@ -69,14 +69,7 @@ void CheckValues(IteratorType begin, IteratorType end)
     {
     VectorType vector = *iter;
     dax::cont::VectorForEach(vector, isValid);
-    if (!isValid)
-      {
-      std::cout << "*** Encountered bad value." << std::endl;
-      std::cout << std::distance(begin,iter) << ":";
-      dax::cont::VectorForEach(vector, PrintScalarValue);
-      std::cout << std::endl;
-      break;
-      }
+    DAX_TEST_ASSERT(isValid, "Encountered bad value.");
     }
 }
 
