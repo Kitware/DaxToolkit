@@ -222,6 +222,11 @@ public:
   typedef dax::exec::internal::ArrayPortalFromIterators<const ValueType*>
       PortalConstType;
 
+  /// Returns the number of values stored in the array.  Results are undefined
+  /// if data has not been loaded or allocated.
+  ///
+  DAX_CONT_EXPORT dax::Id GetNumberOfValues() const;
+
   /// Allocates a large enough array in the execution environment and copies
   /// the given data to that array. The allocated array can later be accessed
   /// via the GetPortal method. If control and execution share arrays, then

@@ -90,8 +90,8 @@ public:
       this->OutputArray.Set(index, this->InputArray.Get(index));
     }
 
-    const IdPortalConstType &InputArray;
-    const IdPortalType &OutputArray;
+    IdPortalConstType InputArray;
+    IdPortalType OutputArray;
   };
 
   struct ClearArrayKernel
@@ -106,7 +106,7 @@ public:
       this->Array.Set(index, OFFSET);
     }
 
-    const IdPortalType &Array;
+    IdPortalType Array;
   };
 
   struct ClearArrayMapKernel
@@ -122,7 +122,7 @@ public:
       this->Array.Set(value, OFFSET);
     }
 
-    const IdPortalType &Array;
+    IdPortalType Array;
   };
 
   struct AddArrayKernel
@@ -137,7 +137,7 @@ public:
       this->Array.Set(index, this->Array.Get(index) + index);
     }
 
-    const IdPortalType &Array;
+    IdPortalType Array;
   };
 
   struct OneErrorKernel
@@ -175,7 +175,7 @@ public:
       this->Array.Set(index, OFFSET + index);
     }
 
-    const IdPortalType &Array;
+    IdPortalType Array;
   };
 
   struct MarkOddNumbersKernel
@@ -190,7 +190,7 @@ public:
       this->Array.Set(index, index%2);
     }
 
-    const IdPortalType &Array;
+    IdPortalType Array;
   };
 
 private:

@@ -52,7 +52,7 @@ struct Assert
 
 private:
   dax::worklet::testing::Assert Worklet;
-  const PortalType &InArray;
+  PortalType InArray;
 };
 
 }

@@ -72,47 +72,8 @@ public:
   typedef typename Superclass::ThrustIteratorConstType ThrustIteratorConstType;
 };
 
-template<class Functor, class Parameters, class Container>
-DAX_CONT_EXPORT void Schedule(Functor functor,
-                              Parameters parameters,
-                              dax::Id numInstances,
-                              Container,
-                              dax::cuda::cont::DeviceAdapterTagCuda)
-{
-  dax::thrust::cont::internal::ScheduleThrust(
-        functor,
-        parameters,
-        numInstances,
-        Container(),
-        dax::cuda::cont::DeviceAdapterTagCuda());
-}
-
 }
 }
 } // namespace dax::cont::internal
-
-namespace dax {
-namespace exec {
-namespace internal {
-
-template <class ArrayContainerControlTag>
-class ExecutionAdapter<ArrayContainerControlTag,
-                       dax::cuda::cont::DeviceAdapterTagCuda>
-    : public dax::thrust::cont::internal::ExecutionAdapterThrust
-        <ArrayContainerControlTag,dax::cuda::cont::DeviceAdapterTagCuda>
-{
-public:
-  typedef dax::thrust::cont::internal::ExecutionAdapterThrust
-      <ArrayContainerControlTag,dax::cuda::cont::DeviceAdapterTagCuda>
-      Superclass;
-  using Superclass::FieldStructures;
-
-  DAX_EXEC_EXPORT ExecutionAdapter(char *messageBegin, char *messageEnd)
-    : Superclass(messageBegin, messageEnd) {  }
-};
-
-}
-}
-} // namespace dax::exec::internal
 
 #endif //__dax_cuda_cont_DeviceAdapterCuda_h

@@ -53,7 +53,7 @@ struct CellMapError
 
 private:
   dax::worklet::testing::CellMapError Worklet;
-  const TopologyType &Topology;
+  TopologyType Topology;
 };
 
 }

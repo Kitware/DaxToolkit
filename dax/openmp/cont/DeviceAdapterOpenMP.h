@@ -72,47 +72,8 @@ public:
   typedef typename Superclass::ThrustIteratorConstType ThrustIteratorConstType;
 };
 
-template<class Functor, class Parameters, class Container>
-DAX_CONT_EXPORT void Schedule(Functor functor,
-                              Parameters parameters,
-                              dax::Id numInstances,
-                              Container,
-                              dax::openmp::cont::DeviceAdapterTagOpenMP)
-{
-  dax::thrust::cont::internal::ScheduleThrust(
-        functor,
-        parameters,
-        numInstances,
-        Container(),
-        dax::openmp::cont::DeviceAdapterTagOpenMP());
-}
-
 }
 }
 } // namespace dax::cont::internal
-
-namespace dax {
-namespace exec {
-namespace internal {
-
-template <class ArrayContainerControlTag>
-class ExecutionAdapter<ArrayContainerControlTag,
-                       dax::openmp::cont::DeviceAdapterTagOpenMP>
-    : public dax::thrust::cont::internal::ExecutionAdapterThrust
-        <ArrayContainerControlTag,dax::openmp::cont::DeviceAdapterTagOpenMP>
-{
-public:
-  typedef dax::thrust::cont::internal::ExecutionAdapterThrust
-      <ArrayContainerControlTag,dax::openmp::cont::DeviceAdapterTagOpenMP>
-      Superclass;
-  using Superclass::FieldStructures;
-
-  DAX_EXEC_EXPORT ExecutionAdapter(char *messageBegin, char *messageEnd)
-    : Superclass(messageBegin, messageEnd) {  }
-};
-
-}
-}
-} // namespace dax::exec::internal
 
 #endif //__dax_openmp_cont_DeviceAdapterOpenMP_h

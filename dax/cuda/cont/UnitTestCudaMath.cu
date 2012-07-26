@@ -46,7 +46,7 @@ namespace ut_CudaMath {
 struct TestCompareKernel
 {
   template<class ErrorHandler>
-  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_EXPORT void operator()(dax::Id, ErrorHandler errorHandler)
   {
     MY_ASSERT(dax::exec::math::Min(3, 8) == 3, "Got wrong min.");
     MY_ASSERT(dax::exec::math::Min(-0.1f, -0.7f) == -0.7f, "Got wrong min.");
@@ -58,7 +58,7 @@ struct TestCompareKernel
 struct TestExpKernel
 {
   template<class ErrorHandler>
-  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_EXPORT void operator()(dax::Id, ErrorHandler errorHandler)
   {
     MY_ASSERT(test_equal(dax::exec::math::Pow(0.25, 2.0), dax::Scalar(0.0625)),
               "Bad power result.");
@@ -108,7 +108,7 @@ struct TestExpKernel
 struct TestPrecisionKernel
 {
   template<class ErrorHandler>
-  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_EXPORT void operator()(dax::Id, ErrorHandler errorHandler)
   {
     dax::Scalar zero = 0.0;
     dax::Scalar finite = 1.0;
@@ -180,7 +180,7 @@ struct TestPrecisionKernel
 struct TestSignKernel
 {
   template<class ErrorHandler>
-  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_EXPORT void operator()(dax::Id, ErrorHandler errorHandler)
   {
     MY_ASSERT(dax::exec::math::Abs(-1) == 1, "Bad abs.");
     MY_ASSERT(dax::exec::math::Abs(dax::Scalar(-0.25)) == 0.25, "Bad abs.");
@@ -194,7 +194,7 @@ struct TestSignKernel
 struct TestTrigKernel
 {
   template<class ErrorHandler>
-  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_EXPORT void operator()(dax::Id, ErrorHandler errorHandler)
   {
     MY_ASSERT(test_equal(dax::exec::math::Pi(), dax::Scalar(3.14159265)),
               "Pi not correct.");
@@ -245,9 +245,7 @@ template<class Functor>
 void TestSchedule(Functor functor)
 {
   dax::cont::internal::Schedule(functor,
-                                0,
                                 1,
-                                DAX_DEFAULT_ARRAY_CONTAINER_CONTROL(),
                                 dax::cuda::cont::DeviceAdapterTagCuda());
 }
 

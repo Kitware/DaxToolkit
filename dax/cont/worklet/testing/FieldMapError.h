@@ -52,7 +52,7 @@ struct FieldMapError
 
 private:
   dax::worklet::testing::FieldMapError Worklet;
-  const PortalType &InArray;
+  PortalType InArray;
 };
 
 }
