@@ -74,41 +74,41 @@ namespace dax {
 namespace cont {
 namespace internal {
 
-template<typename T, class Container>
+template<typename T, class CIn, class COut>
 DAX_CONT_EXPORT void Copy(
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>& input,
-    dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>& output,
+    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>& input,
+    dax::cont::ArrayHandle<T,COut,DeviceAdapterTagSerial>& output,
     DeviceAdapterTagSerial)
 {
-  typedef typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>
-      ::PortalExecution PortalType;
-  typedef typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>
-      ::PortalConstExecution PortalConstType;
+  typedef typename dax::cont::ArrayHandle<T,COut,DeviceAdapterTagSerial>
+      ::PortalExecution PortalOut;
+  typedef typename dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>
+      ::PortalConstExecution PortalIn;
 
   dax::Id numberOfValues = input.GetNumberOfValues();
-  PortalConstType inputPortal = input.PrepareForInput();
-  PortalType outputPortal = output.PrepareForOutput(numberOfValues);
+  PortalIn inputPortal = input.PrepareForInput();
+  PortalOut outputPortal = output.PrepareForOutput(numberOfValues);
 
   std::copy(inputPortal.GetIteratorBegin(),
             inputPortal.GetIteratorEnd(),
             outputPortal.GetIteratorBegin());
 }
 
-template<typename T, class Container>
+template<typename T, class CIn, class COut>
 DAX_CONT_EXPORT T InclusiveScan(
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial> &input,
-    dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>& output,
+    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial> &input,
+    dax::cont::ArrayHandle<T,COut,DeviceAdapterTagSerial>& output,
     DeviceAdapterTagSerial)
 {
-  typedef typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>
-      ::PortalExecution PortalType;
-  typedef typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>
-      ::PortalConstExecution PortalConstType;
+  typedef typename dax::cont::ArrayHandle<T,COut,DeviceAdapterTagSerial>
+      ::PortalExecution PortalOut;
+  typedef typename dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>
+      ::PortalConstExecution PortalIn;
 
   dax::Id numberOfValues = input.GetNumberOfValues();
 
-  PortalConstType inputPortal = input.PrepareForInput();
-  PortalType outputPortal = output.PrepareForOutput(numberOfValues);
+  PortalIn inputPortal = input.PrepareForInput();
+  PortalOut outputPortal = output.PrepareForOutput(numberOfValues);
 
   if (numberOfValues <= 0) { return 0; }
 
@@ -120,65 +120,63 @@ DAX_CONT_EXPORT T InclusiveScan(
   return outputPortal.Get(numberOfValues - 1);
 }
 
-template<typename T, class Container>
+template<typename T, class CIn, class CVal, class COut>
 DAX_CONT_EXPORT void LowerBounds(
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>& input,
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>& values,
-    dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>& output,
+    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>& input,
+    const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTagSerial>& values,
+    dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTagSerial>& output,
     DeviceAdapterTagSerial)
 {
-  typedef typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>
-      ::IteratorConstExecution IteratorConstT;
-  typedef typename dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>
-      ::IteratorExecution IteratorId;
+  typedef typename dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>
+      ::PortalConstExecution PortalIn;
+  typedef typename dax::cont::ArrayHandle<T,CVal,DeviceAdapterTagSerial>
+      ::PortalConstExecution PortalVal;
+  typedef typename dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTagSerial>
+      ::PortalExecution PortalOut;
 
   dax::Id numberOfValues = values.GetNumberOfValues();
 
-  std::pair<IteratorConstT, IteratorConstT> inputIter
-      = input.PrepareForInput();
-  std::pair<IteratorConstT, IteratorConstT> valuesIter
-      = values.PrepareForInput();
-  std::pair<IteratorId, IteratorId> outputIter =
-      output.PrepareForOutput(numberOfValues);
+  PortalIn inputPortal = input.PrepareForInput();
+  PortalVal valuesPortal = values.PrepareForInput();
+  PortalOut outputPortal = output.PrepareForOutput(numberOfValues);
 
   // std::lower_bound only supports a single value to search for so iterate
   // over all values and search for each one.
-  IteratorConstT value;
-  IteratorId out;
-  for (value = valuesIter.first, out = outputIter.first;
-       value != valuesIter.second;
-       value++, out++)
+  for (dax::Id outputIndex = 0; outputIndex < numberOfValues; outputIndex++)
     {
     // std::lower_bound returns an iterator to the position where you can
     // insert, but we want the distance from the start.
-    IteratorConstT resultPos
-        = std::lower_bound(inputIter.first, inputIter.second, *value);
-    *out = static_cast<dax::Id>(std::distance(inputIter.first, resultPos));
+    typename PortalIn::IteratorType resultPos =
+        std::lower_bound(inputPortal.GetIteratorBegin(),
+                         inputPortal.GetIteratorEnd(),
+                         valuesPortal.Get(outputIndex));
+    dax::Id resultIndex =
+        static_cast<dax::Id>(std::distance(inputPortal.GetIteratorBegin(),
+                                           resultPos));
+    outputPortal.Set(outputIndex, resultIndex);
     }
 }
 
-template<class Container>
+template<class CIn, class COut>
 DAX_CONT_EXPORT void LowerBounds(
-    const dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>
-        &input,
-    dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>
-        &values_output,
+    const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTagSerial> &input,
+    dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTagSerial> &values_output,
     DeviceAdapterTagSerial)
 {
-  typedef typename dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>
-      ::PortalConstExecution PortalConstT;
-  typedef typename dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>
-      ::PortalExecution PortalId;
+  typedef typename dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTagSerial>
+      ::PortalConstExecution PortalIn;
+  typedef typename dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTagSerial>
+      ::PortalExecution PortalOut;
 
-  PortalConstT inputPortal = input.PrepareForInput();
-  PortalId outputPortal = values_output.PrepareForInPlace();
+  PortalIn inputPortal = input.PrepareForInput();
+  PortalOut outputPortal = values_output.PrepareForInPlace();
 
   dax::Id outputSize = outputPortal.GetNumberOfValues();
   for (dax::Id outputIndex = 0; outputIndex < outputSize; outputIndex++)
     {
     // std::lower_bound returns an iterator to the position where you can
     // insert, but we want the distance from the start.
-    typename PortalConstT::IteratorType resultPos =
+    typename PortalIn::IteratorType resultPos =
         std::lower_bound(inputPortal.GetIteratorBegin(),
                          inputPortal.GetIteratorEnd(),
                          outputPortal.Get(outputIndex));
@@ -251,24 +249,24 @@ DAX_CONT_EXPORT void Sort(
   std::sort(arrayPortal.GetIteratorBegin(), arrayPortal.GetIteratorEnd());
 }
 
-template<typename T, class Container>
+template<typename T, class CStencil, class COut>
 DAX_CONT_EXPORT void StreamCompact(
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>& stencil,
-    dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>& output,
+    const dax::cont::ArrayHandle<T,CStencil,DeviceAdapterTagSerial>& stencil,
+    dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTagSerial>& output,
     DeviceAdapterTagSerial)
 {
-  typedef typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>
-      ::PortalConstExecution PortalConstT;
-  typedef typename dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTagSerial>
-      ::PortalExecution PortalId;
+  typedef typename dax::cont::ArrayHandle<T,CStencil,DeviceAdapterTagSerial>
+      ::PortalConstExecution PortalStencil;
+  typedef typename dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTagSerial>
+      ::PortalExecution PortalOut;
 
-  PortalConstT stencilPortal = stencil.PrepareForInput();
+  PortalStencil stencilPortal = stencil.PrepareForInput();
 
   dax::Id outputSize = std::count_if(stencilPortal.GetIteratorBegin(),
                                      stencilPortal.GetIteratorEnd(),
                                      dax::not_default_constructor<dax::Id>());
 
-  PortalId outputPortal= output.PrepareForOutput(outputSize);
+  PortalOut outputPortal= output.PrepareForOutput(outputSize);
 
   dax::Id inputSize = stencilPortal.GetNumberOfValues();
   dax::Id outputIndex = 0;
@@ -285,28 +283,28 @@ DAX_CONT_EXPORT void StreamCompact(
   DAX_ASSERT_CONT(outputIndex == outputSize);
 }
 
-template<typename T, typename U, class Container>
+template<typename T, typename U, class CIn, class CStencil, class COut>
 DAX_CONT_EXPORT void StreamCompact(
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>& input,
-    const dax::cont::ArrayHandle<U,Container,DeviceAdapterTagSerial>& stencil,
-    dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>& output,
+    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>& input,
+    const dax::cont::ArrayHandle<U,CStencil,DeviceAdapterTagSerial>& stencil,
+    dax::cont::ArrayHandle<T,COut,DeviceAdapterTagSerial>& output,
     DeviceAdapterTagSerial)
 {
-  typedef typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>
-      ::PortalExecution PortalT;
-  typedef typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>
-      ::PortalConstExecution PortalConstT;
-  typedef typename dax::cont::ArrayHandle<U,Container,DeviceAdapterTagSerial>
-      ::PortalConstExecution PortalConstU;
+  typedef typename dax::cont::ArrayHandle<T,COut,DeviceAdapterTagSerial>
+      ::PortalExecution PortalOut;
+  typedef typename dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>
+      ::PortalConstExecution PortalIn;
+  typedef typename dax::cont::ArrayHandle<U,CStencil,DeviceAdapterTagSerial>
+      ::PortalConstExecution PortalStencil;
 
-  PortalConstT inputPortal = input.PrepareForInput();
-  PortalConstU stencilPortal = stencil.PrepareForInput();
+  PortalIn inputPortal = input.PrepareForInput();
+  PortalStencil stencilPortal = stencil.PrepareForInput();
 
   dax::Id outputSize = std::count_if(stencilPortal.GetIteratorBegin(),
                                      stencilPortal.GetIteratorEnd(),
                                      dax::not_default_constructor<U>());
 
-  PortalT outputPortal = output.PrepareForOutput(outputSize);
+  PortalOut outputPortal = output.PrepareForOutput(outputSize);
 
   dax::Id inputSize = inputPortal.GetNumberOfValues();
   DAX_ASSERT_CONT(inputSize == stencilPortal.GetNumberOfValues());

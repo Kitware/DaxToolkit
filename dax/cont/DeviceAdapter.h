@@ -47,13 +47,13 @@ namespace internal {
 
 /// \brief Copy the contents of one ArrayHandle to another
 ///
-/// Copies the contents of \c from to \c to. The array \c to will be allocated
-/// to the appropriate size.
+/// Copies the contents of \c input to \c output. The array \c to will be
+/// allocated to the appropriate size.
 ///
-template<typename T, class Container>
+template<typename T, class CIn, class COut>
 DAX_CONT_EXPORT void Copy(
-    const dax::cont::ArrayHandle<T, Container, DeviceAdapterTag___> &from,
-    dax::cont::ArrayHandle<T, Container, DeviceAdapterTag___> &to,
+    const dax::cont::ArrayHandle<T, CIn, DeviceAdapterTag___> &input,
+    dax::cont::ArrayHandle<T, COut, DeviceAdapterTag___> &output,
     DeviceAdapterTag___);
 
 /// \brief Compute an inclusive prefix sum operation on the input ArrayHandle.
@@ -66,10 +66,10 @@ DAX_CONT_EXPORT void Copy(
 /// results. When the input and output ArrayHandles are the same ArrayHandle
 /// the operation will be done inplace.
 ///
-template<typename T, class Container>
+template<typename T, class CIn, class COut>
 DAX_CONT_EXPORT T InclusiveScan(
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapterTag___> &input,
-    dax::cont::ArrayHandle<T,Container,DeviceAdapterTag___>& output,
+    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag___> &input,
+    dax::cont::ArrayHandle<T,COut,DeviceAdapterTag___>& output,
     DeviceAdapterTag___);
 
 /// \brief Output is the first index in input for each item in values that wouldn't alter the ordering of input
@@ -81,11 +81,11 @@ DAX_CONT_EXPORT T InclusiveScan(
 /// \par Requirements:
 /// \arg \c input must already be sorted
 ///
-template<typename T, class Container>
+template<typename T, class CIn, class CVal, class COut>
 DAX_CONT_EXPORT void LowerBounds(
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapter>& input,
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapter>& values,
-    dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapter>& output,
+    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag___>& input,
+    const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag___>& values,
+    dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag___>& output,
     DeviceAdapterTag___);
 
 /// \brief A special version of LowerBounds that does an in place operation.
@@ -95,10 +95,10 @@ DAX_CONT_EXPORT void LowerBounds(
 /// where it occurs. Because this is an in place operation, the of the arrays
 /// is limited to dax::Id.
 ///
-template<class Container>
+template<class CIn, class COut>
 DAX_CONT_EXPORT void LowerBounds(
-    const dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTag___>& input,
-    dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTag___>& values_output,
+    const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTag___>& input,
+    dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag___>& values_output,
     DeviceAdapterTag___);
 
 /// \brief Schedule many instances of a function to run on concurrent threads.
@@ -115,7 +115,7 @@ DAX_CONT_EXPORT void LowerBounds(
 /// used to report errors. If RaiseError is called on \c errorMessage with a
 /// non-empty string, an ErrorExecution will be thrown from Schedule.
 ///
-template<class Functor, class Parameters, class Container>
+template<class Functor>
 DAX_CONT_EXPORT void Schedule(Functor functor,
                               dax::Id numInstances,
                               DeviceAdapterTag___);
@@ -140,10 +140,10 @@ DAX_CONT_EXPORT void Sort(
 /// we can't know the number of elements that will be removed by the stream
 /// compaction algorithm.
 ///
-template<typename T, class Container>
+template<typename T, class CIn, class COut>
 DAX_CONT_EXPORT void StreamCompact(
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapterTag___> &input,
-    dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTag___> &output,
+    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag___> &input,
+    dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag___> &output,
     DeviceAdapterTag___);
 
 /// \brief Performs stream compaction to remove unwanted elements in the input array.
