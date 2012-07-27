@@ -209,7 +209,7 @@ private:
   template<typename T>
   static DAX_CONT_EXPORT
   dax::cont::ArrayHandle<T, ArrayContainerControlTagBasic, DeviceAdapterTag>
-  MakeArrayHandle(const std::vector<T> array)
+  MakeArrayHandle(const std::vector<T>& array)
   {
     return dax::cont::make_ArrayHandle(array,
                                        ArrayContainerControlTagBasic(),
