@@ -80,6 +80,7 @@ public:
     this->CellConnections = cellConnections;
   }
 
+
   /// The PointCoordinates array defines the location of each point.  The
   /// length of this array defines how many points are in the mesh.
   ///
@@ -97,6 +98,14 @@ public:
   }
 
   // Helper functions
+
+  /// Given a point idnex, computes the coordinates.
+  ///
+  dax::Vector3 ComputePointCoordinates(dax::Id index) const{
+    DAX_ASSERT_CONT(this->PointCoordinates.GetNumberOfValues() >= index);
+    DAX_ASSERT_CONT(index >= 0);
+    return this->PointCoordinates.GetPortalConstControl().Get(index);
+  }
 
   /// Get the number of points.
   ///
