@@ -17,7 +17,7 @@
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 
 #include <dax/internal/Testing.h>
-
+#include <cstring>
 namespace {
 
 void TestErrorMessageBuffer()
