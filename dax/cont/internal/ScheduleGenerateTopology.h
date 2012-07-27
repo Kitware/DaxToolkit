@@ -137,7 +137,7 @@ public:
   /// places the resulting unstructured grid in outGrid
   ///
   template<typename InGridType, typename OutGridType>
-  DAX_EXEC_EXPORT
+  DAX_CONT_EXPORT
   void Run(const InGridType& inGrid,
            OutGridType& outGrid)
     {
