@@ -52,7 +52,16 @@ static void TestAssert()
     gotError = true;
     }
 
+//The kernel using a NDEBUG check to determine if the assert is checked
+//so we need to make sure that in release mode the test still passes by
+//making sure an error isn't thrown.
+#ifndef NDEBUG
   DAX_TEST_ASSERT(gotError, "Never got the error thrown.");
+#else
+  DAX_TEST_ASSERT(!gotError, "Debug Assert in release mode, not allowed.");
+#endif
+
+
 }
 
 } // Anonymous namespace
