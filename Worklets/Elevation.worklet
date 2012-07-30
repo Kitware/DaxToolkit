@@ -36,16 +36,17 @@ public:
       LowOutput(outputRange[0]),
       OutputDistance(outputRange[1] - outputRange[0])
   {
-    dax::Scalar length2 =
-        dax::exec::math::MagnitudeSquared(this->ScaledDirection);
-    this->ScaledDirection = (1/length2)*this->ScaledDirection;
+
   }
 
   DAX_EXEC_EXPORT void operator()(const dax::Vector3 &inCoordinates,
                                   dax::Scalar &elevation) const
   {
+    dax::Scalar length2 =
+        dax::exec::math::MagnitudeSquared(this->ScaledDirection);
+    dax::Vector3 direction = (1/length2)*this->ScaledDirection;
     dax::Vector3 coordDirection = inCoordinates - this->LowPoint;
-    dax::Scalar s = dax::dot(coordDirection, this->ScaledDirection);
+    dax::Scalar s = dax::dot(coordDirection,direction);
     s = dax::exec::math::Max(dax::Scalar(0), s);
     s = dax::exec::math::Min(dax::Scalar(1), s);
     elevation = this->LowOutput + s*this->OutputDistance;
