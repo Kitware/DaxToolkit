@@ -23,7 +23,7 @@
 
 #include <dax/cont/worklet/CellGradient.h>
 #include <dax/cont/worklet/Cosine.h>
-#include <dax/cont/worklet/Elevation.h>
+#include <dax/cont/worklet/Magnitude.h>
 #include <dax/cont/worklet/Sine.h>
 #include <dax/cont/worklet/Square.h>
 
@@ -101,19 +101,16 @@ void PrintResults(int pipeline, double time)
 
 void RunPipeline1(const dax::cont::UniformGrid<> &grid)
 {
-  std::cout << "Running pipeline 1: Elevation -> Gradient" << std::endl;
+  std::cout << "Running pipeline 1: Magnitude -> Gradient" << std::endl;
 
   dax::cont::ArrayHandle<dax::Scalar> intermediate1;
 
   dax::cont::ArrayHandle<dax::Vector3> results;
 
   Timer timer;
-  dax::cont::worklet::Elevation(
+  dax::cont::worklet::Magnitude(
         grid.GetPointCoordinates(),
-        intermediate1,
-        grid.ComputePointCoordinates(grid.GetExtent().Min),
-        grid.ComputePointCoordinates(grid.GetExtent().Max),
-        dax::make_Vector2(grid.GetExtent().Min[0], 5*grid.GetExtent().Max[0]));
+        intermediate1);
   dax::cont::worklet::CellGradient(grid,
                                    grid.GetPointCoordinates(),
                                    intermediate1,
@@ -126,7 +123,7 @@ void RunPipeline1(const dax::cont::UniformGrid<> &grid)
 
 void RunPipeline2(const dax::cont::UniformGrid<> &grid)
 {
-  std::cout << "Running pipeline 2: Elevation->Gradient->Sine->Square->Cosine"
+  std::cout << "Running pipeline 2: Magnitude->Gradient->Sine->Square->Cosine"
             << std::endl;
 
   dax::cont::ArrayHandle<dax::Scalar> intermediate1;
@@ -136,12 +133,9 @@ void RunPipeline2(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Vector3> results;
 
   Timer timer;
-  dax::cont::worklet::Elevation(
+  dax::cont::worklet::Magnitude(
         grid.GetPointCoordinates(),
-        intermediate1,
-        grid.ComputePointCoordinates(grid.GetExtent().Min),
-        grid.ComputePointCoordinates(grid.GetExtent().Max),
-        dax::make_Vector2(grid.GetExtent().Min[0], 5*grid.GetExtent().Max[0]));
+        intermediate1);
   dax::cont::worklet::CellGradient(grid,
                                    grid.GetPointCoordinates(),
                                    intermediate1,
@@ -160,7 +154,7 @@ void RunPipeline2(const dax::cont::UniformGrid<> &grid)
 
 void RunPipeline3(const dax::cont::UniformGrid<> &grid)
 {
-  std::cout << "Running pipeline 3: Elevation -> Sine -> Square -> Cosine"
+  std::cout << "Running pipeline 3: Magnitude -> Sine -> Square -> Cosine"
             << std::endl;
 
   dax::cont::ArrayHandle<dax::Scalar> intermediate1;
@@ -169,12 +163,9 @@ void RunPipeline3(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Scalar> results;
 
   Timer timer;
-  dax::cont::worklet::Elevation(
+  dax::cont::worklet::Magnitude(
         grid.GetPointCoordinates(),
-        intermediate1,
-        grid.ComputePointCoordinates(grid.GetExtent().Min),
-        grid.ComputePointCoordinates(grid.GetExtent().Max),
-        dax::make_Vector2(grid.GetExtent().Min[0], 5*grid.GetExtent().Max[0]));
+        intermediate1);
   dax::cont::worklet::Sine(intermediate1, intermediate2);
   dax::cont::worklet::Square(intermediate2, intermediate1);
   intermediate2.ReleaseResources();

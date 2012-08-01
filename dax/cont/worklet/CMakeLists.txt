@@ -18,6 +18,7 @@ set(headers
   CellGradient.h
   Cosine.h
   Elevation.h
+  Magnitude.h
   Sine.h
   Square.h
   Threshold.h
@@ -32,6 +33,7 @@ set(unit_tests
   UnitTestWorkletCellGradient.cxx
   UnitTestWorkletCosine.cxx
   UnitTestWorkletElevation.cxx
+  UnitTestWorkletMagnitude.cxx
   UnitTestWorkletSine.cxx
   UnitTestWorkletSquare.cxx
   UnitTestWorkletThreshold.cxx

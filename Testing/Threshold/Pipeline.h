@@ -23,7 +23,7 @@
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/worklet/Elevation.h>
+#include <dax/cont/worklet/Magnitude.h>
 #include <dax/cont/worklet/Threshold.h>
 
 #include <vector>
@@ -37,8 +37,8 @@
 namespace
 {
 
-dax::Scalar THRESHOLD_MIN = -0.25;
-dax::Scalar THRESHOLD_MAX = 0.5;
+dax::Scalar THRESHOLD_MIN = 0;
+dax::Scalar THRESHOLD_MAX = 100;
 
 class CheckValid {
 public:
@@ -158,19 +158,16 @@ void PrintContentsToStream(dax::cont::UnstructuredGrid<T>& grid, Stream &stream)
 
 void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
 {
-  std::cout << "Running pipeline 1: Elevation -> Threshold" << std::endl;
+  std::cout << "Running pipeline 1: Magnitude -> Threshold" << std::endl;
 
   dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> grid2;
 
   dax::cont::ArrayHandle<dax::Scalar> intermediate1;
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
-  dax::cont::worklet::Elevation(
+  dax::cont::worklet::Magnitude(
         grid.GetPointCoordinates(),
-        intermediate1,
-        grid.ComputePointCoordinates(grid.GetExtent().Min),
-        grid.ComputePointCoordinates(grid.GetExtent().Max),
-        dax::make_Vector2(-1.0, 1.0));
+        intermediate1);
 
   Timer timer;
   dax::cont::worklet::Threshold(grid,
