@@ -258,7 +258,7 @@ struct GridTesting
 
  struct TypeCheckUniformGrid {
    template <typename T, class Functor>
-   void operator()(T t, Functor function) const {  }
+   void operator()(T daxNotUsed(t), Functor daxNotUsed(function)) const {  }
 
    template<class Functor>
    void operator()(dax::cont::UniformGrid<> t, Functor function) const { function(t); }
