@@ -288,6 +288,8 @@ private:
         tetConnections[2] = hexConnections[2];
         tetConnections[3] = hexConnections[4];
         break;
+      default:
+        DAX_TEST_FAIL("Should not get here.");
       }
     return tetConnections;
   }
@@ -578,6 +580,8 @@ private:
         lineConnections[0] = hexConnections[3];
         lineConnections[1] = hexConnections[5];
         break;
+      default:
+        DAX_TEST_FAIL("Should not get here.");
       }
     return lineConnections;
   }
