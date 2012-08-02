@@ -149,12 +149,10 @@ protected:
 public:
   //constructor that is passed all the user decided parts of the worklet too
   MarchingCubes(
-     const ValueType& min,
-     const ValueType& max,
+     const ValueType& isoValue,
      const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &MarchingCubesField,
      dax::cont::ArrayHandle<ValueType,Container2,Adapter> &outputField)
-    : Min(min),
-      Max(max),
+    : IsoValue(isoValue),
       InputHandle(MarchingCubesField),
       OutputHandle(outputField)
   {
@@ -175,7 +173,7 @@ public:
         typename dax::cont::ArrayHandle<ValueType,Container1,Adapter>::PortalConstExecution,
         typename ArrayHandleId::PortalExecution> FunctorType;
 
-    dax::worklet::MarchingCubesClassify<ValueType> worklet(this->Min, this->Max);
+    dax::worklet::MarchingCubesClassify<ValueType> worklet(this->IsoValue);
 
     FunctorType functor(
           worklet,
@@ -220,8 +218,7 @@ public:
   }
 
 private:
-  ValueType Min;
-  ValueType Max;
+  ValueType IsoValue;
 
   const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &InputHandle;
   dax::cont::ArrayHandle<ValueType,Container2,Adapter> &OutputHandle;
@@ -246,14 +243,12 @@ template<class InGridType,
 inline void MarchingCubes(
     const InGridType &inGrid,
     OutGridType &outGeom,
-    ValueType MarchingCubesMin,
-    ValueType MarchingCubesMax,
+    ValueType IsoValue,
     const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &MarchingCubesHandle,
     dax::cont::ArrayHandle<ValueType,Container2,Adapter> &MarchingCubesResult)
 {
   dax::exec::internal::kernel::MarchingCubes<
-      ValueType,Container1,Container2,Adapter> marchingCubes(MarchingCubesMin,
-                                                         MarchingCubesMax,
+      ValueType,Container1,Container2,Adapter> marchingCubes(IsoValue,
                                                          MarchingCubesHandle,
                                                          MarchingCubesResult);
 

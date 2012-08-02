@@ -40,17 +40,15 @@
 
 namespace {
 const dax::Id DIM = 26;
-const dax::Id MIN_THRESHOLD = 70;
-const dax::Id MAX_THRESHOLD = 82;
-
+const dax::Id ISO_VALUE = 70;
 
 class CheckValid {
 public:
   CheckValid() : Valid(true) { }
   operator bool() { return this->Valid; }
+  // ALWAYS INVALID FOR NOW
   void operator()(dax::Scalar value) {
-    if ((value < MIN_THRESHOLD) || (value > MAX_THRESHOLD)) {
-      this->Valid = false; }
+      this->Valid = false;
     }
 private:
   bool Valid;
@@ -127,14 +125,13 @@ struct TestMarchingCubesWorklet
     dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
     std::cout << "Running MarchingCubes worklet" << std::endl;
-    dax::Scalar min = MIN_THRESHOLD;
-    dax::Scalar max = MAX_THRESHOLD;
+    dax::Scalar min = ISO_VALUE;
 
     try
       {
       dax::cont::worklet::MarchingCubes(inGrid,
                                     outGrid,
-                                    min,max,fieldHandle,resultHandle);
+                                    min,fieldHandle,resultHandle);
       }
     catch (dax::cont::ErrorControl error)
       {

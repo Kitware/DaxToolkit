@@ -318,31 +318,25 @@ namespace dax {
 namespace worklet {
 
 template<typename T>
-
-struct MarchingCubesFunction {
-  const T Min;
-  const T Max;
-  int valid;
-
-  DAX_EXEC_EXPORT MarchingCubesFunction(const T& min, const T&max):
-    Min(min),Max(max),valid(1)
-    {
-    }
-
-  DAX_EXEC_EXPORT void operator()(T value)
-  {
-    valid &= (value >= Min) && (value <= Max);
-  }
-};
-
+inline unsigned char GetVoxelClassification(const T isoValue,const dax::Tuple<T,8>& values )
+{
+  return ((values[0] <= isoValue) << 0 |
+          (values[1] <= isoValue) << 1 |
+          (values[2] <= isoValue) << 2 |
+          (values[3] <= isoValue) << 3 |
+          (values[4] <= isoValue) << 4 |
+          (values[5] <= isoValue) << 5 |
+          (values[6] <= isoValue) << 6 |
+          (values[7] <= isoValue) << 7);
+}
 
 template<typename ValueType>
 class MarchingCubesClassify : public dax::exec::WorkletDetermineNewCellCount
 {
 public:
   DAX_CONT_EXPORT
-  MarchingCubesClassify(ValueType MarchingCubesMin, ValueType MarchingCubesMax)
-    : MarchingCubesMin(MarchingCubesMin), MarchingCubesMax(MarchingCubesMax) {  }
+  MarchingCubesClassify(ValueType isoValue)
+    : IsoValue(isoValue) {  }
 
   template<class InputCellType>
   DAX_EXEC_EXPORT
@@ -350,15 +344,12 @@ public:
                   const dax::Tuple<ValueType,InputCellType::NUM_POINTS> &values,
                   dax::Id &newCellCount) const
   {
-    MarchingCubesFunction<ValueType> MarchingCubes(this->MarchingCubesMin,
-                                           this->MarchingCubesMax);
-    dax::exec::VectorForEach(values, MarchingCubes);
-    newCellCount = MarchingCubes.valid;
+    unsigned char voxelClass = GetVoxelClassification(IsoValue,values);
+    newCellCount =  dax::worklet::internals::numFaces[voxelClass];
   }
 
 private:
-  ValueType MarchingCubesMin;
-  ValueType MarchingCubesMax;
+  ValueType IsoValue;
 };
 
 //MarchingCubes only works when the topology is the same for input and output/
