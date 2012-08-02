@@ -20,6 +20,7 @@ set(headers
   ArrayPortalShrink.h
   DeviceAdapterError.h
   ScheduleGenerateTopology.h
+  ScheduleGenerateMangledTopology.h
   ScheduleMapAdapter.h
   Testing.h
   TestingDeviceAdapter.h

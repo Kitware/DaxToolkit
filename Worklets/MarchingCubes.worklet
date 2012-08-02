@@ -14,8 +14,8 @@
 //
 //=============================================================================
 
-#ifndef __Threshold_worklet_
-#define __Threshold_worklet_
+#ifndef __MarchingCubes_worklet_
+#define __MarchingCubes_worklet_
 
 #include <dax/exec/Cell.h>
 #include <dax/exec/VectorOperations.h>
@@ -27,12 +27,12 @@ namespace worklet {
 
 template<typename T>
 
-struct ThresholdFunction {
+struct MarchingCubesFunction {
   const T Min;
   const T Max;
   int valid;
 
-  DAX_EXEC_EXPORT ThresholdFunction(const T& min, const T&max):
+  DAX_EXEC_EXPORT MarchingCubesFunction(const T& min, const T&max):
     Min(min),Max(max),valid(1)
     {
     }
@@ -45,12 +45,12 @@ struct ThresholdFunction {
 
 
 template<typename ValueType>
-class ThresholdClassify : public dax::exec::WorkletDetermineNewCellCount
+class MarchingCubesClassify : public dax::exec::WorkletDetermineNewCellCount
 {
 public:
   DAX_CONT_EXPORT
-  ThresholdClassify(ValueType thresholdMin, ValueType thresholdMax)
-    : ThresholdMin(thresholdMin), ThresholdMax(thresholdMax) {  }
+  MarchingCubesClassify(ValueType MarchingCubesMin, ValueType MarchingCubesMax)
+    : MarchingCubesMin(MarchingCubesMin), MarchingCubesMax(MarchingCubesMax) {  }
 
   template<class InputCellType>
   DAX_EXEC_EXPORT
@@ -58,20 +58,20 @@ public:
                   const dax::Tuple<ValueType,InputCellType::NUM_POINTS> &values,
                   dax::Id &newCellCount) const
   {
-    ThresholdFunction<ValueType> threshold(this->ThresholdMin,
-                                           this->ThresholdMax);
-    dax::exec::VectorForEach(values, threshold);
-    newCellCount = threshold.valid;
+    MarchingCubesFunction<ValueType> MarchingCubes(this->MarchingCubesMin,
+                                           this->MarchingCubesMax);
+    dax::exec::VectorForEach(values, MarchingCubes);
+    newCellCount = MarchingCubes.valid;
   }
 
 private:
-  ValueType ThresholdMin;
-  ValueType ThresholdMax;
+  ValueType MarchingCubesMin;
+  ValueType MarchingCubesMax;
 };
 
-//Threshold only works when the topology is the same for input and output/
+//MarchingCubes only works when the topology is the same for input and output/
 //The only special case so far is converting CellVoxel to CellHexahedron
-class ThresholdTopology : public dax::exec::WorkletGenerateTopology
+class MarchingCubesTopology : public dax::exec::WorkletGenerateTopology
 {
 public:
   // Returning a tuple of connections feels a bit clunky.  Is there a better
@@ -83,7 +83,7 @@ public:
                   dax::Tuple<dax::Id,OutputCellSize> &outputConnections) const
   {
     //we can ignore the the requested cell Id to generate
-    //on the work object since we know for threshold it is a pass through
+    //on the work object since we know for MarchingCubes it is a pass through
     outputConnections = inputCell.GetPointIndices();
   }
 };

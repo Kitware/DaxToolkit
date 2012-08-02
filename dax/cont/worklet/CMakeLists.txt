@@ -22,6 +22,7 @@ set(headers
   Sine.h
   Square.h
   Threshold.h
+  MarchingCubes.h
   testing/Assert.h
   testing/CellMapError.h
   testing/FieldMapError.h
@@ -37,6 +38,7 @@ set(unit_tests
   UnitTestWorkletSine.cxx
   UnitTestWorkletSquare.cxx
   UnitTestWorkletThreshold.cxx
+  UnitTestWorkletMarchingCubes.cxx
   UnitTestWorkletAssert.cxx
   UnitTestWorkletMapCellError.cxx
   UnitTestWorkletMapFieldError.cxx

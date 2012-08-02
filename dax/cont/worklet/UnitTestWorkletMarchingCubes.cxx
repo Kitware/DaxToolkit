@@ -20,7 +20,7 @@
 #include <dax/cont/internal/TestingGridGenerator.h>
 #include <dax/cont/internal/Testing.h>
 
-#include <dax/cont/worklet/Threshold.h>
+#include <dax/cont/worklet/MarchingCubes.h>
 
 #include <math.h>
 #include <fstream>
@@ -84,7 +84,7 @@ void CheckValues(dax::cont::ArrayHandle<T,Container,Device> arrayHandle)
 }
 
 //-----------------------------------------------------------------------------
-struct TestThresholdWorklet
+struct TestMarchingCubesWorklet
 {
   //----------------------------------------------------------------------------
   template<typename GridType>
@@ -93,7 +93,7 @@ struct TestThresholdWorklet
     dax::cont::internal::TestGrid<GridType> in(DIM);
     GridType out;
 
-    this->GridThreshold(in.GetRealGrid(),out);
+    this->GridMarchingCubes(in.GetRealGrid(),out);
     }
 
   //----------------------------------------------------------------------------
@@ -102,13 +102,13 @@ struct TestThresholdWorklet
     dax::cont::internal::TestGrid<dax::cont::UniformGrid<> > in(DIM);
     dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> out;
 
-    this->GridThreshold(in.GetRealGrid(),out);
+    this->GridMarchingCubes(in.GetRealGrid(),out);
     }
 
   //----------------------------------------------------------------------------
   template <typename InGridType,
             typename OutGridType>
-  void GridThreshold(const InGridType& inGrid, OutGridType& outGrid) const
+  void GridMarchingCubes(const InGridType& inGrid, OutGridType& outGrid) const
     {
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
     std::vector<dax::Scalar> field(inGrid.GetNumberOfPoints());
@@ -126,13 +126,13 @@ struct TestThresholdWorklet
     //unkown size
     dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
-    std::cout << "Running Threshold worklet" << std::endl;
+    std::cout << "Running MarchingCubes worklet" << std::endl;
     dax::Scalar min = MIN_THRESHOLD;
     dax::Scalar max = MAX_THRESHOLD;
 
     try
       {
-      dax::cont::worklet::Threshold(inGrid,
+      dax::cont::worklet::MarchingCubes(inGrid,
                                     outGrid,
                                     min,max,fieldHandle,resultHandle);
       }
@@ -150,14 +150,14 @@ struct TestThresholdWorklet
 
 
 //-----------------------------------------------------------------------------
-void TestThreshold()
+void TestMarchingCubes()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestThresholdWorklet());
+  dax::cont::internal::GridTesting::TryAllGridTypes(TestMarchingCubesWorklet());
   }
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
-int UnitTestWorkletThreshold(int, char *[])
+int UnitTestWorkletMarchingCubes(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestThreshold);
+  return dax::cont::internal::Testing::Run(TestMarchingCubes);
 }

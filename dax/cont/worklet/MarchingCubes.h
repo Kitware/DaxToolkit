@@ -19,7 +19,7 @@
 
 // TODO: This should be auto-generated.
 
-#include <Worklets/Threshold.worklet>
+#include <Worklets/MarchingCubes.worklet>
 
 #include <boost/shared_ptr.hpp>
 
@@ -37,14 +37,14 @@ namespace internal {
 namespace kernel {
 
 template<class InputTopologyType, class ValuesPortalType, class CountPortalType>
-struct ThresholdClassifyFunctor
+struct MarchingCubesClassifyFunctor
 {
   typedef typename ValuesPortalType::ValueType ValueType;
   typedef typename InputTopologyType::CellType CellType;
 
   DAX_CONT_EXPORT
-  ThresholdClassifyFunctor(
-      const dax::worklet::ThresholdClassify<ValueType> &worklet,
+  MarchingCubesClassifyFunctor(
+      const dax::worklet::MarchingCubesClassify<ValueType> &worklet,
       const InputTopologyType &inputTopology,
       const ValuesPortalType &values,
       const CountPortalType &newCellCount)
@@ -58,7 +58,7 @@ struct ThresholdClassifyFunctor
       const dax::exec::internal::ErrorMessageBuffer &errorMessage)
   {
     this->Worklet.SetErrorMessageBuffer(errorMessage);
-    const dax::worklet::ThresholdClassify<ValueType> &
+    const dax::worklet::MarchingCubesClassify<ValueType> &
         constWorklet = this->Worklet;
 
     CellType cell(this->InputTopology, cellIndex);
@@ -77,20 +77,20 @@ struct ThresholdClassifyFunctor
   }
 
 private:
-  dax::worklet::ThresholdClassify<ValueType> Worklet;
+  dax::worklet::MarchingCubesClassify<ValueType> Worklet;
   InputTopologyType InputTopology;
   ValuesPortalType Values;
   CountPortalType NewCellCount;
 };
 
 template<class InputTopologyType, class OutputTopologyType>
-struct GenerateTopologyFunctor
+struct MarchingCubesGenerateTopologyFunctor
 {
   typedef typename InputTopologyType::CellType InputCellType;
   typedef typename OutputTopologyType::CellType OutputCellType;
 
-  DAX_CONT_EXPORT GenerateTopologyFunctor(
-      const dax::worklet::ThresholdTopology &worklet,
+  DAX_CONT_EXPORT MarchingCubesGenerateTopologyFunctor(
+      const dax::worklet::MarchingCubesTopology &worklet,
       const InputTopologyType &inputTopology,
       const OutputTopologyType &outputTopology)
     : Worklet(worklet),
@@ -103,7 +103,7 @@ struct GenerateTopologyFunctor
       const dax::exec::internal::ErrorMessageBuffer &errorMessage)
   {
     this->Worklet.SetErrorMessageBuffer(errorMessage);
-    const dax::worklet::ThresholdTopology &constWorklet = this->Worklet;
+    const dax::worklet::MarchingCubesTopology &constWorklet = this->Worklet;
 
     InputCellType inputCell(this->InputTopology, inputCellIndex);
     typename OutputCellType::PointConnectionsType outputCellConnections;
@@ -126,7 +126,7 @@ struct GenerateTopologyFunctor
   }
 
 private:
-  dax::worklet::ThresholdTopology Worklet;
+  dax::worklet::MarchingCubesTopology Worklet;
   InputTopologyType InputTopology;
   OutputTopologyType OutputTopology;
 };
@@ -135,27 +135,27 @@ template<class ValueType,
          class Container1,
          class Container2,
          class Adapter>
-class Threshold : public dax::cont::internal::ScheduleGenerateTopology
+class MarchingCubes : public dax::cont::internal::ScheduleGenerateTopology
     <
-    Threshold<ValueType,Container1,Container2,Adapter>,
+    MarchingCubes<ValueType,Container1,Container2,Adapter>,
     Adapter>
 {
 protected:
   typedef dax::cont::internal::ScheduleGenerateTopology<
-      Threshold<ValueType,Container1,Container2,Adapter>, Adapter> Superclass;
+      MarchingCubes<ValueType,Container1,Container2,Adapter>, Adapter> Superclass;
   typedef typename Superclass::ArrayHandleId ArrayHandleId;
   typedef typename Superclass::ArrayHandleMask ArrayHandleMask;
 
 public:
   //constructor that is passed all the user decided parts of the worklet too
-  Threshold(
+  MarchingCubes(
      const ValueType& min,
      const ValueType& max,
-     const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &thresholdField,
+     const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &MarchingCubesField,
      dax::cont::ArrayHandle<ValueType,Container2,Adapter> &outputField)
     : Min(min),
       Max(max),
-      InputHandle(thresholdField),
+      InputHandle(MarchingCubesField),
       OutputHandle(outputField)
   {
 
@@ -163,19 +163,19 @@ public:
 
   //generate the functor for the classification worklet
   template <class InputGridType>
-  ThresholdClassifyFunctor<
+  MarchingCubesClassifyFunctor<
       typename InputGridType::TopologyStructConstExecution,
       typename dax::cont::ArrayHandle<ValueType,Container1,Adapter>::PortalConstExecution,
       typename ArrayHandleId::PortalExecution>
   CreateClassificationFunctor(const InputGridType &grid,
                               ArrayHandleId &cellCountOutput)
   {
-    typedef ThresholdClassifyFunctor<
+    typedef MarchingCubesClassifyFunctor<
         typename InputGridType::TopologyStructConstExecution,
         typename dax::cont::ArrayHandle<ValueType,Container1,Adapter>::PortalConstExecution,
         typename ArrayHandleId::PortalExecution> FunctorType;
 
-    dax::worklet::ThresholdClassify<ValueType> worklet(this->Min, this->Max);
+    dax::worklet::MarchingCubesClassify<ValueType> worklet(this->Min, this->Max);
 
     FunctorType functor(
           worklet,
@@ -188,18 +188,18 @@ public:
 
   //generate the functor for the topology generation worklet
   template<class InputGridType, class OutputGridType>
-  GenerateTopologyFunctor<
+  MarchingCubesGenerateTopologyFunctor<
       typename InputGridType::TopologyStructConstExecution,
       typename OutputGridType::TopologyStructExecution>
   CreateTopologyFunctor(const InputGridType &inputGrid,
                         OutputGridType &outputGrid,
                         dax::Id outputGridSize)
   {
-    typedef GenerateTopologyFunctor<
+    typedef MarchingCubesGenerateTopologyFunctor<
         typename InputGridType::TopologyStructConstExecution,
         typename OutputGridType::TopologyStructExecution> FunctorType;
 
-    dax::worklet::ThresholdTopology worklet;
+    dax::worklet::MarchingCubesTopology worklet;
 
     FunctorType functor(
           worklet,
@@ -209,10 +209,10 @@ public:
     return functor;
   }
 
-  //threshold any fields that are needed
+  //MarchingCubes any fields that are needed
   void GenerateOutputFields(const ArrayHandleMask &pointMask)
   {
-    //we know that the threshold is being done on a point field
+    //we know that the MarchingCubes is being done on a point field
     dax::cont::internal::StreamCompact(this->InputHandle,
                                        pointMask,
                                        this->OutputHandle,
@@ -243,21 +243,21 @@ template<class InGridType,
          class Container1,
          class Container2,
          class Adapter>
-inline void Threshold(
+inline void MarchingCubes(
     const InGridType &inGrid,
     OutGridType &outGeom,
-    ValueType thresholdMin,
-    ValueType thresholdMax,
-    const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &thresholdHandle,
-    dax::cont::ArrayHandle<ValueType,Container2,Adapter> &thresholdResult)
+    ValueType MarchingCubesMin,
+    ValueType MarchingCubesMax,
+    const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &MarchingCubesHandle,
+    dax::cont::ArrayHandle<ValueType,Container2,Adapter> &MarchingCubesResult)
 {
-  dax::exec::internal::kernel::Threshold<
-      ValueType,Container1,Container2,Adapter> threshold(thresholdMin,
-                                                         thresholdMax,
-                                                         thresholdHandle,
-                                                         thresholdResult);
+  dax::exec::internal::kernel::MarchingCubes<
+      ValueType,Container1,Container2,Adapter> marchingCubes(MarchingCubesMin,
+                                                         MarchingCubesMax,
+                                                         MarchingCubesHandle,
+                                                         MarchingCubesResult);
 
-  threshold.Run(inGrid, outGeom);
+  marchingCubes.Run(inGrid, outGeom);
 }
 
 }
