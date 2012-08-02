@@ -41,19 +41,24 @@ struct ClearUsedPointsFunctor
   ClearUsedPointsFunctor(const MaskPortalType &outMask)
     : OutMask(outMask) {  }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id index,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  DAX_EXEC_EXPORT void operator()(dax::Id index) const
   {
     typedef typename MaskPortalType::ValueType MaskType;
     dax::exec::internal::FieldSet(this->OutMask,
                                   index,
                                   static_cast<MaskType>(0),
-                                  errorMessage);
+                                  this->ErrorMessage);
+  }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->ErrorMessage = errorMessage;
   }
 
 private:
   MaskPortalType OutMask;
+  dax::exec::internal::ErrorMessageBuffer ErrorMessage;
 };
 
 template<class MaskPortalType>
@@ -63,20 +68,25 @@ struct GetUsedPointsFunctor
   GetUsedPointsFunctor(const MaskPortalType &outMask)
     : OutMask(outMask) {  }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id daxNotUsed(key),
-      dax::Id value,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage) const
+  DAX_EXEC_EXPORT void operator()(dax::Id daxNotUsed(key),
+                                  dax::Id value) const
   {
     typedef typename MaskPortalType::ValueType MaskType;
     dax::exec::internal::FieldSet(this->OutMask,
                                   value,
                                   static_cast<MaskType>(1),
-                                  errorMessage);
+                                  this->ErrorMessage);
+  }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->ErrorMessage = errorMessage;
   }
 
 private:
   MaskPortalType OutMask;
+  dax::exec::internal::ErrorMessageBuffer ErrorMessage;
 };
 
 
@@ -86,18 +96,23 @@ struct LowerBoundsInputFunctor
   DAX_CONT_EXPORT LowerBoundsInputFunctor(const ArrayPortalType &array)
     : Array(array) {  }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id index,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage) const
+  DAX_EXEC_EXPORT void operator()(dax::Id index) const
   {
     dax::exec::internal::FieldSet(this->Array,
                                   index,
                                   index + 1,
-                                  errorMessage);
+                                  this->ErrorMessage);
+  }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->ErrorMessage = errorMessage;
   }
 
 private:
   ArrayPortalType Array;
+  dax::exec::internal::ErrorMessageBuffer ErrorMessage;
 };
 
 }

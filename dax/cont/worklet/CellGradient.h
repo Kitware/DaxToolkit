@@ -50,29 +50,30 @@ struct CellGradient {
       PointField(pointField),
       Gradient(gradient) {  }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id cellIndex,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  DAX_EXEC_EXPORT void operator()(dax::Id cellIndex) const
   {
-    this->Worklet.SetErrorMessageBuffer(errorMessage);
-    const dax::worklet::CellGradient &constWorklet = this->Worklet;
-
     CellType cell(this->Topology, cellIndex);
     typename GradientPortalType::ValueType gradientValue;
 
-    constWorklet(cell,
-                 dax::exec::internal::FieldGetPointsForCell(this->Coords,
-                                                            cell,
-                                                            constWorklet),
-                 dax::exec::internal::FieldGetPointsForCell(this->PointField,
-                                                            cell,
-                                                            constWorklet),
+    this->Worklet(cell,
+                  dax::exec::internal::FieldGetPointsForCell(this->Coords,
+                                                             cell,
+                                                             this->Worklet),
+                  dax::exec::internal::FieldGetPointsForCell(this->PointField,
+                                                             cell,
+                                                             this->Worklet),
                  gradientValue);
 
     dax::exec::internal::FieldSet(this->Gradient,
                                   cellIndex,
                                   gradientValue,
-                                  constWorklet);
+                                  this->Worklet);
+  }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
   }
 
 private:
@@ -112,26 +113,27 @@ struct CellGradient<
       PointField(pointField),
       Gradient(gradient) {  }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id cellIndex,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  DAX_EXEC_EXPORT void operator()(dax::Id cellIndex) const
   {
-    this->Worklet.SetErrorMessageBuffer(errorMessage);
-    const dax::worklet::CellGradient &constWorklet = this->Worklet;
-
     CellType cell(this->Topology, cellIndex);
     typename GradientPortalType::ValueType gradientValue;
 
-    constWorklet(cell,
-                 dax::exec::internal::FieldGetPointsForCell(this->PointField,
-                                                            cell,
-                                                            constWorklet),
-                 gradientValue);
+    this->Worklet(cell,
+                  dax::exec::internal::FieldGetPointsForCell(this->PointField,
+                                                             cell,
+                                                             this->Worklet),
+                  gradientValue);
 
     dax::exec::internal::FieldSet(this->Gradient,
                                   cellIndex,
                                   gradientValue,
-                                  constWorklet);
+                                  this->Worklet);
+  }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
   }
 
 private:

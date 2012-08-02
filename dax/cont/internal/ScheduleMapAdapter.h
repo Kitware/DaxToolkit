@@ -32,16 +32,19 @@ struct ScheduleMappingAdapter
                                          const ExecutionArrayPortalType &lookup)
     : Functor(functor), LookupTable(lookup) { }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id index,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  DAX_EXEC_EXPORT void operator()(dax::Id index) const
   {
     //send the index as the key, and the LookupTable[index] as value
 
-    this->Functor(index,
-                  this->LookupTable.Get(index),
-                  errorMessage);
+    this->Functor(index, this->LookupTable.Get(index));
   }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Functor.SetErrorMessageBuffer(errorMessage);
+  }
+
 private:
   FunctorType Functor;
   ExecutionArrayPortalType LookupTable;

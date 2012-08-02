@@ -39,15 +39,16 @@ struct FieldMapError
                 const PortalType &inArray)
     : Worklet(worklet), InArray(inArray) {  }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id pointIndex,
+  DAX_EXEC_EXPORT void operator()(dax::Id pointIndex) const
+  {
+    this->Worklet(
+        dax::exec::internal::FieldGet(this->InArray,pointIndex,this->Worklet));
+  }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
       const dax::exec::internal::ErrorMessageBuffer &errorMessage)
   {
     this->Worklet.SetErrorMessageBuffer(errorMessage);
-    const dax::worklet::testing::FieldMapError &constWorklet = this->Worklet;
-
-    constWorklet(
-        dax::exec::internal::FieldGet(this->InArray, pointIndex, constWorklet));
   }
 
 private:

@@ -36,10 +36,11 @@ namespace internal {
 class ErrorMessageBuffer
 {
 public:
-  DAX_EXEC_EXPORT ErrorMessageBuffer()
+  DAX_EXEC_CONT_EXPORT ErrorMessageBuffer()
     : MessageBuffer(), MessageBufferSize(0) {  }
 
-  DAX_EXEC_EXPORT ErrorMessageBuffer(char *messageBuffer, dax::Id bufferSize)
+  DAX_EXEC_CONT_EXPORT
+  ErrorMessageBuffer(char *messageBuffer, dax::Id bufferSize)
     : MessageBuffer(messageBuffer), MessageBufferSize(bufferSize) { }
 
   DAX_EXEC_EXPORT void RaiseError(const char *message) const

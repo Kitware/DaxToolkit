@@ -106,14 +106,17 @@ DAX_CONT_EXPORT void LowerBounds(
 /// Calls the \c functor on several threads. This is the function used in the
 /// control environment to spawn activity in the execution environment. \c
 /// functor is a function-like object that can be invoked with the calling
-/// specification <tt>functor(dax::Id index, const
-/// dax::exec::internal::ErrorMessageBuffer &errorMessage)</tt>.
+/// specification <tt>functor(dax::Id index)</tt>. It also has a method called
+/// from the control environment to establish the error reporting buffer with
+/// the calling specification <tt>functor.SetErrorMessageBuffer(const
+/// dax::exec::internal::ErrorMessageBuffer &errorMessage)</tt>. This object
+/// can be stored in the functor's state such that if RaiseError is called on
+/// it in the execution environment, an ErrorExecution will be thrown from
+/// Schedule.
 ///
-/// The first argument of the invoked functor uniquely identifies the thread or
+/// The argument of the invoked functor uniquely identifies the thread or
 /// instance of the invocation. There should be one invocation for each index
-/// in the range [0, \c numInstances]. The second parameter of the functor is
-/// used to report errors. If RaiseError is called on \c errorMessage with a
-/// non-empty string, an ErrorExecution will be thrown from Schedule.
+/// in the range [0, \c numInstances].
 ///
 template<class Functor>
 DAX_CONT_EXPORT void Schedule(Functor functor,

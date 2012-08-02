@@ -195,19 +195,17 @@ class ScheduleKernelSerial
 {
 public:
   ScheduleKernelSerial(
-      const FunctorType &functor,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
-    : Functor(functor), ErrorMessage(errorMessage) {  }
+      const FunctorType &functor)
+    : Functor(functor) {  }
 
   //needed for when calling from schedule on a range
-  DAX_EXEC_EXPORT void operator()(dax::Id index)
+  DAX_EXEC_EXPORT void operator()(dax::Id index) const
   {
-    this->Functor(index, this->ErrorMessage);
+    this->Functor(index);
   }
 
 private:
-  FunctorType Functor;
-  const dax::exec::internal::ErrorMessageBuffer &ErrorMessage;
+  const FunctorType Functor;
 };
 
 } // namespace detail
@@ -223,7 +221,9 @@ DAX_CONT_EXPORT void Schedule(Functor functor,
   dax::exec::internal::ErrorMessageBuffer
       errorMessage(errorString, MESSAGE_SIZE);
 
-  detail::ScheduleKernelSerial<Functor> kernel(functor, errorMessage);
+  functor.SetErrorMessageBuffer(errorMessage);
+
+  detail::ScheduleKernelSerial<Functor> kernel(functor);
 
   std::for_each(
         ::boost::counting_iterator<dax::Id>(0),

@@ -39,20 +39,23 @@ struct Elevation
     : Worklet(worklet), InCoordinates(inCoordinates), OutField(outField) {  }
 
   DAX_EXEC_EXPORT
-  void operator()(dax::Id index,
-                  const dax::exec::internal::ErrorMessageBuffer &errorBuffer)
+  void operator()(dax::Id index) const
   {
-    this->Worklet.SetErrorMessageBuffer(errorBuffer);
-    const dax::worklet::Elevation &constWorklet = this->Worklet;
-
     const typename PortalType1::ValueType inCoordinates =
         this->InCoordinates.Get(index);
     typename PortalType2::ValueType outField;
 
-    constWorklet(inCoordinates, outField);
+    this->Worklet(inCoordinates, outField);
 
     this->OutField.Set(index, outField);
   }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
+  }
+
 private:
   dax::worklet::Elevation Worklet;
   PortalType1 InCoordinates;

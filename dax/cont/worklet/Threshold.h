@@ -53,27 +53,27 @@ struct ThresholdClassifyFunctor
       Values(values),
       NewCellCount(newCellCount) {  }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id cellIndex,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  DAX_EXEC_EXPORT void operator()(dax::Id cellIndex) const
   {
-    this->Worklet.SetErrorMessageBuffer(errorMessage);
-    const dax::worklet::ThresholdClassify<ValueType> &
-        constWorklet = this->Worklet;
-
     CellType cell(this->InputTopology, cellIndex);
     dax::Id newCellCount;
 
-    constWorklet(cell,
-                 dax::exec::internal::FieldGetPointsForCell(this->Values,
-                                                            cell,
-                                                            constWorklet),
-                 newCellCount);
+    this->Worklet(cell,
+                  dax::exec::internal::FieldGetPointsForCell(this->Values,
+                                                             cell,
+                                                             this->Worklet),
+                  newCellCount);
 
     dax::exec::internal::FieldSet(this->NewCellCount,
                                   cellIndex,
                                   newCellCount,
-                                  constWorklet);
+                                  this->Worklet);
+  }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
   }
 
 private:
@@ -97,18 +97,13 @@ struct GenerateTopologyFunctor
       InputTopology(inputTopology),
       OutputTopology(outputTopology) {  }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id outputCellIndex,
-      dax::Id inputCellIndex,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  DAX_EXEC_EXPORT void operator()(dax::Id outputCellIndex,
+                                  dax::Id inputCellIndex) const
   {
-    this->Worklet.SetErrorMessageBuffer(errorMessage);
-    const dax::worklet::ThresholdTopology &constWorklet = this->Worklet;
-
     InputCellType inputCell(this->InputTopology, inputCellIndex);
     typename OutputCellType::PointConnectionsType outputCellConnections;
 
-    constWorklet(inputCell, outputCellConnections);
+    this->Worklet(inputCell, outputCellConnections);
 
     // Write cell connections back to cell array.
     dax::Id index = outputCellIndex * OutputCellType::NUM_POINTS;
@@ -120,9 +115,15 @@ struct GenerateTopologyFunctor
       dax::exec::internal::FieldSet(this->OutputTopology.CellConnections,
                                     index,
                                     outputCellConnections[localIndex],
-                                    constWorklet);
+                                    this->Worklet);
       index++;
       }
+  }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
   }
 
 private:

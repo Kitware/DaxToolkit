@@ -40,21 +40,23 @@ struct Magnitude
       InValueArray(inValueArray),
       OutValueArray(outValueArray) {  }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id index,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  DAX_EXEC_EXPORT void operator()(dax::Id index) const
   {
-    this->Worklet.SetErrorMessageBuffer(errorMessage);
-    const dax::worklet::Magnitude &constWorklet = this->Worklet;
-
     const typename PortalType1::ValueType inValue =
         this->InValueArray.Get(index);
     typename PortalType2::ValueType outValue;
 
-    constWorklet(inValue, outValue);
+    this->Worklet(inValue, outValue);
 
     this->OutValueArray.Set(index, outValue);
   }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
+  }
+
 private:
   dax::worklet::Magnitude Worklet;
   PortalType1 InValueArray;

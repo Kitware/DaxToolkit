@@ -221,21 +221,16 @@ template<class FunctorType>
 class ScheduleKernelThrust
 {
 public:
-  DAX_CONT_EXPORT ScheduleKernelThrust(
-      const FunctorType &functor,
-      ::thrust::device_vector<char> &errorMessage)
-    : Functor(functor),
-      ErrorMessage(::thrust::raw_pointer_cast(&(*errorMessage.begin())),
-                   errorMessage.size())
+  DAX_CONT_EXPORT ScheduleKernelThrust(const FunctorType &functor)
+    : Functor(functor)
   {  }
 
-  DAX_EXEC_EXPORT void operator()(dax::Id index) {
-    this->Functor(index, this->ErrorMessage);
+  DAX_EXEC_EXPORT void operator()(dax::Id index) const {
+    this->Functor(index);
   }
 
 private:
   FunctorType Functor;
-  dax::exec::internal::ErrorMessageBuffer ErrorMessage;
 };
 
 } // namespace detail
@@ -249,8 +244,13 @@ DAX_CONT_EXPORT void Schedule(
   const dax::Id ERROR_ARRAY_SIZE = 1024;
   ::thrust::device_vector<char> errorArray(ERROR_ARRAY_SIZE);
   errorArray[0] = '\0';
+  dax::exec::internal::ErrorMessageBuffer errorMessage(
+        ::thrust::raw_pointer_cast(&(*errorArray.begin())),
+        errorArray.size());
 
-  detail::ScheduleKernelThrust<Functor> kernel(functor, errorArray);
+  functor.SetErrorMessageBuffer(errorMessage);
+
+  detail::ScheduleKernelThrust<Functor> kernel(functor);
 
   ::thrust::for_each(::thrust::make_counting_iterator<dax::Id>(0),
                      ::thrust::make_counting_iterator<dax::Id>(numInstances),
