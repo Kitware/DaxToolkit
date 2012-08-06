@@ -141,9 +141,34 @@ public:
   void Run(const InGridType& inGrid,
            OutGridType& outGrid)
     {
-    ArrayHandleId newCellCount = this->ScheduleClassification(inGrid);
+    ArrayHandleId cellCount = this->ScheduleClassification(inGrid);
 
-    this->ScheduleTopology(inGrid, outGrid, newCellCount);
+    // Shrink();
+    ArrayHandleId validCellRange;
+    cellCount.PrepareForInput();
+    dax::cont::internal::StreamCompact(cellCount,
+                                       validCellRange,
+                                       DeviceAdapterTag());
+    ArrayHandleId reducedCellCount;
+    cellCount.PrepareForInput();
+    dax::cont::internal::StreamCompact(cellCount,
+                                       cellCount,
+                                       reducedCellCount,
+                                       DeviceAdapterTag());
+    // CalculateTotalOuputCells() + MakeOuputCellIndexArray();
+    ArrayHandleId outputCellIndexArray;
+    reducedCellCount.PrepareForInput();
+    //outputCellIndexArray.PrepareForOutput();
+    dax::Id totalOutputCells = dax::cont::internal::ExclusiveScan(reducedCellCount,
+                                                                  outputCellIndexArray,
+                                                                  DeviceAdapterTag());
+
+    // Generate();
+    this->ScheduleTopology(inGrid, outGrid,
+                           validCellRange,
+                           reducedCellCount,
+                           outputCellIndexArray,
+                           totalOutputCells);
     newCellCount.ReleaseResources();
 
     //GeneratePointMask uses the topology that schedule topology generates
@@ -217,41 +242,45 @@ private:
   template<typename InGridType, typename OutGridType>
   void ScheduleTopology(const InGridType& inGrid,
                         OutGridType& outGrid,
-                        const ArrayHandleId newCellCount)
+                        const ArrayHandleId validCellRange,
+                        const ArrayHandleId reducedCellCount,
+                        const ArrayHandleId outputCellIndexArray,
+                        const dax::Id totalOutputCells)
   {
-    //do an inclusive scan of the cell count / cell mask to get the number
-    //of cells in the output
-    ArrayHandleId scannedNewCellCounts;
-    const dax::Id numNewCells =
-        dax::cont::internal::InclusiveScan(newCellCount,
-                                           scannedNewCellCounts,
-                                           DeviceAdapterTag());
+//    //do an inclusive scan of the cell count / cell mask to get the number
+//    //of cells in the output
+//    ArrayHandleId scannedNewCellCounts;
+//    const dax::Id numNewCells =
+//        dax::cont::internal::InclusiveScan(newCellCount,
+//                                           scannedNewCellCounts,
+//                                           DeviceAdapterTag());
 
-    //fill the validCellRange with the values from 1 to size+1, this is used
-    //for the lower bounds to compute the right indices
-    ArrayHandleId validCellRange;
-    dax::cont::internal::Schedule(
-          dax::exec::internal::kernel::LowerBoundsInputFunctor
-              <typename ArrayHandleId::PortalExecution>(
-                validCellRange.PrepareForOutput(numNewCells)),
-          numNewCells,
-          DeviceAdapterTag());
+//    //fill the validCellRange with the values from 1 to size+1, this is used
+//    //for the lower bounds to compute the right indices
+//    ArrayHandleId validCellRange;
+//    dax::cont::internal::Schedule(
+//          dax::exec::internal::kernel::LowerBoundsInputFunctor
+//              <typename ArrayHandleId::PortalExecution>(
+//                validCellRange.PrepareForOutput(numNewCells)),
+//          numNewCells,
+//          DeviceAdapterTag());
 
-    //now do the lower bounds of the cell indices so that we figure out
-    //which original topology indexs match the new indices.
-    dax::cont::internal::LowerBounds(scannedNewCellCounts,
-                                     validCellRange,
-                                     DeviceAdapterTag());
+//    //now do the lower bounds of the cell indices so that we figure out
+//    //which original topology indexs match the new indices.
+//    dax::cont::internal::LowerBounds(scannedNewCellCounts,
+//                                     validCellRange,
+//                                     DeviceAdapterTag());
 
-    // We are done with scannedNewCellCounts.
-    scannedNewCellCounts.ReleaseResources();
+//    // We are done with scannedNewCellCounts.
+//    scannedNewCellCounts.ReleaseResources();
 
     //now call the user topology generation worklet
     dax::cont::internal::ScheduleMap(
           static_cast<Derived*>(this)->CreateTopologyFunctor(inGrid,
                                                              outGrid,
                                                              numNewCells),
-          validCellRange);
+          validCellRange,
+          outputCellIndexArray);
   }
 
   template<class InGridType, class OutGridType>
