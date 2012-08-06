@@ -120,6 +120,35 @@ DAX_CONT_EXPORT T InclusiveScan(
   return outputPortal.Get(numberOfValues - 1);
 }
 
+template<typename T, class CIn, class COut>
+DAX_CONT_EXPORT T ExclusiveScan(
+    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial> &input,
+    dax::cont::ArrayHandle<T,COut,DeviceAdapterTagSerial>& output,
+    DeviceAdapterTagSerial)
+{
+  typedef typename dax::cont::ArrayHandle<T,COut,DeviceAdapterTagSerial>
+      ::PortalExecution PortalOut;
+  typedef typename dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>
+      ::PortalConstExecution PortalIn;
+
+  dax::Id numberOfValues = input.GetNumberOfValues();
+
+  PortalIn inputPortal = input.PrepareForInput();
+  PortalOut outputPortal = output.PrepareForOutput(numberOfValues);
+
+  if (numberOfValues <= 0) { return 0; }
+
+  std::partial_sum(inputPortal.GetIteratorBegin(),
+                   inputPortal.GetIteratorEnd(),
+                   outputPortal.GetIteratorBegin());
+
+  // Shift right by one
+  std::copy_backward(outputPortal.GetIteratorBegin(),outputPortal.GetIteratorEnd()-1,outputPortal.GetIteratorEnd());
+  outputPortal.GetIteratorBegin()[0]=0;
+  // Return the value at the last index in the array, which is the full sum.
+  return outputPortal.Get(numberOfValues - 1)+inputPortal.Get(numberOfValues-1);
+}
+
 template<typename T, class CIn, class CVal, class COut>
 DAX_CONT_EXPORT void LowerBounds(
     const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>& input,

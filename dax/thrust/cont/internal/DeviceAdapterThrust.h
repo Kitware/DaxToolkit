@@ -162,6 +162,34 @@ DAX_CONT_EXPORT T InclusiveScan(
   return *(result - 1);
 }
 
+template<typename T, class CIn, class COut, class Adapter>
+DAX_CONT_EXPORT T ExclusiveScan(
+    const dax::cont::ArrayHandle<T,CIn,Adapter> &input,
+    dax::cont::ArrayHandle<T,COut,Adapter>& output,
+    dax::thrust::cont::internal::DeviceAdapterTagThrust)
+{
+  typedef typename dax::cont::internal::ArrayManagerExecution<T,CIn,Adapter>::
+      ThrustIteratorConstType ThrustIteratorInType;
+  typedef typename dax::cont::internal::ArrayManagerExecution<T,COut,Adapter>::
+      ThrustIteratorType ThrustIteratorOutType;
+
+  dax::Id numberOfValues = input.GetNumberOfValues();
+
+  std::pair<ThrustIteratorInType, ThrustIteratorInType> inputIter =
+      detail::PrepareForInput(input);
+  std::pair<ThrustIteratorOutType, ThrustIteratorOutType> outputIter =
+      detail::PrepareForOutput(output, numberOfValues);
+
+  if (numberOfValues <= 0) { return 0; }
+
+  ThrustIteratorOutType result = ::thrust::exclusive_scan(inputIter.first,
+                                                          inputIter.second,
+                                                          outputIter.first);
+
+  //return the value at the last index in the array, as that is the size
+  return *(result - 1)+input[input.GetNumberOfValues()-1];
+}
+
 template<typename T, class CIn, class CVal, class COut, class Adapter>
 DAX_CONT_EXPORT void LowerBounds(
     const dax::cont::ArrayHandle<T,CIn,Adapter>& input,
