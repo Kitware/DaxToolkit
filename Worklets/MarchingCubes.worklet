@@ -367,7 +367,7 @@ public:
   {
     //we can ignore the the requested cell Id to generate
     //on the work object since we know for MarchingCubes it is a pass through
-    outputConnections = inputCell.GetPointIndices();
+    //outputConnections = inputCell.GetPointIndices();
   }
 };
 
