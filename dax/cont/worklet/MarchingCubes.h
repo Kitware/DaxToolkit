@@ -36,6 +36,7 @@ namespace exec {
 namespace internal {
 namespace kernel {
 
+// ---------------------------------------------------------------------- Count
 template<class InputTopologyType, class ValuesPortalType, class CountPortalType>
 struct MarchingCubesClassifyFunctor
 {
@@ -83,6 +84,7 @@ private:
   CountPortalType NewCellCount;
 };
 
+// ------------------------------------------------------------------- Generate
 template<class InputTopologyType, class OutputTopologyType>
 struct MarchingCubesGenerateTopologyFunctor
 {
@@ -131,6 +133,7 @@ private:
   OutputTopologyType OutputTopology;
 };
 
+// -------------------------------------------------------------- MarchingCubes
 template<class ValueType,
          class Container1,
          class Container2,
