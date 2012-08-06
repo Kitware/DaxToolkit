@@ -14,8 +14,8 @@
 //
 //=============================================================================
 
-#ifndef __dax_cont_internal_ScheduleGenerateTopology_h
-#define __dax_cont_internal_ScheduleGenerateTopology_h
+#ifndef __dax_cont_internal_ScheduleGenerateMangledTopology_h
+#define __dax_cont_internal_ScheduleGenerateMangledTopology_h
 
 #include <dax/Types.h>
 #include <dax/exec/Cell.h>
@@ -111,16 +111,16 @@ namespace cont {
 namespace internal {
 
 
-/// ScheduleGenerateTopology is the control enviorment representation of a
+/// ScheduleGenerateMangledTopology is the control enviorment representation of a
 /// worklet of the type WorkDetermineNewCellCount. This class handles properly
 /// calling the worklet that the user has defined has being of type
 /// WorkDetermineNewCellCount.
 ///
-/// Since ScheduleGenerateTopology uses CRTP, every worklet needs to construct
+/// Since ScheduleGenerateMangledTopology uses CRTP, every worklet needs to construct
 /// a class that inherits from this class and define GenerateParameters.
 ///
 template<class Derived, class DeviceAdapterTag>
-class ScheduleGenerateTopology
+class ScheduleGenerateMangledTopology
 {
 public:
   typedef dax::Id MaskType;
@@ -133,7 +133,7 @@ protected:
        ArrayHandleMask;
 
 public:
-  /// Executes the ScheduleGenerateTopology algorithm on the inputGrid and
+  /// Executes the ScheduleGenerateMangledTopology algorithm on the inputGrid and
   /// places the resulting unstructured grid in outGrid
   ///
   template<typename InGridType, typename OutGridType>
@@ -323,4 +323,4 @@ private:
 } //dax
 
 
-#endif // __dax_cont_internal_ScheduleGenerateTopology_h
+#endif // __dax_cont_internal_ScheduleGenerateMangledTopology_h
