@@ -14,6 +14,9 @@
 ##
 ##=============================================================================
 
+find_package(VTK REQUIRED)
+include("${VTK_USE_FILE}")
+
 set(headers
   CellGradient.h
   Cosine.h
@@ -44,3 +47,6 @@ set(unit_tests
   UnitTestWorkletMapFieldError.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
+
+add_executable(testMC TestMarchingCubes.cxx)
+target_link_libraries(testMC vtkCommonDataModel vtkIOGeometry)
