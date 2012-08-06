@@ -27,7 +27,7 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 
-#include <dax/cont/internal/ScheduleGenerateTopology.h>
+#include <dax/cont/internal/ScheduleGenerateMangledTopology.h>
 
 #include <dax/exec/internal/FieldAccess.h>
 
@@ -135,13 +135,13 @@ template<class ValueType,
          class Container1,
          class Container2,
          class Adapter>
-class MarchingCubes : public dax::cont::internal::ScheduleGenerateTopology
+class MarchingCubes : public dax::cont::internal::ScheduleGenerateMangledTopology
     <
     MarchingCubes<ValueType,Container1,Container2,Adapter>,
     Adapter>
 {
 protected:
-  typedef dax::cont::internal::ScheduleGenerateTopology<
+  typedef dax::cont::internal::ScheduleGenerateMangledTopology<
       MarchingCubes<ValueType,Container1,Container2,Adapter>, Adapter> Superclass;
   typedef typename Superclass::ArrayHandleId ArrayHandleId;
   typedef typename Superclass::ArrayHandleMask ArrayHandleMask;
