@@ -16,6 +16,7 @@
 
 #include <dax/exec/math/Trig.h>
 
+#include <dax/exec/VectorOperations.h>
 #include <dax/exec/math/Exp.h>
 
 #include <dax/internal/Testing.h>

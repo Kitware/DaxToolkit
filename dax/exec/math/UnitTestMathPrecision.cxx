@@ -16,6 +16,8 @@
 
 #include <dax/exec/math/Precision.h>
 
+#include <dax/exec/VectorOperations.h>
+
 #include <dax/internal/Testing.h>
 
 namespace {

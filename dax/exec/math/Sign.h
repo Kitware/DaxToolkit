@@ -19,11 +19,10 @@
 // This header file defines math functions that deal with the sign (positive or
 // negative) of numbers.
 
-#include <dax/Types.h>
-#include <dax/exec/VectorOperations.h>
+#include <dax/internal/MathSystemFunctions.h>
 
 #ifndef DAX_CUDA
-#include <math.h>
+
 #include <stdlib.h>
 
 // signbit is usually defined as a macro, and boost seems to want to undefine
@@ -32,55 +31,30 @@
 // version when compiling for a CPU.
 #include <boost/math/special_functions/sign.hpp>
 using boost::math::signbit;
+
 #endif
 
 namespace dax {
 namespace exec {
 namespace math {
 
-#ifdef DAX_USE_DOUBLE_PRECISION
-#define DAX_SYS_MATH_FUNCTION(func) func
-#else //DAX_USE_DOUBLE_PRECISION
-#define DAX_SYS_MATH_FUNCTION(func) func ## f
-#endif //DAX_USE_DOUBLE_PRECISION
-
-#define DAX_SYS_MATH_FUNCTOR(func) \
-  namespace internal { \
-  struct func ## _functor { \
-    DAX_EXEC_EXPORT dax::Scalar operator()(dax::Scalar x) const { \
-      return DAX_SYS_MATH_FUNCTION(func)(x); \
-    } \
-  }; \
-  }
-
-#define DAX_SYS_MATH_TEMPLATE(func) \
-  DAX_SYS_MATH_FUNCTOR(func) \
-  namespace internal { \
-    template <typename T> DAX_EXEC_EXPORT T func ## _template(T x) \
-    { \
-      return dax::exec::VectorMap(x, func ## _functor()); \
-    } \
-  }
-
 //-----------------------------------------------------------------------------
-DAX_SYS_MATH_TEMPLATE(fabs)
-
 /// Return the absolute value of \x. That is, return \p x if it is positive or
 /// \p -x if it is negative.
 ///
-DAX_EXEC_EXPORT dax::Scalar Abs(dax::Scalar x) {
-  return internal::fabs_template(x);
+DAX_EXEC_CONT_EXPORT dax::Scalar Abs(dax::Scalar x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(fabs)>(x);
 }
-DAX_EXEC_EXPORT dax::Vector2 Abs(dax::Vector2 x) {
-  return internal::fabs_template(x);
+DAX_EXEC_CONT_EXPORT dax::Vector2 Abs(dax::Vector2 x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(fabs)>(x);
 }
-DAX_EXEC_EXPORT dax::Vector3 Abs(dax::Vector3 x) {
-  return internal::fabs_template(x);
+DAX_EXEC_CONT_EXPORT dax::Vector3 Abs(dax::Vector3 x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(fabs)>(x);
 }
-DAX_EXEC_EXPORT dax::Vector4 Abs(dax::Vector4 x) {
-  return internal::fabs_template(x);
+DAX_EXEC_CONT_EXPORT dax::Vector4 Abs(dax::Vector4 x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(fabs)>(x);
 }
-DAX_EXEC_EXPORT dax::Id Abs(dax::Id x)
+DAX_EXEC_CONT_EXPORT dax::Id Abs(dax::Id x)
 {
 #if DAX_SIZE_ID == DAX_SIZE_INT
   return abs(x);
@@ -92,7 +66,7 @@ DAX_EXEC_EXPORT dax::Id Abs(dax::Id x)
 #error Cannot find correct size for dax::Id.
 #endif
 }
-DAX_EXEC_EXPORT dax::Id3 Abs(dax::Id3 x)
+DAX_EXEC_CONT_EXPORT dax::Id3 Abs(dax::Id3 x)
 {
   return dax::make_Id3(Abs(x[0]), Abs(x[1]), Abs(x[2]));
 }
@@ -100,7 +74,7 @@ DAX_EXEC_EXPORT dax::Id3 Abs(dax::Id3 x)
 //-----------------------------------------------------------------------------
 /// Returns true if \p x is less than zero, false otherwise.
 ///
-DAX_EXEC_EXPORT bool IsNegative(dax::Scalar x)
+DAX_EXEC_CONT_EXPORT bool IsNegative(dax::Scalar x)
 {
   return (signbit(x) != 0);
 }
@@ -109,7 +83,7 @@ DAX_EXEC_EXPORT bool IsNegative(dax::Scalar x)
 /// Copies the sign of \p y onto \p x.  If \p y is positive, returns Abs(\p x).
 /// If \p x is negative, returns -Abs(\p x).
 ///
-DAX_EXEC_EXPORT dax::Scalar CopySign(dax::Scalar x, dax::Scalar y)
+DAX_EXEC_CONT_EXPORT dax::Scalar CopySign(dax::Scalar x, dax::Scalar y)
 {
   return DAX_SYS_MATH_FUNCTION(copysign)(x, y);
 }
@@ -117,9 +91,5 @@ DAX_EXEC_EXPORT dax::Scalar CopySign(dax::Scalar x, dax::Scalar y)
 }
 }
 } // namespace dax::exec::math
-
-#undef DAX_SYS_MATH_FUNCTION
-#undef DAX_SYS_MATH_FUNCTOR
-#undef DAX_SYS_MATH_TEMPLATE
 
 #endif //__dax_exec_math_Sign_h

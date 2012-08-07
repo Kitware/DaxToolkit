@@ -41,32 +41,32 @@ public:
   static const int NUM_ROWS = NumRow;
   static const int NUM_COLUMNS = NumCol;
 
-  DAX_EXEC_EXPORT Matrix() { }
-  DAX_EXEC_EXPORT explicit Matrix(const ComponentType &value)
+  DAX_EXEC_CONT_EXPORT Matrix() { }
+  DAX_EXEC_CONT_EXPORT explicit Matrix(const ComponentType &value)
     : Components(dax::Tuple<ComponentType, NUM_COLUMNS>(value)) { }
 
   /// Brackets are used to reference a matrix like a 2D array (i.e.
   /// matrix[row][column]).
-  DAX_EXEC_EXPORT
+  DAX_EXEC_CONT_EXPORT
   const dax::Tuple<ComponentType, NUM_COLUMNS> &operator[](int rowIndex) const {
     return this->Components[rowIndex];
   }
   /// Brackets are used to referens a matrix like a 2D array i.e.
   /// matrix[row][column].
-  DAX_EXEC_EXPORT
+  DAX_EXEC_CONT_EXPORT
   dax::Tuple<ComponentType, NUM_COLUMNS> &operator[](int rowIndex) {
     return this->Components[rowIndex];
   }
 
   /// Parentheses are used to reference a matrix using mathematical tuple
   /// notation i.e. matrix(row,column).
-  DAX_EXEC_EXPORT
+  DAX_EXEC_CONT_EXPORT
   const ComponentType &operator()(int rowIndex, int colIndex) const {
     return (*this)[rowIndex][colIndex];
   }
   /// Parentheses are used to reference a matrix using mathematical tuple
   /// notation i.e. matrix(row,column).
-  DAX_EXEC_EXPORT
+  DAX_EXEC_CONT_EXPORT
   ComponentType &operator()(int rowIndex, int colIndex) {
     return (*this)[rowIndex][colIndex];
   }
@@ -80,10 +80,10 @@ private:
 class Matrix2x2 : public Matrix<dax::Scalar, 2, 2> {
   typedef Matrix<dax::Scalar, 2, 2> Superclass;
 public:
-  DAX_EXEC_EXPORT Matrix2x2() {  }
-  DAX_EXEC_EXPORT explicit Matrix2x2(const dax::Scalar &value)
+  DAX_EXEC_CONT_EXPORT Matrix2x2() {  }
+  DAX_EXEC_CONT_EXPORT explicit Matrix2x2(const dax::Scalar &value)
     : Superclass(value) {  }
-  DAX_EXEC_EXPORT Matrix2x2(const Matrix<dax::Scalar, 2, 2> &values)
+  DAX_EXEC_CONT_EXPORT Matrix2x2(const Matrix<dax::Scalar, 2, 2> &values)
     : Superclass(values) {  }
 };
 
@@ -92,10 +92,10 @@ public:
 class Matrix3x3 : public Matrix<dax::Scalar, 3, 3> {
   typedef Matrix<dax::Scalar, 3, 3> Superclass;
 public:
-  DAX_EXEC_EXPORT Matrix3x3() {  }
-  DAX_EXEC_EXPORT explicit Matrix3x3(const dax::Scalar &value)
+  DAX_EXEC_CONT_EXPORT Matrix3x3() {  }
+  DAX_EXEC_CONT_EXPORT explicit Matrix3x3(const dax::Scalar &value)
     : Superclass(value) {  }
-  DAX_EXEC_EXPORT Matrix3x3(const Matrix<dax::Scalar, 3, 3> &values)
+  DAX_EXEC_CONT_EXPORT Matrix3x3(const Matrix<dax::Scalar, 3, 3> &values)
     : Superclass(values) {  }
 };
 
@@ -104,10 +104,10 @@ public:
 class Matrix4x4 : public Matrix<dax::Scalar, 4, 4> {
   typedef Matrix<dax::Scalar, 4, 4> Superclass;
 public:
-  DAX_EXEC_EXPORT Matrix4x4() {  }
-  DAX_EXEC_EXPORT explicit Matrix4x4(const dax::Scalar &value)
+  DAX_EXEC_CONT_EXPORT Matrix4x4() {  }
+  DAX_EXEC_CONT_EXPORT explicit Matrix4x4(const dax::Scalar &value)
     : Superclass(value) {  }
-  DAX_EXEC_EXPORT Matrix4x4(const Matrix<dax::Scalar, 4, 4> &values)
+  DAX_EXEC_CONT_EXPORT Matrix4x4(const Matrix<dax::Scalar, 4, 4> &values)
     : Superclass(values) {  }
 };
 
@@ -115,7 +115,7 @@ public:
 /// matrix.
 ///
 template<typename T, int NumRow, int NumCol>
-DAX_EXEC_EXPORT const dax::Tuple<T, NumCol> &MatrixRow(
+DAX_EXEC_CONT_EXPORT const dax::Tuple<T, NumCol> &MatrixRow(
     const dax::exec::math::Matrix<T,NumRow,NumCol> &matrix, int rowIndex)
 {
   return matrix[rowIndex];
@@ -125,7 +125,7 @@ DAX_EXEC_EXPORT const dax::Tuple<T, NumCol> &MatrixRow(
 /// matrix.  Might not be as efficient as the Row function.
 ///
 template<typename T, int NumRow, int NumCol>
-DAX_EXEC_EXPORT dax::Tuple<T, NumRow> MatrixColumn(
+DAX_EXEC_CONT_EXPORT dax::Tuple<T, NumRow> MatrixColumn(
     const dax::exec::math::Matrix<T,NumRow,NumCol> &matrix, int columnIndex)
 {
   dax::Tuple<T, NumRow> columnValues;
@@ -139,7 +139,7 @@ DAX_EXEC_EXPORT dax::Tuple<T, NumRow> MatrixColumn(
 /// Convenience function for setting a row of a matrix.
 ///
 template<typename T, int NumRow, int NumCol>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 void MatrixSetRow(dax::exec::math::Matrix<T,NumRow,NumCol> &matrix,
                   int rowIndex,
                   dax::Tuple<T,NumCol> rowValues)
@@ -150,7 +150,7 @@ void MatrixSetRow(dax::exec::math::Matrix<T,NumRow,NumCol> &matrix,
 /// Convenience function for setting a column of a matrix.
 ///
 template<typename T, int NumRow, int NumCol>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 void MatrixSetColumn(dax::exec::math::Matrix<T,NumRow,NumCol> &matrix,
                      int columnIndex,
                      dax::Tuple<T,NumRow> columnValues)
@@ -164,7 +164,7 @@ void MatrixSetColumn(dax::exec::math::Matrix<T,NumRow,NumCol> &matrix,
 /// Standard matrix multiplication.
 ///
 template<typename T, int NumRow, int NumCol, int NumInternal>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::exec::math::Matrix<T,NumRow,NumCol> MatrixMultiply(
     const dax::exec::math::Matrix<T,NumRow,NumInternal> &leftFactor,
     const dax::exec::math::Matrix<T,NumInternal,NumCol> &rightFactor)
@@ -189,7 +189,7 @@ dax::exec::math::Matrix<T,NumRow,NumCol> MatrixMultiply(
 /// Standard matrix-vector multiplication.
 ///
 template<typename T, int NumRow, int NumCol>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Tuple<T,NumRow> MatrixMultiply(
     const dax::exec::math::Matrix<T,NumRow,NumCol> &leftFactor,
     const dax::Tuple<T,NumCol> &rightFactor)
@@ -206,7 +206,7 @@ dax::Tuple<T,NumRow> MatrixMultiply(
 /// Standard vector-matrix multiplication
 ///
 template<typename T, int NumRow, int NumCol>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Tuple<T,NumCol> MatrixMultiply(
     const dax::Tuple<T,NumRow> &leftFactor,
     const dax::exec::math::Matrix<T,NumRow,NumCol> &rightFactor)
@@ -224,7 +224,7 @@ dax::Tuple<T,NumCol> MatrixMultiply(
 /// Returns the identity matrix.
 ///
 template<typename T, int Size>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::exec::math::Matrix<T,Size,Size> MatrixIdentity()
 {
   dax::exec::math::Matrix<T,Size,Size> result(0);
@@ -238,7 +238,7 @@ dax::exec::math::Matrix<T,Size,Size> MatrixIdentity()
 /// Fills the given matrix with the identity matrix.
 ///
 template<typename T, int Size>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 void MatrixIdentity(dax::exec::math::Matrix<T,Size,Size> &matrix)
 {
   matrix = dax::exec::math::MatrixIdentity<T,Size>();
@@ -247,7 +247,7 @@ void MatrixIdentity(dax::exec::math::Matrix<T,Size,Size> &matrix)
 /// Returns the transpose of the given matrix.
 ///
 template<typename T, int NumRows, int NumCols>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::exec::math::Matrix<T,NumCols,NumRows> MatrixTranspose(
     const dax::exec::math::Matrix<T,NumRows,NumCols> &matrix)
 {
@@ -263,7 +263,7 @@ namespace detail {
 
 // Used with MatrixLUPFactor.
 template<int Size>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 void MatrixLUPFactorFindPivot(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
                               dax::Tuple<int,Size> &permutation,
                               int topCornerIndex,
@@ -307,7 +307,7 @@ void MatrixLUPFactorFindPivot(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
 
 // Used with MatrixLUPFactor
 template<int Size>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 void MatrixLUPFactorFindUpperTriangleElements(
     dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
     int topCornerIndex)
@@ -360,7 +360,7 @@ void MatrixLUPFactorFindUpperTriangleElements(
 /// Otherwise, valid is set to false and the result is indeterminant.
 ///
 template<int Size>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 void MatrixLUPFactor(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
                      dax::Tuple<int,Size> &permutation,
                      dax::Scalar &inversionParity,
@@ -383,7 +383,7 @@ void MatrixLUPFactor(dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
 /// matrices calculated by MatrixLUPFactor from A.
 ///
 template<int Size>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 void MatrixLUPSolve(const dax::exec::math::Matrix<dax::Scalar,Size,Size> &LU,
                     const dax::Tuple<int,Size> &permutation,
                     const dax::Tuple<dax::Scalar,Size> &b,
@@ -426,7 +426,7 @@ void MatrixLUPSolve(const dax::exec::math::Matrix<dax::Scalar,Size,Size> &LU,
 /// is set to true, false otherwise.
 ///
 template<int Size>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Tuple<dax::Scalar,Size> SolveLinearSystem(
     const dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
     const dax::Tuple<dax::Scalar,Size> &b,
@@ -451,7 +451,7 @@ dax::Tuple<dax::Scalar,Size> SolveLinearSystem(
 /// the inverse will not be correct and valid will be set to false.
 ///
 template<int Size>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::exec::math::Matrix<dax::Scalar,Size,Size> MatrixInverse(
     const dax::exec::math::Matrix<dax::Scalar,Size,Size> &A,
     bool &valid)
@@ -484,7 +484,7 @@ dax::exec::math::Matrix<dax::Scalar,Size,Size> MatrixInverse(
 /// Compute the determinant of a matrix.
 ///
 template<int Size>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Scalar MatrixDeterminant(
     const dax::exec::math::Matrix<dax::Scalar,Size,Size> &A)
 {
@@ -517,7 +517,7 @@ dax::Scalar MatrixDeterminant(
 // Specializations for common small determinants.
 
 template<>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Scalar MatrixDeterminant<1>(
     const dax::exec::math::Matrix<dax::Scalar,1,1> &A)
 {
@@ -525,7 +525,7 @@ dax::Scalar MatrixDeterminant<1>(
 }
 
 template<>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Scalar MatrixDeterminant<2>(
     const dax::exec::math::Matrix<dax::Scalar,2,2> &A)
 {
@@ -533,7 +533,7 @@ dax::Scalar MatrixDeterminant<2>(
 }
 
 template<>
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Scalar MatrixDeterminant<3>(
     const dax::exec::math::Matrix<dax::Scalar,3,3> &A)
 {
@@ -588,19 +588,19 @@ public:
   static const int NUM_COMPONENTS = NumRow*NumCol;
   typedef dax::VectorTraitsTagMultipleComponents HasMultipleComponents;
 
-  DAX_EXEC_EXPORT static const ComponentType &GetComponent(
+  DAX_EXEC_CONT_EXPORT static const ComponentType &GetComponent(
       const MatrixType &matrix, int component) {
     int colIndex = component % NumCol;
     int rowIndex = component / NumCol;
     return matrix(rowIndex,colIndex);
   }
-  DAX_EXEC_EXPORT static ComponentType &GetComponent(
+  DAX_EXEC_CONT_EXPORT static ComponentType &GetComponent(
       MatrixType &matrix, int component) {
     int colIndex = component % NumCol;
     int rowIndex = component / NumCol;
     return matrix(rowIndex,colIndex);
   }
-  DAX_EXEC_EXPORT static void SetComponent(MatrixType &matrix,
+  DAX_EXEC_CONT_EXPORT static void SetComponent(MatrixType &matrix,
                                            int component,
                                            T value)
   {
@@ -632,7 +632,7 @@ struct VectorTraits<dax::exec::math::Matrix4x4>
 // Basic comparison operators.
 
 template<typename T, int NumRow, int NumCol>
-DAX_EXEC_EXPORT bool operator==(
+DAX_EXEC_CONT_EXPORT bool operator==(
     const dax::exec::math::Matrix<T,NumRow,NumCol> &a,
     const dax::exec::math::Matrix<T,NumRow,NumCol> &b)
 {
@@ -646,7 +646,7 @@ DAX_EXEC_EXPORT bool operator==(
   return true;
 }
 template<typename T, int NumRow, int NumCol>
-DAX_EXEC_EXPORT bool operator!=(
+DAX_EXEC_CONT_EXPORT bool operator!=(
     const dax::exec::math::Matrix<T,NumRow,NumCol> &a,
     const dax::exec::math::Matrix<T,NumRow,NumCol> &b)
 {

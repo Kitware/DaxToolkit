@@ -37,6 +37,7 @@ namespace math {
 /// desired output, or the closest point found, is returned.
 ///
 template<int Size, class JacobianFunctor, class FunctionFunctor>
+DAX_EXEC_CONT_EXPORT
 dax::Tuple<dax::Scalar,Size>
 NewtonsMethod(JacobianFunctor jacobianEvaluator,
               FunctionFunctor functionEvaluator,
