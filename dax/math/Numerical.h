@@ -13,18 +13,17 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_math_Numerical_h
-#define __dax_exec_math_Numerical_h
+#ifndef __dax_math_Numerical_h
+#define __dax_math_Numerical_h
 
 // This header file defines some numerical methods that are useful in
 // computational geometry.
 
 #include <dax/Types.h>
-#include <dax/exec/math/Matrix.h>
-#include <dax/exec/math/Sign.h>
+#include <dax/math/Matrix.h>
+#include <dax/math/Sign.h>
 
 namespace dax {
-namespace exec {
 namespace math {
 
 /// Uses Newton's method to solve a nonlinear system of equations. This
@@ -48,7 +47,7 @@ NewtonsMethod(JacobianFunctor jacobianEvaluator,
               dax::Id maxIterations = 10)
 {
   typedef dax::Tuple<dax::Scalar,Size> VectorType;
-  typedef dax::exec::math::Matrix<dax::Scalar,Size,Size> MatrixType;
+  typedef dax::math::Matrix<dax::Scalar,Size,Size> MatrixType;
 
   VectorType x = initialGuess;
 
@@ -71,7 +70,7 @@ NewtonsMethod(JacobianFunctor jacobianEvaluator,
 
     bool valid;  // Ignored.
     VectorType deltaX =
-        dax::exec::math::SolveLinearSystem(
+        dax::math::SolveLinearSystem(
           jacobian,
           currentFunctionOutput - desiredFunctionOutput,
           valid);
@@ -81,7 +80,7 @@ NewtonsMethod(JacobianFunctor jacobianEvaluator,
     converged = true;
     for (int index = 0; index < Size; index++)
       {
-      converged &= (dax::exec::math::Abs(deltaX[index]) < convergeDifference);
+      converged &= (dax::math::Abs(deltaX[index]) < convergeDifference);
       }
     }
 
@@ -90,7 +89,6 @@ NewtonsMethod(JacobianFunctor jacobianEvaluator,
 }
 
 }
-}
-} // namespace dax::exec::math
+} // namespace dax::math
 
-#endif //__dax_exec_math_Numerical_h
+#endif //__dax_math_Numerical_h

@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/exec/math/Exp.h>
+#include <dax/math/Exp.h>
 
 #include <dax/Types.h>
 #include <dax/exec/VectorOperations.h>
@@ -36,7 +36,7 @@ void PowTest()
   for (dax::Id index = 0; index < NUM_NUMBERS; index++)
     {
     dax::Scalar x = NumberList[index];
-    dax::Scalar powx = dax::exec::math::Pow(x, 2.0);
+    dax::Scalar powx = dax::math::Pow(x, 2.0);
     dax::Scalar sqrx = x*x;
     DAX_TEST_ASSERT(test_equal(powx, sqrx), "Power gave wrong result.");
     }
@@ -48,7 +48,7 @@ struct RaiseTo
   dax::Scalar Exponent;
   RaiseTo(dax::Scalar exponent) : Exponent(exponent) { }
   dax::Scalar operator()(dax::Scalar base) const {
-    return dax::exec::math::Pow(base, this->Exponent);
+    return dax::math::Pow(base, this->Exponent);
   }
 };
 
@@ -70,7 +70,7 @@ void RaiseToTest(FunctionType function, dax::Scalar exponent)
 }
 
 template<class VectorType> struct SqrtFunctor {
-  VectorType operator()(VectorType x) const { return dax::exec::math::Sqrt(x); }
+  VectorType operator()(VectorType x) const { return dax::math::Sqrt(x); }
 };
 template<class VectorType>
 void SqrtTest()
@@ -82,7 +82,7 @@ void SqrtTest()
 }
 
 template<class VectorType> struct RSqrtFunctor {
-  VectorType operator()(VectorType x) const {return dax::exec::math::RSqrt(x);}
+  VectorType operator()(VectorType x) const {return dax::math::RSqrt(x);}
 };
 template<class VectorType>
 void RSqrtTest()
@@ -94,7 +94,7 @@ void RSqrtTest()
 }
 
 template<class VectorType> struct CbrtFunctor {
-  VectorType operator()(VectorType x) const { return dax::exec::math::Cbrt(x); }
+  VectorType operator()(VectorType x) const { return dax::math::Cbrt(x); }
 };
 template<class VectorType>
 void CbrtTest()
@@ -106,7 +106,7 @@ void CbrtTest()
 }
 
 template<class VectorType> struct RCbrtFunctor {
-  VectorType operator()(VectorType x) const {return dax::exec::math::RCbrt(x);}
+  VectorType operator()(VectorType x) const {return dax::math::RCbrt(x);}
 };
 template<class VectorType>
 void RCbrtTest()
@@ -126,7 +126,7 @@ struct RaiseBy
   RaiseBy(dax::Scalar base, dax::Scalar exponentbias, dax::Scalar resultbias)
     : Base(base), ExponentBias(exponentbias), ResultBias(resultbias) { }
   dax::Scalar operator()(dax::Scalar exponent) const {
-    return dax::exec::math::Pow(this->Base, exponent + this->ExponentBias)
+    return dax::math::Pow(this->Base, exponent + this->ExponentBias)
         + this->ResultBias;
   }
 };
@@ -155,7 +155,7 @@ void RaiseByTest(FunctionType function,
 }
 
 template<class VectorType> struct ExpFunctor {
-  VectorType operator()(VectorType x) const {return dax::exec::math::Exp(x);}
+  VectorType operator()(VectorType x) const {return dax::math::Exp(x);}
 };
 template<class VectorType>
 void ExpTest()
@@ -167,7 +167,7 @@ void ExpTest()
 }
 
 template<class VectorType> struct Exp2Functor {
-  VectorType operator()(VectorType x) const {return dax::exec::math::Exp2(x);}
+  VectorType operator()(VectorType x) const {return dax::math::Exp2(x);}
 };
 template<class VectorType>
 void Exp2Test()
@@ -179,7 +179,7 @@ void Exp2Test()
 }
 
 template<class VectorType> struct ExpM1Functor {
-  VectorType operator()(VectorType x) const {return dax::exec::math::ExpM1(x);}
+  VectorType operator()(VectorType x) const {return dax::math::ExpM1(x);}
 };
 template<class VectorType>
 void ExpM1Test()
@@ -191,7 +191,7 @@ void ExpM1Test()
 }
 
 template<class VectorType> struct Exp10Functor {
-  VectorType operator()(VectorType x) const {return dax::exec::math::Exp10(x);}
+  VectorType operator()(VectorType x) const {return dax::math::Exp10(x);}
 };
 template<class VectorType>
 void Exp10Test()
@@ -206,11 +206,11 @@ void Exp10Test()
 void Log2Test()
 {
   std::cout << "Testing Log2" << std::endl;
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Log2(dax::Scalar(0.25)),
+  DAX_TEST_ASSERT(test_equal(dax::math::Log2(dax::Scalar(0.25)),
                              dax::Scalar(-2.0)),
                   "Bad value from Log2");
   DAX_TEST_ASSERT(
-        test_equal(dax::exec::math::Log2(dax::make_Vector4(0.5, 1.0, 2.0, 4.0)),
+        test_equal(dax::math::Log2(dax::make_Vector4(0.5, 1.0, 2.0, 4.0)),
                    dax::make_Vector4(-1.0, 0.0, 1.0, 2.0)),
         "Bad value from Log2");
 }
@@ -231,7 +231,7 @@ void LogBaseTest(FunctionType function, dax::Scalar base, dax::Scalar bias=0.0)
     dax::exec::VectorFill(biased, NumberList[index] + bias);
 
     VectorType logresult
-        = dax::exec::math::Log2(biased)/dax::exec::math::Log2(basevector);
+        = dax::math::Log2(biased)/dax::math::Log2(basevector);
 
     DAX_TEST_ASSERT(test_equal(mathresult, logresult),
                     "Log functions do not agree.");
@@ -239,7 +239,7 @@ void LogBaseTest(FunctionType function, dax::Scalar base, dax::Scalar bias=0.0)
 }
 
 template<class VectorType> struct LogFunctor {
-  VectorType operator()(VectorType x) const {return dax::exec::math::Log(x);}
+  VectorType operator()(VectorType x) const {return dax::math::Log(x);}
 };
 template<class VectorType>
 void LogTest()
@@ -251,7 +251,7 @@ void LogTest()
 }
 
 template<class VectorType> struct Log10Functor {
-  VectorType operator()(VectorType x) const {return dax::exec::math::Log10(x);}
+  VectorType operator()(VectorType x) const {return dax::math::Log10(x);}
 };
 template<class VectorType>
 void Log10Test()
@@ -263,7 +263,7 @@ void Log10Test()
 }
 
 template<class VectorType> struct Log1PFunctor {
-  VectorType operator()(VectorType x) const {return dax::exec::math::Log1P(x);}
+  VectorType operator()(VectorType x) const {return dax::math::Log1P(x);}
 };
 template<class VectorType>
 void Log1PTest()

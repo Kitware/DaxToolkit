@@ -44,6 +44,8 @@ configure_file(
 #-----------------------------------------------------------------------------
 add_subdirectory(internal)
 
+add_subdirectory(math)
+
 add_subdirectory(exec)
 add_subdirectory(cont)
 

@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_math_Sign_h
-#define __dax_exec_math_Sign_h
+#ifndef __dax_math_Sign_h
+#define __dax_math_Sign_h
 
 // This header file defines math functions that deal with the sign (positive or
 // negative) of numbers.
@@ -35,7 +35,6 @@ using boost::math::signbit;
 #endif
 
 namespace dax {
-namespace exec {
 namespace math {
 
 //-----------------------------------------------------------------------------
@@ -89,7 +88,6 @@ DAX_EXEC_CONT_EXPORT dax::Scalar CopySign(dax::Scalar x, dax::Scalar y)
 }
 
 }
-}
-} // namespace dax::exec::math
+} // namespace dax::math
 
-#endif //__dax_exec_math_Sign_h
+#endif //__dax_math_Sign_h

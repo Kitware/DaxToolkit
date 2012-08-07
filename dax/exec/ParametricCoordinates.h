@@ -23,9 +23,9 @@
 #include <dax/exec/Field.h>
 #include <dax/exec/Interpolate.h>
 
-#include <dax/exec/math/Matrix.h>
-#include <dax/exec/math/Numerical.h>
-#include <dax/exec/math/VectorAnalysis.h>
+#include <dax/math/Matrix.h>
+#include <dax/math/Numerical.h>
+#include <dax/math/VectorAnalysis.h>
 
 #include <dax/exec/internal/FieldAccess.h>
 
@@ -154,7 +154,7 @@ public:
       &vertexCoords)
     : VertexCoordinates(vertexCoords) {  }
   DAX_EXEC_EXPORT
-  dax::exec::math::Matrix3x3 operator()(dax::Vector3 pcoords) const {
+  dax::math::Matrix3x3 operator()(dax::Vector3 pcoords) const {
     return dax::exec::detail::make_JacobianForHexahedron(
           dax::exec::internal::derivativeWeightsHexahedron(pcoords),
           this->VertexCoordinates);
@@ -194,7 +194,7 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   dax::Tuple<dax::Vector3,dax::exec::CellHexahedron::NUM_POINTS> vertexCoords =
       work.GetFieldValues(coordField);
 
-  return dax::exec::math::NewtonsMethod(
+  return dax::math::NewtonsMethod(
         detail::HexahedronJacobianFunctor(vertexCoords),
         detail::HexahedronCoodinatesFunctor<
              WorkType,ExecutionAdapter>(work,cell,coordField),
@@ -272,16 +272,16 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   dax::Vector3 pcoords(dax::Scalar(0));
   dax::Tuple<dax::Vector3, 3> vertexCoords = work.GetFieldValues(coordField);
   dax::Vector3 triangleNormal =
-      dax::exec::math::TriangleNormal(vertexCoords[0],
-                                      vertexCoords[1],
-                                      vertexCoords[2]);
+      dax::math::TriangleNormal(vertexCoords[0],
+                                vertexCoords[1],
+                                vertexCoords[2]);
 
   for (int dimension = 0; dimension < 2; dimension++)
     {
     const dax::Vector3 &p0 = vertexCoords[0];
     const dax::Vector3 &p1 = vertexCoords[dimension+1];
     const dax::Vector3 &p2 = vertexCoords[2-dimension];
-    dax::Vector3 planeNormal = dax::exec::math::Cross(triangleNormal, p2-p0);
+    dax::Vector3 planeNormal = dax::math::Cross(triangleNormal, p2-p0);
 
     dax::Scalar d =
         dax::dot(wcoords - p0, planeNormal)/dax::dot(p1 - p0, planeNormal);

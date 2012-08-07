@@ -13,15 +13,14 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_math_Compare_h
-#define __dax_exec_math_Compare_h
+#ifndef __dax_math_Compare_h
+#define __dax_math_Compare_h
 
 // This header file defines math functions that do comparisons.
 
 #include <dax/internal/MathSystemFunctions.h>
 
 namespace dax {
-namespace exec {
 namespace math {
 
 
@@ -88,7 +87,6 @@ DAX_EXEC_CONT_EXPORT dax::Id3 Min(dax::Id3 x, dax::Id3 y)
 }
 
 }
-}
-} // namespace dax::exec::math
+} // namespace dax::math
 
-#endif //__dax_exec_math_Compare_h
+#endif //__dax_math_Compare_h

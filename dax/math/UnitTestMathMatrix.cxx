@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/exec/math/Matrix.h>
+#include <dax/math/Matrix.h>
 
 #include <dax/VectorTraits.h>
 
@@ -31,7 +31,7 @@ struct MatrixTest
 {
   static const int NUM_ROWS = NumRow;
   static const int NUM_COLS = NumCol;
-  typedef dax::exec::math::Matrix<T,NUM_ROWS,NUM_COLS> MatrixType;
+  typedef dax::math::Matrix<T,NUM_ROWS,NUM_COLS> MatrixType;
 
   static inline T value(int row, int col)
   {
@@ -106,17 +106,17 @@ struct MatrixTest
     std::cout << "Access by row or column" << std::endl;
     FOR_ROW_COL(matrix)
       {
-      RowType rowvec = dax::exec::math::MatrixRow(const_matrix, row);
+      RowType rowvec = dax::math::MatrixRow(const_matrix, row);
       DAX_TEST_ASSERT(rowvec[col] == const_matrix(row,col), "Bad get row.");
-      ColumnType columnvec = dax::exec::math::MatrixColumn(const_matrix, col);
+      ColumnType columnvec = dax::math::MatrixColumn(const_matrix, col);
       DAX_TEST_ASSERT(columnvec[row] == const_matrix(row,col), "Bad get col.");
       }
 
     std::cout << "Set a row." << std::endl;
     for (int row = 0; row < NUM_ROWS; row++)
       {
-      RowType rowvec = dax::exec::math::MatrixRow(const_matrix, NUM_ROWS-row-1);
-      dax::exec::math::MatrixSetRow(matrix, row, rowvec);
+      RowType rowvec = dax::math::MatrixRow(const_matrix, NUM_ROWS-row-1);
+      dax::math::MatrixSetRow(matrix, row, rowvec);
       }
     FOR_ROW_COL(matrix)
       {
@@ -128,8 +128,8 @@ struct MatrixTest
     for (int col = 0; col < NUM_COLS; col++)
       {
       ColumnType colvec =
-          dax::exec::math::MatrixColumn(const_matrix, NUM_COLS-col-1);
-      dax::exec::math::MatrixSetColumn(matrix, col, colvec);
+          dax::math::MatrixColumn(const_matrix, NUM_COLS-col-1);
+      dax::math::MatrixSetColumn(matrix, col, colvec);
       }
     FOR_ROW_COL(matrix)
       {
@@ -142,22 +142,22 @@ struct MatrixTest
   {
     std::cout << "Try multiply." << std::endl;
     const MatrixType leftFactor = CreateMatrix();
-    dax::exec::math::Matrix<T,NUM_COLS,4> rightFactor;
+    dax::math::Matrix<T,NUM_COLS,4> rightFactor;
     for (int index = 0; index < NUM_COLS*4; index++)
       {
-      dax::VectorTraits<dax::exec::math::Matrix<T,NUM_COLS,4> >::SetComponent(
+      dax::VectorTraits<dax::math::Matrix<T,NUM_COLS,4> >::SetComponent(
             rightFactor, index, index);
       }
 
-    dax::exec::math::Matrix<T,NUM_ROWS,4> product
-        = dax::exec::math::MatrixMultiply(leftFactor, rightFactor);
+    dax::math::Matrix<T,NUM_ROWS,4> product
+        = dax::math::MatrixMultiply(leftFactor, rightFactor);
 
     FOR_ROW_COL(product)
       {
       dax::Tuple<T,NUM_COLS> leftVector
-          = dax::exec::math::MatrixRow(leftFactor, row);
+          = dax::math::MatrixRow(leftFactor, row);
       dax::Tuple<T,NUM_COLS> rightVector
-          = dax::exec::math::MatrixColumn(rightFactor, col);
+          = dax::math::MatrixColumn(rightFactor, col);
       DAX_TEST_ASSERT(test_equal(product(row,col),
                                  dax::dot(leftVector,rightVector)),
                       "Matrix multiple wrong.");
@@ -174,7 +174,7 @@ struct MatrixTest
       }
 
     dax::Tuple<T,NUM_COLS> leftResult =
-        dax::exec::math::MatrixMultiply(leftVector, matrixFactor);
+        dax::math::MatrixMultiply(leftVector, matrixFactor);
     for (int index = 0; index < NUM_COLS; index++)
       {
       DAX_TEST_ASSERT(test_equal(leftResult[index], T(NUM_ROWS*(NUM_ROWS+1))),
@@ -182,7 +182,7 @@ struct MatrixTest
       }
 
     dax::Tuple<T,NUM_ROWS> rightResult =
-        dax::exec::math::MatrixMultiply(matrixFactor, rightVector);
+        dax::math::MatrixMultiply(matrixFactor, rightVector);
     for (int index = 0; index < NUM_ROWS; index++)
       {
       DAX_TEST_ASSERT(test_equal(rightResult[index],
@@ -197,11 +197,11 @@ struct MatrixTest
 
     MatrixType originalMatrix = CreateMatrix();
 
-    dax::exec::math::Matrix<T,NUM_COLS,NUM_COLS> identityMatrix;
-    dax::exec::math::MatrixIdentity(identityMatrix);
+    dax::math::Matrix<T,NUM_COLS,NUM_COLS> identityMatrix;
+    dax::math::MatrixIdentity(identityMatrix);
 
     MatrixType multMatrix =
-        dax::exec::math::MatrixMultiply(originalMatrix, identityMatrix);
+        dax::math::MatrixMultiply(originalMatrix, identityMatrix);
 
     DAX_TEST_ASSERT(test_equal(originalMatrix, multMatrix),
                     "Identity is not really identity.");
@@ -214,8 +214,8 @@ struct MatrixTest
 
     MatrixType originalMatrix = CreateMatrix();
 
-    dax::exec::math::Matrix<T,NUM_COLS,NUM_ROWS> transMatrix =
-        dax::exec::math::MatrixTranspose(originalMatrix);
+    dax::math::Matrix<T,NUM_COLS,NUM_ROWS> transMatrix =
+        dax::math::MatrixTranspose(originalMatrix);
     FOR_ROW_COL(originalMatrix)
       {
       DAX_TEST_ASSERT(originalMatrix(row,col) == transMatrix(col,row),
@@ -250,23 +250,23 @@ void MatrixTest1()
 }
 
 template<int Size>
-void NonSingularMatrix(dax::exec::math::Matrix<dax::Scalar,Size,Size> &matrix);
+void NonSingularMatrix(dax::math::Matrix<dax::Scalar,Size,Size> &matrix);
 
 template<>
-void NonSingularMatrix<1>(dax::exec::math::Matrix<dax::Scalar,1,1> &matrix)
+void NonSingularMatrix<1>(dax::math::Matrix<dax::Scalar,1,1> &matrix)
 {
   matrix(0,0) = 1;
 }
 
 template<>
-void NonSingularMatrix<2>(dax::exec::math::Matrix<dax::Scalar,2,2> &matrix)
+void NonSingularMatrix<2>(dax::math::Matrix<dax::Scalar,2,2> &matrix)
 {
   matrix(0,0) = -5;  matrix(0,1) =  6;
   matrix(1,0) = -7;  matrix(1,1) = -2;
 }
 
 template<>
-void NonSingularMatrix<3>(dax::exec::math::Matrix<dax::Scalar,3,3> &matrix)
+void NonSingularMatrix<3>(dax::math::Matrix<dax::Scalar,3,3> &matrix)
 {
   matrix(0,0) =  1;  matrix(0,1) = -2;  matrix(0,2) =  3;
   matrix(1,0) =  6;  matrix(1,1) =  7;  matrix(1,2) = -1;
@@ -274,7 +274,7 @@ void NonSingularMatrix<3>(dax::exec::math::Matrix<dax::Scalar,3,3> &matrix)
 }
 
 template<>
-void NonSingularMatrix<4>(dax::exec::math::Matrix<dax::Scalar,4,4> &matrix)
+void NonSingularMatrix<4>(dax::math::Matrix<dax::Scalar,4,4> &matrix)
 {
   matrix(0,0) =  2;  matrix(0,1) =  1;  matrix(0,2) =  0;  matrix(0,3) =  3;
   matrix(1,0) = -1;  matrix(1,1) =  0;  matrix(1,2) =  2;  matrix(1,3) =  4;
@@ -283,7 +283,7 @@ void NonSingularMatrix<4>(dax::exec::math::Matrix<dax::Scalar,4,4> &matrix)
 }
 
 template<>
-void NonSingularMatrix<5>(dax::exec::math::Matrix<dax::Scalar,5,5> &mat)
+void NonSingularMatrix<5>(dax::math::Matrix<dax::Scalar,5,5> &mat)
 {
   mat(0,0) = 2;  mat(0,1) = 1;  mat(0,2) = 3;  mat(0,3) = 7;  mat(0,4) = 5;
   mat(1,0) = 3;  mat(1,1) = 8;  mat(1,2) = 7;  mat(1,3) = 9;  mat(1,4) = 8;
@@ -294,7 +294,7 @@ void NonSingularMatrix<5>(dax::exec::math::Matrix<dax::Scalar,5,5> &mat)
 
 template<int Size>
 void SingularMatrix(
-    dax::exec::math::Matrix<dax::Scalar,Size,Size> &singularMatrix)
+    dax::math::Matrix<dax::Scalar,Size,Size> &singularMatrix)
 {
   FOR_ROW_COL(singularMatrix)
     {
@@ -302,10 +302,9 @@ void SingularMatrix(
     }
   if (Size > 1)
     {
-    dax::exec::math::MatrixSetRow(singularMatrix,
-                                  0,
-                                  dax::exec::math::MatrixRow(singularMatrix,
-                                                             (Size+1)/2));
+    dax::math::MatrixSetRow(singularMatrix,
+                            0,
+                            dax::math::MatrixRow(singularMatrix, (Size+1)/2));
     }
 }
 
@@ -313,9 +312,9 @@ void SingularMatrix(
 // purposes.
 template<int Size>
 dax::Scalar RecursiveDeterminant(
-    const dax::exec::math::Matrix<dax::Scalar,Size,Size> &A)
+    const dax::math::Matrix<dax::Scalar,Size,Size> &A)
 {
-  dax::exec::math::Matrix<dax::Scalar,Size-1,Size-1> cofactorMatrix;
+  dax::math::Matrix<dax::Scalar,Size-1,Size-1> cofactorMatrix;
   dax::Scalar sum = 0.0;
   dax::Scalar sign = 1.0;
   for (int rowIndex = 0; rowIndex < Size; rowIndex++)
@@ -348,8 +347,7 @@ dax::Scalar RecursiveDeterminant(
 }
 
 template<>
-dax::Scalar RecursiveDeterminant<1>(
-    const dax::exec::math::Matrix<dax::Scalar,1,1> &A)
+dax::Scalar RecursiveDeterminant<1>(const dax::math::Matrix<dax::Scalar,1,1> &A)
 {
   return A(0,0);
 }
@@ -376,10 +374,10 @@ struct SquareMatrixTest {
     dax::Scalar inversionParity;
     bool valid;
 
-    dax::exec::math::detail::MatrixLUPFactor(A,
-                                             permutationVector,
-                                             inversionParity,
-                                             valid);
+    dax::math::detail::MatrixLUPFactor(A,
+                                       permutationVector,
+                                       inversionParity,
+                                       valid);
     DAX_TEST_ASSERT(valid, "Matrix declared singular?");
 
     // Reconstruct L and U matrices from A.
@@ -421,19 +419,18 @@ struct SquareMatrixTest {
       }
 
     // Check that PA = LU is actually correct.
-    MatrixType permutedMatrix =
-        dax::exec::math::MatrixMultiply(P,originalMatrix);
-    MatrixType productMatrix = dax::exec::math::MatrixMultiply(L,U);
+    MatrixType permutedMatrix = dax::math::MatrixMultiply(P,originalMatrix);
+    MatrixType productMatrix = dax::math::MatrixMultiply(L,U);
     DAX_TEST_ASSERT(test_equal(permutedMatrix, productMatrix),
                     "LUP-factorization gave inconsistent answer.");
 
     // Check that a singular matrix is identified.
     MatrixType singularMatrix;
     SingularMatrix(singularMatrix);
-    dax::exec::math::detail::MatrixLUPFactor(singularMatrix,
-                                             permutationVector,
-                                             inversionParity,
-                                             valid);
+    dax::math::detail::MatrixLUPFactor(singularMatrix,
+                                       permutationVector,
+                                       inversionParity,
+                                       valid);
     DAX_TEST_ASSERT(!valid, "Expected matrix to be declared singular.");
   }
 
@@ -450,20 +447,18 @@ struct SquareMatrixTest {
       }
     bool valid;
 
-    dax::Tuple<dax::Scalar,SIZE> x =
-        dax::exec::math::SolveLinearSystem(A, b, valid);
+    dax::Tuple<dax::Scalar,SIZE> x = dax::math::SolveLinearSystem(A, b, valid);
     DAX_TEST_ASSERT(valid, "Matrix declared singular?");
 
     // Check result.
-    dax::Tuple<dax::Scalar,SIZE> check =
-        dax::exec::math::MatrixMultiply(A,x);
+    dax::Tuple<dax::Scalar,SIZE> check = dax::math::MatrixMultiply(A,x);
     DAX_TEST_ASSERT(test_equal(b, check),
                     "Linear solution does not solve equation.");
 
     // Check that a singular matrix is identified.
     MatrixType singularMatrix;
     SingularMatrix(singularMatrix);
-    dax::exec::math::SolveLinearSystem(singularMatrix, b, valid);
+    dax::math::SolveLinearSystem(singularMatrix, b, valid);
     DAX_TEST_ASSERT(!valid, "Expected matrix to be declared singular.");
   }
 
@@ -475,22 +470,21 @@ struct SquareMatrixTest {
     NonSingularMatrix(A);
     bool valid;
 
-    dax::exec::math::Matrix<dax::Scalar,SIZE,SIZE> inverse =
-        dax::exec::math::MatrixInverse(A, valid);
+    dax::math::Matrix<dax::Scalar,SIZE,SIZE> inverse =
+        dax::math::MatrixInverse(A, valid);
     DAX_TEST_ASSERT(valid, "Matrix declared singular?");
 
     // Check result.
-    dax::exec::math::Matrix<dax::Scalar,SIZE,SIZE> product =
-        dax::exec::math::MatrixMultiply(A, inverse);
+    dax::math::Matrix<dax::Scalar,SIZE,SIZE> product =
+        dax::math::MatrixMultiply(A, inverse);
     DAX_TEST_ASSERT(
-          test_equal(product,
-                     dax::exec::math::MatrixIdentity<dax::Scalar,SIZE>()),
+          test_equal(product, dax::math::MatrixIdentity<dax::Scalar,SIZE>()),
           "Matrix inverse did not give identity.");
 
     // Check that a singular matrix is identified.
     MatrixType singularMatrix;
     SingularMatrix(singularMatrix);
-    dax::exec::math::MatrixInverse(singularMatrix, valid);
+    dax::math::MatrixInverse(singularMatrix, valid);
     DAX_TEST_ASSERT(!valid, "Expected matrix to be declared singular.");
   }
 
@@ -501,7 +495,7 @@ struct SquareMatrixTest {
     MatrixType A;
     NonSingularMatrix(A);
 
-    dax::Scalar determinant = dax::exec::math::MatrixDeterminant(A);
+    dax::Scalar determinant = dax::math::MatrixDeterminant(A);
 
     // Check result.
     dax::Scalar determinantCheck = RecursiveDeterminant(A);
@@ -511,7 +505,7 @@ struct SquareMatrixTest {
     // Check that a singular matrix has a zero determinant.
     MatrixType singularMatrix;
     SingularMatrix(singularMatrix);
-    determinant = dax::exec::math::MatrixDeterminant(singularMatrix);
+    determinant = dax::math::MatrixDeterminant(singularMatrix);
     DAX_TEST_ASSERT(test_equal(determinant, dax::Scalar(0.0)),
                     "Non-zero determinant for singular matrix.");
   }
@@ -534,7 +528,7 @@ private:
 template<int Size>
 void RunSquareMatrixTest()
 {
-  SquareMatrixTest<dax::exec::math::Matrix<dax::Scalar,Size,Size>,Size>::Run();
+  SquareMatrixTest<dax::math::Matrix<dax::Scalar,Size,Size>,Size>::Run();
 }
 
 template<class MatrixType, int Size>
@@ -563,7 +557,7 @@ struct VectorMultFunctor
     const int SIZE = dax::VectorTraits<VectorType>::NUM_COMPONENTS;
     typedef typename dax::VectorTraits<VectorType>::ComponentType ComponentType;
 
-    dax::exec::math::Matrix<ComponentType,SIZE,SIZE> matrix(0);
+    dax::math::Matrix<ComponentType,SIZE,SIZE> matrix(0);
     VectorType inVec;
     VectorType outVec;
     for (int index = 0; index < SIZE; index++)
@@ -572,10 +566,10 @@ struct VectorMultFunctor
       inVec[index] = index+1;
       }
 
-    outVec = dax::exec::math::MatrixMultiply(matrix,inVec);
+    outVec = dax::math::MatrixMultiply(matrix,inVec);
     DAX_TEST_ASSERT(test_equal(inVec, outVec), "Bad identity multiply.");
 
-    outVec = dax::exec::math::MatrixMultiply(inVec,matrix);
+    outVec = dax::math::MatrixMultiply(inVec,matrix);
     DAX_TEST_ASSERT(test_equal(inVec, outVec), "Bad identity multiply.");
   }
 };
@@ -594,9 +588,9 @@ void TestMatrices()
   RunSquareMatrixTest<5>();
 
   std::cout << "***** Common square types" << std::endl;
-  RunKnownSquareMatrixTest<dax::exec::math::Matrix2x2,2>();
-  RunKnownSquareMatrixTest<dax::exec::math::Matrix3x3,3>();
-  RunKnownSquareMatrixTest<dax::exec::math::Matrix4x4,4>();
+  RunKnownSquareMatrixTest<dax::math::Matrix2x2,2>();
+  RunKnownSquareMatrixTest<dax::math::Matrix3x3,3>();
+  RunKnownSquareMatrixTest<dax::math::Matrix4x4,4>();
 
   std::cout << "***** Vector multiply tests" << std::endl;
   dax::internal::Testing::TryAllTypes(

@@ -14,10 +14,10 @@
 //
 //=============================================================================
 
-#include <dax/exec/math/Trig.h>
+#include <dax/math/Trig.h>
 
 #include <dax/exec/VectorOperations.h>
-#include <dax/exec/math/Exp.h>
+#include <dax/math/Exp.h>
 
 #include <dax/internal/Testing.h>
 
@@ -26,7 +26,7 @@ namespace {
 void TestPi()
 {
   std::cout << "Testing Pi" << std::endl;
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Pi(), dax::Scalar(3.14159265)),
+  DAX_TEST_ASSERT(test_equal(dax::math::Pi(), dax::Scalar(3.14159265)),
                   "Pi not correct.");
 }
 
@@ -34,27 +34,27 @@ void TestArcTan2()
 {
   std::cout << "Testing arc tan 2" << std::endl;
 
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::ATan2(0.0, 1.0),
+  DAX_TEST_ASSERT(test_equal(dax::math::ATan2(0.0, 1.0),
                              dax::Scalar(0.0)),
                   "ATan2 x+ axis.");
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::ATan2(1.0, 0.0),
-                             dax::Scalar(0.5*dax::exec::math::Pi())),
+  DAX_TEST_ASSERT(test_equal(dax::math::ATan2(1.0, 0.0),
+                             dax::Scalar(0.5*dax::math::Pi())),
                   "ATan2 y+ axis.");
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::ATan2(-1.0, 0.0),
-                             dax::Scalar(-0.5*dax::exec::math::Pi())),
+  DAX_TEST_ASSERT(test_equal(dax::math::ATan2(-1.0, 0.0),
+                             dax::Scalar(-0.5*dax::math::Pi())),
                   "ATan2 y- axis.");
 
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::ATan2(1.0, 1.0),
-                             dax::Scalar(0.25*dax::exec::math::Pi())),
+  DAX_TEST_ASSERT(test_equal(dax::math::ATan2(1.0, 1.0),
+                             dax::Scalar(0.25*dax::math::Pi())),
                   "ATan2 Quadrant 1");
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::ATan2(1.0, -1.0),
-                             dax::Scalar(0.75*dax::exec::math::Pi())),
+  DAX_TEST_ASSERT(test_equal(dax::math::ATan2(1.0, -1.0),
+                             dax::Scalar(0.75*dax::math::Pi())),
                   "ATan2 Quadrant 2");
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::ATan2(-1.0, -1.0),
-                             dax::Scalar(-0.75*dax::exec::math::Pi())),
+  DAX_TEST_ASSERT(test_equal(dax::math::ATan2(-1.0, -1.0),
+                             dax::Scalar(-0.75*dax::math::Pi())),
                   "ATan2 Quadrant 3");
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::ATan2(-1.0, 1.0),
-                             dax::Scalar(-0.25*dax::exec::math::Pi())),
+  DAX_TEST_ASSERT(test_equal(dax::math::ATan2(-1.0, 1.0),
+                             dax::Scalar(-0.25*dax::math::Pi())),
                   "ATan2 Quadrant 4");
 }
 
@@ -68,18 +68,18 @@ void TestTriangle(VectorType angle,
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
 
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Sin(angle), opposite/hypotenuse),
+  DAX_TEST_ASSERT(test_equal(dax::math::Sin(angle), opposite/hypotenuse),
                   "Sin failed test.");
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Cos(angle), adjacent/hypotenuse),
+  DAX_TEST_ASSERT(test_equal(dax::math::Cos(angle), adjacent/hypotenuse),
                   "Cos failed test.");
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Tan(angle), opposite/adjacent),
+  DAX_TEST_ASSERT(test_equal(dax::math::Tan(angle), opposite/adjacent),
                   "Tan failed test.");
 
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::ASin(opposite/hypotenuse), angle),
+  DAX_TEST_ASSERT(test_equal(dax::math::ASin(opposite/hypotenuse), angle),
                   "Arc Sin failed test.");
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::ACos(adjacent/hypotenuse), angle),
+  DAX_TEST_ASSERT(test_equal(dax::math::ACos(adjacent/hypotenuse), angle),
                   "Arc Cos failed test.");
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::ATan(opposite/adjacent), angle),
+  DAX_TEST_ASSERT(test_equal(dax::math::ATan(opposite/adjacent), angle),
                   "Arc Tan failed test.");
 }
 
@@ -94,7 +94,7 @@ void TestHyperbolic(VectorType x)
   dax::exec::VectorFill(zero, dax::Scalar(0.0));
   VectorType minusX = zero - x;
 
-  using namespace dax::exec::math;
+  using namespace dax::math;
   DAX_TEST_ASSERT(test_equal(SinH(x), 0.5f*(Exp(x) - Exp(minusX))),
                   "SinH does not match definition.");
   DAX_TEST_ASSERT(test_equal(CosH(x), 0.5f*(Exp(x) + Exp(minusX))),
@@ -119,9 +119,9 @@ struct TriangleInitStruct {
   dax::Scalar Hypotenuse;
 } TriangleInit[MAX_VECTOR_SIZE] = {
   { 0.643501108793284, 3.0, 4.0, 5.0 },
-  { (1.0/4.0)*dax::exec::math::Pi(), 1.0, 1.0, dax::exec::math::Sqrt(2.0) },
-  { (1.0/6.0)*dax::exec::math::Pi(), 1.0, dax::exec::math::Sqrt(3.0), 2.0 },
-  { (1.0/3.0)*dax::exec::math::Pi(), dax::exec::math::Sqrt(3.0), 1.0, 2.0 }
+  { (1.0/4.0)*dax::math::Pi(), 1.0, 1.0, dax::math::Sqrt(2.0) },
+  { (1.0/6.0)*dax::math::Pi(), 1.0, dax::math::Sqrt(3.0), 2.0 },
+  { (1.0/3.0)*dax::math::Pi(), dax::math::Sqrt(3.0), 1.0, 2.0 }
 };
 
 struct TestTrigFunctor

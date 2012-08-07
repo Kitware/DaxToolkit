@@ -19,7 +19,7 @@
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
-#include <dax/exec/math/Trig.h>
+#include <dax/math/Trig.h>
 
 namespace dax {
 namespace worklet {
@@ -31,7 +31,7 @@ DAX_WORKLET void Sine(
     dax::exec::FieldOut<FieldType, ExecutionAdapter> &outField)
 {
   FieldType inValue = work.GetFieldValue(inField);
-  FieldType outValue = dax::exec::math::Sin(inValue);
+  FieldType outValue = dax::math::Sin(inValue);
   work.SetFieldValue(outField, outValue);
 }
 

@@ -13,20 +13,19 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_math_VectorAnalysis_h
-#define __dax_exec_math_VectorAnalysis_h
+#ifndef __dax_math_VectorAnalysis_h
+#define __dax_math_VectorAnalysis_h
 
 // This header file defines math functions that deal with linear albegra funcitons
 
 #include <dax/Types.h>
 #include <dax/exec/VectorOperations.h>
-#include <dax/exec/math/Sign.h>
-#include <dax/exec/math/Exp.h>
+#include <dax/math/Sign.h>
+#include <dax/math/Exp.h>
 
 #include <dax/internal/MathSystemFunctions.h>
 
 namespace dax {
-namespace exec {
 namespace math {
 
 // ----------------------------------------------------------------------------
@@ -62,7 +61,7 @@ namespace detail {
 template<typename T>
 DAX_EXEC_CONT_EXPORT dax::Scalar magnitude_template(const T &x)
 {
-  return dax::exec::math::Sqrt(magnitudesquared_template(x));
+  return dax::math::Sqrt(magnitudesquared_template(x));
 }
 }
 
@@ -75,7 +74,7 @@ DAX_EXEC_CONT_EXPORT dax::Scalar magnitude_template(const T &x)
 /// actually plan to divide by the magnitude.
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar Magnitude(dax::Scalar x) {
-  return dax::exec::math::Abs(x);
+  return dax::math::Abs(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Scalar Magnitude(dax::Vector2 x) {
   return detail::magnitude_template(x);
@@ -92,7 +91,7 @@ namespace detail {
 template<typename T>
 DAX_EXEC_CONT_EXPORT dax::Scalar rmagnitude_template(const T &x)
 {
-  return dax::exec::math::RSqrt(magnitudesquared_template(x));
+  return dax::math::RSqrt(magnitudesquared_template(x));
 }
 }
 
@@ -102,7 +101,7 @@ DAX_EXEC_CONT_EXPORT dax::Scalar rmagnitude_template(const T &x)
 /// as fast as MagnitudeSquared.
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar RMagnitude(dax::Scalar x) {
-  return 1/dax::exec::math::Abs(x);
+  return 1/dax::math::Abs(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Scalar RMagnitude(dax::Vector2 x) {
   return detail::rmagnitude_template(x);
@@ -118,7 +117,7 @@ DAX_EXEC_CONT_EXPORT dax::Scalar RMagnitude(dax::Vector4 x) {
 namespace detail {
 template <typename T>
 DAX_EXEC_CONT_EXPORT T normal_template(const T &x ) {
-  return dax::exec::math::RSqrt(dax::dot(x,x)) * x;
+  return dax::math::RSqrt(dax::dot(x,x)) * x;
 }
 }
 
@@ -178,11 +177,10 @@ DAX_EXEC_CONT_EXPORT dax::Vector3 TriangleNormal(const dax::Vector3 &a,
                                             const dax::Vector3 &b,
                                             const dax::Vector3 &c)
 {
-  return dax::exec::math::Cross(b-a, c-a);
+  return dax::math::Cross(b-a, c-a);
 }
 
 }
-}
-} // namespace dax::exec::math
+} // namespace dax::math
 
-#endif //__dax_exec_math_VectorAnalysis_h
+#endif //__dax_math_VectorAnalysis_h

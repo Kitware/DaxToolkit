@@ -13,15 +13,14 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_math_Exp_h
-#define __dax_exec_math_Exp_h
+#ifndef __dax_math_Exp_h
+#define __dax_math_Exp_h
 
 // This header file defines math functions that deal with exponentials.
 
 #include <dax/internal/MathSystemFunctions.h>
 
 namespace dax {
-namespace exec {
 namespace math {
 
 //-----------------------------------------------------------------------------
@@ -58,17 +57,17 @@ DAX_EXEC_CONT_EXPORT dax::Scalar RSqrt(dax::Scalar x) {
 #ifdef DAX_CUDA
   return DAX_SYS_MATH_FUNCTION(rsqrt)(x);
 #else
-  return 1/dax::exec::math::Sqrt(x);
+  return 1/dax::math::Sqrt(x);
 #endif
 }
 DAX_EXEC_CONT_EXPORT dax::Vector2 RSqrt(dax::Vector2 x) {
-  return dax::internal::SysMathVectorCall<dax::exec::math::RSqrt>(x);
+  return dax::internal::SysMathVectorCall<dax::math::RSqrt>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector3 RSqrt(dax::Vector3 x) {
-  return dax::internal::SysMathVectorCall<dax::exec::math::RSqrt>(x);
+  return dax::internal::SysMathVectorCall<dax::math::RSqrt>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector4 RSqrt(dax::Vector4 x) {
-  return dax::internal::SysMathVectorCall<dax::exec::math::RSqrt>(x);
+  return dax::internal::SysMathVectorCall<dax::math::RSqrt>(x);
 }
 
 //-----------------------------------------------------------------------------
@@ -97,17 +96,17 @@ DAX_EXEC_CONT_EXPORT dax::Scalar RCbrt(dax::Scalar x) {
 #ifdef DAX_CUDA
   return DAX_SYS_MATH_FUNCTION(rcbrt)(x);
 #else
-  return 1/dax::exec::math::Cbrt(x);
+  return 1/dax::math::Cbrt(x);
 #endif
 }
 DAX_EXEC_CONT_EXPORT dax::Vector2 RCbrt(dax::Vector2 x) {
-  return dax::internal::SysMathVectorCall<dax::exec::math::RCbrt>(x);
+  return dax::internal::SysMathVectorCall<dax::math::RCbrt>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector3 RCbrt(dax::Vector3 x) {
-  return dax::internal::SysMathVectorCall<dax::exec::math::RCbrt>(x);
+  return dax::internal::SysMathVectorCall<dax::math::RCbrt>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector4 RCbrt(dax::Vector4 x) {
-  return dax::internal::SysMathVectorCall<dax::exec::math::RCbrt>(x);
+  return dax::internal::SysMathVectorCall<dax::math::RCbrt>(x);
 }
 
 //-----------------------------------------------------------------------------
@@ -164,17 +163,17 @@ DAX_EXEC_CONT_EXPORT dax::Scalar Exp10(dax::Scalar x) {
 #ifdef DAX_CUDA
   return DAX_SYS_MATH_FUNCTION(exp10)(x);
 #else
-  return dax::exec::math::Pow(10, x);
+  return dax::math::Pow(10, x);
 #endif
 }
 DAX_EXEC_CONT_EXPORT dax::Vector2 Exp10(dax::Vector2 x) {
-  return dax::internal::SysMathVectorCall<dax::exec::math::Exp10>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Exp10>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector3 Exp10(dax::Vector3 x) {
-  return dax::internal::SysMathVectorCall<dax::exec::math::Exp10>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Exp10>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector4 Exp10(dax::Vector4 x) {
-  return dax::internal::SysMathVectorCall<dax::exec::math::Exp10>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Exp10>(x);
 }
 
 //-----------------------------------------------------------------------------
@@ -239,7 +238,6 @@ DAX_EXEC_CONT_EXPORT dax::Vector4 Log1P(dax::Vector4 x) {
 }
 
 }
-}
-} // dax::exec::math
+} // dax::math
 
-#endif //__dax_exec_math_Exp_h
+#endif //__dax_math_Exp_h

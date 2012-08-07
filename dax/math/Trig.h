@@ -13,15 +13,14 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_math_Trig_h
-#define __dax_exec_math_Trig_h
+#ifndef __dax_math_Trig_h
+#define __dax_math_Trig_h
 
 // This header file defines math functions that deal with trigonometry.
 
 #include <dax/internal/MathSystemFunctions.h>
 
 namespace dax {
-namespace exec {
 namespace math {
 
 //-----------------------------------------------------------------------------
@@ -226,7 +225,6 @@ DAX_EXEC_CONT_EXPORT dax::Vector4 ATanH(dax::Vector4 x) {
 }
 
 }
-}
-} // namespace dax::exec::math
+} // namespace dax::math
 
-#endif //__dax_exec_math_Trig_h
+#endif //__dax_math_Trig_h

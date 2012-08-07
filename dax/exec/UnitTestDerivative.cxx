@@ -84,9 +84,9 @@ void TestGradientResult<dax::exec::CellTriangle>(
     const dax::Vector3 computedDerivative,
     const LinearField &fieldValues)
 {
-  dax::Vector3 normal = dax::exec::math::TriangleNormal(
+  dax::Vector3 normal = dax::math::TriangleNormal(
         pointCoordinates[0], pointCoordinates[1], pointCoordinates[2]);
-  dax::exec::math::Normalize(normal);
+  dax::math::Normalize(normal);
   dax::Vector3 expectedGradient =
       fieldValues.Gradient - dax::dot(fieldValues.Gradient,normal)*normal;
   DAX_TEST_ASSERT(test_equal(computedDerivative, expectedGradient),

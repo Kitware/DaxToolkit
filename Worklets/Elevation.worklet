@@ -19,7 +19,7 @@
 #include <dax/exec/Cell.h>
 #include <dax/exec/Field.h>
 #include <dax/exec/WorkMapField.h>
-#include <dax/exec/math/Exp.h>
+#include <dax/math/Exp.h>
 
 namespace dax {
 namespace worklet {
@@ -36,7 +36,7 @@ DAX_WORKLET void Elevation(
   // for now because this is the old calculation, and I want to measure
   // consistent timings for now.
   dax::Scalar elevation
-      = dax::exec::math::Sqrt(dax::dot(pointLocation, pointLocation));
+      = dax::math::Sqrt(dax::dot(pointLocation, pointLocation));
   work.SetFieldValue(outField, elevation);
 }
 

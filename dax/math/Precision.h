@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_math_Precision_h
-#define __dax_exec_math_Precision_h
+#ifndef __dax_math_Precision_h
+#define __dax_math_Precision_h
 
 // This header file defines math functions that deal with the precision of
 // floating point numbers.
@@ -36,7 +36,6 @@ using boost::math::isfinite;
 #endif
 
 namespace dax {
-namespace exec {
 namespace math {
 
 //-----------------------------------------------------------------------------
@@ -73,7 +72,7 @@ union IEEE754Bits {
 } // namespace internal
 
 #define DAX_DEFINE_BITS(name, rep) \
-  const dax::exec::math::internal::IEEE754Bits name = { rep }
+  const dax::math::internal::IEEE754Bits name = { rep }
 
 /// Returns the scalar representation for not-a-number (NaN).
 ///
@@ -398,7 +397,6 @@ DAX_EXEC_CONT_EXPORT dax::Vector4 Round(dax::Vector4 x) {
 }
 
 }
-}
-} // namespace dax::exec::math
+} // namespace dax::math
 
-#endif //__dax_exec_math_Precision_h
+#endif //__dax_math_Precision_h
