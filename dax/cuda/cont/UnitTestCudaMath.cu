@@ -37,28 +37,52 @@ namespace ut_CudaMath {
 #define MY_ASSERT(condition, message) \
   if (!(condition)) \
     { \
-    errorHandler.RaiseError( \
-          __FILE__ ":" __DAX_ASSERT_EXEC_STRINGIFY(__LINE__) ": " message \
-          " (" #condition ")"); \
-    return; \
+    return \
+        __FILE__ ":" __DAX_ASSERT_EXEC_STRINGIFY(__LINE__) ": " message \
+        " (" #condition ")"; \
     }
 
-struct TestCompareKernel
+template<class Derived>
+struct MathTestFunctor
 {
+  // The original implementation of these kernels just had the tests in the
+  // paren operater as you would expect. However, when I modified the test
+  // to work in both the control (host) and execution (device) environments,
+  // the two had incompatible error reporting mechanisms.  To get arround this
+  // problem, I use the paren overload in a curiously recurring template
+  // pattern to call the execution-only raise error method in an execution-only
+  // method and macros to throw exceptions only in the control environment.
+
   template<class ErrorHandler>
-  DAX_EXEC_CONT_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_EXPORT
+  void operator()(int, dax::Id, ErrorHandler errorHandler) const
+  {
+    // Hopefully the derived class will always return constant strings that do
+    // not go out of scope. If we get back garbled error strings, this is
+    // probably where it happens.
+    const char *message = static_cast<const Derived*>(this)->Run();
+    if (message != NULL)
+      {
+      errorHandler.RaiseError(message);
+      }
+  }
+};
+
+struct TestCompareKernel : public MathTestFunctor<TestCompareKernel>
+{
+  DAX_EXEC_CONT_EXPORT const char *Run() const
   {
     MY_ASSERT(dax::math::Min(3, 8) == 3, "Got wrong min.");
     MY_ASSERT(dax::math::Min(-0.1f, -0.7f) == -0.7f, "Got wrong min.");
     MY_ASSERT(dax::math::Max(3, 8) == 8, "Got wrong max.");
     MY_ASSERT(dax::math::Max(-0.1f, -0.7f) == -0.1f, "Got wrong max.");
+    return NULL;
   }
 };
 
-struct TestExpKernel
+struct TestExpKernel : public MathTestFunctor<TestExpKernel>
 {
-  template<class ErrorHandler>
-  DAX_EXEC_CONT_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_CONT_EXPORT const char *Run() const
   {
     MY_ASSERT(test_equal(dax::math::Pow(0.25, 2.0), dax::Scalar(0.0625)),
               "Bad power result.");
@@ -102,13 +126,13 @@ struct TestExpKernel
     MY_ASSERT(test_equal(dax::math::Log1P(3.75),
                          dax::math::Log(4.75)),
               "Bad log1p result.");
+    return NULL;
   }
 };
 
-struct TestPrecisionKernel
+struct TestPrecisionKernel : public MathTestFunctor<TestPrecisionKernel>
 {
-  template<class ErrorHandler>
-  DAX_EXEC_CONT_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_CONT_EXPORT const char *Run() const
   {
     dax::Scalar zero = 0.0;
     dax::Scalar finite = 1.0;
@@ -174,13 +198,14 @@ struct TestPrecisionKernel
               "Bad ceil.");
     MY_ASSERT(test_equal(dax::math::Round(4.6), dax::Scalar(5.0)),
               "Bad round.");
+
+    return NULL;
   }
 };
 
-struct TestSignKernel
+struct TestSignKernel : public MathTestFunctor<TestSignKernel>
 {
-  template<class ErrorHandler>
-  DAX_EXEC_CONT_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_CONT_EXPORT const char *Run() const
   {
     MY_ASSERT(dax::math::Abs(-1) == 1, "Bad abs.");
     MY_ASSERT(dax::math::Abs(dax::Scalar(-0.25)) == 0.25, "Bad abs.");
@@ -188,13 +213,14 @@ struct TestSignKernel
     MY_ASSERT(!dax::math::IsNegative(3.2), "Bad positive.");
     MY_ASSERT(!dax::math::IsNegative(0.0), "Bad non-negative.");
     MY_ASSERT(dax::math::CopySign(-0.25, 100.0) == 0.25, "Copy sign.");
+
+    return NULL;
   }
 };
 
-struct TestTrigKernel
+struct TestTrigKernel : public MathTestFunctor<TestTrigKernel>
 {
-  template<class ErrorHandler>
-  DAX_EXEC_CONT_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_CONT_EXPORT const char *Run() const
   {
     MY_ASSERT(test_equal(dax::math::Pi(), dax::Scalar(3.14159265)),
               "Pi not correct.");
@@ -238,19 +264,32 @@ struct TestTrigKernel
               "Arc Cos failed test.");
     MY_ASSERT(test_equal(dax::math::ATan(opposite/adjacent), angle),
               "Arc Tan failed test.");
+
+    return NULL;
   }
 };
 
 template<class Functor>
+DAX_CONT_EXPORT
 void TestSchedule(Functor functor)
 {
+  // Schedule on device.
   dax::cont::internal::Schedule(functor,
                                 0,
                                 1,
                                 DAX_DEFAULT_ARRAY_CONTAINER_CONTROL(),
                                 dax::cuda::cont::DeviceAdapterTagCuda());
+
+  // Run on host. The return value has the same qualification as mentioned
+  // before.
+  const char *message = functor.Run();
+  if (message != NULL)
+    {
+    DAX_TEST_FAIL(message);
+    }
 }
 
+DAX_CONT_EXPORT
 void TestCudaMath()
 {
   std::cout << "Compare functions" << std::endl;
