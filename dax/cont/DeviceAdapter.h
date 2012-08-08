@@ -16,22 +16,6 @@
 #ifndef __dax_cont_DeviceAdapter_h
 #define __dax_cont_DeviceAdapter_h
 
-#define DAX_DEVICE_ADAPTER_ERROR     -1
-#define DAX_DEVICE_ADAPTER_UNDEFINED  0
-#define DAX_DEVICE_ADAPTER_SERIAL     1
-#define DAX_DEVICE_ADAPTER_CUDA       2
-#define DAX_DEVICE_ADAPTER_OPENMP     3
-
-#ifndef DAX_DEVICE_ADAPTER
-#ifdef DAX_CUDA
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_CUDA
-#elif defined(DAX_OPENMP) // !DAX_CUDA
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_OPENMP
-#else // !DAX_CUDA && !DAX_OPENMP
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
-#endif // !DAX_CUDA && !DAX_OPENMP
-#endif // DAX_DEVICE_ADAPTER
-
 // These are listed in non-alphabetical order because this is the conceptual
 // order in which the sub-files are loaded.  (But the compile should still
 // succeed of the order is changed.)

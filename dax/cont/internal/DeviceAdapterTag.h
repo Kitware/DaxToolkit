@@ -16,6 +16,21 @@
 #ifndef __dax_cont_internal_DeviceAdapterTag_h
 #define __dax_cont_internal_DeviceAdapterTag_h
 
+#define DAX_DEVICE_ADAPTER_ERROR     -1
+#define DAX_DEVICE_ADAPTER_UNDEFINED  0
+#define DAX_DEVICE_ADAPTER_SERIAL     1
+#define DAX_DEVICE_ADAPTER_CUDA       2
+#define DAX_DEVICE_ADAPTER_OPENMP     3
+
+#ifndef DAX_DEVICE_ADAPTER
+#ifdef DAX_CUDA
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_CUDA
+#elif defined(DAX_OPENMP) // !DAX_CUDA
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_OPENMP
+#else // !DAX_CUDA && !DAX_OPENMP
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
+#endif // !DAX_CUDA && !DAX_OPENMP
+#endif // DAX_DEVICE_ADAPTER
 
 //-----------------------------------------------------------------------------
 #if DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_SERIAL
