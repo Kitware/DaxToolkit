@@ -16,12 +16,6 @@
 #ifndef __dax_cont_internal_ArrayContainerControlError_h
 #define __dax_cont_internal_ArrayContainerControlError_h
 
-#ifdef DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
-#undef DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
-#endif
-
-#define DAX_DEFAULT_ARRAY_CONTAINER_CONTROL \
-  ::dax::cont::internal::ArrayContainerControlTagError
 
 namespace dax {
 namespace cont {

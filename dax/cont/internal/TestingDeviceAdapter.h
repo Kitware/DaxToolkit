@@ -17,7 +17,6 @@
 #define __dax_cont_internal_TestingDeviceAdapter_h
 
 #include <dax/cont/ArrayContainerControlBasic.h>
-
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>

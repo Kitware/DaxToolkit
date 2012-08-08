@@ -38,7 +38,7 @@ struct UnstructuredGridOfCell : UnstructuredGridTag {  };
 /// grid can only contain cells of a single type.
 ///
 template <typename CellT,
-          class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
+          class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
           class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER>
 class UnstructuredGrid
 {

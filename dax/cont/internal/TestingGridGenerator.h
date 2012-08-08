@@ -20,6 +20,7 @@
 #include <dax/Types.h>
 
 #include <dax/exec/Cell.h>
+#include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
@@ -32,7 +33,7 @@ namespace cont {
 namespace internal {
 
 template<class GridType,
-         class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
+         class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
          class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER>
 struct TestGrid
 {
@@ -42,7 +43,8 @@ private:
   const dax::Id Size;
   GridType Grid;
   template<typename GT> struct GridStorage {};
-  template<typename U> struct GridStorage<dax::cont::UnstructuredGrid<U> >
+  template<typename U, class UCCT, class DAT>
+  struct GridStorage<dax::cont::UnstructuredGrid<U,UCCT,DAT> >
     {
     std::vector<dax::Id> topology;
     std::vector<dax::Vector3> points;
@@ -80,7 +82,7 @@ public:
   dax::Vector3 GetPointCoordinates(dax::Id index)
   {
     // Not an efficient implementation, but it's test code so who cares?
-    dax::cont::UniformGrid<> uniform;
+    dax::cont::UniformGrid<DeviceAdapterTag> uniform;
     this->BuildGrid(uniform);
     return uniform.ComputePointCoordinates(index);
   }
@@ -102,15 +104,18 @@ private:
                                        DeviceAdapterTag());
   }
 
-  void BuildGrid(dax::cont::UniformGrid<> &grid)
+  void BuildGrid(dax::cont::UniformGrid<DeviceAdapterTag> &grid)
     {
     grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
     }
 
-  void BuildGrid(dax::cont::UnstructuredGrid<dax::exec::CellTriangle> &grid)
+  void BuildGrid(
+      dax::cont::UnstructuredGrid<
+        dax::exec::CellTriangle,ArrayContainerControlTag,DeviceAdapterTag>
+        &grid)
     {
     //we need to make a volume grid
-    dax::cont::UniformGrid<> uniform;
+    dax::cont::UniformGrid<DeviceAdapterTag> uniform;
     uniform.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
 
     //copy the point info over to the unstructured grid
@@ -193,15 +198,19 @@ private:
         }
       }
 
-    grid = dax::cont::UnstructuredGrid<dax::exec::CellTriangle>(
+    grid = dax::cont::UnstructuredGrid<
+        dax::exec::CellTriangle,ArrayContainerControlTag,DeviceAdapterTag>(
           this->MakeArrayHandle(this->Info.topology),
           this->MakeArrayHandle(this->Info.points));
     }
 
-  void BuildGrid(dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> &grid)
+  void BuildGrid(
+      dax::cont::UnstructuredGrid<
+        dax::exec::CellHexahedron,ArrayContainerControlTag,DeviceAdapterTag>
+        &grid)
     {
     //we need to make a volume grid
-    dax::cont::UniformGrid<> uniform;
+    dax::cont::UniformGrid<DeviceAdapterTag> uniform;
     this->BuildGrid(uniform);
 
     //copy the point info over to the unstructured grid
@@ -240,7 +249,8 @@ private:
         }
       }
 
-    grid = dax::cont::UnstructuredGrid<dax::exec::CellHexahedron>(
+    grid = dax::cont::UnstructuredGrid<
+        dax::exec::CellHexahedron,ArrayContainerControlTag,DeviceAdapterTag>(
           this->MakeArrayHandle(this->Info.topology),
           this->MakeArrayHandle(this->Info.points));
     }
@@ -249,58 +259,91 @@ private:
 
 struct GridTesting
 {
- /// Check functors to be used with the TryAllTypes method.
- ///
- struct TypeCheckAlwaysTrue {
-   template <typename T, class Functor>
-   void operator()(T t, Functor function) const { function(t); }
- };
+  /// Check functors to be used with the TryAllTypes method.
+  ///
+  struct TypeCheckAlwaysTrue {
+    template <typename T, class Functor>
+    void operator()(T t, Functor function) const { function(t); }
+  };
 
- struct TypeCheckUniformGrid {
-   template <typename T, class Functor>
-   void operator()(T daxNotUsed(t), Functor daxNotUsed(function)) const {  }
+  struct TypeCheckUniformGrid {
+    template <typename T, class Functor>
+    void operator()(T daxNotUsed(t), Functor daxNotUsed(function)) const {  }
 
-   template<class Functor>
-   void operator()(dax::cont::UniformGrid<> t, Functor function) const { function(t); }
- };
+    template<class DeviceAdapterTag, class Functor>
+    void operator()(dax::cont::UniformGrid<DeviceAdapterTag> t,
+                    Functor function) const { function(t); }
+  };
 
- template<class FunctionType>
- struct InternalPrintOnInvoke {
-   InternalPrintOnInvoke(FunctionType function, std::string toprint)
-     : Function(function), ToPrint(toprint) { }
-   template <typename T> void operator()(T t) {
-     std::cout << this->ToPrint << std::endl;
-     this->Function(t);
-   }
- private:
-   FunctionType Function;
-   std::string ToPrint;
- };
+  template<class FunctionType>
+  struct InternalPrintOnInvoke {
+    InternalPrintOnInvoke(FunctionType function, std::string toprint)
+      : Function(function), ToPrint(toprint) { }
+    template <typename T> void operator()(T t) {
+      std::cout << this->ToPrint << std::endl;
+      this->Function(t);
+    }
+  private:
+    FunctionType Function;
+    std::string ToPrint;
+  };
 
- /// Runs templated \p function on all the grid types defined in Dax. This is
- /// helpful to test templated functions that should work on all grid types. If the
- /// function is supposed to work on some subset of grids or cells, then \p check can
- /// be set to restrict the types used. This Testing class contains several
- /// helpful check functors.
- ///
- template<class FunctionType, class CheckType>
- static void TryAllGridTypes(FunctionType function, CheckType check)
- {
-   dax::cont::UniformGrid<> grid;
-   check(grid, InternalPrintOnInvoke<FunctionType>(function, "dax::UniformGrid"));
+  /// Runs templated \p function on all the grid types defined in Dax. This is
+  /// helpful to test templated functions that should work on all grid types. If the
+  /// function is supposed to work on some subset of grids or cells, then \p check can
+  /// be set to restrict the types used. This Testing class contains several
+  /// helpful check functors.
+  ///
+  template<class FunctionType,
+           class CheckType,
+           class ArrayContainerControlTag,
+           class DeviceAdapterTag>
+  static void TryAllGridTypes(FunctionType function,
+                              CheckType check,
+                              ArrayContainerControlTag,
+                              DeviceAdapterTag)
+  {
+    dax::cont::UniformGrid<DeviceAdapterTag> grid;
+    check(grid, InternalPrintOnInvoke<FunctionType>(
+            function, "dax::UniformGrid"));
 
-   dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> hexGrid;
-   check(hexGrid, InternalPrintOnInvoke<FunctionType>(function, "dax::UnstructuredGrid of Hexahedron"));
+    dax::cont::UnstructuredGrid<
+        dax::exec::CellHexahedron,ArrayContainerControlTag,DeviceAdapterTag>
+        hexGrid;
+    check(hexGrid, InternalPrintOnInvoke<FunctionType>(
+            function, "dax::UnstructuredGrid of Hexahedron"));
 
-   dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> triGrid;
-   check(triGrid, InternalPrintOnInvoke<FunctionType>(function, "dax::UnstructuredGrid of Triangles"));
-
- }
- template<class FunctionType>
- static void TryAllGridTypes(FunctionType function)
- {
-   TryAllGridTypes(function, TypeCheckAlwaysTrue());
- }
+    dax::cont::UnstructuredGrid<
+        dax::exec::CellTriangle,ArrayContainerControlTag,DeviceAdapterTag>
+        triGrid;
+    check(triGrid, InternalPrintOnInvoke<FunctionType>(
+            function, "dax::UnstructuredGrid of Triangles"));
+  }
+  template<class FunctionType,
+           class ArrayContainerControlTag,
+           class DeviceAdapterTag>
+  static void TryAllGridTypes(FunctionType function,
+                              ArrayContainerControlTag,
+                              DeviceAdapterTag)
+  {
+    TryAllGridTypes(function,
+                    TypeCheckAlwaysTrue(),
+                    ArrayContainerControlTag(),
+                    DeviceAdapterTag());
+  }
+  template<class FunctionType, class CheckType>
+  static void TryAllGridTypes(FunctionType function, CheckType check)
+  {
+    TryAllGridTypes(function,
+                    check,
+                    DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG(),
+                    DAX_DEFAULT_DEVICE_ADAPTER());
+  }
+  template<class FunctionType>
+  static void TryAllGridTypes(FunctionType function)
+  {
+    TryAllGridTypes(function, TypeCheckAlwaysTrue());
+  }
 
 };
 

@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/cont/ArrayContainerControlBasic.h>
+#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #include <dax/cont/DeviceAdapterSerial.h>
 
 #include <dax/cont/worklet/Sine.h>

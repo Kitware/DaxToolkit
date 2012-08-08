@@ -16,7 +16,7 @@
 
 //This sets up the ArrayHandle semantics to allocate pointers and share memory
 //between control and execution.
-#include <dax/cont/ArrayContainerControlBasic.h>
+#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #include <dax/cont/DeviceAdapterSerial.h>
 
 #include <dax/cont/ArrayHandle.h>
