@@ -22,6 +22,7 @@
 #include <dax/exec/Cell.h>
 #include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <vector>
@@ -341,7 +342,7 @@ struct GridTesting
     TryAllGridTypes(function,
                     check,
                     DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG(),
-                    DAX_DEFAULT_DEVICE_ADAPTER());
+                    DAX_DEFAULT_DEVICE_ADAPTER_TAG());
   }
   template<class FunctionType>
   static void TryAllGridTypes(FunctionType function)

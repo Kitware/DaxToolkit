@@ -16,29 +16,13 @@
 #ifndef __dax_cont_ArrayHandle_h
 #define __dax_cont_ArrayHandle_h
 
-// Make a forward declaration of ArrayHandle so that when DeviceAdapter gets
-// included its implementations will compile correctly. This chicken-and-egg
-// problem could get averted by simply forward declaring
-// DAX_DEFAULT_DEVICE_ADAPTER_TAG, which is the only reason we need to include
-// DeviceAdapter in the first place, but to do that you would need more
-// complicated headers so that the macro and prototype was included here and
-// then the implementation somewhere later... Well, it's just a lot easier to
-// declare a prototype here.
-//
-namespace dax { namespace cont {
-template <typename T,
-          class ArrayContainerControlTag,
-          class DeviceAdapter>
-class ArrayHandle;
-} }
-
-
 #include <dax/Types.h>
 
 #include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/Assert.h>
-#include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ErrorControlBadValue.h>
+#include <dax/cont/internal/ArrayManagerExecution.h>
+#include <dax/cont/internal/DeviceAdapterTag.h>
 
 #include <boost/concept_check.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
