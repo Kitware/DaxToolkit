@@ -313,11 +313,14 @@ struct GridTesting
     check(hexGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Hexahedron"));
 
-    dax::cont::UnstructuredGrid<
-        dax::exec::CellTriangle,ArrayContainerControlTag,DeviceAdapterTag>
-        triGrid;
-    check(triGrid, InternalPrintOnInvoke<FunctionType>(
-            function, "dax::UnstructuredGrid of Triangles"));
+    // TODO: Implement checking all other grid types and cells (including
+    // this example of a triangle grid) and updating the tests to handle
+    // these.
+//    dax::cont::UnstructuredGrid<
+//        dax::exec::CellTriangle,ArrayContainerControlTag,DeviceAdapterTag>
+//        triGrid;
+//    check(triGrid, InternalPrintOnInvoke<FunctionType>(
+//            function, "dax::UnstructuredGrid of Triangles"));
   }
   template<class FunctionType,
            class ArrayContainerControlTag,
