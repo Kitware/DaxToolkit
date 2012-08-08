@@ -15,7 +15,7 @@
 //=============================================================================
 
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
-#include <dax/cont/DeviceAdapterSerial.h>
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
 #include <dax/cont/internal/TestingGridGenerator.h>
 #include <dax/cont/internal/Testing.h>

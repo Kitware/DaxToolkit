@@ -40,7 +40,7 @@ static void TestCellMapError()
   try
     {
     dax::cont::worklet::testing::CellMapError(grid,
-                                              DAX_DEFAULT_DEVICE_ADAPTER());
+                                              DAX_DEFAULT_DEVICE_ADAPTER_TAG());
     }
   catch (dax::cont::ErrorExecution error)
     {

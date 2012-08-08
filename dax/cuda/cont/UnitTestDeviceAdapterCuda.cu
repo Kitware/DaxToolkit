@@ -14,6 +14,7 @@
 //
 //=============================================================================
 
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 #define BOOST_SP_DISABLE_THREADS
 
 #include <dax/cuda/cont/DeviceAdapterCuda.h>

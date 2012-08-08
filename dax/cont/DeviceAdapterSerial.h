@@ -17,10 +17,6 @@
 #ifndef __dax_cont_DeviceAdapterSerial_h
 #define __dax_cont_DeviceAdapterSerial_h
 
-#ifdef DAX_DEFAULT_DEVICE_ADAPTER
-#undef DAX_DEFAULT_DEVICE_ADAPTER
-#endif
-
 namespace dax {
 namespace cont {
 
@@ -32,8 +28,6 @@ struct DeviceAdapterTagSerial {  };
 
 }
 }
-
-#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::DeviceAdapterTagSerial
 
 #include <dax/Functional.h>
 #include <dax/cont/ArrayHandle.h>

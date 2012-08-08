@@ -17,7 +17,7 @@
 // These macros help tease out when the default template arguments to
 // ArrayHandle are inappropriately used.
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
-#include <dax/cont/internal/DeviceAdapterError.h>
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 
 #include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/DeviceAdapterSerial.h>

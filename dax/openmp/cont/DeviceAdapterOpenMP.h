@@ -17,16 +17,10 @@
 #ifndef __dax_openmp_cont_DeviceAdapterOpenMP_h
 #define __dax_openmp_cont_DeviceAdapterOpenMP_h
 
-// Declare DAX_DEFAULT_DEVICE_ADAPTER and the tag it points to before including
+// Declare DAX_DEFAULT_DEVICE_ADAPTER_TAG and the tag it points to before including
 // other headers that may require it.
 
 #include <dax/thrust/cont/internal/DeviceAdapterThrustTag.h>
-
-#ifdef DAX_DEFAULT_DEVICE_ADAPTER
-#undef DAX_DEFAULT_DEVICE_ADAPTER
-#endif
-
-#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::openmp::cont::DeviceAdapterTagOpenMP
 
 namespace dax {
 namespace openmp {

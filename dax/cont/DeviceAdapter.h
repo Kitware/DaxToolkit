@@ -17,6 +17,22 @@
 #ifndef __dax_cont_DeviceAdapter_h
 #define __dax_cont_DeviceAdapter_h
 
+#define DAX_DEVICE_ADAPTER_ERROR     -1
+#define DAX_DEVICE_ADAPTER_UNDEFINED  0
+#define DAX_DEVICE_ADAPTER_SERIAL     1
+#define DAX_DEVICE_ADAPTER_CUDA       2
+#define DAX_DEVICE_ADAPTER_OPENMP     3
+
+#ifndef DAX_DEVICE_ADAPTER
+#ifdef DAX_CUDA
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_CUDA
+#elif defined(DAX_OPENMP) // !DAX_CUDA
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_OPENMP
+#else // !DAX_CUDA && !DAX_OPENMP
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
+#endif // !DAX_CUDA && !DAX_OPENMP
+#endif // DAX_DEVICE_ADAPTER
+
 namespace dax {
 namespace cont {
 
@@ -28,15 +44,21 @@ namespace cont {
 /// DeviceAdapterTag___ does not actually exist. Rather, this documentation is
 /// provided to describe the interface for a DeviceAdapter. Loading the
 /// dax/cont/DeviceAdapter.h header file will set a default device adapter
-/// appropriate for the current compile environment. The default adapter can be
-/// overloaded by including the header file for a different adapter (for
-/// example, DeviceAdapterSerial.h). This overloading should be done \em before
-/// loading in any other Dax header files. Failing to do so could create
-/// inconsistencies in the default adapter used among classes.
+/// appropriate for the current compile environment. You can specify the
+/// default device adapter by first setting the \c DAX_DEVICE_ADAPTER macro.
+/// Valid values for \c DAX_DEVICE_ADAPTER are the following:
 ///
-/// See the DeviceAdapter.h and ExecutionAdapter.h files for documentation on
-/// all the functions and classes that must be overloaded/specialized to create
-/// a new device adapter.
+/// \li \c DAX_DEVICE_ADAPTER_SERIAL Runs all algorithms in serial. Can be
+/// helpful for debugging.
+/// \li \c DAX_DEVICE_ADAPTER_CUDA Schedules and runs algorithms on a GPU
+/// using CUDA.  Must be compiling with a CUDA compiler (nvcc).
+/// \li \c DAX_DEVICE_ADAPTER_OPENMP Schedules an algorithm over multiple
+/// CPU cores using OpenMP compiler directives.  Must be compiling with an
+/// OpenMP-compliant compiler with OpenMP pragmas enabled.
+///
+/// See the ArrayManagerExecution.h and DeviceAdapterAlgorithm.h files for
+/// documentation on all the functions and classes that must be
+/// overloaded/specialized to create a new device adapter.
 ///
 struct DeviceAdapterTag___ {  };
 #endif //DAX_DOXYGEN_ONLY
@@ -310,16 +332,35 @@ public:
 // This is at the bottom of the file so that the templated class prototypes
 // are declared before including the device adapter implementation.
 
-#ifndef DAX_DEFAULT_DEVICE_ADAPTER
-#ifdef DAX_CUDA
-#include <dax/cuda/cont/DeviceAdapterCuda.h>
-#else // DAX_CUDA
-#ifdef DAX_OPENMP
-#include <dax/openmp/cont/DeviceAdapterOpenMP.h>
-#else // DAX_OPENMP
+
+//-----------------------------------------------------------------------------
+#if DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_SERIAL
+
 #include <dax/cont/DeviceAdapterSerial.h>
-#endif // DAX_OPENMP
-#endif // DAX_CUDA
-#endif // DAX_DEFAULT_DEVICE_ADAPTER
+#define DAX_DEFAULT_DEVICE_ADAPTER_TAG ::dax::cont::DeviceAdapterTagSerial
+
+#elif DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_CUDA
+
+#include <dax/cuda/cont/DeviceAdapterCuda.h>
+#define DAX_DEFAULT_DEVICE_ADAPTER_TAG ::dax::cuda::cont::DeviceAdapterTagCuda
+
+#elif DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_OPENMP
+
+#include <dax/openmp/cont/DeviceAdapterOpenMP.h>
+#define DAX_DEFAULT_DEVICE_ADAPTER_TAG ::dax::openmp::cont::DeviceAdapterTagOpenMP
+
+#elif DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_ERROR
+
+#include <dax/cont/internal/DeviceAdapterError.h>
+#define DAX_DEFAULT_DEVICE_ADAPTER_TAG ::dax::cont::internal::DeviceAdapterTagError
+
+#elif (DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_UNDEFINED) || !defined(DAX_DEVICE_ADAPTER)
+
+#ifndef DAX_DEFAULT_DEVICE_ADAPTER_TAG
+#warning If device adapter is undefined, DAX_DEFAULT_DEVICE_ADAPTER_TAG must be defined.
+#endif
+
+#endif
+
 
 #endif //__dax_cont_DeviceAdapter_h

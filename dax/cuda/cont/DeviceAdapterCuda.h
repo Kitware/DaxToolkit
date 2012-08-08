@@ -17,16 +17,10 @@
 #ifndef __dax_cuda_cont_DeviceAdapterCuda_h
 #define __dax_cuda_cont_DeviceAdapterCuda_h
 
-// Declare DAX_DEFAULT_DEVICE_ADAPTER and the tag it points to before including
+// Declare DAX_DEFAULT_DEVICE_ADAPTER_TAG and the tag it points to before including
 // other headers that may require it.
 
 #include <dax/thrust/cont/internal/DeviceAdapterThrustTag.h>
-
-#ifdef DAX_DEFAULT_DEVICE_ADAPTER
-#undef DAX_DEFAULT_DEVICE_ADAPTER
-#endif
-
-#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cuda::cont::DeviceAdapterTagCuda
 
 namespace dax {
 namespace cuda {

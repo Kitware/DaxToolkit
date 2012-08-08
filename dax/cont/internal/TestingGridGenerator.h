@@ -32,9 +32,10 @@ namespace dax {
 namespace cont {
 namespace internal {
 
-template<class GridType,
-         class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
-         class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER>
+template<
+    class GridType,
+    class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
+    class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 struct TestGrid
 {
 private:
