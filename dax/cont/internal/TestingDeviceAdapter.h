@@ -736,11 +736,19 @@ private:
       TestErrorExecution();
 
       std::cout << "Doing Worklet tests with UniformGrid" << std::endl;
-      WorkletTests<dax::cont::UniformGrid<> >();
+      WorkletTests<dax::cont::UniformGrid<DeviceAdapterTag> >();
 
       std::cout << "Doing Worklet tests with UnstructuredGrid types" << std::endl;
-      WorkletTests<dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> >();
-      WorkletTests<dax::cont::UnstructuredGrid<dax::exec::CellTriangle> >();
+      WorkletTests<dax::cont::UnstructuredGrid
+          <
+          dax::exec::CellHexahedron,
+          dax::cont::ArrayContainerControlTagBasic,
+          DeviceAdapterTag> >();
+      WorkletTests<dax::cont::UnstructuredGrid
+          <
+          dax::exec::CellTriangle,
+          dax::cont::ArrayContainerControlTagBasic,
+          DeviceAdapterTag> >();
     }
   };
 

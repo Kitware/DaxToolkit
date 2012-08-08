@@ -13,11 +13,26 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_openmp_cont_DeviceAdapterOpenMP_h
-#define __dax_openmp_cont_DeviceAdapterOpenMP_h
+#ifndef __dax_cuda_cont_internal_DeviceAdapterTagCuda_h
+#define __dax_cuda_cont_internal_DeviceAdapterTagCuda_h
 
-#include <dax/openmp/cont/internal/DeviceAdapterTagOpenMP.h>
-#include <dax/openmp/cont/internal/ArrayManagerExecutionOpenMP.h>
-#include <dax/openmp/cont/internal/DeviceAdapterAlgorithmOpenMP.h>
+#include <dax/cuda/cont/internal/SetThrustForCuda.h>
 
-#endif //__dax_openmp_cont_DeviceAdapterOpenMP_h
+#include <dax/thrust/cont/internal/DeviceAdapterTagThrust.h>
+
+namespace dax {
+namespace cuda {
+namespace cont {
+
+/// A DeviceAdapter that uses Cuda.  To use this adapter, the code must be
+/// compiled with nvcc.
+///
+struct DeviceAdapterTagCuda
+    : public dax::thrust::cont::internal::DeviceAdapterTagThrust
+{  };
+
+}
+}
+} // namespace dax::cuda::cont
+
+#endif //__dax_cuda_cont_internal_DeviceAdapterTagCuda_h

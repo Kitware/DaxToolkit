@@ -43,7 +43,9 @@ struct TestCellGradientWorklet
   void operator()(const GridType&) const
     {
     dax::cont::internal::TestGrid<
-        GridType,dax::cont::ArrayContainerControlTagBasic> grid(DIM);
+        GridType,
+        dax::cont::ArrayContainerControlTagBasic,
+        dax::cont::DeviceAdapterTagSerial> grid(DIM);
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
     std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
