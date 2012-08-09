@@ -316,6 +316,7 @@ static TriangleCases triTable[] = {
 namespace dax {
 namespace worklet {
 
+// --------------------------------------------------- GetVoxelClassification()
 template<typename T>
 inline unsigned char GetVoxelClassification(const T isoValue,const dax::Tuple<T,8>& values )
 {
@@ -329,14 +330,17 @@ inline unsigned char GetVoxelClassification(const T isoValue,const dax::Tuple<T,
           (values[7] <= isoValue) << 7);
 }
 
+// ------------------------------------------------------------------- Classify
 template<typename ValueType>
 class MarchingCubesClassify : public dax::exec::WorkletDetermineNewCellCount
 {
 public:
+  // .................................................................... cnstr
   DAX_CONT_EXPORT
   MarchingCubesClassify(ValueType isoValue)
     : IsoValue(isoValue) {  }
 
+  // ....................................................................... ()
   template<class InputCellType>
   DAX_EXEC_EXPORT
   void operator()(const InputCellType &daxNotUsed(cell),
@@ -348,9 +352,11 @@ public:
   }
 
 private:
+  // ..................................................................... vars
   ValueType IsoValue;
 };
 
+// ------------------------------------------------------------------- Topology
 //MarchingCubes only works when the topology is the same for input and output/
 //The only special case so far is converting CellVoxel to CellHexahedron
 template<typename ValueType, typename OutputPortalType>

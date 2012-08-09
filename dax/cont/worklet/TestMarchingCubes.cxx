@@ -141,7 +141,8 @@ int main(int argc, char*argv[])
 
   try
     {
-    dax::cont::worklet::MarchingCubes(inGrid,outGrid,
+    dax::cont::worklet::MarchingCubes(inGrid,
+                                      outGrid,
                                       isoValue,
                                       fieldHandle,
                                       resultHandle);

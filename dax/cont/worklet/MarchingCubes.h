@@ -36,26 +36,32 @@ namespace exec {
 namespace internal {
 namespace kernel {
 
-// ---------------------------------------------------------------------- Count
-template<class InputTopologyType, class ValuesPortalType, class CountPortalType>
+// ------------------------------------------------------------------- Classify
+template<class InputTopologyType,
+         class ValuesPortalType,
+         class CountPortalType>
 struct MarchingCubesClassifyFunctor
 {
+  // ................................................................ typesdefs
   typedef typename ValuesPortalType::ValueType ValueType;
   typedef typename InputTopologyType::CellType CellType;
 
+  // ..................................................................... cnstr
   DAX_CONT_EXPORT
   MarchingCubesClassifyFunctor(
       const dax::worklet::MarchingCubesClassify<ValueType> &worklet,
-      const InputTopologyType &inputTopology,
-      const ValuesPortalType &values,
-      const CountPortalType &newCellCount)
+      const InputTopologyType                              &inputTopology,
+      const ValuesPortalType                               &values,
+      const CountPortalType                                &newCellCount)
     : Worklet(worklet),
       InputTopology(inputTopology),
       Values(values),
       NewCellCount(newCellCount) {  }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id cellIndex,
+  // ....................................................................... ()
+  DAX_EXEC_EXPORT
+  void operator()(
+      dax::Id                                        cellIndex,
       const dax::exec::internal::ErrorMessageBuffer &errorMessage)
   {
     this->Worklet.SetErrorMessageBuffer(errorMessage);
@@ -78,17 +84,19 @@ struct MarchingCubesClassifyFunctor
   }
 
 private:
+  // ..................................................................... vars
   dax::worklet::MarchingCubesClassify<ValueType> Worklet;
-  InputTopologyType InputTopology;
-  ValuesPortalType Values;
-  CountPortalType NewCellCount;
+  InputTopologyType                              InputTopology;
+  ValuesPortalType                               Values;
+  CountPortalType                                NewCellCount;
 };
 
 // ------------------------------------------------------------------- Generate
 template<class InputTopologyType, class OutputTopologyType>
 struct MarchingCubesGenerateTopologyFunctor
 {
-  typedef typename InputTopologyType::CellType InputCellType;
+  // ................................................................ typesdefs
+  typedef typename InputTopologyType::CellType  InputCellType;
   typedef typename OutputTopologyType::CellType OutputCellType;
 
   DAX_CONT_EXPORT MarchingCubesGenerateTopologyFunctor(
@@ -99,9 +107,11 @@ struct MarchingCubesGenerateTopologyFunctor
       InputTopology(inputTopology),
       OutputTopology(outputTopology) {  }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id outputCellIndex,
-      dax::Id inputCellIndex,
+  // ....................................................................... ()
+  DAX_EXEC_EXPORT
+  void operator()(
+      dax::Id                                        inputCellIndex,
+      dax::Id                                        outputCellIndex,
       const dax::exec::internal::ErrorMessageBuffer &errorMessage)
   {
     this->Worklet.SetErrorMessageBuffer(errorMessage);
@@ -150,6 +160,7 @@ protected:
   typedef typename Superclass::ArrayHandleMask ArrayHandleMask;
 
 public:
+  // .................................................................... cnstr
   //constructor that is passed all the user decided parts of the worklet too
   MarchingCubes(
      const ValueType& isoValue,
@@ -162,6 +173,7 @@ public:
 
   }
 
+  // .............................................. CreateClassificationFunctor
   //generate the functor for the classification worklet
   template <class InputGridType>
   MarchingCubesClassifyFunctor<
@@ -187,6 +199,7 @@ public:
     return functor;
   }
 
+  // .................................................... CreateTopologyFunctor
   //generate the functor for the topology generation worklet
   template<class InputGridType, class OutputGridType>
   MarchingCubesGenerateTopologyFunctor<
@@ -242,6 +255,7 @@ template<class InGridType,
          typename ValueType,
          class Container1,
          class Container2,
+// ------------------------------------------------------------ MarchingCubes()
          class Adapter>
 inline void MarchingCubes(
     const InGridType &inGrid,
