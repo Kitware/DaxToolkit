@@ -30,86 +30,8 @@
 #include <dax/cont/internal/ScheduleMapAdapter.h>
 
 namespace dax {
-namespace exec {
-namespace internal {
-namespace kernel {
-
-template<class MaskPortalType>
-struct ClearUsedPointsFunctor
-{
-  DAX_CONT_EXPORT
-  ClearUsedPointsFunctor(const MaskPortalType &outMask)
-    : OutMask(outMask) {  }
-
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id index,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
-  {
-    typedef typename MaskPortalType::ValueType MaskType;
-    dax::exec::internal::FieldSet(this->OutMask,
-                                  index,
-                                  static_cast<MaskType>(0),
-                                  errorMessage);
-  }
-
-private:
-  MaskPortalType OutMask;
-};
-
-template<class MaskPortalType>
-struct GetUsedPointsFunctor
-{
-  DAX_CONT_EXPORT
-  GetUsedPointsFunctor(const MaskPortalType &outMask)
-    : OutMask(outMask) {  }
-
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id daxNotUsed(key),
-      dax::Id value,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage) const
-  {
-    typedef typename MaskPortalType::ValueType MaskType;
-    dax::exec::internal::FieldSet(this->OutMask,
-                                  value,
-                                  static_cast<MaskType>(1),
-                                  errorMessage);
-  }
-
-private:
-  MaskPortalType OutMask;
-};
-
-
-template<class ArrayPortalType>
-struct LowerBoundsInputFunctor
-{
-  DAX_CONT_EXPORT LowerBoundsInputFunctor(const ArrayPortalType &array)
-    : Array(array) {  }
-
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id index,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage) const
-  {
-    dax::exec::internal::FieldSet(this->Array,
-                                  index,
-                                  index + 1,
-                                  errorMessage);
-  }
-
-private:
-  ArrayPortalType Array;
-};
-
-}
-}
-}
-} //dax::exec::internal::kernel
-
-
-namespace dax {
 namespace cont {
 namespace internal {
-
 
 /// ScheduleGenerateMangledTopology is the control enviorment representation of a
 /// worklet of the type WorkDetermineNewCellCount. This class handles properly
@@ -122,15 +44,9 @@ namespace internal {
 template<class Derived, class DeviceAdapterTag>
 class ScheduleGenerateMangledTopology
 {
-public:
-  typedef dax::Id MaskType;
-
 protected:
   typedef dax::cont::ArrayHandle<
        dax::Id, ArrayContainerControlTagBasic, DeviceAdapterTag> ArrayHandleId;
-  typedef dax::cont::ArrayHandle<
-       MaskType, ArrayContainerControlTagBasic, DeviceAdapterTag>
-       ArrayHandleMask;
 
 public:
   /// Executes the ScheduleGenerateMangledTopology algorithm on the inputGrid and
@@ -170,15 +86,6 @@ public:
                            outputCellIndexArray,
                            totalOutputCells);
     newCellCount.ReleaseResources();
-
-    //GeneratePointMask uses the topology that schedule topology generates
-    ArrayHandleMask pointMask = this->GeneratePointMask(inGrid, outGrid);
-
-    this->GenerateCompactedTopology(inGrid,outGrid,pointMask);
-
-    //now that the topology has been fully thresholded,
-    //lets ask our derived class if they need to threshold anything
-    static_cast<Derived*>(this)->GenerateOutputFields(pointMask);
     }
 
 #ifdef DAX_DOXYGEN_ONLY
@@ -206,14 +113,6 @@ public:
                                         OutputGridType &outputGrid,
                                         dax::Id outputGridSize);
 
-  /// \brief Abstract method that inherited classes must implement.
-  ///
-  /// The method is called after the new grids points and topology have been
-  /// generated. \c pointMask has an entry for every point in the input grid
-  /// and a positive flag for every entry that corresponds to an output point.
-  /// It can be used with dax::cont::internal::StreamCompact.
-  ///
-  void GenerateOutputFields(const ArrayHandleMask &pointMask);
 
 #endif //DAX_DOXYGEN_ONLY
 
@@ -247,106 +146,13 @@ private:
                         const ArrayHandleId outputCellIndexArray,
                         const dax::Id totalOutputCells)
   {
-//    //do an inclusive scan of the cell count / cell mask to get the number
-//    //of cells in the output
-//    ArrayHandleId scannedNewCellCounts;
-//    const dax::Id numNewCells =
-//        dax::cont::internal::InclusiveScan(newCellCount,
-//                                           scannedNewCellCounts,
-//                                           DeviceAdapterTag());
-
-//    //fill the validCellRange with the values from 1 to size+1, this is used
-//    //for the lower bounds to compute the right indices
-//    ArrayHandleId validCellRange;
-//    dax::cont::internal::Schedule(
-//          dax::exec::internal::kernel::LowerBoundsInputFunctor
-//              <typename ArrayHandleId::PortalExecution>(
-//                validCellRange.PrepareForOutput(numNewCells)),
-//          numNewCells,
-//          DeviceAdapterTag());
-
-//    //now do the lower bounds of the cell indices so that we figure out
-//    //which original topology indexs match the new indices.
-//    dax::cont::internal::LowerBounds(scannedNewCellCounts,
-//                                     validCellRange,
-//                                     DeviceAdapterTag());
-
-//    // We are done with scannedNewCellCounts.
-//    scannedNewCellCounts.ReleaseResources();
-
-    //now call the user topology generation worklet
-    dax::cont::internal::ScheduleMap(
           static_cast<Derived*>(this)->CreateTopologyFunctor(inGrid,
                                                              outGrid,
                                                              numNewCells),
           validCellRange,
           outputCellIndexArray);
   }
-
-  template<class InGridType, class OutGridType>
-  ArrayHandleMask GeneratePointMask(const InGridType &inGrid,
-                                    const OutGridType &outGrid)
-    {
-    typedef typename ArrayHandleMask::PortalExecution MaskPortalType;
-
-    ArrayHandleMask pointMask;
-
-    // Clear out the mask
-    dax::cont::internal::Schedule(
-          dax::exec::internal::kernel::ClearUsedPointsFunctor<MaskPortalType>(
-            pointMask.PrepareForOutput(inGrid.GetNumberOfPoints())),
-          inGrid.GetNumberOfPoints(),
-          DeviceAdapterTag());
-
-    // Mark every point that is used at least once.
-    // This only works when outGrid is an UnstructuredGrid.
-    dax::cont::internal::ScheduleMap(
-          dax::exec::internal::kernel::GetUsedPointsFunctor<MaskPortalType>(
-            pointMask.PrepareForInPlace()),
-          outGrid.GetCellConnections());
-
-    return pointMask;
-  }
-
-  template<typename InGridType,typename OutGridType>
-  void GenerateCompactedTopology(const InGridType &inGrid,
-                                 OutGridType& outGrid,
-                                 const ArrayHandleMask &pointMask)
-    {
-    // Here we are assuming OutGridType is an UnstructuredGrid so that we
-    // can set point and connectivity information.
-
-    //extract the point coordinates that we need for the new topology
-    dax::cont::internal::StreamCompact(inGrid.GetPointCoordinates(),
-                                       pointMask,
-                                       outGrid.GetPointCoordinates(),
-                                       DeviceAdapterTag());
-
-    typedef typename OutGridType::CellConnectionsType CellConnectionsType;
-    typedef typename OutGridType::PointCoordinatesType PointCoordinatesType;
-
-    //compact the topology array to reference the extracted
-    //coordinates ids
-    {
-    // Make usedPointIds become a sorted array of used point indices.
-    // If entry i in usedPointIndices is j, then point index i in the
-    // output corresponds to point index j in the input.
-    ArrayHandleId usedPointIndices;
-    dax::cont::internal::Copy(outGrid.GetCellConnections(),
-                              usedPointIndices,
-                              DeviceAdapterTag());
-    dax::cont::internal::Sort(usedPointIndices, DeviceAdapterTag());
-    dax::cont::internal::Unique(usedPointIndices, DeviceAdapterTag());
-    // Modify the connections of outGrid to point to compacted points.
-    dax::cont::internal::LowerBounds(usedPointIndices,
-                                     outGrid.GetCellConnections(),
-                                     DeviceAdapterTag());
-    }
-    }
 };
-
-
-
 } //internal
 } //exec
 } //dax
