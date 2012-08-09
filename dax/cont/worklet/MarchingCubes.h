@@ -141,24 +141,26 @@ struct MarchingCubesGenerateTopologyFunctor
                                                             inputCell,
                                                             constWorklet),
                  outputPoints);
-
-    for (int localIndex = 0;
-         localIndex < this->Count.Get(inputCellIndex)*OutputCellType::NUM_POINTS;
-         localIndex++)
+    // for each triangle
+    for (int i = 0; i < this->Count.Get(inputCellIndex); ++i)
       {
-      // This only actually works if OutputTopologyType is TopologyUnstructured.
-      for(int i =0 ;i<3;++i)
+      // for each vertex in triangle
+      for (int j = 0; j < 3; ++j)
         {
-        // This only actually works if OutputTopologyType is TopologyUnstructured.
-        dax::exec::internal::FieldSet(this->Output,
-                                      outputCellIndex*OutputCellType::NUM_POINTS+localIndex +i,
-                                      outputPoints[localIndex][i],
+          for (int k = 0; k < 3; ++k)
+            {
+            dax::exec::internal::FieldSet(this->Output,
+                                          (outputCellIndex*9)+(((i*3)+j)*3)+k,
+                                          outputPoints[(i*3)+j][k],
+                                          constWorklet);
+
+            }
+        dax::exec::internal::FieldSet(this->OutputTopology.CellConnections,
+                                      outputCellIndex*3+(i*3)+j,
+                                      outputCellIndex*3+(i*3)+j,
                                       constWorklet);
         }
-      dax::exec::internal::FieldSet(this->OutputTopology.CellConnections,
-                                   OutputCellType::NUM_POINTS*outputCellIndex+localIndex,
-                                   OutputCellType::NUM_POINTS*outputCellIndex+localIndex,
-                                   constWorklet);
+
       }
   }
 
@@ -273,7 +275,7 @@ public:
           this->InputHandle.PrepareForInput(),
           cellCount.PrepareForInput(),
           this->OutputHandle.PrepareForOutput(outputGridSize*3*3),
-          outputGrid.PrepareForOutput(outputGridSize*3));
+          outputGrid.PrepareForOutput(outputGridSize));
 
     return functor;
   }
