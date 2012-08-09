@@ -13,25 +13,24 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_internal_DeviceAdapterError_h
-#define __dax_cont_internal_DeviceAdapterError_h
+#ifndef __dax_cont_internal_DeviceAdapterTagSerial_h
+#define __dax_cont_internal_DeviceAdapterTagSerial_h
 
 namespace dax {
 namespace cont {
-namespace internal {
 
-/// This is an invalid DeviceAdapter. The point of this class is to include the
-/// header file to make this invalid class the default DeviceAdapter. From that
-/// point, you have to specify an appropriate DeviceAdapter or else get a
-/// compile error.
+// This is intentionally in the dax::cont namespace instead of the
+// dax::cont::internal namespace. Conceptually, this tag is defined in
+// DeviceAdapterSerial.h, but is broken into this header to resolve some
+// dependency issues.
+
+/// A simple implementation of a DeviceAdapter that can be used for debuging.
+/// The scheduling will simply run everything in a serial loop, which is easy
+/// to track in a debugger.
 ///
-struct DeviceAdapterTagError
-{
-  // Not implemented.
-};
+struct DeviceAdapterTagSerial {  };
 
 }
-}
-} // namespace dax::cont::internal
+} // namespace dax::cont
 
-#endif //__dax_cont_internal_DeviceAdapterError_h
+#endif //__dax_cont_internal_DeviceAdapterTagSerial_h

@@ -17,7 +17,6 @@
 #define __dax_thrust_cont_internal_DeviceAdapterThrust_h
 
 #include <dax/thrust/cont/internal/CheckThrustBackend.h>
-#include <dax/thrust/cont/internal/DeviceAdapterThrustTag.h>
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
@@ -25,6 +24,8 @@
 #include <dax/Functional.h>
 
 #include <dax/exec/internal/ErrorMessageBuffer.h>
+
+#include <dax/thrust/cont/internal/DeviceAdapterTagThrust.h>
 
 // Disable GCC warnings we check Dax for but Thrust does not.
 #if defined(__GNUC__) && !defined(DAX_CUDA)

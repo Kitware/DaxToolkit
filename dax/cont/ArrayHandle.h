@@ -16,29 +16,13 @@
 #ifndef __dax_cont_ArrayHandle_h
 #define __dax_cont_ArrayHandle_h
 
-// Make a forward declaration of ArrayHandle so that when DeviceAdapter gets
-// included its implementations will compile correctly. This chicken-and-egg
-// problem could get averted by simply forward declaring
-// DAX_DEFAULT_DEVICE_ADAPTER, which is the only reason we need to include
-// DeviceAdapter in the first place, but to do that you would need more
-// complicated headers so that the macro and prototype was included here and
-// then the implementation somewhere later... Well, it's just a lot easier to
-// declare a prototype here.
-//
-namespace dax { namespace cont {
-template <typename T,
-          class ArrayContainerControlTag,
-          class DeviceAdapter>
-class ArrayHandle;
-} }
-
-
 #include <dax/Types.h>
 
 #include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/Assert.h>
-#include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ErrorControlBadValue.h>
+#include <dax/cont/internal/ArrayManagerExecution.h>
+#include <dax/cont/internal/DeviceAdapterTag.h>
 
 #include <boost/concept_check.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
@@ -71,10 +55,10 @@ namespace internal { class ArrayHandleAccess; }
 /// counted so that when all copies of the \c ArrayHandle are destroyed, any
 /// allocated memory is released.
 ///
-template <typename T,
-          class ArrayContainerControlTag
-              = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
-          class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER>
+template<
+    typename T,
+    class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
+    class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class ArrayHandle
 {
 private:
@@ -422,24 +406,24 @@ make_ArrayHandle(const T *array,
 }
 template<typename T, class ArrayContainerControlTag>
 DAX_CONT_EXPORT
-dax::cont::ArrayHandle<T, ArrayContainerControlTag, DAX_DEFAULT_DEVICE_ADAPTER>
+dax::cont::ArrayHandle<T, ArrayContainerControlTag, DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 make_ArrayHandle(const T *array, dax::Id length, ArrayContainerControlTag)
 {
   return make_ArrayHandle(array,
                           length,
                           ArrayContainerControlTag(),
-                          DAX_DEFAULT_DEVICE_ADAPTER());
+                          DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 }
 template<typename T>
 DAX_CONT_EXPORT
 dax::cont::ArrayHandle<
-     T, DAX_DEFAULT_ARRAY_CONTAINER_CONTROL, DAX_DEFAULT_DEVICE_ADAPTER>
+     T, DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG, DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 make_ArrayHandle(const T *array, dax::Id length)
 {
   return make_ArrayHandle(array,
                           length,
-                          DAX_DEFAULT_ARRAY_CONTAINER_CONTROL(),
-                          DAX_DEFAULT_DEVICE_ADAPTER());
+                          DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG(),
+                          DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 }
 
 /// A convenience function for creating an ArrayHandle from an std::vector.
@@ -464,22 +448,22 @@ make_ArrayHandle(const std::vector<T> &array,
 template<typename T,
          class ArrayContainerControlTag>
 DAX_CONT_EXPORT
-dax::cont::ArrayHandle<T, ArrayContainerControlTag, DAX_DEFAULT_DEVICE_ADAPTER>
+dax::cont::ArrayHandle<T, ArrayContainerControlTag, DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 make_ArrayHandle(const std::vector<T> &array, ArrayContainerControlTag)
 {
   return make_ArrayHandle(array,
                           ArrayContainerControlTag(),
-                          DAX_DEFAULT_DEVICE_ADAPTER());
+                          DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 }
 template<typename T>
 DAX_CONT_EXPORT
 dax::cont::ArrayHandle<
-    T, DAX_DEFAULT_ARRAY_CONTAINER_CONTROL, DAX_DEFAULT_DEVICE_ADAPTER>
+    T, DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG, DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 make_ArrayHandle(const std::vector<T> &array)
 {
   return make_ArrayHandle(array,
-                          DAX_DEFAULT_ARRAY_CONTAINER_CONTROL(),
-                          DAX_DEFAULT_DEVICE_ADAPTER());
+                          DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG(),
+                          DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 }
 
 }

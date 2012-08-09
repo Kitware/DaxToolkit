@@ -46,7 +46,7 @@ public:
   ArrayManagerExecutionThrustShare() {  }
 
   // These features are expected by thrust device adapters to run thrust
-  // algorithms (see DeviceAdapterThrust.h).
+  // algorithms (see DeviceAdapterAlgorithmThrust.h).
 
   typedef typename PortalType::IteratorType ThrustIteratorType;
   typedef typename PortalConstType::IteratorType ThrustIteratorConstType;

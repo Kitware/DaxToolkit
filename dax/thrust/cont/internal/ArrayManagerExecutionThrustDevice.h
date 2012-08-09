@@ -151,7 +151,7 @@ public:
   }
 
   // These features are expected by thrust device adapters to run thrust
-  // algorithms (see DeviceAdapterThrust.h).
+  // algorithms (see DeviceAdapterAlgorithmThrust.h).
 
   typedef ::thrust::device_ptr<ValueType> ThrustIteratorType;
   typedef ::thrust::device_ptr<const ValueType> ThrustIteratorConstType;

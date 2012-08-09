@@ -14,6 +14,8 @@
 //
 //=============================================================================
 
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
+
 #include <dax/openmp/cont/DeviceAdapterOpenMP.h>
 
 #include <dax/cont/internal/TestingDeviceAdapter.h>

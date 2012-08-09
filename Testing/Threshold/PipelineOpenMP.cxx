@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/openmp/cont/DeviceAdapterOpenMP.h>
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_OPENMP
 
 #include "PipelineOpenMP.h"
 

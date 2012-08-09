@@ -16,13 +16,6 @@
 #ifndef __dax__cont__ArrayContainerControlBasic_h
 #define __dax__cont__ArrayContainerControlBasic_h
 
-#ifdef DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
-#undef DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
-#endif
-
-#define DAX_DEFAULT_ARRAY_CONTAINER_CONTROL \
-  ::dax::cont::ArrayContainerControlTagBasic
-
 #include <dax/Types.h>
 #include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/ArrayPortalFromIterators.h>

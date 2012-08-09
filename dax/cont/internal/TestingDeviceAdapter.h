@@ -17,7 +17,6 @@
 #define __dax_cont_internal_TestingDeviceAdapter_h
 
 #include <dax/cont/ArrayContainerControlBasic.h>
-
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
@@ -737,11 +736,19 @@ private:
       TestErrorExecution();
 
       std::cout << "Doing Worklet tests with UniformGrid" << std::endl;
-      WorkletTests<dax::cont::UniformGrid<> >();
+      WorkletTests<dax::cont::UniformGrid<DeviceAdapterTag> >();
 
       std::cout << "Doing Worklet tests with UnstructuredGrid types" << std::endl;
-      WorkletTests<dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> >();
-      WorkletTests<dax::cont::UnstructuredGrid<dax::exec::CellTriangle> >();
+      WorkletTests<dax::cont::UnstructuredGrid
+          <
+          dax::exec::CellHexahedron,
+          dax::cont::ArrayContainerControlTagBasic,
+          DeviceAdapterTag> >();
+      WorkletTests<dax::cont::UnstructuredGrid
+          <
+          dax::exec::CellTriangle,
+          dax::cont::ArrayContainerControlTagBasic,
+          DeviceAdapterTag> >();
     }
   };
 

@@ -14,10 +14,10 @@
 //
 //=============================================================================
 
-// These header files help tease out when the default template arguments to
+// These macros help tease out when the default template arguments to
 // ArrayHandle are inappropriately used.
-#include <dax/cont/internal/ArrayContainerControlError.h>
-#include <dax/cont/internal/DeviceAdapterError.h>
+#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 
 #include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/DeviceAdapterSerial.h>
@@ -42,7 +42,10 @@ struct TestCellGradientWorklet
   template<typename GridType>
   void operator()(const GridType&) const
     {
-    dax::cont::internal::TestGrid<GridType> grid(DIM);
+    dax::cont::internal::TestGrid<
+        GridType,
+        dax::cont::ArrayContainerControlTagBasic,
+        dax::cont::DeviceAdapterTagSerial> grid(DIM);
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
     std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
@@ -87,7 +90,10 @@ struct TestCellGradientWorklet
 //-----------------------------------------------------------------------------
 void TestCellGradient()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestCellGradientWorklet());
+  dax::cont::internal::GridTesting::TryAllGridTypes(
+        TestCellGradientWorklet(),
+        dax::cont::ArrayContainerControlTagBasic(),
+        dax::cont::DeviceAdapterTagSerial());
   }
 
 

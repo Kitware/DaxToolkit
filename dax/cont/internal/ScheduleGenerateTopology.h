@@ -25,7 +25,6 @@
 #include <dax/exec/internal/FieldAccess.h>
 #include <dax/exec/internal/GridTopologies.h>
 
-#include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/ScheduleMapAdapter.h>
 

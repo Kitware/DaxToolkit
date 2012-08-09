@@ -19,6 +19,7 @@
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/DeviceAdapter.h>
 
 namespace dax {
 namespace exec {

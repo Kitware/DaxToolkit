@@ -13,11 +13,15 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_DeviceAdapterSerial_h
-#define __dax_cont_DeviceAdapterSerial_h
+#ifndef __dax_openmp_cont_internal_DeviceAdapterAlgorithmOpenMP_h
+#define __dax_openmp_cont_internal_DeviceAdapterAlgorithmOpenMP_h
 
-#include <dax/cont/internal/DeviceAdapterTagSerial.h>
-#include <dax/cont/internal/ArrayManagerExecutionSerial.h>
-#include <dax/cont/internal/DeviceAdapterAlgorithmSerial.h>
+#include <dax/openmp/cont/internal/SetThrustForOpenMP.h>
 
-#endif //__dax_cont_DeviceAdapterSerial_h
+#include <dax/openmp/cont/internal/DeviceAdapterTagOpenMP.h>
+#include <dax/openmp/cont/internal/ArrayManagerExecutionOpenMP.h>
+
+// Here are the actual implementation of the algorithms.
+#include <dax/thrust/cont/internal/DeviceAdapterAlgorithmThrust.h>
+
+#endif //__dax_openmp_cont_internal_DeviceAdapterAlgorithmOpenMP_h

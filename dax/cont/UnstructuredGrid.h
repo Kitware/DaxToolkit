@@ -37,9 +37,10 @@ struct UnstructuredGridOfCell : UnstructuredGridTag {  };
 /// This class defines the topology of an unstructured grid. An unstructured
 /// grid can only contain cells of a single type.
 ///
-template <typename CellT,
-          class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
-          class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER>
+template <
+    typename CellT,
+    class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
+    class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class UnstructuredGrid
 {
 public:

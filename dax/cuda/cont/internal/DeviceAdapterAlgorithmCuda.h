@@ -13,11 +13,15 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_DeviceAdapterSerial_h
-#define __dax_cont_DeviceAdapterSerial_h
+#ifndef __dax_cuda_cont_internal_DeviceAdapterAlgorithmCuda_h
+#define __dax_cuda_cont_internal_DeviceAdapterAlgorithmCuda_h
 
-#include <dax/cont/internal/DeviceAdapterTagSerial.h>
-#include <dax/cont/internal/ArrayManagerExecutionSerial.h>
-#include <dax/cont/internal/DeviceAdapterAlgorithmSerial.h>
+#include <dax/cuda/cont/internal/SetThrustForCuda.h>
 
-#endif //__dax_cont_DeviceAdapterSerial_h
+#include <dax/cuda/cont/internal/DeviceAdapterTagCuda.h>
+#include <dax/cuda/cont/internal/ArrayManagerExecutionCuda.h>
+
+// Here are the actual implementation of the algorithms.
+#include <dax/thrust/cont/internal/DeviceAdapterAlgorithmThrust.h>
+
+#endif //__dax_cuda_cont_internal_DeviceAdapterAlgorithmCuda_h

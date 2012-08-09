@@ -14,6 +14,7 @@
 //
 //=============================================================================
 
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 #define BOOST_SP_DISABLE_THREADS
 
 // Tests math functions that rely on system math functions in the Cuda runtime
