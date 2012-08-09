@@ -246,7 +246,7 @@ public:
   CreateTopologyFunctor(const InputGridType &inputGrid,
                         OutputGridType &outputGrid,
                         dax::Id outputGridSize,
-                        const ArrayHandleId &reducedCellCount)
+                        const ArrayHandleId &cellCount)
   {
     typedef MarchingCubesGenerateTopologyFunctor<
         typename InputGridType::TopologyStructConstExecution,
@@ -271,7 +271,7 @@ public:
           worklet,
           inputGrid.PrepareForInput(),
           this->InputHandle.PrepareForInput(),
-          reducedCellCount.PrepareForInput(),
+          cellCount.PrepareForInput(),
           this->OutputHandle.PrepareForOutput(outputGridSize*3*3),
           outputGrid.PrepareForOutput(outputGridSize*3));
 

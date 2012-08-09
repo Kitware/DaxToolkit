@@ -86,7 +86,7 @@ public:
     // Generate();
     this->ScheduleTopology(inGrid, outGrid,
                            validCellRange,
-                           reducedCellCount,
+                           cellCount,
                            outputCellIndexArray,
                            totalOutputCells);
     cellCount.ReleaseResources();
@@ -148,7 +148,7 @@ private:
   void ScheduleTopology(const InGridType& inGrid,
                         OutGridType& outGrid,
                         const ArrayHandleId &validCellRange,
-                        const ArrayHandleId &reducedCellCount,
+                        const ArrayHandleId &cellCount,
                         const ArrayHandleId &outputCellIndexArray,
                         const dax::Id numNewCells)
   {
@@ -156,7 +156,7 @@ private:
           static_cast<Derived*>(this)->CreateTopologyFunctor(inGrid,
                                                              outGrid,
                                                              numNewCells,
-                                                             reducedCellCount),
+                                                             cellCount),
           validCellRange,
           outputCellIndexArray);
   }
