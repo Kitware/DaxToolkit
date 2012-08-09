@@ -33,6 +33,7 @@ namespace dax {
 namespace cont {
 namespace internal {
 
+// --------------------------------------------- ScheduleGenerateMangledTopology
 /// ScheduleGenerateMangledTopology is the control enviorment representation of a
 /// worklet of the type WorkDetermineNewCellCount. This class handles properly
 /// calling the worklet that the user has defined has being of type
@@ -45,10 +46,13 @@ template<class Derived, class DeviceAdapterTag>
 class ScheduleGenerateMangledTopology
 {
 protected:
-  typedef dax::cont::ArrayHandle<
-       dax::Id, ArrayContainerControlTagBasic, DeviceAdapterTag> ArrayHandleId;
+  // ................................................................. typedefs
+  typedef dax::cont::ArrayHandle<dax::Id,
+                                 ArrayContainerControlTagBasic,
+                                 DeviceAdapterTag> ArrayHandleId;
 
 public:
+  // ...................................................................... Run
   /// Executes the ScheduleGenerateMangledTopology algorithm on the inputGrid and
   /// places the resulting unstructured grid in outGrid
   ///
@@ -85,11 +89,11 @@ public:
                            reducedCellCount,
                            outputCellIndexArray,
                            totalOutputCells);
-    newCellCount.ReleaseResources();
+    cellCount.ReleaseResources();
     }
 
 #ifdef DAX_DOXYGEN_ONLY
-
+  // .............................................. CreateClassificationFunctor
   /// \brief Abstract method that inherited classes must implement.
   ///
   /// This method must return a fully constructed functor object ready to be
@@ -101,6 +105,7 @@ public:
   FunctorClassify CreateClassificationFunctor(const GridType& grid,
                                               ArrayHandleId &cellCountOutput);
 
+  // .................................................... CreateTopologyFunctor
   /// \brief Abstract method that inherited classes must implement.
   ///
   /// This method must return a fully constructed functor object ready to be
@@ -111,13 +116,13 @@ public:
   template<class InputGridType, class OutputGridType>
   FunctorTopology CreateTopologyFunctor(const InputGridType &inputGrid,
                                         OutputGridType &outputGrid,
-                                        dax::Id outputGridSize);
-
+                                        dax::Id outputGridSize,
+                                        const ArrayHandleId &reducedCellCount);
 
 #endif //DAX_DOXYGEN_ONLY
 
 private:
-
+  // ................................................... ScheduleClassification
   //constructs everything needed to call the user defined worklet
   template<typename InGridType>
   ArrayHandleId ScheduleClassification(const InGridType &grid)
@@ -138,17 +143,20 @@ private:
     return newCellCount;
   }
 
+  // ......................................................... ScheduleTopology
   template<typename InGridType, typename OutGridType>
   void ScheduleTopology(const InGridType& inGrid,
                         OutGridType& outGrid,
-                        const ArrayHandleId validCellRange,
-                        const ArrayHandleId reducedCellCount,
-                        const ArrayHandleId outputCellIndexArray,
-                        const dax::Id totalOutputCells)
+                        const ArrayHandleId &validCellRange,
+                        const ArrayHandleId &reducedCellCount,
+                        const ArrayHandleId &outputCellIndexArray,
+                        const dax::Id numNewCells)
   {
+    dax::cont::internal::ScheduleMap2(
           static_cast<Derived*>(this)->CreateTopologyFunctor(inGrid,
                                                              outGrid,
-                                                             numNewCells),
+                                                             numNewCells,
+                                                             reducedCellCount),
           validCellRange,
           outputCellIndexArray);
   }
