@@ -16,23 +16,22 @@
 #ifndef __Square_worklet_
 #define __Square_worklet_
 
-#include <dax/exec/Cell.h>
-#include <dax/exec/Field.h>
-#include <dax/exec/WorkMapField.h>
+#include <dax/exec/WorkletMapField.h>
 
 namespace dax {
 namespace worklet {
 
-template<class CellType, class FieldType, class ExecutionAdapter>
-DAX_WORKLET void Square(
-    dax::exec::WorkMapField<CellType, ExecutionAdapter> &work,
-    dax::exec::FieldIn<FieldType, ExecutionAdapter> &inField,
-    dax::exec::FieldOut<FieldType, ExecutionAdapter> &outField)
+class Square : public dax::exec::WorkletMapField
 {
-  FieldType inValue = work.GetFieldValue(inField);
-  FieldType outValue = inValue * inValue;
-  work.SetFieldValue(outField, outValue);
-}
+public:
+  template<class ValueType>
+  DAX_EXEC_EXPORT
+  void operator()(const ValueType &inValue,
+                  ValueType &outValue) const
+  {
+    outValue = inValue * inValue;
+  }
+};
 
 }
 }

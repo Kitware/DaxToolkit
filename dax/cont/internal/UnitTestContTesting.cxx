@@ -60,8 +60,16 @@ int UnitTestContTesting(int, char *[])
     std::cout << "Did not get expected fail!" << std::endl;
     return 1;
     }
-  std::cout << "-------\nThis call should fail." << std::endl;
-  if (dax::cont::internal::Testing::Run(BadAssert) == 0)
+
+//DAX_ASSERT_CONT only is a valid call when you are building with debug
+#ifndef NDEBUG
+  int expectedResult=0;
+#else
+  int expectedResult=1;
+#endif
+
+  std::cout << "-------\nThis call should fail on debug builds." << std::endl;
+  if (dax::cont::internal::Testing::Run(BadAssert) == expectedResult)
     {
     std::cout << "Did not get expected fail!" << std::endl;
     return 1;

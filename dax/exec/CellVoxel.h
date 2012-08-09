@@ -19,8 +19,6 @@
 #include <dax/Types.h>
 #include <dax/exec/internal/TopologyUniform.h>
 
-#include <dax/exec/Field.h>
-
 namespace dax { namespace exec {
 
 /// A cell in a regular structured grid.

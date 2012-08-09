@@ -23,7 +23,7 @@
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/worklet/Elevation.h>
+#include <dax/cont/worklet/Magnitude.h>
 #include <dax/cont/worklet/Threshold.h>
 
 #include <vector>
@@ -37,12 +37,18 @@
 namespace
 {
 
+dax::Scalar THRESHOLD_MIN = 0;
+dax::Scalar THRESHOLD_MAX = 100;
+
 class CheckValid {
 public:
   CheckValid() : Valid(true) { }
   operator bool() { return this->Valid; }
   void operator()(dax::Scalar value) {
-    if ((value < 0) || (value > 100)) { this->Valid = false; }
+    if ((value < THRESHOLD_MIN) || (value > THRESHOLD_MAX))
+      {
+      this->Valid = false;
+      }
   }
 private:
   bool Valid;
@@ -70,9 +76,16 @@ void CheckValues(IteratorType begin, IteratorType end)
       std::cout << std::distance(begin,iter) << ":";
       dax::cont::VectorForEach(vector, PrintScalarValue);
       std::cout << std::endl;
-      break;
+      exit(1);
       }
     }
+}
+
+template<typename T, class Container, class Device>
+void CheckValues(const dax::cont::ArrayHandle<T,Container,Device> &array)
+{
+  CheckValues(array.GetPortalConstControl().GetIteratorBegin(),
+              array.GetPortalConstControl().GetIteratorEnd());
 }
 
 void PrintResults(int pipeline, double time)
@@ -145,22 +158,24 @@ void PrintContentsToStream(dax::cont::UnstructuredGrid<T>& grid, Stream &stream)
 
 void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
 {
-  std::cout << "Running pipeline 1: Elevation -> Threshold" << std::endl;
+  std::cout << "Running pipeline 1: Magnitude -> Threshold" << std::endl;
 
   dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> grid2;
 
   dax::cont::ArrayHandle<dax::Scalar> intermediate1;
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
-  dax::Scalar min = 0;
-  dax::Scalar max = 100;
-
-  dax::cont::worklet::Elevation(grid,
-                                grid.GetPointCoordinates(),
-                                intermediate1);
+  dax::cont::worklet::Magnitude(
+        grid.GetPointCoordinates(),
+        intermediate1);
 
   Timer timer;
-  dax::cont::worklet::Threshold(grid,grid2,min,max,intermediate1,resultHandle);
+  dax::cont::worklet::Threshold(grid,
+                                grid2,
+                                THRESHOLD_MIN,
+                                THRESHOLD_MAX,
+                                intermediate1,
+                                resultHandle);
   double time = timer.elapsed();
   std::cout << "original GetNumberOfCells: " << grid.GetNumberOfCells() << std::endl;
   std::cout << "threshold GetNumberOfCells: " << grid2.GetNumberOfCells() << std::endl;
@@ -177,8 +192,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
 //  PrintContentsToStream(grid2,file);
 //  file.close();
 
-  CheckValues(resultHandle.GetIteratorConstControlBegin(),
-              resultHandle.GetIteratorConstControlEnd());
+  CheckValues(resultHandle);
 }
 
 

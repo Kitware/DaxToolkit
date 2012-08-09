@@ -18,44 +18,48 @@
 
 // TODO: This should be auto-generated.
 
+#include <Worklets/Elevation.worklet>
+
 #include <dax/Types.h>
-#include <dax/exec/Field.h>
-#include <dax/exec/WorkMapField.h>
-#include <dax/exec/internal/ExecutionAdapter.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/internal/ExecutionPackageField.h>
-#include <dax/cont/internal/ExecutionPackageGrid.h>
-
-#include <Worklets/Elevation.worklet>
 
 namespace dax {
 namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class CellType, class ExecAdapter>
-struct ElevationParameters
-{
-  typename CellType::template GridStructures<ExecAdapter>::TopologyType grid;
-  dax::exec::FieldCoordinatesIn<ExecAdapter> inCoordinates;
-  dax::exec::FieldPointOut<dax::Scalar, ExecAdapter> outField;
-};
-
-template<class CellType, class ExecAdapter>
+template<class PortalType1, class PortalType2>
 struct Elevation
 {
-  DAX_EXEC_EXPORT void operator()(
-      ElevationParameters<CellType, ExecAdapter> &parameters,
-      dax::Id index,
-      const ExecAdapter &execAdapter) const
+  DAX_CONT_EXPORT
+  Elevation(const dax::worklet::Elevation &worklet,
+            const PortalType1 &inCoordinates,
+            const PortalType2 &outField)
+    : Worklet(worklet), InCoordinates(inCoordinates), OutField(outField) {  }
+
+  DAX_EXEC_EXPORT
+  void operator()(dax::Id index) const
   {
-    dax::exec::WorkMapField<CellType,ExecAdapter>
-        work(parameters.grid, index, execAdapter);
-    dax::worklet::Elevation(work,
-                            parameters.inCoordinates,
-                            parameters.outField);
+    const typename PortalType1::ValueType inCoordinates =
+        this->InCoordinates.Get(index);
+    typename PortalType2::ValueType outField;
+
+    this->Worklet(inCoordinates, outField);
+
+    this->OutField.Set(index, outField);
   }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
+  }
+
+private:
+  dax::worklet::Elevation Worklet;
+  PortalType1 InCoordinates;
+  PortalType2 OutField;
 };
 
 }
@@ -67,44 +71,26 @@ namespace dax {
 namespace cont {
 namespace worklet {
 
-template<class GridType,
-         class Container,
+template<class Container1,
+         class Container2,
          class Adapter>
 DAX_CONT_EXPORT void Elevation(
-    const GridType &grid,
-    const typename GridType::PointCoordinatesType &points,
-    dax::cont::ArrayHandle<dax::Scalar, Container, Adapter> &outHandle)
+    const dax::cont::ArrayHandle<dax::Vector3, Container1, Adapter> &inHandle,
+    dax::cont::ArrayHandle<dax::Scalar, Container2, Adapter> &outHandle,
+    const dax::Vector3 &lowPoint = dax::make_Vector3(0.0, 0.0, 0.0),
+    const dax::Vector3 &highPoint = dax::make_Vector3(0.0, 0.0, 1.0),
+    const dax::Vector2 &outputRange = dax::make_Vector2(0.0, 1.0))
 {
-  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
+  dax::Id fieldSize = inHandle.GetNumberOfValues();
 
-  typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
-  ExecutionTopologyType execTopology
-      = dax::cont::internal::ExecutionPackageGrid(grid);
+  dax::exec::internal::kernel::Elevation<
+      typename dax::cont::ArrayHandle<dax::Vector3,Container1,Adapter>::PortalConstExecution,
+      typename dax::cont::ArrayHandle<dax::Scalar,Container2,Adapter>::PortalExecution>
+      kernel(dax::worklet::Elevation(lowPoint, highPoint, outputRange),
+             inHandle.PrepareForInput(),
+             outHandle.PrepareForOutput(fieldSize));
 
-  dax::exec::FieldCoordinatesIn<ExecAdapter> fieldCoordinates =
-      dax::cont::internal::ExecutionPackageFieldGridConst<
-        dax::exec::FieldCoordinatesIn>(points, grid);
-
-  dax::exec::FieldPointOut<dax::Scalar, ExecAdapter> fieldOut
-      = dax::cont::internal::ExecutionPackageFieldGrid<
-        dax::exec::FieldPointOut>(outHandle, grid);
-
-  typedef typename GridType::CellType CellType;
-
-  typedef dax::exec::internal::kernel::ElevationParameters<CellType,ExecAdapter>
-      Parameters;
-
-  Parameters parameters;
-  parameters.grid = execTopology;
-  parameters.inCoordinates = fieldCoordinates;
-  parameters.outField = fieldOut;
-
-  dax::cont::internal::Schedule(
-        dax::exec::internal::kernel::Elevation<CellType, ExecAdapter>(),
-        parameters,
-        grid.GetNumberOfPoints(),
-        Container(),
-        Adapter());
+  dax::cont::internal::Schedule(kernel, fieldSize, Adapter());
 }
 
 }

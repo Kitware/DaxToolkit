@@ -17,25 +17,16 @@
 #ifndef __dax_cuda_cont_DeviceAdapterCuda_h
 #define __dax_cuda_cont_DeviceAdapterCuda_h
 
+// Declare DAX_DEFAULT_DEVICE_ADAPTER and the tag it points to before including
+// other headers that may require it.
+
+#include <dax/thrust/cont/internal/DeviceAdapterThrustTag.h>
+
 #ifdef DAX_DEFAULT_DEVICE_ADAPTER
 #undef DAX_DEFAULT_DEVICE_ADAPTER
 #endif
 
 #define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cuda::cont::DeviceAdapterTagCuda
-
-// Forward declaration (before suber DeviceAdapterTagThrust declared).
-namespace dax {
-namespace cuda {
-namespace cont {
-struct DeviceAdapterTagCuda;
-}
-}
-}
-
-#include <dax/cuda/cont/internal/SetThrustForCuda.h>
-
-#include <dax/thrust/cont/internal/ArrayManagerExecutionThrustDevice.h>
-#include <dax/thrust/cont/internal/DeviceAdapterThrust.h>
 
 namespace dax {
 namespace cuda {
@@ -51,6 +42,11 @@ struct DeviceAdapterTagCuda
 }
 }
 } // namespace dax::cuda::cont
+
+#include <dax/cuda/cont/internal/SetThrustForCuda.h>
+
+#include <dax/thrust/cont/internal/ArrayManagerExecutionThrustDevice.h>
+#include <dax/thrust/cont/internal/DeviceAdapterThrust.h>
 
 // These must be placed in the dax::cont::internal namespace so that
 // the template can be found.
@@ -69,54 +65,15 @@ public:
   typedef dax::thrust::cont::internal::ArrayManagerExecutionThrustDevice
       <T, ArrayContainerTag> Superclass;
   typedef typename Superclass::ValueType ValueType;
-  typedef typename Superclass::IteratorType IteratorType;
-  typedef typename Superclass::IteratorConstType IteratorConstType;
+  typedef typename Superclass::PortalType PortalType;
+  typedef typename Superclass::PortalConstType PortalConstType;
 
   typedef typename Superclass::ThrustIteratorType ThrustIteratorType;
   typedef typename Superclass::ThrustIteratorConstType ThrustIteratorConstType;
 };
 
-template<class Functor, class Parameters, class Container>
-DAX_CONT_EXPORT void Schedule(Functor functor,
-                              Parameters parameters,
-                              dax::Id numInstances,
-                              Container,
-                              dax::cuda::cont::DeviceAdapterTagCuda)
-{
-  dax::thrust::cont::internal::ScheduleThrust(
-        functor,
-        parameters,
-        numInstances,
-        Container(),
-        dax::cuda::cont::DeviceAdapterTagCuda());
-}
-
 }
 }
 } // namespace dax::cont::internal
-
-namespace dax {
-namespace exec {
-namespace internal {
-
-template <class ArrayContainerControlTag>
-class ExecutionAdapter<ArrayContainerControlTag,
-                       dax::cuda::cont::DeviceAdapterTagCuda>
-    : public dax::thrust::cont::internal::ExecutionAdapterThrust
-        <ArrayContainerControlTag,dax::cuda::cont::DeviceAdapterTagCuda>
-{
-public:
-  typedef dax::thrust::cont::internal::ExecutionAdapterThrust
-      <ArrayContainerControlTag,dax::cuda::cont::DeviceAdapterTagCuda>
-      Superclass;
-  using Superclass::FieldStructures;
-
-  DAX_EXEC_EXPORT ExecutionAdapter(char *messageBegin, char *messageEnd)
-    : Superclass(messageBegin, messageEnd) {  }
-};
-
-}
-}
-} // namespace dax::exec::internal
 
 #endif //__dax_cuda_cont_DeviceAdapterCuda_h

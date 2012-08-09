@@ -18,6 +18,8 @@
 
 #include <dax/exec/ParametricCoordinates.h>
 
+#include <dax/exec/internal/TestingTopologyGenerator.h>
+
 #include <dax/internal/Testing.h>
 
 namespace {
@@ -58,7 +60,7 @@ void CheckVertexWeights(
 template<class CellType>
 void CheckCenterWeight()
 {
-  std::cout << "Checking weight at center." << std::endl;
+  std::cout << "  Checking weight at center." << std::endl;
 
   const dax::Id NUM_POINTS = CellType::NUM_POINTS;
 
@@ -75,51 +77,31 @@ void CheckCenterWeight()
 }
 
 //-----------------------------------------------------------------------------
-void TestInterpolationWeightsVoxel()
-{
-  std::cout << "In TestInterpolationWeightsVoxel" << std::endl;
-
-  typedef dax::exec::CellVoxel CellType;
-
-  CheckVertexWeights<CellType>();
-
-  CheckCenterWeight<CellType>();
-}
-
-//-----------------------------------------------------------------------------
-void TestInterpolationWeightsHexahedron()
-{
-  std::cout << "In TestInterpolationWeightsHexahedron" << std::endl;
-
-  typedef dax::exec::CellHexahedron CellType;
-
-  CheckVertexWeights<CellType>();
-
-  CheckCenterWeight<CellType>();
-}
-
-//-----------------------------------------------------------------------------
-void TestInterpolationWeightsTriangle()
-{
-  std::cout << "In TestInterpolationWeightsTriangle" << std::endl;
-
-  typedef dax::exec::CellTriangle CellType;
-
-  CheckVertexWeights<CellType>();
-
-  CheckCenterWeight<CellType>();
-}
-
+template<class CellType>
 void TestInterpolationWeights()
 {
-  TestInterpolationWeightsVoxel();
-  TestInterpolationWeightsHexahedron();
-  TestInterpolationWeightsTriangle();
+  CheckVertexWeights<CellType>();
+
+  CheckCenterWeight<CellType>();
 }
 
+//-----------------------------------------------------------------------------
+struct TestInterpolationWeightsFunctor
+{
+  template<class TopologyGenType>
+  void operator()(const TopologyGenType &) const {
+    TestInterpolationWeights<typename TopologyGenType::CellType>();
+  }
+};
+
+void TestAllInterpolationWeights()
+{
+  dax::exec::internal::TryAllTopologyTypes(TestInterpolationWeightsFunctor());
 }
+
+} // anonymous namespace
 
 int UnitTestInterpolationWeights(int, char *[])
 {
-  return dax::internal::Testing::Run(TestInterpolationWeights);
+  return dax::internal::Testing::Run(TestAllInterpolationWeights);
 }

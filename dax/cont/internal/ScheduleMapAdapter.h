@@ -25,28 +25,29 @@ namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class Functor, class ExecutionIteratorType>
+template<class FunctorType, class ExecutionArrayPortalType>
 struct ScheduleMappingAdapter
 {
-  DAX_CONT_EXPORT ScheduleMappingAdapter(const Functor& functor,
-                                         ExecutionIteratorType lookup)
-    : Function(functor), LookupTable(lookup) { }
+  DAX_CONT_EXPORT ScheduleMappingAdapter(const FunctorType& functor,
+                                         const ExecutionArrayPortalType &lookup)
+    : Functor(functor), LookupTable(lookup) { }
 
-  template<class Parameters, class ExecHandler>
-  DAX_EXEC_EXPORT void operator()(Parameters parameters,
-                                  dax::Id index,
-                                  const ExecHandler& execHandler) const
+  DAX_EXEC_EXPORT void operator()(dax::Id index) const
   {
     //send the index as the key, and the LookupTable[index] as value
 
-    this->Function(parameters,
-                   index,
-                   *(this->LookupTable + index),
-                   execHandler);
+    this->Functor(index, this->LookupTable.Get(index));
   }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Functor.SetErrorMessageBuffer(errorMessage);
+  }
+
 private:
-  const Functor Function;
-  const ExecutionIteratorType LookupTable;
+  FunctorType Functor;
+  ExecutionArrayPortalType LookupTable;
 };
 
 }
@@ -58,37 +59,27 @@ namespace dax {
 namespace cont {
 namespace internal {
 
-template<class Functor,
-         class Parameters,
-         class ArrayContainerControlTag,
-         class DeviceAdapterTag>
+template<class FunctorType,
+         class Container,
+         class Adapter>
 DAX_CONT_EXPORT void ScheduleMap(
-    Functor functor,
-    Parameters parameters,
-    dax::cont::ArrayHandle<dax::Id,ArrayContainerControlTag,DeviceAdapterTag>
-        values)
+    FunctorType functor,
+    const dax::cont::ArrayHandle<dax::Id,Container,Adapter> &values)
 {
   //package up the ids to extract so we can do valid lookups
   const dax::Id size(values.GetNumberOfValues());
 
-  typedef dax::exec::internal
-      ::ExecutionAdapter<ArrayContainerControlTag,DeviceAdapterTag>
-      ExecutionAdapter;
-  typedef typename ExecutionAdapter
-      ::template FieldStructures<dax::Id>::IteratorType IteratorType;
-  typedef typename ExecutionAdapter
-      ::template FieldStructures<dax::Id>::IteratorConstType IteratorConstType;
+  typedef typename dax::cont::ArrayHandle<dax::Id,Container,Adapter>::
+      PortalConstExecution PortalConstType;
 
-  dax::exec::internal::kernel::ScheduleMappingAdapter<Functor,IteratorConstType>
-      mapFunctor(
-        functor,
-        values.PrepareForInput().first);
+  dax::exec::internal::kernel::ScheduleMappingAdapter<
+      FunctorType,PortalConstType>
+      mapFunctor(functor,
+                 values.PrepareForInput());
 
   dax::cont::internal::Schedule(mapFunctor,
-                                parameters,
                                 size,
-                                ArrayContainerControlTag(),
-                                DeviceAdapterTag());
+                                Adapter());
 }
 
 }}} // namespace dax::cont::internal

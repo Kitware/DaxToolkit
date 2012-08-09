@@ -15,7 +15,7 @@
 //=============================================================================
 
 #ifndef __dax_cont_internal_TestingGridGenerator_h
-#define  __dax_cont_internal_TestingGridGenerator_h
+#define __dax_cont_internal_TestingGridGenerator_h
 
 #include <dax/Types.h>
 
@@ -93,6 +93,15 @@ public:
   }
 
 private:
+  template<typename T>
+  dax::cont::ArrayHandle<T, ArrayContainerControlTag, DeviceAdapterTag>
+  MakeArrayHandle(const std::vector<T> &array)
+  {
+    return dax::cont::make_ArrayHandle(array,
+                                       ArrayContainerControlTag(),
+                                       DeviceAdapterTag());
+  }
+
   void BuildGrid(dax::cont::UniformGrid<> &grid)
     {
     grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
@@ -184,12 +193,9 @@ private:
         }
       }
 
-    dax::cont::ArrayHandle<dax::Vector3,ArrayContainerControlTag,DeviceAdapterTag>
-        ahPoints(&this->Info.points.front(),(&this->Info.points.back()) + 1);
-    dax::cont::ArrayHandle<dax::Id,ArrayContainerControlTag,DeviceAdapterTag>
-        ahTopo(&this->Info.topology.front(),(&this->Info.topology.back()) + 1);
-    grid = dax::cont::UnstructuredGrid<dax::exec::CellTriangle>(ahTopo,
-                                                                ahPoints);
+    grid = dax::cont::UnstructuredGrid<dax::exec::CellTriangle>(
+          this->MakeArrayHandle(this->Info.topology),
+          this->MakeArrayHandle(this->Info.points));
     }
 
   void BuildGrid(dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> &grid)
@@ -234,16 +240,70 @@ private:
         }
       }
 
-    dax::cont::ArrayHandle<dax::Vector3,
-                           ArrayContainerControlTag,
-                           DeviceAdapterTag>
-        ahPoints(&this->Info.points.front(), (&this->Info.points.back()) + 1);
-    dax::cont::ArrayHandle<dax::Id,ArrayContainerControlTag,DeviceAdapterTag>
-        ahTopo(&this->Info.topology.front(), (&this->Info.topology.back()) + 1);
-    grid = dax::cont::UnstructuredGrid<dax::exec::CellHexahedron>(ahTopo,
-                                                                  ahPoints);
+    grid = dax::cont::UnstructuredGrid<dax::exec::CellHexahedron>(
+          this->MakeArrayHandle(this->Info.topology),
+          this->MakeArrayHandle(this->Info.points));
     }
 };
+
+
+struct GridTesting
+{
+ /// Check functors to be used with the TryAllTypes method.
+ ///
+ struct TypeCheckAlwaysTrue {
+   template <typename T, class Functor>
+   void operator()(T t, Functor function) const { function(t); }
+ };
+
+ struct TypeCheckUniformGrid {
+   template <typename T, class Functor>
+   void operator()(T daxNotUsed(t), Functor daxNotUsed(function)) const {  }
+
+   template<class Functor>
+   void operator()(dax::cont::UniformGrid<> t, Functor function) const { function(t); }
+ };
+
+ template<class FunctionType>
+ struct InternalPrintOnInvoke {
+   InternalPrintOnInvoke(FunctionType function, std::string toprint)
+     : Function(function), ToPrint(toprint) { }
+   template <typename T> void operator()(T t) {
+     std::cout << this->ToPrint << std::endl;
+     this->Function(t);
+   }
+ private:
+   FunctionType Function;
+   std::string ToPrint;
+ };
+
+ /// Runs templated \p function on all the grid types defined in Dax. This is
+ /// helpful to test templated functions that should work on all grid types. If the
+ /// function is supposed to work on some subset of grids or cells, then \p check can
+ /// be set to restrict the types used. This Testing class contains several
+ /// helpful check functors.
+ ///
+ template<class FunctionType, class CheckType>
+ static void TryAllGridTypes(FunctionType function, CheckType check)
+ {
+   dax::cont::UniformGrid<> grid;
+   check(grid, InternalPrintOnInvoke<FunctionType>(function, "dax::UniformGrid"));
+
+   dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> hexGrid;
+   check(hexGrid, InternalPrintOnInvoke<FunctionType>(function, "dax::UnstructuredGrid of Hexahedron"));
+
+   dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> triGrid;
+   check(triGrid, InternalPrintOnInvoke<FunctionType>(function, "dax::UnstructuredGrid of Triangles"));
+
+ }
+ template<class FunctionType>
+ static void TryAllGridTypes(FunctionType function)
+ {
+   TryAllGridTypes(function, TypeCheckAlwaysTrue());
+ }
+
+};
+
 
 }
 }

@@ -24,26 +24,21 @@
 namespace dax { namespace exec {
 
 //-----------------------------------------------------------------------------
-template<class WorkType, class FieldType>
-DAX_EXEC_EXPORT typename FieldType::ValueType CellInterpolate(
-    const WorkType &work,
-    const typename WorkType::CellType &daxNotUsed(cell), // Should we get rid of the parameter?
-    const FieldType &point_field,
-  const dax::Vector3 &pcoords)
+template<typename ValueType, class CellType>
+DAX_EXEC_EXPORT ValueType CellInterpolate(
+    const CellType &daxNotUsed(cell),
+    const dax::Tuple<ValueType,CellType::NUM_POINTS> &pointFieldValues,
+    const dax::Vector3 &parametricCoords)
 {
-  typedef typename WorkType::CellType CellType;
-  typedef typename FieldType::ValueType ValueType;
   const dax::Id numVerts = CellType::NUM_POINTS;
-  typedef dax::Tuple<ValueType,numVerts> FieldTuple;
 
   dax::Tuple<dax::Scalar, numVerts> weights =
-      dax::exec::internal::InterpolationWeights<CellType>(pcoords);
+      dax::exec::internal::InterpolationWeights<CellType>(parametricCoords);
 
-  FieldTuple values = work.GetFieldValues(point_field);
-  ValueType result = values[0] * weights[0];
+  ValueType result = pointFieldValues[0] * weights[0];
   for (dax::Id vertexId = 1; vertexId < numVerts; vertexId++)
     {
-    result = result + values[vertexId] * weights[vertexId];
+    result = result + pointFieldValues[vertexId] * weights[vertexId];
     }
 
   return result;

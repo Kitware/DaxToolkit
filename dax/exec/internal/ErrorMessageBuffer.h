@@ -23,8 +23,8 @@ namespace exec {
 namespace internal {
 
 /// Used to hold an error in the execution environment until the parallel
-/// execution can complete. This can be used in conjunction with a
-/// DeviceAdapter's ExecutionAdapter to implement errors in execution
+/// execution can complete. This is to be used in conjunction with a
+/// DeviceAdapter's Schedule function to implement errors in execution
 /// environments that cannot throw errors. This string should be global to all
 /// threads. If the first entry in the string is '\0' (the C string
 /// terminator), then we consider it as no error. Otherwise, the array contains
@@ -33,13 +33,15 @@ namespace internal {
 /// Before scheduling worklets, the global array should be cleared to have no
 /// error. This can only be reliably done by the device adapter.
 ///
-template<class MessageIteratorType = char *>
 class ErrorMessageBuffer
 {
 public:
-  DAX_EXEC_EXPORT ErrorMessageBuffer(MessageIteratorType begin,
-                                     MessageIteratorType end)
-    : MessageBegin(begin), MessageEnd(end) { }
+  DAX_EXEC_CONT_EXPORT ErrorMessageBuffer()
+    : MessageBuffer(), MessageBufferSize(0) {  }
+
+  DAX_EXEC_CONT_EXPORT
+  ErrorMessageBuffer(char *messageBuffer, dax::Id bufferSize)
+    : MessageBuffer(messageBuffer), MessageBufferSize(bufferSize) { }
 
   DAX_EXEC_EXPORT void RaiseError(const char *message) const
   {
@@ -53,28 +55,32 @@ public:
     if (this->IsErrorRaised()) { return; }
 
     // Safely copy message into array.
-    const char *inMessage;
-    MessageIteratorType outMessage;
-    for (inMessage = message, outMessage = this->MessageBegin;
-         outMessage != this->MessageEnd;
-         inMessage++, outMessage++)
+    for (dax::Id index = 0; index < this->MessageBufferSize; index++)
       {
-      *outMessage = *inMessage;
-      if (*inMessage == '\0') break;
+      this->MessageBuffer[index] = message[index];
+      if (message[index] == '\0') { break; }
       }
 
     // Make sure message is null terminated.
-    *(this->MessageEnd - 1) = '\0';
+    this->MessageBuffer[this->MessageBufferSize-1] = '\0';
   }
 
   DAX_EXEC_EXPORT bool IsErrorRaised() const
   {
-    return (*(this->MessageBegin) != '\0');
+    if (this->MessageBufferSize > 0)
+      {
+      return (this->MessageBuffer[0] != '\0');
+      }
+    else
+      {
+      // If there is no buffer set, then always report an error.
+      return true;
+      }
   }
 
 private:
-  MessageIteratorType MessageBegin;
-  MessageIteratorType MessageEnd;
+  char *MessageBuffer;
+  dax::Id MessageBufferSize;
 };
 
 }

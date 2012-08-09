@@ -18,38 +18,43 @@
 
 // TODO: This should be auto-generated.
 
+#include <Worklets/Testing/CellMapError.worklet>
+
 #include <dax/Types.h>
-#include <dax/exec/WorkMapField.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/internal/ExecutionPackageField.h>
-#include <dax/cont/internal/ExecutionPackageGrid.h>
-
-#include <Worklets/Testing/CellMapError.worklet>
 
 namespace dax {
 namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class CellType, class ExecAdapter>
-struct CellMapErrorParameters
-{
-  typename CellType::template GridStructures<ExecAdapter>::TopologyType grid;
-};
-
-template<class CellType, class ExecAdapter>
+template<class TopologyType>
 struct CellMapError
 {
-  DAX_EXEC_EXPORT void operator()(
-      CellMapErrorParameters<CellType, ExecAdapter> &parameters,
-      dax::Id index,
-      const ExecAdapter &execAdapter)
+  typedef typename TopologyType::CellType CellType;
+
+  DAX_CONT_EXPORT
+  CellMapError(const dax::worklet::testing::CellMapError &worklet,
+               const TopologyType &topology)
+    : Worklet(worklet), Topology(topology) {  }
+
+  DAX_EXEC_EXPORT void operator()(dax::Id cellIndex) const
   {
-    dax::exec::WorkMapCell<CellType, ExecAdapter>
-        work(parameters.grid, index, execAdapter);
-    dax::worklet::testing::CellMapError(work);
+    CellType cell(this->Topology, cellIndex);
+
+    this->Worklet(cell);
   }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
+  }
+
+private:
+  dax::worklet::testing::CellMapError Worklet;
+  TopologyType Topology;
 };
 
 }
@@ -62,32 +67,22 @@ namespace cont {
 namespace worklet {
 namespace testing {
 
+// The arguments for this are a hack because there are no ArrayHandles passed
+// to definitively define the device adapter. This is probably not a problem
+// for pratical worklets. In the future we can change this to pass in a field
+// that is not used.
 template<class GridType,
-         class Container,
          class DeviceAdapter>
-inline void CellMapError(const GridType &grid)
+inline void CellMapError(const GridType &grid, DeviceAdapter)
 {
-  typedef dax::exec::internal::ExecutionAdapter<Container,DeviceAdapter>
-      ExecAdapter;
+  dax::exec::internal::kernel::CellMapError<
+      typename GridType::TopologyStructConstExecution>
+      kernel(dax::worklet::testing::CellMapError(),
+             grid.PrepareForInput());
 
-  typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
-  ExecutionTopologyType execTopology
-      = dax::cont::internal::ExecutionPackageGrid(grid);
-
-  typedef typename GridType::CellType CellType;
-
-  typedef dax::exec::internal::kernel
-      ::CellMapErrorParameters<CellType, ExecAdapter> Parameters;
-
-  Parameters parameters;
-  parameters.grid = execTopology;
-
-  dax::cont::internal::Schedule(
-        dax::exec::internal::kernel::CellMapError<CellType, ExecAdapter>(),
-        parameters,
-        grid.GetNumberOfCells(),
-        Container(),
-        DeviceAdapter());
+  dax::cont::internal::Schedule(kernel,
+                                grid.GetNumberOfCells(),
+                                DeviceAdapter());
 }
 
 }

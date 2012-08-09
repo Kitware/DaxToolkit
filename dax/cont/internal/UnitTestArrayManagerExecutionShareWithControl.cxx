@@ -40,7 +40,9 @@ struct TemplatedTests
 
   void SetContainer(ArrayContainerType &array, ValueType value)
   {
-    std::fill(array.GetIteratorBegin(), array.GetIteratorEnd(), value);
+    std::fill(array.GetPortal().GetIteratorBegin(),
+              array.GetPortal().GetIteratorEnd(),
+              value);
   }
 
   template <class IteratorType>
@@ -55,7 +57,9 @@ struct TemplatedTests
 
   bool CheckContainer(ArrayContainerType &array, ValueType value)
   {
-    return CheckArray(array.GetIteratorBegin(), array.GetIteratorEnd(), value);
+    return CheckArray(array.GetPortalConst().GetIteratorBegin(),
+                      array.GetPortalConst().GetIteratorEnd(),
+                      value);
   }
 
   void InputData()
@@ -67,11 +71,18 @@ struct TemplatedTests
     SetContainer(controlArray, INPUT_VALUE);
 
     ArrayManagerType executionArray;
-    executionArray.LoadDataForInput(controlArray.GetIteratorBegin(),
-                                    controlArray.GetIteratorEnd());
+    executionArray.LoadDataForInput(controlArray.GetPortal());
 
+    // Although the ArrayManagerExecutionShareWithControl class wraps the
+    // control array portal in a different array portal, it should still
+    // give the same iterator (to avoid any unnecessary indirection).
     DAX_TEST_ASSERT(
-          controlArray.GetIteratorBegin() == executionArray.GetIteratorBegin(),
+          controlArray.GetPortal().GetIteratorBegin() ==
+          executionArray.GetPortal().GetIteratorBegin(),
+          "Execution array manager not holding control array iterators.");
+    DAX_TEST_ASSERT(
+          controlArray.GetPortalConst().GetIteratorBegin() ==
+          executionArray.GetPortalConst().GetIteratorBegin(),
           "Execution array manager not holding control array iterators.");
 
     std::vector<ValueType> copyBack(ARRAY_SIZE);
@@ -90,8 +101,8 @@ struct TemplatedTests
     ArrayManagerType executionArray;
     executionArray.AllocateArrayForOutput(controlArray, ARRAY_SIZE);
 
-    std::fill(executionArray.GetIteratorBegin(),
-              executionArray.GetIteratorEnd(),
+    std::fill(executionArray.GetPortal().GetIteratorBegin(),
+              executionArray.GetPortal().GetIteratorEnd(),
               OUTPUT_VALUE);
 
     std::vector<ValueType> copyBack(ARRAY_SIZE);

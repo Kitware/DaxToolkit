@@ -17,8 +17,8 @@
 #include <dax/exec/internal/TestingTopologyGenerator.h>
 
 #include <dax/exec/Cell.h>
-#include <dax/exec/Field.h>
 
+#include <dax/exec/internal/ArrayPortalFromIterators.h>
 #include <dax/exec/internal/GridTopologies.h>
 
 #include <dax/internal/Testing.h>
@@ -49,8 +49,10 @@ void TestVoxelGrid()
 template<class CellType>
 void TestUnstructuredGrid()
 {
+  typedef dax::exec::internal::ArrayPortalFromIterators<
+      std::vector<dax::Id>::iterator> ConnectionsPortal;
   typedef dax::exec::internal::TopologyUnstructured
-      <CellType,TestExecutionAdapter> TopologyType;
+      <CellType,ConnectionsPortal> TopologyType;
 
   dax::exec::internal::TestTopology<TopologyType> generator;
   TopologyType topology = generator.GetTopology();
@@ -59,21 +61,20 @@ void TestUnstructuredGrid()
   DAX_TEST_ASSERT(topology.NumberOfCells > 0, "Bad number of cells");
 
   // Check that all cell connections are to valid points.
-  TestExecutionAdapter::FieldStructures<dax::Id>::IteratorConstType
-      cellConnections = topology.CellConnections;
+  dax::Id connectionIndex = 0;
   for (dax::Id cellIndex=0; cellIndex < topology.NumberOfCells; cellIndex++)
     {
     dax::Tuple<dax::Id, CellType::NUM_POINTS> expectedConnections =
         generator.GetCellConnections(cellIndex);
     for (dax::Id pointIndex=0; pointIndex < CellType::NUM_POINTS; pointIndex++)
       {
-      dax::Id connection = *cellConnections;
+      dax::Id connection = topology.CellConnections.Get(connectionIndex);
       DAX_TEST_ASSERT(connection >= 0, "Bad cell connection");
       DAX_TEST_ASSERT(connection < topology.NumberOfPoints,
                       "Bad cell connection");
       DAX_TEST_ASSERT(connection == expectedConnections[pointIndex],
                       "Bad cell connection");
-      cellConnections++;
+      connectionIndex++;
       }
     }
 }
@@ -82,6 +83,13 @@ void TestHexahedronGrid()
 {
   std::cout << "Testing hexahedron grid." << std::endl;
   typedef dax::exec::CellHexahedron CellType;
+  TestUnstructuredGrid<CellType>();
+}
+
+void TestTetrahedronGrid()
+{
+  std::cout << "Testing tetrahedron grid." << std::endl;
+  typedef dax::exec::CellTetrahedron CellType;
   TestUnstructuredGrid<CellType>();
 }
 
@@ -94,7 +102,11 @@ void TestTriangleGrid()
 
 struct TestTemplatedTopology {
   template<class TopologyGenerator>
-  void operator()(TopologyGenerator &topologyGenerator) const {
+  void operator()(TopologyGenerator &daxNotUsed(topologyGenerator)) const {
+    std::cout << "Test disabled.  Original test checked created fields and "
+              << "work objects.  When fields objects were removed, these "
+              << "features ceased to exist." << std::endl;
+#if 0
     typedef typename TopologyGenerator::ExecutionAdapter ExecutionAdapter;
     std::vector<dax::Vector3> pointArray;
 
@@ -127,7 +139,9 @@ struct TestTemplatedTopology {
             fieldCoord,
             fieldIn);
       }
+#endif
   }
+#if 0
 private:
   template<class WorkType, class FieldInType, class FieldOutType>
   void CopyField(const WorkType &work,
@@ -154,6 +168,7 @@ private:
                       "Did not get same coordinates in different work type.");
       }
   }
+#endif
 };
 
 void TestTopologyGenerator()
@@ -161,6 +176,7 @@ void TestTopologyGenerator()
   std::cout << "*** Independent grid tests." << std::endl;
   TestVoxelGrid();
   TestHexahedronGrid();
+  TestTetrahedronGrid();
   TestTriangleGrid();
 
   std::cout << "*** Templated grid tests." << std::endl;

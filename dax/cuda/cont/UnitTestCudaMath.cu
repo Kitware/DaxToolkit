@@ -28,6 +28,8 @@
 #include <dax/exec/math/Sign.h>
 #include <dax/exec/math/Trig.h>
 
+#include <dax/exec/internal/ErrorMessageBuffer.h>
+
 #include <dax/exec/Assert.h>
 
 #include <dax/cuda/cont/internal/Testing.h>
@@ -37,7 +39,7 @@ namespace ut_CudaMath {
 #define MY_ASSERT(condition, message) \
   if (!(condition)) \
     { \
-    errorHandler.RaiseError( \
+    this->ErrorMessage.RaiseError( \
           __FILE__ ":" __DAX_ASSERT_EXEC_STRINGIFY(__LINE__) ": " message \
           " (" #condition ")"); \
     return; \
@@ -45,20 +47,26 @@ namespace ut_CudaMath {
 
 struct TestCompareKernel
 {
-  template<class ErrorHandler>
-  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_EXPORT void operator()(dax::Id) const
   {
     MY_ASSERT(dax::exec::math::Min(3, 8) == 3, "Got wrong min.");
     MY_ASSERT(dax::exec::math::Min(-0.1f, -0.7f) == -0.7f, "Got wrong min.");
     MY_ASSERT(dax::exec::math::Max(3, 8) == 8, "Got wrong max.");
     MY_ASSERT(dax::exec::math::Max(-0.1f, -0.7f) == -0.1f, "Got wrong max.");
   }
+
+  dax::exec::internal::ErrorMessageBuffer ErrorMessage;
+  DAX_CONT_EXPORT
+  void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->ErrorMessage = errorMessage;
+  }
 };
 
 struct TestExpKernel
 {
-  template<class ErrorHandler>
-  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_EXPORT void operator()(dax::Id) const
   {
     MY_ASSERT(test_equal(dax::exec::math::Pow(0.25, 2.0), dax::Scalar(0.0625)),
               "Bad power result.");
@@ -103,12 +111,19 @@ struct TestExpKernel
                          dax::exec::math::Log(4.75)),
               "Bad log1p result.");
   }
+
+  dax::exec::internal::ErrorMessageBuffer ErrorMessage;
+  DAX_CONT_EXPORT
+  void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->ErrorMessage = errorMessage;
+  }
 };
 
 struct TestPrecisionKernel
 {
-  template<class ErrorHandler>
-  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_EXPORT void operator()(dax::Id) const
   {
     dax::Scalar zero = 0.0;
     dax::Scalar finite = 1.0;
@@ -175,12 +190,19 @@ struct TestPrecisionKernel
     MY_ASSERT(test_equal(dax::exec::math::Round(4.6), dax::Scalar(5.0)),
               "Bad round.");
   }
+
+  dax::exec::internal::ErrorMessageBuffer ErrorMessage;
+  DAX_CONT_EXPORT
+  void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->ErrorMessage = errorMessage;
+  }
 };
 
 struct TestSignKernel
 {
-  template<class ErrorHandler>
-  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_EXPORT void operator()(dax::Id) const
   {
     MY_ASSERT(dax::exec::math::Abs(-1) == 1, "Bad abs.");
     MY_ASSERT(dax::exec::math::Abs(dax::Scalar(-0.25)) == 0.25, "Bad abs.");
@@ -189,12 +211,19 @@ struct TestSignKernel
     MY_ASSERT(!dax::exec::math::IsNegative(0.0), "Bad non-negative.");
     MY_ASSERT(dax::exec::math::CopySign(-0.25, 100.0) == 0.25, "Copy sign.");
   }
+
+  dax::exec::internal::ErrorMessageBuffer ErrorMessage;
+  DAX_CONT_EXPORT
+  void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->ErrorMessage = errorMessage;
+  }
 };
 
 struct TestTrigKernel
 {
-  template<class ErrorHandler>
-  DAX_EXEC_EXPORT void operator()(int, dax::Id, ErrorHandler errorHandler)
+  DAX_EXEC_EXPORT void operator()(dax::Id) const
   {
     MY_ASSERT(test_equal(dax::exec::math::Pi(), dax::Scalar(3.14159265)),
               "Pi not correct.");
@@ -239,15 +268,21 @@ struct TestTrigKernel
     MY_ASSERT(test_equal(dax::exec::math::ATan(opposite/adjacent), angle),
               "Arc Tan failed test.");
   }
+
+  dax::exec::internal::ErrorMessageBuffer ErrorMessage;
+  DAX_CONT_EXPORT
+  void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->ErrorMessage = errorMessage;
+  }
 };
 
 template<class Functor>
 void TestSchedule(Functor functor)
 {
   dax::cont::internal::Schedule(functor,
-                                0,
                                 1,
-                                DAX_DEFAULT_ARRAY_CONTAINER_CONTROL(),
                                 dax::cuda::cont::DeviceAdapterTagCuda());
 }
 

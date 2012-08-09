@@ -17,13 +17,11 @@
 #ifndef __dax_cont_DeviceAdapter_h
 #define __dax_cont_DeviceAdapter_h
 
-#include <dax/exec/internal/ExecutionAdapter.h>
-
 namespace dax {
 namespace cont {
 
 #ifdef DAX_DOXYGEN_ONLY
-/// \brief A tag specifying the interface between the contorl and execution environments.
+/// \brief A tag specifying the interface between the control and execution environments.
 ///
 /// A DeviceAdapter tag specifies a set of functions and classes that provide
 /// mechanisms to run algorithms on a type of parallel device. The tag
@@ -49,13 +47,13 @@ namespace internal {
 
 /// \brief Copy the contents of one ArrayHandle to another
 ///
-/// Copies the contents of \c from to \c to. The array \c to will be allocated
-/// to the appropriate size.
+/// Copies the contents of \c input to \c output. The array \c to will be
+/// allocated to the appropriate size.
 ///
-template<typename T, class Container>
+template<typename T, class CIn, class COut>
 DAX_CONT_EXPORT void Copy(
-    const dax::cont::ArrayHandle<T, Container, DeviceAdapterTag___> &from,
-    dax::cont::ArrayHandle<T, Container, DeviceAdapterTag___> &to,
+    const dax::cont::ArrayHandle<T, CIn, DeviceAdapterTag___> &input,
+    dax::cont::ArrayHandle<T, COut, DeviceAdapterTag___> &output,
     DeviceAdapterTag___);
 
 /// \brief Compute an inclusive prefix sum operation on the input ArrayHandle.
@@ -68,10 +66,10 @@ DAX_CONT_EXPORT void Copy(
 /// results. When the input and output ArrayHandles are the same ArrayHandle
 /// the operation will be done inplace.
 ///
-template<typename T, class Container>
+template<typename T, class CIn, class COut>
 DAX_CONT_EXPORT T InclusiveScan(
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapterTag___> &input,
-    dax::cont::ArrayHandle<T,Container,DeviceAdapterTag___>& output,
+    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag___> &input,
+    dax::cont::ArrayHandle<T,COut,DeviceAdapterTag___>& output,
     DeviceAdapterTag___);
 
 /// \brief Output is the first index in input for each item in values that wouldn't alter the ordering of input
@@ -83,11 +81,11 @@ DAX_CONT_EXPORT T InclusiveScan(
 /// \par Requirements:
 /// \arg \c input must already be sorted
 ///
-template<typename T, class Container>
+template<typename T, class CIn, class CVal, class COut>
 DAX_CONT_EXPORT void LowerBounds(
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapter>& input,
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapter>& values,
-    dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapter>& output,
+    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag___>& input,
+    const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag___>& values,
+    dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag___>& output,
     DeviceAdapterTag___);
 
 /// \brief A special version of LowerBounds that does an in place operation.
@@ -97,10 +95,10 @@ DAX_CONT_EXPORT void LowerBounds(
 /// where it occurs. Because this is an in place operation, the of the arrays
 /// is limited to dax::Id.
 ///
-template<class Container>
+template<class CIn, class COut>
 DAX_CONT_EXPORT void LowerBounds(
-    const dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTag___>& input,
-    dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTag___>& values_output,
+    const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTag___>& input,
+    dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag___>& values_output,
     DeviceAdapterTag___);
 
 /// \brief Schedule many instances of a function to run on concurrent threads.
@@ -108,23 +106,21 @@ DAX_CONT_EXPORT void LowerBounds(
 /// Calls the \c functor on several threads. This is the function used in the
 /// control environment to spawn activity in the execution environment. \c
 /// functor is a function-like object that can be invoked with the calling
-/// specification <tt>functor(Parameters parameters, dax::Id index,
-/// ExecutionAdapter adapter)</tt>. This last parameter of the functor should
-/// be templated and can be used to create execution objects like work and
-/// field.
+/// specification <tt>functor(dax::Id index)</tt>. It also has a method called
+/// from the control environment to establish the error reporting buffer with
+/// the calling specification <tt>functor.SetErrorMessageBuffer(const
+/// dax::exec::internal::ErrorMessageBuffer &errorMessage)</tt>. This object
+/// can be stored in the functor's state such that if RaiseError is called on
+/// it in the execution environment, an ErrorExecution will be thrown from
+/// Schedule.
 ///
-/// The first argument is the \c parameters passed through. The second argument
-/// uniquely identifies the thread or instance of the invocation. There should
-/// be one invocation for each index in the range [0, \c numInstances]. The
-/// third argment contains an ErrorHandler that can be used to raise an error
-/// in the functor. The final argument is not used for anything but indirectly
-/// specifying the template paramters.
+/// The argument of the invoked functor uniquely identifies the thread or
+/// instance of the invocation. There should be one invocation for each index
+/// in the range [0, \c numInstances].
 ///
-template<class Functor, class Parameters, class Container>
+template<class Functor>
 DAX_CONT_EXPORT void Schedule(Functor functor,
-                              Parameters parameters,
                               dax::Id numInstances,
-                              Container,
                               DeviceAdapterTag___);
 
 /// \brief Unstable ascending sort of input array.
@@ -147,10 +143,10 @@ DAX_CONT_EXPORT void Sort(
 /// we can't know the number of elements that will be removed by the stream
 /// compaction algorithm.
 ///
-template<typename T, class Container>
+template<typename T, class CIn, class COut>
 DAX_CONT_EXPORT void StreamCompact(
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapterTag___> &input,
-    dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapterTag___> &output,
+    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag___> &input,
+    dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag___> &output,
     DeviceAdapterTag___);
 
 /// \brief Performs stream compaction to remove unwanted elements in the input array.
@@ -216,32 +212,39 @@ public:
   ///
   typedef T ValueType;
 
-  /// An iterator that can be used in the execution environment to access
-  /// portions of the arrays. This example defines the iterator as a pointer,
-  /// but any random access iterator is valid.
+  /// An array portal that can be used in the execution environment to access
+  /// portions of the arrays. This example defines the portal with a pointer,
+  /// but any portal with methods that can be called and data that can be
+  /// accessed from the execution environment can be used.
   ///
-  typedef ValueType *IteratorType;
+  typedef dax::exec::internal::ArrayPortalFromIterators<ValueType*> PortalType;
 
-  /// Const version of IteratorType.
+  /// Const version of PortalType.  You must be able to cast PortalType to
+  /// PortalConstType.
   ///
-  typedef const ValueType *IteratorConstType;
+  typedef dax::exec::internal::ArrayPortalFromIterators<const ValueType*>
+      PortalConstType;
+
+  /// Returns the number of values stored in the array.  Results are undefined
+  /// if data has not been loaded or allocated.
+  ///
+  DAX_CONT_EXPORT dax::Id GetNumberOfValues() const;
 
   /// Allocates a large enough array in the execution environment and copies
   /// the given data to that array. The allocated array can later be accessed
-  /// via the GetIteratorBegin method. If control and execution share arrays,
-  /// then this method may save the iterators to be returned in the \c
-  /// GetIterator* methods.
+  /// via the GetPortal method. If control and execution share arrays, then
+  /// this method may save the iterators to be returned in the \c GetPortal*
+  /// methods.
   ///
   DAX_CONT_EXPORT void LoadDataForInput(
-      typename ContainerType::IteratorType beginIterator,
-      typename ContainerType::IteratorType endIterator);
+      typename ContainerType::PortalType portal);
 
-  /// Const version of LoadDataForInput.  Functionally equivalent to the
-  /// non-const version except that the non-const versions of GetIterator*
-  /// may not be available.
+  /// Const version of LoadDataForInput. Functionally equivalent to the
+  /// non-const version except that the non-const versions of GetPortal may not
+  /// be available.
+  ///
   DAX_CONT_EXPORT void LoadDataForInput(
-      typename ContainerType::IteratorConstType beginIterator,
-      typename ContainerType::IteratorConstType endIterator);
+      typename ContainerType::PortalConstType portal);
 
   /// Allocates an array in the execution environment of the specified size.
   /// If control and execution share arrays, then this class can allocate
@@ -279,27 +282,16 @@ public:
   ///
   DAX_CONT_EXPORT void Shrink(dax::Id numberOfValues);
 
-  /// Returns an iterator that can be used in the execution environment. This
-  /// iterator was defined in either LoadDataForInput or
+  /// Returns an array portal that can be used in the execution environment.
+  /// This portal was defined in either LoadDataForInput or
   /// AllocateArrayForOutput. If control and environment share memory space,
   /// this class may return the iterator from the \c controlArray.
   ///
-  DAX_CONT_EXPORT IteratorType GetIteratorBegin();
+  DAX_CONT_EXPORT PortalType GetPortal();
 
-  /// Returns an iterator that can be used in the execution environment. This
-  /// iterator was defined in either LoadDataForInput or
-  /// AllocateArrayForOutput. If control and environment share memory space,
-  /// this class may return the iterator from the \c controlArray.
+  /// Const version of GetPortal.
   ///
-  DAX_CONT_EXPORT IteratorType GetIteratorEnd();
-
-  /// Const version of GetIteratorBegin.
-  ///
-  DAX_CONT_EXPORT IteratorConstType GetIteratorConstBegin() const;
-
-  /// Const version of GetIteratorEnd.
-  ///
-  DAX_CONT_EXPORT IteratorConstType GetIteratorConstEnd() const;
+  DAX_CONT_EXPORT PortalConstType GetPortalConst() const;
 
   /// Frees any resources (i.e. memory) allocated for the exeuction
   /// environment, if any.

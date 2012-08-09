@@ -29,13 +29,12 @@ struct TestCellFunctor
   void operator()(const TopologyGenType &topology)
   {
     typedef typename TopologyGenType::CellType CellType;
-    typedef typename TopologyGenType::ExecutionAdapter ExecutionAdapter;
     typedef typename CellType::PointConnectionsType PointConnectionsType;
 
     dax::Id numCells = topology.GetNumberOfCells();
     for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
       {
-      CellType cell = dax::exec::internal::CreateCell(topology, cellIndex);
+      CellType cell = topology.GetCell(cellIndex);
       DAX_TEST_ASSERT(cell.GetIndex() == cellIndex,
                       "Cell has wrong index.");
       DAX_TEST_ASSERT(cell.GetNumberOfPoints() == CellType::NUM_POINTS,
