@@ -30,6 +30,7 @@ set(headers
   ParametricCoordinates.h
   WorkletDetermineNewCellCount.h
   WorkletGenerateTopology.h
+  WorkletGenerateMangledTopology.h
   WorkletMapCell.h
   WorkletMapField.h
 
