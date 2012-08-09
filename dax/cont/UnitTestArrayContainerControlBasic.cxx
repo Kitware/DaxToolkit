@@ -14,6 +14,8 @@
 //
 //=============================================================================
 
+#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
+
 #include <dax/cont/ArrayContainerControlBasic.h>
 
 #include <dax/VectorTraits.h>
@@ -32,12 +34,13 @@ struct TemplatedTests
   typedef dax::cont::internal::ArrayContainerControl<
       T, dax::cont::ArrayContainerControlTagBasic> ArrayContainerType;
   typedef typename ArrayContainerType::ValueType ValueType;
-  typedef typename ArrayContainerType::IteratorType IteratorType;
+  typedef typename ArrayContainerType::PortalType PortalType;
+  typedef typename PortalType::IteratorType IteratorType;
 
   void SetContainer(ArrayContainerType &array, ValueType value)
   {
-    for (IteratorType iter = array.GetIteratorBegin();
-         iter != array.GetIteratorEnd();
+    for (IteratorType iter = array.GetPortal().GetIteratorBegin();
+         iter != array.GetPortal().GetIteratorEnd();
          iter ++)
       {
       *iter = value;
@@ -46,8 +49,8 @@ struct TemplatedTests
 
   bool CheckContainer(ArrayContainerType &array, ValueType value)
   {
-    for (IteratorType iter = array.GetIteratorBegin();
-         iter != array.GetIteratorEnd();
+    for (IteratorType iter = array.GetPortal().GetIteratorBegin();
+         iter != array.GetPortal().GetIteratorEnd();
          iter ++)
       {
       if (!test_equal(*iter, value)) return false;

@@ -16,12 +16,6 @@
 #ifndef __dax_cont_internal_DeviceAdapterError_h
 #define __dax_cont_internal_DeviceAdapterError_h
 
-#ifdef DAX_DEFAULT_DEVICE_ADAPTER
-#undef DAX_DEFAULT_DEVICE_ADAPTER
-#endif
-
-#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::cont::internal::DeviceAdapterTagError
-
 namespace dax {
 namespace cont {
 namespace internal {

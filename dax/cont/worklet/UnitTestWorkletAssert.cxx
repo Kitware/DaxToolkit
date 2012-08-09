@@ -18,12 +18,15 @@
 
 #include <dax/VectorTraits.h>
 
+#include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <dax/cont/internal/Testing.h>
+
+#include <vector>
 
 namespace {
 
@@ -32,16 +35,15 @@ const dax::Id DIM = 64;
 //-----------------------------------------------------------------------------
 static void TestAssert()
 {
-  dax::cont::UniformGrid<> grid;
-  grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+  std::vector<dax::Scalar> array(DIM);
+  dax::cont::ArrayHandle<dax::Scalar> arrayHandle =
+      dax::cont::make_ArrayHandle(array);
 
   std::cout << "Running field map worklet that errors" << std::endl;
   bool gotError = false;
   try
     {
-    dax::cont::worklet::testing::Assert<dax::cont::UniformGrid<>,
-                                        DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
-                                        DAX_DEFAULT_DEVICE_ADAPTER>(grid);
+    dax::cont::worklet::testing::Assert(arrayHandle);
     }
   catch (dax::cont::ErrorExecution error)
     {
@@ -50,7 +52,16 @@ static void TestAssert()
     gotError = true;
     }
 
+//The kernel using a NDEBUG check to determine if the assert is checked
+//so we need to make sure that in release mode the test still passes by
+//making sure an error isn't thrown.
+#ifndef NDEBUG
   DAX_TEST_ASSERT(gotError, "Never got the error thrown.");
+#else
+  DAX_TEST_ASSERT(!gotError, "Debug Assert in release mode, not allowed.");
+#endif
+
+
 }
 
 } // Anonymous namespace

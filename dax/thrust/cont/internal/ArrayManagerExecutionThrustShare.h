@@ -40,24 +40,33 @@ public:
       ArrayManagerExecutionShareWithControl<T, ArrayContainerControlTag>
         Superclass;
   typedef typename Superclass::ValueType ValueType;
-  typedef typename Superclass::IteratorType IteratorType;
-  typedef typename Superclass::IteratorConstType IteratorConstType;
+  typedef typename Superclass::PortalType PortalType;
+  typedef typename Superclass::PortalConstType PortalConstType;
 
   ArrayManagerExecutionThrustShare() {  }
 
   // These features are expected by thrust device adapters to run thrust
-  // algorithms (see DeviceAdapterThrust.h).
+  // algorithms (see DeviceAdapterAlgorithmThrust.h).
 
-  typedef IteratorType ThrustIteratorType;
-  typedef IteratorConstType ThrustIteratorConstType;
+  typedef typename PortalType::IteratorType ThrustIteratorType;
+  typedef typename PortalConstType::IteratorType ThrustIteratorConstType;
 
-  DAX_CONT_EXPORT static ThrustIteratorType ThrustIterator(
-      IteratorType iterator) {
-    return iterator;
+  DAX_CONT_EXPORT static ThrustIteratorType
+  ThrustIteratorBegin(PortalType portal) {
+    return portal.GetIteratorBegin();
   }
-  DAX_CONT_EXPORT static ThrustIteratorConstType ThrustIterator(
-      IteratorConstType iterator) {
-    return iterator;
+  DAX_CONT_EXPORT static ThrustIteratorType
+  ThrustIteratorEnd(PortalType portal) {
+    return portal.GetIteratorEnd();
+  }
+
+  DAX_CONT_EXPORT static ThrustIteratorConstType
+  ThrustIteratorBegin(PortalConstType portal) {
+    return portal.GetIteratorBegin();
+  }
+  DAX_CONT_EXPORT static ThrustIteratorConstType
+  ThrustIteratorEnd(PortalConstType portal) {
+    return portal.GetIteratorEnd();
   }
 
 private:

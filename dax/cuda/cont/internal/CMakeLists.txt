@@ -15,6 +15,9 @@
 ##=============================================================================
 
 set(headers
+  ArrayManagerExecutionCuda.h
+  DeviceAdapterAlgorithmCuda.h
+  DeviceAdapterTagCuda.h
   SetThrustForCuda.h
   Testing.h
   )

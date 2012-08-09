@@ -16,6 +16,14 @@
 #ifndef __dax__cont__ArrayContainerControl_h
 #define __dax__cont__ArrayContainerControl_h
 
+#define DAX_ARRAY_CONTAINER_CONTROL_ERROR      -1
+#define DAX_ARRAY_CONTAINER_CONTROL_UNDEFINED   0
+#define DAX_ARRAY_CONTAINER_CONTROL_BASIC       1
+
+#ifndef DAX_ARRAY_CONTAINER_CONTROL
+#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
+#endif
+
 namespace dax {
 namespace cont {
 
@@ -26,13 +34,9 @@ namespace cont {
 /// frees memory. The tag ArrayContainerControlTag___ does not actually exist.
 /// Rather, this documentation is provided to describe how array containers are
 /// specified. Loading the dax/cont/ArrayContainerControl.h header will set a
-/// default array container. The default array container can be overloaded by
-/// including the header file for a differt array container (for example,
-/// ArrayContainerControlBasic.h) or simply defining the macro
-/// DAX_DEFAULT_ARRAY_CONTAINER_CONTROL. This overloading should be done \em
-/// before loading in any other Dax header files (with the exception of a
-/// DeviceAdapter header file). Failing to do so could create inconsistencies
-/// in the default adapter used among classes.
+/// default array container. You can specify the default array container by
+/// first setting the DAX_ARRAY_CONTAINER_CONTROL macro.  Currently it can only
+/// be set to DAX_ARRAY_CONTAINER_CONTROL_BASIC.
 ///
 /// User code external to Dax is free to make its own ArrayContainerControlTag.
 /// This is a good way to get Dax to read data directly in and out of arrays
@@ -68,35 +72,27 @@ public:
   ///
   typedef T ValueType;
 
-  /// \brief The type of iterator objects for the array.
+  /// \brief The type of portal objects for the array.
   ///
-  /// The actual iterator object may be more complicated, much like the
-  /// iterators in STL containers.
+  /// The actual portal object can take any form. This is a simple example of a
+  /// portal to a C array.
   ///
-  typedef ValueType *IteratorType;
+  typedef dax::cont::ArrayPortalFromIterators<ValueType*> PortalType;
 
-  /// \brief The type of iterator objects (const version) for the array.
+  /// \brief The type of portal objects (const version) for the array.
   ///
-  /// The actual iterator object may be more complicated, much like the
-  /// iterators in STL containers.
+  /// The actual portal object can take any form. This is a simple example of a
+  /// portal to a C array.
   ///
-  typedef const ValueType *IteratorConstType;
+  typedef dax::cont::ArrayPortalFromIterators<const ValueType*> PortalConstType;
 
-  /// Returns the iterator at the beginning of the array.
+  /// Returns a portal to the array.
   ///
-  IteratorType GetIteratorBegin();
+  PortalType GetPortal();
 
-  /// Returns the iterator at the end of the array.
+  /// Returns a portal to the array with immutable values.
   ///
-  IteratorType GetIteratorEnd();
-
-  /// Returns the const iterator at the beginning of the array.
-  ///
-  IteratorConstType GetIteratorConstBegin() const;
-
-  /// Returns the const iterator at the end of the array.
-  ///
-  IteratorConstType GetIteratorConstEnd() const;
+  PortalConstType GetPortalConst() const;
 
   /// Retuns the number of entries allocated in the array.
   dax::Id GetNumberOfValues() const;
@@ -138,8 +134,25 @@ public:
 
 // This is put at the bottom of the header so that the ArrayContainerControl
 // template is declared before any implementations are called.
-#ifndef DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
+
+#if DAX_ARRAY_CONTAINER_CONTROL == DAX_ARRAY_CONTAINER_CONTROL_BASIC
+
 #include <dax/cont/ArrayContainerControlBasic.h>
-#endif // DAX_DEFAULT_ARRAY_CONTAINER_CONTROL
+#define DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG \
+  ::dax::cont::ArrayContainerControlTagBasic
+
+#elif DAX_ARRAY_CONTAINER_CONTROL == DAX_ARRAY_CONTAINER_CONTROL_ERROR
+
+#include <dax/cont/internal/ArrayContainerControlError.h>
+#define DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG \
+  ::dax::cont::internal::ArrayContainerControlTagError
+
+#elif (DAX_ARRAY_CONTAINER_CONTROL == DAX_ARRAY_CONTAINER_CONTROL_UNDEFINED) || !defined(DAX_ARRAY_CONTAINER_CONTROL)
+
+#ifndef DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG
+#warning If array container for control is undefined, DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG must be defined.
+#endif
+
+#endif
 
 #endif //__dax__cont__ArrayContainerControl_h

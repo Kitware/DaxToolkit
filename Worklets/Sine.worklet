@@ -16,24 +16,23 @@
 #ifndef __Sine_worklet_
 #define __Sine_worklet_
 
-#include <dax/exec/Cell.h>
-#include <dax/exec/Field.h>
-#include <dax/exec/WorkMapField.h>
+#include <dax/exec/WorkletMapField.h>
 #include <dax/math/Trig.h>
 
 namespace dax {
 namespace worklet {
 
-template<class CellType, class FieldType, class ExecutionAdapter>
-DAX_WORKLET void Sine(
-    dax::exec::WorkMapField<CellType, ExecutionAdapter> &work,
-    dax::exec::FieldIn<FieldType, ExecutionAdapter> &inField,
-    dax::exec::FieldOut<FieldType, ExecutionAdapter> &outField)
+class Sine : public dax::exec::WorkletMapField
 {
-  FieldType inValue = work.GetFieldValue(inField);
-  FieldType outValue = dax::math::Sin(inValue);
-  work.SetFieldValue(outField, outValue);
-}
+public:
+  template<class ValueType>
+  DAX_EXEC_EXPORT
+  void operator()(const ValueType &inValue,
+                  ValueType &outValue) const
+  {
+    outValue = dax::math::Sin(inValue);
+  }
+};
 
 }
 }

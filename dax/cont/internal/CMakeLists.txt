@@ -16,11 +16,15 @@
 
 set(headers
   ArrayContainerControlError.h
+  ArrayManagerExecution.h
+  ArrayManagerExecutionSerial.h
   ArrayManagerExecutionShareWithControl.h
+  ArrayPortalShrink.h
+  DeviceAdapterAlgorithm.h
+  DeviceAdapterAlgorithmSerial.h
   DeviceAdapterError.h
-  ExecutionPackageField.h
-  ExecutionPackageGrid.h
-  ExtractCoordinates.h
+  DeviceAdapterTag.h
+  DeviceAdapterTagSerial.h
   ScheduleGenerateTopology.h
   ScheduleMapAdapter.h
   Testing.h
@@ -38,6 +42,5 @@ dax_declare_headers(${headers})
 set(unit_tests
   UnitTestArrayManagerExecutionShareWithControl.cxx
   UnitTestContTesting.cxx
-  UnitTestExecutionPackage.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

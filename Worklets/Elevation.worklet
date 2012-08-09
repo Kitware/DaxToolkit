@@ -16,29 +16,47 @@
 #ifndef __Elevation_worklet_
 #define __Elevation_worklet_
 
-#include <dax/exec/Cell.h>
-#include <dax/exec/Field.h>
-#include <dax/exec/WorkMapField.h>
-#include <dax/math/Exp.h>
+#include <dax/exec/WorkletMapField.h>
+
+#include <dax/math/Compare.h>
+#include <dax/math/VectorAnalysis.h>
 
 namespace dax {
 namespace worklet {
 
-template<class CellType, class ExecutionAdapter>
-DAX_WORKLET void Elevation(
-    dax::exec::WorkMapField<CellType, ExecutionAdapter> &work,
-    dax::exec::FieldCoordinatesIn<ExecutionAdapter> &pointCoord,
-    dax::exec::FieldPointOut<dax::Scalar, ExecutionAdapter> &outField)
+class Elevation : public dax::exec::WorkletMapField
 {
-  dax::Vector3 pointLocation = work.GetFieldValue(pointCoord);
-  // TODO: This is not an elevation calculation.  Rather, it is the distance
-  // to the origin, which is different.  However, I am leaving like this
-  // for now because this is the old calculation, and I want to measure
-  // consistent timings for now.
-  dax::Scalar elevation
-      = dax::math::Sqrt(dax::dot(pointLocation, pointLocation));
-  work.SetFieldValue(outField, elevation);
-}
+public:
+  DAX_CONT_EXPORT
+  Elevation(const dax::Vector3 &lowPoint = dax::make_Vector3(0.0, 0.0, 0.0),
+            const dax::Vector3 &highPoint = dax::make_Vector3(0.0, 0.0, 1.0),
+            const dax::Vector2 &outputRange = dax::make_Vector2(0.0, 1.0))
+    : LowPoint(lowPoint),
+      ScaledDirection(highPoint-lowPoint),
+      LowOutput(outputRange[0]),
+      OutputDistance(outputRange[1] - outputRange[0])
+  {
+
+  }
+
+  DAX_EXEC_EXPORT void operator()(const dax::Vector3 &inCoordinates,
+                                  dax::Scalar &elevation) const
+  {
+    dax::Scalar length2 = dax::math::MagnitudeSquared(this->ScaledDirection);
+    dax::Vector3 direction = (1/length2)*this->ScaledDirection;
+    dax::Vector3 coordDirection = inCoordinates - this->LowPoint;
+    dax::Scalar s = dax::dot(coordDirection,direction);
+    s = dax::math::Max(dax::Scalar(0), s);
+    s = dax::math::Min(dax::Scalar(1), s);
+    elevation = this->LowOutput + s*this->OutputDistance;
+  }
+
+private:
+  dax::Vector3 LowPoint;
+  dax::Vector3 ScaledDirection;
+  dax::Scalar LowOutput;
+  dax::Scalar OutputDistance;
+};
 
 }
 }

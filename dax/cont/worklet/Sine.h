@@ -18,45 +18,49 @@
 
 // TODO: This should be auto-generated.
 
+#include <Worklets/Sine.worklet>
+
 #include <dax/Types.h>
-#include <dax/exec/Field.h>
-#include <dax/exec/WorkMapField.h>
-#include <dax/exec/internal/ExecutionAdapter.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/ErrorControlBadValue.h>
-#include <dax/cont/internal/ExecutionPackageField.h>
-#include <dax/cont/internal/ExecutionPackageGrid.h>
-
-#include <Worklets/Sine.worklet>
 
 namespace dax {
 namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class CellType, typename FieldType, class ExecAdapter>
-struct SineParameters
-{
-  typename CellType::template GridStructures<ExecAdapter>::TopologyType grid;
-  dax::exec::FieldIn<FieldType, ExecAdapter> inField;
-  dax::exec::FieldOut<FieldType, ExecAdapter> outField;
-};
-
-template<class CellType, typename FieldType, class ExecAdapter>
+template<class PortalType1, class PortalType2>
 struct Sine
 {
-  DAX_EXEC_EXPORT void operator()(
-      SineParameters<CellType, FieldType, ExecAdapter> &parameters,
-      dax::Id index,
-      const ExecAdapter &execAdapter)
+  DAX_CONT_EXPORT
+  Sine(const dax::worklet::Sine &worklet,
+       const PortalType1 &inValueArray,
+       const PortalType2 &outValueArray)
+    : Worklet(worklet),
+      InValueArray(inValueArray),
+      OutValueArray(outValueArray) {  }
+
+  DAX_EXEC_EXPORT void operator()(dax::Id index) const
   {
-    dax::exec::WorkMapField<CellType, ExecAdapter>
-        work(parameters.grid, index, execAdapter);
-    dax::worklet::Sine(work,
-                       parameters.inField,
-                       parameters.outField);
+    const typename PortalType1::ValueType inValue =
+        this->InValueArray.Get(index);
+    typename PortalType2::ValueType outValue;
+
+    this->Worklet(inValue, outValue);
+
+    this->OutValueArray.Set(index, outValue);
   }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
+  }
+
+private:
+  dax::worklet::Sine Worklet;
+  PortalType1 InValueArray;
+  PortalType2 OutValueArray;
 };
 
 }
@@ -68,62 +72,24 @@ namespace dax {
 namespace cont {
 namespace worklet {
 
-// Should be templated on grid type too.
-template<class GridType,
-         typename FieldType,
-         class Container,
+template<typename ValueType,
+         class Container1,
+         class Container2,
          class Adapter>
 DAX_CONT_EXPORT void Sine(
-    const GridType &grid,
-    const dax::cont::ArrayHandle<FieldType,Container,Adapter> &inHandle,
-    dax::cont::ArrayHandle<FieldType,Container,Adapter> &outHandle)
+    const dax::cont::ArrayHandle<ValueType, Container1, Adapter> &inHandle,
+    dax::cont::ArrayHandle<ValueType, Container2, Adapter> &outHandle)
 {
-  dax::Id fieldSize;
-  if (inHandle.GetNumberOfValues() == grid.GetNumberOfPoints())
-    {
-    fieldSize = grid.GetNumberOfPoints();
-    }
-  else if (inHandle.GetNumberOfValues() == grid.GetNumberOfCells())
-    {
-    fieldSize = grid.GetNumberOfCells();
-    }
-  else
-    {
-    throw dax::cont::ErrorControlBadValue(
-          "Number of array entries neither cells nor points.");
-    }
+  dax::Id fieldSize = inHandle.GetNumberOfValues();
 
-  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
+  dax::exec::internal::kernel::Sine<
+      typename dax::cont::ArrayHandle<ValueType,Container1,Adapter>::PortalConstExecution,
+      typename dax::cont::ArrayHandle<ValueType,Container2,Adapter>::PortalExecution>
+      kernel(dax::worklet::Sine(),
+             inHandle.PrepareForInput(),
+             outHandle.PrepareForOutput(fieldSize));
 
-  typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
-  ExecutionTopologyType execTopology
-      = dax::cont::internal::ExecutionPackageGrid(grid);
-
-  dax::exec::FieldIn<FieldType, ExecAdapter> fieldIn =
-      dax::cont::internal::ExecutionPackageFieldArrayConst<dax::exec::FieldIn>(
-        inHandle, fieldSize);
-
-  dax::exec::FieldOut<FieldType, ExecAdapter> fieldOut
-      = dax::cont::internal::ExecutionPackageFieldArray<dax::exec::FieldOut>(
-        outHandle, fieldSize);
-
-  typedef typename GridType::CellType CellType;
-
-  typedef dax::exec::internal::kernel::SineParameters<
-      CellType, FieldType, ExecAdapter> Parameters;
-
-  Parameters parameters;
-
-  parameters.grid = execTopology;
-  parameters.inField = fieldIn;
-  parameters.outField = fieldOut;
-
-  dax::cont::internal::Schedule(
-        dax::exec::internal::kernel::Sine<CellType, FieldType, ExecAdapter>(),
-        parameters,
-        fieldSize,
-        Container(),
-        Adapter());
+  dax::cont::internal::Schedule(kernel, fieldSize, Adapter());
 }
 
 }

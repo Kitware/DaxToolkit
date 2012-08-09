@@ -18,39 +18,42 @@
 
 // TODO: This should be auto-generated.
 
+#include <Worklets/Testing/Assert.worklet>
+
 #include <dax/Types.h>
-#include <dax/exec/WorkMapField.h>
-#include <dax/exec/internal/ExecutionAdapter.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/internal/ExecutionPackageField.h>
-#include <dax/cont/internal/ExecutionPackageGrid.h>
 
-#include <Worklets/Testing/Assert.worklet>
+#include <dax/exec/internal/FieldAccess.h>
 
 namespace dax {
 namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class CellType, class ExecAdapter>
-struct AssertParameters
-{
-  typename CellType::template GridStructures<ExecAdapter>::TopologyType grid;
-};
-
-template<class CellType, class ExecAdapter>
+template<class PortalType>
 struct Assert
 {
-  DAX_EXEC_EXPORT void operator()(
-      AssertParameters<CellType, ExecAdapter> &parameters,
-      dax::Id index,
-      const ExecAdapter &execAdapter)
+  DAX_CONT_EXPORT
+  Assert(const dax::worklet::testing::Assert &worklet,
+         const PortalType &inArray)
+    : Worklet(worklet), InArray(inArray) {  }
+
+  DAX_EXEC_EXPORT void operator()(dax::Id pointIndex) const
   {
-    dax::exec::WorkMapField<CellType, ExecAdapter>
-        work(parameters.grid, index, execAdapter);
-    dax::worklet::testing::Assert(work);
+    this->Worklet(
+        dax::exec::internal::FieldGet(this->InArray,pointIndex,this->Worklet));
   }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
+  }
+
+private:
+  dax::worklet::testing::Assert Worklet;
+  PortalType InArray;
 };
 
 }
@@ -63,31 +66,20 @@ namespace cont {
 namespace worklet {
 namespace testing {
 
-template<class GridType,
+template<typename ValueType,
          class Container,
          class Adapter>
-inline void Assert(const GridType &grid)
+inline void Assert(
+    const dax::cont::ArrayHandle<ValueType,Container,Adapter> &inArray)
 {
-  typedef dax::exec::internal::ExecutionAdapter<Container,Adapter> ExecAdapter;
+  dax::Id fieldSize = inArray.GetNumberOfValues();
 
-  typedef typename GridType::ExecutionTopologyStruct ExecutionTopologyType;
-  ExecutionTopologyType execTopology
-      = dax::cont::internal::ExecutionPackageGrid(grid);
+  dax::exec::internal::kernel::Assert<
+      typename dax::cont::ArrayHandle<ValueType,Container,Adapter>::PortalConstExecution>
+      kernel(dax::worklet::testing::Assert(),
+             inArray.PrepareForInput());
 
-  typedef typename GridType::CellType CellType;
-
-  typedef dax::exec::internal::kernel::AssertParameters<CellType, ExecAdapter>
-      Parameters;
-
-  Parameters parameters;
-  parameters.grid = execTopology;
-
-  dax::cont::internal::Schedule(
-        dax::exec::internal::kernel::Assert<CellType, ExecAdapter>(),
-        parameters,
-        grid.GetNumberOfPoints(),
-        Container(),
-        Adapter());
+  dax::cont::internal::Schedule(kernel, fieldSize, Adapter());
 }
 
 }

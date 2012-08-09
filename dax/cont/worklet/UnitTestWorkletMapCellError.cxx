@@ -39,10 +39,8 @@ static void TestCellMapError()
   bool gotError = false;
   try
     {
-    dax::cont::worklet::testing::CellMapError<
-        dax::cont::UniformGrid<>,
-        DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
-        DAX_DEFAULT_DEVICE_ADAPTER>(grid);
+    dax::cont::worklet::testing::CellMapError(grid,
+                                              DAX_DEFAULT_DEVICE_ADAPTER_TAG());
     }
   catch (dax::cont::ErrorExecution error)
     {

@@ -14,6 +14,7 @@
 //
 //=============================================================================
 
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 #define BOOST_SP_DISABLE_THREADS
 
 // Tests math functions that rely on system math functions in the Cuda runtime
@@ -27,6 +28,8 @@
 #include <dax/math/Precision.h>
 #include <dax/math/Sign.h>
 #include <dax/math/Trig.h>
+
+#include <dax/exec/internal/ErrorMessageBuffer.h>
 
 #include <dax/exec/Assert.h>
 
@@ -53,9 +56,8 @@ struct MathTestFunctor
   // pattern to call the execution-only raise error method in an execution-only
   // method and macros to throw exceptions only in the control environment.
 
-  template<class ErrorHandler>
   DAX_EXEC_EXPORT
-  void operator()(int, dax::Id, ErrorHandler errorHandler) const
+  void operator()(dax::Id) const
   {
     // Hopefully the derived class will always return constant strings that do
     // not go out of scope. If we get back garbled error strings, this is
@@ -63,8 +65,16 @@ struct MathTestFunctor
     const char *message = static_cast<const Derived*>(this)->Run();
     if (message != NULL)
       {
-      errorHandler.RaiseError(message);
+      this->ErrorMessage.RaiseError(message);
       }
+  }
+
+  dax::exec::internal::ErrorMessageBuffer ErrorMessage;
+  DAX_CONT_EXPORT
+  void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->ErrorMessage = errorMessage;
   }
 };
 
@@ -275,9 +285,7 @@ void TestSchedule(Functor functor)
 {
   // Schedule on device.
   dax::cont::internal::Schedule(functor,
-                                0,
                                 1,
-                                DAX_DEFAULT_ARRAY_CONTAINER_CONTROL(),
                                 dax::cuda::cont::DeviceAdapterTagCuda());
 
   // Run on host. The return value has the same qualification as mentioned

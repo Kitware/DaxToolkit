@@ -20,6 +20,7 @@
 
 #include <dax/cont/Assert.h>
 #include <dax/cont/ArrayContainerControl.h>
+#include <dax/cont/internal/ArrayPortalShrink.h>
 
 #include <algorithm>
 
@@ -41,38 +42,42 @@ public:
   typedef dax::cont::internal
       ::ArrayContainerControl<ValueType, ArrayContainerControlTag>
       ContainerType;
-  typedef typename ContainerType::IteratorType IteratorType;
-  typedef typename ContainerType::IteratorConstType IteratorConstType;
+  typedef dax::cont::internal::ArrayPortalShrink<
+      typename ContainerType::PortalType> PortalType;
+  typedef dax::cont::internal::ArrayPortalShrink<
+      typename ContainerType::PortalConstType> PortalConstType;
 
   DAX_CONT_EXPORT ArrayManagerExecutionShareWithControl()
-    : IteratorsValid(false), ConstIteratorsValid(false) { }
+    : PortalValid(false), ConstPortalValid(false) { }
 
-  /// Saves the given iterators to be returned later.
+  /// Returns the size of the saved portal.
   ///
-  DAX_CONT_EXPORT void LoadDataForInput(IteratorConstType beginIterator,
-                                        IteratorConstType endIterator)
-  {
-    this->BeginConstIterator = beginIterator;
-    this->EndConstIterator = endIterator;
-    this->ConstIteratorsValid = true;
-
-    // Non-const versions not defined.
-    this->IteratorsValid = false;
+  DAX_CONT_EXPORT dax::Id GetNumberOfValues() const {
+    DAX_ASSERT_CONT(this->ConstPortalValid);
+    return this->ConstPortal.GetNumberOfValues();
   }
 
   /// Saves the given iterators to be returned later.
   ///
-  DAX_CONT_EXPORT void LoadDataForInput(IteratorType beginIterator,
-                                        IteratorType endIterator)
+  DAX_CONT_EXPORT void LoadDataForInput(PortalConstType portal)
+  {
+    this->ConstPortal = portal;
+    this->ConstPortalValid = true;
+
+    // Non-const versions not defined.
+    this->PortalValid = false;
+  }
+
+  /// Saves the given iterators to be returned later.
+  ///
+  DAX_CONT_EXPORT void LoadDataForInput(PortalType portal)
   {
     // This only works if there is a valid cast from non-const to const
     // iterator.
-    this->LoadDataForInput(IteratorConstType(beginIterator),
-                           IteratorConstType(endIterator));
+    this->LoadDataForInput(PortalConstType(portal));
 
-    this->BeginIterator = beginIterator;
-    this->EndIterator = endIterator;
-    this->IteratorsValid = true;
+    this->Portal = portal;
+    this->PortalValid = true;
   }
 
   /// Actually just allocates memory in the given \p controlArray.
@@ -82,26 +87,23 @@ public:
   {
     controlArray.Allocate(numberOfValues);
 
-    this->BeginIterator = controlArray.GetIteratorBegin();
-    this->EndIterator = controlArray.GetIteratorEnd();
-    this->IteratorsValid = true;
+    this->Portal = controlArray.GetPortal();
+    this->PortalValid = true;
 
-    this->BeginConstIterator = controlArray.GetIteratorConstBegin();
-    this->EndConstIterator = controlArray.GetIteratorConstEnd();
-    this->ConstIteratorsValid = true;
+    this->ConstPortal = controlArray.GetPortalConst();
+    this->ConstPortalValid = true;
   }
 
   /// This method is a no-op (except for a few checks). Any data written to
-  /// this class's iterators should already be written to the give \c
+  /// this class's iterators should already be written to the given \c
   /// controlArray (under correct operation).
   ///
   DAX_CONT_EXPORT void RetrieveOutputData(ContainerType &controlArray) const
   {
-    DAX_ASSERT_CONT(this->ConstIteratorsValid);
-    DAX_ASSERT_CONT(
-          controlArray.GetIteratorConstBegin() == this->BeginConstIterator);
-    DAX_ASSERT_CONT(
-          controlArray.GetIteratorConstEnd() == this->EndConstIterator);
+    (void)controlArray;  // Shut up compiler
+    DAX_ASSERT_CONT(this->ConstPortalValid);
+    DAX_ASSERT_CONT(controlArray.GetPortalConst().GetIteratorBegin() ==
+                    this->ConstPortal.GetIteratorBegin());
   }
 
   /// This methods copies data from the execution array into the given
@@ -110,58 +112,39 @@ public:
   template <class IteratorTypeControl>
   DAX_CONT_EXPORT void CopyInto(IteratorTypeControl dest) const
   {
-    DAX_ASSERT_CONT(this->ConstIteratorsValid);
-    std::copy(this->BeginConstIterator, this->EndConstIterator, dest);
+    DAX_ASSERT_CONT(this->ConstPortalValid);
+    std::copy(this->ConstPortal.GetIteratorBegin(),
+              this->ConstPortal.GetIteratorEnd(),
+              dest);
   }
 
   /// Adjusts saved end iterators to resize array.
   ///
   DAX_CONT_EXPORT void Shrink(dax::Id numberOfValues)
   {
-    DAX_ASSERT_CONT(this->ConstIteratorsValid);
-    DAX_ASSERT_CONT(numberOfValues <= std::distance(this->BeginConstIterator,
-                                                    this->EndConstIterator));
+    DAX_ASSERT_CONT(this->ConstPortalValid);
+    this->ConstPortal.Shrink(numberOfValues);
 
-    this->EndConstIterator = this->BeginConstIterator;
-    std::advance(this->EndConstIterator, numberOfValues);
-
-    if (this->IteratorsValid)
+    if (this->PortalValid)
       {
-      this->EndIterator = this->BeginIterator;
-      std::advance(this->EndIterator, numberOfValues);
+      this->Portal.Shrink(numberOfValues);
       }
   }
 
-  /// Returns the iterator previously saved from an \c ArrayContainerControl.
+  /// Returns the portal previously saved from an \c ArrayContainerControl.
   ///
-  DAX_CONT_EXPORT IteratorType GetIteratorBegin()
+  DAX_CONT_EXPORT PortalType GetPortal()
   {
-    DAX_ASSERT_CONT(this->IteratorsValid);
-    return this->BeginIterator;
+    DAX_ASSERT_CONT(this->PortalValid);
+    return this->Portal;
   }
 
-  /// Returns the iterator previously saved from an \c ArrayContainerControl.
+  /// Const version of GetPortal.
   ///
-  DAX_CONT_EXPORT IteratorType GetIteratorEnd()
+  DAX_CONT_EXPORT PortalConstType GetPortalConst() const
   {
-    DAX_ASSERT_CONT(this->IteratorsValid);
-    return this->EndIterator;
-  }
-
-  /// Const version of GetIteratorBegin.
-  ///
-  DAX_CONT_EXPORT IteratorConstType GetIteratorConstBegin() const
-  {
-    DAX_ASSERT_CONT(this->ConstIteratorsValid);
-    return this->BeginConstIterator;
-  }
-
-  /// Const version of GetIteratorEnd.
-  ///
-  DAX_CONT_EXPORT IteratorConstType GetIteratorConstEnd() const
-  {
-    DAX_ASSERT_CONT(this->ConstIteratorsValid);
-    return this->EndConstIterator;
+    DAX_ASSERT_CONT(this->ConstPortalValid);
+    return this->ConstPortal;
   }
 
   /// A no-op.
@@ -175,13 +158,11 @@ private:
   void operator=(
       ArrayManagerExecutionShareWithControl<T, ArrayContainerControlTag> &);
 
-  IteratorType BeginIterator;
-  IteratorType EndIterator;
-  bool IteratorsValid;
+  PortalType Portal;
+  bool PortalValid;
 
-  IteratorConstType BeginConstIterator;
-  IteratorConstType EndConstIterator;
-  bool ConstIteratorsValid;
+  PortalConstType ConstPortal;
+  bool ConstPortalValid;
 };
 
 }

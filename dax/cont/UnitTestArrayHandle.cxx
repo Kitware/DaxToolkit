@@ -16,8 +16,8 @@
 
 //This sets up the ArrayHandle semantics to allocate pointers and share memory
 //between control and execution.
-#include <dax/cont/ArrayContainerControlBasic.h>
-#include <dax/cont/DeviceAdapterSerial.h>
+#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
 #include <dax/cont/ArrayHandle.h>
 
@@ -46,6 +46,13 @@ bool CheckValues(IteratorType begin, IteratorType end)
   return true;
 }
 
+template<typename T>
+bool CheckValues(const dax::cont::ArrayHandle<T> &handle)
+{
+  return CheckValues(handle.GetPortalConstControl().GetIteratorBegin(),
+                     handle.GetPortalConstControl().GetIteratorEnd());
+}
+
 void TestArrayHandle()
 {
   std::cout << "Create array handle." << std::endl;
@@ -56,15 +63,17 @@ void TestArrayHandle()
     array[index] = TestValue(index);
     }
 
+  dax::cont::ArrayHandle<dax::Scalar>::PortalControl arrayPortal(
+        &array[0], &array[ARRAY_SIZE]);
+
   dax::cont::ArrayHandle<dax::Scalar>
-      arrayHandle(&array[0], &array[ARRAY_SIZE]);
+      arrayHandle(arrayPortal);
 
   DAX_TEST_ASSERT(arrayHandle.GetNumberOfValues() == ARRAY_SIZE,
                   "ArrayHandle has wrong number of entries.");
 
   std::cout << "Check basic array." << std::endl;
-  DAX_TEST_ASSERT(CheckValues(arrayHandle.GetIteratorConstControlBegin(),
-                              arrayHandle.GetIteratorConstControlEnd()),
+  DAX_TEST_ASSERT(CheckValues(arrayHandle),
                   "Array values not set correctly.");
   std::fill_n(arrayCopy, ARRAY_SIZE, 0);
   arrayHandle.CopyInto(arrayCopy);
@@ -73,9 +82,10 @@ void TestArrayHandle()
 
   std::cout << "Check out execution array behavior." << std::endl;
   {
-  std::pair<const dax::Scalar *, const dax::Scalar *> executionIter
+  dax::cont::ArrayHandle<dax::Scalar>::PortalConstExecution executionPortal
       = arrayHandle.PrepareForInput();
-  DAX_TEST_ASSERT(CheckValues(executionIter.first, executionIter.second),
+  DAX_TEST_ASSERT(CheckValues(executionPortal.GetIteratorBegin(),
+                              executionPortal.GetIteratorEnd()),
                   "Array not copied to execution correctly.");
   }
 
@@ -95,11 +105,11 @@ void TestArrayHandle()
   }
 
   {
-  std::pair<dax::Scalar *, dax::Scalar *> executionIter
+  dax::cont::ArrayHandle<dax::Scalar>::PortalExecution executionPortal
       = arrayHandle.PrepareForOutput(ARRAY_SIZE*2);
   dax::Id index = 0;
-  for (dax::Scalar *iter = executionIter.first;
-       iter != executionIter.second;
+  for (dax::Scalar *iter = executionPortal.GetIteratorBegin();
+       iter != executionPortal.GetIteratorEnd();
        iter++)
     {
     *iter = TestValue(index);
@@ -108,24 +118,22 @@ void TestArrayHandle()
   }
   DAX_TEST_ASSERT(arrayHandle.GetNumberOfValues() == ARRAY_SIZE*2,
                   "Array not allocated correctly.");
-  DAX_TEST_ASSERT(CheckValues(arrayHandle.GetIteratorControlBegin(),
-                              arrayHandle.GetIteratorControlEnd()),
+  DAX_TEST_ASSERT(CheckValues(arrayHandle),
                   "Array values not retrieved from execution.");
 
   std::cout << "Try shrinking the array." << std::endl;
   arrayHandle.Shrink(ARRAY_SIZE);
   DAX_TEST_ASSERT(arrayHandle.GetNumberOfValues() == ARRAY_SIZE,
                   "Array size did not shrink correctly.");
-  DAX_TEST_ASSERT(CheckValues(arrayHandle.GetIteratorConstControlBegin(),
-                              arrayHandle.GetIteratorConstControlEnd()),
+  DAX_TEST_ASSERT(CheckValues(arrayHandle),
                   "Array values not retrieved from execution.");
 
   std::cout << "Try in place operation." << std::endl;
   {
-  std::pair<dax::Scalar *, dax::Scalar *> executionIter
+  dax::cont::ArrayHandle<dax::Scalar>::PortalExecution executionPortal
       = arrayHandle.PrepareForInPlace();
-  for (dax::Scalar *iter = executionIter.first;
-       iter != executionIter.second;
+  for (dax::Scalar *iter = executionPortal.GetIteratorBegin();
+       iter != executionPortal.GetIteratorEnd();
        iter++)
     {
     *iter += 1;

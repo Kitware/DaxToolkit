@@ -17,7 +17,7 @@
 #include <dax/exec/internal/GridTopologies.h>
 #include <dax/exec/Cell.h>
 
-#include <dax/exec/internal/TestExecutionAdapter.h>
+#include <dax/exec/internal/ArrayPortalFromIterators.h>
 
 #include <dax/internal/Testing.h>
 #include <vector>
@@ -58,9 +58,13 @@ static void TestUniformGrid()
 static void TestUnstructuredGrid()
 {
   std::cout << "Testing Unstructured grid size." << std::endl;
+
+  typedef dax::exec::internal::ArrayPortalFromIterators<
+      std::vector<dax::Id>::iterator> ConnectionsPortal;
+
   {
     dax::exec::internal::TopologyUnstructured<
-        dax::exec::CellHexahedron, TestExecutionAdapter> ugrid;
+        dax::exec::CellHexahedron,ConnectionsPortal> ugrid;
     TestGridSize(ugrid,0,0);
   }
 
@@ -96,10 +100,12 @@ static void TestUnstructuredGrid()
       }
     }
 
+  ConnectionsPortal connectPortal(connections.begin(), connections.end());
+
   dax::exec::internal::TopologyUnstructured<
-      dax::exec::CellHexahedron, TestExecutionAdapter> ugrid(&connections[0],
-                                                             numPoints,
-                                                             numCells);
+      dax::exec::CellHexahedron,ConnectionsPortal> ugrid(connectPortal,
+                                                         numPoints,
+                                                         numCells);
 
   TestGridSize(ugrid,18,4);
 }

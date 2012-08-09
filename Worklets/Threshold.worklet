@@ -18,10 +18,9 @@
 #define __Threshold_worklet_
 
 #include <dax/exec/Cell.h>
-#include <dax/exec/Field.h>
 #include <dax/exec/VectorOperations.h>
-#include <dax/exec/WorkDetermineNewCellCount.h>
-#include <dax/exec/WorkGenerateTopology.h>
+#include <dax/exec/WorkletDetermineNewCellCount.h>
+#include <dax/exec/WorkletGenerateTopology.h>
 
 namespace dax {
 namespace worklet {
@@ -33,7 +32,7 @@ struct ThresholdFunction {
   const T Max;
   int valid;
 
-  DAX_EXEC_EXPORT ThresholdFunction(T& min, T&max):
+  DAX_EXEC_EXPORT ThresholdFunction(const T& min, const T&max):
     Min(min),Max(max),valid(1)
     {
     }
@@ -45,47 +44,49 @@ struct ThresholdFunction {
 };
 
 
-template<typename CellType, typename FieldType, class ExecutionAdapter>
-DAX_WORKLET void Threshold_Classify(
-    dax::exec::WorkDetermineNewCellCount<CellType, ExecutionAdapter> &work,
-    FieldType thresholdMin,
-    FieldType thresholdMax,
-    dax::exec::FieldPointIn<FieldType, ExecutionAdapter> &inField)
+template<typename ValueType>
+class ThresholdClassify : public dax::exec::WorkletDetermineNewCellCount
 {
-  //compare the value at each point with the threshold min/max
-  dax::Tuple<FieldType,CellType::NUM_POINTS> fieldValues=
-      work.GetFieldValues(inField);
+public:
+  DAX_CONT_EXPORT
+  ThresholdClassify(ValueType thresholdMin, ValueType thresholdMax)
+    : ThresholdMin(thresholdMin), ThresholdMax(thresholdMax) {  }
 
-  ThresholdFunction<FieldType> threshold(thresholdMin,thresholdMax);
-  dax::exec::VectorForEach(fieldValues,threshold);
-  work.SetNewCellCount(threshold.valid);
-}
+  template<class InputCellType>
+  DAX_EXEC_EXPORT
+  void operator()(const InputCellType &daxNotUsed(cell),
+                  const dax::Tuple<ValueType,InputCellType::NUM_POINTS> &values,
+                  dax::Id &newCellCount) const
+  {
+    ThresholdFunction<ValueType> threshold(this->ThresholdMin,
+                                           this->ThresholdMax);
+    dax::exec::VectorForEach(values, threshold);
+    newCellCount = threshold.valid;
+  }
 
-template<typename InCellType, class ExecutionAdapter>
-DAX_WORKLET void Threshold_Topology(
-    dax::exec::WorkGenerateTopology<
-      InCellType,
-      InCellType,
-      ExecutionAdapter> &work)
-{
-  //we can ignore the the requested cell Id to generate
-  //on the work object since we know for threshold it is a pass through
-  work.SetOutputTopology(work.GetInputTopology());
-}
+private:
+  ValueType ThresholdMin;
+  ValueType ThresholdMax;
+};
 
 //Threshold only works when the topology is the same for input and output/
 //The only special case so far is converting CellVoxel to CellHexahedron
-template<class ExecutionAdapter>
-DAX_WORKLET void Threshold_Topology(
-    dax::exec::WorkGenerateTopology<
-      dax::exec::CellVoxel,
-      dax::exec::CellHexahedron,
-      ExecutionAdapter> &work)
+class ThresholdTopology : public dax::exec::WorkletGenerateTopology
 {
-  //we can ignore the the requested cell Id to generate
-  //on the work object since we know for threshold it is a pass through
-  work.SetOutputConnections(work.GetInputConnections());
-}
+public:
+  // Returning a tuple of connections feels a bit clunky.  Is there a better
+  // way of specifying the output cell type and generating a cell?
+
+  template<class InputCellType, int OutputCellSize>
+  DAX_EXEC_EXPORT
+  void operator()(const InputCellType &inputCell,
+                  dax::Tuple<dax::Id,OutputCellSize> &outputConnections) const
+  {
+    //we can ignore the the requested cell Id to generate
+    //on the work object since we know for threshold it is a pass through
+    outputConnections = inputCell.GetPointIndices();
+  }
+};
 
 }
 } //dax::worklet

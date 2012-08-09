@@ -16,21 +16,22 @@
 #ifndef __FieldMapError_worklet_
 #define __FieldMapError_worklet_
 
-#include <dax/exec/Cell.h>
-#include <dax/exec/Field.h>
-#include <dax/exec/WorkMapField.h>
-
+#include <dax/exec/WorkletMapField.h>
 
 namespace dax {
 namespace worklet {
 namespace testing {
 
-template<class CellType, class ExecutionAdapter>
-DAX_WORKLET void FieldMapError(
-    dax::exec::WorkMapField<CellType, ExecutionAdapter> &work)
+class FieldMapError : public dax::exec::WorkletMapField
 {
-  work.RaiseError("Testing execution error system.");
-}
+public:
+  template<typename ValueType>
+  DAX_EXEC_EXPORT
+  void operator()(const ValueType &) const
+  {
+    this->RaiseError("Testing execution error system.");
+  }
+};
 
 }
 }

@@ -25,6 +25,8 @@
 
 #include <dax/cont/internal/Testing.h>
 
+#include <vector>
+
 namespace {
 
 const dax::Id DIM = 64;
@@ -32,17 +34,15 @@ const dax::Id DIM = 64;
 //-----------------------------------------------------------------------------
 static void TestFieldMapError()
 {
-  dax::cont::UniformGrid<> grid;
-  grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+  std::vector<dax::Scalar> array(DIM);
+  dax::cont::ArrayHandle<dax::Scalar> arrayHandle =
+      dax::cont::make_ArrayHandle(array);
 
   std::cout << "Running field map worklet that errors" << std::endl;
   bool gotError = false;
   try
     {
-    dax::cont::worklet::testing::FieldMapError<
-        dax::cont::UniformGrid<>,
-        DAX_DEFAULT_ARRAY_CONTAINER_CONTROL,
-        DAX_DEFAULT_DEVICE_ADAPTER>(grid);
+    dax::cont::worklet::testing::FieldMapError(arrayHandle);
     }
   catch (dax::cont::ErrorExecution error)
     {

@@ -16,24 +16,23 @@
 #ifndef __Cosine_worklet_
 #define __Cosine_worklet_
 
-#include <dax/exec/Cell.h>
-#include <dax/exec/Field.h>
-#include <dax/exec/WorkMapField.h>
+#include <dax/exec/WorkletMapField.h>
 #include <dax/math/Trig.h>
 
 namespace dax {
 namespace worklet {
 
-template<class CellType, class FieldType, class ExecutionAdapter>
-DAX_WORKLET void Cosine(
-    dax::exec::WorkMapField<CellType, ExecutionAdapter> &work,
-    dax::exec::FieldIn<FieldType, ExecutionAdapter> &inField,
-    dax::exec::FieldOut<FieldType, ExecutionAdapter> &outField)
+class Cosine : public dax::exec::WorkletMapField
 {
-  FieldType inValue = work.GetFieldValue(inField);
-  FieldType outValue = dax::math::Cos(inValue);
-  work.SetFieldValue(outField, outValue);
-}
+public:
+  template<class ValueType>
+  DAX_EXEC_EXPORT
+  void operator()(const ValueType &inValue,
+                  ValueType &outValue) const
+  {
+    outValue = dax::math::Cos(inValue);
+  }
+};
 
 }
 }

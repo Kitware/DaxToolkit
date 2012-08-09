@@ -13,25 +13,15 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_internal_TestExecutionAdapter_h
-#define __dax_exec_internal_TestExecutionAdapter_h
+#ifndef __dax_openmp_cont_internal_DeviceAdapterAlgorithmOpenMP_h
+#define __dax_openmp_cont_internal_DeviceAdapterAlgorithmOpenMP_h
 
-#include <dax/internal/Testing.h>
+#include <dax/openmp/cont/internal/SetThrustForOpenMP.h>
 
-class TestExecutionAdapter
-{
-public:
-  template <typename T>
-  struct FieldStructures
-  {
-    typedef T *IteratorType;
-    typedef const T *IteratorConstType;
-  };
+#include <dax/openmp/cont/internal/DeviceAdapterTagOpenMP.h>
+#include <dax/openmp/cont/internal/ArrayManagerExecutionOpenMP.h>
 
-  void RaiseError(const char *message) const
-  {
-    DAX_TEST_FAIL(message);
-  }
-};
+// Here are the actual implementation of the algorithms.
+#include <dax/thrust/cont/internal/DeviceAdapterAlgorithmThrust.h>
 
-#endif //__dax_exec_internal_TestExecutionAdapter_h
+#endif //__dax_openmp_cont_internal_DeviceAdapterAlgorithmOpenMP_h

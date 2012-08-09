@@ -16,15 +16,21 @@
 
 #include <dax/exec/internal/DerivativeWeights.h>
 
+#include <dax/exec/ParametricCoordinates.h>
+
+#include <dax/exec/internal/TestingTopologyGenerator.h>
+
 #include <dax/internal/Testing.h>
 
 namespace {
 
-static void TestWeightOnVertex(dax::Vector3 weight,
-                               dax::Vector3 derivativePCoord,
-                               dax::Vector3 vertexPCoord)
+template<class CellType>
+void TestWeightOnVertex(dax::Vector3 weight,
+                        dax::Vector3 derivativePCoord,
+                        dax::Vector3 vertexPCoord)
 {
   dax::Vector3 signs = 2.0*vertexPCoord - dax::make_Vector3(1.0, 1.0, 1.0);
+  if (CellType::TOPOLOGICAL_DIMENSIONS < 3) { signs[2] = 0.0; }
 
   if (vertexPCoord == derivativePCoord)
     {
@@ -58,116 +64,184 @@ static void TestWeightOnVertex(dax::Vector3 weight,
     }
 }
 
-static void TestWeightInMiddle(dax::Scalar weight,
-                               dax::Scalar vertexPCoord)
+// Wedge is linear in two dimensions and nonlinear in third.  Has
+// weird derivatives.
+template<>
+void TestWeightOnVertex<dax::exec::CellWedge>(dax::Vector3 weight,
+                                              dax::Vector3 derivativePCoord,
+                                              dax::Vector3 vertexPCoord)
 {
-  if (vertexPCoord < 0.5)
+  dax::Scalar zFactor = ((vertexPCoord[2] == 0.0)
+                         ? (1.0 - derivativePCoord[2]): derivativePCoord[2]);
+  dax::Scalar zSign = ((vertexPCoord[2] == 0.0) ? -1.0 : 1.0);
+  if ((vertexPCoord[0] == 0.0) && (vertexPCoord[1] == 0.0))
     {
-    DAX_TEST_ASSERT(weight == -0.25, "Bad middle weight");
+    DAX_TEST_ASSERT(weight[0] == -zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[1] == -zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(
+          weight[2] == (1 - derivativePCoord[0] - derivativePCoord[1]) * zSign,
+          "Bad vertex weight.");
+    }
+  else if ((vertexPCoord[0] == 0.0) && (vertexPCoord[1] == 1.0))
+    {
+    DAX_TEST_ASSERT(weight[0] == 0.0, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[1] == zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[2] == derivativePCoord[1]*zSign,
+                    "Bad vertex weight.");
+    }
+  else if ((vertexPCoord[0] == 1.0) && (vertexPCoord[1] == 0.0))
+    {
+    DAX_TEST_ASSERT(weight[0] == zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[1] == 0.0, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[2] == derivativePCoord[0]*zSign,
+                    "Bad vertex weight.");
     }
   else
     {
-    DAX_TEST_ASSERT(weight == 0.25, "Bad middle weight");
+    DAX_TEST_FAIL(
+          "Got parametric coordinates that do not seem to be on a vertex.");
     }
 }
 
-static void TestDerivativeWeightsVoxel()
+template<class CellType>
+void TestWeightInMiddle(dax::Vector3 weight,
+                        dax::Vector3 vertexPCoord)
 {
-  std::cout << "In TestDerivativeWeightsVoxel" << std::endl;
-
-  const dax::Vector3 cellVertexToParametricCoords[8] = {
-    dax::make_Vector3(0, 0, 0),
-    dax::make_Vector3(1, 0, 0),
-    dax::make_Vector3(1, 1, 0),
-    dax::make_Vector3(0, 1, 0),
-    dax::make_Vector3(0, 0, 1),
-    dax::make_Vector3(1, 0, 1),
-    dax::make_Vector3(1, 1, 1),
-    dax::make_Vector3(0, 1, 1)
-  };
-
-  // Check Derivative at each corner.
-  for (dax::Id vertexIndex = 0; vertexIndex < 8; vertexIndex++)
+  dax::Scalar expectedWeight = 0.0;
+  switch (CellType::TOPOLOGICAL_DIMENSIONS)
     {
-    dax::Vector3 pcoords = cellVertexToParametricCoords[vertexIndex];
+    case 3:  expectedWeight = 0.25;  break;
+    case 2:  expectedWeight = 0.5;   break;
+    default: DAX_TEST_FAIL("Unknown dimensions.");
+    }
 
-    dax::Tuple<dax::Vector3,8> weights =
-        dax::exec::internal::derivativeWeightsVoxel(pcoords);
-
-    for (dax::Id weightIndex = 0; weightIndex < 8; weightIndex++)
+  for (int component = 0;
+       component < CellType::TOPOLOGICAL_DIMENSIONS;
+       component++)
+    {
+    if (vertexPCoord[component] < 0.5)
       {
-      dax::Vector3 vertexPCoords = cellVertexToParametricCoords[weightIndex];
-
-      TestWeightOnVertex(weights[weightIndex], pcoords, vertexPCoords);
+      DAX_TEST_ASSERT(weight[component] == -expectedWeight,"Bad middle weight");
+      }
+    else
+      {
+      DAX_TEST_ASSERT(weight[component] == expectedWeight, "Bad middle weight");
       }
     }
-
-  // Check for Derivative at middle.
-  dax::Tuple<dax::Vector3,8> weights =
-      dax::exec::internal::derivativeWeightsVoxel(dax::make_Vector3(0.5,0.5,0.5));
-  for (dax::Id weightIndex = 0; weightIndex < 8; weightIndex++)
-    {
-    dax::Vector3 vertexPCoords = cellVertexToParametricCoords[weightIndex];
-
-    TestWeightInMiddle(weights[weightIndex][0], vertexPCoords[0]);
-    TestWeightInMiddle(weights[weightIndex][1], vertexPCoords[1]);
-    TestWeightInMiddle(weights[weightIndex][2], vertexPCoords[2]);
-    }
 }
 
-static void TestDerivativeWeightsHexahedron()
+template<>
+void TestWeightInMiddle<dax::exec::CellWedge>(dax::Vector3 weight,
+                                              dax::Vector3 vertexPCoord)
 {
-  std::cout << "In TestDerivativeWeightsHexahedron" << std::endl;
-
-  const dax::Vector3 cellVertexToParametricCoords[8] = {
-    dax::make_Vector3(0, 0, 0),
-    dax::make_Vector3(1, 0, 0),
-    dax::make_Vector3(1, 1, 0),
-    dax::make_Vector3(0, 1, 0),
-    dax::make_Vector3(0, 0, 1),
-    dax::make_Vector3(1, 0, 1),
-    dax::make_Vector3(1, 1, 1),
-    dax::make_Vector3(0, 1, 1)
-  };
-
-  // Check Derivative at each corner.
-  for (dax::Id vertexIndex = 0; vertexIndex < 8; vertexIndex++)
+  dax::Scalar zFactor = 0.5;
+  dax::Scalar zSign = ((vertexPCoord[2] == 0.0) ? -1.0 : 1.0);
+  if ((vertexPCoord[0] == 0.0) && (vertexPCoord[1] == 0.0))
     {
-    dax::Vector3 pcoords = cellVertexToParametricCoords[vertexIndex];
-
-    dax::Tuple<dax::Vector3,8> weights =
-        dax::exec::internal::derivativeWeightsHexahedron(pcoords);
-
-    for (dax::Id weightIndex = 0; weightIndex < 8; weightIndex++)
-      {
-      dax::Vector3 vertexPCoords = cellVertexToParametricCoords[weightIndex];
-
-      TestWeightOnVertex(weights[weightIndex], pcoords, vertexPCoords);
-      }
+    DAX_TEST_ASSERT(weight[0] == -zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[1] == -zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(test_equal(weight[2], zSign/3), "Bad vertex weight.");
     }
-
-  // Check for Derivative at middle.
-  dax::Tuple<dax::Vector3,8> weights =
-      dax::exec::internal::derivativeWeightsHexahedron(dax::make_Vector3(0.5,0.5,0.5));
-  for (dax::Id weightIndex = 0; weightIndex < 8; weightIndex++)
+  else if ((vertexPCoord[0] == 0.0) && (vertexPCoord[1] == 1.0))
     {
-    dax::Vector3 vertexPCoords = cellVertexToParametricCoords[weightIndex];
-
-    TestWeightInMiddle(weights[weightIndex][0], vertexPCoords[0]);
-    TestWeightInMiddle(weights[weightIndex][1], vertexPCoords[1]);
-    TestWeightInMiddle(weights[weightIndex][2], vertexPCoords[2]);
+    DAX_TEST_ASSERT(weight[0] == 0.0, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[1] == zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(test_equal(weight[2], zSign/3), "Bad vertex weight.");
+    }
+  else if ((vertexPCoord[0] == 1.0) && (vertexPCoord[1] == 0.0))
+    {
+    DAX_TEST_ASSERT(weight[0] == zFactor, "Bad vertex weight.");
+    DAX_TEST_ASSERT(weight[1] == 0.0, "Bad vertex weight.");
+    DAX_TEST_ASSERT(test_equal(weight[2], zSign/3), "Bad vertex weight.");
+    }
+  else
+    {
+    DAX_TEST_FAIL(
+          "Got parametric coordinates that do not seem to be on a vertex.");
     }
 }
 
+template<class CellType>
 void TestDerivativeWeights()
 {
-  TestDerivativeWeightsVoxel();
-  TestDerivativeWeightsHexahedron();
+  // Check Derivative at each corner.
+  for (dax::Id vertexIndex = 0;
+       vertexIndex < CellType::NUM_POINTS;
+       vertexIndex++)
+    {
+    dax::Vector3 pcoords =
+        dax::exec::ParametricCoordinates<CellType>::Vertex()[vertexIndex];
+
+    dax::Tuple<dax::Vector3,CellType::NUM_POINTS> weights =
+        dax::exec::internal::DerivativeWeights<CellType>(pcoords);
+
+    for (dax::Id weightIndex = 0;
+         weightIndex < CellType::NUM_POINTS;
+         weightIndex++)
+      {
+      dax::Vector3 vertexPCoords =
+          dax::exec::ParametricCoordinates<CellType>::Vertex()[weightIndex];
+
+      TestWeightOnVertex<CellType>(weights[weightIndex],
+                                   pcoords,
+                                   vertexPCoords);
+      }
+    }
+
+  // Check for Derivative at middle.
+  dax::Tuple<dax::Vector3,CellType::NUM_POINTS> weights =
+      dax::exec::internal::DerivativeWeights<CellType>(
+        dax::exec::ParametricCoordinates<CellType>::Center());
+  for (dax::Id weightIndex = 0; weightIndex < CellType::NUM_POINTS; weightIndex++)
+    {
+    dax::Vector3 vertexPCoords =
+        dax::exec::ParametricCoordinates<CellType>::Vertex()[weightIndex];
+
+    TestWeightInMiddle<CellType>(weights[weightIndex],
+                                 vertexPCoords);
+    }
+}
+
+// Special cases for totally linear cells with a different type of weighting.
+// They don't have implementations for DerivativeWeights, and the checks in
+// this test would be wrong if they did.
+template<>
+void TestDerivativeWeights<dax::exec::CellTetrahedron>()
+{
+  std::cout << "  No derivative weights for tetrahedra.  Skiping." << std::endl;
+}
+template<>
+void TestDerivativeWeights<dax::exec::CellTriangle>()
+{
+  std::cout << "  No derivative weights for triangles.  Skiping." << std::endl;
+}
+template<>
+void TestDerivativeWeights<dax::exec::CellLine>()
+{
+  std::cout << "  No derivative weights for lines.  Skiping." << std::endl;
+}
+template<>
+void TestDerivativeWeights<dax::exec::CellVertex>()
+{
+  std::cout << "  No derivative weights for vertices.  Skiping." << std::endl;
+}
+
+struct TestDerivativeWeightsFunctor
+{
+  template<class TopologyGenType>
+  void operator()(const TopologyGenType &) const {
+    TestDerivativeWeights<typename TopologyGenType::CellType>();
+  }
+};
+
+void TestAllDerivativeWeights()
+{
+  dax::exec::internal::TryAllTopologyTypes(TestDerivativeWeightsFunctor());
 }
 
 } // Anonymous namespace
 
 int UnitTestDerivativeWeights(int, char *[])
 {
-  return dax::internal::Testing::Run(TestDerivativeWeights);
+  return dax::internal::Testing::Run(TestAllDerivativeWeights);
 }

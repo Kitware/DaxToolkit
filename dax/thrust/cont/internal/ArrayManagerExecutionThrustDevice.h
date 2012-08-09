@@ -20,6 +20,8 @@
 
 #include <dax/cont/ArrayContainerControl.h>
 
+#include <dax/exec/internal/ArrayPortalFromIterators.h>
+
 // Disable GCC warnings we check Dax for but Thrust does not.
 #if defined(__GNUC__) && !defined(DAX_CUDA)
 #if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
@@ -65,19 +67,27 @@ public:
   typedef dax::cont::internal
       ::ArrayContainerControl<ValueType, ArrayContainerControlTag>
       ContainerType;
-  typedef ValueType *IteratorType;
-  typedef const ValueType *IteratorConstType;
+  typedef dax::exec::internal::ArrayPortalFromIterators<ValueType *>
+      PortalType;
+  typedef dax::exec::internal::ArrayPortalFromIterators<const ValueType *>
+      PortalConstType;
 
   DAX_CONT_EXPORT ArrayManagerExecutionThrustDevice() {  }
+
+  /// Returns the size of the array.
+  ///
+  DAX_CONT_EXPORT dax::Id GetNumberOfValues() const {
+    return this->Array.size();
+  }
 
   /// Allocates the appropriate size of the array and copies the given data
   /// into the array.
   ///
-  template <class IteratorTypeControl>
-  DAX_CONT_EXPORT void LoadDataForInput(IteratorTypeControl beginIterator,
-                                        IteratorTypeControl endIterator)
+  template<class PortalControl>
+  DAX_CONT_EXPORT void LoadDataForInput(PortalControl arrayPortal)
   {
-    this->Array.assign(beginIterator, endIterator);
+    this->Array.assign(arrayPortal.GetIteratorBegin(),
+                       arrayPortal.GetIteratorEnd());
   }
 
   /// Allocates the array to the given size.
@@ -107,7 +117,7 @@ public:
   DAX_CONT_EXPORT void RetrieveOutputData(ContainerType &controlArray) const
   {
     controlArray.Allocate(this->Array.size());
-    this->CopyInto(controlArray.GetIteratorBegin());
+    this->CopyInto(controlArray.GetPortal().GetIteratorBegin());
   }
 
   /// Resizes the device vector.
@@ -121,21 +131,16 @@ public:
     this->Array.resize(numberOfValues);
   }
 
-  DAX_CONT_EXPORT IteratorType GetIteratorBegin()
+  DAX_CONT_EXPORT PortalType GetPortal()
   {
-    return this->ThrustIteratorToExecutionIterator(this->Array.begin());
+    return PortalType(::thrust::raw_pointer_cast(&(*this->Array.begin())),
+                      ::thrust::raw_pointer_cast(&(*this->Array.end())));
   }
-  DAX_CONT_EXPORT IteratorType GetIteratorEnd()
+
+  DAX_CONT_EXPORT PortalConstType GetPortalConst()
   {
-    return this->ThrustIteratorToExecutionIterator(this->Array.end());
-  }
-  DAX_CONT_EXPORT IteratorConstType GetIteratorConstBegin() const
-  {
-    return this->ThrustIteratorToExecutionIterator(this->Array.cbegin());
-  }
-  DAX_CONT_EXPORT IteratorConstType GetIteratorConstEnd() const
-  {
-    return this->ThrustIteratorToExecutionIterator(this->Array.cend());
+    return PortalConstType(::thrust::raw_pointer_cast(&(*this->Array.cbegin())),
+                           ::thrust::raw_pointer_cast(&(*this->Array.cend())));
   }
 
   /// Frees all memory.
@@ -146,18 +151,26 @@ public:
   }
 
   // These features are expected by thrust device adapters to run thrust
-  // algorithms (see DeviceAdapterThrust.h).
+  // algorithms (see DeviceAdapterAlgorithmThrust.h).
 
   typedef ::thrust::device_ptr<ValueType> ThrustIteratorType;
   typedef ::thrust::device_ptr<const ValueType> ThrustIteratorConstType;
 
   DAX_CONT_EXPORT static ThrustIteratorType
-  ThrustIterator(IteratorType iterator) {
-    return ::thrust::device_ptr<ValueType>(iterator);
+  ThrustIteratorBegin(PortalType portal) {
+    return ::thrust::device_ptr<ValueType>(portal.GetIteratorBegin());
+  }
+  DAX_CONT_EXPORT static ThrustIteratorType
+  ThrustIteratorEnd(PortalType portal) {
+    return ::thrust::device_ptr<ValueType>(portal.GetIteratorEnd());
   }
   DAX_CONT_EXPORT static ThrustIteratorConstType
-  ThrustIterator(IteratorConstType iterator) {
-    return ::thrust::device_ptr<const ValueType>(iterator);
+  ThrustIteratorBegin(PortalConstType portal) {
+    return ::thrust::device_ptr<const ValueType>(portal.GetIteratorBegin());
+  }
+  DAX_CONT_EXPORT static ThrustIteratorConstType
+  ThrustIteratorEnd(PortalConstType portal) {
+    return ::thrust::device_ptr<const ValueType>(portal.GetIteratorEnd());
   }
 
 private:
@@ -168,20 +181,6 @@ private:
       ArrayManagerExecutionThrustDevice<T, ArrayContainerControlTag> &);
 
   ::thrust::device_vector<ValueType> Array;
-
-  // For technical reasons, Dax does not use thrust iterators outside these
-  // limited contexts. These methods convert a thrust iterator to an iterator
-  // used in a Dax execution environment.
-  DAX_CONT_EXPORT static IteratorType ThrustIteratorToExecutionIterator(
-      typename ::thrust::device_vector<ValueType>::iterator thrustIterator)
-  {
-    return ::thrust::raw_pointer_cast(&(*thrustIterator));
-  }
-  DAX_CONT_EXPORT static IteratorConstType ThrustIteratorToExecutionIterator(
-      typename ::thrust::device_vector<ValueType>::const_iterator thrustIterator)
-  {
-    return ::thrust::raw_pointer_cast(&(*thrustIterator));
-  }
 };
 
 }
