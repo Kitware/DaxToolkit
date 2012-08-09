@@ -378,7 +378,7 @@ static dax::Vector3 cellVertexToPointIndex[8] = {
 // ------------------------------------------------------------------- Topology
 //MarchingCubes only works when the topology is the same for input and output/
 //The only special case so far is converting CellVoxel to CellHexahedron
-template<typename ValueType, typename OutputPortalType>
+template<typename ValueType>
 class MarchingCubesTopology : public dax::exec::WorkletGenerateMangledTopology
 {
 public:
