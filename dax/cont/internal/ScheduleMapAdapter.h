@@ -47,6 +47,30 @@ private:
   ExecutionArrayPortalType LookupTable;
 };
 
+template<class FunctorType, class ExecutionArrayPortalType>
+struct ScheduleMappingAdapter2
+{
+  DAX_CONT_EXPORT ScheduleMappingAdapter2(const FunctorType& functor,
+                                         const ExecutionArrayPortalType &lookup1,
+                                         const ExecutionArrayPortalType &lookup2)
+    : Functor(functor), LookupTable1(lookup1), LookupTable2(lookup2) { }
+
+  DAX_EXEC_EXPORT void operator()(
+      dax::Id index,
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    //send the index as the key, and the LookupTable[index] as value
+
+    this->Functor(this->LookupTable1.Get(index),
+                  this->LookupTable2.Get(index),
+                  errorMessage);
+  }
+private:
+  FunctorType Functor;
+  ExecutionArrayPortalType LookupTable1;
+  ExecutionArrayPortalType LookupTable2;
+};
+
 }
 }
 }
@@ -79,6 +103,30 @@ DAX_CONT_EXPORT void ScheduleMap(
                                 Adapter());
 }
 
+template<class FunctorType,
+         class Container,
+         class Adapter>
+DAX_CONT_EXPORT void ScheduleMap2(
+    FunctorType functor,
+    const dax::cont::ArrayHandle<dax::Id,Container,Adapter> &values1,
+    const dax::cont::ArrayHandle<dax::Id,Container,Adapter> &values2)
+{
+  //package up the ids to extract so we can do valid lookups
+  const dax::Id size(values1.GetNumberOfValues());
+
+  typedef typename dax::cont::ArrayHandle<dax::Id,Container,Adapter>::
+      PortalConstExecution PortalConstType;
+
+  dax::exec::internal::kernel::ScheduleMappingAdapter2<
+      FunctorType,PortalConstType>
+      mapFunctor(functor,
+                 values1.PrepareForInput(),
+                 values2.PrepareForInput());
+
+  dax::cont::internal::Schedule(mapFunctor,
+                                size,
+                                Adapter());
+}
 }}} // namespace dax::cont::internal
 
 #endif // __dax_cont_internal_ScheduleSubgroupAdapter_h
