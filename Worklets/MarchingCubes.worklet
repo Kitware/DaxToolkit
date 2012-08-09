@@ -384,9 +384,8 @@ class MarchingCubesTopology : public dax::exec::WorkletGenerateMangledTopology
 public:
   // .................................................................... cnstr
   DAX_CONT_EXPORT
-  MarchingCubesTopology(ValueType isoValue, OutputPortalType output)
-    : IsoValue(isoValue),
-      Output(output){ }
+  MarchingCubesTopology(ValueType isoValue)
+    : IsoValue(isoValue){ }
 
   // ....................................................................... ()
   // Returning a tuple of connections feels a bit clunky.  Is there a better
@@ -441,7 +440,6 @@ public:
 private:
   // ..................................................................... vars
   ValueType IsoValue;
-  OutputPortalType &Output;
 };
 
 }
