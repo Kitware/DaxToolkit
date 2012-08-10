@@ -26,6 +26,15 @@
 namespace dax {
 namespace math {
 
+// The NewtonsMethod function was briefly set to be DAX_EXEC_CONT_EXPORT (like
+// the rest of the math functions). However, I changed it back because it uses
+// callbacks, and those callbacks would have to also be declared
+// DAX_EXEC_CONT_EXPORT, which is a pain (and perhaps impossible) for execution
+// environment functions. One could argue that because this method is declared
+// DAX_EXEC_CONT_EXPORT it should be moved back under dax/exec/math. I would
+// not be totally against that, but it would probably be confusing to split the
+// math functions like that (which one is where and why?).
+
 /// Uses Newton's method to solve a nonlinear system of equations. This
 /// function assumes that the number of variables equals the number of
 /// equations. Newton's method operates on an iterative evaluate and search.
@@ -36,7 +45,7 @@ namespace math {
 /// desired output, or the closest point found, is returned.
 ///
 template<int Size, class JacobianFunctor, class FunctionFunctor>
-DAX_EXEC_CONT_EXPORT
+DAX_EXEC_EXPORT
 dax::Tuple<dax::Scalar,Size>
 NewtonsMethod(JacobianFunctor jacobianEvaluator,
               FunctionFunctor functionEvaluator,
