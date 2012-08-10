@@ -17,7 +17,7 @@
 #define __Sine_worklet_
 
 #include <dax/exec/WorkletMapField.h>
-#include <dax/exec/math/Trig.h>
+#include <dax/math/Trig.h>
 
 namespace dax {
 namespace worklet {
@@ -30,7 +30,7 @@ public:
   void operator()(const ValueType &inValue,
                   ValueType &outValue) const
   {
-    outValue = dax::exec::math::Sin(inValue);
+    outValue = dax::math::Sin(inValue);
   }
 };
 

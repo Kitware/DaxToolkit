@@ -14,10 +14,10 @@
 //
 //=============================================================================
 
-#include <dax/exec/math/Numerical.h>
+#include <dax/math/Numerical.h>
 
 #include <dax/Types.h>
-#include <dax/exec/math/Matrix.h>
+#include <dax/math/Matrix.h>
 
 #include <dax/internal/Testing.h>
 
@@ -43,8 +43,8 @@ struct EvaluateFunctions
 };
 struct EvaluateJacobian
 {
-  dax::exec::math::Matrix3x3 operator()(dax::Vector3 x) const {
-    dax::exec::math::Matrix3x3 jacobian;
+  dax::math::Matrix3x3 operator()(dax::Vector3 x) const {
+    dax::math::Matrix3x3 jacobian;
     jacobian(0,0) = 2*x[0];  jacobian(0,1) = 2*x[1];  jacobian(0,2) = 2*x[2];
     jacobian(1,0) = 2;       jacobian(1,1) = -1;      jacobian(1,2) = 1;
     jacobian(2,0) = 1;       jacobian(2,1) = 1;       jacobian(2,2) = -1;
@@ -70,11 +70,11 @@ void TestNewtonsMethod()
         std::cout << "   " << initialGuess << std::endl;
 
         dax::Vector3 solution =
-            dax::exec::math::NewtonsMethod(EvaluateJacobian(),
-                                           EvaluateFunctions(),
-                                           desiredOutput,
-                                           initialGuess,
-                                           1e-6);
+            dax::math::NewtonsMethod(EvaluateJacobian(),
+                                     EvaluateFunctions(),
+                                     desiredOutput,
+                                     initialGuess,
+                                     1e-6);
 
         DAX_TEST_ASSERT(test_equal(solution, expected1)
                         || test_equal(solution, expected2),

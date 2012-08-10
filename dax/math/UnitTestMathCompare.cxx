@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/exec/math/Compare.h>
+#include <dax/math/Compare.h>
 
 #include <dax/internal/Testing.h>
 
@@ -30,8 +30,8 @@ void TestMinMax(VectorType x, VectorType y)
   std::cout << "  Testing Min and Max: " << NUM_COMPONENTS << " components"
             << std::endl;
 
-  VectorType min = dax::exec::math::Min(x, y);
-  VectorType max = dax::exec::math::Max(x, y);
+  VectorType min = dax::math::Min(x, y);
+  VectorType max = dax::math::Max(x, y);
 
   for (dax::Id index = 0; index < NUM_COMPONENTS; index++)
     {

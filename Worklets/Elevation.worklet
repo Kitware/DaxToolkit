@@ -18,8 +18,8 @@
 
 #include <dax/exec/WorkletMapField.h>
 
-#include <dax/exec/math/Compare.h>
-#include <dax/exec/math/VectorAnalysis.h>
+#include <dax/math/Compare.h>
+#include <dax/math/VectorAnalysis.h>
 
 namespace dax {
 namespace worklet {
@@ -32,23 +32,21 @@ public:
             const dax::Vector3 &highPoint = dax::make_Vector3(0.0, 0.0, 1.0),
             const dax::Vector2 &outputRange = dax::make_Vector2(0.0, 1.0))
     : LowPoint(lowPoint),
-      ScaledDirection(highPoint-lowPoint),
       LowOutput(outputRange[0]),
       OutputDistance(outputRange[1] - outputRange[0])
   {
-
+    dax::Vector3 direction = highPoint-lowPoint;
+    dax::Scalar length2 = dax::math::MagnitudeSquared(direction);
+    this->ScaledDirection = (1/length2)*direction;
   }
 
   DAX_EXEC_EXPORT void operator()(const dax::Vector3 &inCoordinates,
                                   dax::Scalar &elevation) const
   {
-    dax::Scalar length2 =
-        dax::exec::math::MagnitudeSquared(this->ScaledDirection);
-    dax::Vector3 direction = (1/length2)*this->ScaledDirection;
     dax::Vector3 coordDirection = inCoordinates - this->LowPoint;
-    dax::Scalar s = dax::dot(coordDirection,direction);
-    s = dax::exec::math::Max(dax::Scalar(0), s);
-    s = dax::exec::math::Min(dax::Scalar(1), s);
+    dax::Scalar s = dax::dot(coordDirection, this->ScaledDirection);
+    s = dax::math::Max(dax::Scalar(0), s);
+    s = dax::math::Min(dax::Scalar(1), s);
     elevation = this->LowOutput + s*this->OutputDistance;
   }
 

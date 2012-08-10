@@ -16,6 +16,7 @@
 
 set(headers
   ExportMacros.h
+  MathSystemFunctions.h
   Testing.h
   )
 

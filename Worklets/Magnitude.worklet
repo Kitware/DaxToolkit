@@ -18,7 +18,7 @@
 
 #include <dax/exec/WorkletMapField.h>
 
-#include <dax/exec/math/VectorAnalysis.h>
+#include <dax/math/VectorAnalysis.h>
 
 namespace dax {
 namespace worklet {
@@ -30,7 +30,7 @@ public:
   void operator()(const dax::Vector3 &inValue,
                   dax::Scalar &outValue) const
   {
-    outValue = dax::exec::math::Magnitude(inValue);
+    outValue = dax::math::Magnitude(inValue);
   }
 };
 

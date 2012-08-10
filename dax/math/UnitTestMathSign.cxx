@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/exec/math/Sign.h>
+#include <dax/math/Sign.h>
 
 #include <dax/internal/Testing.h>
 
@@ -27,9 +27,9 @@ void TestAbs(VectorType negative, VectorType positive)
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
 
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Abs(negative), positive),
+  DAX_TEST_ASSERT(test_equal(dax::math::Abs(negative), positive),
                   "Absolute value not flipping negative.");
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Abs(positive), positive),
+  DAX_TEST_ASSERT(test_equal(dax::math::Abs(positive), positive),
                   "Absolute value not leaving positive.");
 }
 
@@ -37,11 +37,11 @@ void TestIsNegative(dax::Scalar negative, dax::Scalar positive)
 {
   std::cout << "Testing IsNegative" << std::endl;
 
-  DAX_TEST_ASSERT(dax::exec::math::IsNegative(negative),
+  DAX_TEST_ASSERT(dax::math::IsNegative(negative),
                   "Did not detect negative.");
-  DAX_TEST_ASSERT(!dax::exec::math::IsNegative(positive),
+  DAX_TEST_ASSERT(!dax::math::IsNegative(positive),
                   "Did not detect positive.");
-  DAX_TEST_ASSERT(!dax::exec::math::IsNegative(dax::Scalar(0.0)),
+  DAX_TEST_ASSERT(!dax::math::IsNegative(dax::Scalar(0.0)),
                   "Did not detect non-negative.");
 }
 
@@ -50,28 +50,28 @@ void TestCopySign(dax::Scalar negative, dax::Scalar positive)
   std::cout << "Testing CopySign" << std::endl;
 
   DAX_TEST_ASSERT(test_equal(-negative,
-                             dax::exec::math::CopySign(negative, positive)),
+                             dax::math::CopySign(negative, positive)),
                   "Did not copy positive sign.");
   DAX_TEST_ASSERT(test_equal(-positive,
-                             dax::exec::math::CopySign(positive, negative)),
+                             dax::math::CopySign(positive, negative)),
                   "Did not copy negative sign.");
-  DAX_TEST_ASSERT(test_equal(-dax::exec::math::Abs(negative),
-                             dax::exec::math::CopySign(negative, -1)),
+  DAX_TEST_ASSERT(test_equal(-dax::math::Abs(negative),
+                             dax::math::CopySign(negative, -1)),
                   "Did not copy negative sign.");
-  DAX_TEST_ASSERT(test_equal(-dax::exec::math::Abs(positive),
-                             dax::exec::math::CopySign(positive, -1)),
+  DAX_TEST_ASSERT(test_equal(-dax::math::Abs(positive),
+                             dax::math::CopySign(positive, -1)),
                   "Did not copy negative sign.");
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Abs(negative),
-                             dax::exec::math::CopySign(negative, 1)),
+  DAX_TEST_ASSERT(test_equal(dax::math::Abs(negative),
+                             dax::math::CopySign(negative, 1)),
                   "Did not copy positive sign.");
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Abs(positive),
-                             dax::exec::math::CopySign(positive, 1)),
+  DAX_TEST_ASSERT(test_equal(dax::math::Abs(positive),
+                             dax::math::CopySign(positive, 1)),
                   "Did not copy positive sign.");
   DAX_TEST_ASSERT(test_equal(dax::Scalar(-1),
-                             dax::exec::math::CopySign(1, negative)),
+                             dax::math::CopySign(1, negative)),
                   "Did not copy negative sign.");
   DAX_TEST_ASSERT(test_equal(dax::Scalar(1),
-                             dax::exec::math::CopySign(1, positive)),
+                             dax::math::CopySign(1, positive)),
                   "Did not copy positive sign.");
 }
 

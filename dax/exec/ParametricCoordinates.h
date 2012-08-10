@@ -22,9 +22,9 @@
 #include <dax/exec/Derivative.h>
 #include <dax/exec/Interpolate.h>
 
-#include <dax/exec/math/Matrix.h>
-#include <dax/exec/math/Numerical.h>
-#include <dax/exec/math/VectorAnalysis.h>
+#include <dax/math/Matrix.h>
+#include <dax/math/Numerical.h>
+#include <dax/math/VectorAnalysis.h>
 
 namespace dax {
 namespace exec {
@@ -224,7 +224,7 @@ public:
       const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &vertexCoords)
     : VertexCoordinates(vertexCoords) {  }
   DAX_EXEC_EXPORT
-  dax::exec::math::Matrix3x3 operator()(dax::Vector3 pcoords) const {
+  dax::math::Matrix3x3 operator()(dax::Vector3 pcoords) const {
     return dax::exec::detail::make_JacobianFor3DCell(
           dax::exec::internal::DerivativeWeights<CellType>(pcoords),
           this->VertexCoordinates);
@@ -255,7 +255,7 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
     const dax::Tuple<dax::Vector3,CellVoxel::NUM_POINTS> &vertexCoords,
     const dax::Vector3 &worldCoords)
 {
-  return dax::exec::math::NewtonsMethod(
+  return dax::math::NewtonsMethod(
         detail::JacobianFunctor3DCell<dax::exec::CellHexahedron>(vertexCoords),
         detail::CoodinatesFunctor3DCell<dax::exec::CellHexahedron>(
           cell, vertexCoords),
@@ -268,7 +268,7 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
     const dax::Tuple<dax::Vector3,CellWedge::NUM_POINTS> &vertexCoords,
     const dax::Vector3 &worldCoords)
 {
-  return dax::exec::math::NewtonsMethod(
+  return dax::math::NewtonsMethod(
         detail::JacobianFunctor3DCell<dax::exec::CellWedge>(vertexCoords),
         detail::CoodinatesFunctor3DCell<dax::exec::CellWedge>(
           cell,vertexCoords),
@@ -311,13 +311,13 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   const dax::Vector3 vec2 = vertexCoords[3] - vertexCoords[0];
   const dax::Vector3 coordVec = worldCoords - vertexCoords[0];
 
-  dax::Vector3 planeNormal = dax::exec::math::Cross(vec1, vec2);
+  dax::Vector3 planeNormal = dax::math::Cross(vec1, vec2);
   pcoords[0] = dax::dot(coordVec, planeNormal)/dax::dot(vec0, planeNormal);
 
-  planeNormal = dax::exec::math::Cross(vec0, vec2);
+  planeNormal = dax::math::Cross(vec0, vec2);
   pcoords[1] = dax::dot(coordVec, planeNormal)/dax::dot(vec1, planeNormal);
 
-  planeNormal = dax::exec::math::Cross(vec0, vec1);
+  planeNormal = dax::math::Cross(vec0, vec1);
   pcoords[2] = dax::dot(coordVec, planeNormal)/dax::dot(vec2, planeNormal);
 
   return pcoords;
@@ -390,16 +390,16 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 
   dax::Vector3 pcoords(dax::Scalar(0));
   dax::Vector3 triangleNormal =
-      dax::exec::math::TriangleNormal(vertexCoords[0],
-                                      vertexCoords[1],
-                                      vertexCoords[2]);
+      dax::math::TriangleNormal(vertexCoords[0],
+                                vertexCoords[1],
+                                vertexCoords[2]);
 
   for (int dimension = 0; dimension < 2; dimension++)
     {
     const dax::Vector3 &p0 = vertexCoords[0];
     const dax::Vector3 &p1 = vertexCoords[dimension+1];
     const dax::Vector3 &p2 = vertexCoords[2-dimension];
-    dax::Vector3 planeNormal = dax::exec::math::Cross(triangleNormal, p2-p0);
+    dax::Vector3 planeNormal = dax::math::Cross(triangleNormal, p2-p0);
 
     dax::Scalar d =
         dax::dot(worldCoords - p0, planeNormal)/dax::dot(p1 - p0, planeNormal);
@@ -425,7 +425,7 @@ public:
       const dax::Id3 &dimensionSwizzle)
     : VertexCoordinates(vertexCoords), DimensionSwizzle(dimensionSwizzle) {  }
   DAX_EXEC_EXPORT
-  dax::exec::math::Matrix2x2 operator()(dax::Vector2 pcoords) const {
+  dax::math::Matrix2x2 operator()(dax::Vector2 pcoords) const {
     const int NUM_POINTS = dax::exec::CellQuadrilateral::NUM_POINTS;
 
     const dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS>
@@ -443,7 +443,7 @@ public:
     // a and b are some arbitrary dimensions choosen from the first two
     // dimension indices in DimensionSwizzle.  (d is partial derivative)
 
-    dax::exec::math::Matrix2x2 jacobian(0);
+    dax::math::Matrix2x2 jacobian(0);
     for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
       {
       const dax::Vector3 &dweight = derivativeWeights[pointIndex];
@@ -499,10 +499,10 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   // creating a dimension swizzle and using the first two dimensions.
 
   dax::Id3 dimensionSwizzle;
-  dax::Vector3 normal = dax::exec::math::TriangleNormal(vertexCoords[0],
+  dax::Vector3 normal = dax::math::TriangleNormal(vertexCoords[0],
                                                         vertexCoords[1],
                                                         vertexCoords[2]);
-  dax::Vector3 absNormal = dax::exec::math::Abs(normal);
+  dax::Vector3 absNormal = dax::math::Abs(normal);
   if (absNormal[0] < absNormal[1])
     {
     dimensionSwizzle = dax::make_Id3(0, 1, 2);
@@ -522,7 +522,7 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
     }
 
   dax::Vector2 pcoords =
-      dax::exec::math::NewtonsMethod(
+      dax::math::NewtonsMethod(
         detail::QuadrilateralJacobianFunctor(vertexCoords, dimensionSwizzle),
         detail::QuadrilateralCoodinatesFunctor(
           cell,vertexCoords, dimensionSwizzle),
@@ -550,7 +550,7 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 
   dax::Vector3 vec = vertexCoords[1] - vertexCoords[0];
   dax::Scalar numerator = dax::dot(vec, worldCoords - vertexCoords[0]);
-  dax::Scalar denominator = dax::exec::math::MagnitudeSquared(vec);
+  dax::Scalar denominator = dax::math::MagnitudeSquared(vec);
 
   return dax::make_Vector3(numerator/denominator, 0.0, 0.0);
 }

@@ -102,6 +102,7 @@ template<typename ComponentType>
 struct VectorFillFunctor
 {
   VectorFillFunctor(ComponentType value) : Value(value) { }
+  @DAX_VECTOR_OPERATIONS_EXPORT@
   void operator()(ComponentType &component) const { component = this->Value; }
 private:
   ComponentType Value;
@@ -117,7 +118,8 @@ void VectorFill(VectorType &vector,
                 typename dax::VectorTraits<VectorType>::ComponentType value)
 {
   typedef typename dax::VectorTraits<VectorType>::ComponentType ComponentType;
-  VectorForEach(vector, internal::VectorFillFunctor<ComponentType>(value));
+  ::@DAX_VECTOR_OPERATIONS_NAMESPACE@::VectorForEach(
+        vector, internal::VectorFillFunctor<ComponentType>(value));
 }
 
 /// Fills every component in a vector with the given value. As a convenience,
@@ -131,7 +133,7 @@ VectorType VectorFill(
     typename dax::VectorTraits<VectorType>::ComponentType value)
 {
   VectorType vector;
-  VectorFill(vector, value);
+  ::@DAX_VECTOR_OPERATIONS_NAMESPACE@::VectorFill(vector, value);
   return vector;
 }
 
@@ -207,9 +209,8 @@ VectorReduce(const VectorType &vector, FunctorType &functor)
 {
   typedef typename dax::VectorTraits<VectorType>::HasMultipleComponents
       MultipleComponentsTag;
-  return internal::VectorReduceImpl(vector,
-                                    functor,
-                                    MultipleComponentsTag());
+  return ::@DAX_VECTOR_OPERATIONS_NAMESPACE@::internal::VectorReduceImpl(
+        vector, functor, MultipleComponentsTag());
 }
 template<class VectorType, class FunctorType>
 @DAX_VECTOR_OPERATIONS_EXPORT@
@@ -218,9 +219,8 @@ VectorReduce(const VectorType &vector, const FunctorType &functor)
 {
   typedef typename dax::VectorTraits<VectorType>::HasMultipleComponents
       MultipleComponentsTag;
-  return internal::VectorReduceImpl(vector,
-                                    functor,
-                                    MultipleComponentsTag());
+  return ::@DAX_VECTOR_OPERATIONS_NAMESPACE@::internal::VectorReduceImpl(
+        vector, functor, MultipleComponentsTag());
 }
 
 @DAX_VECTOR_OPERATIONS_NAMESPACE_END@
