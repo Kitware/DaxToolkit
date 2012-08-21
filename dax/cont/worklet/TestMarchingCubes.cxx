@@ -116,14 +116,14 @@ int main(int argc, char*argv[])
 
   std::cout<< "Total triangles = " << outGrid.GetNumberOfCells() <<std::endl;
   std::cout<< "Total points    = " << outGrid.GetNumberOfPoints() <<std::endl;
-  std::cout<< "Total fields    = " << resultHandle.GetNumberOfValues() <<std::endl;
+  //std::cout<< "Total fields    = " << resultHandle.GetNumberOfValues() <<std::endl;
 //  DAX_TEST_ASSERT(resultHandle.GetNumberOfValues()==outGrid.GetNumberOfPoints(),
 //                  "Incorrect number of points in the result array");
 
   // Printing result as VTK file output
-  std::vector<dax::Scalar> result(resultHandle.GetNumberOfValues());
+  std::vector<dax::Vector3> result(outGrid.GetNumberOfPoints());
   //resultHandle.PrepareForOutput();
-  resultHandle.CopyInto(result.begin());
+  outGrid.GetPointCoordinates().CopyInto(result.begin());
   //resultHandle.SetNewControlData(result.begin(),result.end());
   //resultHandle.CompleteAsOutput(); //fetch back to control
 
@@ -132,21 +132,21 @@ int main(int argc, char*argv[])
   std::cout<< "vtk output" << std::endl;
   std::cout<< "ASCII" <<std::endl;
   std::cout<< "DATASET POLYDATA" <<std::endl;
-  std::cout<< "POINTS "<< (int)resultHandle.GetNumberOfValues()/3
+  std::cout<< "POINTS "<< (int)outGrid.GetNumberOfPoints()
            << " float" <<std::endl;
-  for (int i = 0; i < resultHandle.GetNumberOfValues(); i+=3)
+  for (int i = 0; i < outGrid.GetNumberOfPoints(); i++)
     {
-      std::cout << result[i] << " "
-                << result[i+1] << " "
-                << result[i+2] << std::endl;
+    std::cout << result[i][0] << " "
+              << result[i][1] << " "
+              << result[i][2] << std::endl;
     }
   std::cout<<std::endl;
   std::cout << "POLYGONS "
-            << (int) resultHandle.GetNumberOfValues()/9 << " "
-            << (int) resultHandle.GetNumberOfValues()*4/9
+            << (int) outGrid.GetNumberOfCells() << " "
+            << (int) outGrid.GetNumberOfCells()*4
             << std::endl;
   int j=0;
-  for(int i =0 ; i < resultHandle.GetNumberOfValues()/9;++i)
+  for(int i =0 ; i < outGrid.GetNumberOfPoints()/3;++i)
     {
       std::cout << "3 "
                 << j << " "

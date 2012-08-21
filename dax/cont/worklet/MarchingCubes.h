@@ -147,14 +147,10 @@ struct MarchingCubesGenerateTopologyFunctor
       // for each vertex in triangle
       for (int j = 0; j < 3; ++j)
         {
-          for (int k = 0; k < 3; ++k)
-            {
-            dax::exec::internal::FieldSet(this->Output,
-                                          (outputCellIndex*9)+(((i*3)+j)*3)+k,
-                                          outputPoints[(i*3)+j][k],
-                                          constWorklet);
-
-            }
+        dax::exec::internal::FieldSet(this->Output,
+                                      (outputCellIndex*9)+(((i*3)+j)),
+                                      outputPoints[(i*3)+j],
+                                      constWorklet);
         dax::exec::internal::FieldSet(this->OutputTopology.CellConnections,
                                       outputCellIndex*3+(i*3)+j,
                                       outputCellIndex*3+(i*3)+j,
@@ -240,9 +236,7 @@ public:
                                     Container1,
                                     Adapter>::PortalConstExecution,
     typename ArrayHandleId::PortalConstExecution,
-    typename dax::cont::ArrayHandle<ValueType,
-                                    Container2,
-                                    Adapter>::PortalExecution,
+    typename OutputGridType::PointCoordinatesType ::PortalExecution,
     typename OutputGridType::TopologyStructExecution
   >
   CreateTopologyFunctor(const InputGridType &inputGrid,
@@ -250,15 +244,14 @@ public:
                         dax::Id outputGridSize,
                         const ArrayHandleId &cellCount)
   {
+    typedef typename OutputGridType::PointCoordinatesType PointCoordinatesType;
     typedef MarchingCubesGenerateTopologyFunctor<
         typename InputGridType::TopologyStructConstExecution,
         typename dax::cont::ArrayHandle<ValueType,
                                         Container1,
                                         Adapter>::PortalConstExecution,
         typename ArrayHandleId::PortalConstExecution,
-        typename dax::cont::ArrayHandle<ValueType,
-                                        Container2,
-                                        Adapter>::PortalExecution,
+        typename PointCoordinatesType::PortalExecution,
         typename OutputGridType::TopologyStructExecution>
       FunctorType;
 
@@ -274,7 +267,7 @@ public:
           inputGrid.PrepareForInput(),
           this->InputHandle.PrepareForInput(),
           cellCount.PrepareForInput(),
-          this->OutputHandle.PrepareForOutput(outputGridSize*3*3),
+          outputGrid.GetPointCoordinates().PrepareForOutput(outputGridSize*3),
           outputGrid.PrepareForOutput(outputGridSize));
 
     return functor;
