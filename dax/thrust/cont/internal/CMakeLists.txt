@@ -23,7 +23,3 @@ set(headers
   )
 
 dax_declare_headers(${headers})
-
-set(unit_tests
-  )
-#dax_unit_tests(CUDA SOURCES ${unit_tests})

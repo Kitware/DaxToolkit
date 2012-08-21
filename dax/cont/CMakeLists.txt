@@ -54,17 +54,5 @@ configure_file(
   @ONLY
   )
 
-#-----------------------------------------------------------------------------
-set(unit_tests
-  UnitTestArrayContainerControlBasic.cxx
-  UnitTestArrayHandle.cxx
-  UnitTestArrayPortalFromIterators.cxx
-  UnitTestDeviceAdapterSerial.cxx
-  UnitTestIteratorFromArrayPortal.cxx
-  UnitTestUniformGrid.cxx
-  UnitTestUnstructuredGrid.cxx
-  UnitTestVectorOperations.cxx
-  )
-dax_unit_tests(SOURCES ${unit_tests})
-
+add_subdirectory(Testing)
 add_subdirectory(worklet)

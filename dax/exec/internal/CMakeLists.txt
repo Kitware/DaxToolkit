@@ -29,12 +29,4 @@ set(headers
 
 dax_declare_headers(${headers})
 
-set(unit_tests
-  UnitTestArrayPortalFromIteratorsExec.cxx
-  UnitTestDerivativeWeights.cxx
-  UnitTestErrorMessageBuffer.cxx
-  UnitTestInterpolationWeights.cxx
-  UnitTestGridTopologies.cxx
-  UnitTestTopologyGenerator.cxx
-  )
-dax_unit_tests(SOURCES ${unit_tests})
+add_subdirectory(Testing)
