@@ -97,6 +97,8 @@ public:
   }
 
 private:
+
+  // .......................................................... MakeArrayHandle
   template<typename T>
   dax::cont::ArrayHandle<T, ArrayContainerControlTag, DeviceAdapterTag>
   MakeArrayHandle(const std::vector<T> &array)
@@ -147,6 +149,8 @@ private:
         }
       }
   }
+
+  // .............................................................. UniformGrid
   void BuildGrid(dax::cont::UniformGrid<DeviceAdapterTag> &grid)
     {
     grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
