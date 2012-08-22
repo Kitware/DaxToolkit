@@ -66,4 +66,4 @@ DAX_EXEC_CONT_EXPORT T SysMathVectorCall(T x)
 }
 } // namespace dax::internal
 
-#endif __dax_internal_MathSystemFunctions_h
+#endif //__dax_internal_MathSystemFunctions_h
