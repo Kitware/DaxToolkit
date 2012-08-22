@@ -156,148 +156,222 @@ private:
     grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
     }
 
+  // ............................................................... Hexahedron
   void BuildGrid(
-      dax::cont::UnstructuredGrid<
-        dax::exec::CellTriangle,ArrayContainerControlTag,DeviceAdapterTag>
-        &grid)
+    dax::cont::UnstructuredGrid<
+    dax::exec::CellHexahedron,ArrayContainerControlTag,DeviceAdapterTag>
+    &grid)
     {
-    //we need to make a volume grid
-    dax::cont::UniformGrid<DeviceAdapterTag> uniform;
-    this->BuildGrid(uniform);
+      //we need to make a volume grid
+      dax::cont::UniformGrid<DeviceAdapterTag> uniform;
+      this->BuildGrid(uniform);
 
-    //copy the point info over to the unstructured grid
-    this->Info.points.clear();
-    for(dax::Id i=0; i <uniform.GetNumberOfPoints(); ++i)
-      {
-      this->Info.points.push_back(uniform.ComputePointCoordinates(i));
-      }
+      //copy the point info over to the unstructured grid
+      this->MakeInfoPoints(uniform);
 
-    //copy the cell topology information over
-    //create 2 triangles for each of the 6 sides of cube
-    const dax::Id3 cellVertexToPointIndex[36] = {
-      // Front
-      dax::make_Id3(0, 0, 0),
-      dax::make_Id3(1, 0, 0),
-      dax::make_Id3(1, 1, 0),
-
-      dax::make_Id3(1, 1, 0),
-      dax::make_Id3(0, 1, 0),
-      dax::make_Id3(0, 0, 0),
-
-      // Left
-      dax::make_Id3(0, 0, 0),
-      dax::make_Id3(0, 1, 0),
-      dax::make_Id3(0, 1, 1),
-
-      dax::make_Id3(0, 1, 1),
-      dax::make_Id3(0, 0, 1),
-      dax::make_Id3(0, 0, 0),
-
-      // Bottom
-      dax::make_Id3(0, 0, 0),
-      dax::make_Id3(0, 0, 1),
-      dax::make_Id3(1, 0, 1),
-
-      dax::make_Id3(1, 0, 1),
-      dax::make_Id3(1, 0, 0),
-      dax::make_Id3(0, 0, 0),
-
-      // Back
-      dax::make_Id3(1, 1, 1),
-      dax::make_Id3(1, 0, 1),
-      dax::make_Id3(0, 0, 1),
-
-      dax::make_Id3(0, 0, 1),
-      dax::make_Id3(0, 1, 1),
-      dax::make_Id3(1, 1, 1),
-
-      // Top
-      dax::make_Id3(1, 1, 1),
-      dax::make_Id3(1, 1, 0),
-      dax::make_Id3(0, 1, 0),
-
-      dax::make_Id3(0, 1, 0),
-      dax::make_Id3(0, 1, 1),
-      dax::make_Id3(1, 1, 1),
-
-      // Right
-      dax::make_Id3(1, 1, 1),
-      dax::make_Id3(1, 0, 1),
-      dax::make_Id3(1, 0, 0),
-
-      dax::make_Id3(1, 0, 0),
-      dax::make_Id3(1, 1, 0),
-      dax::make_Id3(1, 1, 1),
-    };
-
-    this->Info.topology.clear();
-    dax::Id numPointsPerCell = ::dax::exec::CellTriangle::NUM_POINTS;
-    const dax::Extent3 extents = uniform.GetExtent();
-    for ( dax::Id i=0; i < uniform.GetNumberOfCells(); ++i )
-      {
-      dax::Id3 ijkCell = dax::flatIndexToIndex3Cell( i, extents );
-      for(dax::Id j=0; j < numPointsPerCell*12; ++j)
+      dax::Id numPointsPerCell = ::dax::exec::CellHexahedron::NUM_POINTS;
+      dax::Id totalCells = 1;
+      const dax::Id vertexIdList[] =
         {
-        dax::Id3 ijkPoint = ijkCell + cellVertexToPointIndex[j];
+          0,1,2,3,4,5,6,7
+        };
 
-        dax::Id pointIndex = index3ToFlatIndex(ijkPoint,extents);
-        this->Info.topology.push_back(pointIndex);
-        }
-      }
+      this->MakeInfoTopology(uniform,
+                             vertexIdList,
+                             numPointsPerCell,
+                             totalCells);
 
-    grid = dax::cont::UnstructuredGrid<
+      grid = dax::cont::UnstructuredGrid<
+        dax::exec::CellHexahedron,ArrayContainerControlTag,DeviceAdapterTag>(
+          this->MakeArrayHandle(this->Info.topology),
+          this->MakeArrayHandle(this->Info.points));
+    }
+
+  // .............................................................. Tetrahedron
+  void BuildGrid(
+    dax::cont::UnstructuredGrid<
+    dax::exec::CellTetrahedron,ArrayContainerControlTag,DeviceAdapterTag>
+    &grid)
+    {
+      dax::cont::UniformGrid<DeviceAdapterTag> uniform;
+      this->BuildGrid(uniform);
+
+      this->MakeInfoPoints(uniform);
+
+      dax::Id numPointsPerCell = ::dax::exec::CellTetrahedron::NUM_POINTS;
+      dax::Id totalCells = 2;
+      const dax::Id vertexIdList[] =
+        {
+          0,1,4,3,                // Front-Low-Left
+          6,7,2,5                 // Back-Top-Right
+        };
+
+      this->MakeInfoTopology(uniform,
+                             vertexIdList,
+                             numPointsPerCell,
+                             totalCells);
+
+      grid = dax::cont::UnstructuredGrid<
+        dax::exec::CellTetrahedron,ArrayContainerControlTag,DeviceAdapterTag>(
+          this->MakeArrayHandle(this->Info.topology),
+          this->MakeArrayHandle(this->Info.points));
+    }
+
+  // .................................................................... Wedge
+  void BuildGrid(
+    dax::cont::UnstructuredGrid<
+    dax::exec::CellWedge,ArrayContainerControlTag,DeviceAdapterTag>
+    &grid)
+    {
+      dax::cont::UniformGrid<DeviceAdapterTag> uniform;
+      this->BuildGrid(uniform);
+
+      this->MakeInfoPoints(uniform);
+
+      dax::Id numPointsPerCell = ::dax::exec::CellWedge::NUM_POINTS;
+      dax::Id totalCells = 2;
+      const dax::Id vertexIdList[] =
+        {
+          4,5,6,0,1,2,                // right-quad -> left bottom edge
+          2,3,0,6,7,4                 // left-quad  -> right top edge
+        };
+      this->MakeInfoTopology(uniform,
+                             vertexIdList,
+                             numPointsPerCell,
+                             totalCells);
+
+      grid = dax::cont::UnstructuredGrid<
+        dax::exec::CellWedge,ArrayContainerControlTag,DeviceAdapterTag>(
+          this->MakeArrayHandle(this->Info.topology),
+          this->MakeArrayHandle(this->Info.points));
+    }
+
+  // ................................................................. Triangle
+  void BuildGrid(
+    dax::cont::UnstructuredGrid<
+    dax::exec::CellTriangle,ArrayContainerControlTag,DeviceAdapterTag>
+    &grid)
+    {
+      //we need to make a volume grid
+      dax::cont::UniformGrid<DeviceAdapterTag> uniform;
+      this->BuildGrid(uniform);
+
+      dax::Id numPointsPerCell = ::dax::exec::CellTriangle::NUM_POINTS;
+      dax::Id totalCells = 12;
+      const dax::Id vertexIdList[] =
+        {
+          0,1,2,2,3,0,                    // Front
+          0,3,7,7,4,0,                    // Left
+          0,4,5,5,1,0,                    // Bottom
+          6,5,4,4,7,6,                    // Back
+          6,2,3,3,7,6,                    // Top
+          6,5,1,1,2,6                     // Right
+        };
+
+      this->MakeInfoTopology(uniform,
+                             vertexIdList,
+                             numPointsPerCell,
+                             totalCells);
+
+      grid = dax::cont::UnstructuredGrid<
         dax::exec::CellTriangle,ArrayContainerControlTag,DeviceAdapterTag>(
           this->MakeArrayHandle(this->Info.topology),
           this->MakeArrayHandle(this->Info.points));
     }
 
+  // ............................................................ Quadrilateral
   void BuildGrid(
-      dax::cont::UnstructuredGrid<
-        dax::exec::CellHexahedron,ArrayContainerControlTag,DeviceAdapterTag>
-        &grid)
+    dax::cont::UnstructuredGrid<
+    dax::exec::CellQuadrilateral,ArrayContainerControlTag,DeviceAdapterTag>
+    &grid)
     {
-    //we need to make a volume grid
-    dax::cont::UniformGrid<DeviceAdapterTag> uniform;
-    this->BuildGrid(uniform);
+      dax::cont::UniformGrid<DeviceAdapterTag> uniform;
+      this->BuildGrid(uniform);
 
-    //copy the point info over to the unstructured grid
-    this->Info.points.clear();
-    for(dax::Id i=0; i <uniform.GetNumberOfPoints(); ++i)
-      {
-      this->Info.points.push_back(uniform.ComputePointCoordinates(i));
-      }
+      this->MakeInfoPoints(uniform);
 
-    //copy the cell topology information over
-
-    //this only works for voxel/hexahedron
-    const dax::Id3 cellVertexToPointIndex[8] = {
-      dax::make_Id3(0, 0, 0),
-      dax::make_Id3(1, 0, 0),
-      dax::make_Id3(1, 1, 0),
-      dax::make_Id3(0, 1, 0),
-      dax::make_Id3(0, 0, 1),
-      dax::make_Id3(1, 0, 1),
-      dax::make_Id3(1, 1, 1),
-      dax::make_Id3(0, 1, 1)
-    };
-
-    this->Info.topology.clear();
-    dax::Id numPointsPerCell = ::dax::exec::CellHexahedron::NUM_POINTS;
-    const dax::Extent3 extents = uniform.GetExtent();
-    for(dax::Id i=0; i <uniform.GetNumberOfCells(); ++i)
-      {
-      dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(i,extents);
-      for(dax::Id j=0; j < numPointsPerCell; ++j)
+      dax::Id numPointsPerCell = ::dax::exec::CellQuadrilateral::NUM_POINTS;
+      dax::Id totalCells = 6;
+      const dax::Id vertexIdList[] =
         {
-        dax::Id3 ijkPoint = ijkCell + cellVertexToPointIndex[j];
+          0,1,2,3,              // Front
+          0,3,7,4,              // Left
+          0,4,5,1,              // Bottom
+          6,5,4,7,              // Back
+          6,2,3,7,              // Top
+          6,5,1,2               // Right
+        };
 
-        dax::Id pointIndex = index3ToFlatIndex(ijkPoint,extents);
-        this->Info.topology.push_back(pointIndex);
-        }
-      }
+      this->MakeInfoTopology(uniform,
+                             vertexIdList,
+                             numPointsPerCell,
+                             totalCells);
 
-    grid = dax::cont::UnstructuredGrid<
-        dax::exec::CellHexahedron,ArrayContainerControlTag,DeviceAdapterTag>(
+      grid = dax::cont::UnstructuredGrid<
+        dax::exec::CellQuadrilateral,ArrayContainerControlTag,DeviceAdapterTag>(
+          this->MakeArrayHandle(this->Info.topology),
+          this->MakeArrayHandle(this->Info.points));
+    }
+
+  // ..................................................................... Line
+  void BuildGrid(
+    dax::cont::UnstructuredGrid<
+    dax::exec::CellLine,ArrayContainerControlTag,DeviceAdapterTag>
+    &grid)
+    {
+      dax::cont::UniformGrid<DeviceAdapterTag> uniform;
+      this->BuildGrid(uniform);
+
+      this->MakeInfoPoints(uniform);
+
+      dax::Id numPointsPerCell = ::dax::exec::CellLine::NUM_POINTS;
+      dax::Id totalCells = 12;
+      const dax::Id vertexIdList[] =
+        {
+          0,1,1,2,2,3,3,0,      // Front
+          0,3,3,7,7,4,4,0,      // Left
+          0,4,4,5,5,1,1,0,      // Bottom
+          6,5,5,4,4,7,7,6,      // Back
+          6,2,2,3,3,7,7,6,      // Top
+          6,5,5,1,1,2,2,6       // Right
+        };
+
+      this->MakeInfoTopology(uniform,
+                             vertexIdList,
+                             numPointsPerCell,
+                             totalCells);
+
+      grid = dax::cont::UnstructuredGrid<
+        dax::exec::CellLine,ArrayContainerControlTag,DeviceAdapterTag>(
+          this->MakeArrayHandle(this->Info.topology),
+          this->MakeArrayHandle(this->Info.points));
+    }
+
+  // ................................................................... Vertex
+  void BuildGrid(
+    dax::cont::UnstructuredGrid<
+    dax::exec::CellVertex,ArrayContainerControlTag,DeviceAdapterTag>
+    &grid)
+    {
+      dax::cont::UniformGrid<DeviceAdapterTag> uniform;
+      this->BuildGrid(uniform);
+
+      this->MakeInfoPoints(uniform);
+
+      dax::Id numPointsPerCell = ::dax::exec::CellVertex::NUM_POINTS;
+      dax::Id totalCells = 8;
+      const dax::Id vertexIdList[] =
+        {
+          0,1,2,3,4,5,6,7
+        };
+
+      this->MakeInfoTopology(uniform,
+                             vertexIdList,
+                             numPointsPerCell,
+                             totalCells);
+
+      grid = dax::cont::UnstructuredGrid<
+        dax::exec::CellVertex,ArrayContainerControlTag,DeviceAdapterTag>(
           this->MakeArrayHandle(this->Info.topology),
           this->MakeArrayHandle(this->Info.points));
     }
