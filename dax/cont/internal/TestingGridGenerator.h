@@ -110,45 +110,45 @@ private:
 
   // ........................................................... MakeInfoPoints
   void MakeInfoPoints(dax::cont::UniformGrid<DeviceAdapterTag> &uniform)
-  {
-    //copy the point info over to the unstructured grid
-    this->Info.points.clear();
-    for(dax::Id i=0; i <uniform.GetNumberOfPoints(); ++i)
-      {
-      this->Info.points.push_back(uniform.ComputePointCoordinates(i));
-      }
-  }
+    {
+      //copy the point info over to the unstructured grid
+      this->Info.points.clear();
+      for(dax::Id i=0; i <uniform.GetNumberOfPoints(); ++i)
+        {
+        this->Info.points.push_back(uniform.ComputePointCoordinates(i));
+        }
+    }
 
   // ......................................................... MakeInfoTopology
   void MakeInfoTopology(dax::cont::UniformGrid<DeviceAdapterTag> &uniform,
                         const dax::Id vertexIdList[],
                         dax::Id numPointsPerCell,
                         dax::Id totalCells)
-  {
-    const dax::Id3 cellVertexToPointIndex[8] = {
-      dax::make_Id3(0, 0, 0),
-      dax::make_Id3(1, 0, 0),
-      dax::make_Id3(1, 1, 0),
-      dax::make_Id3(0, 1, 0),
-      dax::make_Id3(0, 0, 1),
-      dax::make_Id3(1, 0, 1),
-      dax::make_Id3(1, 1, 1),
-      dax::make_Id3(0, 1, 1)
-    };
-    this->Info.topology.clear();
-    const dax::Extent3 extents = uniform.GetExtent();
-    for(dax::Id i=0; i <uniform.GetNumberOfCells(); ++i)
-      {
-      dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(i,extents);
-      for(dax::Id j=0; j < numPointsPerCell*totalCells; ++j)
+    {
+      const dax::Id3 cellVertexToPointIndex[8] = {
+        dax::make_Id3(0, 0, 0),
+        dax::make_Id3(1, 0, 0),
+        dax::make_Id3(1, 1, 0),
+        dax::make_Id3(0, 1, 0),
+        dax::make_Id3(0, 0, 1),
+        dax::make_Id3(1, 0, 1),
+        dax::make_Id3(1, 1, 1),
+        dax::make_Id3(0, 1, 1)
+      };
+      this->Info.topology.clear();
+      const dax::Extent3 extents = uniform.GetExtent();
+      for(dax::Id i=0; i <uniform.GetNumberOfCells(); ++i)
         {
-        dax::Id3 ijkPoint = ijkCell + cellVertexToPointIndex[vertexIdList[j]];
+        dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(i,extents);
+        for(dax::Id j=0; j < numPointsPerCell*totalCells; ++j)
+          {
+          dax::Id3 ijkPoint = ijkCell + cellVertexToPointIndex[vertexIdList[j]];
 
-        dax::Id pointIndex = index3ToFlatIndex(ijkPoint,extents);
-        this->Info.topology.push_back(pointIndex);
+          dax::Id pointIndex = index3ToFlatIndex(ijkPoint,extents);
+          this->Info.topology.push_back(pointIndex);
+          }
         }
-      }
-  }
+    }
 
   // .............................................................. UniformGrid
   void BuildGrid(dax::cont::UniformGrid<DeviceAdapterTag> &grid)
