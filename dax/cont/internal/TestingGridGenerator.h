@@ -434,14 +434,42 @@ struct GridTesting
     check(hexGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Hexahedron"));
 
-    // TODO: Implement checking all other grid types and cells (including
-    // this example of a triangle grid) and updating the tests to handle
-    // these.
-//    dax::cont::UnstructuredGrid<
-//        dax::exec::CellTriangle,ArrayContainerControlTag,DeviceAdapterTag>
-//        triGrid;
-//    check(triGrid, InternalPrintOnInvoke<FunctionType>(
-//            function, "dax::UnstructuredGrid of Triangles"));
+    dax::cont::UnstructuredGrid<
+        dax::exec::CellTetrahedron,ArrayContainerControlTag,DeviceAdapterTag>
+        tetGrid;
+    check(tetGrid, InternalPrintOnInvoke<FunctionType>(
+            function, "dax::UnstructuredGrid of Tetrahedrons"));
+
+    dax::cont::UnstructuredGrid<
+        dax::exec::CellWedge,ArrayContainerControlTag,DeviceAdapterTag>
+        wedgeGrid;
+    check(wedgeGrid, InternalPrintOnInvoke<FunctionType>(
+            function, "dax::UnstructuredGrid of Wedges"));
+
+    dax::cont::UnstructuredGrid<
+        dax::exec::CellTriangle,ArrayContainerControlTag,DeviceAdapterTag>
+        triGrid;
+    check(triGrid, InternalPrintOnInvoke<FunctionType>(
+            function, "dax::UnstructuredGrid of Triangles"));
+
+    dax::cont::UnstructuredGrid<
+        dax::exec::CellQuadrilateral,ArrayContainerControlTag,DeviceAdapterTag>
+        quadGrid;
+    check(quadGrid, InternalPrintOnInvoke<FunctionType>(
+            function, "dax::UnstructuredGrid of Quadrilaterals"));
+
+    dax::cont::UnstructuredGrid<
+        dax::exec::CellLine,ArrayContainerControlTag,DeviceAdapterTag>
+        lineGrid;
+    check(lineGrid, InternalPrintOnInvoke<FunctionType>(
+            function, "dax::UnstructuredGrid of Lines"));
+
+    dax::cont::UnstructuredGrid<
+        dax::exec::CellVertex,ArrayContainerControlTag,DeviceAdapterTag>
+        vertGrid;
+    check(vertGrid, InternalPrintOnInvoke<FunctionType>(
+            function, "dax::UnstructuredGrid of Vertices"));
+
   }
   template<class FunctionType,
            class ArrayContainerControlTag,
