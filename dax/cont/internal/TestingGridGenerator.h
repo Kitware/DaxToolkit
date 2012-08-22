@@ -159,7 +159,7 @@ private:
     {
     //we need to make a volume grid
     dax::cont::UniformGrid<DeviceAdapterTag> uniform;
-    uniform.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(Size-1, Size-1, Size-1));
+    this->BuildGrid(uniform);
 
     //copy the point info over to the unstructured grid
     this->Info.points.clear();
