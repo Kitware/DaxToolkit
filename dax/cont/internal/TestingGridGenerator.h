@@ -207,7 +207,7 @@ private:
       dax::make_Id3(0, 1, 1),
       dax::make_Id3(1, 1, 1),
 
-      // Right
+      // Top
       dax::make_Id3(1, 1, 1),
       dax::make_Id3(1, 1, 0),
       dax::make_Id3(0, 1, 0),
@@ -216,7 +216,7 @@ private:
       dax::make_Id3(0, 1, 1),
       dax::make_Id3(1, 1, 1),
 
-      // Top
+      // Right
       dax::make_Id3(1, 1, 1),
       dax::make_Id3(1, 0, 1),
       dax::make_Id3(1, 0, 0),
