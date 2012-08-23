@@ -22,8 +22,3 @@ add_subdirectory(internal)
 
 #-----------------------------------------------------------------------------
 #dax_declare_headers(${headers})
-
-#-----------------------------------------------------------------------------
-set(unit_tests
-  )
-#dax_unit_tests(SOURCES ${unit_tests})

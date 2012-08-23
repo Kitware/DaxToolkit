@@ -39,8 +39,4 @@ dax_declare_headers(${headers})
 # internal and which are part of the external interface.
 #add_custom_target(daxContInternal ALL DEPENDS daxCont)
 
-set(unit_tests
-  UnitTestArrayManagerExecutionShareWithControl.cxx
-  UnitTestContTesting.cxx
-  )
-dax_unit_tests(SOURCES ${unit_tests})
+add_subdirectory(Testing)

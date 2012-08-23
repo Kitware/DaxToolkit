@@ -14,11 +14,14 @@
 ##
 ##=============================================================================
 
-set(headers
-  ArrayManagerExecutionOpenMP.h
-  DeviceAdapterAlgorithmOpenMP.h
-  DeviceAdapterTagOpenMP.h
-  SetThrustForOpenMP.h
+set(unit_tests
+  UnitTestArrayContainerControlBasic.cxx
+  UnitTestArrayHandle.cxx
+  UnitTestArrayPortalFromIterators.cxx
+  UnitTestDeviceAdapterSerial.cxx
+  UnitTestIteratorFromArrayPortal.cxx
+  UnitTestUniformGrid.cxx
+  UnitTestUnstructuredGrid.cxx
+  UnitTestVectorOperations.cxx
   )
-
-dax_declare_headers(${headers})
+dax_unit_tests(SOURCES ${unit_tests})
