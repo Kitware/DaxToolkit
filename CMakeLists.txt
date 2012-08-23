@@ -124,7 +124,7 @@ if (NOT DAX_DISABLE_KITS)
 add_subdirectory(dax)
 
 if (DAX_ENABLE_TESTING)
-  add_subdirectory(Testing)
+  add_subdirectory(Benchmarks)
 endif (DAX_ENABLE_TESTING)
 
 endif()
