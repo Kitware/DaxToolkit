@@ -256,6 +256,8 @@ private:
       dax::cont::UniformGrid<DeviceAdapterTag> uniform;
       this->BuildGrid(uniform);
 
+      this->MakeInfoPoints(uniform);
+
       dax::Id numPointsPerCell = ::dax::exec::CellTriangle::NUM_POINTS;
       dax::Id totalCells = 12;
       const dax::Id vertexIdList[] =
