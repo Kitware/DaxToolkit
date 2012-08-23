@@ -746,7 +746,32 @@ private:
           DeviceAdapterTag> >();
       WorkletTests<dax::cont::UnstructuredGrid
           <
+          dax::exec::CellTetrahedron,
+          dax::cont::ArrayContainerControlTagBasic,
+          DeviceAdapterTag> >();
+      WorkletTests<dax::cont::UnstructuredGrid
+          <
+          dax::exec::CellWedge,
+          dax::cont::ArrayContainerControlTagBasic,
+          DeviceAdapterTag> >();
+      WorkletTests<dax::cont::UnstructuredGrid
+          <
           dax::exec::CellTriangle,
+          dax::cont::ArrayContainerControlTagBasic,
+          DeviceAdapterTag> >();
+      WorkletTests<dax::cont::UnstructuredGrid
+          <
+          dax::exec::CellQuadrilateral,
+          dax::cont::ArrayContainerControlTagBasic,
+          DeviceAdapterTag> >();
+      WorkletTests<dax::cont::UnstructuredGrid
+          <
+          dax::exec::CellLine,
+          dax::cont::ArrayContainerControlTagBasic,
+          DeviceAdapterTag> >();
+      WorkletTests<dax::cont::UnstructuredGrid
+          <
+          dax::exec::CellVertex,
           dax::cont::ArrayContainerControlTagBasic,
           DeviceAdapterTag> >();
     }
