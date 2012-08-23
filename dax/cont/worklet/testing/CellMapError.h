@@ -18,7 +18,7 @@
 
 // TODO: This should be auto-generated.
 
-#include <dax/worklets/Testing/CellMapError.worklet>
+#include <dax/worklets/testing/CellMapError.worklet>
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>
