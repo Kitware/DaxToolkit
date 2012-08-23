@@ -26,4 +26,4 @@ add_subdirectory(internal)
 #-----------------------------------------------------------------------------
 dax_declare_headers(${headers})
 
-add_subdirectory(Testing)
+add_subdirectory(testing)

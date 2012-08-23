@@ -54,4 +54,4 @@ configure_file(
 #-----------------------------------------------------------------------------
 add_subdirectory(internal)
 
-add_subdirectory(Testing)
+add_subdirectory(testing)

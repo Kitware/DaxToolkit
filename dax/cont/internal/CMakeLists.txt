@@ -39,4 +39,4 @@ dax_declare_headers(${headers})
 # internal and which are part of the external interface.
 #add_custom_target(daxContInternal ALL DEPENDS daxCont)
 
-add_subdirectory(Testing)
+add_subdirectory(testing)

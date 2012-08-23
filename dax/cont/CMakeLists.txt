@@ -54,5 +54,5 @@ configure_file(
   @ONLY
   )
 
-add_subdirectory(Testing)
+add_subdirectory(testing)
 add_subdirectory(worklet)
