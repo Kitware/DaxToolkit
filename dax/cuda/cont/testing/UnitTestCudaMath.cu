@@ -33,7 +33,7 @@
 
 #include <dax/exec/Assert.h>
 
-#include <dax/cuda/cont/internal/Testing.h>
+#include <dax/cuda/cont/internal/testing/Testing.h>
 
 namespace ut_CudaMath {
 

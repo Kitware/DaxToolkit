@@ -18,7 +18,7 @@
 
 #include <dax/VectorTraits.h>
 
-#include <dax/internal/Testing.h>
+#include <dax/internal/testing/Testing.h>
 
 namespace {
 

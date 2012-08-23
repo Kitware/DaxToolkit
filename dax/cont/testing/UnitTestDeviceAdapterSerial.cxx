@@ -18,7 +18,7 @@
 
 #include <dax/cont/DeviceAdapterSerial.h>
 
-#include <dax/cont/internal/TestingDeviceAdapter.h>
+#include <dax/cont/internal/testing/TestingDeviceAdapter.h>
 
 int UnitTestDeviceAdapterSerial(int, char *[])
 {

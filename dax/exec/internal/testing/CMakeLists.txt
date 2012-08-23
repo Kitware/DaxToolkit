@@ -14,6 +14,11 @@
 ##
 ##=============================================================================
 
+set(headers
+    TestingTopologyGenerator.h)
+
+dax_declare_headers(${headers})
+
 set(unit_tests
   UnitTestArrayPortalFromIteratorsExec.cxx
   UnitTestDerivativeWeights.cxx

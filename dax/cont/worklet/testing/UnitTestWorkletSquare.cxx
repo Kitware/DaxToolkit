@@ -23,8 +23,8 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <dax/cont/internal/TestingGridGenerator.h>
-#include <dax/cont/internal/Testing.h>
+#include <dax/cont/internal/testing/TestingGridGenerator.h>
+#include <dax/cont/internal/testing/Testing.h>
 
 #include <vector>
 

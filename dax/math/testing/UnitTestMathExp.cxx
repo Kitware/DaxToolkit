@@ -19,7 +19,7 @@
 #include <dax/Types.h>
 #include <dax/exec/VectorOperations.h>
 
-#include <dax/internal/Testing.h>
+#include <dax/internal/testing/Testing.h>
 
 #include <boost/lambda/lambda.hpp>
 

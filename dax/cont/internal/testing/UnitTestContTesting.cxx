@@ -19,7 +19,7 @@
 
 #include <dax/cont/Assert.h>
 
-#include <dax/cont/internal/Testing.h>
+#include <dax/cont/internal/testing/Testing.h>
 
 namespace {
 

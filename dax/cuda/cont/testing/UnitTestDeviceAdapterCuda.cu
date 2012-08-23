@@ -19,8 +19,8 @@
 
 #include <dax/cuda/cont/DeviceAdapterCuda.h>
 
-#include <dax/cont/internal/TestingDeviceAdapter.h>
-#include <dax/cuda/cont/internal/Testing.h>
+#include <dax/cont/internal/testing/TestingDeviceAdapter.h>
+#include <dax/cuda/cont/internal/testing/Testing.h>
 
 int UnitTestDeviceAdapterCuda(int, char *[])
 {

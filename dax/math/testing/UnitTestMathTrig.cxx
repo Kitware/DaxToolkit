@@ -19,7 +19,7 @@
 #include <dax/exec/VectorOperations.h>
 #include <dax/math/Exp.h>
 
-#include <dax/internal/Testing.h>
+#include <dax/internal/testing/Testing.h>
 
 namespace {
 

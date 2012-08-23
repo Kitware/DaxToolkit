@@ -18,7 +18,7 @@
 
 #include <dax/openmp/cont/DeviceAdapterOpenMP.h>
 
-#include <dax/cont/internal/TestingDeviceAdapter.h>
+#include <dax/cont/internal/testing/TestingDeviceAdapter.h>
 
 int UnitTestDeviceAdapterOpenMP(int, char *[])
 {

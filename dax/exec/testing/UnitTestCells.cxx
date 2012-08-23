@@ -15,9 +15,9 @@
 //=============================================================================
 #include <dax/exec/Cell.h>
 
-#include <dax/exec/internal/TestingTopologyGenerator.h>
+#include <dax/exec/internal/testing/TestingTopologyGenerator.h>
 
-#include <dax/internal/Testing.h>
+#include <dax/internal/testing/Testing.h>
 #include <vector>
 
 namespace

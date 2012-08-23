@@ -19,7 +19,8 @@ set(headers
   DeviceAdapterAlgorithmCuda.h
   DeviceAdapterTagCuda.h
   SetThrustForCuda.h
-  Testing.h
   )
 
 dax_declare_headers(CUDA ${headers})
+
+add_subdirectory(testing)

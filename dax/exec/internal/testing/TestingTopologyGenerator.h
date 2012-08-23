@@ -23,7 +23,7 @@
 #include <dax/exec/internal/ArrayPortalFromIterators.h>
 #include <dax/exec/internal/GridTopologies.h>
 
-#include <dax/internal/Testing.h>
+#include <dax/internal/testing/Testing.h>
 
 // This use of the STL vector only works in non-CUDA unit tests.
 #include <iterator>

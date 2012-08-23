@@ -16,7 +16,7 @@
 #ifndef __dax_cuda_cont_internal_Testing_h
 #define __dax_cuda_cont_internal_Testing_h
 
-#include <dax/cont/internal/Testing.h>
+#include <dax/cont/internal/testing/Testing.h>
 
 #include <cuda.h>
 

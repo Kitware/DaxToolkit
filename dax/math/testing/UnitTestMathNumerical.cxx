@@ -19,7 +19,7 @@
 #include <dax/Types.h>
 #include <dax/math/Matrix.h>
 
-#include <dax/internal/Testing.h>
+#include <dax/internal/testing/Testing.h>
 
 namespace {
 

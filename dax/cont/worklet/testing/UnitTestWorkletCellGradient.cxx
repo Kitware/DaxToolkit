@@ -22,8 +22,8 @@
 #include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/DeviceAdapterSerial.h>
 
-#include <dax/cont/internal/TestingGridGenerator.h>
-#include <dax/cont/internal/Testing.h>
+#include <dax/cont/internal/testing/TestingGridGenerator.h>
+#include <dax/cont/internal/testing/Testing.h>
 
 #include <dax/cont/worklet/CellGradient.h>
 #include <dax/VectorTraits.h>

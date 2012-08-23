@@ -20,7 +20,7 @@
 #include <dax/cont/ArrayPortalFromIterators.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/internal/Testing.h>
+#include <dax/cont/internal/testing/Testing.h>
 
 namespace {
 

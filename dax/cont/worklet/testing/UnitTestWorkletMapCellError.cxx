@@ -23,7 +23,7 @@
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <dax/cont/internal/Testing.h>
+#include <dax/cont/internal/testing/Testing.h>
 
 namespace {
 

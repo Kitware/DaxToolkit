@@ -21,7 +21,6 @@ set(headers
   FieldAccess.h
   GridTopologies.h
   InterpolationWeights.h
-  TestingTopologyGenerator.h
   TopologyUniform.h
   TopologyUnstructured.h
   WorkletBase.h

@@ -17,7 +17,6 @@
 set(headers
   ExportMacros.h
   MathSystemFunctions.h
-  Testing.h
   )
 
 dax_declare_headers(${headers})

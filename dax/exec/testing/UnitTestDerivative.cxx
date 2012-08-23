@@ -16,9 +16,9 @@
 #include <dax/exec/Derivative.h>
 
 #include <dax/exec/internal/GridTopologies.h>
-#include <dax/exec/internal/TestingTopologyGenerator.h>
+#include <dax/exec/internal/testing/TestingTopologyGenerator.h>
 
-#include <dax/internal/Testing.h>
+#include <dax/internal/testing/Testing.h>
 
 namespace
 {

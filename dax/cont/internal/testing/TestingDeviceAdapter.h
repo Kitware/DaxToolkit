@@ -28,8 +28,8 @@
 #include <dax/cont/worklet/testing/CellMapError.h>
 #include <dax/cont/worklet/testing/FieldMapError.h>
 
-#include <dax/cont/internal/Testing.h>
-#include <dax/cont/internal/TestingGridGenerator.h>
+#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/internal/testing/TestingGridGenerator.h>
 #include <dax/cont/internal/ScheduleMapAdapter.h>
 
 #include <utility>

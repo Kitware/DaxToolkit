@@ -19,7 +19,7 @@
 
 #include <dax/exec/internal/ArrayPortalFromIterators.h>
 
-#include <dax/internal/Testing.h>
+#include <dax/internal/testing/Testing.h>
 #include <vector>
 
 namespace {

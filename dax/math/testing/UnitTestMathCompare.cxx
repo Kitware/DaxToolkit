@@ -16,7 +16,7 @@
 
 #include <dax/math/Compare.h>
 
-#include <dax/internal/Testing.h>
+#include <dax/internal/testing/Testing.h>
 
 namespace {
 

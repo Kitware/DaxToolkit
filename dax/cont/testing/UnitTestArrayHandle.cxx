@@ -21,7 +21,7 @@
 
 #include <dax/cont/ArrayHandle.h>
 
-#include <dax/cont/internal/Testing.h>
+#include <dax/cont/internal/testing/Testing.h>
 
 #include <algorithm>
 

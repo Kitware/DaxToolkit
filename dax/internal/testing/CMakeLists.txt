@@ -14,6 +14,12 @@
 ##
 ##=============================================================================
 
+set(headers
+  Testing.h
+  )
+
+dax_declare_headers(${headers})
+
 set(unit_tests
   UnitTestTesting.cxx
   )

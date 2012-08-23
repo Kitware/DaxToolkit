@@ -17,7 +17,7 @@
 // This meta-test makes sure that the testing environment is properly reporting
 // errors.
 
-#include <dax/internal/Testing.h>
+#include <dax/internal/testing/Testing.h>
 
 namespace {
 
