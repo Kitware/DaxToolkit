@@ -39,16 +39,17 @@ struct CellMapError
                const TopologyType &topology)
     : Worklet(worklet), Topology(topology) {  }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id cellIndex,
+  DAX_EXEC_EXPORT void operator()(dax::Id cellIndex) const
+  {
+    CellType cell(this->Topology, cellIndex);
+
+    this->Worklet(cell);
+  }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
       const dax::exec::internal::ErrorMessageBuffer &errorMessage)
   {
     this->Worklet.SetErrorMessageBuffer(errorMessage);
-    const dax::worklet::testing::CellMapError &constWorklet = this->Worklet;
-
-    CellType cell(this->Topology, cellIndex);
-
-    constWorklet(cell);
   }
 
 private:

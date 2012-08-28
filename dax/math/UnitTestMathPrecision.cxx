@@ -14,7 +14,9 @@
 //
 //=============================================================================
 
-#include <dax/exec/math/Precision.h>
+#include <dax/math/Precision.h>
+
+#include <dax/exec/VectorOperations.h>
 
 #include <dax/internal/Testing.h>
 
@@ -26,10 +28,10 @@ void TestNonFinites()
 
   dax::Scalar zero = 0.0;
   dax::Scalar finite = 1.0;
-  dax::Scalar nan = dax::exec::math::Nan();
-  dax::Scalar inf = dax::exec::math::Infinity();
-  dax::Scalar neginf = dax::exec::math::NegativeInfinity();
-  dax::Scalar epsilon = dax::exec::math::Epsilon();
+  dax::Scalar nan = dax::math::Nan();
+  dax::Scalar inf = dax::math::Infinity();
+  dax::Scalar neginf = dax::math::NegativeInfinity();
+  dax::Scalar epsilon = dax::math::Epsilon();
 
   // General behavior.
   DAX_TEST_ASSERT(nan != nan, "Nan not equal itself.");
@@ -50,26 +52,26 @@ void TestNonFinites()
   DAX_TEST_ASSERT(finite > epsilon, "Large epsilon");
 
   // Math check functions.
-  DAX_TEST_ASSERT(!dax::exec::math::IsNan(zero), "Bad IsNan check.");
-  DAX_TEST_ASSERT(!dax::exec::math::IsNan(finite), "Bad IsNan check.");
-  DAX_TEST_ASSERT(dax::exec::math::IsNan(nan), "Bad IsNan check.");
-  DAX_TEST_ASSERT(!dax::exec::math::IsNan(inf), "Bad IsNan check.");
-  DAX_TEST_ASSERT(!dax::exec::math::IsNan(neginf), "Bad IsNan check.");
-  DAX_TEST_ASSERT(!dax::exec::math::IsNan(epsilon), "Bad IsNan check.");
+  DAX_TEST_ASSERT(!dax::math::IsNan(zero), "Bad IsNan check.");
+  DAX_TEST_ASSERT(!dax::math::IsNan(finite), "Bad IsNan check.");
+  DAX_TEST_ASSERT(dax::math::IsNan(nan), "Bad IsNan check.");
+  DAX_TEST_ASSERT(!dax::math::IsNan(inf), "Bad IsNan check.");
+  DAX_TEST_ASSERT(!dax::math::IsNan(neginf), "Bad IsNan check.");
+  DAX_TEST_ASSERT(!dax::math::IsNan(epsilon), "Bad IsNan check.");
 
-  DAX_TEST_ASSERT(!dax::exec::math::IsInf(zero), "Bad infinity check.");
-  DAX_TEST_ASSERT(!dax::exec::math::IsInf(finite), "Bad infinity check.");
-  DAX_TEST_ASSERT(!dax::exec::math::IsInf(nan), "Bad infinity check.");
-  DAX_TEST_ASSERT(dax::exec::math::IsInf(inf), "Bad infinity check.");
-  DAX_TEST_ASSERT(dax::exec::math::IsInf(neginf), "Bad infinity check.");
-  DAX_TEST_ASSERT(!dax::exec::math::IsInf(epsilon), "Bad infinity check.");
+  DAX_TEST_ASSERT(!dax::math::IsInf(zero), "Bad infinity check.");
+  DAX_TEST_ASSERT(!dax::math::IsInf(finite), "Bad infinity check.");
+  DAX_TEST_ASSERT(!dax::math::IsInf(nan), "Bad infinity check.");
+  DAX_TEST_ASSERT(dax::math::IsInf(inf), "Bad infinity check.");
+  DAX_TEST_ASSERT(dax::math::IsInf(neginf), "Bad infinity check.");
+  DAX_TEST_ASSERT(!dax::math::IsInf(epsilon), "Bad infinity check.");
 
-  DAX_TEST_ASSERT(dax::exec::math::IsFinite(zero), "Bad finite check.");
-  DAX_TEST_ASSERT(dax::exec::math::IsFinite(finite), "Bad finite check.");
-  DAX_TEST_ASSERT(!dax::exec::math::IsFinite(nan), "Bad finite check.");
-  DAX_TEST_ASSERT(!dax::exec::math::IsFinite(inf), "Bad finite check.");
-  DAX_TEST_ASSERT(!dax::exec::math::IsFinite(neginf), "Bad finite check.");
-  DAX_TEST_ASSERT(dax::exec::math::IsFinite(epsilon), "Bad finite check.");
+  DAX_TEST_ASSERT(dax::math::IsFinite(zero), "Bad finite check.");
+  DAX_TEST_ASSERT(dax::math::IsFinite(finite), "Bad finite check.");
+  DAX_TEST_ASSERT(!dax::math::IsFinite(nan), "Bad finite check.");
+  DAX_TEST_ASSERT(!dax::math::IsFinite(inf), "Bad finite check.");
+  DAX_TEST_ASSERT(!dax::math::IsFinite(neginf), "Bad finite check.");
+  DAX_TEST_ASSERT(dax::math::IsFinite(epsilon), "Bad finite check.");
 }
 
 template<typename VectorType>
@@ -81,7 +83,7 @@ void TestFMod(VectorType numerator,
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
 
-  VectorType computed = dax::exec::math::FMod(numerator, denominator);
+  VectorType computed = dax::math::FMod(numerator, denominator);
   DAX_TEST_ASSERT(test_equal(computed, remainder), "Bad remainder");
 }
 
@@ -96,15 +98,15 @@ void TestRemainder(VectorType numerator,
             << std::endl;
 
   VectorType computedRemainder
-      = dax::exec::math::Remainder(numerator, denominator);
+      = dax::math::Remainder(numerator, denominator);
   DAX_TEST_ASSERT(test_equal(computedRemainder, remainder), "Bad remainder");
 
   dax::exec::VectorFill(computedRemainder, dax::Scalar(0.0));
   VectorType computedQuotient;
 
-  computedRemainder = dax::exec::math::RemainderQuotient(numerator,
-                                                         denominator,
-                                                         computedQuotient);
+  computedRemainder = dax::math::RemainderQuotient(numerator,
+                                                   denominator,
+                                                   computedQuotient);
   DAX_TEST_ASSERT(test_equal(computedRemainder, remainder), "Bad remainder");
   DAX_TEST_ASSERT(test_equal(computedQuotient, quotient), "Bad quotient");
 
@@ -112,9 +114,9 @@ void TestRemainder(VectorType numerator,
   int iQuotient;
   dax::Scalar sRemainder;
   sRemainder
-      = dax::exec::math::RemainderQuotient(Traits::GetComponent(numerator, 0),
-                                           Traits::GetComponent(denominator, 0),
-                                           iQuotient);
+      = dax::math::RemainderQuotient(Traits::GetComponent(numerator, 0),
+                                     Traits::GetComponent(denominator, 0),
+                                     iQuotient);
   DAX_TEST_ASSERT(test_equal(sRemainder, Traits::GetComponent(remainder, 0)),
                   "Bad remainder");
   DAX_TEST_ASSERT(test_equal(dax::Scalar(iQuotient),
@@ -132,7 +134,7 @@ void TestModF(VectorType x, VectorType integral, VectorType fractional)
   VectorType computedIntegral;
   VectorType computedFractional;
 
-  computedFractional = dax::exec::math::ModF(x, computedIntegral);
+  computedFractional = dax::math::ModF(x, computedIntegral);
 
   DAX_TEST_ASSERT(test_equal(computedIntegral, integral), "Bad integral");
   DAX_TEST_ASSERT(test_equal(computedFractional, fractional), "Bad fractional");
@@ -148,9 +150,9 @@ void TestRound(VectorType x,
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
 
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Floor(x), xFloor), "Bad floor");
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Ceil(x), xCeil), "Bad ceil");
-  DAX_TEST_ASSERT(test_equal(dax::exec::math::Round(x), xRound), "Bad round");
+  DAX_TEST_ASSERT(test_equal(dax::math::Floor(x), xFloor), "Bad floor");
+  DAX_TEST_ASSERT(test_equal(dax::math::Ceil(x), xCeil), "Bad ceil");
+  DAX_TEST_ASSERT(test_equal(dax::math::Round(x), xRound), "Bad round");
 }
 
 const dax::Id MAX_VECTOR_SIZE = 4;

@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/exec/math/VectorAnalysis.h>
+#include <dax/math/VectorAnalysis.h>
 
 #include<dax/Types.h>
 #include <dax/exec/VectorOperations.h>
@@ -68,27 +68,27 @@ void TestVector(const VectorType& vector)
 
   //to do have to implement a norm and normalized call to verify the math ones
   //against
-  dax::Scalar magnitude = dax::exec::math::Magnitude(vector);
+  dax::Scalar magnitude = dax::math::Magnitude(vector);
   dax::Scalar magnitudeCompare = internal::mag(vector);
   DAX_TEST_ASSERT(test_equal(magnitude, magnitudeCompare),
                   "Magnitude failed test.");
 
-  dax::Scalar magnitudeSquared = dax::exec::math::MagnitudeSquared(vector);
+  dax::Scalar magnitudeSquared = dax::math::MagnitudeSquared(vector);
   DAX_TEST_ASSERT(test_equal(magnitude*magnitude, magnitudeSquared),
                   "Magnitude squared test failed.");
 
   if (magnitudeSquared > 0)
     {
-    dax::Scalar rmagnitude = dax::exec::math::RMagnitude(vector);
+    dax::Scalar rmagnitude = dax::math::RMagnitude(vector);
     DAX_TEST_ASSERT(test_equal(1/magnitude, rmagnitude),
                     "Reciprical magnitude failed.");
 
-    DAX_TEST_ASSERT(test_equal(dax::exec::math::Normal(vector),
+    DAX_TEST_ASSERT(test_equal(dax::math::Normal(vector),
                                internal::normal(vector)),
                     "Normalized vector failed test.");
 
     VectorType normalizedVector=vector;
-    dax::exec::math::Normalize(normalizedVector);
+    dax::math::Normalize(normalizedVector);
     DAX_TEST_ASSERT(test_equal(normalizedVector, internal::normal(vector)),
                     "Inplace Normalized vector failed test.");
     }
@@ -96,7 +96,7 @@ void TestVector(const VectorType& vector)
 
 void TestCross(const dax::Vector3 &x, const dax::Vector3 &y)
 {
-  dax::Vector3 cross = dax::exec::math::Cross(x, y);
+  dax::Vector3 cross = dax::math::Cross(x, y);
 
   std::cout << "Testing " << x << " x " << y << " = " << cross << std::endl;
 
@@ -109,16 +109,16 @@ void TestCross(const dax::Vector3 &x, const dax::Vector3 &y)
   // The length of cross product should be the lengths of the input vectors
   // times the sin of the angle between them.
   dax::Scalar sinAngle =
-      dax::exec::math::Magnitude(cross)
-      * dax::exec::math::RMagnitude(x)
-      * dax::exec::math::RMagnitude(y);
+      dax::math::Magnitude(cross)
+      * dax::math::RMagnitude(x)
+      * dax::math::RMagnitude(y);
 
   // The dot product is likewise the lengths of the input vectors times the
   // cos of the angle between them.
   dax::Scalar cosAngle =
       dax::dot(x,y)
-      * dax::exec::math::RMagnitude(x)
-      * dax::exec::math::RMagnitude(y);
+      * dax::math::RMagnitude(x)
+      * dax::math::RMagnitude(y);
 
   // Test that these are the actual sin and cos of the same angle with a
   // basic trigonometric identity.
@@ -128,7 +128,7 @@ void TestCross(const dax::Vector3 &x, const dax::Vector3 &y)
 
   // Test finding the normal to a triangle (similar to cross product).
   dax::Vector3 normal =
-      dax::exec::math::TriangleNormal(x, y, dax::make_Vector3(0, 0, 0));
+      dax::math::TriangleNormal(x, y, dax::make_Vector3(0, 0, 0));
   DAX_TEST_ASSERT(test_equal(dax::dot(normal, x-y), dax::Scalar(0.0)),
                   "Triangle normal is not really normal.");
 }

@@ -13,19 +13,27 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_math_Numerical_h
-#define __dax_exec_math_Numerical_h
+#ifndef __dax_math_Numerical_h
+#define __dax_math_Numerical_h
 
 // This header file defines some numerical methods that are useful in
 // computational geometry.
 
 #include <dax/Types.h>
-#include <dax/exec/math/Matrix.h>
-#include <dax/exec/math/Sign.h>
+#include <dax/math/Matrix.h>
+#include <dax/math/Sign.h>
 
 namespace dax {
-namespace exec {
 namespace math {
+
+// The NewtonsMethod function was briefly set to be DAX_EXEC_CONT_EXPORT (like
+// the rest of the math functions). However, I changed it back because it uses
+// callbacks, and those callbacks would have to also be declared
+// DAX_EXEC_CONT_EXPORT, which is a pain (and perhaps impossible) for execution
+// environment functions. One could argue that because this method is declared
+// DAX_EXEC_CONT_EXPORT it should be moved back under dax/exec/math. I would
+// not be totally against that, but it would probably be confusing to split the
+// math functions like that (which one is where and why?).
 
 /// Uses Newton's method to solve a nonlinear system of equations. This
 /// function assumes that the number of variables equals the number of
@@ -37,6 +45,7 @@ namespace math {
 /// desired output, or the closest point found, is returned.
 ///
 template<int Size, class JacobianFunctor, class FunctionFunctor>
+DAX_EXEC_EXPORT
 dax::Tuple<dax::Scalar,Size>
 NewtonsMethod(JacobianFunctor jacobianEvaluator,
               FunctionFunctor functionEvaluator,
@@ -47,7 +56,7 @@ NewtonsMethod(JacobianFunctor jacobianEvaluator,
               dax::Id maxIterations = 10)
 {
   typedef dax::Tuple<dax::Scalar,Size> VectorType;
-  typedef dax::exec::math::Matrix<dax::Scalar,Size,Size> MatrixType;
+  typedef dax::math::Matrix<dax::Scalar,Size,Size> MatrixType;
 
   VectorType x = initialGuess;
 
@@ -70,7 +79,7 @@ NewtonsMethod(JacobianFunctor jacobianEvaluator,
 
     bool valid;  // Ignored.
     VectorType deltaX =
-        dax::exec::math::SolveLinearSystem(
+        dax::math::SolveLinearSystem(
           jacobian,
           currentFunctionOutput - desiredFunctionOutput,
           valid);
@@ -80,7 +89,7 @@ NewtonsMethod(JacobianFunctor jacobianEvaluator,
     converged = true;
     for (int index = 0; index < Size; index++)
       {
-      converged &= (dax::exec::math::Abs(deltaX[index]) < convergeDifference);
+      converged &= (dax::math::Abs(deltaX[index]) < convergeDifference);
       }
     }
 
@@ -89,7 +98,6 @@ NewtonsMethod(JacobianFunctor jacobianEvaluator,
 }
 
 }
-}
-} // namespace dax::exec::math
+} // namespace dax::math
 
-#endif //__dax_exec_math_Numerical_h
+#endif //__dax_math_Numerical_h

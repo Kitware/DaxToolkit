@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/cont/DeviceAdapterSerial.h>
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
 #include "PipelineSerial.h"
 

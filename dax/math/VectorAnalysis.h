@@ -13,28 +13,25 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_math_VectorAnalysis_h
-#define __dax_exec_math_VectorAnalysis_h
+#ifndef __dax_math_VectorAnalysis_h
+#define __dax_math_VectorAnalysis_h
 
 // This header file defines math functions that deal with linear albegra funcitons
 
 #include <dax/Types.h>
 #include <dax/exec/VectorOperations.h>
-#include <dax/exec/math/Sign.h>
-#include <dax/exec/math/Exp.h>
+#include <dax/math/Sign.h>
+#include <dax/math/Exp.h>
 
-#ifndef DAX_CUDA
-#include <math.h>
-#endif
+#include <dax/internal/MathSystemFunctions.h>
 
 namespace dax {
-namespace exec {
 namespace math {
 
 // ----------------------------------------------------------------------------
 namespace detail {
 template <typename T>
-DAX_EXEC_EXPORT dax::Scalar magnitudesquared_template(const T &x)
+DAX_EXEC_CONT_EXPORT dax::Scalar magnitudesquared_template(const T &x)
 {
   return dax::dot(x,x);
 }
@@ -46,25 +43,25 @@ DAX_EXEC_EXPORT dax::Scalar magnitudesquared_template(const T &x)
 /// square, so you should use this function in place of Magnitude or RMagnitude
 /// when possible.
 ///
-DAX_EXEC_EXPORT dax::Scalar MagnitudeSquared(dax::Scalar x) {
+DAX_EXEC_CONT_EXPORT dax::Scalar MagnitudeSquared(dax::Scalar x) {
   return detail::magnitudesquared_template(x);
 }
-DAX_EXEC_EXPORT dax::Scalar MagnitudeSquared(dax::Vector2 x) {
+DAX_EXEC_CONT_EXPORT dax::Scalar MagnitudeSquared(dax::Vector2 x) {
   return detail::magnitudesquared_template(x);
 }
-DAX_EXEC_EXPORT dax::Scalar MagnitudeSquared(dax::Vector3 x) {
+DAX_EXEC_CONT_EXPORT dax::Scalar MagnitudeSquared(dax::Vector3 x) {
   return detail::magnitudesquared_template(x);
 }
-DAX_EXEC_EXPORT dax::Scalar MagnitudeSquared(dax::Vector4 x) {
+DAX_EXEC_CONT_EXPORT dax::Scalar MagnitudeSquared(dax::Vector4 x) {
   return detail::magnitudesquared_template(x);
 }
 
 // ----------------------------------------------------------------------------
 namespace detail {
 template<typename T>
-DAX_EXEC_EXPORT dax::Scalar magnitude_template(const T &x)
+DAX_EXEC_CONT_EXPORT dax::Scalar magnitude_template(const T &x)
 {
-  return dax::exec::math::Sqrt(magnitudesquared_template(x));
+  return dax::math::Sqrt(magnitudesquared_template(x));
 }
 }
 
@@ -76,25 +73,25 @@ DAX_EXEC_EXPORT dax::Scalar magnitude_template(const T &x)
 /// to find the reciprical magnitude, so RMagnitude should be used if you
 /// actually plan to divide by the magnitude.
 ///
-DAX_EXEC_EXPORT dax::Scalar Magnitude(dax::Scalar x) {
-  return dax::exec::math::Abs(x);
+DAX_EXEC_CONT_EXPORT dax::Scalar Magnitude(dax::Scalar x) {
+  return dax::math::Abs(x);
 }
-DAX_EXEC_EXPORT dax::Scalar Magnitude(dax::Vector2 x) {
+DAX_EXEC_CONT_EXPORT dax::Scalar Magnitude(dax::Vector2 x) {
   return detail::magnitude_template(x);
 }
-DAX_EXEC_EXPORT dax::Scalar Magnitude(dax::Vector3 x) {
+DAX_EXEC_CONT_EXPORT dax::Scalar Magnitude(dax::Vector3 x) {
   return detail::magnitude_template(x);
 }
-DAX_EXEC_EXPORT dax::Scalar Magnitude(dax::Vector4 x) {
+DAX_EXEC_CONT_EXPORT dax::Scalar Magnitude(dax::Vector4 x) {
   return detail::magnitude_template(x);
 }
 
 // ----------------------------------------------------------------------------
 namespace detail {
 template<typename T>
-DAX_EXEC_EXPORT dax::Scalar rmagnitude_template(const T &x)
+DAX_EXEC_CONT_EXPORT dax::Scalar rmagnitude_template(const T &x)
 {
-  return dax::exec::math::RSqrt(magnitudesquared_template(x));
+  return dax::math::RSqrt(magnitudesquared_template(x));
 }
 }
 
@@ -103,24 +100,24 @@ DAX_EXEC_EXPORT dax::Scalar rmagnitude_template(const T &x)
 /// On some hardware RMagnitude is faster than Magnitude, but neither is
 /// as fast as MagnitudeSquared.
 ///
-DAX_EXEC_EXPORT dax::Scalar RMagnitude(dax::Scalar x) {
-  return 1/dax::exec::math::Abs(x);
+DAX_EXEC_CONT_EXPORT dax::Scalar RMagnitude(dax::Scalar x) {
+  return 1/dax::math::Abs(x);
 }
-DAX_EXEC_EXPORT dax::Scalar RMagnitude(dax::Vector2 x) {
+DAX_EXEC_CONT_EXPORT dax::Scalar RMagnitude(dax::Vector2 x) {
   return detail::rmagnitude_template(x);
 }
-DAX_EXEC_EXPORT dax::Scalar RMagnitude(dax::Vector3 x) {
+DAX_EXEC_CONT_EXPORT dax::Scalar RMagnitude(dax::Vector3 x) {
   return detail::rmagnitude_template(x);
 }
-DAX_EXEC_EXPORT dax::Scalar RMagnitude(dax::Vector4 x) {
+DAX_EXEC_CONT_EXPORT dax::Scalar RMagnitude(dax::Vector4 x) {
   return detail::rmagnitude_template(x);
 }
 
 // ----------------------------------------------------------------------------
 namespace detail {
 template <typename T>
-DAX_EXEC_EXPORT T normal_template(const T &x ) {
-  return dax::exec::math::RSqrt(dax::dot(x,x)) * x;
+DAX_EXEC_CONT_EXPORT T normal_template(const T &x ) {
+  return dax::math::RSqrt(dax::dot(x,x)) * x;
 }
 }
 
@@ -128,16 +125,16 @@ DAX_EXEC_EXPORT T normal_template(const T &x ) {
 ///
 /// The resulting vector points in the same direction but has unit length.
 ///
-DAX_EXEC_EXPORT dax::Scalar Normal(dax::Scalar x) {
+DAX_EXEC_CONT_EXPORT dax::Scalar Normal(dax::Scalar x) {
   return detail::normal_template(x);
 }
-DAX_EXEC_EXPORT dax::Vector2 Normal(const dax::Vector2 &x) {
+DAX_EXEC_CONT_EXPORT dax::Vector2 Normal(const dax::Vector2 &x) {
   return detail::normal_template(x);
 }
-DAX_EXEC_EXPORT dax::Vector3 Normal(const dax::Vector3 &x) {
+DAX_EXEC_CONT_EXPORT dax::Vector3 Normal(const dax::Vector3 &x) {
   return detail::normal_template(x);
 }
-DAX_EXEC_EXPORT dax::Vector4 Normal(const dax::Vector4 &x) {
+DAX_EXEC_CONT_EXPORT dax::Vector4 Normal(const dax::Vector4 &x) {
   return detail::normal_template(x);
 }
 
@@ -146,23 +143,23 @@ DAX_EXEC_EXPORT dax::Vector4 Normal(const dax::Vector4 &x) {
 ///
 /// The given vector is scaled to be unit length.
 ///
-DAX_EXEC_EXPORT void Normalize(dax::Scalar &x) {
+DAX_EXEC_CONT_EXPORT void Normalize(dax::Scalar &x) {
   x = Normal(x);
 }
-DAX_EXEC_EXPORT void Normalize(dax::Vector2 &x) {
+DAX_EXEC_CONT_EXPORT void Normalize(dax::Vector2 &x) {
   x = Normal(x);
 }
-DAX_EXEC_EXPORT void Normalize(dax::Vector3 &x) {
+DAX_EXEC_CONT_EXPORT void Normalize(dax::Vector3 &x) {
   x = Normal(x);
 }
-DAX_EXEC_EXPORT void Normalize(dax::Vector4 &x) {
+DAX_EXEC_CONT_EXPORT void Normalize(dax::Vector4 &x) {
   x = Normal(x);
 }
 
 // ----------------------------------------------------------------------------
 /// \brief Find the cross product of two vectors.
 ///
-DAX_EXEC_EXPORT dax::Vector3 Cross(const dax::Vector3 &x, const dax::Vector3 &y)
+DAX_EXEC_CONT_EXPORT dax::Vector3 Cross(const dax::Vector3 &x, const dax::Vector3 &y)
 {
   return dax::make_Vector3(x[1]*y[2] - x[2]*y[1],
                            x[2]*y[0] - x[0]*y[2],
@@ -176,19 +173,14 @@ DAX_EXEC_EXPORT dax::Vector3 Cross(const dax::Vector3 &x, const dax::Vector3 &y)
 /// a triangle and the plane the triangle is on, returns a vector perpendicular
 /// to that triangle/plane.
 ///
-DAX_EXEC_EXPORT dax::Vector3 TriangleNormal(const dax::Vector3 &a,
+DAX_EXEC_CONT_EXPORT dax::Vector3 TriangleNormal(const dax::Vector3 &a,
                                             const dax::Vector3 &b,
                                             const dax::Vector3 &c)
 {
-  return dax::exec::math::Cross(b-a, c-a);
+  return dax::math::Cross(b-a, c-a);
 }
 
 }
-}
-} // namespace dax::exec::math
+} // namespace dax::math
 
-#undef DAX_SYS_MATH_FUNCTION
-#undef DAX_SYS_MATH_FUNCTOR
-#undef DAX_SYS_MATH_TEMPLATE
-
-#endif //__dax_exec_math_VectorAnalysis_h
+#endif //__dax_math_VectorAnalysis_h

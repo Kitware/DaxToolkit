@@ -15,6 +15,9 @@
 ##=============================================================================
 
 set(headers
+  ArrayManagerExecutionOpenMP.h
+  DeviceAdapterAlgorithmOpenMP.h
+  DeviceAdapterTagOpenMP.h
   SetThrustForOpenMP.h
   )
 

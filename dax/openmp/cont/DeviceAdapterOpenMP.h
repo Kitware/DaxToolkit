@@ -13,67 +13,11 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-
 #ifndef __dax_openmp_cont_DeviceAdapterOpenMP_h
 #define __dax_openmp_cont_DeviceAdapterOpenMP_h
 
-// Declare DAX_DEFAULT_DEVICE_ADAPTER and the tag it points to before including
-// other headers that may require it.
-
-#include <dax/thrust/cont/internal/DeviceAdapterThrustTag.h>
-
-#ifdef DAX_DEFAULT_DEVICE_ADAPTER
-#undef DAX_DEFAULT_DEVICE_ADAPTER
-#endif
-
-#define DAX_DEFAULT_DEVICE_ADAPTER ::dax::openmp::cont::DeviceAdapterTagOpenMP
-
-namespace dax {
-namespace openmp {
-namespace cont {
-
-/// A DeviceAdapter that uses OpenMP.  To use this adapter, an OpenMP-compliant
-/// compiler with OpenMP support turned on must be used (duh).
-///
-struct DeviceAdapterTagOpenMP
-    : public dax::thrust::cont::internal::DeviceAdapterTagThrust
-{  };
-
-}
-}
-} // namespace dax::openmp::cont
-
-#include <dax/openmp/cont/internal/SetThrustForOpenMP.h>
-
-#include <dax/thrust/cont/internal/ArrayManagerExecutionThrustShare.h>
-#include <dax/thrust/cont/internal/DeviceAdapterThrust.h>
-
-// These must be placed in the dax::cont::internal namespace so that
-// the template can be found.
-
-namespace dax {
-namespace cont {
-namespace internal {
-
-template <typename T, class ArrayContainerTag>
-class ArrayManagerExecution
-    <T, ArrayContainerTag, dax::openmp::cont::DeviceAdapterTagOpenMP>
-    : public dax::thrust::cont::internal::ArrayManagerExecutionThrustShare
-        <T, ArrayContainerTag>
-{
-public:
-  typedef dax::thrust::cont::internal::ArrayManagerExecutionThrustShare
-      <T, ArrayContainerTag> Superclass;
-  typedef typename Superclass::ValueType ValueType;
-  typedef typename Superclass::PortalType PortalType;
-  typedef typename Superclass::PortalConstType PortalConstType;
-
-  typedef typename Superclass::ThrustIteratorType ThrustIteratorType;
-  typedef typename Superclass::ThrustIteratorConstType ThrustIteratorConstType;
-};
-
-}
-}
-} // namespace dax::cont::internal
+#include <dax/openmp/cont/internal/DeviceAdapterTagOpenMP.h>
+#include <dax/openmp/cont/internal/ArrayManagerExecutionOpenMP.h>
+#include <dax/openmp/cont/internal/DeviceAdapterAlgorithmOpenMP.h>
 
 #endif //__dax_openmp_cont_DeviceAdapterOpenMP_h

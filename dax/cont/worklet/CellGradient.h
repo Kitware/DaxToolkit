@@ -50,35 +50,95 @@ struct CellGradient {
       PointField(pointField),
       Gradient(gradient) {  }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id cellIndex,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  DAX_EXEC_EXPORT void operator()(dax::Id cellIndex) const
   {
-    this->Worklet.SetErrorMessageBuffer(errorMessage);
-    const dax::worklet::CellGradient &constWorklet = this->Worklet;
-
     CellType cell(this->Topology, cellIndex);
     typename GradientPortalType::ValueType gradientValue;
 
-    constWorklet(cell,
-                 dax::exec::internal::FieldGetPointsForCell(this->Coords,
-                                                            cell,
-                                                            constWorklet),
-                 dax::exec::internal::FieldGetPointsForCell(this->PointField,
-                                                            cell,
-                                                            constWorklet),
+    this->Worklet(cell,
+                  dax::exec::internal::FieldGetPointsForCell(this->Coords,
+                                                             cell,
+                                                             this->Worklet),
+                  dax::exec::internal::FieldGetPointsForCell(this->PointField,
+                                                             cell,
+                                                             this->Worklet),
                  gradientValue);
 
     dax::exec::internal::FieldSet(this->Gradient,
                                   cellIndex,
                                   gradientValue,
-                                  constWorklet);
+                                  this->Worklet);
+  }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
   }
 
 private:
   dax::worklet::CellGradient Worklet;
   TopologyType Topology;
   CoordsPortalType Coords;
+  PointFieldPortalType PointField;
+  GradientPortalType Gradient;
+};
+
+// I am unsatisfied with this specialization for uniform grids. This
+// specialization exists because Voxels, unlike other cell types, do not need
+// the vertex coordinates to compute the gradient. Thus, it is faster to skip
+// the loading of the coordinates, which in the general version is done before
+// the worklet is ever called.
+//
+template<class CoordsPortalType,
+         class PointFieldPortalType,
+         class GradientPortalType>
+struct CellGradient<
+    dax::exec::internal::TopologyUniform,
+    CoordsPortalType,
+    PointFieldPortalType,
+    GradientPortalType>
+{
+  typedef dax::exec::internal::TopologyUniform TopologyType;
+  typedef typename TopologyType::CellType CellType;
+
+  DAX_CONT_EXPORT
+  CellGradient(const dax::worklet::CellGradient &worklet,
+               const TopologyType &topology,
+               const CoordsPortalType &daxNotUsed(coords),
+               const PointFieldPortalType &pointField,
+               const GradientPortalType &gradient)
+    : Worklet(worklet),
+      Topology(topology),
+      PointField(pointField),
+      Gradient(gradient) {  }
+
+  DAX_EXEC_EXPORT void operator()(dax::Id cellIndex) const
+  {
+    CellType cell(this->Topology, cellIndex);
+    typename GradientPortalType::ValueType gradientValue;
+
+    this->Worklet(cell,
+                  dax::exec::internal::FieldGetPointsForCell(this->PointField,
+                                                             cell,
+                                                             this->Worklet),
+                  gradientValue);
+
+    dax::exec::internal::FieldSet(this->Gradient,
+                                  cellIndex,
+                                  gradientValue,
+                                  this->Worklet);
+  }
+
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
+  }
+
+private:
+  dax::worklet::CellGradient Worklet;
+  TopologyType Topology;
   PointFieldPortalType PointField;
   GradientPortalType Gradient;
 };

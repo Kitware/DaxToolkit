@@ -64,16 +64,16 @@ void TestGradientResult(
     }
   else if (CellType::TOPOLOGICAL_DIMENSIONS == 2)
     {
-    dax::Vector3 normal = dax::exec::math::TriangleNormal(
+    dax::Vector3 normal = dax::math::TriangleNormal(
           pointCoordinates[0], pointCoordinates[1], pointCoordinates[2]);
-    dax::exec::math::Normalize(normal);
+    dax::math::Normalize(normal);
     expectedGradient =
         fieldValues.Gradient - dax::dot(fieldValues.Gradient,normal)*normal;
     }
   else if (CellType::TOPOLOGICAL_DIMENSIONS == 1)
     {
     dax::Vector3 direction =
-        dax::exec::math::Normal(pointCoordinates[1]-pointCoordinates[0]);
+        dax::math::Normal(pointCoordinates[1]-pointCoordinates[0]);
     expectedGradient = direction * dax::dot(direction, fieldValues.Gradient);
     }
   else if (CellType::TOPOLOGICAL_DIMENSIONS == 0)

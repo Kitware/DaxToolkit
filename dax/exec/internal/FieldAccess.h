@@ -29,6 +29,7 @@ DAX_EXEC_EXPORT
 typename PortalType::ValueType
 FieldGet(const PortalType &arrayPortal, dax::Id index, const WorkType &work)
 {
+  (void)work;  // Shut up compiler.
   DAX_ASSERT_EXEC(index >= 0, work);
   DAX_ASSERT_EXEC(index < arrayPortal.GetNumberOfValues(), work);
   return arrayPortal.Get(index);
@@ -41,6 +42,7 @@ void FieldSet(const PortalType &arrayPortal,
               typename PortalType::ValueType value,
               const WorkType &work)
 {
+  (void)work;  // Shut up compiler.
   DAX_ASSERT_EXEC(index >= 0, work);
   DAX_ASSERT_EXEC(index < arrayPortal.GetNumberOfValues(), work);
   arrayPortal.Set(index, value);

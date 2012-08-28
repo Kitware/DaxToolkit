@@ -18,9 +18,10 @@
 #define __dax_exec_Derivative_h
 
 #include <dax/exec/Cell.h>
-#include <dax/exec/math/Matrix.h>
-#include <dax/exec/math/VectorAnalysis.h>
 #include <dax/exec/internal/DerivativeWeights.h>
+
+#include <dax/math/Matrix.h>
+#include <dax/math/VectorAnalysis.h>
 
 namespace dax { namespace exec {
 
@@ -76,11 +77,11 @@ namespace detail {
 //
 template<int NUM_POINTS>
 DAX_EXEC_EXPORT
-dax::exec::math::Matrix3x3 make_JacobianFor3DCell(
+dax::math::Matrix3x3 make_JacobianFor3DCell(
     const dax::Tuple<dax::Vector3,NUM_POINTS> &derivativeWeights,
     const dax::Tuple<dax::Vector3,NUM_POINTS> &vertCoords)
 {
-  dax::exec::math::Matrix3x3 jacobian(0);
+  dax::math::Matrix3x3 jacobian(0);
   for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
     {
     const dax::Vector3 &dweight = derivativeWeights[pointIndex];
@@ -117,8 +118,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivativeFor3DCell(
 
   // For reasons that should become apparent in a moment, we actually want
   // the transpose of the Jacobian.
-  dax::exec::math::Matrix3x3 jacobianTranspose =
-      dax::exec::math::MatrixTranspose(
+  dax::math::Matrix3x3 jacobianTranspose =
+      dax::math::MatrixTranspose(
         detail::make_JacobianFor3DCell(derivativeWeights, vertCoords));
 
   // Find the derivative of the field in parametric coordinate space. That is,
@@ -147,9 +148,9 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivativeFor3DCell(
   // world space.
 
   bool valid;  // Ignored.
-  return dax::exec::math::SolveLinearSystem(jacobianTranspose,
-                                            parametricDerivative,
-                                            valid);
+  return dax::math::SolveLinearSystem(jacobianTranspose,
+                                      parametricDerivative,
+                                      valid);
 }
 
 }
@@ -209,10 +210,10 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   dax::Vector3 v1 = vertCoords[2] - vertCoords[0];
   dax::Vector3 v2 = vertCoords[3] - vertCoords[0];
 
-  dax::exec::math::Matrix3x3 A;
-  dax::exec::math::MatrixSetRow(A, 0, v0);
-  dax::exec::math::MatrixSetRow(A, 1, v1);
-  dax::exec::math::MatrixSetRow(A, 2, v2);
+  dax::math::Matrix3x3 A;
+  dax::math::MatrixSetRow(A, 0, v0);
+  dax::math::MatrixSetRow(A, 1, v1);
+  dax::math::MatrixSetRow(A, 2, v2);
 
   dax::Vector3 b(fieldValues[1]-fieldValues[0],
                  fieldValues[2]-fieldValues[0],
@@ -222,7 +223,7 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   // values (for example, to find the Jacobian of a vector field), then there
   // are more efficient ways solve them all than independently solving this
   // equation for each component of the field.  You could find the inverse of
-  // matrix A.  Or you could alter the functions in dax::exec::math to
+  // matrix A.  Or you could alter the functions in dax::math to
   // simultaneously solve multiple equations.
 
   // If the tetrahedron is degenerate, then valid will be false. For now we are
@@ -231,7 +232,7 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   //
   bool valid;
 
-  return dax::exec::math::SolveLinearSystem(A, b, valid);
+  return dax::math::SolveLinearSystem(A, b, valid);
 }
 
 
@@ -268,12 +269,12 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   //
   dax::Vector3 v0 = vertCoords[1] - vertCoords[0];
   dax::Vector3 v1 = vertCoords[2] - vertCoords[0];
-  dax::Vector3 n = dax::exec::math::Cross(v0, v1);
+  dax::Vector3 n = dax::math::Cross(v0, v1);
 
-  dax::exec::math::Matrix3x3 A;
-  dax::exec::math::MatrixSetRow(A, 0, v0);
-  dax::exec::math::MatrixSetRow(A, 1, v1);
-  dax::exec::math::MatrixSetRow(A, 2, n);
+  dax::math::Matrix3x3 A;
+  dax::math::MatrixSetRow(A, 0, v0);
+  dax::math::MatrixSetRow(A, 1, v1);
+  dax::math::MatrixSetRow(A, 2, n);
 
   dax::Vector3 b(fieldValues[1]-fieldValues[0],
                  fieldValues[2]-fieldValues[0],
@@ -283,7 +284,7 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   // values (for example, to find the Jacobian of a vector field), then there
   // are more efficient ways solve them all than independently solving this
   // equation for each component of the field.  You could find the inverse of
-  // matrix A.  Or you could alter the functions in dax::exec::math to
+  // matrix A.  Or you could alter the functions in dax::math to
   // simultaneously solve multiple equations.
 
   // If the triangle is degenerate, then valid will be false.  For now we are
@@ -292,7 +293,7 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   //
   bool valid;
 
-  return dax::exec::math::SolveLinearSystem(A, b, valid);
+  return dax::math::SolveLinearSystem(A, b, valid);
 }
 
 //-----------------------------------------------------------------------------
@@ -323,13 +324,13 @@ void make_SpaceForQuadrilateral(
   space.Origin = vertCoords[0];
 
   dax::Vector3 vec1 = vertCoords[1] - space.Origin;
-  dax::Scalar lengthX = dax::exec::math::Magnitude(vec1);
+  dax::Scalar lengthX = dax::math::Magnitude(vec1);
   space.Basis0 = vec1 * (1/lengthX);
 
   dax::Vector3 vec2 = vertCoords[2] - space.Origin;
-  dax::Vector3 normal = dax::exec::math::Cross(vec1, vec2);
+  dax::Vector3 normal = dax::math::Cross(vec1, vec2);
   space.Basis1 =
-      dax::exec::math::Normal(dax::exec::math::Cross(space.Basis0, normal));
+      dax::math::Normal(dax::math::Cross(space.Basis0, normal));
 
   vertCoords2D[0] = dax::make_Vector2(0, 0);
   vertCoords2D[1] = dax::make_Vector2(lengthX, 0);
@@ -346,7 +347,7 @@ void make_SpaceForQuadrilateral(
 // a 2D space built with make_SpaceForQuadrilateral.
 //
 DAX_EXEC_EXPORT
-dax::exec::math::Matrix2x2 make_JacobianForQuadrilateral(
+dax::math::Matrix2x2 make_JacobianForQuadrilateral(
     const dax::Tuple<dax::Vector3, dax::exec::CellQuadrilateral::NUM_POINTS>
     &derivativeWeights,
     const dax::Tuple<dax::Vector2, dax::exec::CellQuadrilateral::NUM_POINTS>
@@ -354,7 +355,7 @@ dax::exec::math::Matrix2x2 make_JacobianForQuadrilateral(
 {
   const int NUM_POINTS = dax::exec::CellQuadrilateral::NUM_POINTS;
 
-  dax::exec::math::Matrix2x2 jacobian(0);
+  dax::math::Matrix2x2 jacobian(0);
 
   for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
     {
@@ -395,8 +396,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
 
   // For reasons that should become apparent in a moment, we actually want
   // the transpose of the Jacobian.
-  dax::exec::math::Matrix2x2 jacobianTranspose =
-      dax::exec::math::MatrixTranspose(
+  dax::math::Matrix2x2 jacobianTranspose =
+      dax::math::MatrixTranspose(
         detail::make_JacobianForQuadrilateral(derivativeWeights,vertCoords2D));
 
   // Find the derivative of the field in parametric coordinate space. That is,
@@ -425,7 +426,7 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
 
   bool valid;  // Ignored.
   dax::Vector2 gradient2D =
-      dax::exec::math::SolveLinearSystem(jacobianTranspose,
+      dax::math::SolveLinearSystem(jacobianTranspose,
                                          parametricDerivative,
                                          valid);
 
@@ -451,7 +452,7 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
   dax::Scalar deltaField = fieldValues[1] - fieldValues[0];
   dax::Vector3 vec = vertCoords[1] - vertCoords[0];
 
-  return (deltaField/dax::exec::math::MagnitudeSquared(vec))*vec;
+  return (deltaField/dax::math::MagnitudeSquared(vec))*vec;
 }
 
 

@@ -17,7 +17,6 @@
 #define __dax_cont_internal_TestingDeviceAdapter_h
 
 #include <dax/cont/ArrayContainerControlBasic.h>
-
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
@@ -90,6 +89,9 @@ public:
       this->OutputArray.Set(index, this->InputArray.Get(index));
     }
 
+    DAX_CONT_EXPORT void SetErrorMessageBuffer(
+        const dax::exec::internal::ErrorMessageBuffer &) {  }
+
     IdPortalConstType InputArray;
     IdPortalType OutputArray;
   };
@@ -99,12 +101,13 @@ public:
     DAX_CONT_EXPORT
     ClearArrayKernel(const IdPortalType &array) : Array(array) {  }
 
-    DAX_EXEC_EXPORT void operator()(
-        dax::Id index,
-        const dax::exec::internal::ErrorMessageBuffer &) const
+    DAX_EXEC_EXPORT void operator()(dax::Id index) const
     {
       this->Array.Set(index, OFFSET);
     }
+
+    DAX_CONT_EXPORT void SetErrorMessageBuffer(
+        const dax::exec::internal::ErrorMessageBuffer &) {  }
 
     IdPortalType Array;
   };
@@ -114,13 +117,13 @@ public:
     DAX_CONT_EXPORT
     ClearArrayMapKernel(const IdPortalType &array) : Array(array) {  }
 
-    DAX_EXEC_EXPORT void operator()(
-        dax::Id,
-        dax::Id value,
-        const dax::exec::internal::ErrorMessageBuffer &) const
+    DAX_EXEC_EXPORT void operator()(dax::Id, dax::Id value) const
     {
       this->Array.Set(value, OFFSET);
     }
+
+    DAX_CONT_EXPORT void SetErrorMessageBuffer(
+        const dax::exec::internal::ErrorMessageBuffer &) {  }
 
     IdPortalType Array;
   };
@@ -130,37 +133,50 @@ public:
     DAX_CONT_EXPORT
     AddArrayKernel(const IdPortalType &array) : Array(array) {  }
 
-    DAX_EXEC_EXPORT void operator()(
-        dax::Id index,
-        const dax::exec::internal::ErrorMessageBuffer &) const
+    DAX_EXEC_EXPORT void operator()(dax::Id index) const
     {
       this->Array.Set(index, this->Array.Get(index) + index);
     }
+
+    DAX_CONT_EXPORT void SetErrorMessageBuffer(
+        const dax::exec::internal::ErrorMessageBuffer &) {  }
 
     IdPortalType Array;
   };
 
   struct OneErrorKernel
   {
-    DAX_EXEC_EXPORT void operator()(
-        dax::Id index,
-        const dax::exec::internal::ErrorMessageBuffer &errorMessage) const
+    DAX_EXEC_EXPORT void operator()(dax::Id index) const
     {
       if (index == ARRAY_SIZE/2)
         {
-        errorMessage.RaiseError(ERROR_MESSAGE);
+        this->ErrorMessage.RaiseError(ERROR_MESSAGE);
         }
     }
+
+    DAX_CONT_EXPORT void SetErrorMessageBuffer(
+        const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+    {
+      this->ErrorMessage = errorMessage;
+    }
+
+    dax::exec::internal::ErrorMessageBuffer ErrorMessage;
   };
 
   struct AllErrorKernel
   {
-    DAX_EXEC_EXPORT void operator()(
-        dax::Id daxNotUsed(index),
-        const dax::exec::internal::ErrorMessageBuffer &errorMessage) const
+    DAX_EXEC_EXPORT void operator()(dax::Id daxNotUsed(index)) const
     {
-      errorMessage.RaiseError(ERROR_MESSAGE);
+      this->ErrorMessage.RaiseError(ERROR_MESSAGE);
     }
+
+    DAX_CONT_EXPORT void SetErrorMessageBuffer(
+        const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+    {
+      this->ErrorMessage = errorMessage;
+    }
+
+    dax::exec::internal::ErrorMessageBuffer ErrorMessage;
   };
 
   struct OffsetPlusIndexKernel
@@ -168,12 +184,13 @@ public:
     DAX_CONT_EXPORT
     OffsetPlusIndexKernel(const IdPortalType &array) : Array(array) {  }
 
-    DAX_EXEC_EXPORT void operator()(
-        dax::Id index,
-        const dax::exec::internal::ErrorMessageBuffer &) const
+    DAX_EXEC_EXPORT void operator()(dax::Id index) const
     {
       this->Array.Set(index, OFFSET + index);
     }
+
+    DAX_CONT_EXPORT void SetErrorMessageBuffer(
+        const dax::exec::internal::ErrorMessageBuffer &) {  }
 
     IdPortalType Array;
   };
@@ -183,12 +200,13 @@ public:
     DAX_CONT_EXPORT
     MarkOddNumbersKernel(const IdPortalType &array) : Array(array) {  }
 
-    DAX_EXEC_EXPORT void operator()(
-        dax::Id index,
-        const dax::exec::internal::ErrorMessageBuffer &) const
+    DAX_EXEC_EXPORT void operator()(dax::Id index) const
     {
       this->Array.Set(index, index%2);
     }
+
+    DAX_CONT_EXPORT void SetErrorMessageBuffer(
+        const dax::exec::internal::ErrorMessageBuffer &) {  }
 
     IdPortalType Array;
   };
@@ -718,11 +736,19 @@ private:
       TestErrorExecution();
 
       std::cout << "Doing Worklet tests with UniformGrid" << std::endl;
-      WorkletTests<dax::cont::UniformGrid<> >();
+      WorkletTests<dax::cont::UniformGrid<DeviceAdapterTag> >();
 
       std::cout << "Doing Worklet tests with UnstructuredGrid types" << std::endl;
-      WorkletTests<dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> >();
-      WorkletTests<dax::cont::UnstructuredGrid<dax::exec::CellTriangle> >();
+      WorkletTests<dax::cont::UnstructuredGrid
+          <
+          dax::exec::CellHexahedron,
+          dax::cont::ArrayContainerControlTagBasic,
+          DeviceAdapterTag> >();
+      WorkletTests<dax::cont::UnstructuredGrid
+          <
+          dax::exec::CellTriangle,
+          dax::cont::ArrayContainerControlTagBasic,
+          DeviceAdapterTag> >();
     }
   };
 

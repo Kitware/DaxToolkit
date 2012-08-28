@@ -13,17 +13,15 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_math_Precision_h
-#define __dax_exec_math_Precision_h
+#ifndef __dax_math_Precision_h
+#define __dax_math_Precision_h
 
 // This header file defines math functions that deal with the precision of
 // floating point numbers.
 
-#include <dax/Types.h>
-#include <dax/exec/VectorOperations.h>
+#include <dax/internal/MathSystemFunctions.h>
 
 #ifndef DAX_CUDA
-#include <math.h>
 #include <limits>
 
 // These nonfinite test functions are usually defined as macros, and boost
@@ -34,35 +32,11 @@
 using boost::math::isnan;
 using boost::math::isinf;
 using boost::math::isfinite;
+
 #endif
 
 namespace dax {
-namespace exec {
 namespace math {
-
-#ifdef DAX_USE_DOUBLE_PRECISION
-#define DAX_SYS_MATH_FUNCTION(func) func
-#else //DAX_USE_DOUBLE_PRECISION
-#define DAX_SYS_MATH_FUNCTION(func) func ## f
-#endif //DAX_USE_DOUBLE_PRECISION
-
-#define DAX_SYS_MATH_FUNCTOR(func) \
-  namespace internal { \
-  struct func ## _functor { \
-    DAX_EXEC_EXPORT dax::Scalar operator()(dax::Scalar x) const { \
-      return DAX_SYS_MATH_FUNCTION(func)(x); \
-    } \
-  }; \
-  }
-
-#define DAX_SYS_MATH_TEMPLATE(func) \
-  DAX_SYS_MATH_FUNCTOR(func) \
-  namespace internal { \
-    template <typename T> DAX_EXEC_EXPORT T func ## _template(T x) \
-    { \
-      return dax::exec::VectorMap(x, func ## _functor()); \
-    } \
-  }
 
 //-----------------------------------------------------------------------------
 #ifdef DAX_CUDA
@@ -98,11 +72,11 @@ union IEEE754Bits {
 } // namespace internal
 
 #define DAX_DEFINE_BITS(name, rep) \
-  const dax::exec::math::internal::IEEE754Bits name = { rep }
+  const dax::math::internal::IEEE754Bits name = { rep }
 
 /// Returns the scalar representation for not-a-number (NaN).
 ///
-DAX_EXEC_EXPORT dax::Scalar Nan()
+DAX_EXEC_CONT_EXPORT dax::Scalar Nan()
 {
   DAX_DEFINE_BITS(NanBits, DAX_NAN_BITS);
   return NanBits.scalar;
@@ -110,7 +84,7 @@ DAX_EXEC_EXPORT dax::Scalar Nan()
 
 /// Returns the scalar reprentation for infinity.
 ///
-DAX_EXEC_EXPORT dax::Scalar Infinity()
+DAX_EXEC_CONT_EXPORT dax::Scalar Infinity()
 {
   DAX_DEFINE_BITS(InfBits, DAX_INF_BITS);
   return InfBits.scalar;
@@ -118,7 +92,7 @@ DAX_EXEC_EXPORT dax::Scalar Infinity()
 
 /// Returns the scalar representation for negitive infinity.
 ///
-DAX_EXEC_EXPORT dax::Scalar NegativeInfinity()
+DAX_EXEC_CONT_EXPORT dax::Scalar NegativeInfinity()
 {
   DAX_DEFINE_BITS(NegInfBits, DAX_NEG_INF_BITS);
   return NegInfBits.scalar;
@@ -127,7 +101,7 @@ DAX_EXEC_EXPORT dax::Scalar NegativeInfinity()
 /// Returns the difference between 1 and the least value greater than 1
 /// that is representable.
 ///
-DAX_EXEC_EXPORT dax::Scalar Epsilon()
+DAX_EXEC_CONT_EXPORT dax::Scalar Epsilon()
 {
   return DAX_EPSILON;
 }
@@ -136,21 +110,21 @@ DAX_EXEC_EXPORT dax::Scalar Epsilon()
 
 /// Returns the scalar representation for not-a-number (NaN).
 ///
-DAX_EXEC_EXPORT dax::Scalar Nan()
+DAX_EXEC_CONT_EXPORT dax::Scalar Nan()
 {
   return std::numeric_limits<dax::Scalar>::quiet_NaN();
 }
 
 /// Returns the scalar reprentation for infinity.
 ///
-DAX_EXEC_EXPORT dax::Scalar Infinity()
+DAX_EXEC_CONT_EXPORT dax::Scalar Infinity()
 {
   return std::numeric_limits<dax::Scalar>::infinity();
 }
 
 /// Returns the scalar representation for negitive infinity.
 ///
-DAX_EXEC_EXPORT dax::Scalar NegativeInfinity()
+DAX_EXEC_CONT_EXPORT dax::Scalar NegativeInfinity()
 {
   return -std::numeric_limits<dax::Scalar>::infinity();
 }
@@ -158,7 +132,7 @@ DAX_EXEC_EXPORT dax::Scalar NegativeInfinity()
 /// Returns the difference between 1 and the least value greater than 1
 /// that is representable.
 ///
-DAX_EXEC_EXPORT dax::Scalar Epsilon()
+DAX_EXEC_CONT_EXPORT dax::Scalar Epsilon()
 {
   return std::numeric_limits<dax::Scalar>::epsilon();
 }
@@ -176,21 +150,21 @@ DAX_EXEC_EXPORT dax::Scalar Epsilon()
 //-----------------------------------------------------------------------------
 /// Returns true if \p x is not a number.
 ///
-DAX_EXEC_EXPORT bool IsNan(dax::Scalar x)
+DAX_EXEC_CONT_EXPORT bool IsNan(dax::Scalar x)
 {
   return (isnan(x) != 0);
 }
 
 /// Returns true if \p is positive or negative infinity.
 ///
-DAX_EXEC_EXPORT bool IsInf(dax::Scalar x)
+DAX_EXEC_CONT_EXPORT bool IsInf(dax::Scalar x)
 {
   return (isinf(x) != 0);
 }
 
 /// Returns true if \p is a normal number (not NaN or infinite).
 ///
-DAX_EXEC_EXPORT bool IsFinite(dax::Scalar x)
+DAX_EXEC_CONT_EXPORT bool IsFinite(dax::Scalar x)
 {
   return (isfinite(x) != 0);
 }
@@ -198,7 +172,7 @@ DAX_EXEC_EXPORT bool IsFinite(dax::Scalar x)
 //-----------------------------------------------------------------------------
 namespace internal {
 template<typename T>
-DAX_EXEC_EXPORT T fmod_template(T numerator, T denominator)
+DAX_EXEC_CONT_EXPORT T fmod_template(T numerator, T denominator)
 {
   typedef dax::VectorTraits<T> Traits;
   T result;
@@ -219,19 +193,19 @@ DAX_EXEC_EXPORT T fmod_template(T numerator, T denominator)
 /// numerator divided by \p denominator rounded towards zero to an integer. For
 /// example, <tt>FMod(6.5, 2.3)</tt> returns 1.9, which is 6.5 minus 4.6.
 ///
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Scalar FMod(dax::Scalar numerator, dax::Scalar denominator) {
   return internal::fmod_template(numerator, denominator);
 }
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Vector2 FMod(dax::Vector2 numerator, dax::Vector2 denominator) {
   return internal::fmod_template(numerator, denominator);
 }
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Vector3 FMod(dax::Vector3 numerator, dax::Vector3 denominator) {
   return internal::fmod_template(numerator, denominator);
 }
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Vector4 FMod(dax::Vector4 numerator, dax::Vector4 denominator) {
   return internal::fmod_template(numerator, denominator);
 }
@@ -239,7 +213,7 @@ dax::Vector4 FMod(dax::Vector4 numerator, dax::Vector4 denominator) {
 //-----------------------------------------------------------------------------
 namespace internal {
 template<typename T>
-DAX_EXEC_EXPORT T remainder_template(T numerator, T denominator)
+DAX_EXEC_CONT_EXPORT T remainder_template(T numerator, T denominator)
 {
   typedef dax::VectorTraits<T> Traits;
   T result;
@@ -261,19 +235,19 @@ DAX_EXEC_EXPORT T remainder_template(T numerator, T denominator)
 /// (instead of toward zero like FMod). For example, <tt>FMod(6.5, 2.3)</tt>
 /// returns -0.4, which is 6.5 minus 6.9.
 ///
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Scalar Remainder(dax::Scalar numerator, dax::Scalar denominator) {
   return internal::remainder_template(numerator, denominator);
 }
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Vector2 Remainder(dax::Vector2 numerator, dax::Vector2 denominator) {
   return internal::remainder_template(numerator, denominator);
 }
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Vector3 Remainder(dax::Vector3 numerator, dax::Vector3 denominator) {
   return internal::remainder_template(numerator, denominator);
 }
-DAX_EXEC_EXPORT
+DAX_EXEC_CONT_EXPORT
 dax::Vector4 Remainder(dax::Vector4 numerator, dax::Vector4 denominator) {
   return internal::remainder_template(numerator, denominator);
 }
@@ -281,7 +255,7 @@ dax::Vector4 Remainder(dax::Vector4 numerator, dax::Vector4 denominator) {
 //-----------------------------------------------------------------------------
 namespace internal {
 template<typename T>
-DAX_EXEC_EXPORT T remquo_template(T numerator, T denominator, T &quotient)
+DAX_EXEC_CONT_EXPORT T remquo_template(T numerator, T denominator, T &quotient)
 {
   typedef dax::VectorTraits<T> Traits;
   T result;
@@ -304,31 +278,31 @@ DAX_EXEC_EXPORT T remquo_template(T numerator, T denominator, T &quotient)
 /// Remainder. In addition, this function also returns the \c quotient used to
 /// get that remainder.
 ///
-DAX_EXEC_EXPORT dax::Scalar RemainderQuotient(dax::Scalar numerator,
+DAX_EXEC_CONT_EXPORT dax::Scalar RemainderQuotient(dax::Scalar numerator,
                                               dax::Scalar denominator,
                                               int &quotient)
 {
   return DAX_SYS_MATH_FUNCTION(remquo)(numerator, denominator, &quotient);
 }
-DAX_EXEC_EXPORT dax::Scalar RemainderQuotient(dax::Scalar numerator,
+DAX_EXEC_CONT_EXPORT dax::Scalar RemainderQuotient(dax::Scalar numerator,
                                               dax::Scalar denominator,
                                               dax::Scalar &quotient)
 {
   return internal::remquo_template(numerator, denominator, quotient);
 }
-DAX_EXEC_EXPORT dax::Vector2 RemainderQuotient(dax::Vector2 numerator,
+DAX_EXEC_CONT_EXPORT dax::Vector2 RemainderQuotient(dax::Vector2 numerator,
                                                dax::Vector2 denominator,
                                                dax::Vector2 &quotient)
 {
   return internal::remquo_template(numerator, denominator, quotient);
 }
-DAX_EXEC_EXPORT dax::Vector3 RemainderQuotient(dax::Vector3 numerator,
+DAX_EXEC_CONT_EXPORT dax::Vector3 RemainderQuotient(dax::Vector3 numerator,
                                                dax::Vector3 denominator,
                                                dax::Vector3 &quotient)
 {
   return internal::remquo_template(numerator, denominator, quotient);
 }
-DAX_EXEC_EXPORT dax::Vector4 RemainderQuotient(dax::Vector4 numerator,
+DAX_EXEC_CONT_EXPORT dax::Vector4 RemainderQuotient(dax::Vector4 numerator,
                                                dax::Vector4 denominator,
                                                dax::Vector4 &quotient)
 {
@@ -338,7 +312,7 @@ DAX_EXEC_EXPORT dax::Vector4 RemainderQuotient(dax::Vector4 numerator,
 //-----------------------------------------------------------------------------
 namespace internal {
 template<typename T>
-DAX_EXEC_EXPORT T modf_template(T x, T &integral)
+DAX_EXEC_CONT_EXPORT T modf_template(T x, T &integral)
 {
   typedef dax::VectorTraits<T> Traits;
   T result;
@@ -359,79 +333,70 @@ DAX_EXEC_EXPORT T modf_template(T x, T &integral)
 /// Gets the integral and fractional parts of \c x. The return value is the
 /// fractional part and \c integral is set to the integral part.
 ///
-DAX_EXEC_EXPORT dax::Scalar ModF(dax::Scalar x, dax::Scalar &integral)
+DAX_EXEC_CONT_EXPORT dax::Scalar ModF(dax::Scalar x, dax::Scalar &integral)
 {
   return internal::modf_template(x, integral);
 }
-DAX_EXEC_EXPORT dax::Vector2 ModF(dax::Vector2 x, dax::Vector2 &integral)
+DAX_EXEC_CONT_EXPORT dax::Vector2 ModF(dax::Vector2 x, dax::Vector2 &integral)
 {
   return internal::modf_template(x, integral);
 }
-DAX_EXEC_EXPORT dax::Vector3 ModF(dax::Vector3 x, dax::Vector3 &integral)
+DAX_EXEC_CONT_EXPORT dax::Vector3 ModF(dax::Vector3 x, dax::Vector3 &integral)
 {
   return internal::modf_template(x, integral);
 }
-DAX_EXEC_EXPORT dax::Vector4 ModF(dax::Vector4 x, dax::Vector4 &integral)
+DAX_EXEC_CONT_EXPORT dax::Vector4 ModF(dax::Vector4 x, dax::Vector4 &integral)
 {
   return internal::modf_template(x, integral);
 }
 
 //-----------------------------------------------------------------------------
-DAX_SYS_MATH_TEMPLATE(ceil)
-DAX_SYS_MATH_TEMPLATE(floor)
-DAX_SYS_MATH_TEMPLATE(round)
-
 /// Round \p x to the smallest integer value not less than x.
 ///
-DAX_EXEC_EXPORT dax::Scalar Ceil(dax::Scalar x) {
-  return internal::ceil_template(x);
+DAX_EXEC_CONT_EXPORT dax::Scalar Ceil(dax::Scalar x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(ceil)>(x);
 }
-DAX_EXEC_EXPORT dax::Vector2 Ceil(dax::Vector2 x) {
-  return internal::ceil_template(x);
+DAX_EXEC_CONT_EXPORT dax::Vector2 Ceil(dax::Vector2 x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(ceil)>(x);
 }
-DAX_EXEC_EXPORT dax::Vector3 Ceil(dax::Vector3 x) {
-  return internal::ceil_template(x);
+DAX_EXEC_CONT_EXPORT dax::Vector3 Ceil(dax::Vector3 x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(ceil)>(x);
 }
-DAX_EXEC_EXPORT dax::Vector4 Ceil(dax::Vector4 x) {
-  return internal::ceil_template(x);
+DAX_EXEC_CONT_EXPORT dax::Vector4 Ceil(dax::Vector4 x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(ceil)>(x);
 }
 
 /// round \p x to the largest integer value not greater than x.
 ///
-DAX_EXEC_EXPORT dax::Scalar Floor(dax::Scalar x) {
-  return internal::floor_template(x);
+DAX_EXEC_CONT_EXPORT dax::Scalar Floor(dax::Scalar x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(floor)>(x);
 }
-DAX_EXEC_EXPORT dax::Vector2 Floor(dax::Vector2 x) {
-  return internal::floor_template(x);
+DAX_EXEC_CONT_EXPORT dax::Vector2 Floor(dax::Vector2 x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(floor)>(x);
 }
-DAX_EXEC_EXPORT dax::Vector3 Floor(dax::Vector3 x) {
-  return internal::floor_template(x);
+DAX_EXEC_CONT_EXPORT dax::Vector3 Floor(dax::Vector3 x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(floor)>(x);
 }
-DAX_EXEC_EXPORT dax::Vector4 Floor(dax::Vector4 x) {
-  return internal::floor_template(x);
+DAX_EXEC_CONT_EXPORT dax::Vector4 Floor(dax::Vector4 x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(floor)>(x);
 }
 
 /// Round \p x to the nearest integral value.
 ///
-DAX_EXEC_EXPORT dax::Scalar Round(dax::Scalar x) {
-  return internal::round_template(x);
+DAX_EXEC_CONT_EXPORT dax::Scalar Round(dax::Scalar x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(round)>(x);
 }
-DAX_EXEC_EXPORT dax::Vector2 Round(dax::Vector2 x) {
-  return internal::round_template(x);
+DAX_EXEC_CONT_EXPORT dax::Vector2 Round(dax::Vector2 x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(round)>(x);
 }
-DAX_EXEC_EXPORT dax::Vector3 Round(dax::Vector3 x) {
-  return internal::round_template(x);
+DAX_EXEC_CONT_EXPORT dax::Vector3 Round(dax::Vector3 x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(round)>(x);
 }
-DAX_EXEC_EXPORT dax::Vector4 Round(dax::Vector4 x) {
-  return internal::round_template(x);
+DAX_EXEC_CONT_EXPORT dax::Vector4 Round(dax::Vector4 x) {
+  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(round)>(x);
 }
 
 }
-}
-} // namespace dax::exec::math
+} // namespace dax::math
 
-#undef DAX_SYS_MATH_FUNCTION
-#undef DAX_SYS_MATH_FUNCTOR
-#undef DAX_SYS_MATH_TEMPLATE
-
-#endif //__dax_exec_math_Precision_h
+#endif //__dax_math_Precision_h

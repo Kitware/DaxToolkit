@@ -16,9 +16,15 @@
 
 set(headers
   ArrayContainerControlError.h
+  ArrayManagerExecution.h
+  ArrayManagerExecutionSerial.h
   ArrayManagerExecutionShareWithControl.h
   ArrayPortalShrink.h
+  DeviceAdapterAlgorithm.h
+  DeviceAdapterAlgorithmSerial.h
   DeviceAdapterError.h
+  DeviceAdapterTag.h
+  DeviceAdapterTagSerial.h
   ScheduleGenerateTopology.h
   ScheduleGenerateMangledTopology.h
   ScheduleMapAdapter.h

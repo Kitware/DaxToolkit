@@ -42,7 +42,7 @@ public:
   /// errors. This is supposed to be set by the scheduler. This method may be
   /// replaced as the execution semantics change.
   ///
-  DAX_EXEC_EXPORT void SetErrorMessageBuffer(
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
       const dax::exec::internal::ErrorMessageBuffer &buffer)
   {
     this->ErrorMessage = buffer;
