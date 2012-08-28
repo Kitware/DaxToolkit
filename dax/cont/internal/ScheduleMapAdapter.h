@@ -59,8 +59,7 @@ struct ScheduleMappingAdapter2
                                          const ExecutionArrayPortalType &lookup2)
     : Functor(functor), LookupTable1(lookup1), LookupTable2(lookup2) { }
 
-  DAX_EXEC_EXPORT void operator()(
-      dax::Id index)
+  DAX_EXEC_EXPORT void operator()(dax::Id index) const
   {
     //send the index as the key, and the LookupTable[index] as value
 

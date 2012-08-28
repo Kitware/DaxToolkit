@@ -60,8 +60,7 @@ struct MarchingCubesClassifyFunctor
 
   // ....................................................................... ()
   DAX_EXEC_EXPORT
-  void operator()(
-      dax::Id cellIndex)
+  void operator()(dax::Id cellIndex) const
   {
     const dax::worklet::MarchingCubesClassify<ValueType> &
         constWorklet = this->Worklet;
@@ -130,7 +129,7 @@ struct MarchingCubesGenerateTopologyFunctor
   DAX_EXEC_EXPORT
   void operator()(
       dax::Id                                        inputCellIndex,
-      dax::Id                                        outputCellIndex)
+      dax::Id                                        outputCellIndex) const
   {
     const dax::worklet::MarchingCubesTopology<ValueType> &constWorklet = this->Worklet;
 
