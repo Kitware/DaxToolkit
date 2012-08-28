@@ -14,6 +14,16 @@
 ##
 ##=============================================================================
 
-add_subdirectory(FY11Timing)
-add_subdirectory(MarchingCubes)
-add_subdirectory(Threshold)
+#-----------------------------------------------------------------------------
+#Include VTK so we can benchmark agianst it
+option(DAX_ENABLE_VTK_TESTING FALSE)
+if(DAX_ENABLE_VTK_TESTING)
+  find_package(VTK REQUIRED)
+endif()
+
+#-----------------------------------------------------------------------------
+if(DAX_ENABLE_VTK_TESTING)
+  include(${VTK_USE_FILE})
+  add_executable(testMC TestMarchingCubes.cxx)
+  target_link_libraries(testMC vtkCommonDataModel vtkIOGeometry)
+endif()
