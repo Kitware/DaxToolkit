@@ -61,10 +61,8 @@ struct MarchingCubesClassifyFunctor
   // ....................................................................... ()
   DAX_EXEC_EXPORT
   void operator()(
-      dax::Id                                        cellIndex,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+      dax::Id cellIndex)
   {
-    this->Worklet.SetErrorMessageBuffer(errorMessage);
     const dax::worklet::MarchingCubesClassify<ValueType> &
         constWorklet = this->Worklet;
 
@@ -83,6 +81,11 @@ struct MarchingCubesClassifyFunctor
                                   constWorklet);
   }
 
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
+  }
 private:
   // ..................................................................... vars
   dax::worklet::MarchingCubesClassify<ValueType> Worklet;
@@ -127,10 +130,8 @@ struct MarchingCubesGenerateTopologyFunctor
   DAX_EXEC_EXPORT
   void operator()(
       dax::Id                                        inputCellIndex,
-      dax::Id                                        outputCellIndex,
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+      dax::Id                                        outputCellIndex)
   {
-    this->Worklet.SetErrorMessageBuffer(errorMessage);
     const dax::worklet::MarchingCubesTopology<ValueType> &constWorklet = this->Worklet;
 
     InputCellType inputCell(this->InputTopology, inputCellIndex);
@@ -156,8 +157,13 @@ struct MarchingCubesGenerateTopologyFunctor
                                       outputCellIndex*3+(i*3)+j,
                                       constWorklet);
         }
+      } 
+  }
 
-      }
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+  {
+    this->Worklet.SetErrorMessageBuffer(errorMessage);
   }
 
 private:
