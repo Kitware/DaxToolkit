@@ -104,6 +104,8 @@ check_type_size("long long" DAX_SIZE_LONG_LONG BUILTIN_TYPES_ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dax/internal/Configure.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/dax/internal/Configure.h
   @ONLY)
+dax_install_headers(
+  dax/internal ${CMAKE_CURRENT_BINARY_DIR}/dax/internal/Configure.h)
 
 
 if (NOT DAX_DISABLE_KITS)
@@ -122,6 +124,8 @@ if (NOT DAX_DISABLE_KITS)
 #-----------------------------------------------------------------------------
 # Add subdirectories
 add_subdirectory(dax)
+
+add_subdirectory(Worklets)
 
 if (DAX_ENABLE_TESTING)
   add_subdirectory(Testing)
