@@ -64,7 +64,7 @@ endfunction(dax_add_header_build_test)
 function(dax_install_headers dir_prefix)
   set(hfiles ${ARGN})
   install(FILES ${hfiles}
-    DESTINATION include/${dir_prefix}
+    DESTINATION ${Dax_INSTALL_INCLUDE_DIR}/${dir_prefix}
     )
 endfunction(dax_install_headers)
 

@@ -22,6 +22,13 @@ set(Dax_MINOR_VERSION 1)
 set(Dax_PATCH_VERSION 0)
 set(Dax_VERSION "${Dax_MAJOR_VERSION}.${Dax_MINOR_VERSION}.${Dax_PATCH_VERSION}")
 
+set(Dax_INSTALL_INCLUDE_DIR "include")
+set(Dax_INSTALL_CONFIG_DIR "include")
+set(Dax_INSTALL_CMAKE_MODULE_DIR "share/dax/cmake")
+
+set(Dax_REQUIRED_BOOST_VERSION 1.48.0)
+set(Dax_REQUIRED_THRUST_VERSION 1.5.2)
+
 # include some dax-specific cmake code.
 include(CMake/DaxMacros.cmake)
 
@@ -119,7 +126,7 @@ if (NOT DAX_DISABLE_KITS)
   # * Smart Ptr
   # * program options
   # * timer
-  find_package(Boost 1.48.0 REQUIRED
+  find_package(Boost ${Dax_REQUIRED_BOOST_VERSION} REQUIRED
     COMPONENTS
       program_options # only needed for the testing executables
       timer # only needed for the testing executables
@@ -140,6 +147,7 @@ endif(NOT DAX_DISABLE_KITS)
 
 # Configuration for build directory.
 set(Dax_INCLUDE_DIRS_CONFIG "${Dax_SOURCE_DIR};${Dax_BINARY_DIR}")
+set(Dax_CMAKE_MODULE_PATH_CONFIG "${Dax_SOURCE_DIR}/CMake")
 configure_file(
   ${Dax_SOURCE_DIR}/CMake/DaxConfig.cmake.in
   ${Dax_BINARY_DIR}/DaxConfig.cmake
@@ -147,14 +155,15 @@ configure_file(
   )
 
 # Configuration for install.
-set(Dax_INCLUDE_DIRS_CONFIG "\${_install_dir}/include")
+set(Dax_INCLUDE_DIRS_CONFIG "\${_install_dir}/${Dax_INSTALL_INCLUDE_DIR}")
+set(Dax_CMAKE_MODULE_PATH_CONFIG "\${_install_dir}/${Dax_INSTALL_CMAKE_MODULE_DIR}")
 configure_file(
   ${Dax_SOURCE_DIR}/CMake/DaxConfig.cmake.in
   ${Dax_BINARY_DIR}/DaxConfig.cmake.install
   @ONLY IMMEDIATE
   )
 install(FILES ${Dax_BINARY_DIR}/DaxConfig.cmake.install
-  DESTINATION include
+  DESTINATION ${Dax_INSTALL_CONFIG_DIR}
   RENAME DaxConfig.cmake
   )
 
@@ -165,15 +174,24 @@ configure_file(
   @ONLY
   )
 install(FILES ${Dax_BINARY_DIR}/DaxConfigVersion.cmake
-  DESTINATION include
+  DESTINATION ${Dax_INSTALL_CONFIG_DIR}
   )
 
 # Install the license file.
-# Is include the right place to put it or should we rename it and put
-# it somewhere else?
 install(FILES ${Dax_SOURCE_DIR}/LICENSE.txt
-  DESTINATION include
+  DESTINATION ${Dax_INSTALL_CONFIG_DIR}
   RENAME DaxLICENSE.txt
+  )
+
+# Install helper configure files.
+install(FILES ${Dax_SOURCE_DIR}/CMake/FindThrust.cmake
+  DESTINATION ${Dax_INSTALL_CMAKE_MODULE_DIR}
+  )
+install(FILES
+    ${Dax_SOURCE_DIR}/CMake/UseDaxSerial.cmake
+    ${Dax_SOURCE_DIR}/CMake/UseDaxOpenMP.cmake
+    ${Dax_SOURCE_DIR}/CMake/UseDaxCuda.cmake
+  DESTINATION ${Dax_INSTALL_CMAKE_MODULE_DIR}
   )
 
 # Enable CPack packaging

@@ -14,14 +14,25 @@
 ##
 ##=============================================================================
 
-#-------------------------------------------------------------------------
-# Thrust comes with the latest versions of CUDA.  Find CUDA first if it
-# is enabled, which will simplify finding thrust.
-if (DAX_ENABLE_CUDA)
-  find_package(CUDA)
-  mark_as_advanced(CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_VERBOSE_BUILD)
-endif (DAX_ENABLE_CUDA)
+set(Dax_Serial_FOUND ${Dax_ENABLE_OPENMP})
+if (NOT Dax_Serial_FOUND)
+  message(STATUS "This build of Dax does not include Serial.")
+endif (NOT Dax_Serial_FOUND)
 
-find_package(Thrust ${Dax_REQUIRED_THRUST_VERSION} REQUIRED)
+# Find the Boost library.
+if (Dax_Serial_FOUND)
+  find_package(Boost ${Dax_REQUIRED_BOOST_VERSION})
 
-add_subdirectory(cont)
+  if (NOT Boost_FOUND)
+    message(STATUS "Boost not found")
+    set(Dax_Serial_FOUND)
+  endif (NOT Boost_FOUND)
+endif (Dax_Serial_FOUND)
+
+# Set up all these dependent packages (if they were all found).
+if (Dax_Serial_FOUND)
+  include_directories(
+    ${Boost_INCLUDE_DIRS}
+    ${Dax_INCLUDE_DIRS}
+    )
+endif (Dax_Serial_FOUND)
