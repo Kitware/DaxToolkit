@@ -167,3 +167,24 @@ configure_file(
 install(FILES ${Dax_BINARY_DIR}/DaxConfigVersion.cmake
   DESTINATION include
   )
+
+# Install the license file.
+# Is include the right place to put it or should we rename it and put
+# it somewhere else?
+install(FILES ${Dax_SOURCE_DIR}/LICENSE.txt
+  DESTINATION include
+  RENAME DaxLICENSE.txt
+  )
+
+# Enable CPack packaging
+#set(CPACK_PACKAGE_DESCRIPTION_FILE ${Dax_SOURCE_DIR}/README.txt)
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Dax Toolkit")
+set(CPACK_PACKAGE_NAME "Dax")
+set(CPACK_PACKAGE_VENDOR "Sandia National Laboratories, Kitware Inc., and UC Davis")
+set(CPACK_PACKAGE_VERSION_MAJOR ${Dax_MAJOR_VERSION})
+set(CPACK_PACKAGE_VERSION_MINOR ${Dax_MINOR_VERSION})
+set(CPACK_PACKAGE_VERSION_PATCH ${Dax_PATCH_VERSION})
+set(CPACK_PACKAGE_FILE_NAME "Dax-${Dax_VERSION}")
+set(CPACK_RESOURCE_FILE_LICENSE ${Dax_SOURCE_DIR}/LICENSE.txt)
+#set(CPACK_RESOURCE_FILE_README ${Dax_SOURCE_DIR}/README.txt)
+include(CPack)
