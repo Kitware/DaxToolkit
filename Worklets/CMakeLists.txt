@@ -14,14 +14,18 @@
 ##
 ##=============================================================================
 
-#-------------------------------------------------------------------------
-# Thrust comes with the latest versions of CUDA.  Find CUDA first if it
-# is enabled, which will simplify finding thrust.
-if (DAX_ENABLE_CUDA)
-  find_package(CUDA)
-  mark_as_advanced(CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_VERBOSE_BUILD)
-endif (DAX_ENABLE_CUDA)
+include_directories(${Boost_INCLUDE_DIRS})
 
-find_package(Thrust ${Dax_REQUIRED_THRUST_VERSION} REQUIRED)
+set(worklets
+  CellGradient.worklet
+  Cosine.worklet
+  Elevation.worklet
+  Magnitude.worklet
+  Sine.worklet
+  Square.worklet
+  Threshold.worklet
+  )
 
-add_subdirectory(cont)
+dax_declare_worklets(${worklets})
+
+add_subdirectory(Testing)
