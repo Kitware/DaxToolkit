@@ -427,11 +427,9 @@ public:
         dax::Vector3 x2 = cellVertexToPointIndex[vert[1]];
         dax::Vector3 x = x1 + t * (x2-x1);
 
-        x = x + dax::Vector3(index3[0],index3[1],index3[2]);
-
         // Adding the point to output. TODO: The triangles generated are clock
         // wise so we need to change to anticlock wise.
-        outVertex[current] = dax::Vector3(x[0],x[1],x[2]);
+        outVertex[current] = x+index3;
         current++;
         }
       }
