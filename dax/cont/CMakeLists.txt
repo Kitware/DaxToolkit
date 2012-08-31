@@ -68,4 +68,5 @@ set(unit_tests
 dax_unit_tests(SOURCES ${unit_tests})
 
 add_subdirectory(arg)
+add_subdirectory(sig)
 add_subdirectory(worklet)
