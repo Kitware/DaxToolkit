@@ -127,34 +127,38 @@ int main(int argc, char*argv[])
   //resultHandle.SetNewControlData(result.begin(),result.end());
   //resultHandle.CompleteAsOutput(); //fetch back to control
 
+  std::ofstream myfile;
+  myfile.open ("output.vtk");
+
   // FIXME: this should show up with valid results when fixed
-  std::cout<< "# vtk DataFile Version 3.0" <<std::endl;
-  std::cout<< "vtk output" << std::endl;
-  std::cout<< "ASCII" <<std::endl;
-  std::cout<< "DATASET POLYDATA" <<std::endl;
-  std::cout<< "POINTS "<< (int)outGrid.GetNumberOfPoints()
+  myfile<< "# vtk DataFile Version 3.0" <<std::endl;
+  myfile<< "vtk output" << std::endl;
+  myfile<< "ASCII" <<std::endl;
+  myfile<< "DATASET POLYDATA" <<std::endl;
+  myfile<< "POINTS "<< (int)outGrid.GetNumberOfPoints()
            << " float" <<std::endl;
   for (int i = 0; i < outGrid.GetNumberOfPoints(); i++)
     {
-    std::cout << result[i][0] << " "
+    myfile << result[i][0] << " "
               << result[i][1] << " "
               << result[i][2] << std::endl;
     }
-  std::cout<<std::endl;
-  std::cout << "POLYGONS "
+  myfile<<std::endl;
+  myfile << "POLYGONS "
             << (int) outGrid.GetNumberOfCells() << " "
             << (int) outGrid.GetNumberOfCells()*4
             << std::endl;
   int j=0;
   for(int i =0 ; i < outGrid.GetNumberOfPoints()/3;++i)
     {
-      std::cout << "3 "
+      myfile << "3 "
                 << j << " "
                 << j+1 << " "
                 << j+2
                 << std::endl;
       j+=3;
     }
+  myfile.close();
 
   return EXIT_SUCCESS;;
 }
