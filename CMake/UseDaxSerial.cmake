@@ -14,11 +14,6 @@
 ##
 ##=============================================================================
 
-set(Dax_Serial_FOUND ${Dax_ENABLE_OPENMP})
-if (NOT Dax_Serial_FOUND)
-  message(STATUS "This build of Dax does not include Serial.")
-endif (NOT Dax_Serial_FOUND)
-
 # Find the Boost library.
 if (Dax_Serial_FOUND)
   find_package(Boost ${Dax_REQUIRED_BOOST_VERSION})

@@ -27,7 +27,7 @@ set(Dax_INSTALL_CONFIG_DIR "include")
 set(Dax_INSTALL_CMAKE_MODULE_DIR "share/dax/cmake")
 
 set(Dax_REQUIRED_BOOST_VERSION 1.48.0)
-set(Dax_REQUIRED_THRUST_VERSION 1.5.2)
+set(Dax_REQUIRED_THRUST_VERSION 1.4.0)
 
 # include some dax-specific cmake code.
 include(CMake/DaxMacros.cmake)

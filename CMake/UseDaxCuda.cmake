@@ -14,7 +14,7 @@
 ##
 ##=============================================================================
 
-set(Dax_Cuda_FOUND ${Dax_ENABLE_OPENMP})
+set(Dax_Cuda_FOUND ${Dax_ENABLE_CUDA})
 if (NOT Dax_Cuda_FOUND)
   message(STATUS "This build of Dax does not include Cuda.")
 endif (NOT Dax_Cuda_FOUND)
