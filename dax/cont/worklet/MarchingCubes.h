@@ -148,7 +148,7 @@ struct MarchingCubesGenerateTopologyFunctor
       for (int j = 0; j < 3; ++j)
         {
         dax::exec::internal::FieldSet(this->Output,
-                                      (outputCellIndex*9)+(((i*3)+j)),
+                                      (outputCellIndex*3)+(((i*3)+j)),
                                       outputPoints[(i*3)+j],
                                       constWorklet);
         dax::exec::internal::FieldSet(this->OutputTopology.CellConnections,
