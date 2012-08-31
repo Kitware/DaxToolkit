@@ -17,6 +17,18 @@
 cmake_minimum_required(VERSION 2.8)
 project (Dax)
 
+set(Dax_MAJOR_VERSION 0)
+set(Dax_MINOR_VERSION 1)
+set(Dax_PATCH_VERSION 0)
+set(Dax_VERSION "${Dax_MAJOR_VERSION}.${Dax_MINOR_VERSION}.${Dax_PATCH_VERSION}")
+
+set(Dax_INSTALL_INCLUDE_DIR "include")
+set(Dax_INSTALL_CONFIG_DIR "include")
+set(Dax_INSTALL_CMAKE_MODULE_DIR "share/dax/cmake")
+
+set(Dax_REQUIRED_BOOST_VERSION 1.48.0)
+set(Dax_REQUIRED_THRUST_VERSION 1.5.2)
+
 # include some dax-specific cmake code.
 include(CMake/DaxMacros.cmake)
 
@@ -104,6 +116,8 @@ check_type_size("long long" DAX_SIZE_LONG_LONG BUILTIN_TYPES_ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dax/internal/Configure.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/dax/internal/Configure.h
   @ONLY)
+dax_install_headers(
+  dax/internal ${CMAKE_CURRENT_BINARY_DIR}/dax/internal/Configure.h)
 
 
 if (NOT DAX_DISABLE_KITS)
@@ -112,7 +126,7 @@ if (NOT DAX_DISABLE_KITS)
   # * Smart Ptr
   # * program options
   # * timer
-  find_package(Boost 1.48.0 REQUIRED
+  find_package(Boost ${Dax_REQUIRED_BOOST_VERSION} REQUIRED
     COMPONENTS
       program_options # only needed for the testing executables
       timer # only needed for the testing executables
@@ -127,4 +141,71 @@ if (DAX_ENABLE_TESTING)
   add_subdirectory(Benchmarks)
 endif (DAX_ENABLE_TESTING)
 
-endif()
+endif(NOT DAX_DISABLE_KITS)
+
+# Configuration for build directory.
+set(Dax_INCLUDE_DIRS_CONFIG "${Dax_SOURCE_DIR};${Dax_BINARY_DIR}")
+set(Dax_CMAKE_MODULE_PATH_CONFIG "${Dax_SOURCE_DIR}/CMake")
+configure_file(
+  ${Dax_SOURCE_DIR}/CMake/DaxConfig.cmake.in
+  ${Dax_BINARY_DIR}/DaxConfig.cmake
+  @ONLY IMMEDIATE
+  )
+
+# Configuration for install.
+set(Dax_INCLUDE_DIRS_CONFIG "\${_install_dir}/${Dax_INSTALL_INCLUDE_DIR}")
+set(Dax_CMAKE_MODULE_PATH_CONFIG "\${_install_dir}/${Dax_INSTALL_CMAKE_MODULE_DIR}")
+configure_file(
+  ${Dax_SOURCE_DIR}/CMake/DaxConfig.cmake.in
+  ${Dax_BINARY_DIR}/DaxConfig.cmake.install
+  @ONLY IMMEDIATE
+  )
+install(FILES ${Dax_BINARY_DIR}/DaxConfig.cmake.install
+  DESTINATION ${Dax_INSTALL_CONFIG_DIR}
+  RENAME DaxConfig.cmake
+  )
+
+# Create supplemental version configuration file.
+configure_file(
+  ${Dax_SOURCE_DIR}/CMake/DaxConfigVersion.cmake.in
+  ${Dax_BINARY_DIR}/DaxConfigVersion.cmake
+  @ONLY
+  )
+install(FILES ${Dax_BINARY_DIR}/DaxConfigVersion.cmake
+  DESTINATION ${Dax_INSTALL_CONFIG_DIR}
+  )
+
+# Install the readme and license files.
+install(FILES ${Dax_SOURCE_DIR}/README.txt
+  DESTINATION ${Dax_INSTALL_CONFIG_DIR}
+  RENAME DaxREADME.txt
+  )
+install(FILES ${Dax_SOURCE_DIR}/LICENSE.txt
+  DESTINATION ${Dax_INSTALL_CONFIG_DIR}
+  RENAME DaxLICENSE.txt
+  )
+
+# Install helper configure files.
+install(FILES ${Dax_SOURCE_DIR}/CMake/FindThrust.cmake
+  DESTINATION ${Dax_INSTALL_CMAKE_MODULE_DIR}
+  )
+install(
+  FILES
+    ${Dax_SOURCE_DIR}/CMake/UseDaxSerial.cmake
+    ${Dax_SOURCE_DIR}/CMake/UseDaxOpenMP.cmake
+    ${Dax_SOURCE_DIR}/CMake/UseDaxCuda.cmake
+  DESTINATION ${Dax_INSTALL_CMAKE_MODULE_DIR}
+  )
+
+# Enable CPack packaging
+set(CPACK_PACKAGE_DESCRIPTION_FILE ${Dax_SOURCE_DIR}/README.txt)
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Dax Toolkit")
+set(CPACK_PACKAGE_NAME "Dax")
+set(CPACK_PACKAGE_VENDOR "Sandia National Laboratories, Kitware Inc., and UC Davis")
+set(CPACK_PACKAGE_VERSION_MAJOR ${Dax_MAJOR_VERSION})
+set(CPACK_PACKAGE_VERSION_MINOR ${Dax_MINOR_VERSION})
+set(CPACK_PACKAGE_VERSION_PATCH ${Dax_PATCH_VERSION})
+set(CPACK_PACKAGE_FILE_NAME "Dax-${Dax_VERSION}")
+set(CPACK_RESOURCE_FILE_LICENSE ${Dax_SOURCE_DIR}/LICENSE.txt)
+set(CPACK_RESOURCE_FILE_README ${Dax_SOURCE_DIR}/README.txt)
+include(CPack)
