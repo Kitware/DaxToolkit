@@ -54,7 +54,7 @@ private:
   GridStorage<GridType> Info;
 
 public:
-
+  typedef typename GridType::CellType CellType;
   TestGrid(const dax::Id& size)
     :Size(size),
      Grid(),
@@ -83,10 +83,44 @@ public:
   ///
   dax::Vector3 GetPointCoordinates(dax::Id index)
   {
-    // Not an efficient implementation, but it's test code so who cares?
-    dax::cont::UniformGrid<DeviceAdapterTag> uniform;
-    this->BuildGrid(uniform);
-    return uniform.ComputePointCoordinates(index);
+    return this->Grid.ComputePointCoordinates(index);
+  }
+
+
+  //Get the cell at a given index
+  CellType GetCell(dax::Id cellId) const
+  {
+    typedef typename GridType::TopologyStructConstExecution TopoType;
+    TopoType topo = this->Grid.PrepareForInput();
+    return CellType(topo,cellId);
+  }
+
+  //get the cell connections (aka topology) at a given cell id
+  dax::Tuple<dax::Id, CellType::NUM_POINTS> GetCellConnections(dax::Id cellId) const
+  {
+    CellType c = this->GetCell(cellId);
+    return c.GetPointIndices();
+  }
+
+  /// This convienience function allows you to generate the Cell
+  // point coordinates for any given data set
+  dax::Tuple<dax::Vector3,CellType::NUM_POINTS> GetCellVertexCoordinates(dax::Id cellIndex) const
+  {
+    typedef typename GridType::PointCoordinatesType CoordType;
+
+    //get the point ids for this cell
+    dax::Tuple<dax::Id, CellType::NUM_POINTS> cellConnections =
+        this->GetCellConnections(cellIndex);
+
+    //get all the points for data set
+    CoordType allCoords = this->Grid.GetPointCoordinates();
+
+    dax::Tuple<dax::Vector3,CellType::NUM_POINTS> coordinates;
+    for (dax::Id index = 0; index < CellType::NUM_POINTS; index++)
+      {
+      coordinates[index] = allCoords.GetPortalConstControl().Get(cellConnections[index]);
+      }
+    return coordinates;
   }
 
   ~TestGrid()
