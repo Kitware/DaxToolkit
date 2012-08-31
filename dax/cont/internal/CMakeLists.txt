@@ -20,6 +20,7 @@ set(headers
   ArrayManagerExecutionSerial.h
   ArrayManagerExecutionShareWithControl.h
   ArrayPortalShrink.h
+  Bindings.h
   DeviceAdapterAlgorithm.h
   DeviceAdapterAlgorithmSerial.h
   DeviceAdapterError.h
@@ -41,6 +42,7 @@ dax_declare_headers(${headers})
 
 set(unit_tests
   UnitTestArrayManagerExecutionShareWithControl.cxx
+  UnitTestBindings.cxx
   UnitTestContTesting.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

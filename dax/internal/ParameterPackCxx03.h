@@ -41,6 +41,7 @@
 #  define _dax_pp_repeat(z,n,x)   _dax_pp_repeat_(z,n,x)
 #  define _dax_pp_repeat_(z,n,x)  x(n)
 #  define _dax_pp_params___(x)    BOOST_PP_ENUM_SHIFTED_BINARY_PARAMS(BOOST_PP_ITERATION(), T___, x)
+#  define _dax_pp_args___(x)      BOOST_PP_ENUM_SHIFTED_PARAMS(BOOST_PP_ITERATION(), x)
 # endif // !(__cplusplus >= 201103L)
 
 #endif // !defined(DAX_DOXYGEN_ONLY)
