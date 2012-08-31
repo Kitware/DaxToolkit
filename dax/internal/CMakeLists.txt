@@ -18,6 +18,7 @@ set(headers
   ExportMacros.h
   GetNthType.h
   MathSystemFunctions.h
+  Members.h
   Testing.h
   )
 
@@ -25,6 +26,7 @@ dax_declare_headers(${headers})
 
 set(unit_tests
   UnitTestGetNthType.cxx
+  UnitTestMembers.cxx
   UnitTestTesting.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
