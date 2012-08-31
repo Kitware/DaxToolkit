@@ -404,6 +404,12 @@ public:
         dax::worklet::internals::triTable + voxelClass;
     int *edge = triCase->edges;
 
+    // Move the coordinates by the index
+    dax::Id3 temp = dax::flatIndexToIndex3Cell(inputCell.GetIndex(),
+                                               inputCell.GetExtent());
+    dax::Vector3 index3 = inputCell.GetOrigin() + dax::make_Vector3(temp[0],
+                                                                    temp[1],
+                                                                    temp[2]);
     dax::Id current = 0;
     for (; edge[0] > -1; edge+=3)
       {
@@ -421,12 +427,6 @@ public:
         dax::Vector3 x2 = cellVertexToPointIndex[vert[1]];
         dax::Vector3 x = x1 + t * (x2-x1);
 
-        // Move the coordinates by the index
-        dax::Id3 temp = dax::flatIndexToIndex3Cell(inputCell.GetIndex(),
-                                                   inputCell.GetExtent());
-        dax::Vector3 index3 = inputCell.GetOrigin() + Vector3(temp[0],
-                                                              temp[1],
-                                                              temp[2]);
         x = x + dax::Vector3(index3[0],index3[1],index3[2]);
 
         // Adding the point to output. TODO: The triangles generated are clock
