@@ -134,7 +134,7 @@ struct MarchingCubesGenerateTopologyFunctor
     const dax::worklet::MarchingCubesTopology<ValueType> &constWorklet = this->Worklet;
 
     InputCellType inputCell(this->InputTopology, inputCellIndex);
-    dax::Tuple<dax::Vector3,3*5> outputPoints;
+    dax::Tuple<dax::Vector3,3*5> outputPoints(dax::Vector3(0,0,0));
 
     constWorklet(inputCell,
                  dax::exec::internal::FieldGetPointsForCell(this->Values,
