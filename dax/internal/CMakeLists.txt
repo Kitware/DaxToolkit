@@ -17,12 +17,8 @@
 set(headers
   ExportMacros.h
   MathSystemFunctions.h
-  Testing.h
   )
 
 dax_declare_headers(${headers})
 
-set(unit_tests
-  UnitTestTesting.cxx
-  )
-dax_unit_tests(SOURCES ${unit_tests})
+add_subdirectory(testing)

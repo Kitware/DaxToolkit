@@ -18,7 +18,7 @@
 
 // TODO: This should be auto-generated.
 
-#include <Worklets/CellGradient.worklet>
+#include <dax/worklets/CellGradient.worklet>
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>

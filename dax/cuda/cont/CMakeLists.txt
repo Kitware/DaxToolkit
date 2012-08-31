@@ -26,9 +26,4 @@ add_subdirectory(internal)
 #-----------------------------------------------------------------------------
 dax_declare_headers(CUDA ${headers})
 
-#-----------------------------------------------------------------------------
-set(unit_tests
-  UnitTestCudaMath.cu
-  UnitTestDeviceAdapterCuda.cu
-  )
-dax_unit_tests(CUDA SOURCES ${unit_tests})
+add_subdirectory(testing)

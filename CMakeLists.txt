@@ -137,10 +137,8 @@ if (NOT DAX_DISABLE_KITS)
 # Add subdirectories
 add_subdirectory(dax)
 
-add_subdirectory(Worklets)
-
 if (DAX_ENABLE_TESTING)
-  add_subdirectory(Testing)
+  add_subdirectory(Benchmarks)
 endif (DAX_ENABLE_TESTING)
 
 endif(NOT DAX_DISABLE_KITS)
