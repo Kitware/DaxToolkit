@@ -29,9 +29,7 @@
 // templates and other implementations of the same name. Get around the problem
 // by using the boost version when compiling for a CPU.
 #include <boost/math/special_functions/fpclassify.hpp>
-using boost::math::isnan;
-using boost::math::isinf;
-using boost::math::isfinite;
+#define DAX_USE_BOOST_CLASSIFY
 
 #endif
 
@@ -152,6 +150,9 @@ DAX_EXEC_CONT_EXPORT dax::Scalar Epsilon()
 ///
 DAX_EXEC_CONT_EXPORT bool IsNan(dax::Scalar x)
 {
+#ifdef DAX_USE_BOOST_CLASSIFY
+  using boost::math::isnan;
+#endif
   return (isnan(x) != 0);
 }
 
@@ -159,6 +160,9 @@ DAX_EXEC_CONT_EXPORT bool IsNan(dax::Scalar x)
 ///
 DAX_EXEC_CONT_EXPORT bool IsInf(dax::Scalar x)
 {
+#ifdef DAX_USE_BOOST_CLASSIFY
+  using boost::math::isinf;
+#endif
   return (isinf(x) != 0);
 }
 
@@ -166,6 +170,9 @@ DAX_EXEC_CONT_EXPORT bool IsInf(dax::Scalar x)
 ///
 DAX_EXEC_CONT_EXPORT bool IsFinite(dax::Scalar x)
 {
+#ifdef DAX_USE_BOOST_CLASSIFY
+  using boost::math::isfinite;
+#endif
   return (isfinite(x) != 0);
 }
 
@@ -398,5 +405,9 @@ DAX_EXEC_CONT_EXPORT dax::Vector4 Round(dax::Vector4 x) {
 
 }
 } // namespace dax::math
+
+#ifdef DAX_USE_BOOST_CLASSIFY
+#undef DAX_USE_BOOST_CLASSIFY
+#endif
 
 #endif //__dax_math_Precision_h
