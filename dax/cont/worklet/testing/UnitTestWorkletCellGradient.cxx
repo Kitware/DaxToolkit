@@ -36,16 +36,57 @@ namespace {
 const dax::Id DIM = 64;
 
 //-----------------------------------------------------------------------------
+template<typename CellType>
+void verifyGradient(const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &pointCoordinates,
+                    const dax::Vector3& computedGradient,
+                    const dax::Vector3& trueGradient)
+{
+  //the true gradient needs to be fixed based on the toplogical demensions
+  dax::Vector3 expectedGradient;
+  if (CellType::TOPOLOGICAL_DIMENSIONS == 3)
+    {
+    expectedGradient = trueGradient;
+    }
+  else if (CellType::TOPOLOGICAL_DIMENSIONS == 2)
+    {
+    dax::Vector3 normal = dax::math::TriangleNormal(
+          pointCoordinates[0], pointCoordinates[1], pointCoordinates[2]);
+    dax::math::Normalize(normal);
+    expectedGradient =
+        trueGradient - dax::dot(trueGradient,normal)*normal;
+    }
+  else if (CellType::TOPOLOGICAL_DIMENSIONS == 1)
+    {
+    dax::Vector3 direction =
+        dax::math::Normal(pointCoordinates[1]-pointCoordinates[0]);
+    expectedGradient = direction * dax::dot(direction, trueGradient);
+    }
+  else if (CellType::TOPOLOGICAL_DIMENSIONS == 0)
+    {
+    expectedGradient = dax::make_Vector3(0, 0, 0);
+    }
+  else
+    {
+    DAX_TEST_FAIL("Unknown cell dimension.");
+    }
+
+  DAX_TEST_ASSERT(test_equal(computedGradient,expectedGradient),"Got bad gradient");
+}
+
+//-----------------------------------------------------------------------------
 struct TestCellGradientWorklet
 {
   //----------------------------------------------------------------------------
   template<typename GridType>
   void operator()(const GridType&) const
     {
+    typedef typename GridType::CellType CellType;
     dax::cont::internal::TestGrid<
         GridType,
         dax::cont::ArrayContainerControlTagBasic,
         dax::cont::DeviceAdapterTagSerial> grid(DIM);
+
+
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
     std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
@@ -80,9 +121,10 @@ struct TestCellGradientWorklet
          cellIndex < grid->GetNumberOfCells();
          cellIndex++)
       {
-      dax::Vector3 gradientValue = gradient[cellIndex];
-      DAX_TEST_ASSERT(test_equal(gradientValue, trueGradient),
-                      "Got bad gradient");
+      verifyGradient<CellType>(
+                               grid.GetCellVertexCoordinates(cellIndex),
+                               gradient[cellIndex],
+                               trueGradient);
       }
     }
 };
