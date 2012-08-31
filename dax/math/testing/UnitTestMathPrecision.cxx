@@ -14,6 +14,10 @@
 //
 //=============================================================================
 
+// This teases out a bug where math functions in the std namespace conflict
+// with math functions in other namespaces.
+using namespace std;
+
 #include <dax/math/Precision.h>
 
 #include <dax/exec/VectorOperations.h>
