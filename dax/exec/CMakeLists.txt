@@ -52,6 +52,7 @@ configure_file(
   )
 
 #-----------------------------------------------------------------------------
+add_subdirectory(arg)
 add_subdirectory(internal)
 
 set(unit_tests
