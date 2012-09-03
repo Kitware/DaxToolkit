@@ -19,6 +19,7 @@ set(headers
   DerivativeWeights.h
   ErrorMessageBuffer.h
   FieldAccess.h
+  Functor.h
   GridTopologies.h
   InterpolationWeights.h
   TestingTopologyGenerator.h
@@ -34,6 +35,7 @@ set(unit_tests
   UnitTestDerivativeWeights.cxx
   UnitTestErrorMessageBuffer.cxx
   UnitTestInterpolationWeights.cxx
+  UnitTestFunctor.cxx
   UnitTestGridTopologies.cxx
   UnitTestTopologyGenerator.cxx
   )
