@@ -712,18 +712,21 @@ private:
     DAX_TEST_ASSERT(gotError, "Never got the error thrown.");
   }
 
-  struct TestAll
+  struct TestWorklets
   {
     template<typename GridType>
-    DAX_CONT_EXPORT void WorkletTests()
+    DAX_CONT_EXPORT void operator()(const GridType&) const
       {
       TestWorkletMapField<GridType>();
       TestWorkletFieldMapError<GridType>();
       TestWorkletMapCell<GridType>();
       TestWorkletCellMapError<GridType>();
       }
+  };
 
-    DAX_CONT_EXPORT void operator()()
+  struct TestAll
+  {
+    DAX_CONT_EXPORT void operator()() const
     {
       std::cout << "Doing DeviceAdapter tests" << std::endl;
       TestArrayManagerExecution();
@@ -735,45 +738,10 @@ private:
       TestInclusiveScan();
       TestErrorExecution();
 
-      std::cout << "Doing Worklet tests with UniformGrid" << std::endl;
-      WorkletTests<dax::cont::UniformGrid<DeviceAdapterTag> >();
-
-      std::cout << "Doing Worklet tests with UnstructuredGrid types" << std::endl;
-      WorkletTests<dax::cont::UnstructuredGrid
-          <
-          dax::exec::CellHexahedron,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> >();
-      WorkletTests<dax::cont::UnstructuredGrid
-          <
-          dax::exec::CellTetrahedron,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> >();
-      WorkletTests<dax::cont::UnstructuredGrid
-          <
-          dax::exec::CellWedge,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> >();
-      WorkletTests<dax::cont::UnstructuredGrid
-          <
-          dax::exec::CellTriangle,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> >();
-      WorkletTests<dax::cont::UnstructuredGrid
-          <
-          dax::exec::CellQuadrilateral,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> >();
-      WorkletTests<dax::cont::UnstructuredGrid
-          <
-          dax::exec::CellLine,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> >();
-      WorkletTests<dax::cont::UnstructuredGrid
-          <
-          dax::exec::CellVertex,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> >();
+      std::cout << "Doing Worklet tests with all grid type" << std::endl;
+      dax::cont::internal::GridTesting::TryAllGridTypes(TestWorklets(),
+                                          ArrayContainerControlTagBasic(),
+                                                        DeviceAdapterTag());
     }
   };
 

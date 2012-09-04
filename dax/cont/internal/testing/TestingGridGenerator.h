@@ -46,7 +46,7 @@ private:
   GridType Grid;
   template<typename GT> struct GridStorage {};
   template<typename U, class UCCT, class DAT>
-  struct GridStorage<dax::cont::UnstructuredGrid<U,UCCT,DAT> >
+  struct GridStorage<dax::cont::UnstructuredGrid<U,UCCT,UCCT,DAT> >
     {
     std::vector<dax::Id> topology;
     std::vector<dax::Vector3> points;
@@ -193,7 +193,8 @@ private:
   // ............................................................... Hexahedron
   void BuildGrid(
     dax::cont::UnstructuredGrid<
-    dax::exec::CellHexahedron,ArrayContainerControlTag,DeviceAdapterTag>
+    dax::exec::CellHexahedron,
+    ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
     &grid)
     {
       //we need to make a volume grid
@@ -216,7 +217,10 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-        dax::exec::CellHexahedron,ArrayContainerControlTag,DeviceAdapterTag>(
+             dax::exec::CellHexahedron,
+             ArrayContainerControlTag,
+             ArrayContainerControlTag,
+             DeviceAdapterTag>(
           this->MakeArrayHandle(this->Info.topology),
           this->MakeArrayHandle(this->Info.points));
     }
@@ -224,7 +228,8 @@ private:
   // .............................................................. Tetrahedron
   void BuildGrid(
     dax::cont::UnstructuredGrid<
-    dax::exec::CellTetrahedron,ArrayContainerControlTag,DeviceAdapterTag>
+    dax::exec::CellTetrahedron,
+    ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
     &grid)
     {
       dax::cont::UniformGrid<DeviceAdapterTag> uniform;
@@ -246,7 +251,10 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-        dax::exec::CellTetrahedron,ArrayContainerControlTag,DeviceAdapterTag>(
+             dax::exec::CellTetrahedron,
+             ArrayContainerControlTag,
+             ArrayContainerControlTag,
+             DeviceAdapterTag>(
           this->MakeArrayHandle(this->Info.topology),
           this->MakeArrayHandle(this->Info.points));
     }
@@ -254,7 +262,8 @@ private:
   // .................................................................... Wedge
   void BuildGrid(
     dax::cont::UnstructuredGrid<
-    dax::exec::CellWedge,ArrayContainerControlTag,DeviceAdapterTag>
+    dax::exec::CellWedge,
+    ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
     &grid)
     {
       dax::cont::UniformGrid<DeviceAdapterTag> uniform;
@@ -275,7 +284,10 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-        dax::exec::CellWedge,ArrayContainerControlTag,DeviceAdapterTag>(
+             dax::exec::CellWedge,
+             ArrayContainerControlTag,
+             ArrayContainerControlTag,
+             DeviceAdapterTag>(
           this->MakeArrayHandle(this->Info.topology),
           this->MakeArrayHandle(this->Info.points));
     }
@@ -283,7 +295,8 @@ private:
   // ................................................................. Triangle
   void BuildGrid(
     dax::cont::UnstructuredGrid<
-    dax::exec::CellTriangle,ArrayContainerControlTag,DeviceAdapterTag>
+    dax::exec::CellTriangle,
+    ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
     &grid)
     {
       //we need to make a volume grid
@@ -310,7 +323,10 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-        dax::exec::CellTriangle,ArrayContainerControlTag,DeviceAdapterTag>(
+             dax::exec::CellTriangle,
+             ArrayContainerControlTag,
+             ArrayContainerControlTag,
+             DeviceAdapterTag>(
           this->MakeArrayHandle(this->Info.topology),
           this->MakeArrayHandle(this->Info.points));
     }
@@ -318,7 +334,8 @@ private:
   // ............................................................ Quadrilateral
   void BuildGrid(
     dax::cont::UnstructuredGrid<
-    dax::exec::CellQuadrilateral,ArrayContainerControlTag,DeviceAdapterTag>
+    dax::exec::CellQuadrilateral,
+    ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
     &grid)
     {
       dax::cont::UniformGrid<DeviceAdapterTag> uniform;
@@ -344,7 +361,10 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-        dax::exec::CellQuadrilateral,ArrayContainerControlTag,DeviceAdapterTag>(
+             dax::exec::CellQuadrilateral,
+             ArrayContainerControlTag,
+             ArrayContainerControlTag,
+             DeviceAdapterTag>(
           this->MakeArrayHandle(this->Info.topology),
           this->MakeArrayHandle(this->Info.points));
     }
@@ -352,7 +372,8 @@ private:
   // ..................................................................... Line
   void BuildGrid(
     dax::cont::UnstructuredGrid<
-    dax::exec::CellLine,ArrayContainerControlTag,DeviceAdapterTag>
+    dax::exec::CellLine,
+    ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
     &grid)
     {
       dax::cont::UniformGrid<DeviceAdapterTag> uniform;
@@ -378,7 +399,10 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-        dax::exec::CellLine,ArrayContainerControlTag,DeviceAdapterTag>(
+             dax::exec::CellLine,
+              ArrayContainerControlTag,
+              ArrayContainerControlTag,
+              DeviceAdapterTag>(
           this->MakeArrayHandle(this->Info.topology),
           this->MakeArrayHandle(this->Info.points));
     }
@@ -386,7 +410,8 @@ private:
   // ................................................................... Vertex
   void BuildGrid(
     dax::cont::UnstructuredGrid<
-    dax::exec::CellVertex,ArrayContainerControlTag,DeviceAdapterTag>
+    dax::exec::CellVertex,
+    ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
     &grid)
     {
       dax::cont::UniformGrid<DeviceAdapterTag> uniform;
@@ -407,7 +432,10 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-        dax::exec::CellVertex,ArrayContainerControlTag,DeviceAdapterTag>(
+              dax::exec::CellVertex,
+              ArrayContainerControlTag,
+              ArrayContainerControlTag,
+              DeviceAdapterTag>(
           this->MakeArrayHandle(this->Info.topology),
           this->MakeArrayHandle(this->Info.points));
     }
@@ -465,43 +493,50 @@ struct GridTesting
             function, "dax::UniformGrid"));
 
     dax::cont::UnstructuredGrid<
-        dax::exec::CellHexahedron,ArrayContainerControlTag,DeviceAdapterTag>
+        dax::exec::CellHexahedron,
+        ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
         hexGrid;
     check(hexGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Hexahedron"));
 
     dax::cont::UnstructuredGrid<
-        dax::exec::CellTetrahedron,ArrayContainerControlTag,DeviceAdapterTag>
+        dax::exec::CellTetrahedron,
+        ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
         tetGrid;
     check(tetGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Tetrahedrons"));
 
     dax::cont::UnstructuredGrid<
-        dax::exec::CellWedge,ArrayContainerControlTag,DeviceAdapterTag>
+        dax::exec::CellWedge,
+        ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
         wedgeGrid;
     check(wedgeGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Wedges"));
 
     dax::cont::UnstructuredGrid<
-        dax::exec::CellTriangle,ArrayContainerControlTag,DeviceAdapterTag>
+        dax::exec::CellTriangle,
+        ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
         triGrid;
     check(triGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Triangles"));
 
     dax::cont::UnstructuredGrid<
-        dax::exec::CellQuadrilateral,ArrayContainerControlTag,DeviceAdapterTag>
+        dax::exec::CellQuadrilateral,
+        ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
         quadGrid;
     check(quadGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Quadrilaterals"));
 
     dax::cont::UnstructuredGrid<
-        dax::exec::CellLine,ArrayContainerControlTag,DeviceAdapterTag>
+        dax::exec::CellLine,
+        ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
         lineGrid;
     check(lineGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Lines"));
 
     dax::cont::UnstructuredGrid<
-        dax::exec::CellVertex,ArrayContainerControlTag,DeviceAdapterTag>
+        dax::exec::CellVertex,
+        ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
         vertGrid;
     check(vertGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Vertices"));
