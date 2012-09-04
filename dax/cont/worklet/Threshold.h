@@ -21,8 +21,6 @@
 
 #include <dax/worklets/Threshold.worklet>
 
-#include <boost/shared_ptr.hpp>
-
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
