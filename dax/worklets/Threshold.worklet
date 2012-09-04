@@ -21,6 +21,7 @@
 #include <dax/exec/VectorOperations.h>
 #include <dax/exec/WorkletDetermineNewCellCount.h>
 #include <dax/exec/WorkletGenerateTopology.h>
+#include <dax/math/Compare.h>
 
 namespace dax {
 namespace worklet {
@@ -39,7 +40,8 @@ struct ThresholdFunction {
 
   DAX_EXEC_EXPORT void operator()(T value)
   {
-    valid &= (value >= Min) && (value <= Max);
+    valid &= (dax::math::GreaterEqual()(value,Min)) &&
+             (dax::math::LessEqual()(value,Max));
   }
 };
 
@@ -63,7 +65,6 @@ public:
     dax::exec::VectorForEach(values, threshold);
     newCellCount = threshold.valid;
   }
-
 private:
   ValueType ThresholdMin;
   ValueType ThresholdMax;
