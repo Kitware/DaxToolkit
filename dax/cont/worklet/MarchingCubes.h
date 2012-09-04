@@ -20,8 +20,6 @@
 // TODO: This should be auto-generated.
 #include <dax/worklets/MarchingCubes.worklet>
 
-#include <boost/shared_ptr.hpp>
-
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
@@ -177,17 +175,16 @@ private:
 // -------------------------------------------------------------- MarchingCubes
 template<class ValueType,
          class Container1,
-         class Container2,
          class Adapter>
 class MarchingCubes : public dax::cont::internal::ScheduleGenerateMangledTopology
     <
-    MarchingCubes<ValueType,Container1,Container2,Adapter>,
+    MarchingCubes<ValueType,Container1,Adapter>,
     Adapter>
 {
 protected:
   // ................................................................ typesdefs
   typedef dax::cont::internal::ScheduleGenerateMangledTopology<
-      MarchingCubes<ValueType,Container1,Container2,Adapter>, Adapter> Superclass;
+      MarchingCubes<ValueType,Container1,Adapter>, Adapter> Superclass;
   typedef typename Superclass::ArrayHandleId ArrayHandleId;
 
 public:
@@ -195,11 +192,9 @@ public:
   //constructor that is passed all the user decided parts of the worklet too
   MarchingCubes(
      const ValueType& isoValue,
-     const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &MarchingCubesField,
-     dax::cont::ArrayHandle<ValueType,Container2,Adapter> &outputField)
+     const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &MarchingCubesField)
     : IsoValue(isoValue),
-      InputHandle(MarchingCubesField),
-      OutputHandle(outputField)
+      InputHandle(MarchingCubesField)
   {
 
   }
@@ -259,11 +254,6 @@ public:
         typename OutputGridType::TopologyStructExecution>
       FunctorType;
 
-    typedef typename dax::cont::ArrayHandle<ValueType,
-                                            Container2,
-                                            Adapter>::PortalExecution
-      OutputPortal;
-
     dax::worklet::MarchingCubesTopology<ValueType> worklet(this->IsoValue);
 
     FunctorType functor(
@@ -281,7 +271,6 @@ private:
   // ..................................................................... vars
   ValueType                                                         IsoValue;
   const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &InputHandle;
-  dax::cont::ArrayHandle<ValueType,Container2,Adapter>      &OutputHandle;
 };
 
 }
@@ -299,19 +288,16 @@ template<class InGridType,
          class OutGridType,
          typename ValueType,
          class Container1,
-         class Container2,
          class Adapter>
 inline void MarchingCubes(
     const InGridType &inGrid,
     OutGridType &outGeom,
     ValueType IsoValue,
-    const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &MarchingCubesHandle,
-    dax::cont::ArrayHandle<ValueType,Container2,Adapter> &MarchingCubesResult)
+    const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &MarchingCubesHandle)
 {
   dax::exec::internal::kernel::MarchingCubes<
-      ValueType,Container1,Container2,Adapter> marchingCubes(IsoValue,
-                                                         MarchingCubesHandle,
-                                                         MarchingCubesResult);
+      ValueType,Container1,Adapter> marchingCubes(IsoValue,
+                                                  MarchingCubesHandle);
 
   marchingCubes.Run(inGrid, outGeom);
 }

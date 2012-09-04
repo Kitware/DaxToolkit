@@ -69,8 +69,7 @@ struct TestMarchingCubesWorklet
     dax::cont::worklet::MarchingCubes(inGrid,
                                       outGrid,
                                       isoValue,
-                                      fieldHandle,
-                                      resultHandle);
+                                      fieldHandle);
 
     DAX_TEST_ASSERT(resultHandle.GetNumberOfValues()==outGrid.GetNumberOfPoints(),
                     "Incorrect number of points in the result array");
