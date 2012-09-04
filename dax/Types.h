@@ -98,7 +98,7 @@ struct equals
   template<typename T>
   bool operator()(const T& a, const T& b) const
   {
-    return a[Size-1] == b[Size-1] && equals<Size-1>()(a,b);
+    return equals<Size-1>()(a,b) && a[Size-1] == b[Size-1];
   }
 };
 
@@ -111,87 +111,6 @@ struct equals<1>
     return a[0] == b[0];
   }
 };
-
-template<int Size>
-struct gte
-{
-  template<typename T>
-  bool operator()(const T& a, const T& b) const
-  {
-    return a[Size-1] >= b[Size-1] && gte<Size-1>()(a,b);
-  }
-};
-
-template<>
-struct gte<1>
-{
-  template<typename T>
-  bool operator()(const T& a, const T& b) const
-  {
-    return a[0] >= b[0];
-  }
-};
-
-template<int Size>
-struct gt
-{
-  template<typename T>
-  bool operator()(const T& a, const T& b) const
-  {
-    return a[Size-1] > b[Size-1] && gt<Size-1>()(a,b);
-  }
-};
-
-template<>
-struct gt<1>
-{
-  template<typename T>
-  bool operator()(const T& a, const T& b) const
-  {
-    return a[0] > b[0];
-  }
-};
-
-template<int Size>
-struct lte
-{
-  template<typename T>
-  bool operator()(const T& a, const T& b) const
-  {
-    return a[Size-1] <= b[Size-1] && lte<Size-1>()(a,b);
-  }
-};
-
-template<>
-struct lte<1>
-{
-  template<typename T>
-  bool operator()(const T& a, const T& b) const
-  {
-    return a[0] <= b[0];
-  }
-};
-
-template<int Size>
-struct lt
-{
-  template<typename T>
-  bool operator()(const T& a, const T& b) const
-  {
-    return a[Size-1] < b[Size-1] && lt<Size-1>()(a,b);
-  }
-};
-
-template<>
-struct lt<1>
-{
-  template<typename T>
-  bool operator()(const T& a, const T& b) const
-  {
-    return a[0] < b[0];
-  }
-};
-
 } // namespace internal
 
 #if DAX_SIZE_ID == 4
@@ -259,27 +178,6 @@ public:
   {
     return !(this->operator ==(b));
   }
-
-  DAX_EXEC_CONT_EXPORT bool operator >= (const dax::Tuple<T,Size> &b) const
-  {
-  return dax::internal::gte<Size>()(*this,b);
-  }
-
-  DAX_EXEC_CONT_EXPORT bool operator > (const dax::Tuple<T,Size> &b) const
-  {
-  return dax::internal::gt<Size>()(*this,b);
-  }
-
-  DAX_EXEC_CONT_EXPORT bool operator <= (const dax::Tuple<T,Size> &b) const
-  {
-  return dax::internal::lte<Size>()(*this,b);
-  }
-
-  DAX_EXEC_CONT_EXPORT bool operator < (const dax::Tuple<T,Size> &b) const
-  {
-  return dax::internal::lt<Size>()(*this,b);
-  }
-
 
 protected:
   ComponentType Components[NUM_COMPONENTS];
