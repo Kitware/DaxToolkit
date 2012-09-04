@@ -26,8 +26,4 @@ add_subdirectory(internal)
 #-----------------------------------------------------------------------------
 dax_declare_headers(${headers})
 
-#-----------------------------------------------------------------------------
-set(unit_tests
-  UnitTestDeviceAdapterOpenMP.cxx
-  )
-dax_unit_tests(SOURCES ${unit_tests})
+add_subdirectory(testing)

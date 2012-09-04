@@ -14,12 +14,11 @@
 //
 //=============================================================================
 
-#ifndef __dax_cuda_cont_worklet_CountPointUsage_h
-#define __dax_cuda_cont_worklet_CountPointUsage_h
+#ifndef __dax_cuda_cont_worklet_MarchingCubes_h
+#define __dax_cuda_cont_worklet_MarchingCubes_h
 
 // TODO: This should be auto-generated.
-
-#include <Worklets/MarchingCubes.worklet>
+#include <dax/worklets/MarchingCubes.worklet>
 
 #include <boost/shared_ptr.hpp>
 
@@ -156,7 +155,7 @@ struct MarchingCubesGenerateTopologyFunctor
                                       outputCellIndex*3+(i*3)+j,
                                       constWorklet);
         }
-      } 
+      }
   }
 
   DAX_CONT_EXPORT void SetErrorMessageBuffer(
@@ -321,4 +320,4 @@ inline void MarchingCubes(
 }
 } //dax::cuda::cont::worklet
 
-#endif //__dax_cuda_cont_worklet_CountPointUsage_h
+#endif //__dax_cuda_cont_worklet_MarchingCubes_h

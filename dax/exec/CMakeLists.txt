@@ -55,10 +55,4 @@ configure_file(
 #-----------------------------------------------------------------------------
 add_subdirectory(internal)
 
-set(unit_tests
-  UnitTestCells.cxx
-  UnitTestDerivative.cxx
-  UnitTestInterpolate.cxx
-  UnitTestParametricCoordinates.cxx
-  )
-dax_unit_tests(SOURCES ${unit_tests})
+add_subdirectory(testing)

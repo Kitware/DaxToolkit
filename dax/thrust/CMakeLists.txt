@@ -22,6 +22,6 @@ if (DAX_ENABLE_CUDA)
   mark_as_advanced(CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_VERBOSE_BUILD)
 endif (DAX_ENABLE_CUDA)
 
-find_package(Thrust REQUIRED)
+find_package(Thrust ${Dax_REQUIRED_THRUST_VERSION} REQUIRED)
 
 add_subdirectory(cont)

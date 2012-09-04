@@ -30,7 +30,7 @@
 // implementations of the same name. Get around the problem by using the boost
 // version when compiling for a CPU.
 #include <boost/math/special_functions/sign.hpp>
-using boost::math::signbit;
+#define DAX_USE_BOOST_SIGN
 
 #endif
 
@@ -75,6 +75,9 @@ DAX_EXEC_CONT_EXPORT dax::Id3 Abs(dax::Id3 x)
 ///
 DAX_EXEC_CONT_EXPORT bool IsNegative(dax::Scalar x)
 {
+#ifdef DAX_USE_BOOST_SIGN
+  using boost::math::signbit;
+#endif
   return (signbit(x) != 0);
 }
 
@@ -89,5 +92,9 @@ DAX_EXEC_CONT_EXPORT dax::Scalar CopySign(dax::Scalar x, dax::Scalar y)
 
 }
 } // namespace dax::math
+
+#ifdef DAX_USE_BOOST_SIGN
+#undef DAX_USE_BOOST_SIGN
+#endif
 
 #endif //__dax_math_Sign_h

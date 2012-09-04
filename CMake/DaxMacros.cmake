@@ -42,7 +42,7 @@ function(dax_add_header_build_test name dir_prefix use_cuda)
   foreach (header ${ARGN})
     string(REPLACE "${CMAKE_CURRENT_BINARY_DIR}" "" header "${header}")
     get_filename_component(headername ${header} NAME_WE)
-    set(src ${CMAKE_CURRENT_BINARY_DIR}/TestBuild_${name}_${headername}${suffix})
+    set(src ${CMAKE_CURRENT_BINARY_DIR}/testing/TestBuild_${name}_${headername}${suffix})
     configure_file(${Dax_SOURCE_DIR}/CMake/TestBuild.cxx.in ${src} @ONLY)
     set(cxxfiles ${cxxfiles} ${src})
   endforeach (header)
@@ -59,7 +59,14 @@ function(dax_add_header_build_test name dir_prefix use_cuda)
   set_source_files_properties(${hfiles}
     PROPERTIES HEADER_FILE_ONLY TRUE
     )
-endfunction()
+endfunction(dax_add_header_build_test)
+
+function(dax_install_headers dir_prefix)
+  set(hfiles ${ARGN})
+  install(FILES ${hfiles}
+    DESTINATION ${Dax_INSTALL_INCLUDE_DIR}/${dir_prefix}
+    )
+endfunction(dax_install_headers)
 
 # Declare a list of header files.  Will make sure the header files get
 # compiled and show up in an IDE.
@@ -73,10 +80,21 @@ function(dax_declare_headers)
     )
   set(hfiles ${DAX_DH_UNPARSED_ARGUMENTS})
   dax_get_kit_name(name dir_prefix)
-  dax_add_header_build_test(
-    "${name}" "${dir_prefix}" "${DAX_DH_CUDA}" ${hfiles}
-    )
+
+  #only do header testing if enable testing is turned on
+  if (DAX_ENABLE_TESTING)
+    dax_add_header_build_test(
+      "${name}" "${dir_prefix}" "${DAX_DH_CUDA}" ${hfiles})
+  endif()
+  #always install headers
+  dax_install_headers("${dir_prefix}" ${hfiles})
 endfunction(dax_declare_headers)
+
+# Declare a list of worklet files.
+function(dax_declare_worklets)
+  # Currently worklets are just really header files.
+  dax_declare_headers(${ARGN})
+endfunction(dax_declare_worklets)
 
 # Declare unit tests, which should be in the same directory as a kit
 # (package, module, whatever you call it).  Usage:
