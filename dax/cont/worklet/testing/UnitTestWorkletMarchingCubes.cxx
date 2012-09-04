@@ -60,9 +60,6 @@ struct TestMarchingCubesWorklet
     dax::cont::ArrayHandle<dax::Scalar> fieldHandle =
         dax::cont::make_ArrayHandle(field);
 
-    //unkown size
-    dax::cont::ArrayHandle<dax::Scalar> resultHandle;
-
     std::cout << "Running MarchingCubes worklet" << std::endl;
     dax::Scalar isoValue = ISO_VALUE;
 
@@ -71,7 +68,9 @@ struct TestMarchingCubesWorklet
                                       isoValue,
                                       fieldHandle);
 
-    DAX_TEST_ASSERT(resultHandle.GetNumberOfValues()==outGrid.GetNumberOfPoints(),
+    //how will we verify this now? we need some way to save and encode the
+    //proper coordinates and compare that here instead
+    DAX_TEST_ASSERT(outGrid.GetNumberOfPoints()!=inGrid.GetNumberOfPoints(),
                     "Incorrect number of points in the result array");
     }
 };
