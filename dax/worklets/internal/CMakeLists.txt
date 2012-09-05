@@ -14,19 +14,8 @@
 ##
 ##=============================================================================
 
-include_directories(${Boost_INCLUDE_DIRS})
-
-set(worklets
-  CellGradient.worklet
-  Cosine.worklet
-  Elevation.worklet
-  Magnitude.worklet
-  Sine.worklet
-  Square.worklet
-  Threshold.worklet
+set(headers
+  MarchingCubesTable.h
   )
 
-dax_declare_worklets(${worklets})
-
-add_subdirectory(internal)
-add_subdirectory(testing)
+dax_declare_headers(${headers})
