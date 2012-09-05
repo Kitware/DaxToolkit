@@ -43,20 +43,19 @@ inline unsigned char GetVoxelClassification(const T isoValue,const dax::Tuple<T,
 }
 
 // ------------------------------------------------------------------- Classify
-template<typename ValueType>
 class MarchingCubesClassify : public dax::exec::WorkletDetermineNewCellCount
 {
 public:
   // .................................................................... cnstr
   DAX_CONT_EXPORT
-  MarchingCubesClassify(ValueType isoValue)
+  MarchingCubesClassify(dax::Scalar isoValue)
     : IsoValue(isoValue) {  }
 
   // ....................................................................... ()
   template<class InputCellType>
   DAX_EXEC_EXPORT
   void operator()(const InputCellType &daxNotUsed(cell),
-                  const dax::Tuple<ValueType,InputCellType::NUM_POINTS> &values,
+                  const dax::Tuple<dax::Scalar,InputCellType::NUM_POINTS> &values,
                   dax::Id &newCellCount) const
   {
     unsigned char voxelClass = GetVoxelClassification(IsoValue,values);
@@ -65,7 +64,7 @@ public:
 
 private:
   // ..................................................................... vars
-  ValueType IsoValue;
+  dax::Scalar IsoValue;
 };
 
 // -----------------------------------------------------------------------edges
@@ -89,22 +88,21 @@ static dax::Vector3 cellVertexToPointIndex[8] = {
 // ------------------------------------------------------------------- Topology
 //MarchingCubes only works when the topology is the same for input and output/
 //The only special case so far is converting CellVoxel to CellHexahedron
-template<typename ValueType>
 class MarchingCubesTopology : public dax::exec::WorkletGenerateMangledTopology
 {
 public:
   // .................................................................... cnstr
   DAX_CONT_EXPORT
-  MarchingCubesTopology(ValueType isoValue)
+  MarchingCubesTopology(dax::Scalar isoValue)
     : IsoValue(isoValue){ }
 
   // ....................................................................... ()
   // Returning a tuple of connections feels a bit clunky.  Is there a better
   // way of specifying the output cell type and generating a cell?
-  template<class InputCellType>//, int OutputCellSize>
+  template<class InputCellType>
   DAX_EXEC_EXPORT
   void operator()(const InputCellType &inputCell,
-                  const dax::Tuple<ValueType,InputCellType::NUM_POINTS> &values,
+                  const dax::Tuple<dax::Scalar,InputCellType::NUM_POINTS> &values,
                   dax::Tuple<dax::Vector3,3*5> &outVertex)const
                   //OutputPortalType &output) const
                   //dax::Tuple<dax::Id,OutputCellSize> &outputConnections) const
@@ -147,8 +145,7 @@ public:
   }
 
 private:
-  // ..................................................................... vars
-  ValueType IsoValue;
+  dax::Scalar IsoValue;
 };
 
 }

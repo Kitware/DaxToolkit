@@ -46,7 +46,7 @@ struct MarchingCubesClassifyFunctor
   // ..................................................................... cnstr
   DAX_CONT_EXPORT
   MarchingCubesClassifyFunctor(
-      const dax::worklet::MarchingCubesClassify<ValueType> &worklet,
+      const dax::worklet::MarchingCubesClassify            &worklet,
       const InputTopologyType                              &inputTopology,
       const ValuesPortalType                               &values,
       const CountPortalType                                &newCellCount)
@@ -59,7 +59,7 @@ struct MarchingCubesClassifyFunctor
   DAX_EXEC_EXPORT
   void operator()(dax::Id cellIndex) const
   {
-    const dax::worklet::MarchingCubesClassify<ValueType> &
+    const dax::worklet::MarchingCubesClassify &
         constWorklet = this->Worklet;
 
     CellType cell(this->InputTopology, cellIndex);
@@ -84,7 +84,7 @@ struct MarchingCubesClassifyFunctor
   }
 private:
   // ..................................................................... vars
-  dax::worklet::MarchingCubesClassify<ValueType> Worklet;
+  dax::worklet::MarchingCubesClassify            Worklet;
   InputTopologyType                              InputTopology;
   ValuesPortalType                               Values;
   CountPortalType                                NewCellCount;
@@ -109,7 +109,7 @@ struct MarchingCubesGenerateTopologyFunctor
   // ..................................................................... cnstr
   DAX_CONT_EXPORT
   MarchingCubesGenerateTopologyFunctor(
-      const dax::worklet::MarchingCubesTopology<ValueType> &worklet,
+      const dax::worklet::MarchingCubesTopology            &worklet,
       const InputTopologyType                              &inputTopology,
       const ValuesPortalType                               &values,
       const CountPortalType                                &count,
@@ -128,7 +128,7 @@ struct MarchingCubesGenerateTopologyFunctor
       dax::Id                                        inputCellIndex,
       dax::Id                                        outputCellIndex) const
   {
-    const dax::worklet::MarchingCubesTopology<ValueType> &constWorklet = this->Worklet;
+    const dax::worklet::MarchingCubesTopology &constWorklet = this->Worklet;
 
     InputCellType inputCell(this->InputTopology, inputCellIndex);
     dax::Tuple<dax::Vector3,3*5> outputPoints(dax::Vector3(0,0,0));
@@ -164,7 +164,7 @@ struct MarchingCubesGenerateTopologyFunctor
 
 private:
   // ..................................................................... vars
-  dax::worklet::MarchingCubesTopology<ValueType> Worklet;
+  dax::worklet::MarchingCubesTopology                             Worklet;
   InputTopologyType                                               InputTopology;
   ValuesPortalType                                                Values;
   CountPortalType                                                 Count;
@@ -214,7 +214,7 @@ public:
         typename dax::cont::ArrayHandle<ValueType,Container1,Adapter>::PortalConstExecution,
         typename ArrayHandleId::PortalExecution> FunctorType;
 
-    dax::worklet::MarchingCubesClassify<ValueType> worklet(this->IsoValue);
+    dax::worklet::MarchingCubesClassify worklet(this->IsoValue);
 
     FunctorType functor(
           worklet,
@@ -254,7 +254,7 @@ public:
         typename OutputGridType::TopologyStructExecution>
       FunctorType;
 
-    dax::worklet::MarchingCubesTopology<ValueType> worklet(this->IsoValue);
+    dax::worklet::MarchingCubesTopology worklet(this->IsoValue);
 
     FunctorType functor(
           worklet,
@@ -286,17 +286,16 @@ namespace worklet {
 // ------------------------------------------------------------ MarchingCubes()
 template<class InGridType,
          class OutGridType,
-         typename ValueType,
          class Container1,
          class Adapter>
 inline void MarchingCubes(
     const InGridType &inGrid,
     OutGridType &outGeom,
-    ValueType IsoValue,
-    const dax::cont::ArrayHandle<ValueType,Container1,Adapter> &MarchingCubesHandle)
+    dax::Scalar IsoValue,
+    const dax::cont::ArrayHandle<dax::Scalar,Container1,Adapter> &MarchingCubesHandle)
 {
   dax::exec::internal::kernel::MarchingCubes<
-      ValueType,Container1,Adapter> marchingCubes(IsoValue,
+      dax::Scalar,Container1,Adapter> marchingCubes(IsoValue,
                                                   MarchingCubesHandle);
 
   marchingCubes.Run(inGrid, outGeom);
