@@ -26,6 +26,7 @@ set(headers
   DeviceAdapterError.h
   DeviceAdapterTag.h
   DeviceAdapterTagSerial.h
+  FindBinding.h
   ScheduleGenerateTopology.h
   ScheduleMapAdapter.h
   Testing.h
