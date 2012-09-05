@@ -16,6 +16,7 @@
 
 set(headers
   Bind.h
+  BindCellPoints.h
   BindDirect.h
   FieldConstant.h
   )

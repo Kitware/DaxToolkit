@@ -17,9 +17,16 @@
 #define __dax_exec_WorkletMapCell_h
 
 #include <dax/exec/internal/WorkletBase.h>
+#include <dax/cont/arg/ConceptMap.h>
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/arg/Topology.h>
+#include <dax/cont/internal/Bindings.h>
+#include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/Tag.h>
+#include <dax/exec/arg/Bind.h>
+#include <dax/exec/arg/BindCellPoints.h>
+
+#include <boost/mpl/if.hpp>
 
 namespace dax {
 namespace exec {
@@ -41,6 +48,21 @@ protected:
   typedef dax::cont::sig::Cell Cell;
 };
 
+namespace arg {
+
+template <int N, typename Invocation>
+class Bind<WorkletMapCell, dax::cont::sig::Arg<N>, Invocation>
+{
+  typedef typename dax::cont::internal::Bindings<Invocation>::template GetType<N>::type ControlBinding;
+  typedef typename dax::cont::arg::ConceptMapTraits<ControlBinding>::Tags Tags;
+public:
+  typedef typename boost::mpl::if_<
+    typename Tags::template Has<dax::cont::sig::Point>,
+    BindCellPoints<Invocation, N>,
+    BindDirect<Invocation, N>
+    >::type type;
+};
+} // namespace arg
 
 }
 }
