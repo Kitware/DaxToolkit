@@ -20,6 +20,10 @@
 
 #include <dax/internal/MathSystemFunctions.h>
 
+#if _WIN32 && !defined DAX_CUDA_COMPILATION
+#define DAX_USE_BOOST_MATH
+#endif
+
 namespace dax {
 namespace math {
 
@@ -29,7 +33,11 @@ namespace math {
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar Max(dax::Scalar x, dax::Scalar y)
 {
-  return DAX_SYS_MATH_FUNCTION(fmax)(x, y);
+#ifdef DAX_USE_BOOST_MATH
+  return (y > x)? y : x;
+#else
+  return DAX_SYS_MATH_FUNCTION(fmax)(x,y);
+#endif
 }
 DAX_EXEC_CONT_EXPORT dax::Vector2 Max(dax::Vector2 x, dax::Vector2 y)
 {
@@ -60,7 +68,11 @@ DAX_EXEC_CONT_EXPORT dax::Id3 Max(dax::Id3 x, dax::Id3 y)
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar Min(dax::Scalar x, dax::Scalar y)
 {
-  return DAX_SYS_MATH_FUNCTION(fmin)(x, y);
+#ifdef DAX_USE_BOOST_MATH
+  return (x < y)? y : x;
+#else
+  return DAX_SYS_MATH_FUNCTION(fmin)(x,y);
+#endif
 }
 DAX_EXEC_CONT_EXPORT dax::Vector2 Min(dax::Vector2 x, dax::Vector2 y)
 {

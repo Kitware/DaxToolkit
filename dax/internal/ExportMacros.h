@@ -24,6 +24,10 @@
 #define DAX_CUDA
 #endif
 
+#ifdef __CUDA_ARCH__
+#define DAX_CUDA_COMPILATION
+#endif
+
 #ifdef _OPENMP
 #define DAX_OPENMP
 #endif

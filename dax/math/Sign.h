@@ -87,7 +87,12 @@ DAX_EXEC_CONT_EXPORT bool IsNegative(dax::Scalar x)
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar CopySign(dax::Scalar x, dax::Scalar y)
 {
+#ifdef DAX_USE_BOOST_SIGN  
+  return boost::math::copysign(x,y);
+#else
+  //this will call the proper function for cuda and unix/mac serial
   return DAX_SYS_MATH_FUNCTION(copysign)(x, y);
+#endif
 }
 
 }

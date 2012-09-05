@@ -20,6 +20,14 @@
 
 #include <dax/internal/MathSystemFunctions.h>
 
+#if _WIN32 && !defined DAX_CUDA_COMPILATION
+#include <boost/math/special_functions/acosh.hpp>
+#include <boost/math/special_functions/asinh.hpp>
+#include <boost/math/special_functions/atanh.hpp>
+#define DAX_USE_BOOST_MATH
+
+#endif
+
 namespace dax {
 namespace math {
 
@@ -182,49 +190,69 @@ DAX_EXEC_CONT_EXPORT dax::Vector4 TanH(dax::Vector4 x) {
 /// Compute the hyperbolic arc sine of \p x.
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar ASinH(dax::Scalar x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(asinh)>(x);
+#ifdef DAX_USE_BOOST_MATH
+  //windows doesn't have any of the c99 math functions
+  return boost::math::asinh(x);
+#else
+  return DAX_SYS_MATH_FUNCTION(asinh)(x);
+#endif
 }
 DAX_EXEC_CONT_EXPORT dax::Vector2 ASinH(dax::Vector2 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(asinh)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::ASinH>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector3 ASinH(dax::Vector3 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(asinh)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::ASinH>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector4 ASinH(dax::Vector4 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(asinh)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::ASinH>(x);
 }
 
 /// Compute the hyperbolic arc cosine of \p x.
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar ACosH(dax::Scalar x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(acosh)>(x);
+#ifdef DAX_USE_BOOST_MATH
+  //windows doesn't have any of the c99 math functions
+  return boost::math::acosh(x);
+#else
+  return DAX_SYS_MATH_FUNCTION(acosh)(x);
+#endif
 }
+
 DAX_EXEC_CONT_EXPORT dax::Vector2 ACosH(dax::Vector2 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(acosh)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::ACosH>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector3 ACosH(dax::Vector3 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(acosh)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::ACosH>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector4 ACosH(dax::Vector4 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(acosh)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::ACosH>(x);
 }
 
 /// Compute the hyperbolic arc tangent of \p x.
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar ATanH(dax::Scalar x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(atanh)>(x);
+#ifdef DAX_USE_BOOST_MATH
+  //windows doesn't have any of the c99 math functions
+  return boost::math::atanh(x);
+#else
+  return DAX_SYS_MATH_FUNCTION(atanh)(x);
+#endif
 }
 DAX_EXEC_CONT_EXPORT dax::Vector2 ATanH(dax::Vector2 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(atanh)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::ATanH>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector3 ATanH(dax::Vector3 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(atanh)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::ATanH>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector4 ATanH(dax::Vector4 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(atanh)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::ATanH>(x);
 }
 
 }
 } // namespace dax::math
+
+#ifdef DAX_USE_BOOST_MATH
+#undef DAX_USE_BOOST_MATH
+#endif
 
 #endif //__dax_math_Trig_h

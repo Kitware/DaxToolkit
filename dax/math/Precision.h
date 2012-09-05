@@ -21,6 +21,11 @@
 
 #include <dax/internal/MathSystemFunctions.h>
 
+#if _WIN32 && !defined DAX_CUDA_COMPILATION
+#include <boost/math/special_functions/round.hpp>
+#define DAX_USE_WIN_MATH
+#endif
+
 #ifndef DAX_CUDA
 #include <limits>
 
@@ -29,6 +34,7 @@
 // templates and other implementations of the same name. Get around the problem
 // by using the boost version when compiling for a CPU.
 #include <boost/math/special_functions/fpclassify.hpp>
+#include <cmath>
 #define DAX_USE_BOOST_CLASSIFY
 
 #endif
@@ -226,11 +232,22 @@ DAX_EXEC_CONT_EXPORT T remainder_template(T numerator, T denominator)
   T result;
   for (int component = 0; component < Traits::NUM_COMPONENTS; component++)
     {
+#ifdef DAX_USE_WIN_MATH
+    int quotient = boost::math::round(Traits::GetComponent(numerator, component)/
+                                      Traits::GetComponent(denominator, component));
+    const dax::Scalar rem = Traits::GetComponent(numerator, component) - 
+                            (quotient * Traits::GetComponent(denominator, component));
+
+    Traits::SetComponent(result,
+                         component,
+                         rem);
+#else
     Traits::SetComponent(result,
                          component,
                          DAX_SYS_MATH_FUNCTION(remainder)(
                            Traits::GetComponent(numerator, component),
                            Traits::GetComponent(denominator, component)));
+#endif
     }
   return result;
 }
@@ -269,12 +286,23 @@ DAX_EXEC_CONT_EXPORT T remquo_template(T numerator, T denominator, T &quotient)
   for (int component = 0; component < Traits::NUM_COMPONENTS; component++)
     {
     int iQuotient;
+#ifdef DAX_USE_WIN_MATH
+    iQuotient = boost::math::round(Traits::GetComponent(numerator, component) / Traits::GetComponent(denominator, component));
+    
+    Traits::SetComponent(result,
+                         component,
+                         dax::math::Remainder(
+                                  Traits::GetComponent(numerator, component),
+                                  Traits::GetComponent(denominator, component))
+                         );
+#else
     Traits::SetComponent(result,
                          component,
                          DAX_SYS_MATH_FUNCTION(remquo)(
                            Traits::GetComponent(numerator, component),
                            Traits::GetComponent(denominator, component),
                            &iQuotient));
+#endif
     Traits::SetComponent(quotient, component, dax::Scalar(iQuotient));
     }
   return result;
@@ -289,7 +317,13 @@ DAX_EXEC_CONT_EXPORT dax::Scalar RemainderQuotient(dax::Scalar numerator,
                                               dax::Scalar denominator,
                                               int &quotient)
 {
+#ifdef DAX_USE_WIN_MATH
+  quotient = boost::math::round(numerator/denominator);
+  return dax::math::Remainder(numerator,denominator);
+#else
   return DAX_SYS_MATH_FUNCTION(remquo)(numerator, denominator, &quotient);
+#endif
+  
 }
 DAX_EXEC_CONT_EXPORT dax::Scalar RemainderQuotient(dax::Scalar numerator,
                                               dax::Scalar denominator,
@@ -391,16 +425,21 @@ DAX_EXEC_CONT_EXPORT dax::Vector4 Floor(dax::Vector4 x) {
 /// Round \p x to the nearest integral value.
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar Round(dax::Scalar x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(round)>(x);
+#ifdef DAX_USE_WIN_MATH
+  //windows doesn't have any of the c99 math functions
+  return boost::math::round(x);
+#else
+  return DAX_SYS_MATH_FUNCTION(round)(x);
+#endif
 }
 DAX_EXEC_CONT_EXPORT dax::Vector2 Round(dax::Vector2 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(round)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Round>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector3 Round(dax::Vector3 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(round)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Round>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector4 Round(dax::Vector4 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(round)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Round>(x);
 }
 
 }
