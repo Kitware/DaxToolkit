@@ -18,6 +18,7 @@ set(headers
   ConceptMap.h
   Field.h
   FieldConstant.h
+  Topology.h
   )
 
 dax_declare_headers(${headers})
