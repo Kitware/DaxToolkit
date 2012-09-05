@@ -31,13 +31,13 @@ namespace internal {
 /// Contains all the parameters necessary to specify the topology of a uniform
 /// rectilinear grid.
 ///
-struct TopologyUniform {
+DAX_STRUCT_ALIGN_BEGIN(4) struct TopologyUniform
+{
   typedef dax::exec::CellVoxel CellType;
-
   Vector3 Origin;
   Vector3 Spacing;
   Extent3 Extent;
-} __attribute__ ((aligned(4)));
+} DAX_STRUCT_ALIGN_END(4);
 
 /// Returns the number of points in a uniform rectilinear grid.
 ///

@@ -92,17 +92,30 @@ typedef unsigned long long UInt64Type;
 #error Could not find a 64-bit integer.
 #endif
 
+//for windows support we need a macro to wrap the alignment call,
+//since for windows you need declspec(align)
+
+#ifdef _MSC_VER
+#  define DAX_ALIGN(size,decleration) __declspec(align(size)) decleration;
+#  define DAX_STRUCT_ALIGN_BEGIN(size) __declspec(align(size))
+#  define DAX_STRUCT_ALIGN_END(size)
+#else //we presume clang or gcc
+#  define DAX_ALIGN(size,decleration) decleration __attribute__((aligned(size)));
+#  define DAX_STRUCT_ALIGN_BEGIN(size)
+#  define DAX_STRUCT_ALIGN_END(size) __attribute__((aligned(size)))
+#endif
+
 } // namespace internal
 
 #if DAX_SIZE_ID == 4
 
 /// Represents an ID.
-typedef internal::Int32Type Id __attribute__ ((aligned(DAX_SIZE_ID)));
+DAX_ALIGN(DAX_SIZE_ID,typedef internal::Int32Type Id)
 
 #elif DAX_SIZE_ID == 8
 
 /// Represents an ID.
-typedef internal::Int64Type Id __attribute__ ((aligned(DAX_SIZE_ID)));
+DAX_ALIGN(DAX_SIZE_ID,typedef internal::Int64Type Id)
 
 #else
 #error Unknown Id Size
@@ -111,12 +124,12 @@ typedef internal::Int64Type Id __attribute__ ((aligned(DAX_SIZE_ID)));
 #ifdef DAX_USE_DOUBLE_PRECISION
 
 /// Scalar corresponds to a floating point number.
-typedef double Scalar __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+DAX_ALIGN(DAX_SIZE_SCALAR,typedef double Scalar)
 
 #else //DAX_USE_DOUBLE_PRECISION
 
 /// Scalar corresponds to a floating point number.
-typedef float Scalar __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+DAX_ALIGN(DAX_SIZE_SCALAR,typedef float Scalar)
 
 #endif //DAX_USE_DOUBLE_PRECISION
 
@@ -155,6 +168,7 @@ protected:
 };
 
 /// Vector2 corresponds to a 2-tuple
+DAX_STRUCT_ALIGN_BEGIN(DAX_SIZE_SCALAR)
 class Vector2 : public dax::Tuple<dax::Scalar,2>{
 public:
 
@@ -170,9 +184,10 @@ public:
     this->Components[0] = x;
     this->Components[1] = y;
   }
-} __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+} DAX_STRUCT_ALIGN_END(DAX_SIZE_SCALAR);
 
 /// Vector3 corresponds to a 3-tuple
+DAX_STRUCT_ALIGN_BEGIN(DAX_SIZE_SCALAR)
 class Vector3 : public dax::Tuple<dax::Scalar,3>{
 public:
 
@@ -190,9 +205,10 @@ public:
     this->Components[1] = y;
     this->Components[2] = z;
   }
-} __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+} DAX_STRUCT_ALIGN_END(DAX_SIZE_SCALAR);
 
 /// Vector4 corresponds to a 4-tuple
+DAX_STRUCT_ALIGN_BEGIN(DAX_SIZE_SCALAR)
 class Vector4 : public dax::Tuple<Scalar,4>{
 public:
 
@@ -211,11 +227,12 @@ public:
     this->Components[2] = z;
     this->Components[3] = w;
   }
-} __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+} DAX_STRUCT_ALIGN_END(DAX_SIZE_SCALAR);
 
 
 /// Id3 corresponds to a 3-dimensional index for 3d arrays.  Note that
 /// the precision of each index may be less than dax::Id.
+DAX_STRUCT_ALIGN_BEGIN(DAX_SIZE_ID)
 class Id3 : public dax::Tuple<dax::Id,3>{
 public:
 
@@ -232,7 +249,7 @@ public:
     this->Components[1] = y;
     this->Components[2] = z;
   }
-} __attribute__ ((aligned(DAX_SIZE_ID)));
+} DAX_STRUCT_ALIGN_END(DAX_SIZE_ID);
 
 /// Initializes and returns a Vector2.
 DAX_EXEC_CONT_EXPORT dax::Vector2 make_Vector2(dax::Scalar x,
