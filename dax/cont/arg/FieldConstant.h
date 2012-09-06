@@ -35,6 +35,18 @@ private:
   ExecArg ExecArg_;
 };
 
+/// \headerfile FieldConstant.h dax/cont/arg/FieldConstant.h
+/// \brief Map single integer values to \c Field worklet parameters.
+template <typename Tags> class ConceptMap<Field(Tags), int>
+{
+public:
+  typedef dax::exec::arg::FieldConstant<int> ExecArg;
+  ConceptMap(int x): ExecArg_(x) {}
+  ExecArg& GetExecArg() { return this->ExecArg_; }
+private:
+  ExecArg ExecArg_;
+};
+
 }}} // namespace dax::cont::arg
 
 #endif //__dax_cont_arg_FieldConstant_h
