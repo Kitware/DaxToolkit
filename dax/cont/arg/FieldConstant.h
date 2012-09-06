@@ -24,12 +24,24 @@
 namespace dax { namespace cont { namespace arg {
 
 /// \headerfile FieldConstant.h dax/cont/arg/FieldConstant.h
-/// \brief Map single values to \c Field worklet parameters.
+/// \brief Map single float values to \c Field worklet parameters.
 template <typename Tags> class ConceptMap<Field(Tags), float>
 {
 public:
-  typedef dax::exec::arg::FieldConstant<float> ExecArg;
-  ConceptMap(float x): ExecArg_(x) {}
+  typedef dax::exec::arg::FieldConstant<dax::Scalar> ExecArg;
+  ConceptMap(dax::Scalar x): ExecArg_(static_cast<float>(x)) {}
+  ExecArg& GetExecArg() { return this->ExecArg_; }
+private:
+  ExecArg ExecArg_;
+};
+
+/// \headerfile FieldConstant.h dax/cont/arg/FieldConstant.h
+/// \brief Map single double values to \c Field worklet parameters.
+template <typename Tags> class ConceptMap<Field(Tags), double>
+{
+public:
+  typedef dax::exec::arg::FieldConstant<dax::Scalar> ExecArg;
+  ConceptMap(double x): ExecArg_(static_cast<dax::Id>(x)) {}
   ExecArg& GetExecArg() { return this->ExecArg_; }
 private:
   ExecArg ExecArg_;
@@ -40,12 +52,85 @@ private:
 template <typename Tags> class ConceptMap<Field(Tags), int>
 {
 public:
-  typedef dax::exec::arg::FieldConstant<int> ExecArg;
-  ConceptMap(int x): ExecArg_(x) {}
+  typedef dax::exec::arg::FieldConstant<dax::Id> ExecArg;
+  ConceptMap(int x): ExecArg_(static_cast<dax::Id>(x)) {}
   ExecArg& GetExecArg() { return this->ExecArg_; }
 private:
   ExecArg ExecArg_;
 };
+
+
+/// \headerfile FieldConstant.h dax/cont/arg/FieldConstant.h
+/// \brief Map single dax::Tuple values to \c Field worklet parameters.
+template <typename Tags, typename T, int SIZE>
+class ConceptMap<Field(Tags), dax::Tuple<T,SIZE> >
+{
+private:
+  typedef dax::Tuple<T,SIZE> Type;
+public:
+  typedef dax::exec::arg::FieldConstant<Type> ExecArg;
+  ConceptMap(const Type& x): ExecArg_(x) {}
+  ExecArg& GetExecArg() { return this->ExecArg_; }
+private:
+  ExecArg ExecArg_;
+};
+
+/// \headerfile FieldConstant.h dax/cont/arg/FieldConstant.h
+/// \brief Map single dax::Vector2 values to \c Field worklet parameters.
+template <typename Tags> class ConceptMap<Field(Tags), dax::Vector2 >
+{
+private:
+  typedef dax::Vector2 Type;
+public:
+  typedef dax::exec::arg::FieldConstant<Type> ExecArg;
+  ConceptMap(const Type& x): ExecArg_(x) {}
+  ExecArg& GetExecArg() { return this->ExecArg_; }
+private:
+  ExecArg ExecArg_;
+};
+
+/// \headerfile FieldConstant.h dax/cont/arg/FieldConstant.h
+/// \brief Map single dax::Vector3 values to \c Field worklet parameters.
+template <typename Tags> class ConceptMap<Field(Tags), dax::Vector3 >
+{
+private:
+  typedef dax::Vector3 Type;
+public:
+  typedef dax::exec::arg::FieldConstant<Type> ExecArg;
+  ConceptMap(const Type& x): ExecArg_(x) {}
+  ExecArg& GetExecArg() { return this->ExecArg_; }
+private:
+  ExecArg ExecArg_;
+};
+
+/// \headerfile FieldConstant.h dax/cont/arg/FieldConstant.h
+/// \brief Map single dax::Vector4 values to \c Field worklet parameters.
+template <typename Tags> class ConceptMap<Field(Tags), dax::Vector4 >
+{
+private:
+  typedef dax::Vector4 Type;
+public:
+  typedef dax::exec::arg::FieldConstant<Type> ExecArg;
+  ConceptMap(const Type& x): ExecArg_(x) {}
+  ExecArg& GetExecArg() { return this->ExecArg_; }
+private:
+  ExecArg ExecArg_;
+};
+
+/// \headerfile FieldConstant.h dax/cont/arg/FieldConstant.h
+/// \brief Map single dax::Vector3 values to \c Field worklet parameters.
+template <typename Tags> class ConceptMap<Field(Tags), dax::Id3 >
+{
+private:
+  typedef dax::Id3 Type;
+public:
+  typedef dax::exec::arg::FieldConstant<Type> ExecArg;
+  ConceptMap(const Type& x): ExecArg_(x) {}
+  ExecArg& GetExecArg() { return this->ExecArg_; }
+private:
+  ExecArg ExecArg_;
+};
+
 
 }}} // namespace dax::cont::arg
 

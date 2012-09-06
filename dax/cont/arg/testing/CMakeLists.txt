@@ -14,13 +14,9 @@
 ##
 ##=============================================================================
 
-set(headers
-  ConceptMap.h
-  Field.h
-  FieldConstant.h
-  Topology.h
+#-----------------------------------------------------------------------------
+set(unit_tests
+  UnitTestFieldConstant.cxx
   )
 
-dax_declare_headers(${headers})
-
-add_subdirectory(testing)
+dax_unit_tests(SOURCES ${unit_tests})
