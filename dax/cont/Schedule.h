@@ -18,6 +18,7 @@
 //=============================================================================
 
 #include <dax/Types.h>
+#include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/arg/ConceptMap.h>
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Arg.h>
@@ -66,7 +67,7 @@ void Schedule(WorkletType w, A1 a1)
 
   dax::exec::internal::Functor<ControlInvocationSignature> func(w, binded);
 
-  // dax::cont::internal::Schedule(f,count,DeviceAdapter());
+  dax::cont::internal::Schedule(func,count,DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 
 }
 
@@ -98,7 +99,7 @@ void Schedule(WorkletType w, A1 a1, A2 a2)
 
   dax::exec::internal::Functor<ControlInvocationSignature> func(w, binded);
 
-  // dax::cont::internal::Schedule(f,count,DeviceAdapter());
+  dax::cont::internal::Schedule(func,count,DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 
 }
 
@@ -131,7 +132,7 @@ void Schedule(WorkletType w, A1 a1, A2 a2, A3 a3)
 
   dax::exec::internal::Functor<ControlInvocationSignature> func(w, binded);
 
-  // dax::cont::internal::Schedule(f,count,DeviceAdapter());
+  dax::cont::internal::Schedule(func,count,DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 }
 
 namespace detail

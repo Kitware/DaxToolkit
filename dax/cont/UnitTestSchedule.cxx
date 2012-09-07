@@ -14,6 +14,9 @@
 //
 //=============================================================================
 
+#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
+
 #include <dax/cont/DeviceAdapterSerial.h>
 
 #include <dax/cont/arg/FieldConstant.h>
@@ -73,7 +76,7 @@ struct ExampleSquare: public dax::exec::WorkletMapField
   typedef _2 ExecutionSignature(_1);
 
   template<typename T>
-  T operator()(T t)
+  T operator()(T t) const
     {
     return t * t;
     }
