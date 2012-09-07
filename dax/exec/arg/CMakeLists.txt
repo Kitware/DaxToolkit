@@ -19,6 +19,7 @@ set(headers
   BindCellPoints.h
   BindDirect.h
   FieldConstant.h
+  FieldPortal.h
   )
 
 dax_declare_headers(${headers})

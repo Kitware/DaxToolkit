@@ -16,6 +16,7 @@
 
 #-----------------------------------------------------------------------------
 set(unit_tests
+  UnitTestFieldArrayHandle.cxx
   UnitTestFieldConstant.cxx
   )
 
