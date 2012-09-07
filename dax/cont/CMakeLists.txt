@@ -33,6 +33,7 @@ set(headers
   ErrorControlOutOfMemory.h
   ErrorExecution.h
   IteratorFromArrayPortal.h
+  Schedule.h
   UniformGrid.h
   UnstructuredGrid.h
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
@@ -61,6 +62,7 @@ set(unit_tests
   UnitTestArrayPortalFromIterators.cxx
   UnitTestDeviceAdapterSerial.cxx
   UnitTestIteratorFromArrayPortal.cxx
+  UnitTestSchedule.cxx
   UnitTestUniformGrid.cxx
   UnitTestUnstructuredGrid.cxx
   UnitTestVectorOperations.cxx
