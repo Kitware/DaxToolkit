@@ -23,7 +23,6 @@
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/Tag.h>
-#include <dax/exec/internal/Functor.h>
 
 #include <boost/utility/enable_if.hpp>
 
@@ -64,10 +63,10 @@ void Schedule(WorkletType w, A1 a1)
   // //Activate the visitor pattern applying the CreateExecutionResources
   // //visitor to all elements in the worklet parameters class
   binded.ForEach(dax::cont::detail::CreateExecutionResources<WorkType>(count));
-
-  dax::exec::internal::Functor<ControlInvocationSignature> func(w, binded);
-
-  dax::cont::internal::Schedule(func,count,DAX_DEFAULT_DEVICE_ADAPTER_TAG());
+  dax::cont::internal::NG_Schedule<ControlInvocationSignature>(
+                                      w,
+                                      binded,count,
+                                      DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 
 }
 
@@ -96,10 +95,11 @@ void Schedule(WorkletType w, A1 a1, A2 a2)
   // //Activate the visitor pattern applying the CreateExecutionResources
   // //visitor to all elements in the worklet parameters class
   binded.ForEach(dax::cont::detail::CreateExecutionResources<WorkType>(count));
+  dax::cont::internal::NG_Schedule<ControlInvocationSignature>(
+                                      w,
+                                      binded,count,
+                                      DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 
-  dax::exec::internal::Functor<ControlInvocationSignature> func(w, binded);
-
-  dax::cont::internal::Schedule(func,count,DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 
 }
 
@@ -129,10 +129,11 @@ void Schedule(WorkletType w, A1 a1, A2 a2, A3 a3)
   // //Activate the visitor pattern applying the CreateExecutionResources
   // //visitor to all elements in the worklet parameters class
   binded.ForEach(dax::cont::detail::CreateExecutionResources<WorkType>(count));
+  dax::cont::internal::NG_Schedule<ControlInvocationSignature>(
+                                      w,
+                                      binded,count,
+                                      DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 
-  dax::exec::internal::Functor<ControlInvocationSignature> func(w, binded);
-
-  dax::cont::internal::Schedule(func,count,DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 }
 
 namespace detail

@@ -24,6 +24,7 @@
 #include <dax/Functional.h>
 
 #include <dax/exec/internal/ErrorMessageBuffer.h>
+#include <dax/exec/internal/Functor.h>
 
 #include <dax/thrust/cont/internal/DeviceAdapterTagThrust.h>
 
@@ -253,6 +254,38 @@ DAX_CONT_EXPORT void Schedule(
 
   detail::ScheduleKernelThrust<Functor> kernel(functor);
 
+  ::thrust::for_each(::thrust::make_counting_iterator<dax::Id>(0),
+                     ::thrust::make_counting_iterator<dax::Id>(numInstances),
+                     kernel);
+
+  if (errorArray[0] != '\0')
+    {
+    char errorString[ERROR_ARRAY_SIZE];
+    ::thrust::copy(errorArray.begin(), errorArray.end(), errorString);
+
+    throw dax::cont::ErrorExecution(errorString);
+    }
+}
+
+template<class ControlInvocSig, class Functor,  class Bindings>
+DAX_CONT_EXPORT void NG_Schedule(
+    Functor functor,
+    Bindings bindings,
+    dax::Id numInstances,
+    dax::thrust::cont::internal::DeviceAdapterTagThrust)
+{
+  //setup error message
+  const dax::Id ERROR_ARRAY_SIZE = 1024;
+  ::thrust::device_vector<char> errorArray(ERROR_ARRAY_SIZE);
+  errorArray[0] = '\0';
+  dax::exec::internal::ErrorMessageBuffer errorMessage(
+        ::thrust::raw_pointer_cast(&(*errorArray.begin())),
+        errorArray.size());
+
+  functor.SetErrorMessageBuffer(errorMessage);
+
+  //setup functor
+  dax::exec::internal::Functor<ControlInvocSig> kernel(functor, bindings);
   ::thrust::for_each(::thrust::make_counting_iterator<dax::Id>(0),
                      ::thrust::make_counting_iterator<dax::Id>(numInstances),
                      kernel);

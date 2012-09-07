@@ -93,6 +93,7 @@ void VerifyConstantArgs()
   dax::cont::Schedule(Example2Worklet(),1.0f,3.0f); //convert double to dax::Scalar
   DAX_TEST_ASSERT(Example2Worklet::TestValue == 3.0f, "TestValue is not 3.0f");
 
+
   dax::Tuple<dax::Scalar,6> tuple6;
   tuple6[0]=0.0f; tuple6[1]=0.5f; tuple6[2]=0.25f;
   tuple6[0]=0.0f; tuple6[1]=-0.5f; tuple6[2]=-0.25f;
@@ -109,18 +110,22 @@ void VerifyConstantArgs()
 
   dax::Id3 id3(1,2,3);
   dax::cont::Schedule(ExampleTupleWorklet(),id3);
+}
+
+void VerifyArrayHandleArgs()
+{
+  std::vector<dax::Id> in(10);
+  for(int i=0; i < 10; ++i){in[i]=i;}
+  dax::cont::ArrayHandle<dax::Id> input = dax::cont::make_ArrayHandle(in);
+  dax::cont::ArrayHandle<dax::Id> output;
+  dax::cont::Schedule(ExampleSquare(),input,output);
 
 }
 
 void Schedule()
 {
   VerifyConstantArgs();
-
-  std::vector<dax::Id> in(10);
-  for(int i=0; i < 10; ++i){in[i]=i;}
-  dax::cont::ArrayHandle<dax::Id> input = dax::cont::make_ArrayHandle(in);
-  dax::cont::ArrayHandle<dax::Id> output;
-  dax::cont::Schedule(ExampleSquare(),input,output);
+  VerifyArrayHandleArgs();
 }
 
 }
