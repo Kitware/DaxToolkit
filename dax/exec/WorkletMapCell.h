@@ -40,6 +40,8 @@ class WorkletMapCell : public dax::exec::internal::WorkletBase
 {
 public:
   typedef WorkletMapCell WorkType;
+  typedef dax::cont::sig::Cell DomainType;
+
   DAX_EXEC_EXPORT WorkletMapCell() { }
 protected:
   typedef dax::cont::arg::Field Field;
