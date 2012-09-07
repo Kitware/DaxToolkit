@@ -16,6 +16,9 @@
 #ifndef __dax_cont_arg_ConceptMap_h
 #define __dax_cont_arg_ConceptMap_h
 
+#include <dax/cont/sig/Tag.h>
+#include <dax/internal/Tags.h>
+
 /// \namespace dax::cont::arg
 /// \brief Dax Control Environment argument concepts and concept maps
 
@@ -61,7 +64,30 @@ public:
 
   /// Concrete value type bound to the \c Concept.
   typedef A Argument;
+
+  typedef typename Map::DomainTags DomainTags;
 };
+
+template<typename DomainTag>
+class SupportedDomains
+{
+private:
+  //create a base domain tag of type sig::Tag. We can't use sig::Domain
+  //as the base, as Tags::Has never returns true when checking the base type
+  typedef typename dax::internal::Tags<dax::cont::sig::Domain()> TagBase;
+public:
+  //we append all of the concept maps tags to to the base tag type
+  typedef typename TagBase::template Add<DomainTag>::type Tags;
+};
+
+template<>
+class SupportedDomains<dax::cont::sig::Domain>
+{
+public:
+  //You can't add the base to the base already
+  typedef typename dax::internal::Tags<dax::cont::sig::Domain()>  Tags;
+};
+
 
 }}} // namespace dax::cont::arg
 

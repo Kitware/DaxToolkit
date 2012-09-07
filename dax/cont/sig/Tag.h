@@ -40,10 +40,12 @@ class Out: public Tag {};
 /// \brief Mark in/out parameters in a worklet \c ControlSignature.
 class InOut: public In, public Out {};
 
-class Domain: public Tag { public: class Cell; class Point; };
+class Domain: public Tag { public: class AnyDomain; class Cell;  class Point; };
 template <typename T> class DomainTag: public Domain {};
+typedef DomainTag<Domain::AnyDomain> AnyDomain;
 typedef DomainTag<Domain::Cell> Cell;
 typedef DomainTag<Domain::Point> Point;
+
 
 }}} // namespace dax::cont::sig
 
