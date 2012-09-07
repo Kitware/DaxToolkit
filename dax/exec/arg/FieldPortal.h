@@ -90,9 +90,11 @@ protected:
                                    PortalExec,
                                    PortalConstExec>::type PortalType;
 
+  //if we are going with Out tag we create a value storage that holds a copy
+  //otherwise we have to pass a copy, since portals don't have to provide a reference
   typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
                                    ValueType&,
-                                   ValueType const&>::type ReferenceType;
+                                   ValueType const>::type ReferenceType;
 
 
   /*
