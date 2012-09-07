@@ -20,8 +20,11 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
+#include <dax/cont/Schedule.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
+#include <dax/cont/arg/FieldConstant.h>
+#include <dax/cont/arg/FieldArrayHandle.h>
 
 #include <dax/cont/worklet/CellGradient.h>
 #include <dax/cont/worklet/Square.h>
@@ -211,6 +214,19 @@ public:
     IdPortalType Array;
   };
 
+  struct NGMult: public dax::exec::WorkletMapField
+  {
+    typedef void ControlSignature(Field(In), Field(In), Field(Out));
+    typedef _3 ExecutionSignature(_1, _2);
+
+    template<typename T>
+    T operator()(T a, T b) const
+      {
+      return a * b;
+      }
+  };
+
+
 private:
 
   template<typename T>
@@ -352,6 +368,47 @@ private:
       dax::Id value = container.GetPortalConst().Get(rawsubset[index]);
       DAX_TEST_ASSERT(value == OFFSET,
                       "Got bad value for subset scheduled kernel.");
+      }
+
+  }
+
+  static DAX_CONT_EXPORT void TestNGSchedule()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing New Schedule Function" << std::endl;
+
+    std::vector<dax::Scalar> field(ARRAY_SIZE);
+    for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+      {
+      field[i]=i;
+      }
+    ScalarArrayHandle fieldHandle = MakeArrayHandle(field);
+    ScalarArrayHandle multHandle;
+
+    std::cout << "Running NG Multiply worklet with two handles" << std::endl;
+    dax::cont::Schedule(NGMult(),fieldHandle, fieldHandle, multHandle);
+
+    std::vector<dax::Scalar> mult(ARRAY_SIZE);
+    multHandle.CopyInto(mult.begin());
+
+    for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+      {
+      dax::Scalar squareValue = mult[i];
+      dax::Scalar squareTrue = field[i]*field[i];
+      DAX_TEST_ASSERT(test_equal(squareValue, squareTrue),
+                      "Got bad multiply result");
+      }
+
+    std::cout << "Running NG Multiply worklet with handle and constant" << std::endl;
+    dax::cont::Schedule(NGMult(),4.0f,fieldHandle, multHandle);
+    multHandle.CopyInto(mult.begin());
+
+    for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+      {
+      dax::Scalar squareValue = mult[i];
+      dax::Scalar squareTrue = field[i]*4.0f;
+      DAX_TEST_ASSERT(test_equal(squareValue, squareTrue),
+                      "Got bad multiply result");
       }
 
   }
@@ -729,6 +786,7 @@ private:
       TestArrayManagerExecution();
       TestOutOfMemory();
       TestSchedule();
+      TestNGSchedule();
       TestStreamCompact();
       TestStreamCompactWithStencil();
       TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
