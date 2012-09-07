@@ -37,10 +37,16 @@ struct BindDirect
   BindDirect(ControlBindings& bindings):
     ExecArg(bindings.template Get<N>().GetExecArg()) {}
 
-  DAX_EXEC_CONT_EXPORT ReturnType operator()(dax::Id id)
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id)
     {
     return this->ExecArg(id);
     }
+
+  DAX_EXEC_EXPORT void SaveExecutionResult(int id)
+    {
+    this->ExecArg.SaveExecutionResult(id);
+    }
+
 };
 
 }}} // namespace dax::exec::arg

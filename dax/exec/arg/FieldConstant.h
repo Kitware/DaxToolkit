@@ -36,6 +36,19 @@ public:
     {
     return this->Value;
     }
+
+  DAX_EXEC_EXPORT void SaveExecutionResult(int) const
+    {
+    //empty method, since we don't actually support
+    //saving constant field values
+    }
+
+  DAX_EXEC_EXPORT void SaveExecutionResult(int, T) const
+    {
+    //we don't support the api to save to a constant
+    //field when mapped to another domain type
+    }
+
 };
 
 }}} // namespace dax::exec::arg

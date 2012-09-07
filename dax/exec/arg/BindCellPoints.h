@@ -56,14 +56,23 @@ struct BindCellPoints
 
   ValueType Value;
 
-  DAX_EXEC_CONT_EXPORT ReferenceType operator()(dax::Id id)
+  DAX_EXEC_CONT_EXPORT ReferenceType operator()(dax::Id id) const
     {
-    CellPointsContainer ids = this->TopoExecArg.GetCellPoints(id);
+    const CellPointsContainer ids = this->TopoExecArg.GetCellPoints(id);
     for(int i=0; i < CellPointsContainer::NUM_COMPONENTS; ++i)
       {
       this->Value[i] = this->ExecArg(ids[i]);
       }
     return this->Value;
+    }
+
+  DAX_EXEC_EXPORT void SaveExecutionResult(int id) const
+    {
+    const CellPointsContainer ids = this->TopoExecArg.GetCellPoints(id);
+    for(int i=0; i < CellPointsContainer::NUM_COMPONENTS; ++i)
+      {
+      this->ExecArg.SaveExecutionResult(ids[i],this->Value[i]);
+      }
     }
 };
 

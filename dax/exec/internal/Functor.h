@@ -51,6 +51,22 @@ namespace dax { namespace exec { namespace internal {
 
 namespace detail {
 
+struct SaveOutArgs
+{
+protected:
+  const dax::Id Index;
+public:
+  DAX_EXEC_EXPORT SaveOutArgs(dax::Id index):
+    Index(index)
+    {}
+
+  template <typename Worklet, int I>
+  DAX_EXEC_EXPORT void operator()(dax::exec::arg::BindDirect<Worklet,I>& execArg) const
+    {
+    execArg.SaveExecutionResult(Index);
+    }
+};
+
 template <typename Invocation>
 struct FunctorMemberMap
 {
@@ -107,6 +123,7 @@ public:                                                                 \
     {                                                                   \
     _dax_FunctorImpl_##r                                                \
     this->Worklet(_dax_pp_enum___(_dax_FunctorImpl_Argument));          \
+    this->Arguments.ForEach(SaveOutArgs(id));                           \
     }
 
 # if __cplusplus >= 201103L
