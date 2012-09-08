@@ -56,7 +56,7 @@ class CollectCount
 {
   dax::Id& Count;
 public:
-  CollectCount(dax::Id& c): Count(c) { this->Count = 0; }
+  CollectCount(dax::Id& c): Count(c) { this->Count = 1; }
 
   template <typename C, typename A>
   void operator()(const dax::cont::arg::ConceptMap<C,A>& c)
@@ -164,7 +164,7 @@ void Schedule(WorkletType w, _dax_pp_params___(a))
     bindings(_dax_pp_args___(a));
 
   // Visit each bound argument to determine the count to be scheduled.
-  dax::Id count=0;
+  dax::Id count=1;
   bindings.ForEach(dax::cont::detail::CollectCount<WorkType>(count));
 
   // Visit each bound argument to set up its representation in the
