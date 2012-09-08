@@ -220,7 +220,7 @@ public:
     typedef _3 ExecutionSignature(_1, _2);
 
     template<typename T>
-    T operator()(T a, T b) const
+    DAX_EXEC_EXPORT T operator()(T a, T b) const
       {
       return a * b;
       }
