@@ -45,7 +45,7 @@ public:
 # include <dax/cont/internal/Bindings.h>
 # include <dax/exec/arg/Bind.h>
 # include <dax/internal/GetNthType.h>
-# include <dax/internal/Members.h>
+# include <dax/exec/internal/Members.h>
 
 namespace dax { namespace exec { namespace internal {
 
@@ -111,7 +111,7 @@ public:                                                                 \
     WorkletType;                                                        \
   typedef dax::cont::internal::Bindings<Invocation> BindingsType;       \
 private:                                                                \
-  typedef dax::internal::Members<                                       \
+  typedef dax::exec::internal::Members<                                 \
       ExecutionSignature, FunctorMemberMap<Invocation>                  \
     > ArgumentsType;                                                    \
   WorkletType Worklet;                                                  \

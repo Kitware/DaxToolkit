@@ -27,6 +27,7 @@ set(headers
   DeviceAdapterTag.h
   DeviceAdapterTagSerial.h
   FindBinding.h
+  ${Dax_BINARY_DIR}/dax/cont/internal/Members.h
   ScheduleGenerateTopology.h
   ScheduleMapAdapter.h
   Testing.h
@@ -35,6 +36,19 @@ set(headers
   )
 
 dax_declare_headers(${headers})
+
+#-----------------------------------------------------------------------------
+set(DAX_MEMBERS_CONFIGURED_INCLUDE_PATH "dax/cont/internal")
+set(DAX_MEMBERS_NAMESPACE "dax::cont::internal")
+set(DAX_MEMBERS_NAMESPACE_NAME "dax_cont_internal")
+set(DAX_MEMBERS_NAMESPACE_START "namespace dax { namespace cont { namespace internal {")
+set(DAX_MEMBERS_NAMESPACE_END   "} } }")
+set(DAX_MEMBERS_EXPORT "DAX_CONT_EXPORT")
+configure_file(
+  ${Dax_SOURCE_DIR}/dax/internal/Members.h.in
+  ${Dax_BINARY_DIR}/dax/cont/internal/Members.h
+  @ONLY
+  )
 
 # These source files are actually compiled in the parent directory.
 # They are in a seperate directory to highlight which objects are
