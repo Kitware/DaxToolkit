@@ -1,5 +1,3 @@
-#if !defined(BOOST_PP_IS_ITERATING)
-
 #ifndef __dax_cont_Schedule_h
 #define __dax_cont_Schedule_h
 
@@ -28,11 +26,6 @@
 
 #include <boost/utility/enable_if.hpp>
 
-# if !(__cplusplus >= 201103L)
-#  include <dax/internal/ParameterPackCxx03.h>
-# endif // !(__cplusplus >= 201103L)
-
-
 namespace dax { namespace cont {
 
 namespace detail
@@ -43,11 +36,53 @@ template <class WorkType> class CollectCount;
 template<class WorkType> class CreateExecutionResources;
 }
 
-# if __cplusplus >= 201103L
-# else // !(__cplusplus >= 201103L)
-#  define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/cont/Schedule.h>))
-#  include BOOST_PP_ITERATE()
-# endif // !(__cplusplus >= 201103L)
+// Implementation for the Schedule class for single paramter
+// worklet. The rest of the implementations are handled by the preprocessor
+// code that is found at the bottom of the schedule class
+template <class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
+class Schedule
+{
+public:
+  template <class WorkletType, typename Arg1>
+  Schedule(WorkletType w, Arg1 a1)
+    {
+    this->operator()(w,a1);
+    }
+
+  //Note any changes to this method must be reflected in the
+  //other implementation inisde Schedule.txx
+  template <class WorkletType, typename Arg1>
+  void operator()(WorkletType w, Arg1 a1) const
+    {
+    // Construct the signature of the worklet invocation on the control side.
+    typedef WorkletType ControlInvocationSignature(Arg1);
+    typedef typename WorkletType::WorkType WorkType;
+
+    // Bind concrete arguments T...a to the concepts declared in the
+    // worklet ControlSignature through ConceptMap specializations.
+    // The concept maps also know how to make the arguments available
+    // in the execution environment.
+    dax::cont::internal::Bindings<ControlInvocationSignature>
+      bindings(a1);
+
+    // Visit each bound argument to determine the count to be scheduled.
+    dax::Id count=1;
+    bindings.ForEach(dax::cont::detail::CollectCount<WorkType>(count));
+
+    // Visit each bound argument to set up its representation in the
+    // execution environment.
+    bindings.ForEach(dax::cont::detail::CreateExecutionResources<WorkType>(count));
+
+    // Schedule the worklet invocations in the execution environment.
+    dax::cont::internal::NG_Schedule<ControlInvocationSignature>
+      (w, bindings, count, DeviceAdapterTag());
+    }
+
+  //this is parsed by the boost preprocessor to be the rest
+  //of the implementations of the schedule constructor and operator
+  #include "Schedule.txx"
+};
+
 
 namespace detail
 {
@@ -145,36 +180,3 @@ public:
 } }
 
 #endif //__dax_cont_Schedule_h
-
-#else // defined(BOOST_PP_IS_ITERATING)
-
-#if _dax_pp_sizeof___T > 0
-template <class WorkletType, _dax_pp_typename___T>
-void Schedule(WorkletType w, _dax_pp_params___(a))
-{
-  // Construct the signature of the worklet invocation on the control side.
-  typedef WorkletType ControlInvocationSignature(_dax_pp_T___);
-  typedef typename WorkletType::WorkType WorkType;
-
-  // Bind concrete arguments T...a to the concepts declared in the
-  // worklet ControlSignature through ConceptMap specializations.
-  // The concept maps also know how to make the arguments available
-  // in the execution environment.
-  dax::cont::internal::Bindings<ControlInvocationSignature>
-    bindings(_dax_pp_args___(a));
-
-  // Visit each bound argument to determine the count to be scheduled.
-  dax::Id count=1;
-  bindings.ForEach(dax::cont::detail::CollectCount<WorkType>(count));
-
-  // Visit each bound argument to set up its representation in the
-  // execution environment.
-  bindings.ForEach(dax::cont::detail::CreateExecutionResources<WorkType>(count));
-
-  // Schedule the worklet invocations in the execution environment.
-  dax::cont::internal::NG_Schedule<ControlInvocationSignature>
-    (w, bindings, count, DAX_DEFAULT_DEVICE_ADAPTER_TAG());
-}
-#endif // _dax_pp_sizeof___T > 0
-
-#endif // defined(BOOST_PP_IS_ITERATING)

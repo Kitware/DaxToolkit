@@ -386,7 +386,7 @@ private:
     ScalarArrayHandle multHandle;
 
     std::cout << "Running NG Multiply worklet with two handles" << std::endl;
-    dax::cont::Schedule(NGMult(),fieldHandle, fieldHandle, multHandle);
+    dax::cont::Schedule<DeviceAdapterTag>(NGMult(),fieldHandle, fieldHandle, multHandle);
 
     std::vector<dax::Scalar> mult(ARRAY_SIZE);
     multHandle.CopyInto(mult.begin());
@@ -400,7 +400,7 @@ private:
       }
 
     std::cout << "Running NG Multiply worklet with handle and constant" << std::endl;
-    dax::cont::Schedule(NGMult(),4.0f,fieldHandle, multHandle);
+    dax::cont::Schedule<DeviceAdapterTag>(NGMult(),4.0f,fieldHandle, multHandle);
     multHandle.CopyInto(mult.begin());
 
     for (dax::Id i = 0; i < ARRAY_SIZE; i++)

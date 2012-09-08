@@ -65,7 +65,7 @@ struct ExampleTupleWorklet : public dax::exec::WorkletMapField
   typedef void ExecutionSignature(_1);
 
   template <typename T>
-  void operator()(T a) const
+  void operator()(T) const
     {
     }
 };
@@ -84,32 +84,32 @@ struct ExampleSquare: public dax::exec::WorkletMapField
 
 void VerifyConstantArgs()
 {
-  dax::cont::Schedule(ExampleWorklet(),1); //convert to dax::Id
+  dax::cont::Schedule<>(ExampleWorklet(),1); //convert to dax::Id
   DAX_TEST_ASSERT(ExampleWorklet::TestValue == 1, "TestValue is not 1");
 
-  dax::cont::Schedule(ExampleWorklet(),1.35); //convert double to dax::Scalar
+  dax::cont::Schedule<>(ExampleWorklet(),1.35); //convert double to dax::Scalar
   DAX_TEST_ASSERT(ExampleWorklet::TestValue == 1.35f, "TestValue is not 1.35f");
 
-  dax::cont::Schedule(Example2Worklet(),1.0f,3.0f); //convert double to dax::Scalar
+  dax::cont::Schedule<>(Example2Worklet(),1.0f,3.0f); //convert double to dax::Scalar
   DAX_TEST_ASSERT(Example2Worklet::TestValue == 3.0f, "TestValue is not 3.0f");
 
 
   dax::Tuple<dax::Scalar,6> tuple6;
   tuple6[0]=0.0f; tuple6[1]=0.5f; tuple6[2]=0.25f;
   tuple6[0]=0.0f; tuple6[1]=-0.5f; tuple6[2]=-0.25f;
-  dax::cont::Schedule(ExampleTupleWorklet(),tuple6);
+  dax::cont::Schedule<>(ExampleTupleWorklet(),tuple6);
 
   dax::Vector2 vec2(-1, -2);
-  dax::cont::Schedule(ExampleTupleWorklet(),vec2);
+  dax::cont::Schedule<>(ExampleTupleWorklet(),vec2);
 
   dax::Vector3 vec3(-1, -2, -3);
-  dax::cont::Schedule(ExampleTupleWorklet(),vec3);
+  dax::cont::Schedule<>(ExampleTupleWorklet(),vec3);
 
   dax::Vector4 vec4(-1, -2, -3, -4);
-  dax::cont::Schedule(ExampleTupleWorklet(),vec4);
+  dax::cont::Schedule<>(ExampleTupleWorklet(),vec4);
 
   dax::Id3 id3(1,2,3);
-  dax::cont::Schedule(ExampleTupleWorklet(),id3);
+  dax::cont::Schedule<>(ExampleTupleWorklet(),id3);
 }
 
 void VerifyArrayHandleArgs()
@@ -118,7 +118,7 @@ void VerifyArrayHandleArgs()
   for(int i=0; i < 10; ++i){in[i]=i;}
   dax::cont::ArrayHandle<dax::Id> input = dax::cont::make_ArrayHandle(in);
   dax::cont::ArrayHandle<dax::Id> output;
-  dax::cont::Schedule(ExampleSquare(),input,output);
+  dax::cont::Schedule<>(ExampleSquare(),input,output);
 
 }
 
