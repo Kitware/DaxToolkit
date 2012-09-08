@@ -88,7 +88,7 @@ void VerifyConstantArgs()
   DAX_TEST_ASSERT(ExampleWorklet::TestValue == 1, "TestValue is not 1");
 
   dax::cont::Schedule(ExampleWorklet(),1.35); //convert double to dax::Scalar
-  DAX_TEST_ASSERT(ExampleWorklet::TestValue == 1.35, "TestValue is not 1.35f");
+  DAX_TEST_ASSERT(ExampleWorklet::TestValue == 1.35f, "TestValue is not 1.35f");
 
   dax::cont::Schedule(Example2Worklet(),1.0f,3.0f); //convert double to dax::Scalar
   DAX_TEST_ASSERT(Example2Worklet::TestValue == 3.0f, "TestValue is not 3.0f");
