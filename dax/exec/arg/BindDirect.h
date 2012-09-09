@@ -21,20 +21,22 @@
 
 #include <dax/Types.h>
 #include <dax/cont/internal/Bindings.h>
+#include <boost/utility/enable_if.hpp>
 
 namespace dax { namespace exec { namespace arg {
 
 template <typename Invocation, int N>
 struct BindDirect
 {
-  typedef dax::cont::internal::Bindings<Invocation> ControlBindings;
-  typedef typename ControlBindings::template GetType<N>::type ControlBinding;
-  typedef typename ControlBinding::ExecArg ExecArgType;
+  typedef dax::cont::internal::Bindings<Invocation> AllControlBindings;
+  typedef typename AllControlBindings::template GetType<N>::type MyControlBinding;
+  typedef typename MyControlBinding::ExecArg ExecArgType;
+  typedef typename dax::cont::arg::ConceptMapTraits<MyControlBinding>::Tags Tags;
   ExecArgType ExecArg;
 
   typedef typename ExecArgType::ReturnType ReturnType;
 
-  BindDirect(ControlBindings& bindings):
+  BindDirect(AllControlBindings& bindings):
     ExecArg(bindings.template Get<N>().GetExecArg()) {}
 
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id id)
@@ -42,9 +44,34 @@ struct BindDirect
     return this->ExecArg(id);
     }
 
-  DAX_EXEC_EXPORT void SaveExecutionResult(int id)
+  DAX_EXEC_EXPORT
+  void SaveExecutionResult(int id)
     {
-    this->ExecArg.SaveExecutionResult(id);
+    //Look at the concept map traits. If we have the Out tag
+    //we know that we must call our ExecArgs SaveExecutionResult.
+    //Otherwise we are an input argument and that behavior is undefined
+    //and very bad things could happen
+    typedef typename Tags::
+          template Has<typename dax::cont::sig::Out>::type HasOutTag;
+    this->saveResult(id,HasOutTag());
+    }
+
+  //method enabled when we do have the out tag ( or InOut)
+  template <typename HasOutTag>
+  DAX_EXEC_EXPORT
+  void saveResult(int id, HasOutTag,
+     typename boost::enable_if<HasOutTag>::type* dummy = 0)
+  {
+  (void)dummy;
+  this->ExecArg.SaveExecutionResult(id);
+  }
+
+  template <typename HasOutTag>
+  DAX_EXEC_EXPORT
+  void saveResult(int, HasOutTag,
+     typename boost::disable_if<HasOutTag>::type* dummy = 0)
+    {
+    (void)dummy;
     }
 
 };

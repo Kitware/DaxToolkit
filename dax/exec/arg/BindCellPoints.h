@@ -25,6 +25,7 @@
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/internal/FindBinding.h>
 #include <dax/cont/sig/Tag.h>
+#include <boost/utility/enable_if.hpp>
 
 namespace dax { namespace exec { namespace arg {
 
@@ -68,11 +69,34 @@ struct BindCellPoints
 
   DAX_EXEC_EXPORT void SaveExecutionResult(int id) const
     {
+    //Look at the concept map traits. If we have the Out tag
+    //we know that we must call our ExecArgs SaveExecutionResult.
+    //Otherwise we are an input argument and that behavior is undefined
+    //and very bad things could happen
+    typedef typename Tags::
+          template Has<typename dax::cont::sig::Out>::type HasOutTag;
+    this->saveResult(id,HasOutTag());
+    }
+
+  //method enabled when we do have the out tag ( or InOut)
+  template <typename HasOutTag>
+  DAX_EXEC_EXPORT
+  void saveResult(int id, HasOutTag,
+     typename boost::enable_if<HasOutTag>::type* dummy = 0)
+    {
     const CellPointsContainer ids = this->TopoExecArg.GetCellPoints(id);
     for(int i=0; i < CellPointsContainer::NUM_COMPONENTS; ++i)
       {
       this->ExecArg.SaveExecutionResult(ids[i],this->Value[i]);
       }
+    }
+
+  template <typename HasOutTag>
+  DAX_EXEC_EXPORT
+  void saveResult(int, HasOutTag,
+     typename boost::disable_if<HasOutTag>::type* dummy = 0)
+    {
+    (void)dummy;
     }
 };
 
