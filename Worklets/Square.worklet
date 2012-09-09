@@ -24,12 +24,15 @@ namespace worklet {
 class Square : public dax::exec::WorkletMapField
 {
 public:
+  typedef void ControlSignature(Field(In), Field(Out));
+  typedef _2 ExecutionSignature(_1);
+
+
   template<class ValueType>
   DAX_EXEC_EXPORT
-  void operator()(const ValueType &inValue,
-                  ValueType &outValue) const
+  ValueType operator()(const ValueType &inValue) const
   {
-    outValue = inValue * inValue;
+   return inValue * inValue;
   }
 };
 

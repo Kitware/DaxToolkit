@@ -27,6 +27,10 @@ namespace worklet {
 class Elevation : public dax::exec::WorkletMapField
 {
 public:
+  typedef void ControlSignature(Field(In), Field(Out));
+  typedef void ExecutionSignature(_1,_2);
+
+
   DAX_CONT_EXPORT
   Elevation(const dax::Vector3 &lowPoint = dax::make_Vector3(0.0, 0.0, 0.0),
             const dax::Vector3 &highPoint = dax::make_Vector3(0.0, 0.0, 1.0),

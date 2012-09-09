@@ -24,48 +24,8 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 
-namespace dax {
-namespace exec {
-namespace internal {
-namespace kernel {
-
-template<class PortalType1, class PortalType2>
-struct Elevation
-{
-  DAX_CONT_EXPORT
-  Elevation(const dax::worklet::Elevation &worklet,
-            const PortalType1 &inCoordinates,
-            const PortalType2 &outField)
-    : Worklet(worklet), InCoordinates(inCoordinates), OutField(outField) {  }
-
-  DAX_EXEC_EXPORT
-  void operator()(dax::Id index) const
-  {
-    const typename PortalType1::ValueType inCoordinates =
-        this->InCoordinates.Get(index);
-    typename PortalType2::ValueType outField;
-
-    this->Worklet(inCoordinates, outField);
-
-    this->OutField.Set(index, outField);
-  }
-
-  DAX_CONT_EXPORT void SetErrorMessageBuffer(
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
-  {
-    this->Worklet.SetErrorMessageBuffer(errorMessage);
-  }
-
-private:
-  dax::worklet::Elevation Worklet;
-  PortalType1 InCoordinates;
-  PortalType2 OutField;
-};
-
-}
-}
-}
-} // dax::exec::internal::kernel
+#include <dax/cont/arg/FieldArrayHandle.h>
+#include <dax/cont/Schedule.h>
 
 namespace dax {
 namespace cont {
@@ -73,25 +33,18 @@ namespace worklet {
 
 template<class Container1,
          class Container2,
-         class Adapter>
+         class DeviceAdapter>
 DAX_CONT_EXPORT void Elevation(
-    const dax::cont::ArrayHandle<dax::Vector3, Container1, Adapter> &inHandle,
-    dax::cont::ArrayHandle<dax::Scalar, Container2, Adapter> &outHandle,
+    const dax::cont::ArrayHandle<dax::Vector3,Container1,DeviceAdapter> &inHandle,
+    dax::cont::ArrayHandle<dax::Scalar,Container2,DeviceAdapter> &outHandle,
     const dax::Vector3 &lowPoint = dax::make_Vector3(0.0, 0.0, 0.0),
     const dax::Vector3 &highPoint = dax::make_Vector3(0.0, 0.0, 1.0),
     const dax::Vector2 &outputRange = dax::make_Vector2(0.0, 1.0))
 {
-  dax::Id fieldSize = inHandle.GetNumberOfValues();
-
-  dax::exec::internal::kernel::Elevation<
-      typename dax::cont::ArrayHandle<dax::Vector3,Container1,Adapter>::PortalConstExecution,
-      typename dax::cont::ArrayHandle<dax::Scalar,Container2,Adapter>::PortalExecution>
-      kernel(dax::worklet::Elevation(lowPoint, highPoint, outputRange),
-             inHandle.PrepareForInput(),
-             outHandle.PrepareForOutput(fieldSize));
-
-  dax::cont::internal::Schedule(kernel, fieldSize, Adapter());
+  dax::worklet::Elevation elev(lowPoint,highPoint,outputRange);
+  dax::cont::Schedule<DeviceAdapter>(elev,inHandle,outHandle);
 }
+
 
 }
 }
