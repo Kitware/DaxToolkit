@@ -200,7 +200,7 @@ DAX_CONT_EXPORT void Schedule(Functor functor,
 template<class ControlInvocSig, class Functor,  class Bindings>
 DAX_CONT_EXPORT void NG_Schedule(
     Functor functor,
-    Bindings bindings,
+    Bindings& bindings,
     dax::Id numInstances,
     DeviceAdapterTagSerial)
 {
