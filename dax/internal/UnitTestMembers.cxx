@@ -62,8 +62,11 @@ template <typename MembersType, int I> void Members1()
   DAX_TEST_ASSERT(m_all.template Get<I>() == 1, "Member has wrong value!");
   MembersType m_each(1);
   DAX_TEST_ASSERT(m_each.template Get<I>() == 1, "Member has wrong value!");
+  MembersType m_copy(m_each);
+  DAX_TEST_ASSERT(m_copy.template Get<I>() == 1, "Member has wrong value after copy!");
   m_each.ForEach(Increment());
   DAX_TEST_ASSERT(m_each.template Get<I>() == 2, "Member has wrong value after increment!");
+  DAX_TEST_ASSERT(m_copy.template Get<I>() == 1, "Member has wrong value in copy after increment!");
 }
 
 template <typename MembersType, int I> void Members2()
@@ -79,9 +82,14 @@ template <typename MembersType, int I> void Members2()
   MembersType m_each(1,2.0f);
   DAX_TEST_ASSERT(m_each.template Get<I>() == 1, "Member has wrong value!");
   DAX_TEST_ASSERT(m_each.template Get<I+1>() == 2.0f, "Member has wrong value!");
+  MembersType m_copy(m_each);
+  DAX_TEST_ASSERT(m_copy.template Get<I>() == 1, "Member has wrong value after copy!");
+  DAX_TEST_ASSERT(m_copy.template Get<I+1>() == 2.0f, "Member has wrong value after copy!");
   m_each.ForEach(Increment());
   DAX_TEST_ASSERT(m_each.template Get<I>() == 2, "Member has wrong value after increment!");
   DAX_TEST_ASSERT(m_each.template Get<I+1>() == 3.0f, "Member has wrong value after increment!");
+  DAX_TEST_ASSERT(m_copy.template Get<I>() == 1, "Member has wrong value in copy after increment!");
+  DAX_TEST_ASSERT(m_copy.template Get<I+1>() == 2.0f, "Member has wrong value in copy after increment!");
 }
 
 template <typename MembersType, int I> void Members3()
@@ -101,10 +109,17 @@ template <typename MembersType, int I> void Members3()
   DAX_TEST_ASSERT(m_each.template Get<I>() == 1, "Member has wrong value!");
   DAX_TEST_ASSERT(m_each.template Get<I+1>() == 2.0f, "Member has wrong value!");
   DAX_TEST_ASSERT(m_each.template Get<I+2>() == 'a', "Member has wrong value!");
+  MembersType m_copy(m_each);
+  DAX_TEST_ASSERT(m_copy.template Get<I>() == 1, "Member has wrong value after copy!");
+  DAX_TEST_ASSERT(m_copy.template Get<I+1>() == 2.0f, "Member has wrong value after copy!");
+  DAX_TEST_ASSERT(m_copy.template Get<I+2>() == 'a', "Member has wrong value after copy!");
   m_each.ForEach(Increment());
   DAX_TEST_ASSERT(m_each.template Get<I>() == 2, "Member has wrong value after increment!");
   DAX_TEST_ASSERT(m_each.template Get<I+1>() == 3.0f, "Member has wrong value after increment!");
   DAX_TEST_ASSERT(m_each.template Get<I+2>() == 'b', "Member has wrong value after increment!");
+  DAX_TEST_ASSERT(m_copy.template Get<I>() == 1, "Member has wrong value in copy after increment!");
+  DAX_TEST_ASSERT(m_copy.template Get<I+1>() == 2.0f, "Member has wrong value in copy after increment!");
+  DAX_TEST_ASSERT(m_copy.template Get<I+2>() == 'a', "Member has wrong value in copy after increment!");
 }
 
 void Members()
