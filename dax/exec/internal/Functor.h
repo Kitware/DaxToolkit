@@ -102,8 +102,8 @@ template <typename Invocation> struct FunctorImplLookup
 };
 # endif // !(__cplusplus >= 201103L)
 
-#define _dax_FunctorImpl_Argument(n) this->Arguments.template Get<n>()(id)
-#define _dax_FunctorImpl_T0          this->Arguments.template Get<0>()(id) =
+#define _dax_FunctorImpl_Argument(n) instance.template Get<n>()(id)
+#define _dax_FunctorImpl_T0          instance.template Get<0>()(id) =
 #define _dax_FunctorImpl_void
 #define _dax_FunctorImpl(r)                                             \
 public:                                                                 \
@@ -121,9 +121,10 @@ public:                                                                 \
     Worklet(worklet), Arguments(bindings) {}                            \
   DAX_EXEC_EXPORT void operator()(dax::Id id)                           \
     {                                                                   \
+    ArgumentsType instance(this->Arguments);                            \
     _dax_FunctorImpl_##r                                                \
     this->Worklet(_dax_pp_enum___(_dax_FunctorImpl_Argument));          \
-    this->Arguments.ForEach(SaveOutArgs(id));                           \
+    instance.ForEach(SaveOutArgs(id));                                  \
     }
 
 # if __cplusplus >= 201103L
