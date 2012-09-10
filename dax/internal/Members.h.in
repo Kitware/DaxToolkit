@@ -168,13 +168,13 @@ template <unsigned int N> struct MembersForEach<N,N>
     typedef typename member_type::type type;                              \
   };                                                                      \
   template <int N>                                                        \
-  @DAX_MEMBERS_EXPORT@ typename GetType<N>::type& Get()         \
+  @DAX_MEMBERS_EXPORT@ typename GetType<N>::type& Get()                   \
     {                                                                     \
     typedef typename GetType<N>::member_type member_type;                 \
     return static_cast<member_type&>(*this)();                            \
     }                                                                     \
   template <typename F>                                                   \
-  @DAX_MEMBERS_EXPORT@ void ForEach(F f)                        \
+  @DAX_MEMBERS_EXPORT@ void ForEach(F f)                                  \
     {                                                                     \
     detail::MembersForEach<I,_dax_pp_sizeof___T>::Apply(*this, f);        \
     }
