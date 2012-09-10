@@ -85,7 +85,7 @@ template <typename Invocation, typename ExecutionSignature, typename NumList> cl
 template <typename ExecutionSignature> struct FunctorNums;
 template <typename T0, typename...T> struct FunctorNums<T0(T...)>
 {
-  typedef typename dax::internal::detail::Nums<sizeof...(T)>::type type;
+  typedef typename dax::exec::internal::detail::Nums<sizeof...(T)>::type type;
 };
 template <typename Invocation> struct FunctorImplLookup
 {
@@ -129,13 +129,13 @@ public:                                                                 \
 # if __cplusplus >= 201103L
 #  define _dax_pp_enum___(x) x(N)...
 template <typename Invocation, typename T0, typename...T, int...N>
-class FunctorImpl<Invocation, T0(T...), dax::internal::detail::NumList<N...> >
+class FunctorImpl<Invocation, T0(T...), dax::exec::internal::detail::NumList<N...> >
 {
   typedef T0 ExecutionSignature(T...);
   _dax_FunctorImpl(T0)
 };
 template <typename Invocation, typename...T, int...N>
-class FunctorImpl<Invocation, void(T...), dax::internal::detail::NumList<N...> >
+class FunctorImpl<Invocation, void(T...), dax::exec::internal::detail::NumList<N...> >
 {
   typedef void ExecutionSignature(T...);
   _dax_FunctorImpl(void)

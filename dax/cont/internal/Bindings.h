@@ -94,7 +94,7 @@ class BindingsMembers<Worklet(T...)>
   BOOST_STATIC_ASSERT((boost::is_same<typename ControlSigTraits::result_type, void>::value));
   BOOST_STATIC_ASSERT((ControlSigTraits::arity == sizeof...(T)));
  public:
-  typedef dax::internal::Members<void(T...), BindingsMemberMap<Worklet> > type;
+  typedef dax::cont::internal::Members<void(T...), BindingsMemberMap<Worklet> > type;
 };
 
 } // namespace detail
