@@ -32,7 +32,8 @@ public:
   typedef T const& ReturnType;
   FieldConstant(T x): Value(x) {}
 
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id) const
+  template< typename Worklet>
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id, const Worklet& ) const
     {
     return this->Value;
     }

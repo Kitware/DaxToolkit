@@ -57,17 +57,19 @@ struct BindCellPoints
 
   ValueType Value;
 
-  DAX_EXEC_CONT_EXPORT ReferenceType operator()(dax::Id id) const
+  template<typename Worklet>
+  DAX_EXEC_EXPORT ReferenceType operator()(dax::Id id, const Worklet& worklet) const
     {
     const CellPointsContainer ids = this->TopoExecArg.GetCellPoints(id);
     for(int i=0; i < CellPointsContainer::NUM_COMPONENTS; ++i)
       {
-      this->Value[i] = this->ExecArg(ids[i]);
+      this->Value[i] = this->ExecArg(ids[i], worklet);
       }
     return this->Value;
     }
 
-  DAX_EXEC_EXPORT void SaveExecutionResult(int id) const
+  template<typename Worklet>
+  DAX_EXEC_EXPORT void SaveExecutionResult(int id, const Worklet& worklet) const
     {
     //Look at the concept map traits. If we have the Out tag
     //we know that we must call our ExecArgs SaveExecutionResult.
@@ -75,25 +77,25 @@ struct BindCellPoints
     //and very bad things could happen
     typedef typename Tags::
           template Has<typename dax::cont::sig::Out>::type HasOutTag;
-    this->saveResult(id,HasOutTag());
+    this->saveResult(id,worklet,HasOutTag());
     }
 
   //method enabled when we do have the out tag ( or InOut)
-  template <typename HasOutTag>
+  template <typename Worklet, typename HasOutTag>
   DAX_EXEC_EXPORT
-  void saveResult(int id, HasOutTag,
+  void saveResult(int id,const Worklet& worklet, HasOutTag,
      typename boost::enable_if<HasOutTag>::type* dummy = 0)
     {
     const CellPointsContainer ids = this->TopoExecArg.GetCellPoints(id);
     for(int i=0; i < CellPointsContainer::NUM_COMPONENTS; ++i)
       {
-      this->ExecArg.SaveExecutionResult(ids[i],this->Value[i]);
+      this->ExecArg.SaveExecutionResult(ids[i],this->Value[i],worklet);
       }
     }
 
-  template <typename HasOutTag>
+  template <typename Worklet, typename HasOutTag>
   DAX_EXEC_EXPORT
-  void saveResult(int, HasOutTag,
+  void saveResult(int,const Worklet&, HasOutTag,
      typename boost::disable_if<HasOutTag>::type* dummy = 0)
     {
     (void)dummy;

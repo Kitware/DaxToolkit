@@ -37,9 +37,9 @@ void Bindings()
 {
   dax::cont::internal::Bindings<Worklet1(float)> b1(1.0f);
   dax::cont::internal::Bindings<Worklet2(float,float)> b2(1.0f, 2.0f);
-  DAX_TEST_ASSERT((b1.Get<1>().GetExecArg()(0) == 1.0f), "ExecArg value incorrect!");
-  DAX_TEST_ASSERT((b2.Get<1>().GetExecArg()(0) == 1.0f), "ExecArg value incorrect!");
-  DAX_TEST_ASSERT((b2.Get<2>().GetExecArg()(0) == 2.0f), "ExecArg value incorrect!");
+  DAX_TEST_ASSERT((b1.Get<1>().GetExecArg()(0,Worklet1()) == 1.0f), "ExecArg value incorrect!");
+  DAX_TEST_ASSERT((b2.Get<1>().GetExecArg()(0,Worklet2()) == 1.0f), "ExecArg value incorrect!");
+  DAX_TEST_ASSERT((b2.Get<2>().GetExecArg()(0,Worklet2()) == 2.0f), "ExecArg value incorrect!");
 }
 
 } // anonymous namespace

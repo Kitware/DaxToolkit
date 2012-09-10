@@ -39,13 +39,15 @@ struct BindDirect
   BindDirect(AllControlBindings& bindings):
     ExecArg(bindings.template Get<N>().GetExecArg()) {}
 
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id)
+  template<typename Worklet>
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id, const Worklet& worklet)
     {
-    return this->ExecArg(id);
+    return this->ExecArg(id, worklet);
     }
 
+  template<typename Worklet>
   DAX_EXEC_EXPORT
-  void SaveExecutionResult(int id)
+  void SaveExecutionResult(int id, const Worklet& worklet)
     {
     //Look at the concept map traits. If we have the Out tag
     //we know that we must call our ExecArgs SaveExecutionResult.
@@ -53,22 +55,22 @@ struct BindDirect
     //and very bad things could happen
     typedef typename Tags::
           template Has<typename dax::cont::sig::Out>::type HasOutTag;
-    this->saveResult(id,HasOutTag());
+    this->saveResult(id,worklet,HasOutTag());
     }
 
   //method enabled when we do have the out tag ( or InOut)
-  template <typename HasOutTag>
+  template <typename Worklet, typename HasOutTag>
   DAX_EXEC_EXPORT
-  void saveResult(int id, HasOutTag,
+  void saveResult(int id, const Worklet& worklet, HasOutTag,
      typename boost::enable_if<HasOutTag>::type* dummy = 0)
   {
   (void)dummy;
-  this->ExecArg.SaveExecutionResult(id);
+  this->ExecArg.SaveExecutionResult(id,worklet);
   }
 
-  template <typename HasOutTag>
+  template <typename Worklet, typename HasOutTag>
   DAX_EXEC_EXPORT
-  void saveResult(int, HasOutTag,
+  void saveResult(int, const Worklet&, HasOutTag,
      typename boost::disable_if<HasOutTag>::type* dummy = 0)
     {
     (void)dummy;

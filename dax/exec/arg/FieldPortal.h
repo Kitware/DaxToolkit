@@ -18,6 +18,7 @@
 
 #include <dax/Types.h>
 #include <dax/cont/sig/Tag.h>
+#include <dax/exec/Assert.h>
 
 #include <boost/mpl/if.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -114,24 +115,36 @@ public:
 
   FieldPortal(): Storage(), Portal(){}
 
-  DAX_EXEC_EXPORT ReturnType operator()(int index)
+  template< typename Worklet>
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index, const Worklet& work)
     {
     //if we have the In tag we have local store so use that value,
     //otherwise call the portal directly
-    return this->Storage.Get(index,this->Portal);
+    (void)work;  // Shut up compiler.
+    DAX_ASSERT_EXEC(index >= 0, work);
+    DAX_ASSERT_EXEC(index < this->Portal.GetNumberOfValues(), work);
+    return this->Storage.Get(index, this->Portal);
     }
 
   //After needs to be tagged on out, since you get call .Set
   //on a input portal as that fails
-  DAX_EXEC_EXPORT void SaveExecutionResult(int index) const
+  template< typename Worklet>
+  DAX_EXEC_EXPORT void SaveExecutionResult(int index, const Worklet& work) const
     {
+    (void)work;  // Shut up compiler.
+    DAX_ASSERT_EXEC(index >= 0, work);
+    DAX_ASSERT_EXEC(index < this->Portal.GetNumberOfValues(), work);
     this->Storage.Set(index,this->Portal);
     }
 
   //After needs to be tagged on out, since you get call .Set
   //on a input portal as that fails
-  DAX_EXEC_EXPORT void SaveExecutionResult(int index, ReferenceType v) const
+  template< typename Worklet>
+  DAX_EXEC_EXPORT void SaveExecutionResult(int index, ReferenceType v, const Worklet& work) const
     {
+    (void)work;  // Shut up compiler.
+    DAX_ASSERT_EXEC(index >= 0, work);
+    DAX_ASSERT_EXEC(index < this->Portal.GetNumberOfValues(), work);
     this->Storage.Set(index,this->Portal,v);
     }
 };

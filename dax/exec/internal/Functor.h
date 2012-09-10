@@ -51,19 +51,21 @@ namespace dax { namespace exec { namespace internal {
 
 namespace detail {
 
+template<typename WorkletType>
 struct SaveOutArgs
 {
 protected:
   const dax::Id Index;
+  WorkletType& Work;
 public:
-  DAX_EXEC_EXPORT SaveOutArgs(dax::Id index):
-    Index(index)
+  DAX_EXEC_EXPORT SaveOutArgs(dax::Id index, WorkletType& w):
+    Index(index), Work(w)
     {}
 
   template <typename Worklet, int I>
   DAX_EXEC_EXPORT void operator()(dax::exec::arg::BindDirect<Worklet,I>& execArg) const
     {
-    execArg.SaveExecutionResult(Index);
+    execArg.SaveExecutionResult(Index,Work);
     }
 };
 
@@ -102,8 +104,8 @@ template <typename Invocation> struct FunctorImplLookup
 };
 # endif // !(__cplusplus >= 201103L)
 
-#define _dax_FunctorImpl_Argument(n) instance.template Get<n>()(id)
-#define _dax_FunctorImpl_T0          instance.template Get<0>()(id) =
+#define _dax_FunctorImpl_Argument(n) instance.template Get<n>()(id,this->Worklet)
+#define _dax_FunctorImpl_T0          instance.template Get<0>()(id,this->Worklet) =
 #define _dax_FunctorImpl_void
 #define _dax_FunctorImpl(r)                                             \
 public:                                                                 \
@@ -124,7 +126,7 @@ public:                                                                 \
     ArgumentsType instance(this->Arguments);                            \
     _dax_FunctorImpl_##r                                                \
     this->Worklet(_dax_pp_enum___(_dax_FunctorImpl_Argument));          \
-    instance.ForEach(SaveOutArgs(id));                                  \
+    instance.ForEach(SaveOutArgs<WorkletType>(id,this->Worklet));       \
     }
 
 # if __cplusplus >= 201103L
