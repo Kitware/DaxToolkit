@@ -85,7 +85,7 @@ class SupportedDomains<dax::cont::sig::Domain>
 {
 public:
   //You can't add the base to the base already
-  typedef typename dax::internal::Tags<dax::cont::sig::Domain()>  Tags;
+  typedef dax::internal::Tags<dax::cont::sig::Domain()>  Tags;
 };
 
 
