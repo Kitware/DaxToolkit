@@ -118,10 +118,20 @@ public:
   template <typename U> Member(U&& u): M(std::forward<U>(u)) {}
 # else // !(__cplusplus >= 201103L)
   template <typename U>
-  Member(U& u): M(u) {}
+  DAX_CONT_EXPORT Member(U& u): M(u) {}
 
   template <typename U>
-  Member(U const& u): M(u) {}
+  DAX_CONT_EXPORT Member(U const& u): M(u) {}
+
+  //special constructor that only the copy constructor calls
+  //that is used for exec side connstruction of members
+  template <typename U>
+  DAX_EXEC_EXPORT Member(U& u, int): M(u) {}
+
+  //special constructor that only the copy constructor calls
+  //that is used for exec side connstruction of members
+  template <typename U>
+  DAX_EXEC_EXPORT Member(U const& u, int): M(u) {}
 
 # endif // !(__cplusplus >= 201103L)
   @DAX_MEMBERS_EXPORT@ type& operator()() { return M; }
@@ -238,8 +248,8 @@ class Members<void(T...),MemberMap>:
   typedef detail::MembersImpl<void(T...), typename detail::Nums<sizeof...(T)>::type, MemberMap> derived;
   typedef void TypeSequence(T...);
 public:
-  Members(Members& m): derived(m) {}
-  Members(Members const& m): derived(m) {}
+  @DAX_MEMBERS_EXPORT@ Members(Members& m): derived(m) {}
+  @DAX_MEMBERS_EXPORT@ Members(Members const& m): derived(m) {}
   template <typename U> Members(U&& u): derived(std::forward<U>(u)) {}
   Members(T&&...v): derived(std::forward<T>(v)...) {}
   _dax_Members_API(1)
@@ -251,8 +261,8 @@ class Members<T0(T...),MemberMap>: private detail::MembersImpl<T0(T...), typenam
   typedef detail::MembersImpl<T0(T...), typename detail::Nums<sizeof...(T)>::type, MemberMap> derived;
   typedef T0 TypeSequence(T...);
 public:
-  Members(Members& m): derived(m) {}
-  Members(Members const& m): derived(m) {}
+  @DAX_MEMBERS_EXPORT@ Members(Members& m): derived(m) {}
+  @DAX_MEMBERS_EXPORT@ Members(Members const& m): derived(m) {}
   template <typename U> Members(U&& u): derived(std::forward<U>(u)) {}
   Members(T0&& v0, T&&...v):
     derived(std::forward<T0>(v0), std::forward<T>(v)...) {}
@@ -264,7 +274,7 @@ public:
 #  define _dax_Member_typedef(n) typedef _dax_Member(n) Member##n;
 #  define _dax_Member_init_all_u(n)  Member##n(u)
 #  define _dax_Member_init_each_v(n) Member##n(v##n)
-#  define _dax_Member_init_copy_m(n) Member##n(m.template Get<n>())
+#  define _dax_Member_init_copy_m(n) Member##n(m.template Get<n>(),n)
 #  define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <@DAX_MEMBERS_CONFIGURED_INCLUDE_PATH@/Members.h>))
 #  include BOOST_PP_ITERATE()
 #  undef _dax_Member
@@ -291,8 +301,8 @@ class Members<void(_dax_pp_T___),MemberMap>:
   _dax_pp_repeat___(_dax_Member_typedef)
   typedef void TypeSequence(_dax_pp_T___);
 public:
-  Members(Members& m): _dax_pp_enum___(_dax_Member_init_copy_m)  {}
-  Members(Members const& m): _dax_pp_enum___(_dax_Member_init_copy_m)  {}
+  @DAX_MEMBERS_EXPORT@ Members(Members& m): _dax_pp_enum___(_dax_Member_init_copy_m)  {}
+  @DAX_MEMBERS_EXPORT@ Members(Members const& m): _dax_pp_enum___(_dax_Member_init_copy_m)  {}
   template <typename U> Members(U& u): _dax_pp_enum___(_dax_Member_init_all_u) {}
   template <typename U> Members(U const& u): _dax_pp_enum___(_dax_Member_init_all_u) {}
   Members(_dax_pp_params___(v)): _dax_pp_enum___(_dax_Member_init_each_v) {}
@@ -309,8 +319,8 @@ class Members<T0(_dax_pp_T___),MemberMap>:
   _dax_pp_repeat___(_dax_Member_typedef)
   typedef T0 TypeSequence(_dax_pp_T___);
 public:
-  Members(Members& m): Member0(m.template Get<0>()) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
-  Members(Members const& m): Member0(m.template Get<0>()) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
+  @DAX_MEMBERS_EXPORT@ Members(Members& m): Member0(m.template Get<0>(),0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
+  @DAX_MEMBERS_EXPORT@ Members(Members const& m): Member0(m.template Get<0>(),0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
   template <typename U> Members(U& u): Member0(u) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_all_u) {}
   template <typename U> Members(U const& u): Member0(u) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_all_u) {}
   Members(T0 v0 _dax_pp_comma _dax_pp_params___(v)): Member0(v0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_each_v) {}
