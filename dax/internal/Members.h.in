@@ -134,8 +134,8 @@ public:
   DAX_EXEC_EXPORT Member(U const& u, int): M(u) {}
 
 # endif // !(__cplusplus >= 201103L)
-  @DAX_MEMBERS_EXPORT@ type& operator()() { return M; }
-  @DAX_MEMBERS_EXPORT@ type const& operator()() const { return M; }
+  DAX_EXEC_CONT_EXPORT type& operator()() { return M; }
+  DAX_EXEC_CONT_EXPORT type const& operator()() const { return M; }
 };
 
 struct MemberMapDefault { template <int Id, typename T> struct Get { typedef T type; }; };
@@ -178,19 +178,19 @@ template <unsigned int N> struct MembersForEach<N,N>
     typedef typename member_type::type type;                              \
   };                                                                      \
   template <int N>                                                        \
-  @DAX_MEMBERS_EXPORT@ typename GetType<N>::type& Get()                   \
+  DAX_EXEC_CONT_EXPORT typename GetType<N>::type& Get()                   \
     {                                                                     \
     typedef typename GetType<N>::member_type member_type;                 \
     return static_cast<member_type&>(*this)();                            \
     }                                                                     \
   template <int N>                                                        \
-  @DAX_MEMBERS_EXPORT@ typename GetType<N>::type const& Get() const       \
+  DAX_EXEC_CONT_EXPORT typename GetType<N>::type const& Get() const       \
     {                                                                     \
     typedef typename GetType<N>::member_type member_type;                 \
     return static_cast<member_type const&>(*this)();                      \
     }                                                                     \
   template <typename F>                                                   \
-  @DAX_MEMBERS_EXPORT@ void ForEach(F f)                                  \
+  DAX_EXEC_CONT_EXPORT void ForEach(F f)                                  \
     {                                                                     \
     detail::MembersForEach<I,_dax_pp_sizeof___T>::Apply(*this, f);        \
     }
@@ -248,8 +248,8 @@ class Members<void(T...),MemberMap>:
   typedef detail::MembersImpl<void(T...), typename detail::Nums<sizeof...(T)>::type, MemberMap> derived;
   typedef void TypeSequence(T...);
 public:
-  @DAX_MEMBERS_EXPORT@ Members(Members& m): derived(m) {}
-  @DAX_MEMBERS_EXPORT@ Members(Members const& m): derived(m) {}
+  DAX_EXEC_CONT_EXPORT Members(Members& m): derived(m) {}
+  DAX_EXEC_CONT_EXPORT Members(Members const& m): derived(m) {}
   template <typename U> Members(U&& u): derived(std::forward<U>(u)) {}
   Members(T&&...v): derived(std::forward<T>(v)...) {}
   _dax_Members_API(1)
@@ -261,8 +261,8 @@ class Members<T0(T...),MemberMap>: private detail::MembersImpl<T0(T...), typenam
   typedef detail::MembersImpl<T0(T...), typename detail::Nums<sizeof...(T)>::type, MemberMap> derived;
   typedef T0 TypeSequence(T...);
 public:
-  @DAX_MEMBERS_EXPORT@ Members(Members& m): derived(m) {}
-  @DAX_MEMBERS_EXPORT@ Members(Members const& m): derived(m) {}
+  DAX_EXEC_CONT_EXPORT Members(Members& m): derived(m) {}
+  DAX_EXEC_CONT_EXPORT Members(Members const& m): derived(m) {}
   template <typename U> Members(U&& u): derived(std::forward<U>(u)) {}
   Members(T0&& v0, T&&...v):
     derived(std::forward<T0>(v0), std::forward<T>(v)...) {}
@@ -301,8 +301,8 @@ class Members<void(_dax_pp_T___),MemberMap>:
   _dax_pp_repeat___(_dax_Member_typedef)
   typedef void TypeSequence(_dax_pp_T___);
 public:
-  @DAX_MEMBERS_EXPORT@ Members(Members& m): _dax_pp_enum___(_dax_Member_init_copy_m)  {}
-  @DAX_MEMBERS_EXPORT@ Members(Members const& m): _dax_pp_enum___(_dax_Member_init_copy_m)  {}
+  DAX_EXEC_CONT_EXPORT Members(Members& m): _dax_pp_enum___(_dax_Member_init_copy_m)  {}
+  DAX_EXEC_CONT_EXPORT Members(Members const& m): _dax_pp_enum___(_dax_Member_init_copy_m)  {}
   template <typename U> Members(U& u): _dax_pp_enum___(_dax_Member_init_all_u) {}
   template <typename U> Members(U const& u): _dax_pp_enum___(_dax_Member_init_all_u) {}
   Members(_dax_pp_params___(v)): _dax_pp_enum___(_dax_Member_init_each_v) {}
@@ -319,8 +319,8 @@ class Members<T0(_dax_pp_T___),MemberMap>:
   _dax_pp_repeat___(_dax_Member_typedef)
   typedef T0 TypeSequence(_dax_pp_T___);
 public:
-  @DAX_MEMBERS_EXPORT@ Members(Members& m): Member0(m.template Get<0>(),0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
-  @DAX_MEMBERS_EXPORT@ Members(Members const& m): Member0(m.template Get<0>(),0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
+  DAX_EXEC_CONT_EXPORT Members(Members& m): Member0(m.template Get<0>(),0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
+  DAX_EXEC_CONT_EXPORT Members(Members const& m): Member0(m.template Get<0>(),0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
   template <typename U> Members(U& u): Member0(u) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_all_u) {}
   template <typename U> Members(U const& u): Member0(u) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_all_u) {}
   Members(T0 v0 _dax_pp_comma _dax_pp_params___(v)): Member0(v0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_each_v) {}
