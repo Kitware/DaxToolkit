@@ -26,6 +26,10 @@
 
 #include <boost/utility/enable_if.hpp>
 
+#if !(__cplusplus >= 201103L)
+# include <dax/internal/ParameterPackCxx03.h>
+#endif // !(__cplusplus >= 201103L)
+
 namespace dax { namespace cont {
 
 namespace detail
@@ -36,26 +40,18 @@ template <class WorkType> class CollectCount;
 template<class WorkType> class CreateExecutionResources;
 }
 
-// Implementation for the Schedule class for single paramter
-// worklet. The rest of the implementations are handled by the preprocessor
-// code that is found at the bottom of the schedule class
 template <class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class Schedule
 {
 public:
-  template <class WorkletType, typename Arg1>
-  Schedule(WorkletType w, Arg1 a1)
-    {
-    this->operator()(w,a1);
-    }
-
-  //Note any changes to this method must be reflected in the
-  //other implementation inisde Schedule.txx
-  template <class WorkletType, typename Arg1>
-  void operator()(WorkletType w, Arg1 a1) const
+#if __cplusplus >= 201103L
+  // Note any changes to this method must be reflected in the
+  // C++03 implementation inside "Schedule_Cxx03.h".
+  template <class WorkletType, typename...T>
+  Schedule(WorkletType w, T...a)
     {
     // Construct the signature of the worklet invocation on the control side.
-    typedef WorkletType ControlInvocationSignature(Arg1);
+    typedef WorkletType ControlInvocationSignature(T...);
     typedef typename WorkletType::WorkType WorkType;
 
     // Bind concrete arguments T...a to the concepts declared in the
@@ -63,7 +59,7 @@ public:
     // The concept maps also know how to make the arguments available
     // in the execution environment.
     dax::cont::internal::Bindings<ControlInvocationSignature>
-      bindings(a1);
+      bindings(a...);
 
     // Visit each bound argument to determine the count to be scheduled.
     dax::Id count=1;
@@ -77,10 +73,12 @@ public:
     dax::cont::internal::NG_Schedule<ControlInvocationSignature>
       (w, bindings, count, DeviceAdapterTag());
     }
-
-  //this is parsed by the boost preprocessor to be the rest
-  //of the implementations of the schedule constructor and operator
-  #include "Schedule.txx"
+#else // !(__cplusplus >= 201103L)
+  // For C++03 use Boost.Preprocessor file iteration to simulate
+  // parameter packs by enumerating implementations for all argument
+  // counts.
+# include "Schedule_Cxx03.h"
+#endif // !(__cplusplus >= 201103L)
 };
 
 

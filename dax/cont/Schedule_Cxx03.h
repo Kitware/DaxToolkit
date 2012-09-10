@@ -1,25 +1,27 @@
+//=============================================================================
+//
+//  Copyright (c) Kitware, Inc.
+//  All rights reserved.
+//  See LICENSE.txt for details.
+//
+//  This software is distributed WITHOUT ANY WARRANTY; without even
+//  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+//  PURPOSE.  See the above copyright notice for more information.
+//
+//  Copyright 2012 Sandia Corporation.
+//  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+//  the U.S. Government retains certain rights in this software.
+//
+//=============================================================================
 #if !defined(BOOST_PP_IS_ITERATING)
-
-# if !(__cplusplus >= 201103L)
-#  include <dax/internal/ParameterPackCxx03.h>
-# endif // !(__cplusplus >= 201103L)
-
-#  define BOOST_PP_ITERATION_PARAMS_1 (3, (2, 10, <dax/cont/Schedule.txx>))
-#  include BOOST_PP_ITERATE()
-
+# define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/cont/Schedule_Cxx03.h>))
+# include BOOST_PP_ITERATE()
 #else // defined(BOOST_PP_IS_ITERATING)
-
-#if _dax_pp_sizeof___T > 1
+# if _dax_pp_sizeof___T > 0
+// Note any changes to this method must be reflected in the
+// C++11 implementation inside Schedule.h.
 template <class WorkletType, _dax_pp_typename___T>
 Schedule(WorkletType w, _dax_pp_params___(a))
-  {
-  this->operator()(w, _dax_pp_args___(a));
-  }
-
-//Note any changes to this method must be reflected in the
-//other implementation inisde Schedule.txx
-template <class WorkletType, _dax_pp_typename___T>
-void operator()(WorkletType w, _dax_pp_params___(a)) const
   {
   // Construct the signature of the worklet invocation on the control side.
   typedef WorkletType ControlInvocationSignature(_dax_pp_T___);
