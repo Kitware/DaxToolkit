@@ -23,8 +23,6 @@
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-
-#include <dax/cont/arg/FieldArrayHandle.h>
 #include <dax/cont/Schedule.h>
 
 namespace dax {
