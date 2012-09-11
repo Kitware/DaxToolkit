@@ -20,6 +20,7 @@ set(headers
   BindDirect.h
   FieldConstant.h
   FieldPortal.h
+  TopologyCell.h
   )
 
 dax_declare_headers(${headers})

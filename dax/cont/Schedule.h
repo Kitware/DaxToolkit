@@ -147,32 +147,8 @@ public:
   template <typename C, typename A>
   void operator()(dax::cont::arg::ConceptMap<C,A>& concept) const
     {
-    //determine the concept and traits of the concept we
-    //have. This will be used to look up the domains that the concept
-    //has, and if one of those domains match our domina, we know we
-    //can ask it for the size/len
-    typedef dax::cont::arg::ConceptMap<C,A> ConceptType;
-    typedef dax::cont::arg::ConceptMapTraits<ConceptType> Traits;
-    typedef typename Traits::DomainTags DomainTags;
-    typedef typename DomainTags::
-            template Has<typename WorkType::DomainType>::type HasDomain;
-
-    this->toExecution<ConceptType,HasDomain>(concept);
-    }
-
-  template <typename ConceptType, typename HasDomain>
-  typename boost::enable_if<HasDomain>::type
-    toExecution(ConceptType& concept) const
-    {
+    //we must call to execution on everything.
     concept.ToExecution(NumElementsToAlloc);
-    }
-
-  template <typename ConceptType, typename HasDomain>
-  typename boost::disable_if<HasDomain>::type
-    toExecution(ConceptType&) const
-    {
-      //this concept map doesn't have the domain tag we are interested
-      //in so we ignore it
     }
 };
 

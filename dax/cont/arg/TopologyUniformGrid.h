@@ -22,7 +22,7 @@
 #include <dax/cont/arg/Topology.h>
 #include <dax/cont/sig/Tag.h>
 
-#include <dax/exec/arg/TopologyGrid.h>
+#include <dax/exec/arg/TopologyCell.h>
 #include <dax/cont/UniformGrid.h>
 
 namespace dax { namespace cont { namespace arg {
@@ -35,19 +35,22 @@ class ConceptMap<Topology(Tags), dax::cont::UniformGrid< DeviceTag > >
 private:
   typedef dax::cont::UniformGrid< DeviceTag > GridType;
 
-  typedef dax::exec::arg::TopologyGrid<Tags,
+  typedef dax::exec::arg::TopologyCell<Tags,
             typename GridType::TopologyStructExecution,
-            typename GridType::TopologyStructConstExecution > ExecArg;
+            typename GridType::TopologyStructConstExecution > ExecGridType;
   GridType Grid;
-  ExecArg ExecArg_;
+  ExecGridType ExecArg_;
 
 public:
+  typedef ExecGridType ExecArg;
   typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Cell>::Tags DomainTags;
 
   ConceptMap(GridType g):
     Grid(g),
     ExecArg_()
     {}
+
+  ExecArg& GetExecArg() { return this->ExecArg_; }
 
   void ToExecution(dax::Id, boost::false_type)
     { /* Input  */
@@ -59,8 +62,6 @@ public:
     {
     ToExecution(size,typename Tags::template Has<dax::cont::sig::Out>());
     }
-
-  ExecArg& GetExecArg() { return this->ExecArg_; }
 
   dax::Id GetDomainLength(sig::Point) const
     {

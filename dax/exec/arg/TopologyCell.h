@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_arg_TopologyGrid_h
-#define __dax_exec_arg_TopologyGrid_h
+#ifndef __dax_exec_arg_TopologyCell_h
+#define __dax_exec_arg_TopologyCell_h
 
 #include <dax/Types.h>
 #include <dax/cont/sig/Tag.h>
@@ -27,7 +27,7 @@
 namespace dax { namespace exec { namespace arg {
 
 template <typename Tags, typename TopologyExec, typename TopologyConstExec>
-struct TopologyGrid
+struct TopologyCell
 {
 protected:
   //What we have to do is use mpl::if_ to determine the type for
@@ -39,13 +39,15 @@ protected:
   //if we are going with Out tag we create a value storage that holds a copy
   typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
                                    typename TopologyExec::CellType,
-                                   typename TopologyConstExec::CellType const>::type ReferenceType;
-public:
+                                   typename TopologyConstExec::CellType>::type ReferenceType;
+
+  public:
   TopologyType Topo;
 
   typedef ReferenceType ReturnType;
+  typedef ReferenceType CellType;
 
-  TopologyGrid(): Topo(){}
+  TopologyCell(): Topo(){}
 
   template< typename Worklet>
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id index, const Worklet& work)
@@ -54,8 +56,7 @@ public:
     //otherwise call the portal directly
     (void)work;  // Shut up compiler.
     DAX_ASSERT_EXEC(index >= 0, work);
-    DAX_ASSERT_EXEC(index < this->Topo.GetNumberOfValues(), work);
-    return ReturnType(this->Topo, index);
+    return CellType(this->Topo,index);
     }
 
   template< typename Worklet>
@@ -75,4 +76,4 @@ public:
 
 
 
-#endif //__dax_exec_arg_TopologyGrid_h
+#endif //__dax_exec_arg_TopologyCell_h

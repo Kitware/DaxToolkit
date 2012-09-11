@@ -22,7 +22,7 @@
 #include <dax/cont/arg/Topology.h>
 #include <dax/cont/sig/Tag.h>
 
-#include <dax/exec/arg/TopologyGrid.h>
+#include <dax/exec/arg/TopologyCell.h>
 #include <dax/cont/UnstructuredGrid.h>
 
 namespace dax { namespace cont { namespace arg {
@@ -34,16 +34,15 @@ class ConceptMap<Topology(Tags), dax::cont::UnstructuredGrid< Cell,ContainerTag,
 {
 private:
   typedef dax::cont::UnstructuredGrid< Cell,ContainerTag,DeviceTag > GridType;
-  typedef dax::exec::arg::TopologyGrid<Tags,
+  typedef dax::exec::arg::TopologyCell<Tags,
             typename GridType::TopologyStructExecution,
-            typename GridType::TopologyStructConstExecution > ExecArg;
-
+            typename GridType::TopologyStructConstExecution > ExecGridType;
   GridType Grid;
-  ExecArg ExecArg_;
+  ExecGridType ExecArg_;
 
 public:
+  typedef ExecGridType ExecArg;
   typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Cell>::Tags DomainTags;
-
 
   ConceptMap(GridType g):
     Grid(g),
@@ -54,12 +53,12 @@ public:
 
   void ToExecution(dax::Id size, boost::true_type)
     { /* Output */
-    this->ExecArg_.Portal = this->Grid.PrepareForOutput(size);
+    this->ExecArg_.Topo = this->Grid.PrepareForOutput(size);
     }
 
   void ToExecution(dax::Id, boost::false_type)
     { /* Input  */
-    this->ExecArg_.Portal = this->Grid.PrepareForInput();
+    this->ExecArg_.Topo = this->Grid.PrepareForInput();
     }
 
   //we need to pass the number of elements to allocate

@@ -28,35 +28,38 @@ namespace worklet {
 class CellGradient : public dax::exec::WorkletMapCell
 {
 public:
+
+  typedef void ControlSignature(Topology, Field(Point), Field(Point), Field(Out));
+  typedef _4 ExecutionSignature(_1,_2,_3);
+
   template<class CellType>
   DAX_EXEC_EXPORT
-  void operator()(
-      const CellType &cell,
-      const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &coords,
-      const dax::Tuple<dax::Scalar,CellType::NUM_POINTS> &pointField,
-      dax::Vector3 &gradient) const
+  dax::Vector3 operator()(
+      CellType cell,
+      const dax::Tuple<dax::Vector3,CellType::NUM_POINTS>& coords,
+      const dax::Tuple<dax::Scalar,CellType::NUM_POINTS>& pointField) const
   {
     dax::Vector3 parametricCellCenter =
         dax::exec::ParametricCoordinates<CellType>::Center();
-    gradient = dax::exec::CellDerivative(cell,
+    return dax::exec::CellDerivative(cell,
                                          parametricCellCenter,
                                          coords,
                                          pointField);
   }
 
-  // Special version for Voxel elements (which need no vertex coordinates).
-  DAX_EXEC_EXPORT
-  void operator()(
-      const dax::exec::CellVoxel &cell,
-      const dax::Tuple<dax::Scalar,dax::exec::CellVoxel::NUM_POINTS>&pointField,
-      dax::Vector3 &gradient) const
-  {
-    dax::Vector3 parametricCellCenter =
-        dax::exec::ParametricCoordinates<dax::exec::CellVoxel>::Center();
-    gradient = dax::exec::CellDerivative(cell,
-                                         parametricCellCenter,
-                                         pointField);
-  }
+//  // Special version for Voxel elements (which need no vertex coordinates).
+//  DAX_EXEC_EXPORT
+//  void operator()(
+//      const dax::exec::CellVoxel &cell,
+//      const dax::Tuple<dax::Scalar,dax::exec::CellVoxel::NUM_POINTS>&pointField,
+//      dax::Vector3 &gradient) const
+//  {
+//    dax::Vector3 parametricCellCenter =
+//        dax::exec::ParametricCoordinates<dax::exec::CellVoxel>::Center();
+//    gradient = dax::exec::CellDerivative(cell,
+//                                         parametricCellCenter,
+//                                         pointField);
+//  }
 };
 
 }

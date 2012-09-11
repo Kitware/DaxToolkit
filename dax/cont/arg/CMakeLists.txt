@@ -17,6 +17,7 @@
 set(headers
   ConceptMap.h
   Field.h
+  FieldArrayHandle.h
   FieldConstant.h
   Topology.h
   TopologyUniformGrid.h

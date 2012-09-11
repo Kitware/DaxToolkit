@@ -23,8 +23,47 @@
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/Schedule.h>
 
-#include <dax/exec/internal/FieldAccess.h>
+namespace dax {
+namespace cont {
+namespace worklet {
+
+template<class GridType,
+         class Container1,
+         class Container2,
+         class Container3,
+         class DeviceAdapter>
+DAX_CONT_EXPORT void CellGradient(
+    const GridType &grid,
+    const dax::cont::ArrayHandle<dax::Vector3,Container1,DeviceAdapter> &coords,
+    const dax::cont::ArrayHandle<dax::Scalar,Container2,DeviceAdapter>
+        &pointField,
+    dax::cont::ArrayHandle<dax::Vector3,Container3,DeviceAdapter> &gradient)
+{
+  if (coords.GetNumberOfValues() != grid.GetNumberOfPoints())
+    {
+    throw dax::cont::ErrorControlBadValue(
+          "coords size should be same as number of points in grid");
+    }
+  if (pointField.GetNumberOfValues() != grid.GetNumberOfPoints())
+    {
+    throw dax::cont::ErrorControlBadValue(
+          "pointField size should be same as number of points in grid");
+    }
+  dax::cont::Schedule<DeviceAdapter>(dax::worklet::CellGradient(),
+                      grid,
+                      coords,
+                      pointField,
+                      gradient);
+}
+
+}
+}
+} //dax::cont::worklet
+
+
+/*
 
 namespace dax {
 namespace exec {
@@ -148,51 +187,9 @@ private:
 }
 } // dax::exec::internal::kernel
 
-namespace dax {
-namespace cont {
-namespace worklet {
 
-template<class GridType,
-         class Container1,
-         class Container2,
-         class Container3,
-         class DeviceAdapter>
-DAX_CONT_EXPORT void CellGradient(
-    const GridType &grid,
-    const dax::cont::ArrayHandle<dax::Vector3,Container1,DeviceAdapter> &coords,
-    const dax::cont::ArrayHandle<dax::Scalar,Container2,DeviceAdapter>
-        &pointField,
-    dax::cont::ArrayHandle<dax::Vector3,Container3,DeviceAdapter> &gradient)
-{
-  if (coords.GetNumberOfValues() != grid.GetNumberOfPoints())
-    {
-    throw dax::cont::ErrorControlBadValue(
-          "coords size should be same as number of points in grid");
-    }
-  if (pointField.GetNumberOfValues() != grid.GetNumberOfPoints())
-    {
-    throw dax::cont::ErrorControlBadValue(
-          "pointField size should be same as number of points in grid");
-    }
 
-  dax::exec::internal::kernel::CellGradient<
-      typename GridType::TopologyStructConstExecution,
-      typename dax::cont::ArrayHandle<dax::Vector3,Container1,DeviceAdapter>::PortalConstExecution,
-      typename dax::cont::ArrayHandle<dax::Scalar,Container2,DeviceAdapter>::PortalConstExecution,
-      typename dax::cont::ArrayHandle<dax::Vector3,Container3,DeviceAdapter>::PortalExecution>
-      kernel(dax::worklet::CellGradient(),
-             grid.PrepareForInput(),
-             coords.PrepareForInput(),
-             pointField.PrepareForInput(),
-             gradient.PrepareForOutput(grid.GetNumberOfCells()));
 
-  dax::cont::internal::Schedule(kernel,
-                                grid.GetNumberOfCells(),
-                                DeviceAdapter());
-}
-
-}
-}
-} //dax::cont::worklet
+*/
 
 #endif //__dax_cont_worklet_CellGradient_h

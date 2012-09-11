@@ -43,13 +43,13 @@ struct BindCellPoints
   ExecArgType ExecArg;
 
   BindCellPoints(dax::cont::internal::Bindings<Invocation>& bindings):
-    TopoExecArg(bindings.template Get<TopoIndex::value>()),
-    ExecArg(bindings.template Get<N>()) {}
+    TopoExecArg(bindings.template Get<TopoIndex::value>().GetExecArg()),
+    ExecArg(bindings.template Get<N>().GetExecArg()) {}
 
   typedef typename ExecArgType::ValueType ComponentType;
+  typedef typename TopoExecArgType::CellType CellType;
 
-  typedef typename TopoControlBinding::CellPointsContainer CellPointsContainer;
-  typedef dax::Tuple<ComponentType,CellPointsContainer::NUM_COMPONENTS> ValueType;
+  typedef dax::Tuple<ComponentType,CellType::NUM_POINTS> ValueType;
 
   typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
                                    ValueType&,
@@ -58,10 +58,12 @@ struct BindCellPoints
   ValueType Value;
 
   template<typename Worklet>
-  DAX_EXEC_EXPORT ReferenceType operator()(dax::Id id, const Worklet& worklet) const
+  DAX_EXEC_EXPORT ReferenceType operator()(dax::Id id, const Worklet& worklet)
     {
-    const CellPointsContainer ids = this->TopoExecArg.GetCellPoints(id);
-    for(int i=0; i < CellPointsContainer::NUM_COMPONENTS; ++i)
+    const CellType cell(this->TopoExecArg.Topo,id);
+
+    const dax::Tuple<dax::Id,CellType::NUM_POINTS> ids = cell.GetPointIndices();
+    for(int i=0; i < CellType::NUM_POINTS; ++i)
       {
       this->Value[i] = this->ExecArg(ids[i], worklet);
       }
@@ -84,10 +86,12 @@ struct BindCellPoints
   template <typename Worklet, typename HasOutTag>
   DAX_EXEC_EXPORT
   void saveResult(int id,const Worklet& worklet, HasOutTag,
-     typename boost::enable_if<HasOutTag>::type* dummy = 0)
+     typename boost::enable_if<HasOutTag>::type* dummy = 0) const
     {
-    const CellPointsContainer ids = this->TopoExecArg.GetCellPoints(id);
-    for(int i=0; i < CellPointsContainer::NUM_COMPONENTS; ++i)
+    (void)dummy;
+    const CellType cell(this->TopoExecArg.Topo,id);
+    const dax::Tuple<dax::Id,CellType::NUM_POINTS> ids = cell.GetPointIndices();
+    for(int i=0; i < CellType::NUM_POINTS; ++i)
       {
       this->ExecArg.SaveExecutionResult(ids[i],this->Value[i],worklet);
       }
@@ -96,7 +100,7 @@ struct BindCellPoints
   template <typename Worklet, typename HasOutTag>
   DAX_EXEC_EXPORT
   void saveResult(int,const Worklet&, HasOutTag,
-     typename boost::disable_if<HasOutTag>::type* dummy = 0)
+     typename boost::disable_if<HasOutTag>::type* dummy = 0) const
     {
     (void)dummy;
     }
