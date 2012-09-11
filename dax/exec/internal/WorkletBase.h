@@ -62,7 +62,6 @@ protected:
   typedef dax::cont::sig::placeholders::_9 _9;
   typedef dax::cont::sig::In In;
   typedef dax::cont::sig::Out Out;
-  typedef dax::cont::sig::InOut InOut;
 private:
   dax::exec::internal::ErrorMessageBuffer ErrorMessage;
 };

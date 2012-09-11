@@ -59,11 +59,6 @@ public:
     this->ExecArg_.Portal = this->Handle.PrepareForInput();
     }
 
-  void ToExecution(dax::Id, boost::true_type,  boost::true_type)
-    { /* Input/Output */
-    this->ExecArg_.Portal = this->Handle.PrepareForInPlace();
-    }
-
   //we need to pass the number of elements to allocate
   void ToExecution(dax::Id size)
     {

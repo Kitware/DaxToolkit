@@ -36,10 +36,6 @@ class In: public Tag {};
 /// \brief Mark output parameters in a worklet \c ControlSignature.
 class Out: public Tag {};
 
-/// \headerfile Tag.h dax/cont/sig/Tag.h
-/// \brief Mark in/out parameters in a worklet \c ControlSignature.
-class InOut: public In, public Out {};
-
 class Domain: public Tag { public: class AnyDomain; class Cell;  class Point; };
 template <typename T> class DomainTag: public Domain {};
 typedef DomainTag<Domain::AnyDomain> AnyDomain;
