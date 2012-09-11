@@ -24,6 +24,11 @@
 #include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/Tag.h>
 
+#include <dax/cont/arg/FieldArrayHandle.h>
+#include <dax/cont/arg/FieldConstant.h>
+#include <dax/cont/arg/TopologyUniformGrid.h>
+#include <dax/cont/arg/TopologyUnstructuredGrid.h>
+
 #include <boost/utility/enable_if.hpp>
 
 #if !(__cplusplus >= 201103L)

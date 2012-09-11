@@ -18,6 +18,7 @@
 set(unit_tests
   UnitTestFieldArrayHandle.cxx
   UnitTestFieldConstant.cxx
+  UnitTestTopologyGrids.cxx
   )
 
 dax_unit_tests(SOURCES ${unit_tests})

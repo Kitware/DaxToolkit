@@ -19,6 +19,8 @@ set(headers
   Field.h
   FieldConstant.h
   Topology.h
+  TopologyUniformGrid.h
+  TopologyUnstructuredGrid.h
   )
 
 dax_declare_headers(${headers})
