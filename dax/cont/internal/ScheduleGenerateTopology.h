@@ -26,6 +26,7 @@
 #include <dax/exec/internal/GridTopologies.h>
 
 #include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/Schedule.h>
 #include <dax/cont/internal/ScheduleMapAdapter.h>
 
 namespace dax {
@@ -213,18 +214,8 @@ private:
   ArrayHandleId ScheduleClassification(const InGridType &grid)
   {
     ArrayHandleId newCellCount;
-
-    //we need the control grid to create the parameters struct.
-    //So pass those objects to the derived class and let it populate the
-    //functor struct with all the user defined information letting the user
-    //defined class do this work allows us to easily extend this class
-    //for an arbitrary number of input parameters
-    dax::cont::internal::Schedule(
-          static_cast<Derived*>(this)->CreateClassificationFunctor(
-            grid, newCellCount),
-          grid.GetNumberOfCells(),
-          DeviceAdapterTag());
-
+    static_cast<Derived*>(this)->CreateClassificationFunctor(grid,newCellCount,
+                                                             DeviceAdapterTag());
     return newCellCount;
   }
 

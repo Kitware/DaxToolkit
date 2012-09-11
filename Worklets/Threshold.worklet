@@ -48,20 +48,22 @@ template<typename ValueType>
 class ThresholdClassify : public dax::exec::WorkletDetermineNewCellCount
 {
 public:
+  typedef void ControlSignature(Topology, Field(Point), Field(Out));
+  typedef _3 ExecutionSignature(_1,_2);
+
   DAX_CONT_EXPORT
   ThresholdClassify(ValueType thresholdMin, ValueType thresholdMax)
     : ThresholdMin(thresholdMin), ThresholdMax(thresholdMax) {  }
 
   template<class InputCellType>
   DAX_EXEC_EXPORT
-  void operator()(const InputCellType &daxNotUsed(cell),
-                  const dax::Tuple<ValueType,InputCellType::NUM_POINTS> &values,
-                  dax::Id &newCellCount) const
+  dax::Id operator()(InputCellType,
+      const dax::Tuple<ValueType,InputCellType::NUM_POINTS> &values) const
   {
     ThresholdFunction<ValueType> threshold(this->ThresholdMin,
                                            this->ThresholdMax);
     dax::exec::VectorForEach(values, threshold);
-    newCellCount = threshold.valid;
+    return threshold.valid;
   }
 
 private:

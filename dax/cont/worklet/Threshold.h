@@ -36,53 +36,6 @@ namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class InputTopologyType, class ValuesPortalType, class CountPortalType>
-struct ThresholdClassifyFunctor
-{
-  typedef typename ValuesPortalType::ValueType ValueType;
-  typedef typename InputTopologyType::CellType CellType;
-
-  DAX_CONT_EXPORT
-  ThresholdClassifyFunctor(
-      const dax::worklet::ThresholdClassify<ValueType> &worklet,
-      const InputTopologyType &inputTopology,
-      const ValuesPortalType &values,
-      const CountPortalType &newCellCount)
-    : Worklet(worklet),
-      InputTopology(inputTopology),
-      Values(values),
-      NewCellCount(newCellCount) {  }
-
-  DAX_EXEC_EXPORT void operator()(dax::Id cellIndex) const
-  {
-    CellType cell(this->InputTopology, cellIndex);
-    dax::Id newCellCount;
-
-    this->Worklet(cell,
-                  dax::exec::internal::FieldGetPointsForCell(this->Values,
-                                                             cell,
-                                                             this->Worklet),
-                  newCellCount);
-
-    dax::exec::internal::FieldSet(this->NewCellCount,
-                                  cellIndex,
-                                  newCellCount,
-                                  this->Worklet);
-  }
-
-  DAX_CONT_EXPORT void SetErrorMessageBuffer(
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
-  {
-    this->Worklet.SetErrorMessageBuffer(errorMessage);
-  }
-
-private:
-  dax::worklet::ThresholdClassify<ValueType> Worklet;
-  InputTopologyType InputTopology;
-  ValuesPortalType Values;
-  CountPortalType NewCellCount;
-};
-
 template<class InputTopologyType, class OutputTopologyType>
 struct GenerateTopologyFunctor
 {
@@ -162,30 +115,19 @@ public:
 
   }
 
-  //generate the functor for the classification worklet
-  template <class InputGridType>
-  ThresholdClassifyFunctor<
-      typename InputGridType::TopologyStructConstExecution,
-      typename dax::cont::ArrayHandle<ValueType,Container1,Adapter>::PortalConstExecution,
-      typename ArrayHandleId::PortalExecution>
-  CreateClassificationFunctor(const InputGridType &grid,
-                              ArrayHandleId &cellCountOutput)
-  {
-    typedef ThresholdClassifyFunctor<
-        typename InputGridType::TopologyStructConstExecution,
-        typename dax::cont::ArrayHandle<ValueType,Container1,Adapter>::PortalConstExecution,
-        typename ArrayHandleId::PortalExecution> FunctorType;
+  //generate the output of the classification worklet
+  template<typename InGridType, typename DeviceAdapterTag>
+  void CreateClassificationFunctor(const InGridType& grid,
+                                   ArrayHandleId& cellCountOutput,
+                                   DeviceAdapterTag)
+    {
+    dax::worklet::ThresholdClassify<ValueType> threshold(this->Min, this->Max);
+    dax::cont::Schedule<DeviceAdapterTag>(threshold,
+                              grid,
+                              this->InputHandle,
+                              cellCountOutput);
+    }
 
-    dax::worklet::ThresholdClassify<ValueType> worklet(this->Min, this->Max);
-
-    FunctorType functor(
-          worklet,
-          grid.PrepareForInput(),
-          this->InputHandle.PrepareForInput(),
-          cellCountOutput.PrepareForOutput(grid.GetNumberOfCells()));
-
-    return functor;
-  }
 
   //generate the functor for the topology generation worklet
   template<class InputGridType, class OutputGridType>
