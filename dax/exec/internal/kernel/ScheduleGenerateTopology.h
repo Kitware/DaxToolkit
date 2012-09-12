@@ -17,37 +17,34 @@
 #define __dax_exec_internal_kernel_ScheduleGenerateTopology_h
 
 #include <dax/Types.h>
+#include <dax/exec/WorkletMapField.h>
 
 namespace dax {
 namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class MaskPortalType>
-struct ClearUsedPointsFunctor
+struct ClearUsedPointsFunctor : public WorkletMapField
 {
-  DAX_CONT_EXPORT
-  ClearUsedPointsFunctor(const MaskPortalType &outMask)
-    : OutMask(outMask) {  }
+  typedef void ControlSignature(Field(Out));
+  typedef void ExecutionSignature(_1);
 
-  DAX_EXEC_EXPORT void operator()(dax::Id index) const
+  template<typename T>
+  DAX_EXEC_EXPORT void operator()(T &t) const
   {
-    typedef typename MaskPortalType::ValueType MaskType;
-    dax::exec::internal::FieldSet(this->OutMask,
-                                  index,
-                                  static_cast<MaskType>(0),
-                                  this->ErrorMessage);
+    t = static_cast<T>(0);
   }
+};
 
-  DAX_CONT_EXPORT void SetErrorMessageBuffer(
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
+struct LowerBoundsInputFunctor : public WorkletMapField
+{
+  typedef void ControlSignature(Field(Out));
+  typedef _1 ExecutionSignature(WorkId);
+
+  DAX_EXEC_EXPORT dax::Id operator()(dax::Id index) const
   {
-    this->ErrorMessage = errorMessage;
+    return index+1;
   }
-
-private:
-  MaskPortalType OutMask;
-  dax::exec::internal::ErrorMessageBuffer ErrorMessage;
 };
 
 template<class MaskPortalType>
@@ -77,33 +74,6 @@ private:
   MaskPortalType OutMask;
   dax::exec::internal::ErrorMessageBuffer ErrorMessage;
 };
-
-
-template<class ArrayPortalType>
-struct LowerBoundsInputFunctor
-{
-  DAX_CONT_EXPORT LowerBoundsInputFunctor(const ArrayPortalType &array)
-    : Array(array) {  }
-
-  DAX_EXEC_EXPORT void operator()(dax::Id index) const
-  {
-    dax::exec::internal::FieldSet(this->Array,
-                                  index,
-                                  index + 1,
-                                  this->ErrorMessage);
-  }
-
-  DAX_CONT_EXPORT void SetErrorMessageBuffer(
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
-  {
-    this->ErrorMessage = errorMessage;
-  }
-
-private:
-  ArrayPortalType Array;
-  dax::exec::internal::ErrorMessageBuffer ErrorMessage;
-};
-
 
 
 template<class WorkletType, class InputTopologyType, class OutputTopologyType>

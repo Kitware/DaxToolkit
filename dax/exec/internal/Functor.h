@@ -44,7 +44,6 @@ public:
 # include <dax/Types.h>
 # include <dax/cont/internal/Bindings.h>
 # include <dax/exec/arg/Bind.h>
-# include <dax/exec/arg/BindCellPoints.h>
 # include <dax/internal/GetNthType.h>
 # include <dax/exec/internal/Members.h>
 
@@ -63,14 +62,8 @@ public:
     Index(index), Work(w)
     {}
 
-  template <typename Worklet, int I>
-  DAX_EXEC_EXPORT void operator()(dax::exec::arg::BindDirect<Worklet,I>& execArg) const
-    {
-    execArg.SaveExecutionResult(Index,Work);
-    }
-
-  template <typename Worklet, int I>
-  DAX_EXEC_EXPORT void operator()(dax::exec::arg::BindCellPoints<Worklet,I>& execArg) const
+  template <typename BindType>
+  DAX_EXEC_EXPORT void operator()(BindType& execArg) const
     {
     execArg.SaveExecutionResult(Index,Work);
     }

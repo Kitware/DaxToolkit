@@ -132,12 +132,10 @@ protected:
     //fill the validCellRange with the values from 1 to size+1, this is used
     //for the lower bounds to compute the right indices
     IdArrayHandleType validCellRange;
-    dax::cont::internal::Schedule(
-          dax::exec::internal::kernel::LowerBoundsInputFunctor
-              <typename IdArrayHandleType::PortalExecution>(
-                validCellRange.PrepareForOutput(numNewCells)),
-          numNewCells,
-          DeviceAdapterTag());
+    validCellRange.PrepareForOutput(numNewCells);
+    dax::cont::Schedule<DeviceAdapterTag>(
+          dax::exec::internal::kernel::LowerBoundsInputFunctor(),
+          validCellRange);
 
     //now do the lower bounds of the cell indices so that we figure out
     //which original topology indexs match the new indices.
@@ -162,7 +160,10 @@ protected:
     //in this case the scheduler looks the array for the value to pass
     //instead of the index. We need a way in the current scheduler for this
     //syntax maybe something like Topology, Map, Field(Map,Topology) ??
+
+
     dax::cont::internal::ScheduleMap(functor,validCellRange);
+    //dax::cont::Schedule(w, inGrid, make_Map(outGrid, validCellRange) );
   }
 
   template<class InGridType, class OutGridType>
@@ -171,12 +172,12 @@ protected:
     {
     typedef typename PointMaskType::PortalExecution MaskPortalType;
 
-    // Clear out the mask
-    dax::cont::internal::Schedule(
-          dax::exec::internal::kernel::ClearUsedPointsFunctor<MaskPortalType>(
-            this->PointMask.PrepareForOutput(inGrid.GetNumberOfPoints())),
-          inGrid.GetNumberOfPoints(),
-          DeviceAdapterTag());
+    // Clear out the mask, have to allocate the size first
+    // so that schedule works properly
+    this->PointMask.PrepareForOutput(inGrid.GetNumberOfPoints());
+    dax::cont::Schedule<DeviceAdapterTag>(
+        dax::exec::internal::kernel::ClearUsedPointsFunctor(),
+        this->PointMask);
 
     // Mark every point that is used at least once.
     // This only works when outGrid is an UnstructuredGrid.

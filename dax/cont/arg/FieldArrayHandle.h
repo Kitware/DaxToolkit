@@ -66,25 +66,11 @@ public:
            typename Tags::template Has<dax::cont::sig::Out>());
     }
 
-  dax::Id GetDomainLength(boost::true_type) const
-    {
-    //if we are being used as an input array we expect to have a valid
-    //number of values
-    return this->Handle.GetNumberOfValues();
-    }
-
-  dax::Id GetDomainLength(boost::false_type) const
-    {
-    //if we are being used as output we might not be allocated so something
-    //else must provide the work count
-    return -1;
-    }
-
   dax::Id GetDomainLength(sig::Domain) const
     {
     //determine the proper work count be seing if we are being used
     //as input or output
-    return GetDomainLength(typename Tags::template Has<dax::cont::sig::In>() );
+    return this->Handle.GetNumberOfValues();
     }
 
 private:

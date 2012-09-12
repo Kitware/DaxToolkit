@@ -35,6 +35,7 @@ namespace placeholders {
  typedef Arg<7> _7; ///< Placeholder for \c ControlSignature argument 7.
  typedef Arg<8> _8; ///< Placeholder for \c ControlSignature argument 8.
  typedef Arg<9> _9; ///< Placeholder for \c ControlSignature argument 9.
+
 } // namespace placeholders
 
 }}} // namespace dax::cont::sig

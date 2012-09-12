@@ -13,41 +13,40 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_arg_Bind_h
-#define __dax_exec_arg_Bind_h
+#ifndef __dax_exec_arg_BindWorkId_h
+#define __dax_exec_arg_BindWorkId_h
 #if defined(DAX_DOXYGEN_ONLY)
 
 #else // !defined(DAX_DOXYGEN_ONLY)
 
 #include <dax/Types.h>
 #include <dax/cont/internal/Bindings.h>
-#include <dax/cont/sig/Arg.h>
-#include <dax/cont/sig/WorkId.h>
-#include <dax/exec/arg/BindDirect.h>
-#include <dax/exec/arg/BindWorkId.h>
-
 
 namespace dax { namespace exec { namespace arg {
 
-template <typename WorkType, typename Parameter, typename Invocation> class Bind;
-
-template <typename WorkType, int N, typename Invocation>
-class Bind<WorkType, dax::cont::sig::Arg<N>, Invocation>
+template <typename Invocation>
+struct BindWorkId
 {
-public:
-  typedef BindDirect<Invocation, N> type;
-};
+  typedef dax::cont::internal::Bindings<Invocation> AllControlBindings;
 
-//bind workid in the execution signature to th bindworkId class
-template <typename WorkType, typename Invocation>
-class Bind<WorkType, dax::cont::sig::WorkId, Invocation>
-{
-public:
-  typedef BindWorkId<Invocation> type;
-};
+  typedef dax::Id ReturnType;
 
+  BindWorkId(AllControlBindings&){}
+
+  template<typename Worklet>
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id, const Worklet&)
+    {
+    return id;
+    }
+
+  template<typename Worklet>
+  DAX_EXEC_EXPORT
+  void SaveExecutionResult(int, const Worklet&)
+    {
+    }
+};
 
 }}} // namespace dax::exec::arg
 
 #endif // !defined(DAX_DOXYGEN_ONLY)
-#endif //__dax_exec_arg_Bind_h
+#endif //__dax_exec_arg_BindWorkId_h
