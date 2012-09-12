@@ -45,7 +45,7 @@ struct ThresholdFunction {
 
 
 template<typename ValueType>
-class ThresholdClassify : public dax::exec::WorkletDetermineNewCellCount
+class ThresholdClassify : public dax::exec::WorkletMapCell
 {
 public:
   typedef void ControlSignature(Topology, Field(Point), Field(Out));

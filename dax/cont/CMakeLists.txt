@@ -34,6 +34,7 @@ set(headers
   ErrorExecution.h
   IteratorFromArrayPortal.h
   Schedule.h
+  ScheduleGenerateTopology.h
   UniformGrid.h
   UnstructuredGrid.h
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
