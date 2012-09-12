@@ -35,15 +35,17 @@ endif (DAX_ENABLE_THRUST)
 
 #-----------------------------------------------------------------------------
 #Include VTK so we can benchmark agianst it
-option(DAX_ENABLE_VTK_TESTING FALSE)
-if(DAX_ENABLE_VTK_TESTING)
+mark_as_advanced(DAX_ENABLE_VTK_THRESHOLD_BENCHMARK)
+option(DAX_ENABLE_VTK_THRESHOLD_BENCHMARK FALSE)
+if(DAX_ENABLE_VTK_THRESHOLD_BENCHMARK)
   find_package(VTK REQUIRED)
 endif()
 
 #-----------------------------------------------------------------------------
 #Include PISTON so we can benchmark agianst it
-option(DAX_ENABLE_PISTON_TESTING FALSE)
-if(DAX_ENABLE_PISTON_TESTING)
+mark_as_advanced(DAX_ENABLE_PISTON_THRESHOLD_BENCHMARK)
+option(DAX_ENABLE_PISTON_THRESHOLD_BENCHMARK FALSE)
+if(DAX_ENABLE_PISTON_THRESHOLD_BENCHMARK)
   find_package(VTK REQUIRED)
   find_path( PISTON_INCLUDE
     NAMES piston/piston_math.h
@@ -69,7 +71,7 @@ set(sources
   )
 
 #-----------------------------------------------------------------------------
-if(DAX_ENABLE_VTK_TESTING)
+if(DAX_ENABLE_VTK_THRESHOLD_BENCHMARK)
   set(vtkHeaders
     VTKPipeline.h
     )
@@ -90,7 +92,7 @@ if(DAX_ENABLE_VTK_TESTING)
 endif()
 
 #-----------------------------------------------------------------------------
-if(DAX_ENABLE_PISTON_TESTING)
+if(DAX_ENABLE_PISTON_THRESHOLD_BENCHMARK)
   set(pistonHeaders
     PISTONPipeline.h
     )
