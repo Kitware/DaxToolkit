@@ -21,6 +21,7 @@
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
 #include <dax/cont/Schedule.h>
+#include <dax/cont/ScheduleMapAdapter.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/arg/FieldConstant.h>
@@ -33,7 +34,6 @@
 
 #include <dax/cont/internal/Testing.h>
 #include <dax/cont/internal/TestingGridGenerator.h>
-#include <dax/cont/internal/ScheduleMapAdapter.h>
 
 #include <utility>
 #include <vector>
@@ -359,9 +359,12 @@ private:
     IdArrayHandle subset = MakeArrayHandle(rawsubset, RAWSUBSET_SIZE);
 
     std::cout << "Running clear on subset." << std::endl;
-    dax::cont::internal::ScheduleMap(ClearArrayMapKernel(manager.GetPortal()),
-                                     subset);
-    manager.RetrieveOutputData(container);
+
+
+    //Todo: ScheduleMapAdapter
+//    dax::cont::internal::ScheduleMap(ClearArrayMapKernel(manager.GetPortal()),
+//                                     subset);
+//    manager.RetrieveOutputData(container);
 
     for (dax::Id index = 0; index < 4; index++)
       {

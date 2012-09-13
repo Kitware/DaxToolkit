@@ -19,8 +19,7 @@
 
 #include <dax/exec/Cell.h>
 #include <dax/exec/VectorOperations.h>
-#include <dax/exec/WorkletDetermineNewCellCount.h>
-#include <dax/exec/WorkletGenerateTopology.h>
+#include <dax/exec/WorkletMapCell.h>
 
 namespace dax {
 namespace worklet {
@@ -71,22 +70,21 @@ private:
   ValueType ThresholdMax;
 };
 
-//Threshold only works when the topology is the same for input and output/
-//The only special case so far is converting CellVoxel to CellHexahedron
-class ThresholdTopology : public dax::exec::WorkletGenerateTopology
+class ThresholdTopology : public dax::exec::WorkletMapCell
 {
 public:
   // Returning a tuple of connections feels a bit clunky.  Is there a better
   // way of specifying the output cell type and generating a cell?
+  typedef void ControlSignature(Topology, Topology(Out));
+  typedef void ExecutionSignature(Topology::PointIds(_1),
+                                  Topology::PointIds(_2));
 
-  template<class InputCellType, int OutputCellSize>
+  template<int NumInputPoints, int NumOutputPoints>
   DAX_EXEC_EXPORT
-  void operator()(const InputCellType &inputCell,
-                  dax::Tuple<dax::Id,OutputCellSize> &outputConnections) const
+  void operator()(dax::Tuple<dax::Id,NumInputPoints> const& in,
+                  dax::Tuple<dax::Id,NumOutputPoints> &out) const
   {
-    //we can ignore the the requested cell Id to generate
-    //on the work object since we know for threshold it is a pass through
-    outputConnections = inputCell.GetPointIndices();
+    out = in;
   }
 };
 

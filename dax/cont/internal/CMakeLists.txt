@@ -28,7 +28,6 @@ set(headers
   DeviceAdapterTagSerial.h
   FindBinding.h
   ${Dax_BINARY_DIR}/dax/cont/internal/Members.h
-  ScheduleMapAdapter.h
   Testing.h
   TestingDeviceAdapter.h
   TestingGridGenerator.h

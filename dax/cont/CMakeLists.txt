@@ -34,6 +34,7 @@ set(headers
   ErrorExecution.h
   IteratorFromArrayPortal.h
   Schedule.h
+  ScheduleMapAdapter.h
   ScheduleGenerateTopology.h
   UniformGrid.h
   UnstructuredGrid.h

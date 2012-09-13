@@ -19,7 +19,6 @@
 
 #include <dax/Types.h>
 #include <dax/exec/Cell.h>
-#include <dax/exec/WorkletGenerateTopology.h>
 
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 #include <dax/exec/internal/FieldAccess.h>
@@ -27,9 +26,7 @@
 
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/Schedule.h>
-
-//todo still need to design a map adapter for new scheduler
-#include <dax/cont/internal/ScheduleMapAdapter.h>
+#include <dax/cont/ScheduleMapAdapter.h>
 
 //where all my custom kernels I use are located
 #include <dax/exec/internal/kernel/ScheduleGenerateTopology.h>
@@ -146,24 +143,8 @@ protected:
     // We are done with scannedNewCellCounts.
     scannedNewCellCounts.ReleaseResources();
 
-
-    typedef dax::exec::internal::kernel::GenerateTopologyFunctor<
-        Worklet,
-        typename InGridType::TopologyStructConstExecution,
-        typename OutGridType::TopologyStructExecution> FunctorType;
-
-    FunctorType functor(w,
-                        inGrid.PrepareForInput(),
-                        outGrid.PrepareForOutput(numNewCells));
-
-    //Schedule Map uses the validCellRange for the lookup array
-    //in this case the scheduler looks the array for the value to pass
-    //instead of the index. We need a way in the current scheduler for this
-    //syntax maybe something like Topology, Map, Field(Map,Topology) ??
-
-
-    dax::cont::internal::ScheduleMap(functor,validCellRange);
-    //dax::cont::Schedule(w, inGrid, make_Map(outGrid, validCellRange) );
+    dax::cont::Schedule<DeviceAdapterTag>(w, inGrid,
+        dax::cont::make_MapAdapter(validCellRange, outGrid, numNewCells));
   }
 
   template<class InGridType, class OutGridType>
@@ -181,10 +162,10 @@ protected:
 
     // Mark every point that is used at least once.
     // This only works when outGrid is an UnstructuredGrid.
-    dax::cont::internal::ScheduleMap(
-          dax::exec::internal::kernel::GetUsedPointsFunctor<MaskPortalType>(
-            this->PointMask.PrepareForInPlace()),
-          outGrid.GetCellConnections());
+    dax::cont::Schedule<DeviceAdapterTag>(
+          dax::exec::internal::kernel::GetUsedPointsFunctor(),
+          dax::cont::make_MapAdapter(outGrid.GetCellConnections(),
+                                     this->PointMask));
   }
 
   template<typename InGridType,typename OutGridType>

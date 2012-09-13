@@ -47,32 +47,16 @@ struct LowerBoundsInputFunctor : public WorkletMapField
   }
 };
 
-template<class MaskPortalType>
-struct GetUsedPointsFunctor
+struct GetUsedPointsFunctor : public WorkletMapField
 {
-  DAX_CONT_EXPORT
-  GetUsedPointsFunctor(const MaskPortalType &outMask)
-    : OutMask(outMask) {  }
+  typedef void ControlSignature(Field(Out));
+  typedef _1 ExecutionSignature();
 
-  DAX_EXEC_EXPORT void operator()(dax::Id daxNotUsed(key),
-                                  dax::Id value) const
+  template<typename T>
+  DAX_EXEC_EXPORT T operator()() const
   {
-    typedef typename MaskPortalType::ValueType MaskType;
-    dax::exec::internal::FieldSet(this->OutMask,
-                                  value,
-                                  static_cast<MaskType>(1),
-                                  this->ErrorMessage);
+    return static_cast<T>(1);
   }
-
-  DAX_CONT_EXPORT void SetErrorMessageBuffer(
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
-  {
-    this->ErrorMessage = errorMessage;
-  }
-
-private:
-  MaskPortalType OutMask;
-  dax::exec::internal::ErrorMessageBuffer ErrorMessage;
 };
 
 
