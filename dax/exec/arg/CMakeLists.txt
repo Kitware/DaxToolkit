@@ -19,6 +19,7 @@ set(headers
   BindCellPoints.h
   BindDirect.h
   FieldConstant.h
+  FieldMap.h
   FieldPortal.h
   TopologyCell.h
   )
