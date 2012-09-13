@@ -143,15 +143,13 @@ protected:
     // We are done with scannedNewCellCounts.
     scannedNewCellCounts.ReleaseResources();
 
-    //the ids in the valid cell range are all of by one, so we need to subtract
-    //one from each one.
-    dax::cont::Schedule<DeviceAdapterTag>(
-          dax::exec::internal::kernel::ValueMinusOne(),
-          validCellRange,
-          validCellRange);
-
-    dax::cont::Schedule<DeviceAdapterTag>(w, inGrid,
-        dax::cont::make_MapAdapter(validCellRange, outGrid, numNewCells));
+    //call the user worklet for every cell in our input grid with the new
+    //respective cell in the output. The mapping is used to make sure
+    //that for input cells that are becoming multiple output cells we call the
+    //combination multiple times
+    dax::cont::Schedule<DeviceAdapterTag>(w,
+        dax::cont::make_MapAdapter(validCellRange, inGrid, inGrid.GetNumberOfCells()),
+        outGrid);
   }
 
   template<class InGridType, class OutGridType>

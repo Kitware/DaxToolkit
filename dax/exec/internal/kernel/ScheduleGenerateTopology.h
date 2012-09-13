@@ -47,18 +47,6 @@ struct IndexPlusOne : public WorkletMapField
   }
 };
 
-struct ValueMinusOne : public WorkletMapField
-{
-  typedef void ControlSignature(Field(In),Field(Out));
-  typedef _2 ExecutionSignature(_1);
-
-  template<typename T>
-  DAX_EXEC_EXPORT T operator()(T t) const
-  {
-    return --t;
-  }
-};
-
 struct GetUsedPointsFunctor : public WorkletMapField
 {
   typedef void ControlSignature(Field(Out));

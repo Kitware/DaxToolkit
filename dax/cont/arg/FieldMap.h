@@ -51,7 +51,7 @@ private:
 
 public:
   //Since we are a wrapper around T
-  typedef typename KeyFieldType::DomainTags DomainTags;
+  typedef typename ValueFieldType::DomainTags DomainTags;
 
   typedef dax::exec::arg::FieldMap<Tags,
           typename KeyFieldType::ExecArg,
