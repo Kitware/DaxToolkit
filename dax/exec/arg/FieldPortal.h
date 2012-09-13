@@ -81,42 +81,36 @@ struct ValueStorage<T, ReferenceType, Tags,
 }
 
 template <typename T, typename Tags, typename PortalExec, typename PortalConstExec>
-struct FieldPortal
+class FieldPortal
 {
-  typedef T ValueType;
-protected:
   //What we have to do is use mpl::if_ to determine the type for
   //ExecArg
   typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
                                    PortalExec,
                                    PortalConstExec>::type PortalType;
-
+public:
+  typedef T ValueType;
   //if we are going with Out tag we create a value storage that holds a copy
   //otherwise we have to pass a copy, since portals don't have to provide a reference
   typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
                                    ValueType&,
-                                   ValueType const>::type ReferenceType;
-
-
-  /*
-  Todo for basic portals where the underlying storage is the same
-  as the value type we want a flag so that we don't store a copy
-  int the execPortal, but instead directly return a reference.
-  */
-
-  //determine if we need to store a local copy of the value we get from
-  //the portal. Remember a portal can return Vector3 that can't be assigned
-  //too as they actually might be created on the fly
-  detail::ValueStorage< ValueType, ReferenceType, Tags > Storage;
-public:
-  PortalType Portal;
-
-  typedef ReferenceType ReturnType;
+                                   ValueType const>::type ReturnType;
 
   FieldPortal(): Storage(), Portal(){}
 
   template< typename Worklet>
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id index, const Worklet& work)
+    {
+    //if we have the In tag we have local store so use that value,
+    //otherwise call the portal directly
+    (void)work;  // Shut up compiler.
+    DAX_ASSERT_EXEC(index >= 0, work);
+    DAX_ASSERT_EXEC(index < this->Portal.GetNumberOfValues(), work);
+    return this->Storage.Get(index, this->Portal);
+    }
+
+  template< typename Worklet>
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index, const Worklet& work) const
     {
     //if we have the In tag we have local store so use that value,
     //otherwise call the portal directly
@@ -140,13 +134,28 @@ public:
   //After needs to be tagged on out, since you get call .Set
   //on a input portal as that fails
   template< typename Worklet>
-  DAX_EXEC_EXPORT void SaveExecutionResult(int index, ReferenceType v, const Worklet& work) const
+  DAX_EXEC_EXPORT void SaveExecutionResult(int index, ReturnType v,
+                                           const Worklet& work) const
     {
     (void)work;  // Shut up compiler.
     DAX_ASSERT_EXEC(index >= 0, work);
     DAX_ASSERT_EXEC(index < this->Portal.GetNumberOfValues(), work);
     this->Storage.Set(index,this->Portal,v);
     }
+
+  void SetPortal(PortalType p) { this->Portal = p; }
+private:
+  /*
+  Todo for basic portals where the underlying storage is the same
+  as the value type we want a flag so that we don't store a copy
+  int the execPortal, but instead directly return a reference.
+  */
+
+  //determine if we need to store a local copy of the value we get from
+  //the portal. Remember a portal can return Vector3 that can't be assigned
+  //too as they actually might be created on the fly
+  detail::ValueStorage< ValueType, ReturnType, Tags > Storage;
+  PortalType Portal;
 };
 
 

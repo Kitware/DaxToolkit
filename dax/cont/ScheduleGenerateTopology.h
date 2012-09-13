@@ -131,7 +131,7 @@ protected:
     IdArrayHandleType validCellRange;
     validCellRange.PrepareForOutput(numNewCells);
     dax::cont::Schedule<DeviceAdapterTag>(
-          dax::exec::internal::kernel::LowerBoundsInputFunctor(),
+          dax::exec::internal::kernel::IndexPlusOne(),
           validCellRange);
 
     //now do the lower bounds of the cell indices so that we figure out
@@ -142,6 +142,13 @@ protected:
 
     // We are done with scannedNewCellCounts.
     scannedNewCellCounts.ReleaseResources();
+
+    //the ids in the valid cell range are all of by one, so we need to subtract
+    //one from each one.
+    dax::cont::Schedule<DeviceAdapterTag>(
+          dax::exec::internal::kernel::ValueMinusOne(),
+          validCellRange,
+          validCellRange);
 
     dax::cont::Schedule<DeviceAdapterTag>(w, inGrid,
         dax::cont::make_MapAdapter(validCellRange, outGrid, numNewCells));
@@ -165,7 +172,8 @@ protected:
     dax::cont::Schedule<DeviceAdapterTag>(
           dax::exec::internal::kernel::GetUsedPointsFunctor(),
           dax::cont::make_MapAdapter(outGrid.GetCellConnections(),
-                                     this->PointMask));
+                                     this->PointMask,
+                                     inGrid.GetNumberOfPoints()));
   }
 
   template<typename InGridType,typename OutGridType>

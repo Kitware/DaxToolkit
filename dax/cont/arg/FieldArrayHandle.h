@@ -26,47 +26,47 @@
 
 namespace dax { namespace cont { namespace arg {
 
-/// \headerfile FieldConstant.h dax/cont/arg/FieldConstant.h
-/// \brief Map single float values to \c Field worklet parameters.
+/// \headerfile FieldArrayHandle.h dax/cont/arg/FieldArrayHandle.h
+/// \brief Map array of user values to \c Field worklet parameters.
 template <typename Tags, typename T, typename ContainerTag, typename Device>
 struct ConceptMap< Field(Tags), dax::cont::ArrayHandle<T, ContainerTag, Device> >
 {
 private:
   typedef dax::cont::ArrayHandle<T,ContainerTag, Device > HandleType;
+  HandleType Handle;
+
 public:
   //ignore constant values when finding size of domain
   typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::AnyDomain>::Tags DomainTags;
   typedef dax::exec::arg::FieldPortal<T,Tags,
           typename HandleType::PortalExecution,
           typename HandleType::PortalConstExecution> ExecArg;
-  HandleType Handle;
-
 
   ConceptMap(HandleType handle):
     Handle(handle),
     ExecArg_()
     {}
 
-  ExecArg& GetExecArg() { return this->ExecArg_; }
+  DAX_CONT_EXPORT ExecArg& GetExecArg() { return this->ExecArg_; }
 
-  void ToExecution(dax::Id size, boost::false_type, boost::true_type)
+  DAX_CONT_EXPORT void ToExecution(dax::Id size, boost::false_type, boost::true_type)
     { /* Output */
-    this->ExecArg_.Portal = this->Handle.PrepareForOutput(size);
+    this->ExecArg_.SetPortal(this->Handle.PrepareForOutput(size));
     }
 
-  void ToExecution(dax::Id, boost::true_type,  boost::false_type)
+  DAX_CONT_EXPORT void ToExecution(dax::Id, boost::true_type,  boost::false_type)
     { /* Input  */
-    this->ExecArg_.Portal = this->Handle.PrepareForInput();
+    this->ExecArg_.SetPortal(this->Handle.PrepareForInput());
     }
 
   //we need to pass the number of elements to allocate
-  void ToExecution(dax::Id size)
+  DAX_CONT_EXPORT void ToExecution(dax::Id size)
     {
     ToExecution(size,typename Tags::template Has<dax::cont::sig::In>(),
            typename Tags::template Has<dax::cont::sig::Out>());
     }
 
-  dax::Id GetDomainLength(sig::Domain) const
+  DAX_CONT_EXPORT dax::Id GetDomainLength(sig::Domain) const
     {
     //determine the proper work count be seing if we are being used
     //as input or output
@@ -77,6 +77,48 @@ private:
   ExecArg ExecArg_;
 };
 
+/// \headerfile FieldArrayHandle.h dax/cont/arg/FieldArrayHandle.h
+/// \brief Map array of user values to \c Field worklet parameters.
+template <typename Tags, typename T, typename ContainerTag, typename Device>
+struct ConceptMap< Field(Tags), const dax::cont::ArrayHandle<T, ContainerTag, Device> >
+{
+private:
+  typedef dax::cont::ArrayHandle<T,ContainerTag, Device > HandleType;
+  HandleType Handle;
+
+public:
+  //ignore constant values when finding size of domain
+  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::AnyDomain>::Tags DomainTags;
+  typedef dax::exec::arg::FieldPortal<T,Tags,
+          typename HandleType::PortalExecution,
+          typename HandleType::PortalConstExecution> ExecArg;
+
+  ConceptMap(HandleType handle):
+    Handle(handle),
+    ExecArg_()
+    {}
+
+  DAX_CONT_EXPORT ExecArg& GetExecArg() { return this->ExecArg_; }
+  DAX_CONT_EXPORT void ToExecution(dax::Id, boost::true_type,  boost::false_type)
+    { /* Input  */
+    this->ExecArg_.SetPortal(this->Handle.PrepareForInput());
+    }
+  //we need to pass the number of elements to allocate
+  DAX_CONT_EXPORT void ToExecution(dax::Id size)
+    {
+    ToExecution(size,typename Tags::template Has<dax::cont::sig::In>(),
+           typename Tags::template Has<dax::cont::sig::Out>());
+    }
+  DAX_CONT_EXPORT dax::Id GetDomainLength(sig::Domain) const
+    {
+    return this->Handle.GetNumberOfValues();
+    }
+
+private:
+  ExecArg ExecArg_;
+};
+
+
 } } } //namespace dax::cont::arg
 
-#endif //__dax_cont_arg_FieldConstant_h
+#endif //__dax_cont_arg_FieldArrayHandle_h

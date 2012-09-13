@@ -27,9 +27,9 @@
 namespace dax { namespace exec { namespace arg {
 
 template <typename Tags, typename TopologyExec, typename TopologyConstExec>
-struct TopologyCell
+class TopologyCell
 {
-protected:
+
   //What we have to do is use mpl::if_ to determine the type for
   //ExecArg
   typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
@@ -41,7 +41,7 @@ protected:
                                    typename TopologyExec::CellType,
                                    typename TopologyConstExec::CellType>::type ReferenceType;
 
-  public:
+public:
   TopologyType Topo;
 
   typedef ReferenceType ReturnType;
@@ -66,7 +66,7 @@ protected:
     }
 
   template< typename Worklet>
-  DAX_EXEC_EXPORT void SaveExecutionResult(int, ReferenceType, const Worklet&) const
+  DAX_EXEC_EXPORT void SaveExecutionResult(int, ReturnType, const Worklet&) const
     {
     }
 };

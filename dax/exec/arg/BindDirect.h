@@ -26,14 +26,14 @@
 namespace dax { namespace exec { namespace arg {
 
 template <typename Invocation, int N>
-struct BindDirect
+class BindDirect
 {
   typedef dax::cont::internal::Bindings<Invocation> AllControlBindings;
   typedef typename AllControlBindings::template GetType<N>::type MyControlBinding;
   typedef typename MyControlBinding::ExecArg ExecArgType;
   typedef typename dax::cont::arg::ConceptMapTraits<MyControlBinding>::Tags Tags;
   ExecArgType ExecArg;
-
+public:
   typedef typename ExecArgType::ReturnType ReturnType;
 
   BindDirect(AllControlBindings& bindings):

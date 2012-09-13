@@ -20,9 +20,10 @@
 #include <dax/Types.h>
 #include <dax/cont/arg/ConceptMap.h>
 #include <dax/cont/arg/Field.h>
-#include <dax/cont/internal/ScheduleMapAdapter.h>
+#include <dax/cont/ScheduleMapAdapter.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/cont/ErrorControlBadValue.h>
+
 #include <dax/exec/arg/FieldMap.h>
 #include <dax/internal/Tags.h>
 
@@ -34,12 +35,14 @@ namespace dax { namespace cont { namespace arg {
 /// and use the values contained in the second as the actual value to pass to
 /// the first as the workId
 /// The item Key is the item that will actually be passed to the worklet
-template <typename Tags, typename Key, typename Value>
-struct ConceptMap< Field(Tags), dax::cont::ScheduleMapAdapter<Key,Value> >
+template <typename Concept, typename Tags, typename Key, typename Value>
+struct ConceptMap< Concept(Tags), dax::cont::ScheduleMapAdapter<Key,Value> >
 {
 private:
-  typedef dax::cont::arg::ConceptMap< Field(dax::cont::sig::In), Key > KeyFieldType;
-  typedef dax::cont::arg::ConceptMap< Field(Tags), Value > ValueFieldType;
+  typedef dax::internal::Tags<dax::cont::sig::Tag(dax::cont::sig::In)> KeyTags;
+
+  typedef dax::cont::arg::ConceptMap<Field(KeyTags), Key > KeyFieldType;
+  typedef dax::cont::arg::ConceptMap<Concept(Tags), Value > ValueFieldType;
   typedef dax::cont::ScheduleMapAdapter<Key,Value> InputType;
 
   InputType MapAdapter;
@@ -55,19 +58,16 @@ public:
           typename ValueFieldType::ExecArg
           > ExecArg;
 
-
   ConceptMap(InputType input):
     MapAdapter(input),
     KeyConcept(input.Key()),
-    ValueConcept(input.Value()),
-    ExecArg_()
+    ValueConcept(input.Value())
     {}
 
-  DAX_CONT_EXPORT ExecArg& GetExecArg()
+  DAX_CONT_EXPORT ExecArg GetExecArg()
     {
-    this->ExecArg.SetKeyExecArg(KeyConcept.GetExecArg());
-    this->ExecArg.SetValueExecArg(ValueConcept.GetExecArg());
-    return this->ExecArg_;
+    return ExecArg(KeyConcept.GetExecArg(),
+                   ValueConcept.GetExecArg());
     }
 
   //we need to pass the number of elements to allocate.
@@ -89,9 +89,6 @@ public:
     //or we are using Value to lookup a subset of Key
     return this->KeyConcept.GetDomainLength(d);
     }
-
-private:
-  ExecArg ExecArg_;
 };
 
 } } } //namespace dax::cont::arg

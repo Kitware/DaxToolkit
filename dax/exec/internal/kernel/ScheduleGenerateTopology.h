@@ -36,7 +36,7 @@ struct ClearUsedPointsFunctor : public WorkletMapField
   }
 };
 
-struct LowerBoundsInputFunctor : public WorkletMapField
+struct IndexPlusOne : public WorkletMapField
 {
   typedef void ControlSignature(Field(Out));
   typedef _1 ExecutionSignature(WorkId);
@@ -47,15 +47,27 @@ struct LowerBoundsInputFunctor : public WorkletMapField
   }
 };
 
+struct ValueMinusOne : public WorkletMapField
+{
+  typedef void ControlSignature(Field(In),Field(Out));
+  typedef _2 ExecutionSignature(_1);
+
+  template<typename T>
+  DAX_EXEC_EXPORT T operator()(T t) const
+  {
+    return --t;
+  }
+};
+
 struct GetUsedPointsFunctor : public WorkletMapField
 {
   typedef void ControlSignature(Field(Out));
-  typedef _1 ExecutionSignature();
+  typedef void ExecutionSignature(_1);
 
   template<typename T>
-  DAX_EXEC_EXPORT T operator()() const
+  DAX_EXEC_EXPORT void operator()(T& t) const
   {
-    return static_cast<T>(1);
+    t = static_cast<T>(1);
   }
 };
 

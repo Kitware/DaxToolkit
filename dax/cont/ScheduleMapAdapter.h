@@ -50,21 +50,18 @@ private:
   dax::Id ValueSizeToAllocate;
 public:
   DAX_CONT_EXPORT ScheduleMapAdapter(KeyClassType& k,
-                     ValueClassType& v):
+                                     ValueClassType& v,
+                                     dax::Id valueLen):
     Key_(k),
     Value_(v),
-    ValueSizeToAllocate(0)
+    ValueSizeToAllocate(valueLen)
     {
     }
 
   DAX_CONT_EXPORT void SetValueSize(dax::Id v) { this->ValueSizeToAllocate = v; }
   DAX_CONT_EXPORT dax::Id GetValueSize() const
     {
-    if(this->ValueSizeToAllocate > 0)
-      {
-      return this->ValueSizeToAllocate;
-      }
-    return this->Value_.GetNumberOfValues();
+    return this->ValueSizeToAllocate;
     }
 
   //should really only be used by the FieldMap Concept
@@ -76,19 +73,9 @@ public:
 template<class Key, class Value>
 DAX_CONT_EXPORT
 dax::cont::ScheduleMapAdapter<Key,Value>
-make_MapAdapter(Key& k,Value& v)
-  {
-  return dax::cont::ScheduleMapAdapter<Key,Value>(k,v);
-  }
-
-template<class Key, class Value>
-DAX_CONT_EXPORT
-dax::cont::ScheduleMapAdapter<Key,Value>
 make_MapAdapter(Key& k,Value& v, dax::Id valueLen)
   {
-  dax::cont::ScheduleMapAdapter<Key,Value> t(k,v);
-  t.SetValueSize(valueLen);
-  return t;
+  return dax::cont::ScheduleMapAdapter<Key,Value>(k,v,valueLen);
   }
 
 } } // namespace dax::cont

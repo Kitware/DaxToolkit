@@ -118,7 +118,11 @@ public:
     getCount(const ConceptType& concept)
     {
     dax::Id c = concept.GetDomainLength(typename WorkType::DomainType());
-    if(c > 0)
+    if(this->Count <= 1)
+      {
+      this->Count = c;
+      }
+    else if(c > 0 && c < this->Count)
       {
       // TODO: Consolidate counts from multiple bindings.
       // Outputs may need to be given the count to allocate.

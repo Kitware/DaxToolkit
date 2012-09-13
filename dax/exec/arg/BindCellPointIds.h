@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_arg_BindCellPoints_h
-#define __dax_exec_arg_BindCellPoints_h
+#ifndef __dax_exec_arg_BindCellPointIds_h
+#define __dax_exec_arg_BindCellPointIds_h
 #if defined(DAX_DOXYGEN_ONLY)
 
 #else // !defined(DAX_DOXYGEN_ONLY)
@@ -23,27 +23,24 @@
 #include <dax/cont/arg/ConceptMap.h>
 #include <dax/cont/arg/Topology.h>
 #include <dax/cont/internal/Bindings.h>
-#include <dax/cont/internal/FindBinding.h>
 #include <dax/cont/sig/Tag.h>
 #include <boost/utility/enable_if.hpp>
+#include <dax/exec/internal/FieldAccess.h>
+
 
 namespace dax { namespace exec { namespace arg {
 
 template <typename Invocation, int N>
-class BindCellPoints
+class BindCellPointIds
 {
-  typedef typename dax::cont::internal::FindBinding<Invocation, dax::cont::arg::Topology>::type TopoIndex;
-  typedef typename dax::cont::internal::Bindings<Invocation>::template GetType<TopoIndex::value>::type TopoControlBinding;
-  typedef typename TopoControlBinding::ExecArg TopoExecArgType;
-  TopoExecArgType TopoExecArg;
-
   typedef typename dax::cont::internal::Bindings<Invocation>::template GetType<N>::type ControlBinding;
-  typedef typename ControlBinding::ExecArg ExecArgType;
+  typedef typename ControlBinding::ExecArg TopoArgType;
   typedef typename dax::cont::arg::ConceptMapTraits<ControlBinding>::Tags Tags;
-  ExecArgType ExecArg;
+  TopoArgType TopoExecArg;
 
-  typedef typename ExecArgType::ValueType ComponentType;
-  typedef typename TopoExecArgType::CellType CellType;
+  typedef typename TopoArgType::CellType CellType;
+  typedef typename dax::Id ComponentType;
+
 
 public:
   typedef dax::Tuple<ComponentType,CellType::NUM_POINTS> ValueType;
@@ -51,31 +48,27 @@ public:
 
   typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
                                    ValueType&,
-                                   ValueType const&>::type ReturnType;
+                                   ValueType const&>::type ReferenceType;
+  typedef ReferenceType ReturnType;
 
-  BindCellPoints(dax::cont::internal::Bindings<Invocation>& bindings):
-    TopoExecArg(bindings.template Get<TopoIndex::value>().GetExecArg()),
-    ExecArg(bindings.template Get<N>().GetExecArg()) {}
+
+  BindCellPointIds(dax::cont::internal::Bindings<Invocation>& bindings):
+    TopoExecArg(bindings.template Get<N>().GetExecArg()) {}
 
 
   template<typename Worklet>
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id, const Worklet& worklet)
+  DAX_EXEC_EXPORT ReferenceType operator()(dax::Id id, const Worklet& worklet)
     {
     const CellType cell(this->TopoExecArg.Topo,id);
-
-    const dax::Tuple<dax::Id,CellType::NUM_POINTS> ids = cell.GetPointIndices();
-    for(int i=0; i < CellType::NUM_POINTS; ++i)
-      {
-      this->Value[i] = this->ExecArg(ids[i], worklet);
-      }
+    this->Value = cell.GetPointIndices();
     return this->Value;
     }
 
   template<typename Worklet>
-  DAX_EXEC_EXPORT void SaveExecutionResult(int id, const Worklet& worklet) const
+  DAX_EXEC_EXPORT void SaveExecutionResult(dax::Id id, const Worklet& worklet) const
     {
     //Look at the concept map traits. If we have the Out tag
-    //we know that we must call our ExecArgs SaveExecutionResult.
+    //we know that we must call our TopoExecArgs SaveExecutionResult.
     //Otherwise we are an input argument and that behavior is undefined
     //and very bad things could happen
     typedef typename Tags::
@@ -86,28 +79,31 @@ public:
   //method enabled when we do have the out tag ( or InOut)
   template <typename Worklet, typename HasOutTag>
   DAX_EXEC_EXPORT
-  void saveResult(int id,const Worklet& worklet, HasOutTag,
-     typename boost::enable_if<HasOutTag>::type* dummy = 0) const
+  void saveResult(dax::Id id,const Worklet& worklet, HasOutTag,
+     typename boost::enable_if<HasOutTag>::type* = 0) const
     {
-    (void)dummy;
-    const CellType cell(this->TopoExecArg.Topo,id);
-    const dax::Tuple<dax::Id,CellType::NUM_POINTS> ids = cell.GetPointIndices();
-    for(int i=0; i < CellType::NUM_POINTS; ++i)
+    dax::Id index = id * CellType::NUM_POINTS;
+    for (int localIndex = 0;
+         localIndex < CellType::NUM_POINTS;
+         ++localIndex, ++index)
       {
-      this->ExecArg.SaveExecutionResult(ids[i],this->Value[i],worklet);
+      // This only actually works if TopoExecArg is TopologyUnstructured.
+      dax::exec::internal::FieldSet(this->TopoExecArg.Topo.CellConnections,
+                                    index,
+                                    this->Value[localIndex],
+                                    worklet);
       }
     }
 
   template <typename Worklet, typename HasOutTag>
   DAX_EXEC_EXPORT
-  void saveResult(int,const Worklet&, HasOutTag,
-     typename boost::disable_if<HasOutTag>::type* dummy = 0) const
+  void saveResult(dax::Id,const Worklet&, HasOutTag,
+     typename boost::disable_if<HasOutTag>::type* = 0) const
     {
-    (void)dummy;
     }
 };
 
 }}} // namespace dax::exec::arg
 
 #endif // !defined(DAX_DOXYGEN_ONLY)
-#endif //__dax_exec_arg_BindCellPoints_h
+#endif //__dax_exec_arg_BindCellPointIds_h
