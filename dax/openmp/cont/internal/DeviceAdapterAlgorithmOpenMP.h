@@ -82,7 +82,7 @@ DAX_CONT_EXPORT void Schedule(
     dax::Id numInstances,
     dax::openmp::cont::DeviceAdapterTagOpenMP)
 {
-  Schedule(detail::ScheduleKernelOpenMP<FunctorType>(functor),
+  dax::cont::internal::Schedule(detail::ScheduleKernelOpenMP<FunctorType>(functor),
            numInstances,
            dax::thrust::cont::internal::DeviceAdapterTagThrust());
 }
