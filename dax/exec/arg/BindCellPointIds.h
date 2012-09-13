@@ -24,9 +24,10 @@
 #include <dax/cont/arg/Topology.h>
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Tag.h>
-#include <boost/utility/enable_if.hpp>
 #include <dax/exec/internal/FieldAccess.h>
 
+#include <boost/mpl/if.hpp>
+#include <boost/utility/enable_if.hpp>
 
 namespace dax { namespace exec { namespace arg {
 
@@ -48,16 +49,14 @@ public:
 
   typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
                                    ValueType&,
-                                   ValueType const&>::type ReferenceType;
-  typedef ReferenceType ReturnType;
-
+                                   ValueType const&>::type ReturnType;
 
   BindCellPointIds(dax::cont::internal::Bindings<Invocation>& bindings):
     TopoExecArg(bindings.template Get<N>().GetExecArg()) {}
 
 
   template<typename Worklet>
-  DAX_EXEC_EXPORT ReferenceType operator()(dax::Id id, const Worklet& worklet)
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id, const Worklet&)
     {
     const CellType cell(this->TopoExecArg.Topo,id);
     this->Value = cell.GetPointIndices();
