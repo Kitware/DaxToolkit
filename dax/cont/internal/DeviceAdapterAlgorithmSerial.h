@@ -172,7 +172,7 @@ private:
 } // namespace detail
 
 template<class Functor>
-DAX_CONT_EXPORT void Schedule(Functor functor,
+DAX_CONT_EXPORT void LegacySchedule(Functor functor,
                               dax::Id numInstances,
                               DeviceAdapterTagSerial)
 {
@@ -198,7 +198,7 @@ DAX_CONT_EXPORT void Schedule(Functor functor,
 }
 
 template<class ControlInvocSig, class Functor,  class Bindings>
-DAX_CONT_EXPORT void NG_Schedule(
+DAX_CONT_EXPORT void Schedule(
     Functor functor,
     Bindings& bindings,
     dax::Id numInstances,

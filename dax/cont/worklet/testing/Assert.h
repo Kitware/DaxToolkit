@@ -79,7 +79,7 @@ inline void Assert(
       kernel(dax::worklet::testing::Assert(),
              inArray.PrepareForInput());
 
-  dax::cont::internal::Schedule(kernel, fieldSize, Adapter());
+  dax::cont::internal::LegacySchedule(kernel, fieldSize, Adapter());
 }
 
 }

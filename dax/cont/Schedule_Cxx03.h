@@ -43,7 +43,7 @@ Schedule(WorkletType w, _dax_pp_params___(a))
   bindings.ForEach(dax::cont::detail::CreateExecutionResources<WorkType>(count));
 
   // Schedule the worklet invocations in the execution environment.
-  dax::cont::internal::NG_Schedule<ControlInvocationSignature>
+  dax::cont::internal::Schedule<ControlInvocationSignature>
     (w, bindings, count, DeviceAdapterTag());
   }
 # endif // _dax_pp_sizeof___T > 1

@@ -330,12 +330,12 @@ private:
     manager.AllocateArrayForOutput(container, ARRAY_SIZE);
 
     std::cout << "Running clear." << std::endl;
-    dax::cont::internal::Schedule(ClearArrayKernel(manager.GetPortal()),
+    dax::cont::internal::LegacySchedule(ClearArrayKernel(manager.GetPortal()),
                                   ARRAY_SIZE,
                                   DeviceAdapterTag());
 
     std::cout << "Running add." << std::endl;
-    dax::cont::internal::Schedule(AddArrayKernel(manager.GetPortal()),
+    dax::cont::internal::LegacySchedule(AddArrayKernel(manager.GetPortal()),
                                   ARRAY_SIZE,
                                   DeviceAdapterTag());
 
@@ -432,7 +432,7 @@ private:
 
     //construct the index array
 
-    dax::cont::internal::Schedule(
+    dax::cont::internal::LegacySchedule(
           MarkOddNumbersKernel(array.PrepareForOutput(ARRAY_SIZE)),
           ARRAY_SIZE,
           DeviceAdapterTag());
@@ -459,11 +459,11 @@ private:
     IdArrayHandle result;
 
     //construct the index array
-    dax::cont::internal::Schedule(
+    dax::cont::internal::LegacySchedule(
           OffsetPlusIndexKernel(array.PrepareForOutput(ARRAY_SIZE)),
           ARRAY_SIZE,
           DeviceAdapterTag());
-    dax::cont::internal::Schedule(
+    dax::cont::internal::LegacySchedule(
           MarkOddNumbersKernel(stencil.PrepareForOutput(ARRAY_SIZE)),
           ARRAY_SIZE,
           DeviceAdapterTag());
@@ -549,7 +549,7 @@ private:
 
     //construct the index array
     IdArrayHandle array;
-    dax::cont::internal::Schedule(
+    dax::cont::internal::LegacySchedule(
           ClearArrayKernel(array.PrepareForOutput(ARRAY_SIZE)),
           ARRAY_SIZE,
           DeviceAdapterTag());
@@ -585,7 +585,7 @@ private:
     std::string message;
     try
       {
-      dax::cont::internal::Schedule(OneErrorKernel(),
+      dax::cont::internal::LegacySchedule(OneErrorKernel(),
                                     ARRAY_SIZE,
                                     DeviceAdapterTag());
       }
@@ -601,7 +601,7 @@ private:
     message = "";
     try
       {
-      dax::cont::internal::Schedule(AllErrorKernel(),
+      dax::cont::internal::LegacySchedule(AllErrorKernel(),
                                     ARRAY_SIZE,
                                     DeviceAdapterTag());
       }

@@ -80,7 +80,7 @@ inline void CellMapError(const GridType &grid, DeviceAdapter)
       kernel(dax::worklet::testing::CellMapError(),
              grid.PrepareForInput());
 
-  dax::cont::internal::Schedule(kernel,
+  dax::cont::internal::LegacySchedule(kernel,
                                 grid.GetNumberOfCells(),
                                 DeviceAdapter());
 }
