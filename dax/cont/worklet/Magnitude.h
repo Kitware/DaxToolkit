@@ -18,7 +18,7 @@
 
 // TODO: This should be auto-generated.
 
-#include <Worklets/Magnitude.worklet>
+#include <dax/worklets/Magnitude.worklet>
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>

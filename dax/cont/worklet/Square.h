@@ -18,7 +18,7 @@
 
 // TODO: This should be auto-generated.
 
-#include <Worklets/Square.worklet>
+#include <dax/worklets/Square.worklet>
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>

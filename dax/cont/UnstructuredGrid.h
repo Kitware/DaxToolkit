@@ -39,7 +39,8 @@ struct UnstructuredGridOfCell : UnstructuredGridTag {  };
 ///
 template <
     typename CellT,
-    class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
+    class CellConnectionsContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
+    class PointsArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
     class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class UnstructuredGrid
 {
@@ -48,9 +49,10 @@ public:
   typedef UnstructuredGridOfCell<CellType> GridTypeTag;
 
   typedef dax::cont::ArrayHandle<
-      dax::Id, ArrayContainerControlTag, DeviceAdapterTag> CellConnectionsType;
+      dax::Id, CellConnectionsContainerControlTag, DeviceAdapterTag>
+      CellConnectionsType;
   typedef dax::cont::ArrayHandle<
-      dax::Vector3, ArrayContainerControlTag, DeviceAdapterTag>
+      dax::Vector3, PointsArrayContainerControlTag, DeviceAdapterTag>
       PointCoordinatesType;
 
   DAX_CONT_EXPORT

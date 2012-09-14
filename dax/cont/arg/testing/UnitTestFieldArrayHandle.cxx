@@ -15,7 +15,7 @@
 //=============================================================================
 
 #include <dax/cont/arg/FieldArrayHandle.h>
-#include <dax/cont/internal/Testing.h>
+#include <dax/cont/internal/testing/Testing.h>
 
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Tag.h>

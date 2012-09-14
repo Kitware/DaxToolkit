@@ -29,11 +29,19 @@ namespace dax { namespace cont { namespace arg {
 
 /// \headerfile TopologyUnstructured.h dax/cont/arg/TopologyUnstructuredGrid.h
 /// \brief Map an unstructured grid to an execution side cell topology parameter
-template <typename Tags, typename Cell, typename ContainerTag, typename DeviceTag >
-class ConceptMap<Topology(Tags), dax::cont::UnstructuredGrid< Cell,ContainerTag,DeviceTag > >
+template <typename Tags,
+          typename Cell,
+          typename CellContainerTag,
+          typename PointContainerTag,
+          typename DeviceTag
+          >
+class ConceptMap<Topology(Tags), dax::cont::UnstructuredGrid< Cell,
+                                 CellContainerTag,PointContainerTag,
+                                 DeviceTag > >
 {
 private:
-  typedef dax::cont::UnstructuredGrid< Cell,ContainerTag,DeviceTag > GridType;
+  typedef dax::cont::UnstructuredGrid< Cell,
+          CellContainerTag, PointContainerTag, DeviceTag > GridType;
 
   //use mpl::if_ to determine the type for ExecArg
   typedef typename boost::mpl::if_<
@@ -82,11 +90,19 @@ public:
 
 /// \headerfile TopologyUnstructured.h dax/cont/arg/TopologyUnstructuredGrid.h
 /// \brief Map an unstructured grid to an execution side cell topology parameter
-template <typename Tags, typename Cell, typename ContainerTag, typename DeviceTag >
-class ConceptMap<Topology(Tags), const dax::cont::UnstructuredGrid< Cell,ContainerTag,DeviceTag > >
+template <typename Tags,
+          typename Cell,
+          typename CellContainerTag,
+          typename PointContainerTag,
+          typename DeviceTag
+          >
+class ConceptMap<Topology(Tags), const dax::cont::UnstructuredGrid< Cell,
+                                 CellContainerTag,PointContainerTag,
+                                 DeviceTag > >
 {
 private:
-  typedef dax::cont::UnstructuredGrid< Cell,ContainerTag,DeviceTag > GridType;
+  typedef dax::cont::UnstructuredGrid< Cell,
+          CellContainerTag, PointContainerTag, DeviceTag > GridType;
 
   //use mpl::if_ to determine the type for ExecArg
   typedef typename GridType::TopologyStructConstExecution TopologyType;

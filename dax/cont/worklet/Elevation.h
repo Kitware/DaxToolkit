@@ -18,7 +18,7 @@
 
 // TODO: This should be auto-generated.
 
-#include <Worklets/Elevation.worklet>
+#include <dax/worklets/Elevation.worklet>
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>

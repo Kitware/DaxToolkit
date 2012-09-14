@@ -92,6 +92,25 @@ typedef unsigned long long UInt64Type;
 #error Could not find a 64-bit integer.
 #endif
 
+template<int Size>
+struct equals
+{
+  template<typename T>
+  bool operator()(const T& a, const T& b) const
+  {
+    return equals<Size-1>()(a,b) && a[Size-1] == b[Size-1];
+  }
+};
+
+template<>
+struct equals<1>
+{
+  template<typename T>
+  bool operator()(const T& a, const T& b) const
+  {
+    return a[0] == b[0];
+  }
+};
 } // namespace internal
 
 #if DAX_SIZE_ID == 4
@@ -148,6 +167,16 @@ public:
   }
   DAX_EXEC_CONT_EXPORT ComponentType &operator[](int idx) {
     return this->Components[idx];
+  }
+
+  DAX_EXEC_CONT_EXPORT bool operator == (const dax::Tuple<T,Size> &b) const
+  {
+    return dax::internal::equals<Size>()(*this,b);
+  }
+
+  DAX_EXEC_CONT_EXPORT bool operator != (const dax::Tuple<T,Size> &b) const
+  {
+    return !(this->operator ==(b));
   }
 
 protected:

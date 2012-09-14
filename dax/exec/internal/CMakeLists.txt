@@ -23,7 +23,6 @@ set(headers
   GridTopologies.h
   InterpolationWeights.h
   ${Dax_BINARY_DIR}/dax/exec/internal/Members.h
-  TestingTopologyGenerator.h
   TopologyUniform.h
   TopologyUnstructured.h
   WorkletBase.h
@@ -43,14 +42,6 @@ configure_file(
   @ONLY
   )
 
+add_subdirectory(kernel)
+add_subdirectory(testing)
 
-set(unit_tests
-  UnitTestArrayPortalFromIteratorsExec.cxx
-  UnitTestDerivativeWeights.cxx
-  UnitTestErrorMessageBuffer.cxx
-  UnitTestInterpolationWeights.cxx
-  UnitTestFunctor.cxx
-  UnitTestGridTopologies.cxx
-  UnitTestTopologyGenerator.cxx
-  )
-dax_unit_tests(SOURCES ${unit_tests})

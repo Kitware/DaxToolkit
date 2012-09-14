@@ -17,8 +17,8 @@
 #include <dax/cont/arg/TopologyUniformGrid.h>
 #include <dax/cont/arg/TopologyUnstructuredGrid.h>
 
-#include <dax/cont/internal/Testing.h>
-#include <dax/cont/internal/TestingGridGenerator.h>
+#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/internal/testing/TestingGridGenerator.h>
 
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Tag.h>

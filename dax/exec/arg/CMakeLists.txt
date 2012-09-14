@@ -28,7 +28,4 @@ set(headers
 
 dax_declare_headers(${headers})
 
-set(unit_tests
-  UnitTestBind.cxx
-  )
-dax_unit_tests(SOURCES ${unit_tests})
+add_subdirectory(testing)

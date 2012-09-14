@@ -21,14 +21,10 @@ set(headers
   )
 
 if(DAX_ENABLE_OPENMP)
-set(headers ${headers}
+  list(APPEND headers
     ArrayManagerExecutionThrustDevice.h
     DeviceAdapterAlgorithmThrust.h
     )
 endif()
 
 dax_declare_headers(${headers})
-
-set(unit_tests
-  )
-#dax_unit_tests(CUDA SOURCES ${unit_tests})

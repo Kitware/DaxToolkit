@@ -17,7 +17,7 @@
 #include <dax/cont/arg/FieldConstant.h>
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Tag.h>
-#include <dax/cont/internal/Testing.h>
+#include <dax/cont/internal/testing/Testing.h>
 
 namespace{
 using dax::cont::arg::Field;

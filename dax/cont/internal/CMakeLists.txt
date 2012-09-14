@@ -28,9 +28,6 @@ set(headers
   DeviceAdapterTagSerial.h
   FindBinding.h
   ${Dax_BINARY_DIR}/dax/cont/internal/Members.h
-  Testing.h
-  TestingDeviceAdapter.h
-  TestingGridGenerator.h
   )
 
 dax_declare_headers(${headers})
@@ -53,9 +50,4 @@ configure_file(
 # internal and which are part of the external interface.
 #add_custom_target(daxContInternal ALL DEPENDS daxCont)
 
-set(unit_tests
-  UnitTestArrayManagerExecutionShareWithControl.cxx
-  UnitTestBindings.cxx
-  UnitTestContTesting.cxx
-  )
-dax_unit_tests(SOURCES ${unit_tests})
+add_subdirectory(testing)

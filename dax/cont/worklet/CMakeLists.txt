@@ -29,16 +29,4 @@ set(headers
 
 dax_declare_headers(${headers})
 
-set(unit_tests
-  UnitTestWorkletCellGradient.cxx
-  UnitTestWorkletCosine.cxx
-  UnitTestWorkletElevation.cxx
-  UnitTestWorkletMagnitude.cxx
-  UnitTestWorkletSine.cxx
-  UnitTestWorkletSquare.cxx
-  UnitTestWorkletThreshold.cxx
-  UnitTestWorkletAssert.cxx
-  UnitTestWorkletMapCellError.cxx
-  UnitTestWorkletMapFieldError.cxx
-  )
-dax_unit_tests(SOURCES ${unit_tests})
+add_subdirectory(testing)

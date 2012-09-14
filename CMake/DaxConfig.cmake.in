@@ -1,0 +1,64 @@
+##=============================================================================
+##
+##  Copyright (c) Kitware, Inc.
+##  All rights reserved.
+##  See LICENSE.txt for details.
+##
+##  This software is distributed WITHOUT ANY WARRANTY; without even
+##  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+##  PURPOSE.  See the above copyright notice for more information.
+##
+##  Copyright 2012 Sandia Corporation.
+##  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+##  the U.S. Government retains certain rights in this software.
+##
+##=============================================================================
+
+# This file should be installed in the include directory.
+# Find the root directory.
+get_filename_component(_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(_install_dir "${_dir}/.." ABSOLUTE)
+
+# The Dax include file directories.
+set(Dax_INCLUDE_DIRS "@Dax_INCLUDE_DIRS_CONFIG@")
+
+# The Dax version number
+set(Dax_MAJOR_VERSION "@Dax_MAJOR_VERSION@")
+set(Dax_MINOR_VERSION "@Dax_MINOR_VERSION@")
+set(Dax_PATCH_VERSION "@Dax_PATCH_VERSION@")
+
+# Main Dax configuration options.  These indicate what headers are available
+# but does not guarantee the dependent compilers and libraries are available.
+set(Dax_ENABLE_CUDA "@DAX_ENABLE_CUDA@")
+set(Dax_ENABLE_OPENMP "@DAX_ENABLE_OPENMP@")
+
+# Use these macros to configure your build to the various devices supported
+# by Dax.
+macro(DaxConfigureSerial)
+  DaxConfigureDevice(Serial ${ARGV})
+endmacro(DaxConfigureSerial)
+macro(DaxConfigureOpenMP)
+  DaxConfigureDevice(OpenMP ${ARGV})
+endmacro(DaxConfigureOpenMP)
+macro(DaxConfigureCuda)
+  DaxConfigureDevice(Cuda ${ARGV})
+endmacro(DaxConfigureCuda)
+
+# Used by other macros.
+macro(DaxConfigureDevice device)
+  include("${USE_Dax_${device}}")
+  if ("${ARGV1}" STREQUAL "REQUIRED")
+    if (NOT Dax_${device}_FOUND)
+      message(SEND_ERROR "Could not configure for using Dax with ${device}")
+    endif (NOT Dax_${device}_FOUND)
+  endif ("${ARGV1}" STREQUAL "REQUIRED")
+endmacro(DaxConfigureDevice device)
+
+set(Dax_REQUIRED_BOOST_VERSION "@Dax_REQUIRED_BOOST_VERSION@")
+set(Dax_REQUIRED_THRUST_VERSION "@Dax_REQUIRED_THRUST_VERSION@")
+
+set(Dax_CMAKE_MODULE_PATH "@Dax_CMAKE_MODULE_PATH_CONFIG@")
+
+set(USE_Dax_Serial "@Dax_CMAKE_MODULE_PATH_CONFIG@/UseDaxSerial.cmake")
+set(USE_Dax_OpenMP "@Dax_CMAKE_MODULE_PATH_CONFIG@/UseDaxOpenMP.cmake")
+set(USE_Dax_Cuda "@Dax_CMAKE_MODULE_PATH_CONFIG@/UseDaxCuda.cmake")

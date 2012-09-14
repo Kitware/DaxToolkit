@@ -59,56 +59,6 @@ struct GetUsedPointsFunctor : public WorkletMapField
   }
 };
 
-
-template<class WorkletType, class InputTopologyType, class OutputTopologyType>
-struct GenerateTopologyFunctor
-{
-  typedef typename InputTopologyType::CellType InputCellType;
-  typedef typename OutputTopologyType::CellType OutputCellType;
-
-  DAX_CONT_EXPORT GenerateTopologyFunctor(
-      WorkletType &worklet,
-      const InputTopologyType &inputTopology,
-      const OutputTopologyType &outputTopology)
-    : Worklet(worklet),
-      InputTopology(inputTopology),
-      OutputTopology(outputTopology) {  }
-
-  DAX_EXEC_EXPORT void operator()(dax::Id outputCellIndex,
-                                  dax::Id inputCellIndex) const
-  {
-    InputCellType inputCell(this->InputTopology, inputCellIndex);
-    typename OutputCellType::PointConnectionsType outputCellConnections;
-
-    this->Worklet(inputCell, outputCellConnections);
-
-    // Write cell connections back to cell array.
-    dax::Id index = outputCellIndex * OutputCellType::NUM_POINTS;
-    for (int localIndex = 0;
-         localIndex < OutputCellType::NUM_POINTS;
-         localIndex++)
-      {
-      // This only actually works if OutputTopologyType is TopologyUnstructured.
-      dax::exec::internal::FieldSet(this->OutputTopology.CellConnections,
-                                    index,
-                                    outputCellConnections[localIndex],
-                                    this->Worklet);
-      index++;
-      }
-  }
-
-  DAX_CONT_EXPORT void SetErrorMessageBuffer(
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
-  {
-    this->Worklet.SetErrorMessageBuffer(errorMessage);
-  }
-
-private:
-  WorkletType Worklet;
-  InputTopologyType InputTopology;
-  OutputTopologyType OutputTopology;
-};
-
 }
 }
 }
