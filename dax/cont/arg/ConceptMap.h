@@ -37,7 +37,7 @@ public:
   typedef dax::exec::arg::unspecified_type ExecArg;
 
   /// Get representation of argument value for the execution environment.
-  ExecArg& GetExecArg();
+  ExecArg GetExecArg();
 };
 #else // !defined(DAX_DOXYGEN_ONLY)
 template <typename Concept, typename Argument> class ConceptMap;

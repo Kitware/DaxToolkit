@@ -87,14 +87,9 @@ struct ValueStorage<T, ReferenceType, Tags,
 };
 }
 
-template <typename T, typename Tags, typename PortalExec, typename PortalConstExec>
+template <typename T, typename Tags, typename PortalType>
 class FieldPortal
 {
-  //What we have to do is use mpl::if_ to determine the type for
-  //ExecArg
-  typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
-                                   PortalExec,
-                                   PortalConstExec>::type PortalType;
 public:
   typedef T ValueType;
   //if we are going with Out tag we create a value storage that holds a copy
@@ -103,7 +98,7 @@ public:
                                    ValueType&,
                                    ValueType const>::type ReturnType;
 
-  FieldPortal(): Storage(), Portal(){}
+  FieldPortal(PortalType portal): Storage(), Portal(portal){}
 
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
                       const dax::exec::internal::WorkletBase& work)
@@ -136,8 +131,6 @@ public:
     {
     this->Storage.Set(index,this->Portal,v,work);
     }
-
-  void SetPortal(PortalType p) { this->Portal = p; }
 private:
   /*
   Todo for basic portals where the underlying storage is the same
