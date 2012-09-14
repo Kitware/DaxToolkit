@@ -115,20 +115,17 @@ public:
     IdPortalType Array;
   };
 
-  struct ClearArrayMapKernel
+  struct ClearArrayMapKernel: public dax::exec::WorkletMapField
   {
-    DAX_CONT_EXPORT
-    ClearArrayMapKernel(const IdPortalType &array) : Array(array) {  }
 
-    DAX_EXEC_EXPORT void operator()(dax::Id, dax::Id value) const
+    typedef void ControlSignature(Field(Out));
+    typedef void ExecutionSignature(_1);
+
+    template<typename T>
+    DAX_EXEC_EXPORT void operator()(T& value) const
     {
-      this->Array.Set(value, OFFSET);
+      value = OFFSET;
     }
-
-    DAX_CONT_EXPORT void SetErrorMessageBuffer(
-        const dax::exec::internal::ErrorMessageBuffer &) {  }
-
-    IdPortalType Array;
   };
 
   struct AddArrayKernel
@@ -353,22 +350,29 @@ private:
       }
 
     std::cout << "Testing Schedule on Subset" << std::endl;
+
+
+    dax::Id rawInput[ARRAY_SIZE];
+    IdArrayHandle subsetInput = MakeArrayHandle(rawInput, ARRAY_SIZE);
+    for (dax::Id index = 0; index < ARRAY_SIZE; index++)
+      {
+      rawInput[index]=container.GetPortalConst().Get(index);
+      }
+
+
     const dax::Id RAWSUBSET_SIZE = 4;
     dax::Id rawsubset[RAWSUBSET_SIZE];
     rawsubset[0]=0;rawsubset[1]=10;rawsubset[2]=30;rawsubset[3]=20;
     IdArrayHandle subset = MakeArrayHandle(rawsubset, RAWSUBSET_SIZE);
 
     std::cout << "Running clear on subset." << std::endl;
-
-
-    //Todo: ScheduleMapAdapter
-//    dax::cont::internal::ScheduleMap(ClearArrayMapKernel(manager.GetPortal()),
-//                                     subset);
-//    manager.RetrieveOutputData(container);
+    dax::cont::Schedule<DeviceAdapterTag>(
+          ClearArrayMapKernel(),
+          make_MapAdapter(subset,subsetInput,ARRAY_SIZE));
 
     for (dax::Id index = 0; index < 4; index++)
       {
-      dax::Id value = container.GetPortalConst().Get(rawsubset[index]);
+      dax::Id value = subsetInput.GetPortalConstControl().Get(rawsubset[index]);
       DAX_TEST_ASSERT(value == OFFSET,
                       "Got bad value for subset scheduled kernel.");
       }
