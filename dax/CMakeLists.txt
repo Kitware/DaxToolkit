@@ -61,7 +61,7 @@ if (DAX_ENABLE_OPENMP)
   add_subdirectory(openmp)
 endif (DAX_ENABLE_OPENMP)
 
-add_subdirectory(worklets)
+add_subdirectory(worklet)
 
 add_subdirectory(testing)
 

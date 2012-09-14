@@ -18,7 +18,7 @@
 
 // TODO: This should be auto-generated.
 
-#include <dax/worklets/Cosine.worklet>
+#include <dax/worklet/Cosine.worklet>
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>

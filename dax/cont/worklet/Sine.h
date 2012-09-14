@@ -18,7 +18,7 @@
 
 // TODO: This should be auto-generated.
 
-#include <dax/worklets/Sine.worklet>
+#include <dax/worklet/Sine.worklet>
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>

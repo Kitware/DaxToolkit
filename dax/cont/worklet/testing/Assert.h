@@ -18,7 +18,7 @@
 
 // TODO: This should be auto-generated.
 
-#include <dax/worklets/testing/Assert.worklet>
+#include <dax/worklet/testing/Assert.worklet>
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>

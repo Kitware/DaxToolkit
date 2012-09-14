@@ -19,7 +19,7 @@
 
 // TODO: This should be auto-generated.
 
-#include <dax/worklets/Threshold.worklet>
+#include <dax/worklet/Threshold.worklet>
 
 #include <boost/shared_ptr.hpp>
 

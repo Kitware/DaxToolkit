@@ -18,7 +18,7 @@
 
 // TODO: This should be auto-generated.
 
-#include <dax/worklets/testing/FieldMapError.worklet>
+#include <dax/worklet/testing/FieldMapError.worklet>
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>
