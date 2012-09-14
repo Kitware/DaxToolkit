@@ -79,7 +79,7 @@ public:
                   typename boost::enable_if<HasOutTag>::type* = 0) const
     {
     dax::exec::internal::FieldSetMultiple(this->Topo.CellConnections,
-                                        index,
+                                        CellType::NUM_POINTS * index,
                                         values,
                                         work);
     }
