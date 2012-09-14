@@ -19,7 +19,6 @@
 #include <dax/Types.h>
 #include <dax/exec/internal/WorkletBase.h>
 
-
 namespace dax { namespace exec { namespace arg {
 
 /// \headerfile FieldMap.h dax/exec/arg/FieldMap.h
@@ -33,6 +32,7 @@ class FieldMap : public ExecValueType
   ExecKeyType KeyArg;
 public:
   typedef typename ExecValueType::ReturnType ReturnType;
+  typedef typename ExecValueType::SaveType SaveType;
 
   FieldMap(const ExecKeyType& k, const ExecValueType& v):
     ExecValueType(v),
@@ -43,16 +43,24 @@ public:
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
                             const dax::exec::internal::WorkletBase& work)
     {
-    return ExecValueType::operator()(this->KeyArg(index, work), work);
+    dax::Id newIndex = this->KeyArg(index, work);
+    return ExecValueType::operator()(newIndex, work);
     }
 
-  DAX_EXEC_EXPORT void SaveExecutionResult(int index,
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
+                            const dax::exec::internal::WorkletBase& work) const
+    {
+    dax::Id newIndex = this->KeyArg(index, work);
+    return ExecValueType::operator()(newIndex, work);
+    }
+
+  DAX_EXEC_EXPORT void SaveExecutionResult(dax::Id index,
                             const dax::exec::internal::WorkletBase& work) const
     {
     ExecValueType::SaveExecutionResult(this->KeyArg(index,work),work);
     }
 
-  DAX_EXEC_EXPORT void SaveExecutionResult(int index, ReturnType v,
+  DAX_EXEC_EXPORT void SaveExecutionResult(dax::Id index, const SaveType& v,
                              const dax::exec::internal::WorkletBase& work) const
     {
     ExecValueType::SaveExecutionResult(this->KeyArg(index,work),v,work);

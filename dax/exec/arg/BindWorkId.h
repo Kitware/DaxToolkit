@@ -33,7 +33,7 @@ struct BindWorkId
 
   typedef dax::Id ReturnType;
 
-  BindWorkId(AllControlBindings&){}
+  DAX_CONT_EXPORT BindWorkId(AllControlBindings&){}
 
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id id,
                               const dax::exec::internal::WorkletBase&)

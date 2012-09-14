@@ -97,6 +97,7 @@ public:
   typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
                                    ValueType&,
                                    ValueType const>::type ReturnType;
+  typedef ValueType SaveType;
 
   FieldPortal(const PortalType& portal): Storage(), Portal(portal){}
 
@@ -126,7 +127,7 @@ public:
 
   //After needs to be tagged on out, since you get call .Set
   //on a input portal as that fails
-  DAX_EXEC_EXPORT void SaveExecutionResult(int index, ReturnType v,
+  DAX_EXEC_EXPORT void SaveExecutionResult(int index, const SaveType& v,
                    const dax::exec::internal::WorkletBase& work) const
     {
     this->Storage.Set(index,this->Portal,v,work);

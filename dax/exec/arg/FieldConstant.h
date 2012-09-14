@@ -31,6 +31,7 @@ template <typename T> class FieldConstant
   T Value;
 public:
   typedef T const& ReturnType;
+  typedef T SaveType;
   FieldConstant(T x): Value(x) {}
 
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id,

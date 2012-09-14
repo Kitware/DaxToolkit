@@ -25,9 +25,7 @@
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Tag.h>
 
-#include <dax/exec/internal/FieldAccess.h>
 #include <dax/exec/internal/WorkletBase.h>
-
 
 #include <boost/mpl/if.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -50,57 +48,33 @@ public:
   typedef dax::Tuple<ComponentType,CellType::NUM_POINTS> ValueType;
   ValueType Value;
 
-  typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
-                                   ValueType&,
-                                   ValueType const&>::type ReturnType;
+  typedef typename boost::mpl::if_<
+          typename Tags::template Has<dax::cont::sig::Out>,
+                   ValueType&,
+                  ValueType const&>::type ReturnType;
 
+  DAX_CONT_EXPORT
   BindCellPointIds(dax::cont::internal::Bindings<Invocation>& bindings):
-    TopoExecArg(bindings.template Get<N>().GetExecArg()) {}
+    TopoExecArg(bindings.template Get<N>().GetExecArg())
+    {    
+    }
 
 
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id id,
-                                        const dax::exec::internal::WorkletBase&)
+                          const dax::exec::internal::WorkletBase& work)
     {
-    const CellType cell(this->TopoExecArg.Topo,id);
+    //we have to call topo to get the cell since the topology is private
+    //this allows us to use a FieldMap between the bindCellPoints and
+    //the real topology
+    const CellType cell = this->TopoExecArg.operator()(id,work);
     this->Value = cell.GetPointIndices();
     return this->Value;
     }
 
   DAX_EXEC_EXPORT void SaveExecutionResult(dax::Id id,
-                               const dax::exec::internal::WorkletBase& worklet) const
+                          const dax::exec::internal::WorkletBase& worklet) const
     {
-    //Look at the concept map traits. If we have the Out tag
-    //we know that we must call our TopoExecArgs SaveExecutionResult.
-    //Otherwise we are an input argument and that behavior is undefined
-    //and very bad things could happen
-    typedef typename Tags::
-          template Has<typename dax::cont::sig::Out>::type HasOutTag;
-    this->saveResult(id,worklet,HasOutTag());
-    }
-
-  //method enabled when we do have the out tag ( or InOut)
-  template <typename HasOutTag>
-  DAX_EXEC_EXPORT
-  void saveResult(dax::Id id,
-                  dax::exec::internal::WorkletBase worklet,
-                  HasOutTag,
-                  typename boost::enable_if<HasOutTag>::type* = 0) const
-    {
-    dax::Id index = id * CellType::NUM_POINTS;
-    // This only actually works if TopoExecArg is TopologyUnstructured.
-    dax::exec::internal::FieldSetMultiple(this->TopoExecArg.Topo.CellConnections,
-                                  index,
-                                  this->Value,
-                                  worklet);
-    }
-
-  template <typename HasOutTag>
-  DAX_EXEC_EXPORT
-  void saveResult(dax::Id,
-                  dax::exec::internal::WorkletBase,
-                  HasOutTag,
-                  typename boost::disable_if<HasOutTag>::type* = 0) const
-    {
+    this->TopoExecArg.SaveExecutionResult(id,this->Value,worklet);
     }
 };
 

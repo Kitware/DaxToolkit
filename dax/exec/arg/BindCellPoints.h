@@ -55,21 +55,22 @@ public:
   typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
                                    ValueType&,
                                    ValueType const&>::type ReturnType;
+  typedef ValueType SaveType;
 
-  BindCellPoints(dax::cont::internal::Bindings<Invocation>& bindings):
+  DAX_CONT_EXPORT BindCellPoints(dax::cont::internal::Bindings<Invocation>& bindings):
     TopoExecArg(bindings.template Get<TopoIndex::value>().GetExecArg()),
     ExecArg(bindings.template Get<N>().GetExecArg()) {}
 
 
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id id,
-                        const dax::exec::internal::WorkletBase& worklet)
+                        const dax::exec::internal::WorkletBase& work)
     {
-    const CellType cell(this->TopoExecArg.Topo,id);
+    const CellType cell = this->TopoExecArg.operator()(id,work);
 
     const dax::Tuple<dax::Id,CellType::NUM_POINTS> ids = cell.GetPointIndices();
     for(int i=0; i < CellType::NUM_POINTS; ++i)
       {
-      this->Value[i] = this->ExecArg(ids[i], worklet);
+      this->Value[i] = this->ExecArg(ids[i], work);
       }
     return this->Value;
     }
@@ -90,16 +91,15 @@ public:
   template <typename HasOutTag>
   DAX_EXEC_EXPORT
   void saveResult(int id,
-                  const dax::exec::internal::WorkletBase& worklet,
+                  const dax::exec::internal::WorkletBase& work,
                   HasOutTag,
-                  typename boost::enable_if<HasOutTag>::type* dummy = 0) const
+                  typename boost::enable_if<HasOutTag>::type* = 0) const
     {
-    (void)dummy;
-    const CellType cell(this->TopoExecArg.Topo,id);
+    const CellType cell = this->TopoExecArg.operator()(id,work);
     const dax::Tuple<dax::Id,CellType::NUM_POINTS> ids = cell.GetPointIndices();
     for(int i=0; i < CellType::NUM_POINTS; ++i)
       {
-      this->ExecArg.SaveExecutionResult(ids[i],this->Value[i],worklet);
+      this->ExecArg.SaveExecutionResult(ids[i],this->Value[i],work);
       }
     }
 
@@ -108,9 +108,8 @@ public:
   void saveResult(int,
                   const dax::exec::internal::WorkletBase&,
                   HasOutTag,
-                  typename boost::disable_if<HasOutTag>::type* dummy = 0) const
+                  typename boost::disable_if<HasOutTag>::type* = 0) const
     {
-    (void)dummy;
     }
 };
 

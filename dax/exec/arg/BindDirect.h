@@ -39,7 +39,7 @@ class BindDirect
 public:
   typedef typename ExecArgType::ReturnType ReturnType;
 
-  BindDirect(AllControlBindings& bindings):
+  DAX_CONT_EXPORT BindDirect(AllControlBindings& bindings):
     ExecArg(bindings.template Get<N>().GetExecArg()) {}
 
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id id,
@@ -66,9 +66,8 @@ public:
   void saveResult(int id,
                   const dax::exec::internal::WorkletBase& worklet,
                   HasOutTag,
-                  typename boost::enable_if<HasOutTag>::type* dummy = 0)
+                  typename boost::enable_if<HasOutTag>::type* = 0)
   {
-  (void)dummy;
   this->ExecArg.SaveExecutionResult(id,worklet);
   }
 
@@ -77,10 +76,9 @@ public:
   void saveResult(int,
                   const dax::exec::internal::WorkletBase&,
                   HasOutTag,
-                  typename boost::disable_if<HasOutTag>::type* dummy = 0)
-    {
-    (void)dummy;
-    }
+                  typename boost::disable_if<HasOutTag>::type* = 0)
+  {
+  }
 
 };
 
