@@ -18,14 +18,13 @@
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Arg.h>
 #include <dax/exec/internal/Functor.h>
+#include <dax/exec/internal/WorkletBase.h>
 #include <dax/internal/Testing.h>
 
 namespace {
-
 using dax::cont::arg::Field;
-using dax::cont::sig::placeholders::_1;
 
-struct WorkType1
+struct WorkType1 : public dax::exec::internal::WorkletBase
 {
   typedef WorkType1 WorkType;
 };

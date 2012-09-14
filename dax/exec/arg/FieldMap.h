@@ -17,6 +17,8 @@
 #define __dax_exec_arg_FieldMap_h
 
 #include <dax/Types.h>
+#include <dax/exec/internal/WorkletBase.h>
+
 
 namespace dax { namespace exec { namespace arg {
 
@@ -38,21 +40,20 @@ public:
     {
     }
 
-  template< typename Worklet>
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index, const Worklet& work)
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
+                            const dax::exec::internal::WorkletBase& work)
     {
     return ExecValueType::operator()(this->KeyArg(index, work), work);
     }
 
-  template< typename Worklet>
-  DAX_EXEC_EXPORT void SaveExecutionResult(int index, const Worklet& work) const
+  DAX_EXEC_EXPORT void SaveExecutionResult(int index,
+                            const dax::exec::internal::WorkletBase& work) const
     {
     ExecValueType::SaveExecutionResult(this->KeyArg(index,work),work);
     }
 
-  template< typename Worklet>
   DAX_EXEC_EXPORT void SaveExecutionResult(int index, ReturnType v,
-                                           const Worklet& work) const
+                             const dax::exec::internal::WorkletBase& work) const
     {
     ExecValueType::SaveExecutionResult(this->KeyArg(index,work),v,work);
     }

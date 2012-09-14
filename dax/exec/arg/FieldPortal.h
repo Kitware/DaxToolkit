@@ -19,13 +19,14 @@
 #include <dax/Types.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/exec/Assert.h>
+#include <dax/exec/internal/WorkletBase.h>
+#include <dax/exec/internal/FieldAccess.h>
 
 #include <boost/mpl/if.hpp>
 #include <boost/utility/enable_if.hpp>
 
 
 namespace dax { namespace exec { namespace arg {
-
 
 namespace detail
 {
@@ -36,16 +37,19 @@ struct ValueStorage
   //empty storage for read only portals
 
   template<typename PortalType>
-  DAX_EXEC_EXPORT ReferenceType Get(int index, PortalType const& portal) const
+  DAX_EXEC_EXPORT ReferenceType Get(int index, PortalType const& portal,
+                            const dax::exec::internal::WorkletBase& work) const
     {
-    return portal.Get(index);
+    return dax::exec::internal::FieldGet(portal,index,work);
     }
 
   template<typename PortalType>
-  DAX_EXEC_EXPORT void Set(int,PortalType const&) const { }
+  DAX_EXEC_EXPORT void Set(int,PortalType const&,
+                           const dax::exec::internal::WorkletBase&) const { }
 
   template<typename PortalType>
-  DAX_EXEC_EXPORT void Set(int,PortalType const&,ReferenceType) const { }
+  DAX_EXEC_EXPORT void Set(int,PortalType const&,ReferenceType,
+                           const dax::exec::internal::WorkletBase&) const { }
 
 };
 
@@ -58,23 +62,26 @@ struct ValueStorage<T, ReferenceType, Tags,
   T Value;
 
   template<typename PortalType>
-  DAX_EXEC_EXPORT ReferenceType Get(int index, PortalType const& portal)
+  DAX_EXEC_EXPORT ReferenceType Get(int index, PortalType const& portal,
+                                    const dax::exec::internal::WorkletBase& work)
     {
-    this->Value = portal.Get(index);
+    this->Value = dax::exec::internal::FieldGet(portal,index,work);
     return this->Value;
     }
 
   template<typename PortalType>
-  DAX_EXEC_EXPORT void Set(int index, PortalType const& portal) const
+  DAX_EXEC_EXPORT void Set(int index, PortalType const& portal,
+                           const dax::exec::internal::WorkletBase& work) const
     {
-    portal.Set(index,this->Value);
+    dax::exec::internal::FieldSet(portal,index,this->Value,work);
     }
 
   template<typename PortalType>
   DAX_EXEC_EXPORT void Set(int index, PortalType const& portal,
-                           ReferenceType v) const
+                           ReferenceType v,
+                           const dax::exec::internal::WorkletBase& work) const
     {
-    portal.Set(index,v);
+    dax::exec::internal::FieldSet(portal,index,v,work);
     }
 
 };
@@ -98,49 +105,36 @@ public:
 
   FieldPortal(): Storage(), Portal(){}
 
-  template< typename Worklet>
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index, const Worklet& work)
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
+                      const dax::exec::internal::WorkletBase& work)
     {
     //if we have the In tag we have local store so use that value,
     //otherwise call the portal directly
-    (void)work;  // Shut up compiler.
-    DAX_ASSERT_EXEC(index >= 0, work);
-    DAX_ASSERT_EXEC(index < this->Portal.GetNumberOfValues(), work);
-    return this->Storage.Get(index, this->Portal);
+    return this->Storage.Get(index, this->Portal,work);
     }
 
-  template< typename Worklet>
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index, const Worklet& work) const
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
+                  const dax::exec::internal::WorkletBase& work) const
     {
     //if we have the In tag we have local store so use that value,
     //otherwise call the portal directly
-    (void)work;  // Shut up compiler.
-    DAX_ASSERT_EXEC(index >= 0, work);
-    DAX_ASSERT_EXEC(index < this->Portal.GetNumberOfValues(), work);
-    return this->Storage.Get(index, this->Portal);
+    return this->Storage.Get(index, this->Portal,work);
     }
 
   //After needs to be tagged on out, since you get call .Set
   //on a input portal as that fails
-  template< typename Worklet>
-  DAX_EXEC_EXPORT void SaveExecutionResult(int index, const Worklet& work) const
+  DAX_EXEC_EXPORT void SaveExecutionResult(int index,
+                  const dax::exec::internal::WorkletBase& work) const
     {
-    (void)work;  // Shut up compiler.
-    DAX_ASSERT_EXEC(index >= 0, work);
-    DAX_ASSERT_EXEC(index < this->Portal.GetNumberOfValues(), work);
-    this->Storage.Set(index,this->Portal);
+    this->Storage.Set(index,this->Portal,work);
     }
 
   //After needs to be tagged on out, since you get call .Set
   //on a input portal as that fails
-  template< typename Worklet>
   DAX_EXEC_EXPORT void SaveExecutionResult(int index, ReturnType v,
-                                           const Worklet& work) const
+                   const dax::exec::internal::WorkletBase& work) const
     {
-    (void)work;  // Shut up compiler.
-    DAX_ASSERT_EXEC(index >= 0, work);
-    DAX_ASSERT_EXEC(index < this->Portal.GetNumberOfValues(), work);
-    this->Storage.Set(index,this->Portal,v);
+    this->Storage.Set(index,this->Portal,v,work);
     }
 
   void SetPortal(PortalType p) { this->Portal = p; }

@@ -20,6 +20,8 @@
 #include <dax/cont/sig/Tag.h>
 #include <dax/exec/Assert.h>
 
+#include <dax/exec/internal/WorkletBase.h>
+
 #include <boost/mpl/if.hpp>
 #include <boost/utility/enable_if.hpp>
 
@@ -49,8 +51,8 @@ public:
 
   TopologyCell(): Topo(){}
 
-  template< typename Worklet>
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index, const Worklet& work)
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
+                            const dax::exec::internal::WorkletBase& work)
     {
     //if we have the In tag we have local store so use that value,
     //otherwise call the portal directly
@@ -59,14 +61,14 @@ public:
     return CellType(this->Topo,index);
     }
 
-  template< typename Worklet>
-  DAX_EXEC_EXPORT void SaveExecutionResult(int, const Worklet&) const
+  DAX_EXEC_EXPORT void SaveExecutionResult(int,
+                       const dax::exec::internal::WorkletBase&) const
     {
 
     }
 
-  template< typename Worklet>
-  DAX_EXEC_EXPORT void SaveExecutionResult(int, ReturnType, const Worklet&) const
+  DAX_EXEC_EXPORT void SaveExecutionResult(int, ReturnType,
+                       const dax::exec::internal::WorkletBase&) const
     {
     }
 };

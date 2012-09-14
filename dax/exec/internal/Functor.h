@@ -44,6 +44,7 @@ public:
 # include <dax/Types.h>
 # include <dax/cont/internal/Bindings.h>
 # include <dax/exec/arg/Bind.h>
+# include <dax/exec/internal/WorkletBase.h>
 # include <dax/internal/GetNthType.h>
 # include <dax/exec/internal/Members.h>
 
@@ -51,14 +52,13 @@ namespace dax { namespace exec { namespace internal {
 
 namespace detail {
 
-template<typename WorkletType>
 struct SaveOutArgs
 {
 protected:
   const dax::Id Index;
-  WorkletType& Work;
+  dax::exec::internal::WorkletBase& Work;
 public:
-  DAX_EXEC_EXPORT SaveOutArgs(dax::Id index, WorkletType& w):
+  DAX_EXEC_EXPORT SaveOutArgs(dax::Id index, dax::exec::internal::WorkletBase& w):
     Index(index), Work(w)
     {}
 
@@ -126,7 +126,7 @@ public:                                                                 \
     ArgumentsType instance(this->Arguments);                            \
     _dax_FunctorImpl_##r                                                \
     this->Worklet(_dax_pp_enum___(_dax_FunctorImpl_Argument));          \
-    instance.ForEach(SaveOutArgs<WorkletType>(id,this->Worklet));       \
+    instance.ForEach(SaveOutArgs(id,this->Worklet));                    \
     }
 
 # if __cplusplus >= 201103L

@@ -20,6 +20,7 @@
 /// \brief Execution environment representation of worklet arguments
 
 #include <dax/Types.h>
+#include <dax/exec/internal/WorkletBase.h>
 
 namespace dax { namespace exec { namespace arg {
 
@@ -32,10 +33,15 @@ public:
   typedef T const& ReturnType;
   FieldConstant(T x): Value(x) {}
 
-  template< typename Worklet>
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id, const Worklet& ) const
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id,
+                      const dax::exec::internal::WorkletBase& ) const
     {
     return this->Value;
+    }
+
+  DAX_EXEC_EXPORT void SaveExecutionResult(int,
+                 const dax::exec::internal::WorkletBase&) const
+    {
     }
 };
 

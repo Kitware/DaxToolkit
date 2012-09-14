@@ -24,7 +24,10 @@
 #include <dax/cont/arg/Topology.h>
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Tag.h>
+
 #include <dax/exec/internal/FieldAccess.h>
+#include <dax/exec/internal/WorkletBase.h>
+
 
 #include <boost/mpl/if.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -55,16 +58,16 @@ public:
     TopoExecArg(bindings.template Get<N>().GetExecArg()) {}
 
 
-  template<typename Worklet>
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id, const Worklet&)
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id,
+                                        const dax::exec::internal::WorkletBase&)
     {
     const CellType cell(this->TopoExecArg.Topo,id);
     this->Value = cell.GetPointIndices();
     return this->Value;
     }
 
-  template<typename Worklet>
-  DAX_EXEC_EXPORT void SaveExecutionResult(dax::Id id, const Worklet& worklet) const
+  DAX_EXEC_EXPORT void SaveExecutionResult(dax::Id id,
+                               const dax::exec::internal::WorkletBase& worklet) const
     {
     //Look at the concept map traits. If we have the Out tag
     //we know that we must call our TopoExecArgs SaveExecutionResult.
@@ -76,28 +79,27 @@ public:
     }
 
   //method enabled when we do have the out tag ( or InOut)
-  template <typename Worklet, typename HasOutTag>
+  template <typename HasOutTag>
   DAX_EXEC_EXPORT
-  void saveResult(dax::Id id,const Worklet& worklet, HasOutTag,
-     typename boost::enable_if<HasOutTag>::type* = 0) const
+  void saveResult(dax::Id id,
+                  dax::exec::internal::WorkletBase worklet,
+                  HasOutTag,
+                  typename boost::enable_if<HasOutTag>::type* = 0) const
     {
     dax::Id index = id * CellType::NUM_POINTS;
-    for (int localIndex = 0;
-         localIndex < CellType::NUM_POINTS;
-         ++localIndex, ++index)
-      {
-      // This only actually works if TopoExecArg is TopologyUnstructured.
-      dax::exec::internal::FieldSet(this->TopoExecArg.Topo.CellConnections,
-                                    index,
-                                    this->Value[localIndex],
-                                    worklet);
-      }
+    // This only actually works if TopoExecArg is TopologyUnstructured.
+    dax::exec::internal::FieldSetMultiple(this->TopoExecArg.Topo.CellConnections,
+                                  index,
+                                  this->Value,
+                                  worklet);
     }
 
-  template <typename Worklet, typename HasOutTag>
+  template <typename HasOutTag>
   DAX_EXEC_EXPORT
-  void saveResult(dax::Id,const Worklet&, HasOutTag,
-     typename boost::disable_if<HasOutTag>::type* = 0) const
+  void saveResult(dax::Id,
+                  dax::exec::internal::WorkletBase,
+                  HasOutTag,
+                  typename boost::disable_if<HasOutTag>::type* = 0) const
     {
     }
 };

@@ -28,7 +28,6 @@
 #include <dax/cont/DeviceAdapter.h>
 
 #include <dax/cont/ScheduleGenerateTopology.h>
-#include <dax/exec/internal/FieldAccess.h>
 
 
 namespace dax {

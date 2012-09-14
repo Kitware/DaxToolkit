@@ -22,6 +22,8 @@
 #include <dax/Types.h>
 #include <dax/cont/internal/Bindings.h>
 
+#include <dax/exec/internal/WorkletBase.h>
+
 namespace dax { namespace exec { namespace arg {
 
 template <typename Invocation>
@@ -33,15 +35,14 @@ struct BindWorkId
 
   BindWorkId(AllControlBindings&){}
 
-  template<typename Worklet>
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id, const Worklet&)
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id,
+                              const dax::exec::internal::WorkletBase&)
     {
     return id;
     }
 
-  template<typename Worklet>
-  DAX_EXEC_EXPORT
-  void SaveExecutionResult(int, const Worklet&)
+  DAX_EXEC_EXPORT void SaveExecutionResult(int,
+                 const dax::exec::internal::WorkletBase&) const
     {
     }
 };

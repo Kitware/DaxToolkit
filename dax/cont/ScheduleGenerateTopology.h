@@ -21,7 +21,6 @@
 #include <dax/exec/Cell.h>
 
 #include <dax/exec/internal/ErrorMessageBuffer.h>
-#include <dax/exec/internal/FieldAccess.h>
 #include <dax/exec/internal/GridTopologies.h>
 
 #include <dax/cont/DeviceAdapter.h>

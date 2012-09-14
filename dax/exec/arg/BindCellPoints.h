@@ -25,6 +25,9 @@
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/internal/FindBinding.h>
 #include <dax/cont/sig/Tag.h>
+
+#include <dax/exec/internal/WorkletBase.h>
+
 #include <boost/utility/enable_if.hpp>
 
 namespace dax { namespace exec { namespace arg {
@@ -58,8 +61,8 @@ public:
     ExecArg(bindings.template Get<N>().GetExecArg()) {}
 
 
-  template<typename Worklet>
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id, const Worklet& worklet)
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id,
+                        const dax::exec::internal::WorkletBase& worklet)
     {
     const CellType cell(this->TopoExecArg.Topo,id);
 
@@ -71,8 +74,8 @@ public:
     return this->Value;
     }
 
-  template<typename Worklet>
-  DAX_EXEC_EXPORT void SaveExecutionResult(int id, const Worklet& worklet) const
+  DAX_EXEC_EXPORT void SaveExecutionResult(int id,
+                       const dax::exec::internal::WorkletBase& worklet) const
     {
     //Look at the concept map traits. If we have the Out tag
     //we know that we must call our ExecArgs SaveExecutionResult.
@@ -84,10 +87,12 @@ public:
     }
 
   //method enabled when we do have the out tag ( or InOut)
-  template <typename Worklet, typename HasOutTag>
+  template <typename HasOutTag>
   DAX_EXEC_EXPORT
-  void saveResult(int id,const Worklet& worklet, HasOutTag,
-     typename boost::enable_if<HasOutTag>::type* dummy = 0) const
+  void saveResult(int id,
+                  const dax::exec::internal::WorkletBase& worklet,
+                  HasOutTag,
+                  typename boost::enable_if<HasOutTag>::type* dummy = 0) const
     {
     (void)dummy;
     const CellType cell(this->TopoExecArg.Topo,id);
@@ -98,10 +103,12 @@ public:
       }
     }
 
-  template <typename Worklet, typename HasOutTag>
+  template <typename HasOutTag>
   DAX_EXEC_EXPORT
-  void saveResult(int,const Worklet&, HasOutTag,
-     typename boost::disable_if<HasOutTag>::type* dummy = 0) const
+  void saveResult(int,
+                  const dax::exec::internal::WorkletBase&,
+                  HasOutTag,
+                  typename boost::disable_if<HasOutTag>::type* dummy = 0) const
     {
     (void)dummy;
     }

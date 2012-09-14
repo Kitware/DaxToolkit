@@ -19,16 +19,18 @@
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/arg/FieldConstant.h>
 
+#include <dax/exec/internal/WorkletBase.h>
+
 namespace {
 
 using dax::cont::arg::Field;
 
-struct Worklet1
+struct Worklet1 : public dax::exec::internal::WorkletBase
 {
   typedef void ControlSignature(Field);
 };
 
-struct Worklet2
+struct Worklet2 : public dax::exec::internal::WorkletBase
 {
   typedef void ControlSignature(Field,Field);
 };
