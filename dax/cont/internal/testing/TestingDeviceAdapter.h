@@ -25,8 +25,8 @@
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 
-#include <dax/cont/worklet/CellGradient.h>
-#include <dax/cont/worklet/Square.h>
+#include <dax/cont/CellGradient.worklet>
+#include <dax/cont/Square.worklet>
 #include <dax/cont/worklet/testing/CellMapError.h>
 #include <dax/cont/worklet/testing/FieldMapError.h>
 
@@ -642,7 +642,9 @@ private:
     ScalarArrayHandle squareHandle;
 
     std::cout << "Running Square worklet" << std::endl;
-    dax::cont::worklet::Square(fieldHandle, squareHandle);
+    dax::cont::Schedule<>(dax::worklet::Square(),
+                          fieldHandle,
+                          squareHandle);
 
     std::vector<dax::Scalar> square(grid->GetNumberOfPoints());
     squareHandle.CopyInto(square.begin());
@@ -728,10 +730,11 @@ private:
     Vector3ArrayHandle gradientHandle;
 
     std::cout << "Running CellGradient worklet" << std::endl;
-    dax::cont::worklet::CellGradient(grid.GetRealGrid(),
-                                     grid->GetPointCoordinates(),
-                                     fieldHandle,
-                                     gradientHandle);
+    dax::cont::Schedule<>(dax::worklet::CellGradient(),
+                          grid.GetRealGrid(),
+                          grid->GetPointCoordinates(),
+                          fieldHandle,
+                          gradientHandle);
 
     std::vector<dax::Vector3> gradient(grid->GetNumberOfCells());
     gradientHandle.CopyInto(gradient.begin());
