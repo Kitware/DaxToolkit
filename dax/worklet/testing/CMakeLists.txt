@@ -21,3 +21,17 @@ set(worklets
   )
 
 dax_declare_worklets(${worklets})
+
+set(unit_tests
+  UnitTestWorkletCellGradient.cxx
+  UnitTestWorkletCosine.cxx
+  UnitTestWorkletElevation.cxx
+  UnitTestWorkletMagnitude.cxx
+  UnitTestWorkletSine.cxx
+  UnitTestWorkletSquare.cxx
+  UnitTestWorkletThreshold.cxx
+  UnitTestWorkletAssert.cxx
+  UnitTestWorkletMapCellError.cxx
+  UnitTestWorkletMapFieldError.cxx
+  )
+dax_unit_tests(SOURCES ${unit_tests})

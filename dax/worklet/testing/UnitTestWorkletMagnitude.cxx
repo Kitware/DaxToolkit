@@ -20,9 +20,11 @@
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 #include <dax/cont/internal/testing/Testing.h>
 
-#include <dax/cont/worklet/Magnitude.h>
+#include <dax/worklet/Magnitude.worklet>
 
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/Schedule.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <vector>
@@ -45,8 +47,9 @@ struct TestMagnitudeWorklet
                          dax::cont::DeviceAdapterTagSerial> magnitudeHandle;
 
   std::cout << "Running Magnitude worklet" << std::endl;
-  dax::cont::worklet::Magnitude(grid->GetPointCoordinates(),
-                                magnitudeHandle);
+  dax::cont::Schedule<>(dax::worklet::Magnitude(),
+                        grid->GetPointCoordinates(),
+                        magnitudeHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> magnitude(grid->GetNumberOfPoints());

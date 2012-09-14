@@ -37,7 +37,7 @@ namespace cont {
 /// an algorithm that takes a classification of a given input topology
 /// and will generate a new topology, but doesn't create new cells
 
-template<class DeviceAdapterTag>
+template<class DeviceAdapterTag= DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class ScheduleGenerateTopology
 {
 public:

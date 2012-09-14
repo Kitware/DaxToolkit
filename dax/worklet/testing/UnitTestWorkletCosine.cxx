@@ -20,9 +20,14 @@
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 #include <dax/cont/internal/testing/Testing.h>
 
-#include <dax/cont/worklet/Cosine.h>
+#include <dax/worklet/Cosine.worklet>
 
+#include <dax/Types.h>
+#include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/Schedule.h>
+
 
 #include <vector>
 
@@ -61,7 +66,7 @@ struct TestCosineWorklet
         dax::cont::DeviceAdapterTagSerial> cosineHandle;
 
     std::cout << "Running Cosine worklet" << std::endl;
-    dax::cont::worklet::Cosine(fieldHandle, cosineHandle);
+    dax::cont::Schedule<> s(dax::worklet::Cosine(),fieldHandle, cosineHandle);
 
     std::cout << "Checking result" << std::endl;
     std::vector<dax::Scalar> cosine(grid->GetNumberOfPoints());

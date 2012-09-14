@@ -14,14 +14,15 @@
 //
 //=============================================================================
 
-#include <dax/cont/worklet/testing/Assert.h>
+#include <dax/worklet/testing/Assert.worklet>
 
+#include <dax/Types.h>
 #include <dax/VectorTraits.h>
-
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ErrorExecution.h>
+#include <dax/cont/Schedule.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <dax/cont/internal/testing/Testing.h>
@@ -43,7 +44,7 @@ static void TestAssert()
   bool gotError = false;
   try
     {
-    dax::cont::worklet::testing::Assert(arrayHandle);
+    dax::cont::Schedule<>(dax::worklet::testing::Assert(),arrayHandle);
     }
   catch (dax::cont::ErrorExecution error)
     {

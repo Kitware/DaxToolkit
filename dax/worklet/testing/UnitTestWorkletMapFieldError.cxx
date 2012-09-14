@@ -14,13 +14,15 @@
 //
 //=============================================================================
 
-#include <dax/cont/worklet/testing/FieldMapError.h>
+#include <dax/worklet/testing/FieldMapError.worklet>
 
 #include <dax/VectorTraits.h>
 
 #include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ErrorExecution.h>
+#include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/Schedule.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <dax/cont/internal/testing/Testing.h>
@@ -42,7 +44,7 @@ static void TestFieldMapError()
   bool gotError = false;
   try
     {
-    dax::cont::worklet::testing::FieldMapError(arrayHandle);
+    dax::cont::Schedule<>(dax::worklet::testing::FieldMapError(),arrayHandle);
     }
   catch (dax::cont::ErrorExecution error)
     {

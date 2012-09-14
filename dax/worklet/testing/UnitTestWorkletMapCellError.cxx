@@ -14,13 +14,15 @@
 //
 //=============================================================================
 
-#include <dax/cont/worklet/testing/CellMapError.h>
+#include <dax/worklet/testing/CellMapError.worklet>
 
 #include <dax/VectorTraits.h>
 
 #include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ErrorExecution.h>
+#include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/Schedule.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <dax/cont/internal/testing/Testing.h>
@@ -39,8 +41,7 @@ static void TestCellMapError()
   bool gotError = false;
   try
     {
-    dax::cont::worklet::testing::CellMapError(grid,
-                                              DAX_DEFAULT_DEVICE_ADAPTER_TAG());
+    dax::cont::Schedule<>(dax::worklet::testing::CellMapError(),grid);
     }
   catch (dax::cont::ErrorExecution error)
     {

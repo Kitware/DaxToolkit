@@ -20,7 +20,7 @@
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 #include <dax/cont/internal/testing/Testing.h>
 
-#include <dax/cont/worklet/Threshold.h>
+#include <dax/worklet/Threshold.worklet>
 
 #include <math.h>
 #include <fstream>
@@ -31,6 +31,8 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
+#include <dax/cont/Schedule.h>
+#include <dax/cont/ScheduleGenerateTopology.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
 
@@ -132,9 +134,22 @@ struct TestThresholdWorklet
 
     try
       {
-      dax::cont::worklet::Threshold(inGrid,
-                                    outGrid,
-                                    min,max,fieldHandle,resultHandle);
+      typedef dax::cont::ScheduleGenerateTopology<> ScheduleGT;
+      typedef typename ScheduleGT::ClassifyResultType  ClassifyResultType;
+      typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
+
+      ClassifyResultType classification;
+      dax::cont::Schedule<>(
+                        ThresholdClassifyType(min,max),
+                        inGrid, fieldHandle, classification);
+
+      ScheduleGT resolveTopology(classification);
+      //remove classification resource from execution for more space
+      resolveTopology.SetReleaseClassification(true);
+      //resolve duplicates points
+      resolveTopology.SetRemoveDuplicatePoints(true);
+      resolveTopology.CompactTopology(dax::worklet::ThresholdTopology(),inGrid,outGrid);
+      resolveTopology.CompactPointField(fieldHandle,resultHandle);
       }
     catch (dax::cont::ErrorControl error)
       {

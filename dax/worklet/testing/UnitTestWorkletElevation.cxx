@@ -20,9 +20,11 @@
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 #include <dax/cont/internal/testing/Testing.h>
 
-#include <dax/cont/worklet/Elevation.h>
+#include <dax/worklet/Elevation.worklet>
 
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/Schedule.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <vector>
@@ -45,10 +47,11 @@ struct TestElevationWorklet
                          dax::cont::DeviceAdapterTagSerial> elevationHandle;
 
   std::cout << "Running Elevation worklet" << std::endl;
-  dax::cont::worklet::Elevation(grid->GetPointCoordinates(),
-                                elevationHandle,
-                                dax::make_Vector3(DIM, DIM, DIM),
-                                dax::make_Vector3(0.0, 0.0, 0.0));
+  dax::worklet::Elevation elev(dax::make_Vector3(DIM, DIM, DIM),
+                               dax::make_Vector3(0.0, 0.0, 0.0));
+  dax::cont::Schedule<>(elev,
+                        grid->GetPointCoordinates(),
+                        elevationHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> elevation(grid->GetNumberOfPoints());

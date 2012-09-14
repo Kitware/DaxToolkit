@@ -17,10 +17,12 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
-#include <dax/cont/worklet/Square.h>
+#include <dax/worklet/Square.worklet>
 
 #include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/Schedule.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
@@ -62,7 +64,7 @@ struct TestElevationWorklet
                         dax::cont::DeviceAdapterTagSerial> squareHandle;
 
   std::cout << "Running Square worklet" << std::endl;
-  dax::cont::worklet::Square(fieldHandle, squareHandle);
+  dax::cont::Schedule<>(dax::worklet::Square(),fieldHandle, squareHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> square(grid->GetNumberOfPoints());
