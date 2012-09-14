@@ -28,28 +28,17 @@
 
 namespace dax { namespace exec { namespace arg {
 
-template <typename Tags, typename TopologyExec, typename TopologyConstExec>
+template <typename Tags, typename TopologyType>
 class TopologyCell
 {
-
-  //What we have to do is use mpl::if_ to determine the type for
-  //ExecArg
-  typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
-                                   TopologyExec,
-                                   TopologyConstExec>::type TopologyType;
-
-  //if we are going with Out tag we create a value storage that holds a copy
-  typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
-                                   typename TopologyExec::CellType,
-                                   typename TopologyConstExec::CellType>::type ReferenceType;
-
+  typedef typename TopologyType::CellType ReferenceType;
 public:
   TopologyType Topo;
 
   typedef ReferenceType ReturnType;
   typedef ReferenceType CellType;
 
-  TopologyCell(): Topo(){}
+  TopologyCell(const TopologyType& t): Topo(t){}
 
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
                             const dax::exec::internal::WorkletBase& work)

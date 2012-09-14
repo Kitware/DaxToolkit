@@ -25,6 +25,8 @@
 #include <dax/exec/arg/TopologyCell.h>
 #include <dax/cont/UniformGrid.h>
 
+#include <boost/mpl/if.hpp>
+
 namespace dax { namespace cont { namespace arg {
 
 /// \headerfile TopologyUniformGrid.h dax/cont/arg/TopologyUniformGrid.h
@@ -35,26 +37,27 @@ class ConceptMap<Topology(Tags), dax::cont::UniformGrid< DeviceTag > >
 private:
   typedef dax::cont::UniformGrid< DeviceTag > GridType;
 
-  typedef dax::exec::arg::TopologyCell<Tags,
-            typename GridType::TopologyStructExecution,
-            typename GridType::TopologyStructConstExecution > ExecGridType;
+  //use mpl::if_ to determine the type for ExecArg
+  typedef typename boost::mpl::if_<
+      typename Tags::template Has<dax::cont::sig::Out>,
+      typename GridType::TopologyStructExecution,
+      typename GridType::TopologyStructConstExecution>::type TopologyType;
+
+  typedef dax::exec::arg::TopologyCell<Tags,TopologyType> ExecGridType;
   GridType Grid;
-  ExecGridType ExecArg_;
+  TopologyType Topology;
 
 public:
   typedef ExecGridType ExecArg;
   typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Cell>::Tags DomainTags;
 
-  ConceptMap(GridType g):
-    Grid(g),
-    ExecArg_()
-    {}
+  ConceptMap(GridType g): Grid(g) {}
 
-  ExecArg& GetExecArg() { return this->ExecArg_; }
+  ExecArg GetExecArg() { return ExecGridType(Topology); }
 
   void ToExecution(dax::Id, boost::false_type)
     { /* Input  */
-    this->ExecArg_.Topo = this->Grid.PrepareForInput();
+    this->Topology = this->Grid.PrepareForInput();
     }
 
   //we need to pass the number of elements to allocate
@@ -81,27 +84,22 @@ class ConceptMap<Topology(Tags), const dax::cont::UniformGrid< DeviceTag > >
 {
 private:
   typedef dax::cont::UniformGrid< DeviceTag > GridType;
-
-  typedef dax::exec::arg::TopologyCell<Tags,
-            typename GridType::TopologyStructExecution,
-            typename GridType::TopologyStructConstExecution > ExecGridType;
+  typedef typename GridType::TopologyStructConstExecution TopologyType;
+  typedef dax::exec::arg::TopologyCell<Tags,TopologyType> ExecGridType;
   GridType Grid;
-  ExecGridType ExecArg_;
+  TopologyType Topology;
 
 public:
   typedef ExecGridType ExecArg;
   typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Cell>::Tags DomainTags;
 
-  ConceptMap(GridType g):
-    Grid(g),
-    ExecArg_()
-    {}
+  ConceptMap(GridType g): Grid(g) {}
 
-  ExecArg& GetExecArg() { return this->ExecArg_; }
+  ExecArg GetExecArg() { return ExecGridType(Topology); }
 
   void ToExecution(dax::Id, boost::false_type)
     { /* Input  */
-    this->ExecArg_.Topo = this->Grid.PrepareForInput();
+    this->Topology = this->Grid.PrepareForInput();
     }
 
   //we need to pass the number of elements to allocate

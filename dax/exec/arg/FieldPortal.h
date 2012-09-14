@@ -98,7 +98,7 @@ public:
                                    ValueType&,
                                    ValueType const>::type ReturnType;
 
-  FieldPortal(PortalType portal): Storage(), Portal(portal){}
+  FieldPortal(const PortalType& portal): Storage(), Portal(portal){}
 
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
                       const dax::exec::internal::WorkletBase& work)
