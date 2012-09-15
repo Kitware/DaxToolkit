@@ -165,17 +165,29 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Scalar> intermediate1;
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
-  dax::cont::worklet::Magnitude(
+  dax::cont::Schedule<> schedule;
+  schedule(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
 
   Timer timer;
-  dax::cont::worklet::Threshold(grid,
-                                grid2,
-                                THRESHOLD_MIN,
-                                THRESHOLD_MAX,
-                                intermediate1,
-                                resultHandle);
+
+  typedef dax::cont::ScheduleGenerateTopology<> ScheduleGT;
+  typedef ScheduleGT::ClassifyResultType  ClassifyResultType;
+  typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
+
+  ClassifyResultType classification;
+  schedule(ThresholdClassifyType(THRESHOLD_MIN,THRESHOLD_MAX),
+           grid, intermediate1, classification);
+
+  ScheduleGT resolveTopology(classification);
+  //remove classification resource from execution for more space
+  resolveTopology.SetReleaseClassification(true);
+  //resolve duplicates points
+  resolveTopology.SetRemoveDuplicatePoints(true);
+  resolveTopology.CompactTopology(dax::worklet::ThresholdTopology(),grid,grid2);
+  resolveTopology.CompactPointField(intermediate1,resultHandle);
+
   double time = timer.elapsed();
   std::cout << "original GetNumberOfCells: " << grid.GetNumberOfCells() << std::endl;
   std::cout << "threshold GetNumberOfCells: " << grid2.GetNumberOfCells() << std::endl;

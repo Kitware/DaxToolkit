@@ -20,17 +20,18 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
+#include <dax/cont/Schedule.h>
+#include <dax/cont/ScheduleMapAdapter.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 
-#include <dax/cont/worklet/CellGradient.h>
-#include <dax/cont/worklet/Square.h>
-#include <dax/cont/worklet/testing/CellMapError.h>
-#include <dax/cont/worklet/testing/FieldMapError.h>
+#include <dax/worklet/CellGradient.worklet>
+#include <dax/worklet/Square.worklet>
+#include <dax/worklet/testing/CellMapError.worklet>
+#include <dax/worklet/testing/FieldMapError.worklet>
 
 #include <dax/cont/internal/testing/Testing.h>
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/ScheduleMapAdapter.h>
 
 #include <utility>
 #include <vector>
@@ -112,20 +113,17 @@ public:
     IdPortalType Array;
   };
 
-  struct ClearArrayMapKernel
+  struct ClearArrayMapKernel: public dax::exec::WorkletMapField
   {
-    DAX_CONT_EXPORT
-    ClearArrayMapKernel(const IdPortalType &array) : Array(array) {  }
 
-    DAX_EXEC_EXPORT void operator()(dax::Id, dax::Id value) const
+    typedef void ControlSignature(Field(Out));
+    typedef void ExecutionSignature(_1);
+
+    template<typename T>
+    DAX_EXEC_EXPORT void operator()(T& value) const
     {
-      this->Array.Set(value, OFFSET);
+      value = OFFSET;
     }
-
-    DAX_CONT_EXPORT void SetErrorMessageBuffer(
-        const dax::exec::internal::ErrorMessageBuffer &) {  }
-
-    IdPortalType Array;
   };
 
   struct AddArrayKernel
@@ -210,6 +208,19 @@ public:
 
     IdPortalType Array;
   };
+
+  struct NGMult: public dax::exec::WorkletMapField
+  {
+    typedef void ControlSignature(Field(In), Field(In), Field(Out));
+    typedef _3 ExecutionSignature(_1, _2);
+
+    template<typename T>
+    DAX_EXEC_EXPORT T operator()(T a, T b) const
+      {
+      return a * b;
+      }
+  };
+
 
 private:
 
@@ -306,7 +317,7 @@ private:
 #endif
   }
 
-  static DAX_CONT_EXPORT void TestSchedule()
+  static DAX_CONT_EXPORT void TestLegacySchedule()
   {
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing Schedule" << std::endl;
@@ -317,12 +328,12 @@ private:
     manager.AllocateArrayForOutput(container, ARRAY_SIZE);
 
     std::cout << "Running clear." << std::endl;
-    dax::cont::internal::Schedule(ClearArrayKernel(manager.GetPortal()),
+    dax::cont::internal::LegacySchedule(ClearArrayKernel(manager.GetPortal()),
                                   ARRAY_SIZE,
                                   DeviceAdapterTag());
 
     std::cout << "Running add." << std::endl;
-    dax::cont::internal::Schedule(AddArrayKernel(manager.GetPortal()),
+    dax::cont::internal::LegacySchedule(AddArrayKernel(manager.GetPortal()),
                                   ARRAY_SIZE,
                                   DeviceAdapterTag());
 
@@ -337,21 +348,72 @@ private:
       }
 
     std::cout << "Testing Schedule on Subset" << std::endl;
+
+
+    dax::Id rawInput[ARRAY_SIZE];
+    IdArrayHandle subsetInput = MakeArrayHandle(rawInput, ARRAY_SIZE);
+    for (dax::Id index = 0; index < ARRAY_SIZE; index++)
+      {
+      rawInput[index]=container.GetPortalConst().Get(index);
+      }
+
+
     const dax::Id RAWSUBSET_SIZE = 4;
     dax::Id rawsubset[RAWSUBSET_SIZE];
     rawsubset[0]=0;rawsubset[1]=10;rawsubset[2]=30;rawsubset[3]=20;
     IdArrayHandle subset = MakeArrayHandle(rawsubset, RAWSUBSET_SIZE);
 
     std::cout << "Running clear on subset." << std::endl;
-    dax::cont::internal::ScheduleMap(ClearArrayMapKernel(manager.GetPortal()),
-                                     subset);
-    manager.RetrieveOutputData(container);
+    dax::cont::Schedule<DeviceAdapterTag>()(
+          ClearArrayMapKernel(),
+          make_MapAdapter(subset,subsetInput,ARRAY_SIZE));
 
     for (dax::Id index = 0; index < 4; index++)
       {
-      dax::Id value = container.GetPortalConst().Get(rawsubset[index]);
+      dax::Id value = subsetInput.GetPortalConstControl().Get(rawsubset[index]);
       DAX_TEST_ASSERT(value == OFFSET,
                       "Got bad value for subset scheduled kernel.");
+      }
+
+  }
+
+  static DAX_CONT_EXPORT void TestSchedule()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing New Schedule Function" << std::endl;
+
+    std::vector<dax::Scalar> field(ARRAY_SIZE);
+    for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+      {
+      field[i]=i;
+      }
+    ScalarArrayHandle fieldHandle = MakeArrayHandle(field);
+    ScalarArrayHandle multHandle;
+
+    std::cout << "Running NG Multiply worklet with two handles" << std::endl;
+    dax::cont::Schedule<DeviceAdapterTag>()(NGMult(),fieldHandle, fieldHandle, multHandle);
+
+    std::vector<dax::Scalar> mult(ARRAY_SIZE);
+    multHandle.CopyInto(mult.begin());
+
+    for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+      {
+      dax::Scalar squareValue = mult[i];
+      dax::Scalar squareTrue = field[i]*field[i];
+      DAX_TEST_ASSERT(test_equal(squareValue, squareTrue),
+                      "Got bad multiply result");
+      }
+
+    std::cout << "Running NG Multiply worklet with handle and constant" << std::endl;
+    dax::cont::Schedule<DeviceAdapterTag>()(NGMult(),4.0f,fieldHandle, multHandle);
+    multHandle.CopyInto(mult.begin());
+
+    for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+      {
+      dax::Scalar squareValue = mult[i];
+      dax::Scalar squareTrue = field[i]*4.0f;
+      DAX_TEST_ASSERT(test_equal(squareValue, squareTrue),
+                      "Got bad multiply result");
       }
 
   }
@@ -368,7 +430,7 @@ private:
 
     //construct the index array
 
-    dax::cont::internal::Schedule(
+    dax::cont::internal::LegacySchedule(
           MarkOddNumbersKernel(array.PrepareForOutput(ARRAY_SIZE)),
           ARRAY_SIZE,
           DeviceAdapterTag());
@@ -395,11 +457,11 @@ private:
     IdArrayHandle result;
 
     //construct the index array
-    dax::cont::internal::Schedule(
+    dax::cont::internal::LegacySchedule(
           OffsetPlusIndexKernel(array.PrepareForOutput(ARRAY_SIZE)),
           ARRAY_SIZE,
           DeviceAdapterTag());
-    dax::cont::internal::Schedule(
+    dax::cont::internal::LegacySchedule(
           MarkOddNumbersKernel(stencil.PrepareForOutput(ARRAY_SIZE)),
           ARRAY_SIZE,
           DeviceAdapterTag());
@@ -485,7 +547,7 @@ private:
 
     //construct the index array
     IdArrayHandle array;
-    dax::cont::internal::Schedule(
+    dax::cont::internal::LegacySchedule(
           ClearArrayKernel(array.PrepareForOutput(ARRAY_SIZE)),
           ARRAY_SIZE,
           DeviceAdapterTag());
@@ -521,7 +583,7 @@ private:
     std::string message;
     try
       {
-      dax::cont::internal::Schedule(OneErrorKernel(),
+      dax::cont::internal::LegacySchedule(OneErrorKernel(),
                                     ARRAY_SIZE,
                                     DeviceAdapterTag());
       }
@@ -537,7 +599,7 @@ private:
     message = "";
     try
       {
-      dax::cont::internal::Schedule(AllErrorKernel(),
+      dax::cont::internal::LegacySchedule(AllErrorKernel(),
                                     ARRAY_SIZE,
                                     DeviceAdapterTag());
       }
@@ -580,7 +642,9 @@ private:
     ScalarArrayHandle squareHandle;
 
     std::cout << "Running Square worklet" << std::endl;
-    dax::cont::worklet::Square(fieldHandle, squareHandle);
+    dax::cont::Schedule<DeviceAdapterTag>()(dax::worklet::Square(),
+                          fieldHandle,
+                          squareHandle);
 
     std::vector<dax::Scalar> square(grid->GetNumberOfPoints());
     squareHandle.CopyInto(square.begin());
@@ -611,8 +675,9 @@ private:
     bool gotError = false;
     try
       {
-      dax::cont::worklet::testing::FieldMapError(
-            grid.GetRealGrid().GetPointCoordinates());
+      dax::cont::Schedule<DeviceAdapterTag>()(
+                dax::worklet::testing::FieldMapError(),
+                grid.GetRealGrid().GetPointCoordinates());
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -666,10 +731,11 @@ private:
     Vector3ArrayHandle gradientHandle;
 
     std::cout << "Running CellGradient worklet" << std::endl;
-    dax::cont::worklet::CellGradient(grid.GetRealGrid(),
-                                     grid->GetPointCoordinates(),
-                                     fieldHandle,
-                                     gradientHandle);
+    dax::cont::Schedule<DeviceAdapterTag>()(dax::worklet::CellGradient(),
+                          grid.GetRealGrid(),
+                          grid->GetPointCoordinates(),
+                          fieldHandle,
+                          gradientHandle);
 
     std::vector<dax::Vector3> gradient(grid->GetNumberOfCells());
     gradientHandle.CopyInto(gradient.begin());
@@ -699,8 +765,9 @@ private:
     bool gotError = false;
     try
       {
-      dax::cont::worklet::testing::CellMapError(grid.GetRealGrid(),
-                                                DeviceAdapterTag());
+      dax::cont::Schedule<DeviceAdapterTag>()(
+                          dax::worklet::testing::CellMapError(),
+                          grid.GetRealGrid());
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -731,6 +798,7 @@ private:
       std::cout << "Doing DeviceAdapter tests" << std::endl;
       TestArrayManagerExecution();
       TestOutOfMemory();
+      TestSchedule();
       TestSchedule();
       TestStreamCompact();
       TestStreamCompactWithStencil();

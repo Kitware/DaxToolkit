@@ -18,6 +18,9 @@
 
 #include <dax/Types.h>
 
+#include <dax/cont/sig/Arg.h>
+#include <dax/cont/sig/WorkId.h>
+#include <dax/cont/sig/Tag.h>
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 
 namespace dax {
@@ -48,9 +51,23 @@ public:
     this->ErrorMessage = buffer;
   }
 
+protected:
+  typedef dax::cont::sig::placeholders::_1 _1;
+  typedef dax::cont::sig::placeholders::_2 _2;
+  typedef dax::cont::sig::placeholders::_3 _3;
+  typedef dax::cont::sig::placeholders::_4 _4;
+  typedef dax::cont::sig::placeholders::_5 _5;
+  typedef dax::cont::sig::placeholders::_6 _6;
+  typedef dax::cont::sig::placeholders::_7 _7;
+  typedef dax::cont::sig::placeholders::_8 _8;
+  typedef dax::cont::sig::placeholders::_9 _9;
+  typedef dax::cont::sig::In In;
+  typedef dax::cont::sig::Out Out;
+  typedef dax::cont::sig::WorkId WorkId;
 private:
   dax::exec::internal::ErrorMessageBuffer ErrorMessage;
 };
+
 
 }
 }

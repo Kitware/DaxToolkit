@@ -28,11 +28,8 @@ set(headers
   Derivative.h
   Interpolate.h
   ParametricCoordinates.h
-  WorkletDetermineNewCellCount.h
-  WorkletGenerateTopology.h
   WorkletMapCell.h
   WorkletMapField.h
-
 
   ${Dax_BINARY_DIR}/dax/exec/VectorOperations.h
 )
@@ -52,6 +49,7 @@ configure_file(
   )
 
 #-----------------------------------------------------------------------------
+add_subdirectory(arg)
 add_subdirectory(internal)
 
 add_subdirectory(testing)

@@ -18,7 +18,7 @@
 
 // TODO: This should be auto-generated.
 
-#include <dax/worklets/testing/CellMapError.worklet>
+#include <dax/worklet/testing/CellMapError.worklet>
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>
@@ -80,7 +80,7 @@ inline void CellMapError(const GridType &grid, DeviceAdapter)
       kernel(dax::worklet::testing::CellMapError(),
              grid.PrepareForInput());
 
-  dax::cont::internal::Schedule(kernel,
+  dax::cont::internal::LegacySchedule(kernel,
                                 grid.GetNumberOfCells(),
                                 DeviceAdapter());
 }

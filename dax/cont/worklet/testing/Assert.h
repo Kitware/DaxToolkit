@@ -18,7 +18,7 @@
 
 // TODO: This should be auto-generated.
 
-#include <dax/worklets/testing/Assert.worklet>
+#include <dax/worklet/testing/Assert.worklet>
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>
@@ -79,12 +79,12 @@ inline void Assert(
       kernel(dax::worklet::testing::Assert(),
              inArray.PrepareForInput());
 
-  dax::cont::internal::Schedule(kernel, fieldSize, Adapter());
+  dax::cont::internal::LegacySchedule(kernel, fieldSize, Adapter());
 }
 
 }
 }
 }
-} //dax::cont::worklet::testing
+} //dax::worklet::testing
 
 #endif //__dax_cont_worklet_testing_Assert_h

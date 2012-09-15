@@ -16,7 +16,9 @@
 
 set(headers
   ExportMacros.h
+  GetNthType.h
   MathSystemFunctions.h
+  Tags.h
   )
 
 dax_declare_headers(${headers})

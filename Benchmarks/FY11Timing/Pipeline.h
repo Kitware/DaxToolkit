@@ -108,10 +108,11 @@ void RunPipeline1(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Vector3> results;
 
   Timer timer;
-  dax::cont::worklet::Magnitude(
+  dax::cont::Schedule<> schedule;
+  schedule(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
-  dax::cont::worklet::CellGradient(grid,
+  schedule(dax::worklet::CellGradient(),grid,
                                    grid.GetPointCoordinates(),
                                    intermediate1,
                                    results);
@@ -133,18 +134,21 @@ void RunPipeline2(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Vector3> results;
 
   Timer timer;
-  dax::cont::worklet::Magnitude(
+  dax::cont::Schedule<> schedule;
+  schedule(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
-  dax::cont::worklet::CellGradient(grid,
-                                   grid.GetPointCoordinates(),
-                                   intermediate1,
-                                   intermediate2);
+
+  schedule(dax::worklet::CellGradient(),grid,
+           grid.GetPointCoordinates(),
+           intermediate1,
+           intermediate2);
+
   intermediate1.ReleaseResources();
-  dax::cont::worklet::Sine(intermediate2, intermediate3);
-  dax::cont::worklet::Square(intermediate3, intermediate2);
+  schedule(dax::worklet::Sine(),intermediate2, intermediate3);
+  schedule(dax::worklet::Square(),intermediate3, intermediate2);
   intermediate3.ReleaseResources();
-  dax::cont::worklet::Cosine(intermediate2, results);
+  schedule(dax::worklet::Cosine(),intermediate2, results);
   double time = timer.elapsed();
 
   PrintCheckValues(results);
@@ -163,13 +167,14 @@ void RunPipeline3(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Scalar> results;
 
   Timer timer;
-  dax::cont::worklet::Magnitude(
+  dax::cont::Schedule<> schedule;
+  schedule(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
-  dax::cont::worklet::Sine(intermediate1, intermediate2);
-  dax::cont::worklet::Square(intermediate2, intermediate1);
+  schedule(dax::worklet::Sine(),intermediate1, intermediate2);
+  schedule(dax::worklet::Square(),intermediate2, intermediate1);
   intermediate2.ReleaseResources();
-  dax::cont::worklet::Cosine(intermediate1, results);
+  schedule(dax::worklet::Cosine(),intermediate1, results);
   double time = timer.elapsed();
 
   PrintCheckValues(results);

@@ -18,7 +18,7 @@
 
 // TODO: This should be auto-generated.
 
-#include <dax/worklets/testing/FieldMapError.worklet>
+#include <dax/worklet/testing/FieldMapError.worklet>
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayHandle.h>
@@ -79,7 +79,7 @@ inline void FieldMapError(
       kernel(dax::worklet::testing::FieldMapError(),
              inArray.PrepareForInput());
 
-  dax::cont::internal::Schedule(kernel, fieldSize, Adapter());
+  dax::cont::internal::LegacySchedule(kernel, fieldSize, Adapter());
 }
 
 }

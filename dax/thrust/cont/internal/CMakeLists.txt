@@ -15,16 +15,16 @@
 ##=============================================================================
 
 set(headers
-  CheckThrustBackend.h
   ArrayManagerExecutionThrustShare.h
+  CheckThrustBackend.h
   DeviceAdapterTagThrust.h
   )
 
 if(DAX_ENABLE_OPENMP)
-list(APPEND headers
-  ArrayManagerExecutionThrustDevice.h
-  DeviceAdapterAlgorithmThrust.h
-  )
+  list(APPEND headers
+    ArrayManagerExecutionThrustDevice.h
+    DeviceAdapterAlgorithmThrust.h
+    )
 endif()
 
 dax_declare_headers(${headers})

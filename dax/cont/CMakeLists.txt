@@ -33,6 +33,9 @@ set(headers
   ErrorControlOutOfMemory.h
   ErrorExecution.h
   IteratorFromArrayPortal.h
+  Schedule.h
+  ScheduleMapAdapter.h
+  ScheduleGenerateTopology.h
   UniformGrid.h
   UnstructuredGrid.h
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
@@ -54,5 +57,6 @@ configure_file(
   @ONLY
   )
 
+add_subdirectory(arg)
+add_subdirectory(sig)
 add_subdirectory(testing)
-add_subdirectory(worklet)

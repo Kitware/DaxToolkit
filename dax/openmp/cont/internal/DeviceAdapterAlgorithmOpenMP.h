@@ -77,12 +77,12 @@ private:
 // Override the thrust version of Schedule to handle exceptions that can occur
 // because we are running on a CPU.
 template<class FunctorType>
-DAX_CONT_EXPORT void Schedule(
+DAX_CONT_EXPORT void LegacySchedule(
     FunctorType functor,
     dax::Id numInstances,
     dax::openmp::cont::DeviceAdapterTagOpenMP)
 {
-  Schedule(detail::ScheduleKernelOpenMP<FunctorType>(functor),
+  dax::cont::internal::LegacySchedule(detail::ScheduleKernelOpenMP<FunctorType>(functor),
            numInstances,
            dax::thrust::cont::internal::DeviceAdapterTagThrust());
 }

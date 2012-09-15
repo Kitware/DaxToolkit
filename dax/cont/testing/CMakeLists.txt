@@ -20,6 +20,7 @@ set(unit_tests
   UnitTestArrayPortalFromIterators.cxx
   UnitTestDeviceAdapterSerial.cxx
   UnitTestIteratorFromArrayPortal.cxx
+  UnitTestSchedule.cxx
   UnitTestUniformGrid.cxx
   UnitTestUnstructuredGrid.cxx
   UnitTestVectorOperations.cxx

@@ -17,6 +17,8 @@
 #define __dax_exec_WorkletMapField_h
 
 #include <dax/exec/internal/WorkletBase.h>
+#include <dax/cont/arg/Field.h>
+#include <dax/cont/sig/Tag.h>
 
 namespace dax { namespace exec {
 
@@ -27,7 +29,12 @@ namespace dax { namespace exec {
 class WorkletMapField : public dax::exec::internal::WorkletBase
 {
 public:
+  typedef WorkletMapField WorkType;
+  typedef dax::cont::sig::Domain DomainType;
+
   DAX_EXEC_CONT_EXPORT WorkletMapField() { }
+protected:
+  typedef dax::cont::arg::Field Field;
 };
 
 }}

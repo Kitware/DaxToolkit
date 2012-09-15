@@ -50,6 +50,19 @@ void FieldSet(const PortalType &arrayPortal,
 
 template<class PortalType, class WorkType, int Size>
 DAX_EXEC_EXPORT
+void FieldSetMultiple(const PortalType &arrayPortal,
+              dax::Id index,
+              const dax::Tuple<typename PortalType::ValueType,Size>& values,
+              const WorkType &work)
+{
+  for (int i = 0; i < Size; i++)
+    {
+    FieldSet(arrayPortal, index+i, values[i], work);
+    }
+}
+
+template<class PortalType, class WorkType, int Size>
+DAX_EXEC_EXPORT
 dax::Tuple<typename PortalType::ValueType, Size>
 FieldGetMultiple(const PortalType &arrayPortal,
                  dax::Tuple<dax::Id,Size> indices,

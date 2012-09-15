@@ -55,7 +55,10 @@ void RunVTKPipeline(const dax::cont::UniformGrid &dgrid, vtkImageData* grid)
   dax::cont::ArrayHandle<dax::Scalar> elevHandle(elev.begin(),elev.end());
 
   //use dax to compute the elevation
-  dax::cont::worklet::Elevation(dgrid, dgrid.GetPoints(), elevHandle);
+  dax::worklet::Elevation elevWorklet(dax::make_Vector3(0.0, 0.0, 0.0),
+                          dax::make_Vector3(0.0, 0.0, 1.0),
+                          dax::make_Vector2(0.0, 1.0));
+  dax::cont::Schedule<>(elevWorklet, dgrid, dgrid.GetPoints(), elevHandle);
 
   //now that the results are back on the cpu, do threshold with VTK
   vtkSmartPointer<vtkFloatArray> vtkElevationPoints = vtkSmartPointer<vtkFloatArray>::New();
@@ -84,7 +87,7 @@ void RunVTKPipeline(const dax::cont::UniformGrid &dgrid, vtkImageData* grid)
   double time = timer.elapsed();
 
   vtkSmartPointer<vtkUnstructuredGrid> out = threshold->GetOutput();
-  
+
   std::cout << "original GetNumberOfCells: " << dgrid.GetNumberOfCells() << std::endl;
   std::cout << "threshold GetNumberOfCells: " << out->GetNumberOfCells() << std::endl;
 
