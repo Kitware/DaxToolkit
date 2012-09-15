@@ -129,9 +129,9 @@ protected:
     //for the lower bounds to compute the right indices
     IdArrayHandleType validCellRange;
     validCellRange.PrepareForOutput(numNewCells);
-    dax::cont::Schedule<DeviceAdapterTag>(
-          dax::exec::internal::kernel::IndexPlusOne(),
-          validCellRange);
+    dax::cont::Schedule<DeviceAdapterTag> schedule;
+    schedule(dax::exec::internal::kernel::IndexPlusOne(),
+             validCellRange);
 
     //now do the lower bounds of the cell indices so that we figure out
     //which original topology indexs match the new indices.
@@ -146,9 +146,10 @@ protected:
     //respective cell in the output. The mapping is used to make sure
     //that for input cells that are becoming multiple output cells we call the
     //combination multiple times
-    dax::cont::Schedule<DeviceAdapterTag>(w,
-        dax::cont::make_MapAdapter(validCellRange, inGrid, inGrid.GetNumberOfCells()),
-        outGrid);
+    schedule(w, dax::cont::make_MapAdapter(validCellRange,
+                                           inGrid,
+                                           inGrid.GetNumberOfCells()),
+             outGrid);
   }
 
   template<class InGridType, class OutGridType>
@@ -160,17 +161,16 @@ protected:
     // Clear out the mask, have to allocate the size first
     // so that schedule works properly
     this->PointMask.PrepareForOutput(inGrid.GetNumberOfPoints());
-    dax::cont::Schedule<DeviceAdapterTag>(
-        dax::exec::internal::kernel::ClearUsedPointsFunctor(),
+    dax::cont::Schedule<DeviceAdapterTag> schedule;
+    schedule(dax::exec::internal::kernel::ClearUsedPointsFunctor(),
         this->PointMask);
 
     // Mark every point that is used at least once.
     // This only works when outGrid is an UnstructuredGrid.
-    dax::cont::Schedule<DeviceAdapterTag>(
-          dax::exec::internal::kernel::GetUsedPointsFunctor(),
-          dax::cont::make_MapAdapter(outGrid.GetCellConnections(),
-                                     this->PointMask,
-                                     inGrid.GetNumberOfPoints()));
+    schedule(dax::exec::internal::kernel::GetUsedPointsFunctor(),
+             dax::cont::make_MapAdapter(outGrid.GetCellConnections(),
+             this->PointMask,
+             inGrid.GetNumberOfPoints()));
   }
 
   template<typename InGridType,typename OutGridType>

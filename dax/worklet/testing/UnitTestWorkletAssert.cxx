@@ -44,7 +44,7 @@ static void TestAssert()
   bool gotError = false;
   try
     {
-    dax::cont::Schedule<>(dax::worklet::testing::Assert(),arrayHandle);
+    dax::cont::Schedule<>()(dax::worklet::testing::Assert(),arrayHandle);
     }
   catch (dax::cont::ErrorExecution error)
     {

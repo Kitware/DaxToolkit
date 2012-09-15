@@ -165,7 +165,8 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Scalar> intermediate1;
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
-  dax::cont::Schedule<>(dax::worklet::Magnitude(),
+  dax::cont::Schedule<> schedule;
+  schedule(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
 
@@ -176,9 +177,8 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
   typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
 
   ClassifyResultType classification;
-  dax::cont::Schedule<>(
-                    ThresholdClassifyType(THRESHOLD_MIN,THRESHOLD_MAX),
-                    grid, intermediate1, classification);
+  schedule(ThresholdClassifyType(THRESHOLD_MIN,THRESHOLD_MAX),
+           grid, intermediate1, classification);
 
   ScheduleGT resolveTopology(classification);
   //remove classification resource from execution for more space

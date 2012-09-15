@@ -46,20 +46,6 @@ public:
                                          coords,
                                          pointField);
   }
-
-//  // Special version for Voxel elements (which need no vertex coordinates).
-//  DAX_EXEC_EXPORT
-//  void operator()(
-//      const dax::exec::CellVoxel &cell,
-//      const dax::Tuple<dax::Scalar,dax::exec::CellVoxel::NUM_POINTS>&pointField,
-//      dax::Vector3 &gradient) const
-//  {
-//    dax::Vector3 parametricCellCenter =
-//        dax::exec::ParametricCoordinates<dax::exec::CellVoxel>::Center();
-//    gradient = dax::exec::CellDerivative(cell,
-//                                         parametricCellCenter,
-//                                         pointField);
-//  }
 };
 
 }

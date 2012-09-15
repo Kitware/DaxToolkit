@@ -54,7 +54,7 @@ public:
   // Note any changes to this method must be reflected in the
   // C++03 implementation inside "Schedule_Cxx03.h".
   template <class WorkletType, typename...T>
-  Schedule(WorkletType w, T...a)
+  void operator()(WorkletType w, T...a)
     {
     // Construct the signature of the worklet invocation on the control side.
     typedef WorkletType ControlInvocationSignature(T...);

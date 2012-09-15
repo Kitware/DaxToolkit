@@ -364,7 +364,7 @@ private:
     IdArrayHandle subset = MakeArrayHandle(rawsubset, RAWSUBSET_SIZE);
 
     std::cout << "Running clear on subset." << std::endl;
-    dax::cont::Schedule<DeviceAdapterTag>(
+    dax::cont::Schedule<DeviceAdapterTag>()(
           ClearArrayMapKernel(),
           make_MapAdapter(subset,subsetInput,ARRAY_SIZE));
 
@@ -391,7 +391,7 @@ private:
     ScalarArrayHandle multHandle;
 
     std::cout << "Running NG Multiply worklet with two handles" << std::endl;
-    dax::cont::Schedule<DeviceAdapterTag>(NGMult(),fieldHandle, fieldHandle, multHandle);
+    dax::cont::Schedule<DeviceAdapterTag>()(NGMult(),fieldHandle, fieldHandle, multHandle);
 
     std::vector<dax::Scalar> mult(ARRAY_SIZE);
     multHandle.CopyInto(mult.begin());
@@ -405,7 +405,7 @@ private:
       }
 
     std::cout << "Running NG Multiply worklet with handle and constant" << std::endl;
-    dax::cont::Schedule<DeviceAdapterTag>(NGMult(),4.0f,fieldHandle, multHandle);
+    dax::cont::Schedule<DeviceAdapterTag>()(NGMult(),4.0f,fieldHandle, multHandle);
     multHandle.CopyInto(mult.begin());
 
     for (dax::Id i = 0; i < ARRAY_SIZE; i++)
@@ -642,7 +642,7 @@ private:
     ScalarArrayHandle squareHandle;
 
     std::cout << "Running Square worklet" << std::endl;
-    dax::cont::Schedule<DeviceAdapterTag>(dax::worklet::Square(),
+    dax::cont::Schedule<DeviceAdapterTag>()(dax::worklet::Square(),
                           fieldHandle,
                           squareHandle);
 
@@ -675,7 +675,7 @@ private:
     bool gotError = false;
     try
       {
-      dax::cont::Schedule<DeviceAdapterTag>(
+      dax::cont::Schedule<DeviceAdapterTag>()(
                 dax::worklet::testing::FieldMapError(),
                 grid.GetRealGrid().GetPointCoordinates());
       }
@@ -731,7 +731,7 @@ private:
     Vector3ArrayHandle gradientHandle;
 
     std::cout << "Running CellGradient worklet" << std::endl;
-    dax::cont::Schedule<DeviceAdapterTag>(dax::worklet::CellGradient(),
+    dax::cont::Schedule<DeviceAdapterTag>()(dax::worklet::CellGradient(),
                           grid.GetRealGrid(),
                           grid->GetPointCoordinates(),
                           fieldHandle,
@@ -765,7 +765,7 @@ private:
     bool gotError = false;
     try
       {
-      dax::cont::Schedule<DeviceAdapterTag>(
+      dax::cont::Schedule<DeviceAdapterTag>()(
                           dax::worklet::testing::CellMapError(),
                           grid.GetRealGrid());
       }

@@ -65,7 +65,7 @@ struct TestSineWorklet
                         dax::cont::DeviceAdapterTagSerial> sineHandle;
 
   std::cout << "Running Sine worklet" << std::endl;
-  dax::cont::Schedule<>(dax::worklet::Sine(),fieldHandle, sineHandle);
+  dax::cont::Schedule<>()(dax::worklet::Sine(),fieldHandle, sineHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> sine(grid->GetNumberOfPoints());

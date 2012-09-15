@@ -139,7 +139,7 @@ struct TestThresholdWorklet
       typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
 
       ClassifyResultType classification;
-      dax::cont::Schedule<>(
+      dax::cont::Schedule<>()(
                         ThresholdClassifyType(min,max),
                         inGrid, fieldHandle, classification);
 

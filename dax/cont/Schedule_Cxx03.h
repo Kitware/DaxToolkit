@@ -21,7 +21,7 @@
 // Note any changes to this method must be reflected in the
 // C++11 implementation inside Schedule.h.
 template <class WorkletType, _dax_pp_typename___T>
-Schedule(WorkletType w, _dax_pp_params___(a))
+void operator()(WorkletType w, _dax_pp_params___(a))
   {
   // Construct the signature of the worklet invocation on the control side.
   typedef WorkletType ControlInvocationSignature(_dax_pp_T___);

@@ -110,7 +110,8 @@ struct TestCellGradientWorklet
         dax::cont::DeviceAdapterTagSerial> gradientHandle;
 
     std::cout << "Running CellGradient worklet" << std::endl;
-    dax::cont::Schedule<>(dax::worklet::CellGradient(),
+    dax::cont::Schedule<>()(
+                          dax::worklet::CellGradient(),
                           grid.GetRealGrid(),
                           grid->GetPointCoordinates(),
                           fieldHandle,

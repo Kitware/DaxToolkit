@@ -66,7 +66,7 @@ struct TestCosineWorklet
         dax::cont::DeviceAdapterTagSerial> cosineHandle;
 
     std::cout << "Running Cosine worklet" << std::endl;
-    dax::cont::Schedule(dax::worklet::Cosine(),fieldHandle, cosineHandle);
+    dax::cont::Schedule<>()(dax::worklet::Cosine(),fieldHandle, cosineHandle);
 
     std::cout << "Checking result" << std::endl;
     std::vector<dax::Scalar> cosine(grid->GetNumberOfPoints());
