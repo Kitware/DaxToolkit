@@ -165,14 +165,14 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Scalar> intermediate1;
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
-  dax::cont::Schedlue<>(dax::worklet::Magnitude(),
+  dax::cont::Schedule<>(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
 
   Timer timer;
 
   typedef dax::cont::ScheduleGenerateTopology<> ScheduleGT;
-  typedef typename ScheduleGT::ClassifyResultType  ClassifyResultType;
+  typedef ScheduleGT::ClassifyResultType  ClassifyResultType;
   typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
 
   ClassifyResultType classification;

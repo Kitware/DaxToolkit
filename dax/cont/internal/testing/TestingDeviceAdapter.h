@@ -25,10 +25,10 @@
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 
-#include <dax/cont/CellGradient.worklet>
-#include <dax/cont/Square.worklet>
-#include <dax/cont/worklet/testing/CellMapError.h>
-#include <dax/cont/worklet/testing/FieldMapError.h>
+#include <dax/worklet/CellGradient.worklet>
+#include <dax/worklet/Square.worklet>
+#include <dax/worklet/testing/CellMapError.worklet>
+#include <dax/worklet/testing/FieldMapError.worklet>
 
 #include <dax/cont/internal/testing/Testing.h>
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
@@ -317,7 +317,7 @@ private:
 #endif
   }
 
-  static DAX_CONT_EXPORT void TestSchedule()
+  static DAX_CONT_EXPORT void TestLegacySchedule()
   {
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing Schedule" << std::endl;
@@ -377,7 +377,7 @@ private:
 
   }
 
-  static DAX_CONT_EXPORT void TestNGSchedule()
+  static DAX_CONT_EXPORT void TestSchedule()
   {
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing New Schedule Function" << std::endl;
@@ -642,7 +642,7 @@ private:
     ScalarArrayHandle squareHandle;
 
     std::cout << "Running Square worklet" << std::endl;
-    dax::cont::Schedule<>(dax::worklet::Square(),
+    dax::cont::Schedule<DeviceAdapterTag>(dax::worklet::Square(),
                           fieldHandle,
                           squareHandle);
 
@@ -675,8 +675,9 @@ private:
     bool gotError = false;
     try
       {
-      dax::cont::worklet::testing::FieldMapError(
-            grid.GetRealGrid().GetPointCoordinates());
+      dax::cont::Schedule<DeviceAdapterTag>(
+                dax::worklet::testing::FieldMapError(),
+                grid.GetRealGrid().GetPointCoordinates());
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -730,7 +731,7 @@ private:
     Vector3ArrayHandle gradientHandle;
 
     std::cout << "Running CellGradient worklet" << std::endl;
-    dax::cont::Schedule<>(dax::worklet::CellGradient(),
+    dax::cont::Schedule<DeviceAdapterTag>(dax::worklet::CellGradient(),
                           grid.GetRealGrid(),
                           grid->GetPointCoordinates(),
                           fieldHandle,
@@ -764,8 +765,9 @@ private:
     bool gotError = false;
     try
       {
-      dax::cont::worklet::testing::CellMapError(grid.GetRealGrid(),
-                                                DeviceAdapterTag());
+      dax::cont::Schedule<DeviceAdapterTag>(
+                          dax::worklet::testing::CellMapError(),
+                          grid.GetRealGrid());
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -797,7 +799,7 @@ private:
       TestArrayManagerExecution();
       TestOutOfMemory();
       TestSchedule();
-      TestNGSchedule();
+      TestSchedule();
       TestStreamCompact();
       TestStreamCompactWithStencil();
       TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique

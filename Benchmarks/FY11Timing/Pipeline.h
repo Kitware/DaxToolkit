@@ -108,10 +108,10 @@ void RunPipeline1(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Vector3> results;
 
   Timer timer;
-  dax::cont::Schedlue<>(dax::worklet::Magnitude(),
+  dax::cont::Schedule<>(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
-  dax::cont::Schedlue<>(dax::worklet::CellGradient(),grid,
+  dax::cont::Schedule<>(dax::worklet::CellGradient(),grid,
                                    grid.GetPointCoordinates(),
                                    intermediate1,
                                    results);
@@ -133,18 +133,18 @@ void RunPipeline2(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Vector3> results;
 
   Timer timer;
-  dax::cont::Schedlue<>(dax::worklet::Magnitude(),
+  dax::cont::Schedule<>(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
-  dax::cont::Schedlue<>(dax::worklet::CellGradient(),grid,
+  dax::cont::Schedule<>(dax::worklet::CellGradient(),grid,
                                    grid.GetPointCoordinates(),
                                    intermediate1,
                                    intermediate2);
   intermediate1.ReleaseResources();
-  dax::cont::Schedlue<>(dax::worklet::Sine(),intermediate2, intermediate3);
-  dax::cont::Schedlue<>(dax::worklet::Square(),intermediate3, intermediate2);
+  dax::cont::Schedule<>(dax::worklet::Sine(),intermediate2, intermediate3);
+  dax::cont::Schedule<>(dax::worklet::Square(),intermediate3, intermediate2);
   intermediate3.ReleaseResources();
-  dax::cont::Schedlue<>(dax::worklet::Cosine(),intermediate2, results);
+  dax::cont::Schedule<>(dax::worklet::Cosine(),intermediate2, results);
   double time = timer.elapsed();
 
   PrintCheckValues(results);
@@ -163,13 +163,13 @@ void RunPipeline3(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Scalar> results;
 
   Timer timer;
-  dax::cont::Schedlue<>(dax::worklet::Magnitude(),
+  dax::cont::Schedule<>(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
-  dax::cont::Schedlue<>(dax::worklet::Sine(),intermediate1, intermediate2);
-  dax::cont::Schedlue<>(dax::worklet::Square(),intermediate2, intermediate1);
+  dax::cont::Schedule<>(dax::worklet::Sine(),intermediate1, intermediate2);
+  dax::cont::Schedule<>(dax::worklet::Square(),intermediate2, intermediate1);
   intermediate2.ReleaseResources();
-  dax::cont::Schedlue<>(dax::worklet::Cosine(),intermediate1, results);
+  dax::cont::Schedule<>(dax::worklet::Cosine(),intermediate1, results);
   double time = timer.elapsed();
 
   PrintCheckValues(results);
