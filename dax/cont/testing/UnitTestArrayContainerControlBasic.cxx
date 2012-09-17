@@ -58,8 +58,9 @@ struct TemplatedTests
     return true;
   }
 
-  static const typename dax::VectorTraits<ValueType>::ComponentType
-      STOLEN_ARRAY_VALUE = 4529;
+  typename dax::VectorTraits<ValueType>::ComponentType STOLEN_ARRAY_VALUE() {
+    return 4529;
+  }
 
   /// Returned value should later be passed to StealArray2.  It is best to
   /// put as much between the two test parts to maximize the chance of a
@@ -69,7 +70,7 @@ struct TemplatedTests
     ValueType *stolenArray;
 
     ValueType stolenArrayValue
-        = dax::cont::VectorFill<ValueType>(STOLEN_ARRAY_VALUE);
+        = dax::cont::VectorFill<ValueType>(STOLEN_ARRAY_VALUE());
 
     ArrayContainerType stealMyArray;
     stealMyArray.Allocate(ARRAY_SIZE);
@@ -87,7 +88,7 @@ struct TemplatedTests
   void StealArray2(ValueType *stolenArray)
   {
     ValueType stolenArrayValue
-        = dax::cont::VectorFill<ValueType>(STOLEN_ARRAY_VALUE);
+        = dax::cont::VectorFill<ValueType>(STOLEN_ARRAY_VALUE());
 
     for (dax::Id index = 0; index < ARRAY_SIZE; index++)
       {

@@ -59,7 +59,7 @@ struct TemplatedTests
     return true;
   }
 
-  static const ComponentType ORIGINAL_VALUE = 239;
+  ComponentType ORIGINAL_VALUE() { return 239; }
 
   template<class ArrayPortalType>
   void TestIteratorRead(ArrayPortalType portal)
@@ -72,7 +72,7 @@ struct TemplatedTests
                     "Distance between begin and end incorrect.");
 
     std::cout << "    Check forward iteration." << std::endl;
-    DAX_TEST_ASSERT(CheckIterator(begin, end, ORIGINAL_VALUE),
+    DAX_TEST_ASSERT(CheckIterator(begin, end, ORIGINAL_VALUE()),
                     "Forward iteration wrong");
 
     std::cout << "    Check backward iteration." << std::endl;
@@ -81,7 +81,7 @@ struct TemplatedTests
       {
       middle--;
       ValueType value = *middle;
-      DAX_TEST_ASSERT(value == ExpectedValue(index, ORIGINAL_VALUE),
+      DAX_TEST_ASSERT(value == ExpectedValue(index, ORIGINAL_VALUE()),
                       "Backward iteration wrong");
       }
 
@@ -89,7 +89,7 @@ struct TemplatedTests
     middle = begin + ARRAY_SIZE/2;
     DAX_TEST_ASSERT(std::distance(begin, middle) == ARRAY_SIZE/2,
                     "Bad distance to middle.");
-    DAX_TEST_ASSERT(*middle == ExpectedValue(ARRAY_SIZE/2, ORIGINAL_VALUE),
+    DAX_TEST_ASSERT(*middle == ExpectedValue(ARRAY_SIZE/2, ORIGINAL_VALUE()),
                     "Bad value at middle.");
   }
 
@@ -117,7 +117,7 @@ struct TemplatedTests
   {
     ValueType array[ARRAY_SIZE];
 
-    FillIterator(array, array+ARRAY_SIZE, ORIGINAL_VALUE);
+    FillIterator(array, array+ARRAY_SIZE, ORIGINAL_VALUE());
 
     dax::cont::ArrayPortalFromIterators<ValueType *>
         portal(array, array+ARRAY_SIZE);
