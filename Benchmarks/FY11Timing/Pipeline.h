@@ -18,14 +18,15 @@
 #include "Timer.h"
 
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/Schedule.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/worklet/CellGradient.h>
-#include <dax/cont/worklet/Cosine.h>
-#include <dax/cont/worklet/Magnitude.h>
-#include <dax/cont/worklet/Sine.h>
-#include <dax/cont/worklet/Square.h>
+#include <dax/worklet/CellGradient.worklet>
+#include <dax/worklet/Cosine.worklet>
+#include <dax/worklet/Magnitude.worklet>
+#include <dax/worklet/Sine.worklet>
+#include <dax/worklet/Square.worklet>
 
 #include <vector>
 

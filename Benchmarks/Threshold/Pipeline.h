@@ -19,12 +19,14 @@
 #include "Timer.h"
 
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/Schedule.h>
+#include <dax/cont/ScheduleGenerateTopology.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/worklet/Magnitude.h>
-#include <dax/cont/worklet/Threshold.h>
+#include <dax/worklet/Magnitude.worklet>
+#include <dax/worklet/Threshold.worklet>
 
 #include <vector>
 #include <iostream>
