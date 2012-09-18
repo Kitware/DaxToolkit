@@ -108,6 +108,9 @@ namespace dax { namespace internal {
 
 namespace detail {
 
+class MemberCont {};
+class MemberExecCont {};
+
 template <int Id, typename T>
 class Member
 {
@@ -117,22 +120,10 @@ public:
 # if __cplusplus >= 201103L
   template <typename U> Member(U&& u): M(std::forward<U>(u)) {}
 # else // !(__cplusplus >= 201103L)
-  template <typename U>
-  DAX_CONT_EXPORT Member(U& u): M(u) {}
-
-  template <typename U>
-  DAX_CONT_EXPORT Member(U const& u): M(u) {}
-
-  //special constructor that only the copy constructor calls
-  //that is used for exec side connstruction of members
-  template <typename U>
-  DAX_EXEC_EXPORT Member(U& u, int): M(u) {}
-
-  //special constructor that only the copy constructor calls
-  //that is used for exec side connstruction of members
-  template <typename U>
-  DAX_EXEC_EXPORT Member(U const& u, int): M(u) {}
-
+  template <typename U> DAX_CONT_EXPORT Member(U& u, MemberCont): M(u) {}
+  template <typename U> DAX_CONT_EXPORT Member(U const& u, MemberCont): M(u) {}
+  template <typename U> DAX_EXEC_CONT_EXPORT Member(U& u, MemberExecCont): M(u) {}
+  template <typename U> DAX_EXEC_CONT_EXPORT Member(U const& u, MemberExecCont): M(u) {}
 # endif // !(__cplusplus >= 201103L)
   DAX_EXEC_CONT_EXPORT type& operator()() { return M; }
   DAX_EXEC_CONT_EXPORT type const& operator()() const { return M; }
@@ -272,9 +263,9 @@ public:
 # else // !(__cplusplus >= 201103L)
 #  define _dax_Member(n) detail::Member<n, typename MemberMap::template Get<n,T___##n>::type>
 #  define _dax_Member_typedef(n) typedef _dax_Member(n) Member##n;
-#  define _dax_Member_init_all_u(n)  Member##n(u)
-#  define _dax_Member_init_each_v(n) Member##n(v##n)
-#  define _dax_Member_init_copy_m(n) Member##n(m.template Get<n>(),n)
+#  define _dax_Member_init_all_u(n)  Member##n(u, detail::MemberCont())
+#  define _dax_Member_init_each_v(n) Member##n(v##n, detail::MemberCont())
+#  define _dax_Member_init_copy_m(n) Member##n(m.template Get<n>(), detail::MemberExecCont())
 #  define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/internal/Members.h>))
 #  include BOOST_PP_ITERATE()
 #  undef _dax_Member
