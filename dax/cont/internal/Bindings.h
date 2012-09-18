@@ -27,7 +27,7 @@
 # include <dax/cont/arg/ConceptMap.h>
 # include <dax/cont/sig/Tag.h>
 # include <dax/internal/GetNthType.h>
-# include <dax/cont/internal/Members.h>
+# include <dax/internal/Members.h>
 # include <dax/internal/Tags.h>
 
 # include <boost/mpl/identity.hpp>
@@ -94,7 +94,7 @@ class BindingsMembers<Worklet(T...)>
   BOOST_STATIC_ASSERT((boost::is_same<typename ControlSigTraits::result_type, void>::value));
   BOOST_STATIC_ASSERT((ControlSigTraits::arity == sizeof...(T)));
  public:
-  typedef dax::cont::internal::Members<void(T...), BindingsMemberMap<Worklet> > type;
+  typedef dax::internal::Members<void(T...), BindingsMemberMap<Worklet> > type;
 };
 
 } // namespace detail
@@ -137,7 +137,7 @@ class BindingsMembers<Worklet(_dax_pp_T___)>
   BOOST_STATIC_ASSERT((boost::is_same<typename ControlSigTraits::result_type, void>::value));
   BOOST_STATIC_ASSERT((ControlSigTraits::arity == _dax_pp_sizeof___T));
  public:
-  typedef dax::cont::internal::Members<void(_dax_pp_T___), BindingsMemberMap<Worklet> > type;
+  typedef dax::internal::Members<void(_dax_pp_T___), BindingsMemberMap<Worklet> > type;
 };
 #endif // _dax_pp_sizeof___T > 0
 

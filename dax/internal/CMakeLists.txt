@@ -18,6 +18,7 @@ set(headers
   ExportMacros.h
   GetNthType.h
   MathSystemFunctions.h
+  Members.h
   Tags.h
   )
 

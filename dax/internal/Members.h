@@ -15,11 +15,11 @@
 //=============================================================================
 #if !defined(BOOST_PP_IS_ITERATING)
 
-# ifndef __@DAX_MEMBERS_NAMESPACE_NAME@__Members_h
-# define __@DAX_MEMBERS_NAMESPACE_NAME@__Members_h
+# ifndef __dax__internal__Members_h
+# define __dax__internal__Members_h
 # if defined(DAX_DOXYGEN_ONLY)
 
-@DAX_MEMBERS_NAMESPACE_START@
+namespace dax { namespace internal {
 
 /// \class Members       Members.h dax/internal/Members.h
 /// \brief Store programmatically-indexable members.
@@ -88,7 +88,7 @@ public:
   template <typename Functor> void ForEach(Functor functor);
 };
 
-@DAX_MEMBERS_NAMESPACE_END@
+}} // namespace dax::internal
 
 # else // !defined(DAX_DOXYGEN_ONLY)
 
@@ -104,7 +104,7 @@ public:
 #  include <dax/internal/ParameterPackCxx03.h>
 # endif // !(__cplusplus >= 201103L)
 
-@DAX_MEMBERS_NAMESPACE_START@
+namespace dax { namespace internal {
 
 namespace detail {
 
@@ -149,7 +149,7 @@ template <unsigned int M, unsigned int N> struct MembersForEach
 {
   BOOST_STATIC_ASSERT(M<N);
   template <typename Types, typename MemberMap, typename F>
-  @DAX_MEMBERS_EXPORT@ static void Apply(Members<Types, MemberMap>& self, F f)
+  DAX_CONT_EXPORT static void Apply(Members<Types, MemberMap>& self, F f)
     {
     MembersForEach<M,N-1>::Apply(self, f);
     f(self.template Get<N>());
@@ -158,7 +158,7 @@ template <unsigned int M, unsigned int N> struct MembersForEach
 template <unsigned int N> struct MembersForEach<N,N>
 {
   template <typename Types, typename MemberMap, typename F>
-  @DAX_MEMBERS_EXPORT@ static void Apply(Members<Types, MemberMap>&self, F f)
+  DAX_CONT_EXPORT static void Apply(Members<Types, MemberMap>&self, F f)
     {
     f(self.template Get<N>());
     }
@@ -275,7 +275,7 @@ public:
 #  define _dax_Member_init_all_u(n)  Member##n(u)
 #  define _dax_Member_init_each_v(n) Member##n(v##n)
 #  define _dax_Member_init_copy_m(n) Member##n(m.template Get<n>(),n)
-#  define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <@DAX_MEMBERS_CONFIGURED_INCLUDE_PATH@/Members.h>))
+#  define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/internal/Members.h>))
 #  include BOOST_PP_ITERATE()
 #  undef _dax_Member
 #  undef _dax_Member_typedef
@@ -286,7 +286,7 @@ public:
 
 # undef _dax_Members_API
 
-@DAX_MEMBERS_NAMESPACE_END@
+}} // namespace dax::internal
 
 # endif // !defined(DAX_DOXYGEN_ONLY)
 # endif //__dax__internal__Members_h

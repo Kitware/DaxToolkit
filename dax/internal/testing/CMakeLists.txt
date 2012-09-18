@@ -22,7 +22,7 @@ dax_declare_headers(${headers})
 
 set(unit_tests
   UnitTestGetNthType.cxx
-  #UnitTestMembers.cxx
+  UnitTestMembers.cxx
   UnitTestTags.cxx
   UnitTestTesting.cxx
   )

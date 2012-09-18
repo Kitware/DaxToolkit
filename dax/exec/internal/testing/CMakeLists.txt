@@ -26,7 +26,6 @@ set(unit_tests
   UnitTestFunctor.cxx
   UnitTestGridTopologies.cxx
   UnitTestInterpolationWeights.cxx
-  UnitTestMembers.cxx
   UnitTestTopologyGenerator.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

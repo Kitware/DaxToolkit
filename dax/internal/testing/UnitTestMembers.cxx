@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/cont/internal/Members.h>
+#include <dax/internal/Members.h>
 #include <dax/internal/testing/Testing.h>
 
 #include <boost/type_traits/is_same.hpp>
@@ -46,7 +46,7 @@ struct TestMap
 };
 template <typename T> struct MembersTraits;
 template <typename Types, typename MemberMap>
-struct MembersTraits< dax::cont::internal::Members<Types, MemberMap> >
+struct MembersTraits< dax::internal::Members<Types, MemberMap> >
 {
   typedef MemberMap MemberMapType;
 };
@@ -124,18 +124,18 @@ template <typename MembersType, int I> void Members3()
 
 void Members()
 {
-  Members1<dax::cont::internal::Members<int()>, 0>();
-  Members1<dax::cont::internal::Members<int(),TestMap>, 0>();
-  Members1<dax::cont::internal::Members<void(int)>, 1>();
-  Members1<dax::cont::internal::Members<void(int),TestMap>, 1>();
-  Members2<dax::cont::internal::Members<int(float)>, 0>();
-  Members2<dax::cont::internal::Members<int(float),TestMap>, 0>();
-  Members2<dax::cont::internal::Members<void(int,float)>, 1>();
-  Members2<dax::cont::internal::Members<void(int,float),TestMap>, 1>();
-  Members3<dax::cont::internal::Members<int(float,char)>, 0>();
-  Members3<dax::cont::internal::Members<int(float,char),TestMap>, 0>();
-  Members3<dax::cont::internal::Members<void(int,float,char)>, 1>();
-  Members3<dax::cont::internal::Members<void(int,float,char),TestMap>, 1>();
+  Members1<dax::internal::Members<int()>, 0>();
+  Members1<dax::internal::Members<int(),TestMap>, 0>();
+  Members1<dax::internal::Members<void(int)>, 1>();
+  Members1<dax::internal::Members<void(int),TestMap>, 1>();
+  Members2<dax::internal::Members<int(float)>, 0>();
+  Members2<dax::internal::Members<int(float),TestMap>, 0>();
+  Members2<dax::internal::Members<void(int,float)>, 1>();
+  Members2<dax::internal::Members<void(int,float),TestMap>, 1>();
+  Members3<dax::internal::Members<int(float,char)>, 0>();
+  Members3<dax::internal::Members<int(float,char),TestMap>, 0>();
+  Members3<dax::internal::Members<void(int,float,char)>, 1>();
+  Members3<dax::internal::Members<void(int,float,char),TestMap>, 1>();
 }
 
 } // anonymous namespace
