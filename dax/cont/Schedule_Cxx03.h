@@ -18,7 +18,7 @@
 # include BOOST_PP_ITERATE()
 
 #include <dax/cont/internal/Schedule_GenerateTopology.h>
-# define BOOST_PP_ITERATION_PARAMS_1 (3, (2, 10, <dax/cont/internal/Schedule_GenerateTopology.h>))
+# define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/cont/internal/Schedule_GenerateTopology.h>))
 # include BOOST_PP_ITERATE()
 
 #else // defined(BOOST_PP_IS_ITERATING)
@@ -26,7 +26,8 @@
 // Note any changes to this method must be reflected in the
 // C++11 implementation inside Schedule.h.
 template <class WorkletType, _dax_pp_typename___T>
-void operator()(WorkletType w, _dax_pp_params___(a))
+typename boost::enable_if<boost::is_base_of<dax::exec::internal::WorkletBase,WorkletType> >::type
+ operator()(WorkletType w, _dax_pp_params___(a)) const
   {
   // Construct the signature of the worklet invocation on the control side.
   typedef WorkletType ControlInvocationSignature(_dax_pp_T___);

@@ -21,7 +21,7 @@ private:
 template<class InGridType, class OutGridType, typename MaskType>
 void FillPointMask(const InGridType &inGrid,
                        const OutGridType &outGrid,
-                       MaskType& mask)
+                       MaskType mask) const
   {
     typedef typename MaskType::PortalExecution MaskPortalType;
 
@@ -43,7 +43,7 @@ void FillPointMask(const InGridType &inGrid,
 template<typename InGridType,typename OutGridType, typename MaskType>
 void RemoveDuplicatePoints(const InGridType &inGrid,
                         OutGridType& outGrid,
-                        MaskType const& mask )
+                        MaskType const mask ) const
   {
     // Here we are assuming OutGridType is an UnstructuredGrid so that we
     // can set point and connectivity information.
@@ -86,7 +86,7 @@ template <typename WorkType,
 void GenerateNewTopology(
     dax::cont::ScheduleGenerateTopology<WorkType,DeviceAdapterTag> newTopo,
     const InputGrid& inputGrid,
-    OutputGrid& outputGrid)
+    OutputGrid& outputGrid) const
   {
   typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
       DeviceAdapterTag> IdArrayHandleType;
@@ -135,7 +135,7 @@ void GenerateNewTopology(
   }
 public:
 #else
-# if _dax_pp_sizeof___T > 2
+# if _dax_pp_sizeof___T > 1
 //only expose this for 2 or more parameters, since you can't
 //generate topology without input and output params
 public:
@@ -146,10 +146,8 @@ void operator()(
   {
   this->GenerateNewTopology(newTopo,_dax_pp_args___(a));
   }
-# endif // _dax_pp_sizeof___T > 2
 
-# if _dax_pp_sizeof___T > 3
-# define   SIZE                   BOOST_PP_SUB(_dax_pp_sizeof___T,1)
+# define   SIZE                   _dax_pp_sizeof___T
 # define  _SGT_pp_typename___T    BOOST_PP_ENUM_SHIFTED_PARAMS (SIZE, typename T___)
 # define  _SGT_pp_params___(x)    BOOST_PP_ENUM_SHIFTED_BINARY_PARAMS(SIZE, T___, x)
 # define  _SGT_pp_args___(x)      BOOST_PP_ENUM_SHIFTED_PARAMS(SIZE, x)
@@ -162,7 +160,7 @@ void GenerateNewTopology(
     dax::cont::ScheduleGenerateTopology<WorkType,DeviceAdapterTag> newTopo,
     const InputGrid& inputGrid,
     OutputGrid& outputGrid,
-    _SGT_pp_params___(a))
+    _SGT_pp_params___(a)) const
   {
   typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
       DeviceAdapterTag> IdArrayHandleType;
@@ -210,7 +208,7 @@ void GenerateNewTopology(
     this->RemoveDuplicatePoints(inputGrid,outputGrid, newTopo.GetPointMask());
     }
   }
-#endif //_dax_pp_sizeof___T > 3
+#endif //_dax_pp_sizeof___T > 1
 
 
 #endif // defined(BOOST_PP_IS_ITERATING)
