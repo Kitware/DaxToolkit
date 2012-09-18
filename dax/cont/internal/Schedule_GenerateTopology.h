@@ -78,6 +78,8 @@ void RemoveDuplicatePoints(const InGridType &inGrid,
     }
   }
 
+//want the basic implementation to be easily edited, instead of inside
+//the BOOST_PP block and unreadable
 template <typename WorkType,
           typename InputGrid,
           typename OutputGrid>
@@ -147,8 +149,10 @@ void operator()(
 # endif // _dax_pp_sizeof___T > 2
 
 # if _dax_pp_sizeof___T > 3
-
-#  define _SGT_pp_typename___T    BOOST_PP_ENUM_SHIFTED_PARAMS (BOOST_PP_ITERATION() - 1, typename T___)
+# define   SIZE                   BOOST_PP_SUB(_dax_pp_sizeof___T,1)
+# define  _SGT_pp_typename___T    BOOST_PP_ENUM_SHIFTED_PARAMS (SIZE, typename T___)
+# define  _SGT_pp_params___(x)    BOOST_PP_ENUM_SHIFTED_BINARY_PARAMS(SIZE, T___, x)
+# define  _SGT_pp_args___(x)      BOOST_PP_ENUM_SHIFTED_PARAMS(SIZE, x)
 
 template <typename WorkType,
           typename InputGrid,
@@ -157,7 +161,8 @@ template <typename WorkType,
 void GenerateNewTopology(
     dax::cont::ScheduleGenerateTopology<WorkType,DeviceAdapterTag> newTopo,
     const InputGrid& inputGrid,
-    OutputGrid& outputGrid)
+    OutputGrid& outputGrid,
+    _SGT_pp_params___(a))
   {
   typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
       DeviceAdapterTag> IdArrayHandleType;
@@ -196,7 +201,8 @@ void GenerateNewTopology(
   this->operator()(newTopo.GetWorklet(),
                    dax::cont::make_MapAdapter(validCellRange,inputGrid,
                                              inputGrid.GetNumberOfCells()),
-                   outputGrid);
+                   outputGrid,
+                  _SGT_pp_args___(a));
   //call this here as we have stripped out the input and output grids
   this->FillPointMask(inputGrid,outputGrid, newTopo.GetPointMask());
   if(newTopo.GetRemoveDuplicatePoints())
