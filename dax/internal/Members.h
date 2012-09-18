@@ -15,11 +15,11 @@
 //=============================================================================
 #if !defined(BOOST_PP_IS_ITERATING)
 
-# ifndef __@DAX_MEMBERS_NAMESPACE_NAME@__Members_h
-# define __@DAX_MEMBERS_NAMESPACE_NAME@__Members_h
+# ifndef __dax__internal__Members_h
+# define __dax__internal__Members_h
 # if defined(DAX_DOXYGEN_ONLY)
 
-@DAX_MEMBERS_NAMESPACE_START@
+namespace dax { namespace internal {
 
 /// \class Members       Members.h dax/internal/Members.h
 /// \brief Store programmatically-indexable members.
@@ -88,7 +88,7 @@ public:
   template <typename Functor> void ForEach(Functor functor);
 };
 
-@DAX_MEMBERS_NAMESPACE_END@
+}} // namespace dax::internal
 
 # else // !defined(DAX_DOXYGEN_ONLY)
 
@@ -104,9 +104,12 @@ public:
 #  include <dax/internal/ParameterPackCxx03.h>
 # endif // !(__cplusplus >= 201103L)
 
-@DAX_MEMBERS_NAMESPACE_START@
+namespace dax { namespace internal {
 
 namespace detail {
+
+class MemberCont {};
+class MemberExecCont {};
 
 template <int Id, typename T>
 class Member
@@ -117,22 +120,10 @@ public:
 # if __cplusplus >= 201103L
   template <typename U> Member(U&& u): M(std::forward<U>(u)) {}
 # else // !(__cplusplus >= 201103L)
-  template <typename U>
-  DAX_CONT_EXPORT Member(U& u): M(u) {}
-
-  template <typename U>
-  DAX_CONT_EXPORT Member(U const& u): M(u) {}
-
-  //special constructor that only the copy constructor calls
-  //that is used for exec side connstruction of members
-  template <typename U>
-  DAX_EXEC_EXPORT Member(U& u, int): M(u) {}
-
-  //special constructor that only the copy constructor calls
-  //that is used for exec side connstruction of members
-  template <typename U>
-  DAX_EXEC_EXPORT Member(U const& u, int): M(u) {}
-
+  template <typename U> DAX_CONT_EXPORT Member(U& u, MemberCont): M(u) {}
+  template <typename U> DAX_CONT_EXPORT Member(U const& u, MemberCont): M(u) {}
+  template <typename U> DAX_EXEC_CONT_EXPORT Member(U& u, MemberExecCont): M(u) {}
+  template <typename U> DAX_EXEC_CONT_EXPORT Member(U const& u, MemberExecCont): M(u) {}
 # endif // !(__cplusplus >= 201103L)
   DAX_EXEC_CONT_EXPORT type& operator()() { return M; }
   DAX_EXEC_CONT_EXPORT type const& operator()() const { return M; }
@@ -149,7 +140,7 @@ template <unsigned int M, unsigned int N> struct MembersForEach
 {
   BOOST_STATIC_ASSERT(M<N);
   template <typename Types, typename MemberMap, typename F>
-  @DAX_MEMBERS_EXPORT@ static void Apply(Members<Types, MemberMap>& self, F f)
+  DAX_CONT_EXPORT static void Apply(Members<Types, MemberMap>& self, F f)
     {
     MembersForEach<M,N-1>::Apply(self, f);
     f(self.template Get<N>());
@@ -158,7 +149,7 @@ template <unsigned int M, unsigned int N> struct MembersForEach
 template <unsigned int N> struct MembersForEach<N,N>
 {
   template <typename Types, typename MemberMap, typename F>
-  @DAX_MEMBERS_EXPORT@ static void Apply(Members<Types, MemberMap>&self, F f)
+  DAX_CONT_EXPORT static void Apply(Members<Types, MemberMap>&self, F f)
     {
     f(self.template Get<N>());
     }
@@ -272,10 +263,10 @@ public:
 # else // !(__cplusplus >= 201103L)
 #  define _dax_Member(n) detail::Member<n, typename MemberMap::template Get<n,T___##n>::type>
 #  define _dax_Member_typedef(n) typedef _dax_Member(n) Member##n;
-#  define _dax_Member_init_all_u(n)  Member##n(u)
-#  define _dax_Member_init_each_v(n) Member##n(v##n)
-#  define _dax_Member_init_copy_m(n) Member##n(m.template Get<n>(),n)
-#  define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <@DAX_MEMBERS_CONFIGURED_INCLUDE_PATH@/Members.h>))
+#  define _dax_Member_init_all_u(n)  Member##n(u, detail::MemberCont())
+#  define _dax_Member_init_each_v(n) Member##n(v##n, detail::MemberCont())
+#  define _dax_Member_init_copy_m(n) Member##n(m.template Get<n>(), detail::MemberExecCont())
+#  define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/internal/Members.h>))
 #  include BOOST_PP_ITERATE()
 #  undef _dax_Member
 #  undef _dax_Member_typedef
@@ -286,7 +277,7 @@ public:
 
 # undef _dax_Members_API
 
-@DAX_MEMBERS_NAMESPACE_END@
+}} // namespace dax::internal
 
 # endif // !defined(DAX_DOXYGEN_ONLY)
 # endif //__dax__internal__Members_h
@@ -319,11 +310,11 @@ class Members<T0(_dax_pp_T___),MemberMap>:
   _dax_pp_repeat___(_dax_Member_typedef)
   typedef T0 TypeSequence(_dax_pp_T___);
 public:
-  DAX_EXEC_CONT_EXPORT Members(Members& m): Member0(m.template Get<0>(),0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
-  DAX_EXEC_CONT_EXPORT Members(Members const& m): Member0(m.template Get<0>(),0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
-  template <typename U> Members(U& u): Member0(u) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_all_u) {}
-  template <typename U> Members(U const& u): Member0(u) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_all_u) {}
-  Members(T0 v0 _dax_pp_comma _dax_pp_params___(v)): Member0(v0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_each_v) {}
+  DAX_EXEC_CONT_EXPORT Members(Members& m): _dax_Member_init_copy_m(0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
+  DAX_EXEC_CONT_EXPORT Members(Members const& m): _dax_Member_init_copy_m(0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
+  template <typename U> Members(U& u): _dax_Member_init_all_u(0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_all_u) {}
+  template <typename U> Members(U const& u): _dax_Member_init_all_u(0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_all_u) {}
+  Members(T0 v0 _dax_pp_comma _dax_pp_params___(v)): _dax_Member_init_each_v(0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_each_v) {}
   _dax_Members_API(0)
 };
 

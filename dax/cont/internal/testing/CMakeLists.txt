@@ -26,6 +26,5 @@ set(unit_tests
   UnitTestArrayManagerExecutionShareWithControl.cxx
   UnitTestBindings.cxx
   UnitTestContTesting.cxx
-  UnitTestMembers.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
