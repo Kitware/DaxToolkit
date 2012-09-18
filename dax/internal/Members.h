@@ -319,11 +319,11 @@ class Members<T0(_dax_pp_T___),MemberMap>:
   _dax_pp_repeat___(_dax_Member_typedef)
   typedef T0 TypeSequence(_dax_pp_T___);
 public:
-  DAX_EXEC_CONT_EXPORT Members(Members& m): Member0(m.template Get<0>(),0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
-  DAX_EXEC_CONT_EXPORT Members(Members const& m): Member0(m.template Get<0>(),0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
-  template <typename U> Members(U& u): Member0(u) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_all_u) {}
-  template <typename U> Members(U const& u): Member0(u) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_all_u) {}
-  Members(T0 v0 _dax_pp_comma _dax_pp_params___(v)): Member0(v0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_each_v) {}
+  DAX_EXEC_CONT_EXPORT Members(Members& m): _dax_Member_init_copy_m(0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
+  DAX_EXEC_CONT_EXPORT Members(Members const& m): _dax_Member_init_copy_m(0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_copy_m)  {}
+  template <typename U> Members(U& u): _dax_Member_init_all_u(0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_all_u) {}
+  template <typename U> Members(U const& u): _dax_Member_init_all_u(0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_all_u) {}
+  Members(T0 v0 _dax_pp_comma _dax_pp_params___(v)): _dax_Member_init_each_v(0) _dax_pp_comma _dax_pp_enum___(_dax_Member_init_each_v) {}
   _dax_Members_API(0)
 };
 
