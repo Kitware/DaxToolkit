@@ -167,8 +167,9 @@ struct TestThresholdWorklet
       //construct the topology generation worklet
       ScheduleGT generateTopo(classification);
 
-      //scheduler it
-      scheduler(generateTopo,inGrid,outGrid, 4.0f);
+      //schedule it, and verify we can handle more than 2 parameter generate
+      //topology worklets
+      scheduler(generateTopo,inGrid, outGrid, 4.0f);
 
       //request to also compact the topology
       generateTopo.CompactPointField(fieldHandle,resultHandle);
