@@ -85,6 +85,27 @@ void CheckValues(dax::cont::ArrayHandle<T,Container,Device> arrayHandle)
               arrayHandle.GetPortalConstControl().GetIteratorEnd());
 }
 
+
+class TestThresholdTopology : public dax::exec::WorkletGenerateTopology
+{
+public:
+  // Returning a tuple of connections feels a bit clunky.  Is there a better
+  // way of specifying the output cell type and generating a cell?
+  typedef void ControlSignature(Topology, Topology(Out),Field(In));
+  typedef void ExecutionSignature(Topology::PointIds(_1),
+                                  Topology::PointIds(_2),
+                                  _3);
+
+  template<int NumInputPoints, int NumOutputPoints, typename T>
+  DAX_EXEC_EXPORT
+  void operator()(dax::Tuple<dax::Id,NumInputPoints> const& in,
+                  dax::Tuple<dax::Id,NumOutputPoints> &out,
+                  const T&) const
+  {
+    out = in;
+  }
+};
+
 //-----------------------------------------------------------------------------
 struct TestThresholdWorklet
 {
@@ -134,22 +155,23 @@ struct TestThresholdWorklet
 
     try
       {
-      typedef dax::cont::ScheduleGenerateTopology<> ScheduleGT;
+      typedef dax::cont::ScheduleGenerateTopology<TestThresholdTopology> ScheduleGT;
       typedef typename ScheduleGT::ClassifyResultType  ClassifyResultType;
       typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
 
+      dax::cont::Schedule<> scheduler;
       ClassifyResultType classification;
-      dax::cont::Schedule<>()(
-                        ThresholdClassifyType(min,max),
-                        inGrid, fieldHandle, classification);
+      scheduler(ThresholdClassifyType(min,max),
+                inGrid, fieldHandle, classification);
 
-      ScheduleGT resolveTopology(classification);
-      //remove classification resource from execution for more space
-      resolveTopology.SetReleaseClassification(true);
-      //resolve duplicates points
-      resolveTopology.SetRemoveDuplicatePoints(true);
-      resolveTopology.CompactTopology(dax::worklet::ThresholdTopology(),inGrid,outGrid);
-      resolveTopology.CompactPointField(fieldHandle,resultHandle);
+      //construct the topology generation worklet
+      ScheduleGT generateTopo(classification);
+
+      //scheduler it
+      scheduler(generateTopo,inGrid,outGrid, 4.0f);
+
+      //request to also compact the topology
+      generateTopo.CompactPointField(fieldHandle,resultHandle);
       }
     catch (dax::cont::ErrorControl error)
       {

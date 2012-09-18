@@ -24,11 +24,16 @@
 #include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/Tag.h>
 
+#include <dax/cont/ScheduleGenerateTopology.h>
+#include <dax/cont/ScheduleMapAdapter.h>
+
 #include <dax/cont/arg/FieldArrayHandle.h>
 #include <dax/cont/arg/FieldConstant.h>
 #include <dax/cont/arg/FieldMap.h>
 #include <dax/cont/arg/TopologyUniformGrid.h>
 #include <dax/cont/arg/TopologyUnstructuredGrid.h>
+
+#include <dax/exec/internal/kernel/ScheduleGenerateTopology.h>
 
 #include <boost/utility/enable_if.hpp>
 

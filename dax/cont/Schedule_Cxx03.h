@@ -16,6 +16,11 @@
 #if !defined(BOOST_PP_IS_ITERATING)
 # define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/cont/Schedule_Cxx03.h>))
 # include BOOST_PP_ITERATE()
+
+#include <dax/cont/internal/Schedule_GenerateTopology.h>
+# define BOOST_PP_ITERATION_PARAMS_1 (3, (2, 10, <dax/cont/internal/Schedule_GenerateTopology.h>))
+# include BOOST_PP_ITERATE()
+
 #else // defined(BOOST_PP_IS_ITERATING)
 # if _dax_pp_sizeof___T > 0
 // Note any changes to this method must be reflected in the
@@ -46,5 +51,6 @@ void operator()(WorkletType w, _dax_pp_params___(a))
   dax::cont::internal::Schedule<ControlInvocationSignature>
     (w, bindings, count, DeviceAdapterTag());
   }
+
 # endif // _dax_pp_sizeof___T > 1
 #endif // defined(BOOST_PP_IS_ITERATING)

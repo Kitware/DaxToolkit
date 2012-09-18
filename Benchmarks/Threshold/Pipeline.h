@@ -174,7 +174,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
 
   Timer timer;
 
-  typedef dax::cont::ScheduleGenerateTopology<> ScheduleGT;
+  typedef dax::cont::ScheduleGenerateTopology<dax::worklet::ThresholdTopology> ScheduleGT;
   typedef ScheduleGT::ClassifyResultType  ClassifyResultType;
   typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
 
@@ -183,11 +183,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
            grid, intermediate1, classification);
 
   ScheduleGT resolveTopology(classification);
-  //remove classification resource from execution for more space
-  resolveTopology.SetReleaseClassification(true);
-  //resolve duplicates points
-  resolveTopology.SetRemoveDuplicatePoints(true);
-  resolveTopology.CompactTopology(dax::worklet::ThresholdTopology(),grid,grid2);
+  schedule(resolveTopology,grid,grid2);
   resolveTopology.CompactPointField(intermediate1,resultHandle);
 
   double time = timer.elapsed();
