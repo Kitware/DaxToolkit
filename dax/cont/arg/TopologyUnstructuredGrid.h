@@ -39,7 +39,6 @@ class ConceptMap<Topology(Tags), dax::cont::UnstructuredGrid< Cell,
                                  CellContainerTag,PointContainerTag,
                                  DeviceTag > >
 {
-private:
   typedef dax::cont::UnstructuredGrid< Cell,
           CellContainerTag, PointContainerTag, DeviceTag > GridType;
 
@@ -100,7 +99,6 @@ class ConceptMap<Topology(Tags), const dax::cont::UnstructuredGrid< Cell,
                                  CellContainerTag,PointContainerTag,
                                  DeviceTag > >
 {
-private:
   typedef dax::cont::UnstructuredGrid< Cell,
           CellContainerTag, PointContainerTag, DeviceTag > GridType;
 

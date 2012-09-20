@@ -31,9 +31,8 @@ namespace dax { namespace cont { namespace arg {
 /// \headerfile FieldArrayHandle.h dax/cont/arg/FieldArrayHandle.h
 /// \brief Map array of user values to \c Field worklet parameters.
 template <typename Tags, typename T, typename ContainerTag, typename Device>
-struct ConceptMap< Field(Tags), dax::cont::ArrayHandle<T, ContainerTag, Device> >
+class ConceptMap< Field(Tags), dax::cont::ArrayHandle<T, ContainerTag, Device> >
 {
-private:
   typedef dax::cont::ArrayHandle<T,ContainerTag, Device > HandleType;
   //What we have to do is use mpl::if_ to determine the type for
   //ExecArg
@@ -89,9 +88,8 @@ private:
 /// \headerfile FieldArrayHandle.h dax/cont/arg/FieldArrayHandle.h
 /// \brief Map array of user values to \c Field worklet parameters.
 template <typename Tags, typename T, typename ContainerTag, typename Device>
-struct ConceptMap< Field(Tags), const dax::cont::ArrayHandle<T, ContainerTag, Device> >
+class ConceptMap< Field(Tags), const dax::cont::ArrayHandle<T, ContainerTag, Device> >
 {
-private:
   typedef dax::cont::ArrayHandle<T,ContainerTag, Device > HandleType;
   typedef  typename HandleType::PortalConstExecution  PortalType;
 

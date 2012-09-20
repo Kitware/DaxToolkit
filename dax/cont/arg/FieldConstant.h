@@ -76,7 +76,6 @@ private:
 template <typename Tags, typename T, int SIZE>
 class ConceptMap<Field(Tags), dax::Tuple<T,SIZE> >
 {
-private:
   typedef dax::Tuple<T,SIZE> Type;
 public:
   //ignore constant values when finding size of domain
@@ -93,7 +92,6 @@ private:
 /// \brief Map single dax::Vector2 values to \c Field worklet parameters.
 template <typename Tags> class ConceptMap<Field(Tags), dax::Vector2 >
 {
-private:
   typedef dax::Vector2 Type;
 public:
   //ignore constant values when finding size of domain
@@ -110,7 +108,6 @@ private:
 /// \brief Map single dax::Vector3 values to \c Field worklet parameters.
 template <typename Tags> class ConceptMap<Field(Tags), dax::Vector3 >
 {
-private:
   typedef dax::Vector3 Type;
 public:
   //ignore constant values when finding size of domain
@@ -127,7 +124,6 @@ private:
 /// \brief Map single dax::Vector4 values to \c Field worklet parameters.
 template <typename Tags> class ConceptMap<Field(Tags), dax::Vector4 >
 {
-private:
   typedef dax::Vector4 Type;
 public:
   //ignore constant values when finding size of domain
@@ -144,7 +140,6 @@ private:
 /// \brief Map single dax::Vector3 values to \c Field worklet parameters.
 template <typename Tags> class ConceptMap<Field(Tags), dax::Id3 >
 {
-private:
   typedef dax::Id3 Type;
 public:
   //ignore constant values when finding size of domain
