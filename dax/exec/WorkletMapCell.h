@@ -18,6 +18,7 @@
 
 #include <dax/exec/internal/WorkletBase.h>
 #include <dax/cont/arg/ConceptMap.h>
+#include <dax/cont/arg/ExecArg.h>
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/arg/Topology.h>
 #include <dax/cont/internal/Bindings.h>
@@ -47,6 +48,7 @@ public:
   DAX_EXEC_EXPORT WorkletMapCell() { }
 protected:
   typedef dax::cont::arg::Field Field;
+  typedef dax::cont::arg::ExecArg ExecArg;
   typedef dax::cont::arg::Topology Topology;
   typedef dax::cont::sig::Point Point;
   typedef dax::cont::sig::Cell Cell;
