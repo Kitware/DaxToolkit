@@ -27,7 +27,8 @@ namespace dax { namespace cont { namespace arg {
 #if defined(DAX_DOXYGEN_ONLY)
 /// \headerfile ConceptMap.h dax/cont/arg/ConceptMap.h
 /// \brief Map a concrete \c Argument type to an abstract \c Concept.
-template <typename Concept, typename Argument> class ConceptMap
+template <typename Concept, typename Argument, typename Enable=void>
+class ConceptMap
 {
 public:
   /// Construct with a value convertible to the \c Argument type.
@@ -40,7 +41,8 @@ public:
   ExecArg GetExecArg();
 };
 #else // !defined(DAX_DOXYGEN_ONLY)
-template <typename Concept, typename Argument> class ConceptMap;
+template <typename Concept, typename Argument, typename Enable=void>
+class ConceptMap;
 #endif // !defined(DAX_DOXYGEN_ONLY)
 
 template <typename ConceptMap> class ConceptMapTraits;
