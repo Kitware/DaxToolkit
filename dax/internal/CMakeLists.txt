@@ -19,6 +19,7 @@ set(headers
   GetNthType.h
   MathSystemFunctions.h
   Members.h
+  ParameterPackCxx03.h
   Tags.h
   )
 

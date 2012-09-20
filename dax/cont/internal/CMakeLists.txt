@@ -29,6 +29,8 @@ set(headers
   FindBinding.h
   )
 
+dax_install_headers(dax/cont/internal Schedule_GenerateTopology.h)
+
 dax_declare_headers(${headers})
 
 # These source files are actually compiled in the parent directory.
