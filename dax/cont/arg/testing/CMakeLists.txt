@@ -16,6 +16,7 @@
 
 #-----------------------------------------------------------------------------
 set(unit_tests
+  UnitTestExecutionObject.cxx
   UnitTestFieldArrayHandle.cxx
   UnitTestFieldConstant.cxx
   UnitTestTopologyGrids.cxx
