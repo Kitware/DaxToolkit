@@ -17,7 +17,6 @@
 #define __dax_exec_WorkletMapField_h
 
 #include <dax/exec/internal/WorkletBase.h>
-#include <dax/cont/arg/ExecArg.h>
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/sig/Tag.h>
 
@@ -36,7 +35,7 @@ public:
   DAX_EXEC_CONT_EXPORT WorkletMapField() { }
 protected:
   typedef dax::cont::arg::Field Field;
-  typedef dax::cont::arg::ExecArg ExecArg;
+
 };
 
 }}

@@ -13,15 +13,15 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_arg_ExecArg_h
-#define __dax_cont_arg_ExecArg_h
+#ifndef __dax_cont_arg_ExecObject_h
+#define __dax_cont_arg_ExecObject_h
 
 namespace dax { namespace cont { namespace arg {
 
-/// \headerfile ExecArg.h dax/cont/arg/ExecArg.h
-/// \brief Identify ExecArg parameters in worklet \c ControlSignature declarations.
-class ExecArg {};
+/// \headerfile ExecObject.h dax/cont/arg/ExecArg.h
+/// \brief Identify ExecObject parameters in worklet \c ControlSignature declarations.
+class ExecObject {};
 
 }}} // namespace dax::cont::arg
 
-#endif //__dax_cont_arg_ExecArg_h
+#endif //__dax_cont_arg_ExecObject_h

@@ -20,7 +20,7 @@
 #include <dax/cont/internal/testing/Testing.h>
 
 namespace{
-using dax::cont::arg::Field;
+using dax::cont::arg::ExecObject;
 
 struct Functor1 : dax::exec::ExecutionObjectBase
 {
@@ -47,7 +47,7 @@ struct WorkType1
 
 struct Worklet1: public WorkType1
 {
-  typedef void ControlSignature(Field);
+  typedef void ControlSignature(ExecObject);
 };
 
 template<typename T>

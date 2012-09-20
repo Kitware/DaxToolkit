@@ -33,7 +33,7 @@ namespace dax { namespace cont { namespace arg {
 /// \headerfile FieldFunctor.h dax/cont/arg/FieldFunctor.h
 /// \brief Map user defined objects to \c ExecObject worklet parameters.
 template< typename Tags, typename UserClass >
-class ConceptMap<ExecObject(Tags), T, typename boost::enable_if< boost::is_base_of<dax::exec::ExecutionObjectBase,UserClass> >::type>
+class ConceptMap<ExecObject(Tags), UserClass, typename boost::enable_if< boost::is_base_of<dax::exec::ExecutionObjectBase,UserClass> >::type>
 {
 public:
   //ignore constant values when finding size of domain
@@ -42,7 +42,7 @@ public:
 
   explicit ConceptMap(UserClass f): UserClassInstance(f) {}
 
-  ExecArg GetExecArg() { this->UserClassInstance; }
+  ExecArg GetExecArg() { return this->UserClassInstance; }
 
   void ToExecution(dax::Id) const {}
 private:
