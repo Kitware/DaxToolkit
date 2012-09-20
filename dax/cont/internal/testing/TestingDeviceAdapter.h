@@ -346,35 +346,6 @@ private:
       DAX_TEST_ASSERT(value == index + OFFSET,
                       "Got bad value for scheduled kernels.");
       }
-
-    std::cout << "Testing Schedule on Subset" << std::endl;
-
-
-    dax::Id rawInput[ARRAY_SIZE];
-    IdArrayHandle subsetInput = MakeArrayHandle(rawInput, ARRAY_SIZE);
-    for (dax::Id index = 0; index < ARRAY_SIZE; index++)
-      {
-      rawInput[index]=container.GetPortalConst().Get(index);
-      }
-
-
-    const dax::Id RAWSUBSET_SIZE = 4;
-    dax::Id rawsubset[RAWSUBSET_SIZE];
-    rawsubset[0]=0;rawsubset[1]=10;rawsubset[2]=30;rawsubset[3]=20;
-    IdArrayHandle subset = MakeArrayHandle(rawsubset, RAWSUBSET_SIZE);
-
-    std::cout << "Running clear on subset." << std::endl;
-    dax::cont::Schedule<DeviceAdapterTag>()(
-          ClearArrayMapKernel(),
-          make_MapAdapter(subset,subsetInput,ARRAY_SIZE));
-
-    for (dax::Id index = 0; index < 4; index++)
-      {
-      dax::Id value = subsetInput.GetPortalConstControl().Get(rawsubset[index]);
-      DAX_TEST_ASSERT(value == OFFSET,
-                      "Got bad value for subset scheduled kernel.");
-      }
-
   }
 
   static DAX_CONT_EXPORT void TestSchedule()
@@ -414,6 +385,34 @@ private:
       dax::Scalar squareTrue = field[i]*4.0f;
       DAX_TEST_ASSERT(test_equal(squareValue, squareTrue),
                       "Got bad multiply result");
+      }
+
+
+    std::cout << "Testing Schedule on Subset" << std::endl;
+    std::vector<dax::Scalar> fullField(ARRAY_SIZE);
+    std::vector<dax::Id> subSetLookup(ARRAY_SIZE/2);
+    for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+      {
+      field[i]=i;
+      if(i%2==0)
+        {
+        subSetLookup[i/2]=i;
+        }
+      }
+
+    IdArrayHandle subSetLookupHandle = MakeArrayHandle(subSetLookup);
+    ScalarArrayHandle fullFieldHandle = MakeArrayHandle(fullField);
+
+    std::cout << "Running clear on subset." << std::endl;
+    dax::cont::Schedule<DeviceAdapterTag>()(
+          ClearArrayMapKernel(),
+          make_MapAdapter(subSetLookup,fullField,ARRAY_SIZE));
+
+    for (dax::Id index = 0; index < ARRAY_SIZE; index+=2)
+      {
+      dax::Id value = fullField.GetPortalConstControl().Get(index);
+      DAX_TEST_ASSERT(value == OFFSET,
+                      "Got bad value for subset scheduled kernel.");
       }
 
   }
