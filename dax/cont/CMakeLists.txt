@@ -44,6 +44,8 @@ set(headers
 add_subdirectory(internal)
 
 dax_declare_headers(${impl_headers} ${headers})
+dax_install_headers(dax/cont Schedule_Cxx03.h)
+
 
 #-----------------------------------------------------------------------------
 set(DAX_VECTOR_OPERATIONS_NAMESPACE "dax::cont")

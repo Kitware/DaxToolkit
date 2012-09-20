@@ -17,6 +17,7 @@
 set(headers
   Arg.h
   Tag.h
+  WorkId.h
   )
 
 dax_declare_headers(${headers})
