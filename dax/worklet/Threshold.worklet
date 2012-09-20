@@ -20,6 +20,7 @@
 #include <dax/exec/Cell.h>
 #include <dax/exec/VectorOperations.h>
 #include <dax/exec/WorkletMapCell.h>
+#include <dax/exec/WorkletGenerateTopology.h>
 #include <dax/math/Compare.h>
 
 namespace dax {
@@ -71,7 +72,7 @@ private:
   ValueType ThresholdMax;
 };
 
-class ThresholdTopology : public dax::exec::WorkletMapCell
+class ThresholdTopology : public dax::exec::WorkletGenerateTopology
 {
 public:
   // Returning a tuple of connections feels a bit clunky.  Is there a better
@@ -88,6 +89,7 @@ public:
     out = in;
   }
 };
+
 
 }
 } //dax::worklet

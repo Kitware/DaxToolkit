@@ -24,13 +24,20 @@
 #include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/Tag.h>
 
+#include <dax/cont/ScheduleGenerateTopology.h>
+#include <dax/cont/ScheduleMapAdapter.h>
+
 #include <dax/cont/arg/FieldArrayHandle.h>
 #include <dax/cont/arg/FieldConstant.h>
 #include <dax/cont/arg/FieldMap.h>
 #include <dax/cont/arg/TopologyUniformGrid.h>
 #include <dax/cont/arg/TopologyUnstructuredGrid.h>
 
+#include <dax/exec/internal/WorkletBase.h>
+#include <dax/exec/internal/kernel/ScheduleGenerateTopology.h>
+
 #include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_base_of.hpp>
 
 #if !(__cplusplus >= 201103L)
 # include <dax/internal/ParameterPackCxx03.h>
@@ -54,7 +61,7 @@ public:
   // Note any changes to this method must be reflected in the
   // C++03 implementation inside "Schedule_Cxx03.h".
   template <class WorkletType, typename...T>
-  void operator()(WorkletType w, T...a)
+  void operator()(WorkletType w, T...a) const
     {
     // Construct the signature of the worklet invocation on the control side.
     typedef WorkletType ControlInvocationSignature(T...);

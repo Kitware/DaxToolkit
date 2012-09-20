@@ -28,6 +28,7 @@ set(headers
   Derivative.h
   Interpolate.h
   ParametricCoordinates.h
+  WorkletGenerateTopology.h
   WorkletMapCell.h
   WorkletMapField.h
 
