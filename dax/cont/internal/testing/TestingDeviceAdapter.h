@@ -406,11 +406,11 @@ private:
     std::cout << "Running clear on subset." << std::endl;
     dax::cont::Schedule<DeviceAdapterTag>()(
           ClearArrayMapKernel(),
-          make_MapAdapter(subSetLookup,fullField,ARRAY_SIZE));
+          make_MapAdapter(subSetLookupHandle,fullFieldHandle,ARRAY_SIZE));
 
     for (dax::Id index = 0; index < ARRAY_SIZE; index+=2)
       {
-      dax::Id value = fullField.GetPortalConstControl().Get(index);
+      dax::Id value = fullFieldHandle.GetPortalConstControl().Get(index);
       DAX_TEST_ASSERT(value == OFFSET,
                       "Got bad value for subset scheduled kernel.");
       }

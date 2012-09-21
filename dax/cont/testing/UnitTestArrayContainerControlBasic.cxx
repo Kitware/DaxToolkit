@@ -120,6 +120,14 @@ struct TemplatedTests
     arrayContainer.ReleaseResources();
     DAX_TEST_ASSERT(arrayContainer.GetNumberOfValues() == 0,
                     "Array not released correctly.");
+
+    try
+      {
+      arrayContainer.Shrink(ARRAY_SIZE);
+      DAX_TEST_ASSERT(true==false,
+                      "Array shrink do a larger size was possible. This can't be allowed.");
+      }
+    catch(dax::cont::ErrorControlBadValue){}
   }
 
   void operator()()
