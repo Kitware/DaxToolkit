@@ -85,7 +85,11 @@ public:
 
   void Allocate(dax::Id numberOfValues)
   {
-    if (this->AllocatedSize == numberOfValues) return;
+    if (numberOfValues <= this->AllocatedSize)
+      {
+      this->NumberOfValues = numberOfValues;
+      return;
+      }
 
     this->ReleaseResources();
     try
