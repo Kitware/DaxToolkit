@@ -71,9 +71,8 @@ const dax::Id ARRAY_SIZE = 1;
 template <typename T>
 struct TemplatedTests
 {
-  typedef dax::cont::ArrayContainerControlImplicit<TestImplicitContainer<T> > ImplictContainer;
-  typedef dax::cont::internal::ArrayContainerControl<
-      T, ImplictContainer > ArrayContainerType;
+  typedef dax::cont::ArrayContainerControlImplicit< TestImplicitContainer<T> > ContainerTagType;
+  typedef dax::cont::internal::ArrayContainerControl< T,  ContainerTagType > ArrayContainerType;
 
   typedef typename ArrayContainerType::ValueType ValueType;
   typedef typename ArrayContainerType::PortalType PortalType;
@@ -114,16 +113,13 @@ struct TemplatedTests
 
   void BasicAccess()
     {
-
-    typedef dax::cont::ArrayContainerControlImplicit<TestImplicitContainer<T> > ImplictContainer;
-    typedef dax::cont::internal::ArrayContainerControl<
-        T, ImplictContainer > ArrayContainerType;
+    typedef dax::cont::ArrayContainerControlImplicit< TestImplicitContainer<T> > ContainerTagType;
 
     TestImplicitContainer<T> portal;
-    dax::cont::ArrayHandle<T,ArrayContainerType> implictHandle(portal);
+    dax::cont::ArrayHandle<T,ContainerTagType> implictHandle(portal);
     DAX_TEST_ASSERT(implictHandle.GetNumberOfValues() == 1,
                     "handle should have size 1");
-    DAX_TEST_ASSERT(implictHandle.GetPortalConstControl().Get(0) == 1,
+    DAX_TEST_ASSERT(implictHandle.GetPortalConstControl().Get(0) == T(1),
                     "portals first values should be 1");
     ;
     }
@@ -153,7 +149,7 @@ void TestArrayContainerControlBasic()
 
 } // Anonymous namespace
 
-int UnitTestArrayContainerControlBasic(int, char *[])
+int UnitTestArrayContainerControlImplicit(int, char *[])
 {
   return dax::cont::internal::Testing::Run(TestArrayContainerControlBasic);
 }
