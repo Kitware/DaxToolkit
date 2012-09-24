@@ -47,6 +47,7 @@ private:
       ContainerType;
   typedef dax::cont::internal::ArrayManagerExecution<
       T,ArrayContainerControlTag,DeviceAdapterTag> ArrayManagerType;
+
 public:
   /// The type of value held in the array (dax::Scalar, dax::Vector3, etc.)
   ///
