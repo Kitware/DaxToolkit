@@ -62,56 +62,61 @@ namespace internal {
 
 namespace detail {
 
-template<typename T, class Container, class Adapter>
-std::pair<typename dax::cont::internal::
-            ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorConstType,
-          typename dax::cont::internal::
-            ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorConstType>
-PrepareForInput(const dax::cont::ArrayHandle<T,Container,Adapter> &array)
+template<class IteratorType>
+class ThrustIteratorForceDevice : public IteratorType
 {
-  typedef dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>
-      Manager;
-  typedef typename Manager::PortalConstType PortalConstType;
-  typedef typename Manager::ThrustIteratorConstType ThrustIteratorConstType;
+public:
+  typedef ::thrust::random_access_device_iterator_tag iterator_category;
+  ThrustIteratorForceDevice() {  }
+  ThrustIteratorForceDevice(const IteratorType &src)
+    : IteratorType(src) {  }
+};
 
-  PortalConstType portal = array.PrepareForInput();
-  return std::make_pair(Manager::ThrustIteratorBegin(portal),
-                        Manager::ThrustIteratorEnd(portal));
+template<class ManagerType, class PortalType>
+DAX_CONT_EXPORT
+ThrustIteratorForceDevice<typename PortalType::IteratorType>
+ThrustIteratorBegin(PortalType portal)
+{
+  return ThrustIteratorForceDevice<typename PortalType::IteratorType>(
+        portal.GetIteratorBegin());
+}
+template<class ManagerType, class PortalType>
+DAX_CONT_EXPORT
+ThrustIteratorForceDevice<typename PortalType::IteratorType>
+ThrustIteratorEnd(PortalType portal)
+{
+  return ThrustIteratorForceDevice<typename PortalType::IteratorType>(
+        portal.GetIteratorEnd());
 }
 
-template<typename T, class Container, class Adapter>
-std::pair<typename dax::cont::internal::
-            ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorType,
-          typename dax::cont::internal::
-            ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorType>
-PrepareForOutput(dax::cont::ArrayHandle<T,Container,Adapter> &array,
-                 dax::Id numberOfValues)
+template<class ManagerType>
+DAX_CONT_EXPORT
+typename ManagerType::ThrustIteratorConstType
+ThrustIteratorBegin(typename ManagerType::PortalConstType portal)
 {
-  typedef dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>
-      Manager;
-  typedef typename Manager::PortalType PortalType;
-  typedef typename Manager::ThrustIteratorType ThrustIteratorType;
-
-  PortalType portal = array.PrepareForOutput(numberOfValues);
-  return std::make_pair(Manager::ThrustIteratorBegin(portal),
-                        Manager::ThrustIteratorEnd(portal));
+  return ManagerType::ThrustIteratorBegin(portal);
+}
+template<class ManagerType>
+DAX_CONT_EXPORT
+typename ManagerType::ThrustIteratorConstType
+ThrustIteratorEnd(typename ManagerType::PortalConstType portal)
+{
+  return ManagerType::ThrustIteratorEnd(portal);
 }
 
-template<typename T, class Container, class Adapter>
-std::pair<typename dax::cont::internal::
-            ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorType,
-          typename dax::cont::internal::
-            ArrayManagerExecution<T,Container,Adapter>::ThrustIteratorType>
-PrepareForInPlace(dax::cont::ArrayHandle<T,Container,Adapter> &array)
+template<class ManagerType>
+DAX_CONT_EXPORT
+typename ManagerType::ThrustIteratorType
+ThrustIteratorBegin(typename ManagerType::PortalType portal)
 {
-  typedef dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>
-      Manager;
-  typedef typename Manager::PortalType PortalType;
-  typedef typename Manager::ThrustIteratorType ThrustIteratorType;
-
-  PortalType portal = array.PrepareForInPlace();
-  return std::make_pair(Manager::ThrustIteratorBegin(portal),
-                        Manager::ThrustIteratorEnd(portal));
+  return ManagerType::ThrustIteratorBegin(portal);
+}
+template<class ManagerType>
+DAX_CONT_EXPORT
+typename ManagerType::ThrustIteratorType
+ThrustIteratorEnd(typename ManagerType::PortalType portal)
+{
+  return ManagerType::ThrustIteratorEnd(portal);
 }
 
 } // namespace detail
@@ -122,18 +127,20 @@ DAX_CONT_EXPORT void Copy(
     dax::cont::ArrayHandle<T,COut,Adapter> &output,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
-  typedef typename dax::cont::internal::ArrayManagerExecution<T,CIn,Adapter>::
-      ThrustIteratorConstType ThrustIteratorInType;
-  typedef typename dax::cont::internal::ArrayManagerExecution<T,COut,Adapter>::
-      ThrustIteratorType ThrustIteratorOutType;
+  typedef dax::cont::internal::ArrayManagerExecution<T,CIn,Adapter>
+      InputManagerType;
+  typedef dax::cont::internal::ArrayManagerExecution<T,COut,Adapter>
+      OutputManagerType;
 
   dax::Id numberOfValues = input.GetNumberOfValues();
-  std::pair<ThrustIteratorInType, ThrustIteratorInType> inputIter =
-      detail::PrepareForInput(input);
-  std::pair<ThrustIteratorOutType, ThrustIteratorOutType> outputIter =
-      detail::PrepareForOutput(output, numberOfValues);
+  typename InputManagerType::PortalConstType inputPortal =
+      input.PrepareForInput();
+  typename OutputManagerType::PortalType outputPortal =
+      output.PrepareForOutput(numberOfValues);
 
-  ::thrust::copy(inputIter.first, inputIter.second, outputIter.first);
+  ::thrust::copy(detail::ThrustIteratorBegin<InputManagerType>(inputPortal),
+                 detail::ThrustIteratorEnd<InputManagerType>(inputPortal),
+                 detail::ThrustIteratorBegin<OutputManagerType>(outputPortal));
 }
 
 template<typename T, class CIn, class COut, class Adapter>
@@ -142,26 +149,27 @@ DAX_CONT_EXPORT T InclusiveScan(
     dax::cont::ArrayHandle<T,COut,Adapter>& output,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
-  typedef typename dax::cont::internal::ArrayManagerExecution<T,CIn,Adapter>::
-      ThrustIteratorConstType ThrustIteratorInType;
-  typedef typename dax::cont::internal::ArrayManagerExecution<T,COut,Adapter>::
-      ThrustIteratorType ThrustIteratorOutType;
+  typedef dax::cont::internal::ArrayManagerExecution<T,CIn,Adapter>
+      InputManagerType;
+  typedef dax::cont::internal::ArrayManagerExecution<T,COut,Adapter>
+      OutputManagerType;
 
   dax::Id numberOfValues = input.GetNumberOfValues();
 
-  std::pair<ThrustIteratorInType, ThrustIteratorInType> inputIter =
-      detail::PrepareForInput(input);
-  std::pair<ThrustIteratorOutType, ThrustIteratorOutType> outputIter =
-      detail::PrepareForOutput(output, numberOfValues);
+  typename InputManagerType::PortalConstType inputPortal =
+      input.PrepareForInput();
+  typename OutputManagerType::PortalType outputPortal =
+      output.PrepareForOutput(numberOfValues);
 
   if (numberOfValues <= 0) { return 0; }
 
-  ThrustIteratorOutType result = ::thrust::inclusive_scan(inputIter.first,
-                                                          inputIter.second,
-                                                          outputIter.first);
+  ::thrust::inclusive_scan(
+        detail::ThrustIteratorBegin<InputManagerType>(inputPortal),
+        detail::ThrustIteratorEnd<InputManagerType>(inputPortal),
+        detail::ThrustIteratorBegin<OutputManagerType>(outputPortal));
 
   //return the value at the last index in the array, as that is the size
-  return *(result - 1);
+  return *(detail::ThrustIteratorEnd<OutputManagerType>(outputPortal) - 1);
 }
 
 template<typename T, class CIn, class CVal, class COut, class Adapter>
@@ -171,27 +179,28 @@ DAX_CONT_EXPORT void LowerBounds(
     dax::cont::ArrayHandle<dax::Id,COut,Adapter>& output,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
-  typedef typename dax::cont::internal::ArrayManagerExecution<T,CIn,Adapter>::
-      ThrustIteratorConstType ThrustIteratorInType;
-  typedef typename dax::cont::internal::ArrayManagerExecution<T,CVal,Adapter>::
-      ThrustIteratorConstType ThrustIteratorValType;
-  typedef typename dax::cont::internal::ArrayManagerExecution<
-      dax::Id,COut,Adapter>::ThrustIteratorType ThrustIteratorOutType;
+  typedef dax::cont::internal::ArrayManagerExecution<T,CIn,Adapter>
+      InputManagerType;
+  typedef dax::cont::internal::ArrayManagerExecution<T,CVal,Adapter>
+      ValueManagerType;
+  typedef dax::cont::internal::ArrayManagerExecution<dax::Id,COut,Adapter>
+      OutputManagerType;
 
   dax::Id numberOfValues = values.GetNumberOfValues();
 
-  std::pair<ThrustIteratorInType, ThrustIteratorInType> inputIter =
-      detail::PrepareForInput(input);
-  std::pair<ThrustIteratorValType, ThrustIteratorValType> valuesIter =
-      detail::PrepareForInput(values);
-  std::pair<ThrustIteratorOutType, ThrustIteratorOutType> outputIter =
-      detail::PrepareForOutput(output, numberOfValues);
+  typename InputManagerType::PortalConstType inputPortal =
+      input.PrepareForInput();
+  typename ValueManagerType::PortalConstType valuesPortal =
+      values.PrepareForInput();
+  typename OutputManagerType::PortalType outputPortal =
+      output.PrepareForOutput(numberOfValues);
 
-  ::thrust::lower_bound(inputIter.first,
-                        inputIter.second,
-                        valuesIter.first,
-                        valuesIter.second,
-                        outputIter.first);
+  ::thrust::lower_bound(
+        detail::ThrustIteratorBegin<InputManagerType>(inputPortal),
+        detail::ThrustIteratorEnd<InputManagerType>(inputPortal),
+        detail::ThrustIteratorBegin<ValueManagerType>(valuesPortal),
+        detail::ThrustIteratorEnd<ValueManagerType>(valuesPortal),
+        detail::ThrustIteratorBegin<OutputManagerType>(outputPortal));
 }
 
 template<class CIn, class COut, class Adapter>
@@ -200,21 +209,22 @@ DAX_CONT_EXPORT void LowerBounds(
     dax::cont::ArrayHandle<dax::Id,COut,Adapter> &values_output,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
-  typedef typename dax::cont::internal::ArrayManagerExecution<
-      dax::Id,CIn,Adapter>::ThrustIteratorConstType ThrustIteratorInType;
-  typedef typename dax::cont::internal::ArrayManagerExecution<
-      dax::Id,COut,Adapter>::ThrustIteratorType ThrustIteratorOutType;
+  typedef dax::cont::internal::ArrayManagerExecution<dax::Id,CIn,Adapter>
+      InputManagerType;
+  typedef dax::cont::internal::ArrayManagerExecution<dax::Id,COut,Adapter>
+      OutputManagerType;
 
-  std::pair<ThrustIteratorInType, ThrustIteratorInType> inputIter =
-      detail::PrepareForInput(input);
-  std::pair<ThrustIteratorOutType, ThrustIteratorOutType> outputIter =
-      detail::PrepareForInPlace(values_output);
+  typename InputManagerType::PortalConstType inputPortal =
+      input.PrepareForInput();
+  typename OutputManagerType::PortalType outputPortal =
+      values_output.PrepareForInPlace();
 
-  ::thrust::lower_bound(inputIter.first,
-                        inputIter.second,
-                        outputIter.first,
-                        outputIter.second,
-                        outputIter.first);
+  ::thrust::lower_bound(
+        detail::ThrustIteratorBegin<InputManagerType>(inputPortal),
+        detail::ThrustIteratorEnd<InputManagerType>(inputPortal),
+        detail::ThrustIteratorBegin<OutputManagerType>(outputPortal),
+        detail::ThrustIteratorEnd<OutputManagerType>(outputPortal),
+        detail::ThrustIteratorBegin<OutputManagerType>(outputPortal));
 }
 
 namespace detail {
@@ -304,12 +314,13 @@ DAX_CONT_EXPORT void Sort(
     dax::cont::ArrayHandle<T,Container,Adapter>& values,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
-  typedef typename dax::cont::internal::ArrayManagerExecution<
-      T,Container,Adapter>::ThrustIteratorType ThrustIteratorType;
+  typedef dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>
+      ManagerType;
 
-  std::pair<ThrustIteratorType, ThrustIteratorType> iterators =
-      detail::PrepareForInPlace(values);
-  ::thrust::sort(iterators.first, iterators.second);
+  typename ManagerType::PortalType portal = values.PrepareForInPlace();
+
+  ::thrust::sort(detail::ThrustIteratorBegin<ManagerType>(portal),
+                 detail::ThrustIteratorEnd<ManagerType>(portal));
 }
 
 
@@ -327,26 +338,28 @@ DAX_CONT_EXPORT void RemoveIf(
     const dax::cont::ArrayHandle<T,CStencil,Adapter>& stencil,
     dax::cont::ArrayHandle<U,COut,Adapter>& output)
 {
-  typedef typename dax::cont::internal::ArrayManagerExecution<
-      T,CStencil,Adapter>::ThrustIteratorConstType ThrustIteratorStencilType;
-  typedef typename dax::cont::internal::ArrayManagerExecution<
-      U,COut,Adapter>::ThrustIteratorType ThrustIteratorOutType;
+  typedef dax::cont::internal::ArrayManagerExecution<T,CStencil,Adapter>
+      StencilManagerType;
+  typedef dax::cont::internal::ArrayManagerExecution<U,COut,Adapter>
+      OutputManagerType;
 
-  std::pair<ThrustIteratorStencilType, ThrustIteratorStencilType> stencilIter =
-      detail::PrepareForInput(stencil);
+  typename StencilManagerType::PortalConstType stencilPortal =
+      stencil.PrepareForInput();
 
-  dax::Id numLeft = ::thrust::count_if(stencilIter.first,
-                                       stencilIter.second,
-                                       dax::not_default_constructor<T>());
+  dax::Id numLeft = ::thrust::count_if(
+        detail::ThrustIteratorBegin<StencilManagerType>(stencilPortal),
+        detail::ThrustIteratorEnd<StencilManagerType>(stencilPortal),
+        dax::not_default_constructor<T>());
 
-  std::pair<ThrustIteratorOutType, ThrustIteratorOutType> outputIter =
-      detail::PrepareForOutput(output, numLeft);
+  typename OutputManagerType::PortalType outputPortal =
+      output.PrepareForOutput(numLeft);
 
-  ::thrust::copy_if(valuesBegin,
-                    valuesEnd,
-                    stencilIter.first,
-                    outputIter.first,
-                    dax::not_default_constructor<T>());
+  ::thrust::copy_if(
+        valuesBegin,
+        valuesEnd,
+        detail::ThrustIteratorBegin<StencilManagerType>(stencilPortal),
+        detail::ThrustIteratorBegin<OutputManagerType>(outputPortal),
+        dax::not_default_constructor<T>());
 }
 
 } // namespace detail
@@ -377,13 +390,30 @@ DAX_CONT_EXPORT void StreamCompact(
     dax::cont::ArrayHandle<U,COut,Adapter>& output,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
-  typedef typename dax::cont::internal::ArrayManagerExecution<
-      U,CIn,Adapter>::ThrustIteratorConstType ThrustIteratorInType;
+  typedef dax::cont::internal::ArrayManagerExecution<U,CIn,Adapter>
+      InputManagerType;
 
-  std::pair<ThrustIteratorInType, ThrustIteratorInType> inputIter =
-      detail::PrepareForInput(input);
+  typename InputManagerType::PortalConstType inputPortal =
+      input.PrepareForInput();
 
-  detail::RemoveIf(inputIter.first, inputIter.second, stencil, output);
+  detail::RemoveIf(detail::ThrustIteratorBegin<InputManagerType>(inputPortal),
+                   detail::ThrustIteratorEnd<InputManagerType>(inputPortal),
+                   stencil,
+                   output);
+}
+
+namespace detail {
+
+// A simple wrapper around unique that returns the size of the array.
+// This would not be necessary if we had an auto keyword.
+template<class IteratorType>
+DAX_CONT_EXPORT
+dax::Id ThrustUnique(IteratorType first, IteratorType last)
+{
+  IteratorType newLast = ::thrust::unique(first, last);
+  return ::thrust::distance(first, newLast);
+}
+
 }
 
 template<typename T, class Container, class Adapter>
@@ -391,16 +421,16 @@ DAX_CONT_EXPORT void Unique(
     dax::cont::ArrayHandle<T,Container,Adapter> &values,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
-  typedef typename dax::cont::internal::ArrayManagerExecution<
-      T,Container,Adapter>::ThrustIteratorType ThrustIteratorType;
+  typedef dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>
+      ManagerType;
 
-  std::pair<ThrustIteratorType, ThrustIteratorType> valueIter =
-      detail::PrepareForInPlace(values);
+  typename ManagerType::PortalType valuePortal = values.PrepareForInPlace();
 
-  ThrustIteratorType newEnd =
-      ::thrust::unique(valueIter.first, valueIter.second);
+  dax::Id newSize = detail::ThrustUnique(
+        detail::ThrustIteratorBegin<ManagerType>(valuePortal),
+        detail::ThrustIteratorEnd<ManagerType>(valuePortal));
 
-  values.Shrink(::thrust::distance(valueIter.first, newEnd));
+  values.Shrink(newSize);
 }
 
 }
