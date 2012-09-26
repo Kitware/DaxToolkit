@@ -58,9 +58,8 @@
 #endif // gcc version >= 4.6
 #endif // gcc && !CUDA
 
-// These have to be in the dax::cont::internal namespace to match those
-// defined elsewhere.
 namespace dax {
+namespace thrust {
 namespace cont {
 namespace internal {
 
@@ -184,26 +183,157 @@ ThrustIteratorEnd(PortalType portal)
 
 } // namespace detail
 
+template<class InputPortal, class OutputPortal>
+DAX_CONT_EXPORT void CopyPortal(const InputPortal &input,
+                                const OutputPortal &output)
+{
+  ::thrust::copy(detail::ThrustIteratorBegin(input),
+                 detail::ThrustIteratorEnd(input),
+                 detail::ThrustIteratorBegin(output));
+}
+
+template<class InputPortal, class OutputPortal>
+DAX_CONT_EXPORT typename InputPortal::ValueType InclusiveScanPortal(
+    const InputPortal &input,
+    const OutputPortal &output)
+{
+  ::thrust::inclusive_scan(detail::ThrustIteratorBegin(input),
+                           detail::ThrustIteratorEnd(input),
+                           detail::ThrustIteratorBegin(output));
+
+  //return the value at the last index in the array, as that is the size
+  return *(detail::ThrustIteratorEnd(output) - 1);
+}
+
+template<class InputPortal, class ValuesPortal, class OutputPortal>
+DAX_CONT_EXPORT void LowerBoundsPortal(const InputPortal &input,
+                                       const ValuesPortal &values,
+                                       const OutputPortal &output)
+{
+  ::thrust::lower_bound(detail::ThrustIteratorBegin(input),
+                        detail::ThrustIteratorEnd(input),
+                        detail::ThrustIteratorBegin(values),
+                        detail::ThrustIteratorEnd(values),
+                        detail::ThrustIteratorBegin(output));
+}
+
+template<class InputPortal, class OutputPortal>
+DAX_CONT_EXPORT void LowerBoundsPortal(const InputPortal &input,
+                                       const OutputPortal &values_output)
+{
+  ::thrust::lower_bound(detail::ThrustIteratorBegin(input),
+                        detail::ThrustIteratorEnd(input),
+                        detail::ThrustIteratorBegin(values_output),
+                        detail::ThrustIteratorEnd(values_output),
+                        detail::ThrustIteratorBegin(values_output));
+}
+
+template<class ValuesPortal>
+DAX_CONT_EXPORT void SortPortal(const ValuesPortal &values)
+{
+  ::thrust::sort(detail::ThrustIteratorBegin(values),
+                 detail::ThrustIteratorEnd(values));
+}
+
+template<class StencilPortal>
+DAX_CONT_EXPORT dax::Id CountIfPortal(const StencilPortal &stencil)
+{
+  typedef typename StencilPortal::ValueType ValueType;
+  return ::thrust::count_if(detail::ThrustIteratorBegin(stencil),
+                            detail::ThrustIteratorEnd(stencil),
+                            dax::not_default_constructor<ValueType>());
+}
+
+template<class ValueIterator,
+         class StencilPortal,
+         class OutputPortal>
+DAX_CONT_EXPORT void CopyIfPortal(ValueIterator valuesBegin,
+                                  ValueIterator valuesEnd,
+                                  const StencilPortal &stencil,
+                                  const OutputPortal &output)
+{
+  typedef typename StencilPortal::ValueType ValueType;
+  ::thrust::copy_if(valuesBegin,
+                    valuesEnd,
+                    detail::ThrustIteratorBegin(stencil),
+                    detail::ThrustIteratorBegin(output),
+                    dax::not_default_constructor<ValueType>());
+}
+
+template<class ValueIterator, class StencilArrayHandle, class OutputArrayHandle>
+DAX_CONT_EXPORT void RemoveIf(ValueIterator valuesBegin,
+                              ValueIterator valuesEnd,
+                              const StencilArrayHandle& stencil,
+                              OutputArrayHandle& output)
+{
+  // TODO: Check that Adapter is compatable.
+
+  dax::Id numLeft =
+      dax::thrust::cont::internal::CountIfPortal(stencil.PrepareForInput());
+
+  dax::thrust::cont::internal::CopyIfPortal(valuesBegin,
+                                            valuesEnd,
+                                            stencil.PrepareForInput(),
+                                            output.PrepareForOutput(numLeft));
+}
+
+template<class InputPortal,
+         class StencilArrayHandle,
+         class OutputArrayHandle>
+DAX_CONT_EXPORT void StreamCompactPortal(const InputPortal& inputPortal,
+                                         const StencilArrayHandle &stencil,
+                                         OutputArrayHandle& output)
+{
+  // TODO: Check that Adapter is compatable.
+
+  dax::thrust::cont::internal::RemoveIf(
+        detail::ThrustIteratorBegin(inputPortal),
+        detail::ThrustIteratorEnd(inputPortal),
+        stencil,
+        output);
+}
+
+// A simple wrapper around unique that returns the size of the array.
+// This would not be necessary if we had an auto keyword.
+template<class IteratorType>
+DAX_CONT_EXPORT
+dax::Id UniqueIterator(IteratorType first, IteratorType last)
+{
+  IteratorType newLast = ::thrust::unique(first, last);
+  return ::thrust::distance(first, newLast);
+}
+
+template<class ValuesPortal>
+DAX_CONT_EXPORT dax::Id UniquePortal(const ValuesPortal values)
+{
+  return dax::thrust::cont::internal::UniqueIterator(
+        detail::ThrustIteratorBegin(values),
+        detail::ThrustIteratorEnd(values));
+}
+
+}
+}
+}
+} // namespace dax::thrust::cont::internal
+
+// These have to be in the dax::cont::internal namespace to match those
+// defined elsewhere.
+namespace dax {
+namespace cont {
+namespace internal {
 template<typename T, class CIn, class COut, class Adapter>
+
 DAX_CONT_EXPORT void Copy(
     const dax::cont::ArrayHandle<T,CIn,Adapter> &input,
     dax::cont::ArrayHandle<T,COut,Adapter> &output,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
-  typedef dax::cont::internal::ArrayManagerExecution<T,CIn,Adapter>
-      InputManagerType;
-  typedef dax::cont::internal::ArrayManagerExecution<T,COut,Adapter>
-      OutputManagerType;
+  // TODO: Check that Adapter is compatable.
 
   dax::Id numberOfValues = input.GetNumberOfValues();
-  typename InputManagerType::PortalConstType inputPortal =
-      input.PrepareForInput();
-  typename OutputManagerType::PortalType outputPortal =
-      output.PrepareForOutput(numberOfValues);
-
-  ::thrust::copy(detail::ThrustIteratorBegin(inputPortal),
-                 detail::ThrustIteratorEnd(inputPortal),
-                 detail::ThrustIteratorBegin(outputPortal));
+  dax::thrust::cont::internal::CopyPortal(
+        input.PrepareForInput(),
+        output.PrepareForOutput(numberOfValues));
 }
 
 template<typename T, class CIn, class COut, class Adapter>
@@ -212,26 +342,18 @@ DAX_CONT_EXPORT T InclusiveScan(
     dax::cont::ArrayHandle<T,COut,Adapter>& output,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
-  typedef dax::cont::internal::ArrayManagerExecution<T,CIn,Adapter>
-      InputManagerType;
-  typedef dax::cont::internal::ArrayManagerExecution<T,COut,Adapter>
-      OutputManagerType;
+  // TODO: Check that Adapter is compatable.
 
   dax::Id numberOfValues = input.GetNumberOfValues();
+  if (numberOfValues <= 0)
+    {
+    output.PrepareForOutput(0);
+    return 0;
+    }
 
-  typename InputManagerType::PortalConstType inputPortal =
-      input.PrepareForInput();
-  typename OutputManagerType::PortalType outputPortal =
-      output.PrepareForOutput(numberOfValues);
-
-  if (numberOfValues <= 0) { return 0; }
-
-  ::thrust::inclusive_scan(detail::ThrustIteratorBegin(inputPortal),
-                           detail::ThrustIteratorEnd(inputPortal),
-                           detail::ThrustIteratorBegin(outputPortal));
-
-  //return the value at the last index in the array, as that is the size
-  return *(detail::ThrustIteratorEnd(outputPortal) - 1);
+  return dax::thrust::cont::internal::InclusiveScanPortal(
+        input.PrepareForInput(),
+        output.PrepareForOutput(numberOfValues));
 }
 
 template<typename T, class CIn, class CVal, class COut, class Adapter>
@@ -241,27 +363,13 @@ DAX_CONT_EXPORT void LowerBounds(
     dax::cont::ArrayHandle<dax::Id,COut,Adapter>& output,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
-  typedef dax::cont::internal::ArrayManagerExecution<T,CIn,Adapter>
-      InputManagerType;
-  typedef dax::cont::internal::ArrayManagerExecution<T,CVal,Adapter>
-      ValueManagerType;
-  typedef dax::cont::internal::ArrayManagerExecution<dax::Id,COut,Adapter>
-      OutputManagerType;
+  // TODO: Check that Adapter is compatable.
 
   dax::Id numberOfValues = values.GetNumberOfValues();
-
-  typename InputManagerType::PortalConstType inputPortal =
-      input.PrepareForInput();
-  typename ValueManagerType::PortalConstType valuesPortal =
-      values.PrepareForInput();
-  typename OutputManagerType::PortalType outputPortal =
-      output.PrepareForOutput(numberOfValues);
-
-  ::thrust::lower_bound(detail::ThrustIteratorBegin(inputPortal),
-                        detail::ThrustIteratorEnd(inputPortal),
-                        detail::ThrustIteratorBegin(valuesPortal),
-                        detail::ThrustIteratorEnd(valuesPortal),
-                        detail::ThrustIteratorBegin(outputPortal));
+  dax::thrust::cont::internal::LowerBoundsPortal(
+        input.PrepareForInput(),
+        values.PrepareForInput(),
+        output.PrepareForOutput(numberOfValues));
 }
 
 template<class CIn, class COut, class Adapter>
@@ -270,21 +378,11 @@ DAX_CONT_EXPORT void LowerBounds(
     dax::cont::ArrayHandle<dax::Id,COut,Adapter> &values_output,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
-  typedef dax::cont::internal::ArrayManagerExecution<dax::Id,CIn,Adapter>
-      InputManagerType;
-  typedef dax::cont::internal::ArrayManagerExecution<dax::Id,COut,Adapter>
-      OutputManagerType;
+  // TODO: Check that Adapter is compatable.
 
-  typename InputManagerType::PortalConstType inputPortal =
-      input.PrepareForInput();
-  typename OutputManagerType::PortalType outputPortal =
-      values_output.PrepareForInPlace();
-
-  ::thrust::lower_bound(detail::ThrustIteratorBegin(inputPortal),
-                        detail::ThrustIteratorEnd(inputPortal),
-                        detail::ThrustIteratorBegin(outputPortal),
-                        detail::ThrustIteratorEnd(outputPortal),
-                        detail::ThrustIteratorBegin(outputPortal));
+  dax::thrust::cont::internal::LowerBoundsPortal(
+        input.PrepareForInput(),
+        values_output.PrepareForInPlace());
 }
 
 namespace detail {
@@ -374,54 +472,10 @@ DAX_CONT_EXPORT void Sort(
     dax::cont::ArrayHandle<T,Container,Adapter>& values,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
-  typedef dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>
-      ManagerType;
+  // TODO: Check that Adapter is compatable.
 
-  typename ManagerType::PortalType portal = values.PrepareForInPlace();
-
-  ::thrust::sort(detail::ThrustIteratorBegin(portal),
-                 detail::ThrustIteratorEnd(portal));
+  ::dax::thrust::cont::internal::SortPortal(values.PrepareForInPlace());
 }
-
-
-namespace detail {
-
-template<class ValueIterator,
-         typename T,
-         typename U,
-         class CStencil,
-         class COut,
-         class Adapter>
-DAX_CONT_EXPORT void RemoveIf(
-    ValueIterator valuesBegin,
-    ValueIterator valuesEnd,
-    const dax::cont::ArrayHandle<T,CStencil,Adapter>& stencil,
-    dax::cont::ArrayHandle<U,COut,Adapter>& output)
-{
-  typedef dax::cont::internal::ArrayManagerExecution<T,CStencil,Adapter>
-      StencilManagerType;
-  typedef dax::cont::internal::ArrayManagerExecution<U,COut,Adapter>
-      OutputManagerType;
-
-  typename StencilManagerType::PortalConstType stencilPortal =
-      stencil.PrepareForInput();
-
-  dax::Id numLeft = ::thrust::count_if(
-        detail::ThrustIteratorBegin(stencilPortal),
-        detail::ThrustIteratorEnd(stencilPortal),
-        dax::not_default_constructor<T>());
-
-  typename OutputManagerType::PortalType outputPortal =
-      output.PrepareForOutput(numLeft);
-
-  ::thrust::copy_if(valuesBegin,
-                    valuesEnd,
-                    detail::ThrustIteratorBegin(stencilPortal),
-                    detail::ThrustIteratorBegin(outputPortal),
-                    dax::not_default_constructor<T>());
-}
-
-} // namespace detail
 
 template<typename T, class CStencil, class COut, class Adapter>
 DAX_CONT_EXPORT void StreamCompact(
@@ -429,12 +483,15 @@ DAX_CONT_EXPORT void StreamCompact(
     dax::cont::ArrayHandle<dax::Id,COut,Adapter>& output,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
+  // TODO: Check that Adapter is compatable.
+
   dax::Id stencilSize = stencil.GetNumberOfValues();
 
-  detail::RemoveIf(::thrust::make_counting_iterator<dax::Id>(0),
-                   ::thrust::make_counting_iterator<dax::Id>(stencilSize),
-                   stencil,
-                   output);
+  dax::thrust::cont::internal::RemoveIf(
+        ::thrust::make_counting_iterator<dax::Id>(0),
+        ::thrust::make_counting_iterator<dax::Id>(stencilSize),
+        stencil,
+        output);
 }
 
 template<typename T,
@@ -449,30 +506,11 @@ DAX_CONT_EXPORT void StreamCompact(
     dax::cont::ArrayHandle<U,COut,Adapter>& output,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
-  typedef dax::cont::internal::ArrayManagerExecution<U,CIn,Adapter>
-      InputManagerType;
+  // TODO: Check that Adapter is compatable.
 
-  typename InputManagerType::PortalConstType inputPortal =
-      input.PrepareForInput();
-
-  detail::RemoveIf(detail::ThrustIteratorBegin(inputPortal),
-                   detail::ThrustIteratorEnd(inputPortal),
-                   stencil,
-                   output);
-}
-
-namespace detail {
-
-// A simple wrapper around unique that returns the size of the array.
-// This would not be necessary if we had an auto keyword.
-template<class IteratorType>
-DAX_CONT_EXPORT
-dax::Id ThrustUnique(IteratorType first, IteratorType last)
-{
-  IteratorType newLast = ::thrust::unique(first, last);
-  return ::thrust::distance(first, newLast);
-}
-
+  dax::thrust::cont::internal::StreamCompactPortal(input.PrepareForInput(),
+                                                   stencil,
+                                                   output);
 }
 
 template<typename T, class Container, class Adapter>
@@ -480,14 +518,10 @@ DAX_CONT_EXPORT void Unique(
     dax::cont::ArrayHandle<T,Container,Adapter> &values,
     dax::thrust::cont::internal::DeviceAdapterTagThrust)
 {
-  typedef dax::cont::internal::ArrayManagerExecution<T,Container,Adapter>
-      ManagerType;
-
-  typename ManagerType::PortalType valuePortal = values.PrepareForInPlace();
+  // TODO: Check that Adapter is compatable.
 
   dax::Id newSize =
-      detail::ThrustUnique(detail::ThrustIteratorBegin(valuePortal),
-                           detail::ThrustIteratorEnd(valuePortal));
+      dax::thrust::cont::internal::UniquePortal(values.PrepareForInPlace());
 
   values.Shrink(newSize);
 }

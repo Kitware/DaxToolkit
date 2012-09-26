@@ -143,8 +143,8 @@ public:
   DAX_CONT_EXPORT void CopyInto(IteratorTypeControl dest) const
   {
     DAX_ASSERT_CONT(this->PortalValid);
-    std::copy(this->ConstPortal.GetIteratorBegin(),
-              this->ConstPortal.GetIteratorEnd(),
+    std::copy(this->Portal.GetIteratorBegin(),
+              this->Portal.GetIteratorEnd(),
               dest);
   }
 
