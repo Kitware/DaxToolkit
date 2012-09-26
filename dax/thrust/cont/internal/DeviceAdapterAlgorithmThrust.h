@@ -23,6 +23,7 @@
 
 #include <dax/Functional.h>
 
+#include <dax/exec/internal/ArrayPortalFromIterators.h>
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 #include <dax/exec/internal/Functor.h>
 
@@ -48,6 +49,9 @@
 #include <thrust/sort.h>
 #include <thrust/unique.h>
 
+#include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/transform_iterator.h>
+
 #if defined(__GNUC__) && !defined(DAX_CUDA)
 #if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
 #pragma GCC diagnostic pop
@@ -62,61 +66,120 @@ namespace internal {
 
 namespace detail {
 
-template<class IteratorType>
-class ThrustIteratorForceDevice : public IteratorType
+template<class PortalType>
+class ThrustLookupFunctor
+    : public ::thrust::unary_function<dax::Id, typename PortalType::ValueType>
 {
 public:
-  typedef ::thrust::random_access_device_iterator_tag iterator_category;
-  ThrustIteratorForceDevice() {  }
-  ThrustIteratorForceDevice(const IteratorType &src)
-    : IteratorType(src) {  }
+  DAX_CONT_EXPORT ThrustLookupFunctor(PortalType portal)
+    : Portal(portal) {  }
+
+  DAX_EXEC_EXPORT
+  typename PortalType::ValueType
+  operator()(dax::Id index)
+  {
+    return this->Portal.Get(index);
+  }
+
+private:
+  PortalType Portal;
 };
 
-template<class ManagerType, class PortalType>
+// Tags to specify what type of thrust iterator to use.
+struct ThrustIteratorTransformTag {  };
+struct ThrustIteratorDevicePtrTag {  };
+
+// Traits to help classify what thrust iterators will be used.
+template<class IteratorType>
+struct ThrustIteratorTag {
+  typedef ThrustIteratorTransformTag Type;
+};
+template<typename T>
+struct ThrustIteratorTag<T *> {
+  typedef ThrustIteratorDevicePtrTag Type;
+};
+template<typename T>
+struct ThrustIteratorTag<const T*> {
+  typedef ThrustIteratorDevicePtrTag Type;
+};
+
+template<typename T> struct ThrustStripPointer;
+template<typename T> struct ThrustStripPointer<T *> {
+  typedef T Type;
+};
+template<typename T> struct ThrustStripPointer<const T *> {
+  typedef const T Type;
+};
+
+template<class PortalType, class Tag> struct ThrustIteratorType;
+template<class PortalType>
+struct ThrustIteratorType<PortalType, ThrustIteratorTransformTag> {
+  typedef ::thrust::transform_iterator<
+      ThrustLookupFunctor<PortalType>,
+      ::thrust::counting_iterator<dax::Id> > Type;
+};
+template<class PortalType>
+struct ThrustIteratorType<PortalType, ThrustIteratorDevicePtrTag> {
+  typedef ::thrust::device_ptr<
+      typename ThrustStripPointer<typename PortalType::IteratorType>::Type>
+      Type;
+};
+
+template<class PortalType>
+struct ThrustIteratorTraits
+{
+  typedef typename PortalType::IteratorType BaseIteratorType;
+  typedef typename ThrustIteratorTag<BaseIteratorType>::Type Tag;
+  typedef typename ThrustIteratorType<PortalType, Tag>::Type IteratorType;
+};
+
+template<typename T>
 DAX_CONT_EXPORT
-ThrustIteratorForceDevice<typename PortalType::IteratorType>
+::thrust::device_ptr<T>
+ThrustMakeDevicePtr(T *iter)
+{
+  return ::thrust::device_ptr<T>(iter);
+}
+template<typename T>
+DAX_CONT_EXPORT
+::thrust::device_ptr<const T>
+ThrustMakeDevicePtr(const T *iter)
+{
+  return ::thrust::device_ptr<const T>(iter);
+}
+
+template<class PortalType>
+DAX_CONT_EXPORT
+typename ThrustIteratorTraits<PortalType>::IteratorType
+ThrustMakeIteratorBegin(PortalType portal, ThrustIteratorTransformTag)
+{
+  return ::thrust::make_transform_iterator(
+        ::thrust::make_counting_iterator(dax::Id(0)),
+        ThrustLookupFunctor<PortalType>(portal));
+}
+
+template<class PortalType>
+DAX_CONT_EXPORT
+typename ThrustIteratorTraits<PortalType>::IteratorType
+ThrustMakeIteratorBegin(PortalType portal, ThrustIteratorDevicePtrTag)
+{
+  return ThrustMakeDevicePtr(portal.GetIteratorBegin());
+}
+
+template<class PortalType>
+DAX_CONT_EXPORT
+typename ThrustIteratorTraits<PortalType>::IteratorType
 ThrustIteratorBegin(PortalType portal)
 {
-  return ThrustIteratorForceDevice<typename PortalType::IteratorType>(
-        portal.GetIteratorBegin());
+  typedef typename ThrustIteratorTraits<PortalType>::Tag ThrustIteratorTag;
+  return ThrustMakeIteratorBegin(portal, ThrustIteratorTag());
 }
-template<class ManagerType, class PortalType>
+template<class PortalType>
 DAX_CONT_EXPORT
-ThrustIteratorForceDevice<typename PortalType::IteratorType>
+typename ThrustIteratorTraits<PortalType>::IteratorType
 ThrustIteratorEnd(PortalType portal)
 {
-  return ThrustIteratorForceDevice<typename PortalType::IteratorType>(
-        portal.GetIteratorEnd());
-}
-
-template<class ManagerType>
-DAX_CONT_EXPORT
-typename ManagerType::ThrustIteratorConstType
-ThrustIteratorBegin(typename ManagerType::PortalConstType portal)
-{
-  return ManagerType::ThrustIteratorBegin(portal);
-}
-template<class ManagerType>
-DAX_CONT_EXPORT
-typename ManagerType::ThrustIteratorConstType
-ThrustIteratorEnd(typename ManagerType::PortalConstType portal)
-{
-  return ManagerType::ThrustIteratorEnd(portal);
-}
-
-template<class ManagerType>
-DAX_CONT_EXPORT
-typename ManagerType::ThrustIteratorType
-ThrustIteratorBegin(typename ManagerType::PortalType portal)
-{
-  return ManagerType::ThrustIteratorBegin(portal);
-}
-template<class ManagerType>
-DAX_CONT_EXPORT
-typename ManagerType::ThrustIteratorType
-ThrustIteratorEnd(typename ManagerType::PortalType portal)
-{
-  return ManagerType::ThrustIteratorEnd(portal);
+  return ThrustIteratorBegin(portal) + portal.GetNumberOfValues();
 }
 
 } // namespace detail
@@ -138,9 +201,9 @@ DAX_CONT_EXPORT void Copy(
   typename OutputManagerType::PortalType outputPortal =
       output.PrepareForOutput(numberOfValues);
 
-  ::thrust::copy(detail::ThrustIteratorBegin<InputManagerType>(inputPortal),
-                 detail::ThrustIteratorEnd<InputManagerType>(inputPortal),
-                 detail::ThrustIteratorBegin<OutputManagerType>(outputPortal));
+  ::thrust::copy(detail::ThrustIteratorBegin(inputPortal),
+                 detail::ThrustIteratorEnd(inputPortal),
+                 detail::ThrustIteratorBegin(outputPortal));
 }
 
 template<typename T, class CIn, class COut, class Adapter>
@@ -163,13 +226,12 @@ DAX_CONT_EXPORT T InclusiveScan(
 
   if (numberOfValues <= 0) { return 0; }
 
-  ::thrust::inclusive_scan(
-        detail::ThrustIteratorBegin<InputManagerType>(inputPortal),
-        detail::ThrustIteratorEnd<InputManagerType>(inputPortal),
-        detail::ThrustIteratorBegin<OutputManagerType>(outputPortal));
+  ::thrust::inclusive_scan(detail::ThrustIteratorBegin(inputPortal),
+                           detail::ThrustIteratorEnd(inputPortal),
+                           detail::ThrustIteratorBegin(outputPortal));
 
   //return the value at the last index in the array, as that is the size
-  return *(detail::ThrustIteratorEnd<OutputManagerType>(outputPortal) - 1);
+  return *(detail::ThrustIteratorEnd(outputPortal) - 1);
 }
 
 template<typename T, class CIn, class CVal, class COut, class Adapter>
@@ -195,12 +257,11 @@ DAX_CONT_EXPORT void LowerBounds(
   typename OutputManagerType::PortalType outputPortal =
       output.PrepareForOutput(numberOfValues);
 
-  ::thrust::lower_bound(
-        detail::ThrustIteratorBegin<InputManagerType>(inputPortal),
-        detail::ThrustIteratorEnd<InputManagerType>(inputPortal),
-        detail::ThrustIteratorBegin<ValueManagerType>(valuesPortal),
-        detail::ThrustIteratorEnd<ValueManagerType>(valuesPortal),
-        detail::ThrustIteratorBegin<OutputManagerType>(outputPortal));
+  ::thrust::lower_bound(detail::ThrustIteratorBegin(inputPortal),
+                        detail::ThrustIteratorEnd(inputPortal),
+                        detail::ThrustIteratorBegin(valuesPortal),
+                        detail::ThrustIteratorEnd(valuesPortal),
+                        detail::ThrustIteratorBegin(outputPortal));
 }
 
 template<class CIn, class COut, class Adapter>
@@ -219,12 +280,11 @@ DAX_CONT_EXPORT void LowerBounds(
   typename OutputManagerType::PortalType outputPortal =
       values_output.PrepareForInPlace();
 
-  ::thrust::lower_bound(
-        detail::ThrustIteratorBegin<InputManagerType>(inputPortal),
-        detail::ThrustIteratorEnd<InputManagerType>(inputPortal),
-        detail::ThrustIteratorBegin<OutputManagerType>(outputPortal),
-        detail::ThrustIteratorEnd<OutputManagerType>(outputPortal),
-        detail::ThrustIteratorBegin<OutputManagerType>(outputPortal));
+  ::thrust::lower_bound(detail::ThrustIteratorBegin(inputPortal),
+                        detail::ThrustIteratorEnd(inputPortal),
+                        detail::ThrustIteratorBegin(outputPortal),
+                        detail::ThrustIteratorEnd(outputPortal),
+                        detail::ThrustIteratorBegin(outputPortal));
 }
 
 namespace detail {
@@ -319,8 +379,8 @@ DAX_CONT_EXPORT void Sort(
 
   typename ManagerType::PortalType portal = values.PrepareForInPlace();
 
-  ::thrust::sort(detail::ThrustIteratorBegin<ManagerType>(portal),
-                 detail::ThrustIteratorEnd<ManagerType>(portal));
+  ::thrust::sort(detail::ThrustIteratorBegin(portal),
+                 detail::ThrustIteratorEnd(portal));
 }
 
 
@@ -347,19 +407,18 @@ DAX_CONT_EXPORT void RemoveIf(
       stencil.PrepareForInput();
 
   dax::Id numLeft = ::thrust::count_if(
-        detail::ThrustIteratorBegin<StencilManagerType>(stencilPortal),
-        detail::ThrustIteratorEnd<StencilManagerType>(stencilPortal),
+        detail::ThrustIteratorBegin(stencilPortal),
+        detail::ThrustIteratorEnd(stencilPortal),
         dax::not_default_constructor<T>());
 
   typename OutputManagerType::PortalType outputPortal =
       output.PrepareForOutput(numLeft);
 
-  ::thrust::copy_if(
-        valuesBegin,
-        valuesEnd,
-        detail::ThrustIteratorBegin<StencilManagerType>(stencilPortal),
-        detail::ThrustIteratorBegin<OutputManagerType>(outputPortal),
-        dax::not_default_constructor<T>());
+  ::thrust::copy_if(valuesBegin,
+                    valuesEnd,
+                    detail::ThrustIteratorBegin(stencilPortal),
+                    detail::ThrustIteratorBegin(outputPortal),
+                    dax::not_default_constructor<T>());
 }
 
 } // namespace detail
@@ -396,8 +455,8 @@ DAX_CONT_EXPORT void StreamCompact(
   typename InputManagerType::PortalConstType inputPortal =
       input.PrepareForInput();
 
-  detail::RemoveIf(detail::ThrustIteratorBegin<InputManagerType>(inputPortal),
-                   detail::ThrustIteratorEnd<InputManagerType>(inputPortal),
+  detail::RemoveIf(detail::ThrustIteratorBegin(inputPortal),
+                   detail::ThrustIteratorEnd(inputPortal),
                    stencil,
                    output);
 }
@@ -426,9 +485,9 @@ DAX_CONT_EXPORT void Unique(
 
   typename ManagerType::PortalType valuePortal = values.PrepareForInPlace();
 
-  dax::Id newSize = detail::ThrustUnique(
-        detail::ThrustIteratorBegin<ManagerType>(valuePortal),
-        detail::ThrustIteratorEnd<ManagerType>(valuePortal));
+  dax::Id newSize =
+      detail::ThrustUnique(detail::ThrustIteratorBegin(valuePortal),
+                           detail::ThrustIteratorEnd(valuePortal));
 
   values.Shrink(newSize);
 }
