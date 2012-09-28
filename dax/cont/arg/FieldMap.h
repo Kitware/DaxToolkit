@@ -36,9 +36,8 @@ namespace dax { namespace cont { namespace arg {
 /// the first as the workId
 /// The item Key is the item that will actually be passed to the worklet
 template <typename Concept, typename Tags, typename Key, typename Value>
-struct ConceptMap< Concept(Tags), dax::cont::ScheduleMapAdapter<Key,Value> >
+class ConceptMap< Concept(Tags), dax::cont::ScheduleMapAdapter<Key,Value> >
 {
-private:
   typedef dax::internal::Tags<dax::cont::sig::Tag(dax::cont::sig::In)> KeyTags;
 
   typedef dax::cont::arg::ConceptMap<Field(KeyTags), Key > KeyFieldType;

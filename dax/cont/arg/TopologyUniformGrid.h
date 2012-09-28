@@ -34,7 +34,6 @@ namespace dax { namespace cont { namespace arg {
 template <typename Tags, typename DeviceTag >
 class ConceptMap<Topology(Tags), dax::cont::UniformGrid< DeviceTag > >
 {
-private:
   typedef dax::cont::UniformGrid< DeviceTag > GridType;
 
   //use mpl::if_ to determine the type for ExecArg
@@ -82,7 +81,6 @@ public:
 template <typename Tags, typename DeviceTag >
 class ConceptMap<Topology(Tags), const dax::cont::UniformGrid< DeviceTag > >
 {
-private:
   typedef dax::cont::UniformGrid< DeviceTag > GridType;
   typedef typename GridType::TopologyStructConstExecution TopologyType;
   typedef dax::exec::arg::TopologyCell<Tags,TopologyType> ExecGridType;
