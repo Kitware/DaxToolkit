@@ -117,6 +117,10 @@ struct TemplatedTests
     DAX_TEST_ASSERT(arrayContainer.GetNumberOfValues() == ARRAY_SIZE * 2,
                     "Array not reallocated correctly.");
 
+    arrayContainer.Shrink(ARRAY_SIZE);
+    DAX_TEST_ASSERT(arrayContainer.GetNumberOfValues() == ARRAY_SIZE,
+                    "Array Shrnk failed to resize.");
+
     arrayContainer.ReleaseResources();
     DAX_TEST_ASSERT(arrayContainer.GetNumberOfValues() == 0,
                     "Array not released correctly.");
