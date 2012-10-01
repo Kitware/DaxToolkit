@@ -41,6 +41,11 @@
  * Environment. Worklets typically use classes/apis defined within this
  * namespace alone.
  *
+ * \namespace dax::math
+ * \brief Utility math functions
+ *
+ * dax::math defines the publicly accessible API for Utility Math functions.
+ *
  * \namespace dax::cuda
  * \brief CUDA implementation.
  *
