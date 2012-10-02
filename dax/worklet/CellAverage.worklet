@@ -24,6 +24,7 @@
 namespace dax {
 namespace worklet {
 
+namespace{
 struct Add
 {
   dax::Scalar operator()(dax::Scalar a, dax::Scalar b)
@@ -31,6 +32,7 @@ struct Add
     return a+b;
   }
 };
+}
 
 class CellAverage : public dax::exec::WorkletMapCell
 {
@@ -42,7 +44,7 @@ public:
   template<class CellType>
   DAX_EXEC_EXPORT
   dax::Scalar operator()(
-    CellType cell,
+    CellType,
     const dax::Tuple<dax::Scalar, CellType::NUM_POINTS>& values) const
   {
     Add add;
