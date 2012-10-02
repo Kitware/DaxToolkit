@@ -17,6 +17,7 @@
 include_directories(${Boost_INCLUDE_DIRS})
 
 set(worklets
+  CellAverage.worklet
   CellGradient.worklet
   Cosine.worklet
   Elevation.worklet
