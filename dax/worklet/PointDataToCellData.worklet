@@ -16,26 +16,30 @@
 #ifndef __PointDataToCellData_worklet_
 #define __PointDataToCellData_worklet_
 
+#include <dax/exec/Cell.h>
 #include <dax/exec/Interpolate.h>
-
+#include <dax/exec/WorkletMapCell.h>
 
 namespace dax {
 namespace worklet {
 
-}
-template<class CellType>
-DAX_WORKLET void PointDataToCellData(DAX_IN dax::exec::WorkMapCell& work,
-  DAX_IN dax::exec::FieldPoint& point_attribute,
-  DAX_OUT dax::exec::FieldCell& cell_attribute)
+class PointDataToCellData : public dax::exec::WorkletMapCell
 {
-  dax::Vector3 center = dax::make_Vector3(0.5, 0.5, 0.5);
-  CellType cell(work);
-  dax::Scalar scalar = dax::exec::cellInterpolate(cell,
-                                                  center,
-                                                  point_attribute,
-                                                  0);
-  cell_attribute.Set(work, scalar);
-}
+public:
+
+  typedef void ControlSignature(Field(Point), Field(Out));
+  typedef _2 ExecutionSignature(_1);
+
+  template<class CellType>
+  DAX_EXEC_EXPORT
+  void operator()(
+    const dax::Tuple<dax::Scalar, CellType::NUM_POINTS>& pointField) const
+  {
+    dax::Vector3 center =  dax::make_Vector3(0.5,0.5,0.5);
+    CellType cell;
+    return dax::exec::CellInterpolate(cell,center,pointField,0);
+  }
+};
 }
 }
 
