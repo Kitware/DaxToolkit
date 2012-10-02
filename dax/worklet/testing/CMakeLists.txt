@@ -23,6 +23,7 @@ set(worklets
 dax_declare_worklets(${worklets})
 
 set(unit_tests
+  UnitTestWorkletCellAverage.cxx
   UnitTestWorkletCellGradient.cxx
   UnitTestWorkletCosine.cxx
   UnitTestWorkletElevation.cxx

@@ -17,33 +17,36 @@
 #define __CellAverage_worklet_
 
 #include <dax/exec/Cell.h>
+#include <dax/exec/VectorOperations.h>
 #include <dax/exec/WorkletMapCell.h>
 #include <dax/exec/WorkletMapField.h>
 
 namespace dax {
 namespace worklet {
 
+struct Add
+{
+  dax::Scalar operator()(dax::Scalar a, dax::Scalar b)
+  {
+    return a+b;
+  }
+};
+
 class CellAverage : public dax::exec::WorkletMapCell
 {
 public:
 
-  typedef void ControlSignature(Field(Point), Field(Out));
-  typedef _2 ExecutionSignature(_1);
+  typedef void ControlSignature(Topology, Field(Point), Field(Out));
+  typedef _3 ExecutionSignature(_1,_2);
 
   template<class CellType>
   DAX_EXEC_EXPORT
   dax::Scalar operator()(
-    const dax::Tuple<dax::Scalar, CellType::NUM_POINTS>& pointField) const
+    CellType cell,
+    const dax::Tuple<dax::Scalar, CellType::NUM_POINTS>& values) const
   {
-    CellType cell;
-    dax::Scalar avg = 0.0;
-    dax::Id numberOfPoints = cell.GetNumberOfPoints();
-    for (dax::Id i=0; i < numberOfPoints; ++i)
-      {
-      dax::exec::WorkletMapField pointWork= cell.GetNumberOfPoints();
-      avg += pointField.GetScalar(pointWork);
-      }
-    return avg /= numberOfPoints;
+    Add add;
+    return (dax::exec::VectorReduce(values,add)/CellType::NUM_POINTS);
   }
 };
 }
