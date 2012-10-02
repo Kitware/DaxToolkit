@@ -18,6 +18,7 @@
 
 #include <dax/exec/Cell.h>
 #include <dax/exec/Interpolate.h>
+#include <dax/exec/ParametricCoordinates.h>
 #include <dax/exec/WorkletMapCell.h>
 
 namespace dax {
@@ -32,12 +33,12 @@ public:
 
   template<class CellType>
   DAX_EXEC_EXPORT
-  void operator()(
+  dax::Scalar operator()(
+    CellType cell,
     const dax::Tuple<dax::Scalar, CellType::NUM_POINTS>& pointField) const
   {
-    dax::Vector3 center =  dax::make_Vector3(0.5,0.5,0.5);
-    CellType cell;
-    return dax::exec::CellInterpolate(cell,center,pointField,0);
+    dax::Vector3 center =  dax::exec::ParametricCoordinates<CellType>::Center();
+    return dax::exec::CellInterpolate(cell,pointField,center);
   }
 };
 }
