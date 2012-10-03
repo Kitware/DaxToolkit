@@ -28,8 +28,8 @@ class PointDataToCellData : public dax::exec::WorkletMapCell
 {
 public:
 
-  typedef void ControlSignature(Field(Point), Field(Out));
-  typedef _2 ExecutionSignature(_1);
+  typedef void ControlSignature(Topology,Field(Point), Field(Out));
+  typedef _3 ExecutionSignature(_1,_2);
 
   template<class CellType>
   DAX_EXEC_EXPORT
