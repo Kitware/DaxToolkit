@@ -24,8 +24,8 @@
  * \brief Dax Toolkit.
  *
  * dax is the namespace for the Dax Toolkit. It contains other sub namespaces,
- * as well as basic data types and functions callable from all components in
- * Dax toolkit.
+ * as well as basic data types and functions callable from all components in Dax
+ * toolkit.
  *
  * \namespace dax::cont
  * \brief Dax Control Environment.
@@ -34,23 +34,10 @@
  * Environment. Users of the Dax Toolkit can use this namespace to access the
  * Control Environment.
  *
- * \namespace dax::exec
- * \brief Dax Execution Environment.
- *
- * dax::exec defines the publicly accessible API for the Dax Execution
- * Environment. Worklets typically use classes/apis defined within this
- * namespace alone.
- *
- * \namespace dax::math
- * \brief Utility math functions
- *
- * dax::math defines the publicly accessible API for Utility Math functions.
- *
  * \namespace dax::cuda
  * \brief CUDA implementation.
  *
- * dax::cuda includes the code to implement the Dax for CUDA-based
- * platforms.
+ * dax::cuda includes the code to implement the Dax for CUDA-based platforms.
  *
  * \namespace dax::cuda::cont
  * \brief CUDA implementation for Control Environment.
@@ -63,6 +50,18 @@
  *
  * dax::cuda::exec includes the code to implement the Dax Execution Environment
  * for CUDA-based platforms.
+ *
+ * \namespace dax::exec
+ * \brief Dax Execution Environment.
+ *
+ * dax::exec defines the publicly accessible API for the Dax Execution
+ * Environment. Worklets typically use classes/apis defined within this
+ * namespace alone.
+ *
+ * \namespace dax::math
+ * \brief Utility math functions
+ *
+ * dax::math defines the publicly accessible API for Utility Math functions.
  *
  * \namespace dax::testing
  * \brief Internal testing classes
