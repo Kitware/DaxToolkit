@@ -58,6 +58,13 @@
  * Environment. Worklets typically use classes/apis defined within this
  * namespace alone.
  *
+ * \namespace dax::internal
+ * \brief Dax Internal Environment
+ *
+ * dax::internal defines API which is internal and subject to frequent
+ * change. This should not be used for projects using Dax. Instead it servers
+ * are a reference for the developers of Dax.
+ *
  * \namespace dax::math
  * \brief Utility math functions
  *
