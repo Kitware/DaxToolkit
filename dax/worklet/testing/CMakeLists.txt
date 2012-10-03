@@ -27,6 +27,7 @@ set(unit_tests
   UnitTestWorkletCosine.cxx
   UnitTestWorkletElevation.cxx
   UnitTestWorkletMagnitude.cxx
+  UnitTestWorkletPointDataToCellData.cxx
   UnitTestWorkletSine.cxx
   UnitTestWorkletSquare.cxx
   UnitTestWorkletThreshold.cxx
