@@ -84,7 +84,7 @@ template <typename WorkType,
           typename InputGrid,
           typename OutputGrid>
 void GenerateNewTopology(
-    dax::cont::ScheduleGenerateTopology<WorkType,DeviceAdapterTag> newTopo,
+    dax::cont::ScheduleGenerateTopology<WorkType,DeviceAdapterTag>& newTopo,
     const InputGrid& inputGrid,
     OutputGrid& outputGrid) const
   {
@@ -127,9 +127,9 @@ void GenerateNewTopology(
                                              inputGrid.GetNumberOfCells()),
                    outputGrid);
   //call this here as we have stripped out the input and output grids
-  this->FillPointMask(inputGrid,outputGrid, newTopo.GetPointMask());
   if(newTopo.GetRemoveDuplicatePoints())
     {
+    this->FillPointMask(inputGrid,outputGrid, newTopo.GetPointMask());
     this->RemoveDuplicatePoints(inputGrid,outputGrid, newTopo.GetPointMask());
     }
   }
@@ -157,7 +157,7 @@ template <typename WorkType,
           typename OutputGrid,
           _SGT_pp_typename___T>
 void GenerateNewTopology(
-    dax::cont::ScheduleGenerateTopology<WorkType,DeviceAdapterTag> newTopo,
+    dax::cont::ScheduleGenerateTopology<WorkType,DeviceAdapterTag>& newTopo,
     const InputGrid& inputGrid,
     OutputGrid& outputGrid,
     _SGT_pp_params___(a)) const
@@ -202,9 +202,9 @@ void GenerateNewTopology(
                    outputGrid,
                   _SGT_pp_args___(a));
   //call this here as we have stripped out the input and output grids
-  this->FillPointMask(inputGrid,outputGrid, newTopo.GetPointMask());
   if(newTopo.GetRemoveDuplicatePoints())
     {
+    this->FillPointMask(inputGrid,outputGrid, newTopo.GetPointMask());
     this->RemoveDuplicatePoints(inputGrid,outputGrid, newTopo.GetPointMask());
     }
   }
