@@ -104,7 +104,9 @@ DAX_CONT_EXPORT T ExclusiveScan(
                    outputPortal.GetIteratorBegin());
 
   // Shift right by one
-  std::copy_backward(outputPortal.GetIteratorBegin(),outputPortal.GetIteratorEnd()-1,outputPortal.GetIteratorEnd());
+  std::copy_backward(outputPortal.GetIteratorBegin(),
+                     outputPortal.GetIteratorEnd()-1,
+                     outputPortal.GetIteratorEnd());
   outputPortal.GetIteratorBegin()[0]=0;
   return outputPortal.Get(numberOfValues - 1);
 }
