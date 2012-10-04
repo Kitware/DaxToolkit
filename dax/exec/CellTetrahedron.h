@@ -25,13 +25,6 @@ namespace dax { namespace exec {
 class CellTetrahedron
 {
 public:
-  template<class ExecutionAdapter>
-  struct GridStructures
-  {
-    typedef dax::exec::internal::TopologyUnstructured<
-        CellTetrahedron,
-        ExecutionAdapter> TopologyType;
-  };
 
   /// static variable that returns the number of points per cell
   const static dax::Id NUM_POINTS = 4;

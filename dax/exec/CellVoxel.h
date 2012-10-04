@@ -25,13 +25,6 @@ namespace dax { namespace exec {
 class CellVoxel
 {
 public:
-  // Even though this templating is unnecessary for this class, it is requried
-  // for pretty much all other cell types. To match, we template this, too.
-  template<class ExecutionAdapter>
-  struct GridStructures
-  {
-    typedef dax::exec::internal::TopologyUniform TopologyType;
-  };
 
   /// static variable that holds the number of points per cell
   const static dax::Id NUM_POINTS = 8;

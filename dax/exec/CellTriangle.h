@@ -25,13 +25,6 @@ namespace dax { namespace exec {
 class CellTriangle
 {
 public:
-  template<class ExecutionAdapter>
-  struct GridStructures
-  {
-    typedef dax::exec::internal::TopologyUnstructured<
-        CellTriangle,
-        ExecutionAdapter> TopologyType;
-  };
 
   /// static variable that returns the number of points per cell
   const static dax::Id NUM_POINTS = 3;

@@ -25,13 +25,6 @@ namespace dax { namespace exec {
 class CellQuadrilateral
 {
 public:
-  template<class ExecutionAdapter>
-  struct GridStructures
-  {
-    typedef dax::exec::internal::TopologyUnstructured<
-        CellQuadrilateral,
-        ExecutionAdapter> TopologyType;
-  };
 
   /// static variable that returns the number of points per cell
   const static dax::Id NUM_POINTS = 4;

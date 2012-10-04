@@ -24,13 +24,6 @@ namespace dax { namespace exec {
 class CellWedge
 {
 public:
-  template<class ExecutionAdapter>
-  struct GridStructures
-  {
-    typedef dax::exec::internal::TopologyUnstructured<
-        CellWedge,
-        ExecutionAdapter> TopologyType;
-  };
 
   /// static variable that holds the number of points per cell
   const static dax::Id NUM_POINTS = 6;

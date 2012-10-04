@@ -39,16 +39,6 @@ namespace exec {
 class Cell
 {
 public:
-  /// A templated structure containing a typedef to the grid structure
-  /// containing this type of cell.
-  ///
-  template<class ExecutionAdapter>
-  struct GridStructures
-  {
-    typedef dax::exec::internal::TopologyTemplate<Cell,ExecutionAdapter>
-        TopologyType;
-  };
-
   /// Static variable that contains the number of points per cell.
   ///
   const static dax::Id NUM_POINTS = 4;
