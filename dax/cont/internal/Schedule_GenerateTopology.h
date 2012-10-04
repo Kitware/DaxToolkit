@@ -127,9 +127,9 @@ void GenerateNewTopology(
                                              inputGrid.GetNumberOfCells()),
                    outputGrid);
   //call this here as we have stripped out the input and output grids
-  this->FillPointMask(inputGrid,outputGrid, newTopo.GetPointMask());
   if(newTopo.GetRemoveDuplicatePoints())
     {
+    this->FillPointMask(inputGrid,outputGrid, newTopo.GetPointMask());
     this->RemoveDuplicatePoints(inputGrid,outputGrid, newTopo.GetPointMask());
     }
   }
@@ -202,9 +202,9 @@ void GenerateNewTopology(
                    outputGrid,
                   _SGT_pp_args___(a));
   //call this here as we have stripped out the input and output grids
-  this->FillPointMask(inputGrid,outputGrid, newTopo.GetPointMask());
   if(newTopo.GetRemoveDuplicatePoints())
     {
+    this->FillPointMask(inputGrid,outputGrid, newTopo.GetPointMask());
     this->RemoveDuplicatePoints(inputGrid,outputGrid, newTopo.GetPointMask());
     }
   }

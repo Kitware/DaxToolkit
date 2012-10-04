@@ -74,11 +74,16 @@ public:
       const dax::cont::ArrayHandle<T,Container1,DeviceAdapterTag>& input,
       dax::cont::ArrayHandle<T,Container2,DeviceAdapterTag>& output)
     {
-    dax::cont::internal::StreamCompact(input,
+    if(this->GetRemoveDuplicatePoints())
+      {
+      dax::cont::internal::StreamCompact(input,
                                        this->PointMask,
                                        output,
                                        DeviceAdapterTag());
-    return true;
+
+      return true;
+      }
+    return false;
     }
 
   void SetReleaseClassification(bool b){ ReleaseClassification = b; }
