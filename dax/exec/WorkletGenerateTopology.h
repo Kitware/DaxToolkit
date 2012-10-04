@@ -48,8 +48,8 @@ public:
 protected:
   typedef dax::cont::arg::Field Field;
   typedef dax::cont::arg::Topology Topology;
-  typedef dax::cont::sig::Point Point;
   typedef dax::cont::sig::Cell Cell;
+  typedef dax::cont::sig::Point Point;
 };
 
 namespace arg {

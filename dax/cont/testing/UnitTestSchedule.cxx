@@ -19,6 +19,7 @@
 
 #include <dax/cont/DeviceAdapterSerial.h>
 
+#include <dax/cont/arg/ExecutionObject.h>
 #include <dax/cont/arg/FieldConstant.h>
 #include <dax/cont/arg/FieldArrayHandle.h>
 
@@ -82,6 +83,29 @@ struct ExampleSquare: public dax::exec::WorkletMapField
     }
 };
 
+struct Functor1 : dax::exec::ExecutionObjectBase
+{
+  template<typename T>
+  DAX_EXEC_EXPORT T operator()(const T& t) const
+    {
+    return t*t;
+    }
+};
+
+struct ArbFunctorWorklet: dax::exec::WorkletMapField
+{
+
+  typedef void ControlSignature(Field(In), ExecObject(), Field(Out));
+  typedef _3 ExecutionSignature(_1,_2);
+
+  template<typename T, typename Functor>
+  T operator()(T t, Functor const& f) const
+    {
+    return f(t);
+    }
+};
+
+
 void VerifyConstantArgs()
 {
   dax::cont::Schedule<>()(ExampleWorklet(),1); //convert to dax::Id
@@ -122,10 +146,21 @@ void VerifyArrayHandleArgs()
 
 }
 
+void VerifyObjectArgs()
+{
+  std::vector<dax::Id> in(10);
+  for(int i=0; i < 10; ++i){in[i]=i;}
+  dax::cont::ArrayHandle<dax::Id> input = dax::cont::make_ArrayHandle(in);
+  dax::cont::ArrayHandle<dax::Id> output;
+  dax::cont::Schedule<>()(ArbFunctorWorklet(),input,Functor1(),output);
+}
+
+
 void Schedule()
 {
   VerifyConstantArgs();
   VerifyArrayHandleArgs();
+  VerifyObjectArgs();
 }
 
 }

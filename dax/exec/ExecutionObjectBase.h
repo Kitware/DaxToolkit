@@ -13,31 +13,17 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_WorkletMapField_h
-#define __dax_exec_WorkletMapField_h
 
-#include <dax/exec/internal/WorkletBase.h>
-#include <dax/cont/arg/Field.h>
-#include <dax/cont/sig/Tag.h>
+#ifndef __dax_exec_ExecutionObjectBase_h
+#define __dax_exec_ExecutionObjectBase_h
 
+///Base ExecutionObjectBase for execution objects to inherit from so that you can
+///use an arbitrary object as a parameter to a worklet. Any method you want
+///to use on the execution side must be have the DAX_EXEC_EXPORT
 namespace dax { namespace exec {
-
-///----------------------------------------------------------------------------
-/// Superclass for worklets that map fields without regard to topology or any
-/// other connectivity information.
-///
-class WorkletMapField : public dax::exec::internal::WorkletBase
+class ExecutionObjectBase
 {
-public:
-  typedef WorkletMapField WorkType;
-  typedef dax::cont::sig::Domain DomainType;
-
-  DAX_EXEC_CONT_EXPORT WorkletMapField() { }
-protected:
-  typedef dax::cont::arg::Field Field;
-
 };
+} }
 
-}}
-
-#endif //__dax_exec_WorkletMapField_h
+#endif // __dax_exec_ExecutionObjectBase_h

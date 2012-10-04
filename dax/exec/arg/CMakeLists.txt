@@ -22,6 +22,7 @@ set(headers
   BindWorkId.h
   FieldConstant.h
   FieldMap.h
+  ExecutionObject.h
   FieldPortal.h
   TopologyCell.h
   )
