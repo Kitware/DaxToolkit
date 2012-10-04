@@ -84,7 +84,7 @@ template <typename WorkType,
           typename InputGrid,
           typename OutputGrid>
 void GenerateNewTopology(
-    dax::cont::ScheduleGenerateTopology<WorkType,DeviceAdapterTag> newTopo,
+    dax::cont::ScheduleGenerateTopology<WorkType,DeviceAdapterTag>& newTopo,
     const InputGrid& inputGrid,
     OutputGrid& outputGrid) const
   {
@@ -157,7 +157,7 @@ template <typename WorkType,
           typename OutputGrid,
           _SGT_pp_typename___T>
 void GenerateNewTopology(
-    dax::cont::ScheduleGenerateTopology<WorkType,DeviceAdapterTag> newTopo,
+    dax::cont::ScheduleGenerateTopology<WorkType,DeviceAdapterTag>& newTopo,
     const InputGrid& inputGrid,
     OutputGrid& outputGrid,
     _SGT_pp_params___(a)) const
