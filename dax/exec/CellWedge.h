@@ -31,35 +31,13 @@ public:
   const static dax::Id TOPOLOGICAL_DIMENSIONS = 3;
 
 private:
-  const dax::Id CellIndex;
   const PointConnectionsType Connections;
-
-  template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT static PointConnectionsType GetPointConnections(
-      const dax::exec::internal::TopologyUnstructured<
-          CellWedge,ExecutionAdapter> &topology,
-      dax::Id cellIndex)
-  {
-    PointConnectionsType connections;
-    dax::Id offset = cellIndex*NUM_POINTS;
-    connections[0] = topology.CellConnections.Get(offset + 0);
-    connections[1] = topology.CellConnections.Get(offset + 1);
-    connections[2] = topology.CellConnections.Get(offset + 2);
-    connections[3] = topology.CellConnections.Get(offset + 3);
-    connections[4] = topology.CellConnections.Get(offset + 4);
-    connections[5] = topology.CellConnections.Get(offset + 5);
-    return connections;
-  }
 
 public:
   /// Create a cell for the given work.
   template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT CellWedge(
-      const dax::exec::internal::TopologyUnstructured<
-          CellWedge,ExecutionAdapter> &topology,
-      dax::Id cellIndex)
-    : CellIndex(cellIndex),
-      Connections(GetPointConnections(topology, cellIndex))
+  DAX_EXEC_EXPORT CellWedge():
+      Connections()
     { }
 
   /// Get the number of points in the cell.
@@ -82,8 +60,28 @@ public:
     return this->Connections;
   }
 
-  /// Get the cell index.  Probably only useful internally.
-  DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->CellIndex; }
+  //  method to set this cell from a portal
+  template<class PortalType>
+  DAX_EXEC_EXPORT static void SetPointIndicies(
+      const PortalType & cellConnectionsPortal,
+      dax::Id cellIndex)
+  {
+    const dax::Id offset = cellIndex*NUM_POINTS;
+    this->Connections[0] = cellConnectionsPortal.Get(offset + 0);
+    this->Connections[1] = cellConnectionsPortal.Get(offset + 1);
+    this->Connections[2] = cellConnectionsPortal.Get(offset + 2);
+    this->Connections[3] = cellConnectionsPortal.Get(offset + 3);
+    this->Connections[4] = cellConnectionsPortal.Get(offset + 4);
+    this->Connections[5] = cellConnectionsPortal.Get(offset + 5);
+  }
+
+  //  method to set this cell from a different tuple
+  DAX_EXEC_EXPORT static void SetPointIndicies(
+      const PointConnectionsType & cellConnections)
+  {
+    this->Connections = cellConnections;
+  }
+
 };
 
 }}
