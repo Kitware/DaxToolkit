@@ -106,8 +106,7 @@ DAX_CONT_EXPORT T ExclusiveScan(
   // Shift right by one
   std::copy_backward(outputPortal.GetIteratorBegin(),outputPortal.GetIteratorEnd()-1,outputPortal.GetIteratorEnd());
   outputPortal.GetIteratorBegin()[0]=0;
-  // Return the value at the last index in the array, which is the full sum.
-  return outputPortal.Get(numberOfValues - 1)+inputPortal.Get(numberOfValues-1);
+  return outputPortal.Get(numberOfValues - 1);
 }
 
 template<typename T, class CIn, class CVal, class COut>

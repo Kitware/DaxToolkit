@@ -187,9 +187,7 @@ DAX_CONT_EXPORT T ExclusiveScan(
   ThrustIteratorOutType result = ::thrust::exclusive_scan(inputIter.first,
                                                           inputIter.second,
                                                           outputIter.first);
-
-  //return the value at the last index in the array, as that is the size
-  return *(result - 1)+input[input.GetNumberOfValues()-1];
+  return *(result - 1);
 }
 
 template<typename T, class CIn, class CVal, class COut, class Adapter>
