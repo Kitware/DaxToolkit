@@ -14,14 +14,17 @@
 //
 //=============================================================================
 
+
+
 #include <stdio.h>
 #include <iostream>
 #include "Timer.h"
 
+#include <dax/cont/Schedule.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <dax/cont/worklet/Elevation.h>
+#include <dax/worklet/Magnitude.worklet>
 
 #include <vector>
 
@@ -51,18 +54,21 @@ void PrintResults(int pipeline, double time, const char* name)
             << pipeline << "," << time << std::endl;
 }
 
-void RunPISTONPipeline(const dax::cont::UniformGrid &dgrid, vtkImageData* grid)
+void RunPISTONPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid)
 {
   std::cout << "Running pipeline 1: Elevation -> Threshold" << std::endl;
 
   std::vector<dax::Scalar> elev(dgrid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar> elevHandle(elev.begin(),elev.end());
+  dax::cont::ArrayHandle<dax::Scalar> elevHandle = dax::cont::make_ArrayHandle(elev);
 
-  //use dax to compute the elevation
-  dax::worklet::Elevation elevWorklet(dax::make_Vector3(0.0, 0.0, 0.0),
-                          dax::make_Vector3(0.0, 0.0, 1.0),
-                          dax::make_Vector2(0.0, 1.0));
-  dax::cont::Schedule<>(elevWorklet, dgrid, dgrid.GetPoints(), elevHandle);
+  //use dax to compute the magnitude
+  dax::cont::Schedule<> scheduler;
+  scheduler(dax::worklet::Magnitude(),
+            dgrid.GetPointCoordinates(),
+            elevHandle);
+
+  //return results to host
+  elevHandle.CopyInto(elev.begin());
 
   //now that the results are back on the cpu, do threshold with VTK
   vtkSmartPointer<vtkFloatArray> vtkElevationPoints = vtkSmartPointer<vtkFloatArray>::New();
@@ -70,16 +76,16 @@ void RunPISTONPipeline(const dax::cont::UniformGrid &dgrid, vtkImageData* grid)
   vtkElevationPoints->SetVoidArray(&elev[0],elev.size(),1);
 
   grid->GetPointData()->SetScalars(vtkElevationPoints); //piston on works on active scalars
-  piston::vtk_image3d<int,float,SPACE> image(grid);
-  piston::threshold_geometry<piston::vtk_image3d<int, float, SPACE> > threshold(image,0,100);
-  threshold.set_threshold_range(0,100);
+  piston::vtk_image3d<SPACE> image(grid);
+  piston::threshold_geometry<piston::vtk_image3d<SPACE> > threshold(image,0.0f,100.0f);
+
 
   Timer timer;
   threshold();
   double time = timer.elapsed();
 
   std::cout << "original GetNumberOfCells: " << dgrid.GetNumberOfCells() << std::endl;
-  std::cout << "threshold GetNumberOfCells: " << threshold.valid_cell_indices.size() << std::endl;
+  std::cout << "threshold GetNumberOfCells: " << threshold.num_valid_cells << std::endl;
   PrintResults(1, time, "Piston");
 }
 

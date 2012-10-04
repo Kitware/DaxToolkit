@@ -21,6 +21,6 @@
 
 class vtkImageData;
 
-void RunPipelinePISTON(int pipeline, const dax::cont::UniformGrid &dgrid, vtkImageData* grid);
+void RunPipelinePISTON(int pipeline, const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid);
 
 #endif //__PipelinePISTON_h

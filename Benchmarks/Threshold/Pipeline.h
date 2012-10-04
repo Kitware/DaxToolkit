@@ -183,7 +183,9 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
            grid, intermediate1, classification);
 
   ScheduleGT resolveTopology(classification);
+  //resolveTopology.SetRemoveDuplicatePoints(false);
   schedule(resolveTopology,grid,grid2);
+
   resolveTopology.CompactPointField(intermediate1,resultHandle);
 
   double time = timer.elapsed();
