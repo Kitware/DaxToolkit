@@ -100,10 +100,10 @@ public:
   ///
   DAX_CONT_EXPORT void RetrieveOutputData(ContainerType &controlArray) const
   {
-    (void)controlArray;  // Shut up compiler
     DAX_ASSERT_CONT(this->ConstPortalValid);
     DAX_ASSERT_CONT(controlArray.GetPortalConst().GetIteratorBegin() ==
                     this->ConstPortal.GetIteratorBegin());
+    controlArray.Shrink(this->ConstPortal.GetNumberOfValues());
   }
 
   /// This methods copies data from the execution array into the given

@@ -495,6 +495,15 @@ private:
     dax::cont::internal::Sort(temp,DeviceAdapterTag());
     dax::cont::internal::Unique(temp,DeviceAdapterTag());
     dax::cont::internal::LowerBounds(temp,input,handle,DeviceAdapterTag());
+
+    // Check to make sure that temp was resized correctly during Unique.
+    // (This was a discovered bug at one point.)
+    temp.GetPortalConstControl();  // Forces copy back to control.
+    temp.ReleaseResourcesExecution(); // Make sure not counting on execution.
+    DAX_TEST_ASSERT(
+          temp.GetNumberOfValues() == 50,
+          "Unique did not resize array (or size did not copy to control).");
+
     temp.ReleaseResources();
 
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
