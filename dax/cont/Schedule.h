@@ -33,6 +33,7 @@
 #include <dax/cont/arg/TopologyUniformGrid.h>
 #include <dax/cont/arg/TopologyUnstructuredGrid.h>
 
+#include <dax/exec/internal/Functor.h>
 #include <dax/exec/internal/WorkletBase.h>
 #include <dax/exec/internal/kernel/ScheduleGenerateTopology.h>
 
@@ -83,8 +84,9 @@ public:
     bindings.ForEach(dax::cont::detail::CreateExecutionResources<WorkType>(count));
 
     // Schedule the worklet invocations in the execution environment.
-    dax::cont::internal::Schedule<ControlInvocationSignature>
-      (w, bindings, count, DeviceAdapterTag());
+    dax::exec::internal::Functor<ControlInvocationSignature>
+        bindingFunctor(w, bindings);
+    dax::cont::internal::Schedule(bindingFunctor, count, DeviceAdapterTag());
     }
 #else // !(__cplusplus >= 201103L)
   // For C++03 use Boost.Preprocessor file iteration to simulate
