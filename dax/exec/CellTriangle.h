@@ -39,7 +39,7 @@ public:
   template<class ExecutionAdapter>
   DAX_EXEC_EXPORT CellTriangle(
     const dax::exec::internal::TopologyUnstructured<
-      CellVertex,ExecutionAdapter> &topology)
+      CellTriangle,ExecutionAdapter> &topology)
     :Connections()
     { }
 
