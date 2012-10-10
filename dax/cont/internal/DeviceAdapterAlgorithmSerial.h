@@ -23,7 +23,6 @@
 #include <dax/cont/internal/DeviceAdapterAlgorithm.h>
 
 #include <dax/exec/internal/ErrorMessageBuffer.h>
-#include <dax/exec/internal/Functor.h>
 
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -172,7 +171,7 @@ private:
 } // namespace detail
 
 template<class Functor>
-DAX_CONT_EXPORT void LegacySchedule(Functor functor,
+DAX_CONT_EXPORT void Schedule(Functor functor,
                               dax::Id numInstances,
                               DeviceAdapterTagSerial)
 {
@@ -186,34 +185,6 @@ DAX_CONT_EXPORT void LegacySchedule(Functor functor,
 
   detail::ScheduleKernelSerial<Functor> kernel(functor);
 
-  std::for_each(
-        ::boost::counting_iterator<dax::Id>(0),
-        ::boost::counting_iterator<dax::Id>(numInstances),
-        kernel);
-
-  if (errorMessage.IsErrorRaised())
-    {
-    throw dax::cont::ErrorExecution(errorString);
-    }
-}
-
-template<class ControlInvocSig, class Functor,  class Bindings>
-DAX_CONT_EXPORT void Schedule(
-    Functor functor,
-    Bindings& bindings,
-    dax::Id numInstances,
-    DeviceAdapterTagSerial)
-{
-  const dax::Id MESSAGE_SIZE = 1024;
-  char errorString[MESSAGE_SIZE];
-  errorString[0] = '\0';
-  dax::exec::internal::ErrorMessageBuffer
-      errorMessage(errorString, MESSAGE_SIZE);
-
-  functor.SetErrorMessageBuffer(errorMessage);
-
-  //setup functor
-  dax::exec::internal::Functor<ControlInvocSig> kernel(functor, bindings);
   std::for_each(
         ::boost::counting_iterator<dax::Id>(0),
         ::boost::counting_iterator<dax::Id>(numInstances),

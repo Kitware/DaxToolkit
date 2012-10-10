@@ -49,8 +49,9 @@ typename boost::enable_if<boost::is_base_of<dax::exec::internal::WorkletBase,Wor
   bindings.ForEach(dax::cont::detail::CreateExecutionResources<WorkType>(count));
 
   // Schedule the worklet invocations in the execution environment.
-  dax::cont::internal::Schedule<ControlInvocationSignature>
-    (w, bindings, count, DeviceAdapterTag());
+  dax::exec::internal::Functor<ControlInvocationSignature>
+      bindingFunctor(w, bindings);
+  dax::cont::internal::Schedule(bindingFunctor, count, DeviceAdapterTag());
   }
 
 # endif // _dax_pp_sizeof___T > 1

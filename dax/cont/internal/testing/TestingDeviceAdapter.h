@@ -317,7 +317,7 @@ private:
 #endif
   }
 
-  static DAX_CONT_EXPORT void TestLegacySchedule()
+  static DAX_CONT_EXPORT void TestSchedule()
   {
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing Schedule" << std::endl;
@@ -328,12 +328,12 @@ private:
     manager.AllocateArrayForOutput(container, ARRAY_SIZE);
 
     std::cout << "Running clear." << std::endl;
-    dax::cont::internal::LegacySchedule(ClearArrayKernel(manager.GetPortal()),
+    dax::cont::internal::Schedule(ClearArrayKernel(manager.GetPortal()),
                                   ARRAY_SIZE,
                                   DeviceAdapterTag());
 
     std::cout << "Running add." << std::endl;
-    dax::cont::internal::LegacySchedule(AddArrayKernel(manager.GetPortal()),
+    dax::cont::internal::Schedule(AddArrayKernel(manager.GetPortal()),
                                   ARRAY_SIZE,
                                   DeviceAdapterTag());
 
@@ -348,7 +348,7 @@ private:
       }
   }
 
-  static DAX_CONT_EXPORT void TestSchedule()
+  static DAX_CONT_EXPORT void TestScheduleClass()
   {
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing New Schedule Function" << std::endl;
@@ -429,7 +429,7 @@ private:
 
     //construct the index array
 
-    dax::cont::internal::LegacySchedule(
+    dax::cont::internal::Schedule(
           MarkOddNumbersKernel(array.PrepareForOutput(ARRAY_SIZE)),
           ARRAY_SIZE,
           DeviceAdapterTag());
@@ -456,11 +456,11 @@ private:
     IdArrayHandle result;
 
     //construct the index array
-    dax::cont::internal::LegacySchedule(
+    dax::cont::internal::Schedule(
           OffsetPlusIndexKernel(array.PrepareForOutput(ARRAY_SIZE)),
           ARRAY_SIZE,
           DeviceAdapterTag());
-    dax::cont::internal::LegacySchedule(
+    dax::cont::internal::Schedule(
           MarkOddNumbersKernel(stencil.PrepareForOutput(ARRAY_SIZE)),
           ARRAY_SIZE,
           DeviceAdapterTag());
@@ -555,7 +555,7 @@ private:
 
     //construct the index array
     IdArrayHandle array;
-    dax::cont::internal::LegacySchedule(
+    dax::cont::internal::Schedule(
           ClearArrayKernel(array.PrepareForOutput(ARRAY_SIZE)),
           ARRAY_SIZE,
           DeviceAdapterTag());
@@ -591,7 +591,7 @@ private:
     std::string message;
     try
       {
-      dax::cont::internal::LegacySchedule(OneErrorKernel(),
+      dax::cont::internal::Schedule(OneErrorKernel(),
                                     ARRAY_SIZE,
                                     DeviceAdapterTag());
       }
@@ -607,7 +607,7 @@ private:
     message = "";
     try
       {
-      dax::cont::internal::LegacySchedule(AllErrorKernel(),
+      dax::cont::internal::Schedule(AllErrorKernel(),
                                     ARRAY_SIZE,
                                     DeviceAdapterTag());
       }
@@ -807,7 +807,7 @@ private:
       TestArrayManagerExecution();
       TestOutOfMemory();
       TestSchedule();
-      TestSchedule();
+      TestScheduleClass();
       TestStreamCompact();
       TestStreamCompactWithStencil();
       TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
