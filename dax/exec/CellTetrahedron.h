@@ -64,19 +64,19 @@ public:
 
   // method to set this cell from a portal
   template<class PortalType>
-  DAX_EXEC_EXPORT static void SetPointIndicies(
+  DAX_EXEC_EXPORT void SetPointIndices(
       const PortalType & cellConnectionsPortal,
       dax::Id cellIndex)
   {
     dax::Id offset = cellIndex*NUM_POINTS;
-    this->Connection[0] = cellConnectionsPortal.Get(offset + 0);
-    this->Connection[1] = cellConnectionsPortal.Get(offset + 1);
-    this->Connection[2] = cellConnectionsPortal.Get(offset + 2);
-    this->Connection[3] = cellConnectionsPortal.Get(offset + 3);
+    this->Connections[0] = cellConnectionsPortal.Get(offset + 0);
+    this->Connections[1] = cellConnectionsPortal.Get(offset + 1);
+    this->Connections[2] = cellConnectionsPortal.Get(offset + 2);
+    this->Connections[3] = cellConnectionsPortal.Get(offset + 3);
   }
 
   //  method to set this cell from a different tuple
-  DAX_EXEC_EXPORT static void SetPointIndicies(
+  DAX_EXEC_EXPORT void SetPointIndices(
       const PointConnectionsType & cellConnections)
   {
     this->Connections = cellConnections;

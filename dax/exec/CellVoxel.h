@@ -33,13 +33,12 @@ public:
 
 private:
   const dax::exec::internal::TopologyUniform GridTopology;
-  const PointConnectionsType Connections;
+  PointConnectionsType Connections;
 
 public:
   /// Create a cell for the given work.
-  DAX_EXEC_EXPORT CellVoxel(const dax::exec::internal::TopologyUniform &gs,
-                            dax::Id index)
-    : GridTopology(gs), CellIndex(index) { }
+  DAX_EXEC_EXPORT CellVoxel(const dax::exec::internal::TopologyUniform &gs)
+    : GridTopology(gs){ }
 
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
@@ -62,7 +61,7 @@ public:
 
    //  method to set this cell from a portal
   template<class PortalType>
-  DAX_EXEC_EXPORT static void SetPointIndicies(
+  DAX_EXEC_EXPORT void SetPointIndices(
       const PortalType & cellConnectionsPortal,
       dax::Id cellIndex)
   {

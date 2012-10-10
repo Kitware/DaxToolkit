@@ -39,7 +39,7 @@ public:
   template<class ExecutionAdapter>
   DAX_EXEC_EXPORT CellVertex(
     const dax::exec::internal::TopologyUnstructured<
-      CellVertex,ExecutionAdapter> &topology)
+      CellVertex,ExecutionAdapter> &)
     :Connections()
     { }
 
@@ -64,16 +64,16 @@ public:
 
   // method to set this cell from a portal
   template<class PortalType>
-  DAX_EXEC_EXPORT static void SetPointIndicies(
+  DAX_EXEC_EXPORT void SetPointIndices(
       const PortalType & cellConnectionsPortal,
       dax::Id cellIndex)
   {
     dax::Id offset = cellIndex*NUM_POINTS;
-    this->Connection[0] = cellConnectionsPortal.Get(offset + 0);
+    this->Connections[0] = cellConnectionsPortal.Get(offset + 0);
   }
 
   //  method to set this cell from a different tuple
-  DAX_EXEC_EXPORT static void SetPointIndicies(
+  DAX_EXEC_EXPORT void SetPointIndices(
       const PointConnectionsType & cellConnections)
   {
     this->Connections = cellConnections;

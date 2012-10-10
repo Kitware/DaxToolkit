@@ -39,8 +39,8 @@ public:
   template<class ExecutionAdapter>
   DAX_EXEC_EXPORT CellLine(
     const dax::exec::internal::TopologyUnstructured<
-      CellLine,ExecutionAdapter> &topology)
-    :Connections(GetPointConnections()
+      CellLine,ExecutionAdapter> &)
+    :Connections()
     { }
 
   /// Get the number of points in the cell.
@@ -64,17 +64,17 @@ public:
 
   // method to set this cell from a portal
   template<class PortalType>
-  DAX_EXEC_EXPORT static void SetPointIndicies(
+  DAX_EXEC_EXPORT void SetPointIndices(
       const PortalType & cellConnectionsPortal,
       dax::Id cellIndex)
   {
     dax::Id offset = cellIndex*NUM_POINTS;
-    this->Connection[0] = cellConnectionsPortal.Get(offset + 0);
-    this->Connection[1] = cellConnectionsPortal.Get(offset + 1);
+    this->Connections[0] = cellConnectionsPortal.Get(offset + 0);
+    this->Connections[1] = cellConnectionsPortal.Get(offset + 1);
   }
 
   //  method to set this cell from a different tuple
-  DAX_EXEC_EXPORT static void SetPointIndicies(
+  DAX_EXEC_EXPORT void SetPointIndices(
       const PointConnectionsType & cellConnections)
   {
     this->Connections = cellConnections;

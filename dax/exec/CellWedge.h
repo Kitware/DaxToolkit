@@ -31,14 +31,14 @@ public:
   const static dax::Id TOPOLOGICAL_DIMENSIONS = 3;
 
 private:
-  const PointConnectionsType Connections;
+  PointConnectionsType Connections;
 
 public:
   /// Create a cell for the given work.
   template<class ExecutionAdapter>
   DAX_EXEC_EXPORT CellWedge(
     const dax::exec::internal::TopologyUnstructured<
-      CellWedge,ExecutionAdapter> &topology)
+      CellWedge,ExecutionAdapter> &)
     :Connections()
     { }
 
@@ -64,7 +64,7 @@ public:
 
   //  method to set this cell from a portal
   template<class PortalType>
-  DAX_EXEC_EXPORT static void SetPointIndicies(
+  DAX_EXEC_EXPORT void SetPointIndices(
       const PortalType & cellConnectionsPortal,
       dax::Id cellIndex)
   {
@@ -78,7 +78,7 @@ public:
   }
 
   //  method to set this cell from a different tuple
-  DAX_EXEC_EXPORT static void SetPointIndicies(
+  DAX_EXEC_EXPORT void SetPointIndices(
       const PointConnectionsType & cellConnections)
   {
     this->Connections = cellConnections;
