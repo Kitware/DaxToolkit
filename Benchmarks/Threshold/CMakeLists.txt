@@ -38,7 +38,14 @@ endif (DAX_ENABLE_THRUST)
 mark_as_advanced(DAX_ENABLE_VTK_THRESHOLD_BENCHMARK)
 option(DAX_ENABLE_VTK_THRESHOLD_BENCHMARK FALSE)
 if(DAX_ENABLE_VTK_THRESHOLD_BENCHMARK)
-  find_package(VTK REQUIRED)
+  find_package(VTK 6.0
+    COMPONENTS
+    vtkCommonCore
+    vtkCommonDataModel
+    vtkCommonExecutionModel
+    vtkFiltersCore
+    vtkFiltersGeometry
+    REQUIRED)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -46,7 +53,15 @@ endif()
 mark_as_advanced(DAX_ENABLE_PISTON_THRESHOLD_BENCHMARK)
 option(DAX_ENABLE_PISTON_THRESHOLD_BENCHMARK FALSE)
 if(DAX_ENABLE_PISTON_THRESHOLD_BENCHMARK)
-  find_package(VTK REQUIRED)
+  find_package(VTK 6.0
+    COMPONENTS
+    vtkCommonCore
+    vtkCommonDataModel
+    vtkCommonExecutionModel
+    vtkFiltersCore
+    vtkFiltersGeometry
+    REQUIRED)
+
   find_path( PISTON_INCLUDE
     NAMES piston/piston_math.h
     DOC "Piston headers"
@@ -81,8 +96,11 @@ if(DAX_ENABLE_VTK_THRESHOLD_BENCHMARK)
   set_source_files_properties(${vtkHeaders} PROPERTIES HEADER_FILE_ONLY TRUE)
   target_link_libraries(ThresholdTimingVTK
     ${Boost_LIBRARIES}
-    vtkFiltering
-    vtkGraphics
+    vtkCommonCore
+    vtkCommonDataModel
+    vtkCommonExecutionModel
+    vtkFiltersCore
+    vtkFiltersGeometry
     )
 
   add_test(ThresholdTimingVTK1-128
@@ -102,8 +120,11 @@ if(DAX_ENABLE_PISTON_THRESHOLD_BENCHMARK)
   set_source_files_properties(${pistonHeaders} PROPERTIES HEADER_FILE_ONLY TRUE)
   target_link_libraries(ThresholdTimingPISTON
     ${Boost_LIBRARIES}
-    vtkGraphics
-    vtkFiltering
+    vtkCommonCore
+    vtkCommonDataModel
+    vtkCommonExecutionModel
+    vtkFiltersCore
+    vtkFiltersGeometry
     )
 
   add_test(ThresholdTimingPiston1-128
