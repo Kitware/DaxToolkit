@@ -60,9 +60,10 @@ public:
   }
 
    //  method to set this cell from a portal
-  template<class PortalType>
+  template<class ConnectionsPortalT>
   DAX_EXEC_EXPORT void SetPointIndices(
-      const PortalType & cellConnectionsPortal,
+       const dax::exec::internal::TopologyUniform<
+        CellVoxel,ConnectionsPortalT> &topology,
       dax::Id cellIndex)
   {
     dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(

@@ -63,20 +63,21 @@ public:
   }
 
   // method to set this cell from a portal
-  template<class PortalType>
+  template<class ConnectionsPortalT>
   DAX_EXEC_EXPORT void SetPointIndices(
-      const PortalType & cellConnectionsPortal,
+      const dax::exec::internal::TopologyUnstructured<
+          CellHexahedron,ConnectionsPortalT> &topology,
       dax::Id cellIndex)
  {
     dax::Id offset = cellIndex*NUM_POINTS;
-    this->Connections[0] = cellConnectionsPortal.Get(offset + 0);
-    this->Connections[1] = cellConnectionsPortal.Get(offset + 1);
-    this->Connections[2] = cellConnectionsPortal.Get(offset + 2);
-    this->Connections[3] = cellConnectionsPortal.Get(offset + 3);
-    this->Connections[4] = cellConnectionsPortal.Get(offset + 4);
-    this->Connections[5] = cellConnectionsPortal.Get(offset + 5);
-    this->Connections[6] = cellConnectionsPortal.Get(offset + 6);
-    this->Connections[7] = cellConnectionsPortal.Get(offset + 7);
+    this->Connections[0] = topology.CellConnections.Get(offset + 0);
+    this->Connections[1] = topology.CellConnections.Get(offset + 1);
+    this->Connections[2] = topology.CellConnections.Get(offset + 2);
+    this->Connections[3] = topology.CellConnections.Get(offset + 3);
+    this->Connections[4] = topology.CellConnections.Get(offset + 4);
+    this->Connections[5] = topology.CellConnections.Get(offset + 5);
+    this->Connections[6] = topology.CellConnections.Get(offset + 6);
+    this->Connections[7] = topology.CellConnections.Get(offset + 7);
   }
 
   //  method to set this cell from a different tuple
