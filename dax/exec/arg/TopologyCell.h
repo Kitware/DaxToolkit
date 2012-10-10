@@ -32,15 +32,19 @@ namespace dax { namespace exec { namespace arg {
 template <typename Tags, typename TopologyType>
 class TopologyCell
 {
-  typedef typename TopologyType::CellType ReferenceType;
   TopologyType Topo;
+  typename TopologyType::CellType Cell;
 public:
-
-  typedef ReferenceType ReturnType;
-  typedef ReferenceType CellType;
+  typedef typename TopologyType::CellType CellType;
   typedef typename CellType::PointConnectionsType SaveType;
 
-  TopologyCell(const TopologyType& t): Topo(t){}
+  //if we are going with Out tag we create a value storage that holds a copy
+  //otherwise we have to pass a copy, since portals don't have to provide a reference
+  typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
+                                   CellType&,
+                                   CellType const&>::type ReturnType;
+
+  TopologyCell(const TopologyType& t): Topo(t), Cell(t){}
 
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
                             const dax::exec::internal::WorkletBase& work) const
@@ -49,7 +53,8 @@ public:
     //otherwise call the portal directly
     (void)work;  // Shut up compiler.
     DAX_ASSERT_EXEC(index >= 0, work);
-    return CellType(this->Topo,index);
+    this->Cell.SetPointIndices(this->Topo,index);
+    return this->Cell;
     }
 
   DAX_EXEC_EXPORT void SaveExecutionResult(int,
