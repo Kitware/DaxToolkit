@@ -47,7 +47,7 @@ public:
   TopologyCell(const TopologyType& t): Topo(t), Cell(t){}
 
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
-                            const dax::exec::internal::WorkletBase& work) const
+                            const dax::exec::internal::WorkletBase& work)
     {
     //if we have the In tag we have local store so use that value,
     //otherwise call the portal directly

@@ -33,6 +33,9 @@ namespace dax {
 namespace exec {
 namespace internal {
 
+namespace
+{
+
 template<class TopologyType>
 class TestTopology
 {
@@ -69,7 +72,7 @@ public:
   CellType GetCell(dax::Id cellId) const
   {
     CellType cell(this->Topology);
-    cell.SetPointIndices(this->Topology.CellConnections,cellId);
+    cell.SetPointIndices(this->Topology,cellId);
     return cell;
   }
 
