@@ -37,7 +37,9 @@ private:
 public:
   /// Create a cell for the given work.
   template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT CellLine()
+  DAX_EXEC_EXPORT CellLine(
+    const dax::exec::internal::TopologyUnstructured<
+      CellLine,ExecutionAdapter> &topology)
     :Connections(GetPointConnections()
     { }
 

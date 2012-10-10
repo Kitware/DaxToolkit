@@ -37,7 +37,9 @@ private:
 public:
   /// Create a cell for the given work.
   template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT CellVertex()
+  DAX_EXEC_EXPORT CellVertex(
+    const dax::exec::internal::TopologyUnstructured<
+      CellVertex,ExecutionAdapter> &topology)
     :Connections()
     { }
 

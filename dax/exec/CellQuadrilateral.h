@@ -37,7 +37,9 @@ private:
 public:
   /// Create a cell for the given work.
   template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT CellQuadrilateral()
+  DAX_EXEC_EXPORT CellQuadrilateral(
+    const dax::exec::internal::TopologyUnstructured<
+    CellQuadrilateral,ExecutionAdapter> &topology)
     :Connections()
     { }
 

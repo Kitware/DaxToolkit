@@ -37,7 +37,9 @@ private:
 public:
   /// Create a cell for the given work.
   template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT CellTetrahedron()
+  DAX_EXEC_EXPORT CellTetrahedron(
+    const dax::exec::internal::TopologyUnstructured<
+      CellTetrahedron,ExecutionAdapter> &topology)
     :Connections()
     { }
 

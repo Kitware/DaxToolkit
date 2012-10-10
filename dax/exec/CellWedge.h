@@ -36,8 +36,10 @@ private:
 public:
   /// Create a cell for the given work.
   template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT CellWedge():
-      Connections()
+  DAX_EXEC_EXPORT CellWedge(
+    const dax::exec::internal::TopologyUnstructured<
+      CellWedge,ExecutionAdapter> &topology)
+    :Connections()
     { }
 
   /// Get the number of points in the cell.
