@@ -284,7 +284,7 @@ DAX_CONT_EXPORT
 void TestSchedule(Functor functor)
 {
   // Schedule on device.
-  dax::cont::internal::LegacySchedule(functor,
+  dax::cont::internal::Schedule(functor,
                                 1,
                                 dax::cuda::cont::DeviceAdapterTagCuda());
 
