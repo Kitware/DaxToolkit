@@ -34,19 +34,6 @@ public:
 private:
   PointConnectionsType Connections;
 
-  template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT static PointConnectionsType GetPointConnections(
-      const dax::exec::internal::TopologyUnstructured<
-          CellLine,ExecutionAdapter> &topology,
-      dax::Id cellIndex)
-  {
-    PointConnectionsType connections;
-    dax::Id offset = cellIndex*NUM_POINTS;
-    connections[0] = topology.CellConnections.Get(offset + 0);
-    connections[1] = topology.CellConnections.Get(offset + 1);
-    return connections;
-  }
-
 public:
   /// Create a cell for the given work.
   template<class ExecutionAdapter>
@@ -71,6 +58,24 @@ public:
   DAX_EXEC_EXPORT PointConnectionsType GetPointIndices() const
   {
     return this->Connections;
+  }
+
+  // method to set this cell from a portal
+  template<class PortalType>
+  DAX_EXEC_EXPORT static void SetPointIndicies(
+      const PortalType & cellConnectionsPortal,
+      dax::Id cellIndex)
+  {
+    dax::Id offset = cellIndex*NUM_POINTS;
+    this->Connection[0] = cellConnectionsPortal.Get(offset + 0);
+    this->Connection[1] = cellConnectionsPortal.Get(offset + 1);
+  }
+
+  //  method to set this cell from a different tuple
+  DAX_EXEC_EXPORT static void SetPointIndicies(
+      const PointConnectionsType & cellConnections)
+  {
+    this->Connections = cellConnections;
   }
 };
 
