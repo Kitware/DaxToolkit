@@ -66,18 +66,41 @@ namespace internal {
 namespace detail {
 
 template<class PortalType>
+struct ThrustPortalValue {
+  typedef typename PortalType::ValueType ValueType;
+
+  DAX_EXEC_EXPORT
+  ThrustPortalValue(const PortalType &portal, dax::Id index)
+    : Portal(portal), Index(index) {  }
+
+  DAX_EXEC_EXPORT
+  ValueType operator=(ValueType value) {
+    this->Portal.Set(this->Index, value);
+    return value;
+  }
+
+  DAX_EXEC_EXPORT
+  operator ValueType(void) const {
+    return this->Portal.Get(this->Index);
+  }
+
+  const PortalType &Portal;
+  const dax::Id Index;
+};
+
+template<class PortalType>
 class ThrustLookupFunctor
-    : public ::thrust::unary_function<dax::Id, typename PortalType::ValueType>
+    : public ::thrust::unary_function<dax::Id, ThrustPortalValue<PortalType> >
 {
 public:
   DAX_CONT_EXPORT ThrustLookupFunctor(PortalType portal)
     : Portal(portal) {  }
 
   DAX_EXEC_EXPORT
-  typename PortalType::ValueType
+  ThrustPortalValue<PortalType>
   operator()(dax::Id index)
   {
-    return this->Portal.Get(index);
+    return ThrustPortalValue<PortalType>(this->Portal, index);
   }
 
 private:

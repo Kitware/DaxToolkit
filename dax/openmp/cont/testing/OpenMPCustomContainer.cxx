@@ -99,7 +99,7 @@ public:
   }
 
   DAX_CONT_EXPORT
-  ValueType Set(dax::Id index, const ValueType &value) const
+  void Set(dax::Id index, const ValueType &value) const
   {
     for (int componentIndex = 0;
          componentIndex < NUM_COMPONENTS;
