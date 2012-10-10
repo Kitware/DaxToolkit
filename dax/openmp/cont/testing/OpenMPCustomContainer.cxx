@@ -237,7 +237,7 @@ void TestCustomContainer()
   const int ARRAY_SIZE = 10;
   const dax::Scalar TEST_VALUE = 1234.5678;
 
-  // Set up input array.
+  std::cout << "Set up input array." << std::endl;
   dax::Vector2 inputBuffer[ARRAY_SIZE];
   for (dax::Id index = 0; index < ARRAY_SIZE; index++)
     {
@@ -253,19 +253,19 @@ void TestCustomContainer()
                                   dax::cont::ArrayContainerControlTagBasic(),
                                   dax::openmp::cont::DeviceAdapterTagOpenMP());
 
-  // Set up output array.
+  std::cout << "Set up output array." << std::endl;
   typedef dax::cont::ArrayHandle<
       dax::Vector2,
       ArrayContainerControlTagZip<dax::cont::ArrayContainerControlTagBasic>,
       dax::openmp::cont::DeviceAdapterTagOpenMP> OutputArrayType;
   OutputArrayType outputArray;
 
-  // Do a simple operation on the arrays.
+  std::cout << "Do a simple operation on the arrays." << std::endl;
   dax::cont::internal::Copy(inputArray,
                             outputArray,
                             dax::openmp::cont::DeviceAdapterTagOpenMP());
 
-  // Check the result.
+  std::cout << "Check the result." << std::endl;
   OutputArrayType::PortalConstControl outputPortal =
       outputArray.GetPortalConstControl();
   for (dax::Id index = 0; index < ARRAY_SIZE; index++)
@@ -274,6 +274,8 @@ void TestCustomContainer()
     DAX_TEST_ASSERT(value[0] == TEST_VALUE, "Values not copied.");
     DAX_TEST_ASSERT(value[1] == index, "Values not copied");
     }
+
+  std::cout << "Test passed." << std::endl;
 }
 
 } // anonymous namespace

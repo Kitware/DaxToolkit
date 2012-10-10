@@ -84,7 +84,7 @@ struct ThrustPortalValue {
     return this->Portal.Get(this->Index);
   }
 
-  const PortalType &Portal;
+  const PortalType Portal;
   const dax::Id Index;
 };
 
