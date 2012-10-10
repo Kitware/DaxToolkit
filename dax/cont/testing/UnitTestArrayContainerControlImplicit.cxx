@@ -48,7 +48,7 @@ struct TestImplicitContainer
   }
 
   DAX_EXEC_CONT_EXPORT
-  ValueType Get(dax::Id index) const
+  ValueType Get(dax::Id daxNotUsed(index)) const
   {
   return Temp;
   }
@@ -113,8 +113,6 @@ struct TemplatedTests
 
   void BasicAccess()
     {
-    typedef dax::cont::ArrayContainerControlImplicit< TestImplicitContainer<T> > ContainerTagType;
-
     TestImplicitContainer<T> portal;
     dax::cont::ArrayHandle<T,ContainerTagType> implictHandle(portal);
     DAX_TEST_ASSERT(implictHandle.GetNumberOfValues() == 1,
