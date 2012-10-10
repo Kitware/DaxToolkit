@@ -76,8 +76,8 @@ void RunPISTONPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid
   vtkElevationPoints->SetVoidArray(&elev[0],elev.size(),1);
 
   grid->GetPointData()->SetScalars(vtkElevationPoints); //piston on works on active scalars
-  piston::vtk_image3d<SPACE> image(grid);
-  piston::threshold_geometry<piston::vtk_image3d<SPACE> > threshold(image,0.0f,100.0f);
+  piston::vtk_image3d<dax::Id, dax::Scalar, SPACE> image(grid);
+  piston::threshold_geometry<piston::vtk_image3d<dax::Id, dax::Scalar, SPACE> > threshold(image,0.0f,100.0f);
 
 
   Timer timer;
@@ -85,7 +85,7 @@ void RunPISTONPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid
   double time = timer.elapsed();
 
   std::cout << "original GetNumberOfCells: " << dgrid.GetNumberOfCells() << std::endl;
-  std::cout << "threshold GetNumberOfCells: " << threshold.num_valid_cells << std::endl;
+  std::cout << "threshold GetNumberOfCells: " << threshold.valid_cell_indices.size() << std::endl;
   PrintResults(1, time, "Piston");
 }
 
