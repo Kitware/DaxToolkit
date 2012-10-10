@@ -32,7 +32,6 @@ public:
   const static dax::Id TOPOLOGICAL_DIMENSIONS = 1;
 
 private:
-  dax::Id CellIndex;
   PointConnectionsType Connections;
 
   template<class ExecutionAdapter>
@@ -51,12 +50,8 @@ private:
 public:
   /// Create a cell for the given work.
   template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT CellLine(
-      const dax::exec::internal::TopologyUnstructured<
-          CellLine,ExecutionAdapter> &topology,
-      dax::Id cellIndex)
-    : CellIndex(cellIndex),
-      Connections(GetPointConnections(topology, cellIndex))
+  DAX_EXEC_EXPORT CellLine()
+    :Connections(GetPointConnections()
     { }
 
   /// Get the number of points in the cell.
@@ -77,9 +72,6 @@ public:
   {
     return this->Connections;
   }
-
-  /// Get the cell index.  Probably only useful internally.
-  DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->CellIndex; }
 };
 
 }}

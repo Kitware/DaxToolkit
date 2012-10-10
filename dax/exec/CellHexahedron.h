@@ -31,7 +31,6 @@ public:
   const static dax::Id TOPOLOGICAL_DIMENSIONS = 3;
 
 private:
-  const dax::Id CellIndex;
   const PointConnectionsType Connections;
 
   template<class ExecutionAdapter>
@@ -56,12 +55,8 @@ private:
 public:
   /// Create a cell for the given work.
   template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT CellHexahedron(
-      const dax::exec::internal::TopologyUnstructured<
-          CellHexahedron,ExecutionAdapter> &topology,
-      dax::Id cellIndex)
-    : CellIndex(cellIndex),
-      Connections(GetPointConnections(topology, cellIndex))
+  DAX_EXEC_EXPORT CellHexahedron()
+    :Connections()
     { }
 
   /// Get the number of points in the cell.
@@ -83,9 +78,6 @@ public:
   {
     return this->Connections;
   }
-
-  /// Get the cell index.  Probably only useful internally.
-  DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->CellIndex; }
 };
 
 }}
