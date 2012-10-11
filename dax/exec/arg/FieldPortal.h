@@ -17,6 +17,7 @@
 #define __dax_exec_arg_FieldPortal_h
 
 #include <dax/Types.h>
+#include <dax/VectorTraits.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/exec/Assert.h>
 #include <dax/exec/internal/WorkletBase.h>
@@ -58,8 +59,14 @@ struct ValueStorage<T, ReferenceType, Tags,
     typename boost::enable_if<typename Tags::template Has<
     dax::cont::sig::Out> >::type>
 {
-  //actually store a value from the protal
+  //actually store a value from the portal
   T Value;
+
+  // If you do not explicitly initialize Value, then gcc sometimes complains
+  // about an uninitialized value. I don't think it is ever actually used
+  // uninitialized (at this time), but the optimizer's execution flow analysis
+  // seems to think so.
+  ValueStorage() : Value(typename dax::VectorTraits<T>::ComponentType()) {  }
 
   template<typename PortalType>
   DAX_EXEC_EXPORT ReferenceType Get(int index, PortalType const& portal,
