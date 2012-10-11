@@ -33,9 +33,6 @@ namespace dax {
 namespace exec {
 namespace internal {
 
-namespace
-{
-
 template<class TopologyType>
 class TestTopology
 {
