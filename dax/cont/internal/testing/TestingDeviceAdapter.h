@@ -581,7 +581,7 @@ private:
 
     //construct the index array
     IdArrayHandle array;
-    dax::cont::internal::LegacySchedule(
+    dax::cont::internal::Schedule(
           ClearArrayKernel(array.PrepareForOutput(ARRAY_SIZE)),
           ARRAY_SIZE,
           DeviceAdapterTag());
