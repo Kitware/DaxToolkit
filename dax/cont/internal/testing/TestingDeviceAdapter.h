@@ -582,6 +582,43 @@ private:
       }
   }
 
+  static DAX_CONT_EXPORT void TestExclusiveScan()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing Exclusive Scan" << std::endl;
+
+    //construct the index array
+    IdArrayHandle array;
+    dax::cont::internal::LegacySchedule(
+          ClearArrayKernel(array.PrepareForOutput(ARRAY_SIZE)),
+          ARRAY_SIZE,
+          DeviceAdapterTag());
+
+    dax::Id lastElement = array.GetPortalConstControl().Get(ARRAY_SIZE-1);
+
+    // we know have an array whose sum = (OFFSET * ARRAY_SIZE) - lastElement,
+    // let's validate that
+    dax::Id sum = dax::cont::internal::ExclusiveScan(array,
+                                                     array,
+                                                     DeviceAdapterTag());
+
+    DAX_TEST_ASSERT(sum == (OFFSET * ARRAY_SIZE) -lastElement,
+                    "Got bad sum from Exclusive Scan");
+
+    //each value should be equal to the Triangle Number of that index
+    //ie 0, 1, 3, 6, 10, 15, 21 ...
+    dax::Id partialSum = 0;
+    dax::Id triangleNumber = 0;
+    for(unsigned int i=0, pos=0; i < ARRAY_SIZE; ++i, ++pos)
+      {
+      const dax::Id value = array.GetPortalConstControl().Get(i);
+      partialSum += value;
+      triangleNumber = ((pos*(pos+1))/2);
+      DAX_TEST_ASSERT(partialSum == triangleNumber * OFFSET,
+                      "Incorrect partial sum");
+      }
+  }
+
   static DAX_CONT_EXPORT void TestErrorExecution()
   {
     std::cout << "-------------------------------------------" << std::endl;
@@ -812,6 +849,7 @@ private:
       TestStreamCompactWithStencil();
       TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
       TestInclusiveScan();
+      TestExclusiveScan();
       TestErrorExecution();
 
       std::cout << "Doing Worklet tests with all grid type" << std::endl;
