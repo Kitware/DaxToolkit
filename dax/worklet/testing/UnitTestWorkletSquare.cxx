@@ -64,7 +64,8 @@ struct TestElevationWorklet
                         dax::cont::DeviceAdapterTagSerial> squareHandle;
 
   std::cout << "Running Square worklet" << std::endl;
-  dax::cont::Schedule<>()(dax::worklet::Square(),fieldHandle, squareHandle);
+  dax::cont::Scheduler<> scheduler;
+  scheduler.invoke(dax::worklet::Square(),fieldHandle, squareHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> square(grid->GetNumberOfPoints());

@@ -49,9 +49,10 @@ struct TestElevationWorklet
   std::cout << "Running Elevation worklet" << std::endl;
   dax::worklet::Elevation elev(dax::make_Vector3(DIM, DIM, DIM),
                                dax::make_Vector3(0.0, 0.0, 0.0));
-  dax::cont::Schedule<>()(elev,
-                        grid->GetPointCoordinates(),
-                        elevationHandle);
+  dax::cont::Scheduler<> scheduler;
+  scheduler.invoke(elev,
+                   grid->GetPointCoordinates(),
+                   elevationHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> elevation(grid->GetNumberOfPoints());

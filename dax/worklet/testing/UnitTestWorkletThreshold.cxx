@@ -159,9 +159,9 @@ struct TestThresholdWorklet
       typedef typename ScheduleGT::ClassifyResultType  ClassifyResultType;
       typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
 
-      dax::cont::Schedule<> scheduler;
+      dax::cont::Scheduler<> scheduler;
       ClassifyResultType classification;
-      scheduler(ThresholdClassifyType(min,max),
+      scheduler.invoke(ThresholdClassifyType(min,max),
                 inGrid, fieldHandle, classification);
 
       //construct the topology generation worklet
@@ -169,7 +169,7 @@ struct TestThresholdWorklet
 
       //schedule it, and verify we can handle more than 2 parameter generate
       //topology worklets
-      scheduler(generateTopo,inGrid, outGrid, 4.0f);
+      scheduler.invoke(generateTopo,inGrid, outGrid, 4.0f);
 
       //request to also compact the topology
       generateTopo.CompactPointField(fieldHandle,resultHandle);

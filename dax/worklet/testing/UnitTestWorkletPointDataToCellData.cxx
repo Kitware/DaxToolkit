@@ -84,11 +84,11 @@ struct TestPointDataToCellDataWorklet
         dax::cont::DeviceAdapterTagSerial> resultHandle;
 
     std::cout << "Running PointDataToCellData worklet" << std::endl;
-    dax::cont::Schedule<>()(
-                          dax::worklet::PointDataToCellData(),
-                          grid.GetRealGrid(),
-                          fieldHandle,
-                          resultHandle);
+    dax::cont::Scheduler<> scheduler;
+    scheduler.invoke(dax::worklet::PointDataToCellData(),
+                     grid.GetRealGrid(),
+                     fieldHandle,
+                     resultHandle);
 
     std::cout << "Checking result" << std::endl;
     std::vector<dax::Scalar> cellData(grid->GetNumberOfCells());

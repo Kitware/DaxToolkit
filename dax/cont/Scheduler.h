@@ -55,14 +55,14 @@ template<class WorkType> class CreateExecutionResources;
 }
 
 template <class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
-class Schedule
+class Scheduler
 {
 public:
 #if __cplusplus >= 201103L
   // Note any changes to this method must be reflected in the
   // C++03 implementation inside "Schedule_Cxx03.h".
   template <class WorkletType, typename...T>
-  void operator()(WorkletType w, T...a) const
+  void invoke(WorkletType w, T...a) const
     {
     // Construct the signature of the worklet invocation on the control side.
     typedef WorkletType ControlInvocationSignature(T...);

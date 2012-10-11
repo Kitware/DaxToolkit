@@ -47,9 +47,10 @@ struct TestMagnitudeWorklet
                          dax::cont::DeviceAdapterTagSerial> magnitudeHandle;
 
   std::cout << "Running Magnitude worklet" << std::endl;
-  dax::cont::Schedule<>()(dax::worklet::Magnitude(),
-                        grid->GetPointCoordinates(),
-                        magnitudeHandle);
+  dax::cont::Scheduler<> scheduler;
+  scheduler.invoke(dax::worklet::Magnitude(),
+                   grid->GetPointCoordinates(),
+                   magnitudeHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> magnitude(grid->GetNumberOfPoints());
