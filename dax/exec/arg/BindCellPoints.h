@@ -65,9 +65,9 @@ public:
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id id,
                         const dax::exec::internal::WorkletBase& work)
     {
-    const CellType cell = this->TopoExecArg.operator()(id,work);
+    const CellType& cell = this->TopoExecArg.operator()(id,work);
 
-    const dax::Tuple<dax::Id,CellType::NUM_POINTS> ids = cell.GetPointIndices();
+    const dax::Tuple<dax::Id,CellType::NUM_POINTS>& ids = cell.GetPointIndices();
     for(int i=0; i < CellType::NUM_POINTS; ++i)
       {
       this->Value[i] = this->ExecArg(ids[i], work);
@@ -95,8 +95,8 @@ public:
                   HasOutTag,
                   typename boost::enable_if<HasOutTag>::type* = 0) const
     {
-    const CellType cell = this->TopoExecArg.operator()(id,work);
-    const dax::Tuple<dax::Id,CellType::NUM_POINTS> ids = cell.GetPointIndices();
+    const CellType& cell = this->TopoExecArg.operator()(id,work);
+    const dax::Tuple<dax::Id,CellType::NUM_POINTS>& ids = cell.GetPointIndices();
     for(int i=0; i < CellType::NUM_POINTS; ++i)
       {
       this->ExecArg.SaveExecutionResult(ids[i],this->Value[i],work);
