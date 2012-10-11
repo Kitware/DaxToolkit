@@ -39,7 +39,7 @@ public:
   template<class ConnectionsPortalT>
   DAX_EXEC_EXPORT CellTetrahedron(
     const dax::exec::internal::TopologyUnstructured<
-      CellTetrahedron,ConnectionsPortalT> &topology)
+      CellTetrahedron,ConnectionsPortalT> &)
     :Connections()
     { }
 
