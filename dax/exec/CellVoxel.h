@@ -37,8 +37,11 @@ private:
 
 public:
   /// Create a cell for the given work.
-  DAX_EXEC_EXPORT CellVoxel(const dax::exec::internal::TopologyUniform &gs)
-    : GridTopology(gs){ }
+  DAX_EXEC_EXPORT explicit CellVoxel(const dax::exec::internal::TopologyUniform &gs)
+    : GridTopology(gs), Connections()
+    {
+
+    }
 
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
@@ -54,7 +57,7 @@ public:
   }
 
   /// returns the indices for all the points in the cell.
-  DAX_EXEC_EXPORT PointConnectionsType GetPointIndices() const
+  DAX_EXEC_EXPORT const PointConnectionsType& GetPointIndices() const
   {
     return this->Connections;
   }
@@ -122,6 +125,15 @@ public:
   {
     return this->GridTopology;
   }
+
+  DAX_EXEC_EXPORT explicit CellVoxel(const CellVoxel& vox):
+  GridTopology(vox.GridTopology),
+  Connections(vox.Connections)
+  {}
+
+private:
+   //CellVoxel(const CellVoxel& other);
+   CellVoxel & operator = (CellVoxel other);
 };
 
 }}

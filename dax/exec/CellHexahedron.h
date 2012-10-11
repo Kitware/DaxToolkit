@@ -36,7 +36,7 @@ private:
 public:
   /// Create a cell for the given work.
   template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT CellHexahedron(
+  DAX_EXEC_EXPORT explicit CellHexahedron(
     const dax::exec::internal::TopologyUnstructured<
       CellHexahedron,ExecutionAdapter> &)
     :Connections()
@@ -87,6 +87,13 @@ public:
     this->Connections = cellConnections;
   }
 
+  DAX_EXEC_EXPORT CellHexahedron(const CellHexahedron& hex)
+  :Connections(hex.Connections)
+  {}
+
+private:
+
+   CellHexahedron & operator = (CellHexahedron other);
 };
 
 }}
