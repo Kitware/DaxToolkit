@@ -18,7 +18,7 @@
 #include "Timer.h"
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/Scheduler.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/VectorOperations.h>
 

@@ -92,7 +92,7 @@ public:
   // For C++03 use Boost.Preprocessor file iteration to simulate
   // parameter packs by enumerating implementations for all argument
   // counts.
-# include "Schedule_Cxx03.h"
+# include "Scheduler_Cxx03.h"
 #endif // !(__cplusplus >= 201103L)
 };
 

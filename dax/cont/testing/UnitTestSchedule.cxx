@@ -23,7 +23,7 @@
 #include <dax/cont/arg/FieldConstant.h>
 #include <dax/cont/arg/FieldArrayHandle.h>
 
-#include <dax/cont/Schedule.h>
+#include <dax/cont/Scheduler.h>
 #include <dax/cont/DeviceAdapterSerial.h>
 #include <dax/exec/WorkletMapField.h>
 #include <dax/cont/sig/Tag.h>
