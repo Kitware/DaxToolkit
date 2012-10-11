@@ -48,7 +48,7 @@ struct TestImplicitContainer
   }
 
   DAX_EXEC_CONT_EXPORT
-  ValueType Get(dax::Id index) const
+  ValueType Get(dax::Id) const
   {
   return Temp;
   }
