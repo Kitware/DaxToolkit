@@ -85,7 +85,7 @@ struct TestPointDataToCellDataWorklet
 
     std::cout << "Running PointDataToCellData worklet" << std::endl;
     dax::cont::Scheduler<> scheduler;
-    scheduler.invoke(dax::worklet::PointDataToCellData(),
+    scheduler.Invoke(dax::worklet::PointDataToCellData(),
                      grid.GetRealGrid(),
                      fieldHandle,
                      resultHandle);

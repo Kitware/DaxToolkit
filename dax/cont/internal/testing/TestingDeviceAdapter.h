@@ -363,7 +363,7 @@ private:
 
     std::cout << "Running NG Multiply worklet with two handles" << std::endl;
     dax::cont::Scheduler<DeviceAdapterTag> scheduler;
-    scheduler.invoke(NGMult(),fieldHandle, fieldHandle, multHandle);
+    scheduler.Invoke(NGMult(),fieldHandle, fieldHandle, multHandle);
 
     std::vector<dax::Scalar> mult(ARRAY_SIZE);
     multHandle.CopyInto(mult.begin());
@@ -377,7 +377,7 @@ private:
       }
 
     std::cout << "Running NG Multiply worklet with handle and constant" << std::endl;
-    scheduler.invoke(NGMult(),4.0f,fieldHandle, multHandle);
+    scheduler.Invoke(NGMult(),4.0f,fieldHandle, multHandle);
     multHandle.CopyInto(mult.begin());
 
     for (dax::Id i = 0; i < ARRAY_SIZE; i++)
@@ -405,7 +405,7 @@ private:
     ScalarArrayHandle fullFieldHandle = MakeArrayHandle(fullField);
 
     std::cout << "Running clear on subset." << std::endl;
-    scheduler.invoke(ClearArrayMapKernel(),
+    scheduler.Invoke(ClearArrayMapKernel(),
           make_MapAdapter(subSetLookupHandle,fullFieldHandle,ARRAY_SIZE));
 
     for (dax::Id index = 0; index < ARRAY_SIZE; index+=2)
@@ -688,7 +688,7 @@ private:
 
     std::cout << "Running Square worklet" << std::endl;
     dax::cont::Scheduler<DeviceAdapterTag> scheduler;
-    scheduler.invoke(dax::worklet::Square(),
+    scheduler.Invoke(dax::worklet::Square(),
                           fieldHandle,
                           squareHandle);
 
@@ -722,7 +722,7 @@ private:
     try
       {
       dax::cont::Scheduler<DeviceAdapterTag> scheduler;
-      scheduler.invoke(
+      scheduler.Invoke(
                 dax::worklet::testing::FieldMapError(),
                 grid.GetRealGrid().GetPointCoordinates());
       }
@@ -779,7 +779,7 @@ private:
 
     std::cout << "Running CellGradient worklet" << std::endl;
     dax::cont::Scheduler<DeviceAdapterTag> scheduler;
-    scheduler.invoke(dax::worklet::CellGradient(),
+    scheduler.Invoke(dax::worklet::CellGradient(),
                     grid.GetRealGrid(),
                     grid->GetPointCoordinates(),
                     fieldHandle,
@@ -814,7 +814,7 @@ private:
     try
       {
       dax::cont::Scheduler<DeviceAdapterTag> scheduler;
-      scheduler.invoke(dax::worklet::testing::CellMapError(),
+      scheduler.Invoke(dax::worklet::testing::CellMapError(),
                       grid.GetRealGrid());
       }
     catch (dax::cont::ErrorExecution error)

@@ -42,7 +42,7 @@ static void TestCellMapError()
   try
     {
     dax::cont::Scheduler<> scheduler;
-    scheduler.invoke(dax::worklet::testing::CellMapError(),grid);
+    scheduler.Invoke(dax::worklet::testing::CellMapError(),grid);
     }
   catch (dax::cont::ErrorExecution error)
     {

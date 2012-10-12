@@ -111,7 +111,7 @@ struct TestCellGradientWorklet
 
     std::cout << "Running CellGradient worklet" << std::endl;
     dax::cont::Scheduler<> scheduler;
-    scheduler.invoke(dax::worklet::CellGradient(),
+    scheduler.Invoke(dax::worklet::CellGradient(),
                     grid.GetRealGrid(),
                     grid->GetPointCoordinates(),
                     fieldHandle,

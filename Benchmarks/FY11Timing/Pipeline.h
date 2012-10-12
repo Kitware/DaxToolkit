@@ -110,10 +110,10 @@ void RunPipeline1(const dax::cont::UniformGrid<> &grid)
 
   Timer timer;
   dax::cont::Scheduler<> schedule;
-  schedule.invoke(dax::worklet::Magnitude(),
+  schedule.Invoke(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
-  schedule.invoke(dax::worklet::CellGradient(),grid,
+  schedule.Invoke(dax::worklet::CellGradient(),grid,
                                    grid.GetPointCoordinates(),
                                    intermediate1,
                                    results);
@@ -136,20 +136,20 @@ void RunPipeline2(const dax::cont::UniformGrid<> &grid)
 
   Timer timer;
   dax::cont::Scheduler<> schedule;
-  schedule.invoke(dax::worklet::Magnitude(),
+  schedule.Invoke(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
 
-  schedule.invoke(dax::worklet::CellGradient(),grid,
+  schedule.Invoke(dax::worklet::CellGradient(),grid,
            grid.GetPointCoordinates(),
            intermediate1,
            intermediate2);
 
   intermediate1.ReleaseResources();
-  schedule.invoke(dax::worklet::Sine(),intermediate2, intermediate3);
-  schedule.invoke(dax::worklet::Square(),intermediate3, intermediate2);
+  schedule.Invoke(dax::worklet::Sine(),intermediate2, intermediate3);
+  schedule.Invoke(dax::worklet::Square(),intermediate3, intermediate2);
   intermediate3.ReleaseResources();
-  schedule.invoke(dax::worklet::Cosine(),intermediate2, results);
+  schedule.Invoke(dax::worklet::Cosine(),intermediate2, results);
   double time = timer.elapsed();
 
   PrintCheckValues(results);
@@ -169,13 +169,13 @@ void RunPipeline3(const dax::cont::UniformGrid<> &grid)
 
   Timer timer;
   dax::cont::Scheduler<> schedule;
-  schedule.invoke(dax::worklet::Magnitude(),
+  schedule.Invoke(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
-  schedule.invoke(dax::worklet::Sine(),intermediate1, intermediate2);
-  schedule.invoke(dax::worklet::Square(),intermediate2, intermediate1);
+  schedule.Invoke(dax::worklet::Sine(),intermediate1, intermediate2);
+  schedule.Invoke(dax::worklet::Square(),intermediate2, intermediate1);
   intermediate2.ReleaseResources();
-  schedule.invoke(dax::worklet::Cosine(),intermediate1, results);
+  schedule.Invoke(dax::worklet::Cosine(),intermediate1, results);
   double time = timer.elapsed();
 
   PrintCheckValues(results);

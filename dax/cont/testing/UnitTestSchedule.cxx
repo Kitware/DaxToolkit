@@ -109,32 +109,32 @@ struct ArbFunctorWorklet: dax::exec::WorkletMapField
 void VerifyConstantArgs()
 {
   dax::cont::Scheduler<> scheduler;
-  scheduler.invoke(ExampleWorklet(),1); //convert to dax::Id
+  scheduler.Invoke(ExampleWorklet(),1); //convert to dax::Id
   DAX_TEST_ASSERT(ExampleWorklet::TestValue == 1, "TestValue is not 1");
 
-  scheduler.invoke(ExampleWorklet(),1.35); //convert double to dax::Scalar
+  scheduler.Invoke(ExampleWorklet(),1.35); //convert double to dax::Scalar
   DAX_TEST_ASSERT(ExampleWorklet::TestValue == 1.35f, "TestValue is not 1.35f");
 
-  scheduler.invoke(Example2Worklet(),1.0f,3.0f); //convert double to dax::Scalar
+  scheduler.Invoke(Example2Worklet(),1.0f,3.0f); //convert double to dax::Scalar
   DAX_TEST_ASSERT(Example2Worklet::TestValue == 3.0f, "TestValue is not 3.0f");
 
 
   dax::Tuple<dax::Scalar,6> tuple6;
   tuple6[0]=0.0f; tuple6[1]=0.5f; tuple6[2]=0.25f;
   tuple6[0]=0.0f; tuple6[1]=-0.5f; tuple6[2]=-0.25f;
-  scheduler.invoke(ExampleTupleWorklet(),tuple6);
+  scheduler.Invoke(ExampleTupleWorklet(),tuple6);
 
   dax::Vector2 vec2(-1, -2);
-  scheduler.invoke(ExampleTupleWorklet(),vec2);
+  scheduler.Invoke(ExampleTupleWorklet(),vec2);
 
   dax::Vector3 vec3(-1, -2, -3);
-  scheduler.invoke(ExampleTupleWorklet(),vec3);
+  scheduler.Invoke(ExampleTupleWorklet(),vec3);
 
   dax::Vector4 vec4(-1, -2, -3, -4);
-  scheduler.invoke(ExampleTupleWorklet(),vec4);
+  scheduler.Invoke(ExampleTupleWorklet(),vec4);
 
   dax::Id3 id3(1,2,3);
-  scheduler.invoke(ExampleTupleWorklet(),id3);
+  scheduler.Invoke(ExampleTupleWorklet(),id3);
 }
 
 void VerifyArrayHandleArgs()
@@ -144,7 +144,7 @@ void VerifyArrayHandleArgs()
   dax::cont::ArrayHandle<dax::Id> input = dax::cont::make_ArrayHandle(in);
   dax::cont::ArrayHandle<dax::Id> output;
   dax::cont::Scheduler<> scheduler;
-  scheduler.invoke(ExampleSquare(),input,output);
+  scheduler.Invoke(ExampleSquare(),input,output);
 
 }
 
@@ -155,7 +155,7 @@ void VerifyObjectArgs()
   dax::cont::ArrayHandle<dax::Id> input = dax::cont::make_ArrayHandle(in);
   dax::cont::ArrayHandle<dax::Id> output;
   dax::cont::Scheduler<> scheduler;
-  scheduler.invoke(ArbFunctorWorklet(),input,Functor1(),output);
+  scheduler.Invoke(ArbFunctorWorklet(),input,Functor1(),output);
 }
 
 

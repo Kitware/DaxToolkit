@@ -48,7 +48,7 @@ struct TestMagnitudeWorklet
 
   std::cout << "Running Magnitude worklet" << std::endl;
   dax::cont::Scheduler<> scheduler;
-  scheduler.invoke(dax::worklet::Magnitude(),
+  scheduler.Invoke(dax::worklet::Magnitude(),
                    grid->GetPointCoordinates(),
                    magnitudeHandle);
 

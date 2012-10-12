@@ -67,7 +67,7 @@ struct TestCosineWorklet
 
     std::cout << "Running Cosine worklet" << std::endl;
     dax::cont::Scheduler<> scheduler;
-    scheduler.invoke(dax::worklet::Cosine(),fieldHandle, cosineHandle);
+    scheduler.Invoke(dax::worklet::Cosine(),fieldHandle, cosineHandle);
 
     std::cout << "Checking result" << std::endl;
     std::vector<dax::Scalar> cosine(grid->GetNumberOfPoints());

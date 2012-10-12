@@ -86,7 +86,7 @@ struct TestCellAverageWorklet
 
     std::cout << "Running CellAverage worklet" << std::endl;
     dax::cont::Scheduler<> scheduler;
-    scheduler.invoke(dax::worklet::CellAverage(),
+    scheduler.Invoke(dax::worklet::CellAverage(),
                      grid.GetRealGrid(),
                      fieldHandle,
                      resultHandle);

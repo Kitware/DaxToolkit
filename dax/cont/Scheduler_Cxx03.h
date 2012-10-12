@@ -27,7 +27,7 @@
 // C++11 implementation inside Schedule.h.
 template <class WorkletType, _dax_pp_typename___T>
 typename boost::enable_if<boost::is_base_of<dax::exec::internal::WorkletBase,WorkletType> >::type
- invoke(WorkletType w, _dax_pp_params___(a)) const
+ Invoke(WorkletType w, _dax_pp_params___(a)) const
   {
   // Construct the signature of the worklet invocation on the control side.
   typedef WorkletType ControlInvocationSignature(_dax_pp_T___);

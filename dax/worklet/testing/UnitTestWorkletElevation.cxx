@@ -50,7 +50,7 @@ struct TestElevationWorklet
   dax::worklet::Elevation elev(dax::make_Vector3(DIM, DIM, DIM),
                                dax::make_Vector3(0.0, 0.0, 0.0));
   dax::cont::Scheduler<> scheduler;
-  scheduler.invoke(elev,
+  scheduler.Invoke(elev,
                    grid->GetPointCoordinates(),
                    elevationHandle);
 

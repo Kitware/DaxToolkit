@@ -168,7 +168,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
   dax::cont::Scheduler<> schedule;
-  schedule.invoke(dax::worklet::Magnitude(),
+  schedule.Invoke(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
 
@@ -179,12 +179,12 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
   typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
 
   ClassifyResultType classification;
-  schedule.invoke(ThresholdClassifyType(THRESHOLD_MIN,THRESHOLD_MAX),
+  schedule.Invoke(ThresholdClassifyType(THRESHOLD_MIN,THRESHOLD_MAX),
            grid, intermediate1, classification);
 
   ScheduleGT resolveTopology(classification);
   //resolveTopology.SetRemoveDuplicatePoints(false);
-  schedule.invoke(resolveTopology,grid,grid2);
+  schedule.Invoke(resolveTopology,grid,grid2);
 
   resolveTopology.CompactPointField(intermediate1,resultHandle);
 

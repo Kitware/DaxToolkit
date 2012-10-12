@@ -66,7 +66,7 @@ struct TestSineWorklet
 
   std::cout << "Running Sine worklet" << std::endl;
   dax::cont::Scheduler<> scheduler;
-  scheduler.invoke(dax::worklet::Sine(),fieldHandle, sineHandle);
+  scheduler.Invoke(dax::worklet::Sine(),fieldHandle, sineHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> sine(grid->GetNumberOfPoints());

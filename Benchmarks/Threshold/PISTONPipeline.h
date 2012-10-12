@@ -63,7 +63,7 @@ void RunPISTONPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid
 
   //use dax to compute the magnitude
   dax::cont::Scheduler<> scheduler;
-  scheduler.invoke(dax::worklet::Magnitude(),
+  scheduler.Invoke(dax::worklet::Magnitude(),
             dgrid.GetPointCoordinates(),
             elevHandle);
 

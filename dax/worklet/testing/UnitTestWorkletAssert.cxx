@@ -45,7 +45,7 @@ static void TestAssert()
   try
     {
     dax::cont::Scheduler<> scheduler;
-    scheduler.invoke(dax::worklet::testing::Assert(),arrayHandle);
+    scheduler.Invoke(dax::worklet::testing::Assert(),arrayHandle);
     }
   catch (dax::cont::ErrorExecution error)
     {

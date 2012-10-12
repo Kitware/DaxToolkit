@@ -65,7 +65,7 @@ struct TestElevationWorklet
 
   std::cout << "Running Square worklet" << std::endl;
   dax::cont::Scheduler<> scheduler;
-  scheduler.invoke(dax::worklet::Square(),fieldHandle, squareHandle);
+  scheduler.Invoke(dax::worklet::Square(),fieldHandle, squareHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> square(grid->GetNumberOfPoints());
