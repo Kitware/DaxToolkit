@@ -29,12 +29,12 @@ void FillPointMask(const InGridType &inGrid,
     // so that  works properly
     mask.PrepareForOutput(inGrid.GetNumberOfPoints());
 
-    this->operator()(dax::exec::internal::kernel::ClearUsedPointsFunctor(),
+    this->Invoke(dax::exec::internal::kernel::ClearUsedPointsFunctor(),
              mask);
 
     // Mark every point that is used at least once.
     // This only works when outGrid is an UnstructuredGrid.
-    this->operator()(dax::exec::internal::kernel::GetUsedPointsFunctor(),
+    this->Invoke(dax::exec::internal::kernel::GetUsedPointsFunctor(),
              dax::cont::make_MapAdapter(outGrid.GetCellConnections(),
              mask,
              inGrid.GetNumberOfPoints()));
@@ -108,7 +108,7 @@ void GenerateNewTopology(
   //for the lower bounds to compute the right indices
   IdArrayHandleType validCellRange;
   validCellRange.PrepareForOutput(numNewCells);
-  this->operator()(dax::exec::internal::kernel::IndexPlusOne(),
+  this->Invoke(dax::exec::internal::kernel::IndexPlusOne(),
                    validCellRange);
 
   //now do the lower bounds of the cell indices so that we figure out
@@ -122,7 +122,7 @@ void GenerateNewTopology(
 
   //we get our magic here. we need to wrap some paramemters and pass
   //them to the real scheduler
-  this->operator()(newTopo.GetWorklet(),
+  this->Invoke(newTopo.GetWorklet(),
                    dax::cont::make_MapAdapter(validCellRange,inputGrid,
                                              inputGrid.GetNumberOfCells()),
                    outputGrid);
@@ -140,7 +140,7 @@ public:
 //generate topology without input and output params
 public:
 template <typename WorkType, _dax_pp_typename___T>
-void operator()(
+void Invoke(
     dax::cont::ScheduleGenerateTopology<WorkType,DeviceAdapterTag> newTopo,
      _dax_pp_params___(a))
   {
@@ -182,7 +182,7 @@ void GenerateNewTopology(
   //for the lower bounds to compute the right indices
   IdArrayHandleType validCellRange;
   validCellRange.PrepareForOutput(numNewCells);
-  this->operator()(dax::exec::internal::kernel::IndexPlusOne(),
+  this->Invoke(dax::exec::internal::kernel::IndexPlusOne(),
                    validCellRange);
 
   //now do the lower bounds of the cell indices so that we figure out
@@ -196,7 +196,7 @@ void GenerateNewTopology(
 
   //we get our magic here. we need to wrap some paramemters and pass
   //them to the real scheduler
-  this->operator()(newTopo.GetWorklet(),
+  this->Invoke(newTopo.GetWorklet(),
                    dax::cont::make_MapAdapter(validCellRange,inputGrid,
                                              inputGrid.GetNumberOfCells()),
                    outputGrid,

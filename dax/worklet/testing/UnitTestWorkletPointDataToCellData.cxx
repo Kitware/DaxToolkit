@@ -28,7 +28,7 @@
 #include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/Scheduler.h>
 
 #include <vector>
 
@@ -84,11 +84,11 @@ struct TestPointDataToCellDataWorklet
         dax::cont::DeviceAdapterTagSerial> resultHandle;
 
     std::cout << "Running PointDataToCellData worklet" << std::endl;
-    dax::cont::Schedule<>()(
-                          dax::worklet::PointDataToCellData(),
-                          grid.GetRealGrid(),
-                          fieldHandle,
-                          resultHandle);
+    dax::cont::Scheduler<> scheduler;
+    scheduler.Invoke(dax::worklet::PointDataToCellData(),
+                     grid.GetRealGrid(),
+                     fieldHandle,
+                     resultHandle);
 
     std::cout << "Checking result" << std::endl;
     std::vector<dax::Scalar> cellData(grid->GetNumberOfCells());

@@ -33,7 +33,7 @@ set(headers
   ErrorControlOutOfMemory.h
   ErrorExecution.h
   IteratorFromArrayPortal.h
-  Schedule.h
+  Scheduler.h
   ScheduleMapAdapter.h
   ScheduleGenerateTopology.h
   UniformGrid.h

@@ -28,7 +28,7 @@
 #include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/Scheduler.h>
 
 #include <vector>
 
@@ -110,12 +110,12 @@ struct TestCellGradientWorklet
         dax::cont::DeviceAdapterTagSerial> gradientHandle;
 
     std::cout << "Running CellGradient worklet" << std::endl;
-    dax::cont::Schedule<>()(
-                          dax::worklet::CellGradient(),
-                          grid.GetRealGrid(),
-                          grid->GetPointCoordinates(),
-                          fieldHandle,
-                          gradientHandle);
+    dax::cont::Scheduler<> scheduler;
+    scheduler.Invoke(dax::worklet::CellGradient(),
+                    grid.GetRealGrid(),
+                    grid->GetPointCoordinates(),
+                    fieldHandle,
+                    gradientHandle);
 
     std::cout << "Checking result" << std::endl;
     std::vector<dax::Vector3> gradient(grid->GetNumberOfCells());

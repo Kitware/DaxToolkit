@@ -19,7 +19,7 @@
 #include "Timer.h"
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/Scheduler.h>
 #include <dax/cont/ScheduleGenerateTopology.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
@@ -167,8 +167,8 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Scalar> intermediate1;
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
-  dax::cont::Schedule<> schedule;
-  schedule(dax::worklet::Magnitude(),
+  dax::cont::Scheduler<> schedule;
+  schedule.Invoke(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
 
@@ -179,12 +179,12 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
   typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
 
   ClassifyResultType classification;
-  schedule(ThresholdClassifyType(THRESHOLD_MIN,THRESHOLD_MAX),
+  schedule.Invoke(ThresholdClassifyType(THRESHOLD_MIN,THRESHOLD_MAX),
            grid, intermediate1, classification);
 
   ScheduleGT resolveTopology(classification);
   //resolveTopology.SetRemoveDuplicatePoints(false);
-  schedule(resolveTopology,grid,grid2);
+  schedule.Invoke(resolveTopology,grid,grid2);
 
   resolveTopology.CompactPointField(intermediate1,resultHandle);
 

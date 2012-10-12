@@ -20,7 +20,7 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/Scheduler.h>
 #include <dax/cont/ScheduleMapAdapter.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
@@ -362,7 +362,8 @@ private:
     ScalarArrayHandle multHandle;
 
     std::cout << "Running NG Multiply worklet with two handles" << std::endl;
-    dax::cont::Schedule<DeviceAdapterTag>()(NGMult(),fieldHandle, fieldHandle, multHandle);
+    dax::cont::Scheduler<DeviceAdapterTag> scheduler;
+    scheduler.Invoke(NGMult(),fieldHandle, fieldHandle, multHandle);
 
     std::vector<dax::Scalar> mult(ARRAY_SIZE);
     multHandle.CopyInto(mult.begin());
@@ -376,7 +377,7 @@ private:
       }
 
     std::cout << "Running NG Multiply worklet with handle and constant" << std::endl;
-    dax::cont::Schedule<DeviceAdapterTag>()(NGMult(),4.0f,fieldHandle, multHandle);
+    scheduler.Invoke(NGMult(),4.0f,fieldHandle, multHandle);
     multHandle.CopyInto(mult.begin());
 
     for (dax::Id i = 0; i < ARRAY_SIZE; i++)
@@ -404,8 +405,7 @@ private:
     ScalarArrayHandle fullFieldHandle = MakeArrayHandle(fullField);
 
     std::cout << "Running clear on subset." << std::endl;
-    dax::cont::Schedule<DeviceAdapterTag>()(
-          ClearArrayMapKernel(),
+    scheduler.Invoke(ClearArrayMapKernel(),
           make_MapAdapter(subSetLookupHandle,fullFieldHandle,ARRAY_SIZE));
 
     for (dax::Id index = 0; index < ARRAY_SIZE; index+=2)
@@ -582,6 +582,43 @@ private:
       }
   }
 
+  static DAX_CONT_EXPORT void TestExclusiveScan()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing Exclusive Scan" << std::endl;
+
+    //construct the index array
+    IdArrayHandle array;
+    dax::cont::internal::Schedule(
+          ClearArrayKernel(array.PrepareForOutput(ARRAY_SIZE)),
+          ARRAY_SIZE,
+          DeviceAdapterTag());
+
+    dax::Id lastElement = array.GetPortalConstControl().Get(ARRAY_SIZE-1);
+
+    // we know have an array whose sum = (OFFSET * ARRAY_SIZE) - lastElement,
+    // let's validate that
+    dax::Id sum = dax::cont::internal::ExclusiveScan(array,
+                                                     array,
+                                                     DeviceAdapterTag());
+
+    DAX_TEST_ASSERT(sum == (OFFSET * ARRAY_SIZE) -lastElement,
+                    "Got bad sum from Exclusive Scan");
+
+    //each value should be equal to the Triangle Number of that index
+    //ie 0, 1, 3, 6, 10, 15, 21 ...
+    dax::Id partialSum = 0;
+    dax::Id triangleNumber = 0;
+    for(unsigned int i=0, pos=0; i < ARRAY_SIZE; ++i, ++pos)
+      {
+      const dax::Id value = array.GetPortalConstControl().Get(i);
+      partialSum += value;
+      triangleNumber = ((pos*(pos+1))/2);
+      DAX_TEST_ASSERT(partialSum == triangleNumber * OFFSET,
+                      "Incorrect partial sum");
+      }
+  }
+
   static DAX_CONT_EXPORT void TestErrorExecution()
   {
     std::cout << "-------------------------------------------" << std::endl;
@@ -650,7 +687,8 @@ private:
     ScalarArrayHandle squareHandle;
 
     std::cout << "Running Square worklet" << std::endl;
-    dax::cont::Schedule<DeviceAdapterTag>()(dax::worklet::Square(),
+    dax::cont::Scheduler<DeviceAdapterTag> scheduler;
+    scheduler.Invoke(dax::worklet::Square(),
                           fieldHandle,
                           squareHandle);
 
@@ -683,7 +721,8 @@ private:
     bool gotError = false;
     try
       {
-      dax::cont::Schedule<DeviceAdapterTag>()(
+      dax::cont::Scheduler<DeviceAdapterTag> scheduler;
+      scheduler.Invoke(
                 dax::worklet::testing::FieldMapError(),
                 grid.GetRealGrid().GetPointCoordinates());
       }
@@ -739,11 +778,12 @@ private:
     Vector3ArrayHandle gradientHandle;
 
     std::cout << "Running CellGradient worklet" << std::endl;
-    dax::cont::Schedule<DeviceAdapterTag>()(dax::worklet::CellGradient(),
-                          grid.GetRealGrid(),
-                          grid->GetPointCoordinates(),
-                          fieldHandle,
-                          gradientHandle);
+    dax::cont::Scheduler<DeviceAdapterTag> scheduler;
+    scheduler.Invoke(dax::worklet::CellGradient(),
+                    grid.GetRealGrid(),
+                    grid->GetPointCoordinates(),
+                    fieldHandle,
+                    gradientHandle);
 
     std::vector<dax::Vector3> gradient(grid->GetNumberOfCells());
     gradientHandle.CopyInto(gradient.begin());
@@ -773,9 +813,9 @@ private:
     bool gotError = false;
     try
       {
-      dax::cont::Schedule<DeviceAdapterTag>()(
-                          dax::worklet::testing::CellMapError(),
-                          grid.GetRealGrid());
+      dax::cont::Scheduler<DeviceAdapterTag> scheduler;
+      scheduler.Invoke(dax::worklet::testing::CellMapError(),
+                      grid.GetRealGrid());
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -812,6 +852,7 @@ private:
       TestStreamCompactWithStencil();
       TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
       TestInclusiveScan();
+      TestExclusiveScan();
       TestErrorExecution();
 
       std::cout << "Doing Worklet tests with all grid type" << std::endl;
