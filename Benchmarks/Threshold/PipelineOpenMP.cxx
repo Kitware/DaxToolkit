@@ -20,7 +20,7 @@
 
 #include "Pipeline.h"
 
-void RunPipelineOpenMP(int pipeline, const dax::cont::UniformGrid<> &grid)
+void RunPipelineOpenMP(const dax::cont::UniformGrid<> &grid)
 {
   RunDAXPipeline(grid);
 }
@@ -52,10 +52,7 @@ int main(int argc, char* argv[])
 
   dax::cont::UniformGrid<> grid = CreateInputStructure(MAX_SIZE);
 
-  int pipeline = parser.pipeline();
-  std::cout << "Pipeline #" << pipeline << std::endl;
-
-  RunPipelineOpenMP(pipeline, grid);
+  RunPipelineOpenMP(grid);
 
   return 0;
 }

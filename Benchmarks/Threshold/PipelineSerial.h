@@ -19,6 +19,6 @@
 
 #include <dax/cont/UniformGrid.h>
 
-void RunPipelineSerial(int pipeline, const dax::cont::UniformGrid<> &grid);
+void RunPipelineSerial(const dax::cont::UniformGrid<> &grid);
 
 #endif //__PipelineSerial_h
