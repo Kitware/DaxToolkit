@@ -43,6 +43,12 @@ public:
     :Connections()
     { }
 
+  // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
+  // COPY CONSTRUCTOR.
+  DAX_EXEC_EXPORT CellLine(const CellLine& line)
+  :Connections(line.Connections)
+  {}
+
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
   {
@@ -80,12 +86,6 @@ public:
   {
     this->Connections = cellConnections;
   }
-
-  // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
-  // COPY CONSTRUCTOR.
-  DAX_EXEC_EXPORT CellLine(const CellLine& line)
-  :Connections(line.Connections)
-  {}
 
 private:
   // MAKING SURE THAT THERE ARE NO MORE ASSIGNMENTS HAPPENING THAT WILL

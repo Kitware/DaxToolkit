@@ -42,6 +42,12 @@ public:
     :Connections()
     { }
 
+  // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
+  // COPY CONSTRUCTOR.
+  DAX_EXEC_EXPORT CellHexahedron(const CellHexahedron& hex)
+  :Connections(hex.Connections)
+  {}
+
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
   {
@@ -86,12 +92,6 @@ public:
   {
     this->Connections = cellConnections;
   }
-
-  // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
-  // COPY CONSTRUCTOR.
-  DAX_EXEC_EXPORT CellHexahedron(const CellHexahedron& hex)
-  :Connections(hex.Connections)
-  {}
 
 private:
   // MAKING SURE THAT THERE ARE NO MORE ASSIGNMENTS HAPPENING THAT WILL

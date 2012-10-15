@@ -40,7 +40,13 @@ public:
     const dax::exec::internal::TopologyUnstructured<
       CellWedge,ExecutionAdapter> &)
     :Connections()
-    { }
+    {}
+
+  // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
+  // COPY CONSTRUCTOR.
+  DAX_EXEC_EXPORT CellWedge(const CellWedge& wge)
+  :Connections(wge.Connections)
+  {}
 
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
@@ -84,12 +90,6 @@ public:
   {
     this->Connections = cellConnections;
   }
-
-  // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
-  // COPY CONSTRUCTOR.
-  DAX_EXEC_EXPORT CellWedge(const CellWedge& wge)
-  :Connections(wge.Connections)
-  {}
 
 private:
   // MAKING SURE THAT THERE ARE NO MORE ASSIGNMENTS HAPPENING THAT WILL

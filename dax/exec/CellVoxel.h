@@ -39,9 +39,14 @@ public:
   /// Create a cell for the given work.
   DAX_EXEC_EXPORT explicit CellVoxel(const dax::exec::internal::TopologyUniform &gs)
     : GridTopology(gs), Connections()
-    {
+    {}
 
-    }
+  // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
+  // COPY CONSTRUCTOR.
+  DAX_EXEC_EXPORT CellVoxel(const CellVoxel& vox):
+  GridTopology(vox.GridTopology),
+  Connections(vox.Connections)
+  {}
 
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
@@ -125,13 +130,6 @@ public:
   {
     return this->GridTopology;
   }
-
-  // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
-  // COPY CONSTRUCTOR.
-  DAX_EXEC_EXPORT CellVoxel(const CellVoxel& vox):
-  GridTopology(vox.GridTopology),
-  Connections(vox.Connections)
-  {}
 
 private:
   // MAKING SURE THAT THERE ARE NO MORE ASSIGNMENTS HAPPENING THAT WILL
