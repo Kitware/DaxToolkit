@@ -49,6 +49,11 @@ public:
   :Connections(tet.Connections)
   {}
 
+  // COPY CONSTRUCTOR (Non-Const)
+  DAX_EXEC_EXPORT CellTetrahedron(CellTetrahedron& tet)
+  :Connections(tet.Connections)
+  {}
+
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
   {

@@ -48,6 +48,11 @@ public:
   :Connections(wge.Connections)
   {}
 
+  // COPY CONSTRUCTOR (Non-Const)
+  DAX_EXEC_EXPORT CellWedge(CellWedge& wge)
+  :Connections(wge.Connections)
+  {}
+
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
   {

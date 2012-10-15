@@ -48,6 +48,12 @@ public:
   Connections(vox.Connections)
   {}
 
+  // COPY CONSTRUCTOR (Non-Const)
+  DAX_EXEC_EXPORT CellVoxel(CellVoxel& vox):
+  GridTopology(vox.GridTopology),
+  Connections(vox.Connections)
+  {}
+
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
   {

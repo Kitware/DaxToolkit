@@ -49,6 +49,11 @@ public:
   :Connections(line.Connections)
   {}
 
+  // COPY CONSTRUCTOR (Non-Const)
+  DAX_EXEC_EXPORT CellLine(CellLine& line)
+  :Connections(line.Connections)
+  {}
+
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
   {

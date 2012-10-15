@@ -49,6 +49,11 @@ public:
   :Connections(tri.Connections)
   {}
 
+  // COPY CONSTRUCTOR (Non-Const)
+  DAX_EXEC_EXPORT CellTriangle(CellTriangle& tri)
+  :Connections(tri.Connections)
+  {}
+
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
   {
