@@ -27,7 +27,7 @@
 // C++11 implementation inside Schedule.h.
 template <class WorkletType, _dax_pp_typename___T>
 typename boost::enable_if<boost::is_base_of<dax::exec::internal::WorkletBase,WorkletType> >::type
- operator()(WorkletType w, _dax_pp_params___(a)) const
+ DAX_CONT_EXPORT operator()(WorkletType w, _dax_pp_params___(a)) const
   {
   // Construct the signature of the worklet invocation on the control side.
   typedef WorkletType ControlInvocationSignature(_dax_pp_T___);
@@ -42,11 +42,12 @@ typename boost::enable_if<boost::is_base_of<dax::exec::internal::WorkletBase,Wor
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count=1;
-  bindings.ForEach(dax::cont::detail::CollectCount<WorkType>(count));
+  bindings.ForEachCont(dax::cont::detail::CollectCount<WorkType>(count));
 
   // Visit each bound argument to set up its representation in the
   // execution environment.
-  bindings.ForEach(dax::cont::detail::CreateExecutionResources<WorkType>(count));
+  bindings.ForEachCont(
+        dax::cont::detail::CreateExecutionResources<WorkType>(count));
 
   // Schedule the worklet invocations in the execution environment.
   dax::cont::internal::Schedule<ControlInvocationSignature>
