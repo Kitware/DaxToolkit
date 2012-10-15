@@ -126,14 +126,17 @@ public:
     return this->GridTopology;
   }
 
-  DAX_EXEC_EXPORT explicit CellVoxel(const CellVoxel& vox):
+  // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
+  // COPY CONSTRUCTOR.
+  DAX_EXEC_EXPORT CellVoxel(const CellVoxel& vox):
   GridTopology(vox.GridTopology),
   Connections(vox.Connections)
   {}
 
 private:
-   //CellVoxel(const CellVoxel& other);
-   CellVoxel & operator = (CellVoxel other);
+  // MAKING SURE THAT THERE ARE NO MORE ASSIGNMENTS HAPPENING THAT WILL
+  // POTENTIALLY BRING ABOUT A PERFOMANCE HIT
+  CellVoxel & operator = (CellVoxel other);
 };
 
 }}

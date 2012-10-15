@@ -87,13 +87,16 @@ public:
     this->Connections = cellConnections;
   }
 
+  // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
+  // COPY CONSTRUCTOR.
   DAX_EXEC_EXPORT CellHexahedron(const CellHexahedron& hex)
   :Connections(hex.Connections)
   {}
 
 private:
-
-   CellHexahedron & operator = (CellHexahedron other);
+  // MAKING SURE THAT THERE ARE NO MORE ASSIGNMENTS HAPPENING THAT WILL
+  // POTENTIALLY BRING ABOUT A PERFOMANCE HIT
+  CellHexahedron & operator = (CellHexahedron other);
 };
 
 }}

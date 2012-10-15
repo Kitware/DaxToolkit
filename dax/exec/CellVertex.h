@@ -80,6 +80,17 @@ public:
     this->Connections = cellConnections;
   }
 
+  // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
+  // COPY CONSTRUCTOR.
+  DAX_EXEC_EXPORT CellVertex(const CellVertex& vert)
+  :Connections(vert.Connections)
+  {}
+
+private:
+  // MAKING SURE THAT THERE ARE NO MORE ASSIGNMENTS HAPPENING THAT WILL
+  // POTENTIALLY BRING ABOUT A PERFOMANCE HIT
+  CellVertex & operator = (CellVertex other);
+
 };
 
 }}
