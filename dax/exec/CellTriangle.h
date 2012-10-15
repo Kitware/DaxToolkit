@@ -37,7 +37,7 @@ private:
 public:
   /// Create a cell for the given work.
   template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT CellTriangle(
+  DAX_EXEC_EXPORT explicit CellTriangle(
     const dax::exec::internal::TopologyUnstructured<
       CellTriangle,ExecutionAdapter> &)
     :Connections()
