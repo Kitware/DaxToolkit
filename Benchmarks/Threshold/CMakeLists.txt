@@ -160,6 +160,7 @@ endif (DAX_ENABLE_OPENMP)
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_CUDA)
+  dax_disable_troublesome_thrust_warnings()
   cuda_add_executable(ThresholdTimingCuda
     ${sources} ${headers} PipelineCuda.h PipelineCuda.cu
     )
