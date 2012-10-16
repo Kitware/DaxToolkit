@@ -129,7 +129,7 @@ public:                                                                 \
     ArgumentsType instance(this->Arguments);                            \
     _dax_FunctorImpl_##r                                                \
     this->Worklet(_dax_pp_enum___(_dax_FunctorImpl_Argument));          \
-    instance.ForEach(SaveOutArgs(id,this->Worklet));                    \
+    instance.ForEachExec(SaveOutArgs(id,this->Worklet));                \
     }
 
 # if __cplusplus >= 201103L

@@ -85,7 +85,8 @@ public:
   /// Invokes
   ///  \c functor(Get<I>())
   /// for each member \c I.
-  template <typename Functor> void ForEach(Functor functor);
+  template <typename Functor> void ForEachCont(Functor functor);
+  template <typename Functor> void ForEachExec(Functor functor);
 };
 
 }} // namespace dax::internal
@@ -140,16 +141,27 @@ template <unsigned int M, unsigned int N> struct MembersForEach
 {
   BOOST_STATIC_ASSERT(M<N);
   template <typename Types, typename MemberMap, typename F>
-  DAX_CONT_EXPORT static void Apply(Members<Types, MemberMap>& self, F f)
+  DAX_CONT_EXPORT static void ApplyCont(Members<Types, MemberMap>& self, F f)
     {
-    MembersForEach<M,N-1>::Apply(self, f);
+    MembersForEach<M,N-1>::ApplyCont(self, f);
+    f(self.template Get<N>());
+    }
+  template <typename Types, typename MemberMap, typename F>
+  DAX_EXEC_EXPORT static void ApplyExec(Members<Types, MemberMap>& self, F f)
+    {
+    MembersForEach<M,N-1>::ApplyExec(self, f);
     f(self.template Get<N>());
     }
 };
 template <unsigned int N> struct MembersForEach<N,N>
 {
   template <typename Types, typename MemberMap, typename F>
-  DAX_CONT_EXPORT static void Apply(Members<Types, MemberMap>&self, F f)
+  DAX_CONT_EXPORT static void ApplyCont(Members<Types, MemberMap>&self, F f)
+    {
+    f(self.template Get<N>());
+    }
+  template <typename Types, typename MemberMap, typename F>
+  DAX_EXEC_EXPORT static void ApplyExec(Members<Types, MemberMap>&self, F f)
     {
     f(self.template Get<N>());
     }
@@ -181,9 +193,14 @@ template <unsigned int N> struct MembersForEach<N,N>
     return static_cast<member_type const&>(*this)();                      \
     }                                                                     \
   template <typename F>                                                   \
-  DAX_EXEC_CONT_EXPORT void ForEach(F f)                                  \
+  DAX_CONT_EXPORT void ForEachCont(F f)                                   \
     {                                                                     \
-    detail::MembersForEach<I,_dax_pp_sizeof___T>::Apply(*this, f);        \
+    detail::MembersForEach<I,_dax_pp_sizeof___T>::ApplyCont(*this, f);    \
+    }                                                                     \
+  template <typename F>                                                   \
+  DAX_EXEC_EXPORT void ForEachExec(F f)                                   \
+    {                                                                     \
+    detail::MembersForEach<I,_dax_pp_sizeof___T>::ApplyExec(*this, f);    \
     }
 
 # if __cplusplus >= 201103L

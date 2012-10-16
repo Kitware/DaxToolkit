@@ -134,3 +134,24 @@ function(dax_unit_tests)
     endforeach (test)
   endif (DAX_ENABLE_TESTING)
 endfunction(dax_unit_tests)
+
+# The Thrust project is not as careful as the Dax project in avoiding warnings
+# on shadow variables and unused arguments.  With a real GCC compiler, you
+# can disable these warnings inline, but with something like nvcc, those
+# pragmas cause errors.  Thus, this macro will disable the compiler warnings.
+macro(dax_disable_troublesome_thrust_warnings)
+  dax_disable_troublesome_thrust_warnings_var(CMAKE_CXX_FLAGS_DEBUG)
+  dax_disable_troublesome_thrust_warnings_var(CMAKE_CXX_FLAGS_MINSIZEREL)
+  dax_disable_troublesome_thrust_warnings_var(CMAKE_CXX_FLAGS_RELEASE)
+  dax_disable_troublesome_thrust_warnings_var(CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+endmacro(dax_disable_troublesome_thrust_warnings)
+
+macro(dax_disable_troublesome_thrust_warnings_var flags_var)
+  set(old_flags "${${flags_var}}")
+  string(REPLACE "-Wshadow" "" new_flags "${old_flags}")
+  string(REPLACE "-Wunused-parameter" "" new_flags "${new_flags}")
+  string(REPLACE "-Wunused" "" new_flags "${new_flags}")
+  string(REPLACE "-Wextra" "" new_flags "${new_flags}")
+  string(REPLACE "-Wall" "" new_flags "${new_flags}")
+  set(${flags_var} "${new_flags}")
+endmacro(dax_disable_troublesome_thrust_warnings_var)

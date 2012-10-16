@@ -35,6 +35,12 @@ struct BindWorkId
 
   DAX_CONT_EXPORT BindWorkId(AllControlBindings&){}
 
+  // Explicitly making this copy constructor avoids a warning.  For some
+  // reason the default implementation with the gcc compiler somehow uses
+  // an uninitalized value.  I don't know how since there are no ivars in
+  // this class, but this seems to solve the problem.
+  DAX_EXEC_CONT_EXPORT BindWorkId(const BindWorkId &) {}
+
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id id,
                               const dax::exec::internal::WorkletBase&)
     {
