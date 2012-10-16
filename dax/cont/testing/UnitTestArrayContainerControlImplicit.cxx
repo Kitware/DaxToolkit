@@ -71,8 +71,10 @@ const dax::Id ARRAY_SIZE = 1;
 template <typename T>
 struct TemplatedTests
 {
-  typedef dax::cont::ArrayContainerControlImplicit< TestImplicitContainer<T> > ContainerTagType;
-  typedef dax::cont::internal::ArrayContainerControl< T,  ContainerTagType > ArrayContainerType;
+  typedef dax::cont::ArrayContainerControlTagImplicit<
+      TestImplicitContainer<T> > ContainerTagType;
+  typedef dax::cont::internal::ArrayContainerControl<
+      T,  ContainerTagType > ArrayContainerType;
 
   typedef typename ArrayContainerType::ValueType ValueType;
   typedef typename ArrayContainerType::PortalType PortalType;

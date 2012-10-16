@@ -27,7 +27,7 @@ namespace cont {
 /// It is sometimes the case that you want Dax to operate on an array of
 /// implicit values. That is, rather than store the data in an actual array, it
 /// is gerenated on the fly by a function. This is handled in Dax by creating
-/// an ArrayHandle in Dax with an ArrayContainerControlImplicitTag type of
+/// an ArrayHandle in Dax with an ArrayContainerControlTagImplicit type of
 /// ArrayContainerControl. This tag itself is templated to specify an
 /// ArrayPortal that generates the desired values. An ArrayHandle created with
 /// this tag will raise an error on any operation that tries to modify it.
@@ -36,7 +36,7 @@ namespace cont {
 /// and environment do not share memory. This is wasteful and should be fixed.
 ///
 template<class ArrayPortalType>
-struct ArrayContainerControlImplicit {
+struct ArrayContainerControlTagImplicit {
   typedef ArrayPortalType PortalType;
 };
 
@@ -45,7 +45,7 @@ namespace internal {
 template<class ArrayPortalType>
 class ArrayContainerControl<
     typename ArrayPortalType::ValueType,
-    ArrayContainerControlImplicit<ArrayPortalType> >
+    ArrayContainerControlTagImplicit<ArrayPortalType> >
 {
 public:
   typedef typename ArrayPortalType::ValueType ValueType;
