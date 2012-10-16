@@ -23,7 +23,6 @@
 #include <dax/cont/internal/DeviceAdapterAlgorithm.h>
 
 #include <dax/exec/internal/ErrorMessageBuffer.h>
-#include <dax/exec/internal/Functor.h>
 
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -78,6 +77,36 @@ DAX_CONT_EXPORT T InclusiveScan(
                    outputPortal.GetIteratorBegin());
 
   // Return the value at the last index in the array, which is the full sum.
+  return outputPortal.Get(numberOfValues - 1);
+}
+
+template<typename T, class CIn, class COut>
+DAX_CONT_EXPORT T ExclusiveScan(
+    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial> &input,
+    dax::cont::ArrayHandle<T,COut,DeviceAdapterTagSerial>& output,
+    DeviceAdapterTagSerial)
+{
+  typedef typename dax::cont::ArrayHandle<T,COut,DeviceAdapterTagSerial>
+      ::PortalExecution PortalOut;
+  typedef typename dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>
+      ::PortalConstExecution PortalIn;
+
+  dax::Id numberOfValues = input.GetNumberOfValues();
+
+  PortalIn inputPortal = input.PrepareForInput();
+  PortalOut outputPortal = output.PrepareForOutput(numberOfValues);
+
+  if (numberOfValues <= 0) { return 0; }
+
+  std::partial_sum(inputPortal.GetIteratorBegin(),
+                   inputPortal.GetIteratorEnd(),
+                   outputPortal.GetIteratorBegin());
+
+  // Shift right by one
+  std::copy_backward(outputPortal.GetIteratorBegin(),
+                     outputPortal.GetIteratorEnd()-1,
+                     outputPortal.GetIteratorEnd());
+  outputPortal.GetIteratorBegin()[0]=0;
   return outputPortal.Get(numberOfValues - 1);
 }
 
@@ -172,7 +201,7 @@ private:
 } // namespace detail
 
 template<class Functor>
-DAX_CONT_EXPORT void LegacySchedule(Functor functor,
+DAX_CONT_EXPORT void Schedule(Functor functor,
                               dax::Id numInstances,
                               DeviceAdapterTagSerial)
 {
@@ -186,34 +215,6 @@ DAX_CONT_EXPORT void LegacySchedule(Functor functor,
 
   detail::ScheduleKernelSerial<Functor> kernel(functor);
 
-  std::for_each(
-        ::boost::counting_iterator<dax::Id>(0),
-        ::boost::counting_iterator<dax::Id>(numInstances),
-        kernel);
-
-  if (errorMessage.IsErrorRaised())
-    {
-    throw dax::cont::ErrorExecution(errorString);
-    }
-}
-
-template<class ControlInvocSig, class Functor,  class Bindings>
-DAX_CONT_EXPORT void Schedule(
-    Functor functor,
-    Bindings& bindings,
-    dax::Id numInstances,
-    DeviceAdapterTagSerial)
-{
-  const dax::Id MESSAGE_SIZE = 1024;
-  char errorString[MESSAGE_SIZE];
-  errorString[0] = '\0';
-  dax::exec::internal::ErrorMessageBuffer
-      errorMessage(errorString, MESSAGE_SIZE);
-
-  functor.SetErrorMessageBuffer(errorMessage);
-
-  //setup functor
-  dax::exec::internal::Functor<ControlInvocSig> kernel(functor, bindings);
   std::for_each(
         ::boost::counting_iterator<dax::Id>(0),
         ::boost::counting_iterator<dax::Id>(numInstances),

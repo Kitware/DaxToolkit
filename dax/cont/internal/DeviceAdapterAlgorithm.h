@@ -60,6 +60,22 @@ DAX_CONT_EXPORT T InclusiveScan(
     dax::cont::ArrayHandle<T,COut,DeviceAdapterTag___>& output,
     DeviceAdapterTag___);
 
+/// \brief Compute an exclusive prefix sum operation on the input ArrayHandle.
+///
+/// Computes an exclusive prefix sum operation on the \c input ArrayHandle,
+/// storing the results in the \c output ArrayHandle. ExclusiveScan is similiar
+/// to the stl partial sum function, exception that ExclusiveScan doesn't do a
+/// serial sumnation. This means that if you have defined a custom plus
+/// operator for T it must be associative, or you will get inconsistent
+/// results. When the input and output ArrayHandles are the same ArrayHandle
+/// the operation will be done inplace.
+///
+template<typename T, class CIn, class COut>
+DAX_CONT_EXPORT T ExclusiveScan(
+    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag___> &input,
+    dax::cont::ArrayHandle<T,COut,DeviceAdapterTag___>& output,
+    DeviceAdapterTag___);
+
 /// \brief Output is the first index in input for each item in values that wouldn't alter the ordering of input
 ///
 /// LowerBounds is a vectorized search. From each value in \c values it finds

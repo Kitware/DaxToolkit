@@ -22,7 +22,7 @@
 #include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/Scheduler.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
@@ -65,7 +65,8 @@ struct TestSineWorklet
                         dax::cont::DeviceAdapterTagSerial> sineHandle;
 
   std::cout << "Running Sine worklet" << std::endl;
-  dax::cont::Schedule<>()(dax::worklet::Sine(),fieldHandle, sineHandle);
+  dax::cont::Scheduler<> scheduler;
+  scheduler.Invoke(dax::worklet::Sine(),fieldHandle, sineHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> sine(grid->GetNumberOfPoints());

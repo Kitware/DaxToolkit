@@ -28,7 +28,7 @@
 #include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/Scheduler.h>
 
 #include <vector>
 
@@ -85,11 +85,11 @@ struct TestCellAverageWorklet
         dax::cont::DeviceAdapterTagSerial> resultHandle;
 
     std::cout << "Running CellAverage worklet" << std::endl;
-    dax::cont::Schedule<>()(
-                          dax::worklet::CellAverage(),
-                          grid.GetRealGrid(),
-                          fieldHandle,
-                          resultHandle);
+    dax::cont::Scheduler<> scheduler;
+    scheduler.Invoke(dax::worklet::CellAverage(),
+                     grid.GetRealGrid(),
+                     fieldHandle,
+                     resultHandle);
 
     std::cout << "Checking result" << std::endl;
     std::vector<dax::Scalar> averages(grid->GetNumberOfCells());

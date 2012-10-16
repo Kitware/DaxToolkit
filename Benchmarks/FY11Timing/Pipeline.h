@@ -18,7 +18,7 @@
 #include "Timer.h"
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/Scheduler.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/VectorOperations.h>
 
@@ -109,11 +109,11 @@ void RunPipeline1(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Vector3> results;
 
   Timer timer;
-  dax::cont::Schedule<> schedule;
-  schedule(dax::worklet::Magnitude(),
+  dax::cont::Scheduler<> schedule;
+  schedule.Invoke(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
-  schedule(dax::worklet::CellGradient(),grid,
+  schedule.Invoke(dax::worklet::CellGradient(),grid,
                                    grid.GetPointCoordinates(),
                                    intermediate1,
                                    results);
@@ -135,21 +135,21 @@ void RunPipeline2(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Vector3> results;
 
   Timer timer;
-  dax::cont::Schedule<> schedule;
-  schedule(dax::worklet::Magnitude(),
+  dax::cont::Scheduler<> schedule;
+  schedule.Invoke(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
 
-  schedule(dax::worklet::CellGradient(),grid,
+  schedule.Invoke(dax::worklet::CellGradient(),grid,
            grid.GetPointCoordinates(),
            intermediate1,
            intermediate2);
 
   intermediate1.ReleaseResources();
-  schedule(dax::worklet::Sine(),intermediate2, intermediate3);
-  schedule(dax::worklet::Square(),intermediate3, intermediate2);
+  schedule.Invoke(dax::worklet::Sine(),intermediate2, intermediate3);
+  schedule.Invoke(dax::worklet::Square(),intermediate3, intermediate2);
   intermediate3.ReleaseResources();
-  schedule(dax::worklet::Cosine(),intermediate2, results);
+  schedule.Invoke(dax::worklet::Cosine(),intermediate2, results);
   double time = timer.elapsed();
 
   PrintCheckValues(results);
@@ -168,14 +168,14 @@ void RunPipeline3(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Scalar> results;
 
   Timer timer;
-  dax::cont::Schedule<> schedule;
-  schedule(dax::worklet::Magnitude(),
+  dax::cont::Scheduler<> schedule;
+  schedule.Invoke(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
-  schedule(dax::worklet::Sine(),intermediate1, intermediate2);
-  schedule(dax::worklet::Square(),intermediate2, intermediate1);
+  schedule.Invoke(dax::worklet::Sine(),intermediate1, intermediate2);
+  schedule.Invoke(dax::worklet::Square(),intermediate2, intermediate1);
   intermediate2.ReleaseResources();
-  schedule(dax::worklet::Cosine(),intermediate1, results);
+  schedule.Invoke(dax::worklet::Cosine(),intermediate1, results);
   double time = timer.elapsed();
 
   PrintCheckValues(results);

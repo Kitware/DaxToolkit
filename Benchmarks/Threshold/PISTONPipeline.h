@@ -20,7 +20,7 @@
 #include <iostream>
 #include "Timer.h"
 
-#include <dax/cont/Schedule.h>
+#include <dax/cont/Scheduler.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 
@@ -62,8 +62,8 @@ void RunPISTONPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid
   dax::cont::ArrayHandle<dax::Scalar> elevHandle = dax::cont::make_ArrayHandle(elev);
 
   //use dax to compute the magnitude
-  dax::cont::Schedule<> scheduler;
-  scheduler(dax::worklet::Magnitude(),
+  dax::cont::Scheduler<> scheduler;
+  scheduler.Invoke(dax::worklet::Magnitude(),
             dgrid.GetPointCoordinates(),
             elevHandle);
 

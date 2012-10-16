@@ -14,7 +14,7 @@
 //
 //=============================================================================
 #if !defined(BOOST_PP_IS_ITERATING)
-# define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/cont/Schedule_Cxx03.h>))
+# define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/cont/Scheduler_Cxx03.h>))
 # include BOOST_PP_ITERATE()
 
 #include <dax/cont/internal/Schedule_GenerateTopology.h>
@@ -26,8 +26,9 @@
 // Note any changes to this method must be reflected in the
 // C++11 implementation inside Schedule.h.
 template <class WorkletType, _dax_pp_typename___T>
+DAX_CONT_EXPORT
 typename boost::enable_if<boost::is_base_of<dax::exec::internal::WorkletBase,WorkletType> >::type
- DAX_CONT_EXPORT operator()(WorkletType w, _dax_pp_params___(a)) const
+ Invoke(WorkletType w, _dax_pp_params___(a)) const
   {
   // Construct the signature of the worklet invocation on the control side.
   typedef WorkletType ControlInvocationSignature(_dax_pp_T___);
@@ -50,8 +51,9 @@ typename boost::enable_if<boost::is_base_of<dax::exec::internal::WorkletBase,Wor
         dax::cont::detail::CreateExecutionResources<WorkType>(count));
 
   // Schedule the worklet invocations in the execution environment.
-  dax::cont::internal::Schedule<ControlInvocationSignature>
-    (w, bindings, count, DeviceAdapterTag());
+  dax::exec::internal::Functor<ControlInvocationSignature>
+      bindingFunctor(w, bindings);
+  dax::cont::internal::Schedule(bindingFunctor, count, DeviceAdapterTag());
   }
 
 # endif // _dax_pp_sizeof___T > 1

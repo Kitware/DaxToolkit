@@ -26,7 +26,7 @@
 #include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/Scheduler.h>
 
 
 #include <vector>
@@ -66,7 +66,8 @@ struct TestCosineWorklet
         dax::cont::DeviceAdapterTagSerial> cosineHandle;
 
     std::cout << "Running Cosine worklet" << std::endl;
-    dax::cont::Schedule<>()(dax::worklet::Cosine(),fieldHandle, cosineHandle);
+    dax::cont::Scheduler<> scheduler;
+    scheduler.Invoke(dax::worklet::Cosine(),fieldHandle, cosineHandle);
 
     std::cout << "Checking result" << std::endl;
     std::vector<dax::Scalar> cosine(grid->GetNumberOfPoints());
