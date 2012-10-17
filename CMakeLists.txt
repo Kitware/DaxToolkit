@@ -42,6 +42,7 @@ include(CMake/DaxCompilerExtras.cmake)
 # Configurable Options
 option(DAX_ENABLE_CUDA "Enable Cuda support" ON)
 option(DAX_ENABLE_OPENMP "Enable OpenMP support" ON)
+option(DAX_ENABLE_TBB "Enable TBB support" OFF)
 option(DAX_ENABLE_TESTING "Enable DAX Testing" ON)
 option(DAX_ENABLE_DOXYGEN
   "Enable DAX Documentation Generation (Needs Doxygen)" OFF)
