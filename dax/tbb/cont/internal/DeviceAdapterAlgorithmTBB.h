@@ -21,9 +21,263 @@
 
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 
+#include <dax/cont/ArrayHandle.h>
+#include <dax/cont/ErrorExecution.h>
+
+#include <boost/type_traits/remove_reference.hpp>
+
+#include <tbb/blocked_range.h>
+#include <tbb/parallel_for.h>
+#include <tbb/parallel_scan.h>
+#include <tbb/parallel_sort.h>
+
 namespace dax {
 namespace cont {
 namespace internal {
+
+template<typename T, class CIn, class COut>
+DAX_CONT_EXPORT void Copy(
+    const dax::cont::ArrayHandle<T, CIn, dax::tbb::cont::DeviceAdapterTagTBB>
+        &daxNotUsed(input),
+    dax::cont::ArrayHandle<T, COut, dax::tbb::cont::DeviceAdapterTagTBB>
+        &daxNotUsed(output),
+    dax::tbb::cont::DeviceAdapterTagTBB)
+{
+  //TODO
+}
+
+namespace detail {
+
+// The "grain size" of scheduling with TBB.  Not a lot of thought as gone
+// into picking this size.
+//const dax::Id TBB_GRAIN_SIZE = 128;
+const dax::Id TBB_GRAIN_SIZE = 1;
+
+template<class InputPortalType, class OutputPortalType>
+struct InclusiveScanBodyTBB
+{
+  typedef typename boost::remove_reference<
+      typename OutputPortalType::ValueType>::type ValueType;
+  ValueType Sum;
+  InputPortalType InputPortal;
+  OutputPortalType OutputPortal;
+
+  DAX_CONT_EXPORT
+  InclusiveScanBodyTBB(const InputPortalType &inputPortal,
+                       const OutputPortalType &outputPortal)
+    : Sum(ValueType(0)), InputPortal(inputPortal), OutputPortal(outputPortal)
+  {  }
+
+  template<typename Tag>
+  DAX_EXEC_EXPORT
+  void operator()(const ::tbb::blocked_range<dax::Id> &range, Tag)
+  {
+    for (dax::Id index = range.begin(); index < range.end(); index++)
+      {
+      this->Sum = this->Sum + this->InputPortal.Get(index);
+      if (Tag::is_final_scan())
+        {
+        this->OutputPortal.Set(index, this->Sum);
+        }
+      }
+  }
+
+  DAX_EXEC_CONT_EXPORT
+  InclusiveScanBodyTBB(const InclusiveScanBodyTBB &body, ::tbb::split)
+    : Sum(0),
+      InputPortal(body.InputPortal),
+      OutputPortal(body.OutputPortal) {  }
+
+  DAX_EXEC_CONT_EXPORT
+  void reverse_join(const InclusiveScanBodyTBB &left)
+  {
+    this->Sum = left.Sum + this->Sum;
+  }
+
+  DAX_EXEC_CONT_EXPORT
+  void assign(const InclusiveScanBodyTBB &src)
+  {
+    this->Sum = src.Sum;
+  }
+};
+
+template<class InputPortalType, class OutputPortalType>
+typename boost::remove_reference<typename OutputPortalType::ValueType>::type
+InclusiveScanPortals(InputPortalType inputPortal, OutputPortalType outputPortal)
+{
+  InclusiveScanBodyTBB<InputPortalType, OutputPortalType>
+      body(inputPortal, outputPortal);
+  dax::Id arrayLength = inputPortal.GetNumberOfValues();
+  ::tbb::parallel_scan(
+        ::tbb::blocked_range<dax::Id>(0, arrayLength, TBB_GRAIN_SIZE),
+        body);
+  return body.Sum;
+}
+
+#if 0
+// An array portal wrapper that offsets the output array by one for
+// convienience.
+template<class DelegatePortalType>
+class ArrayPortalExclusiveScanOutput
+{
+public:
+  typedef typename DelegatePortalType::ValueType ValueType;
+
+  DAX_CONT_EXPORT
+  ArrayPortalExclusiveScanOutput(const DelegatePortalType &delegatePortal)
+    : DelegatePortal(delegatePortal) {  }
+
+  DAX_EXEC_CONT_EXPORT
+  void Set(dax::Id index, const ValueType &value) {
+    this->DelegatePortal.Set(index+1, value);
+  }
+
+private:
+  DelegatePortalType DelegatePortal;
+};
+
+template<class InputPortalType, class OutputPortalType>
+typename boost::remove_reference<typename OutputPortalType::ValueType>::type
+ExclusiveScanPortals(InputPortalType inputPortal, OutputPortalType outputPortal)
+{
+  ScanBodyTBB<InputPortalType, OutputPortalType>
+      body(inputPortal, outputPortal);
+  dax::Id arrayLength = inputPortal.GetNumberOfValues();
+
+  typedef typename OutputPortalType::ValueType ValueType;
+  outputPortal.Set(0, ValueType(0));
+
+  ::tbb::parallel_scan(
+        ::tbb::blocked_range<dax::Id>(0, arrayLength-1, TBB_GRAIN_SIZE),
+        body);
+
+  return body.Sum + inputPortal.Get(arrayLength-1);
+}
+#endif
+
+template<class InputPortalType, class OutputPortalType>
+struct ExclusiveScanBodyTBB
+{
+  typedef typename boost::remove_reference<
+      typename OutputPortalType::ValueType>::type ValueType;
+  ValueType Sum;
+  InputPortalType InputPortal;
+  OutputPortalType OutputPortal;
+
+  DAX_CONT_EXPORT
+  ExclusiveScanBodyTBB(const InputPortalType &inputPortal,
+                       const OutputPortalType &outputPortal)
+    : Sum(ValueType(0)), InputPortal(inputPortal), OutputPortal(outputPortal)
+  {  }
+
+  template<typename Tag>
+  DAX_EXEC_EXPORT
+  void operator()(const ::tbb::blocked_range<dax::Id> &range, Tag)
+  {
+    for (dax::Id index = range.begin(); index < range.end(); index++)
+      {
+      ValueType inputValue = this->InputPortal.Get(index);
+      if (Tag::is_final_scan())
+        {
+        this->OutputPortal.Set(index, this->Sum);
+        }
+      this->Sum = this->Sum + inputValue;
+      }
+  }
+
+  DAX_EXEC_CONT_EXPORT
+  ExclusiveScanBodyTBB(const ExclusiveScanBodyTBB &body, ::tbb::split)
+    : Sum(0),
+      InputPortal(body.InputPortal),
+      OutputPortal(body.OutputPortal) {  }
+
+  DAX_EXEC_CONT_EXPORT
+  void reverse_join(const ExclusiveScanBodyTBB &left)
+  {
+    this->Sum = left.Sum + this->Sum;
+  }
+
+  DAX_EXEC_CONT_EXPORT
+  void assign(const ExclusiveScanBodyTBB &src)
+  {
+    this->Sum = src.Sum;
+  }
+};
+
+template<class InputPortalType, class OutputPortalType>
+typename boost::remove_reference<typename OutputPortalType::ValueType>::type
+ExclusiveScanPortals(InputPortalType inputPortal, OutputPortalType outputPortal)
+{
+  ExclusiveScanBodyTBB<InputPortalType, OutputPortalType>
+      body(inputPortal, outputPortal);
+  dax::Id arrayLength = inputPortal.GetNumberOfValues();
+
+  typename boost::remove_reference<typename OutputPortalType::ValueType>::type
+      lastValue = inputPortal.Get(arrayLength-1);
+
+  ::tbb::parallel_scan(
+        ::tbb::blocked_range<dax::Id>(0, arrayLength, TBB_GRAIN_SIZE),
+        body);
+
+  // Seems a little weird to me that we would return the last value in the
+  // array rather than the sum, but that is how the function is specified.
+  return body.Sum - lastValue;
+}
+
+} // namespace detail
+
+template<typename T, class CIn, class COut>
+DAX_CONT_EXPORT T InclusiveScan(
+    const dax::cont::ArrayHandle<T,CIn,dax::tbb::cont::DeviceAdapterTagTBB>
+        &input,
+    dax::cont::ArrayHandle<T,COut,dax::tbb::cont::DeviceAdapterTagTBB>
+        &output,
+    dax::tbb::cont::DeviceAdapterTagTBB)
+{
+  return detail::InclusiveScanPortals(
+        input.PrepareForInput(),
+        output.PrepareForOutput(input.GetNumberOfValues()));
+}
+
+template<typename T, class CIn, class COut>
+DAX_CONT_EXPORT T ExclusiveScan(
+    const dax::cont::ArrayHandle<T,CIn,dax::tbb::cont::DeviceAdapterTagTBB>
+        &input,
+    dax::cont::ArrayHandle<T,COut,dax::tbb::cont::DeviceAdapterTagTBB>
+        &output,
+    dax::tbb::cont::DeviceAdapterTagTBB)
+{
+  return detail::ExclusiveScanPortals(
+        input.PrepareForInput(),
+        output.PrepareForOutput(input.GetNumberOfValues()));
+}
+
+template<typename T, class CIn, class CVal, class COut>
+DAX_CONT_EXPORT void LowerBounds(
+    const dax::cont::ArrayHandle<T,CIn,dax::tbb::cont::DeviceAdapterTagTBB>
+        &daxNotUsed(input),
+    const dax::cont::ArrayHandle<T,CVal,dax::tbb::cont::DeviceAdapterTagTBB>
+        &daxNotUsed(values),
+    dax::cont::ArrayHandle<dax::Id,COut,dax::tbb::cont::DeviceAdapterTagTBB>
+        &daxNotUsed(output),
+    dax::tbb::cont::DeviceAdapterTagTBB)
+{
+  //TODO
+}
+
+template<class CIn, class COut>
+DAX_CONT_EXPORT void LowerBounds(
+    const dax::cont::ArrayHandle<dax::Id,CIn,dax::tbb::cont::DeviceAdapterTagTBB>
+        &input,
+    dax::cont::ArrayHandle<dax::Id,COut,dax::tbb::cont::DeviceAdapterTagTBB>
+        &values_output,
+    dax::tbb::cont::DeviceAdapterTagTBB)
+{
+  dax::cont::internal::LowerBounds(input,
+                                   values_output,
+                                   values_output,
+                                   dax::tbb::cont::DeviceAdapterTagTBB());
+}
 
 namespace detail {
 
@@ -42,7 +296,8 @@ public:
     this->Functor.SetErrorMessageBuffer(errorMessage);
   }
 
-  DAX_EXEC_EXPORT void operator()(dax::Id index) const {
+  DAX_EXEC_EXPORT
+  void operator()(const ::tbb::blocked_range<dax::Id> &range) const {
     // The TBB device adapter causes array classes to be shared between
     // control and execution environment. This means that it is possible for an
     // exception to be thrown even though this is typically not allowed.
@@ -51,7 +306,10 @@ public:
     // error and setting the message buffer as expected.
     try
       {
-      this->Functor(index);
+      for (dax::Id index = range.begin(); index < range.end(); index++)
+        {
+        this->Functor(index);
+        }
       }
     catch (dax::cont::Error error)
       {
@@ -71,18 +329,79 @@ private:
 
 } // namespace detail
 
-#if 0
 template<class FunctorType>
-DAX_CONT_EXPORT void LegacySchedule(
-    FunctorType functor,
-    dax::Id numInstances,
+DAX_CONT_EXPORT void Schedule(FunctorType functor,
+                              dax::Id numInstances,
+                              dax::tbb::cont::DeviceAdapterTagTBB)
+{
+  const dax::Id MESSAGE_SIZE = 1024;
+  char errorString[MESSAGE_SIZE];
+  errorString[0] = '\0';
+  dax::exec::internal::ErrorMessageBuffer
+      errorMessage(errorString, MESSAGE_SIZE);
+
+  functor.SetErrorMessageBuffer(errorMessage);
+
+  detail::ScheduleKernelTBB<FunctorType> kernel(functor);
+
+  ::tbb::blocked_range<dax::Id> range(0, numInstances, detail::TBB_GRAIN_SIZE);
+
+  ::tbb::parallel_for(range, kernel);
+
+  if (errorMessage.IsErrorRaised())
+    {
+    throw dax::cont::ErrorExecution(errorString);
+    }
+}
+
+
+template<typename T, class Container>
+DAX_CONT_EXPORT void Sort(
+    dax::cont::ArrayHandle<T,Container,dax::tbb::cont::DeviceAdapterTagTBB>
+        &values,
     dax::tbb::cont::DeviceAdapterTagTBB)
 {
-  dax::cont::internal::LegacySchedule(detail::ScheduleKernelTBB<FunctorType>(functor),
-           numInstances,
-           dax::thrust::cont::internal::DeviceAdapterTagThrust());
+  typedef typename dax::cont::ArrayHandle<
+      T,Container,dax::tbb::cont::DeviceAdapterTagTBB>::PortalExecution
+      PortalType;
+
+  PortalType arrayPortal = values.PrepareForInPlace();
+  ::tbb::parallel_sort(arrayPortal.GetIteratorBegin(),
+                       arrayPortal.GetIteratorEnd());
 }
-#endif
+
+template<typename T, class CStencil, class COut>
+DAX_CONT_EXPORT void StreamCompact(
+    const dax::cont::ArrayHandle<T,CStencil,dax::tbb::cont::DeviceAdapterTagTBB>
+        &daxNotUsed(stencil),
+    dax::cont::ArrayHandle<dax::Id,COut,dax::tbb::cont::DeviceAdapterTagTBB>
+        &daxNotUsed(output),
+    dax::tbb::cont::DeviceAdapterTagTBB)
+{
+  //TODO
+}
+
+template<typename T, typename U, class CIn, class CStencil, class COut>
+static void StreamCompact(
+    const dax::cont::ArrayHandle<T,CIn,dax::tbb::cont::DeviceAdapterTagTBB>
+        &daxNotUsed(input),
+    const dax::cont::ArrayHandle<U,CStencil,dax::tbb::cont::DeviceAdapterTagTBB>
+        &daxNotUsed(stencil),
+    dax::cont::ArrayHandle<T,COut,dax::tbb::cont::DeviceAdapterTagTBB> &daxNotUsed(output),
+    dax::tbb::cont::DeviceAdapterTagTBB)
+{
+  //TODO
+}
+
+template<typename T, class Container>
+DAX_CONT_EXPORT void Unique(
+    dax::cont::ArrayHandle<T,Container,dax::tbb::cont::DeviceAdapterTagTBB>
+        &daxNotUsed(values),
+    dax::tbb::cont::DeviceAdapterTagTBB)
+{
+  //TODO
+}
+
 
 }
 }

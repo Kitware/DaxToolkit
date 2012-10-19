@@ -14,12 +14,7 @@
 ##
 ##=============================================================================
 
-#-------------------------------------------------------------------------
-# Find TBB
-find_package(TBB REQUIRED)
-
-include_directories(${TBB_INCLUDE_DIRS})
-link_libraries(${TBB_LIBRARIES})
-
-#-------------------------------------------------------------------------
-add_subdirectory(cont)
+set(unit_tests
+  UnitTestDeviceAdapterTBB.cxx
+  )
+dax_unit_tests(SOURCES ${unit_tests})

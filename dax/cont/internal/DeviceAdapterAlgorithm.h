@@ -147,9 +147,9 @@ DAX_CONT_EXPORT void Sort(
 /// we can't know the number of elements that will be removed by the stream
 /// compaction algorithm.
 ///
-template<typename T, class CIn, class COut>
+template<typename T, class CStencil, class COut>
 DAX_CONT_EXPORT void StreamCompact(
-    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag___> &input,
+    const dax::cont::ArrayHandle<T,CStencil,DeviceAdapterTag___> &stencil,
     dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag___> &output,
     DeviceAdapterTag___);
 
@@ -163,11 +163,11 @@ DAX_CONT_EXPORT void StreamCompact(
 /// number of elements that will be removed by the stream compaction
 /// algorithm.
 ///
-template<typename T, typename U, class Container>
+template<typename T, typename U, class CIn, class CStencil, class COut>
 static void StreamCompact(
-    const dax::cont::ArrayHandle<T,Container,DeviceAdapterTag___> &input,
-    const dax::cont::ArrayHandle<U,Container,DeviceAdapterTag___> &v,
-    dax::cont::ArrayHandle<T,Container,DeviceAdapterTag___> &output,
+    const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag___> &input,
+    const dax::cont::ArrayHandle<U,CStencil,DeviceAdapterTag___> &stencil,
+    dax::cont::ArrayHandle<T,COut,DeviceAdapterTag___> &output,
     DeviceAdapterTag___);
 
 /// \brief Reduce an array to only the unique values it contains
