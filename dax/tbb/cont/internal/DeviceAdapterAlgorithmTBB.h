@@ -23,6 +23,7 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
+#include <dax/cont/internal/DeviceAdapterAlgorithmGeneral.h>
 
 #include <boost/type_traits/remove_reference.hpp>
 
@@ -50,8 +51,7 @@ namespace detail {
 
 // The "grain size" of scheduling with TBB.  Not a lot of thought as gone
 // into picking this size.
-//const dax::Id TBB_GRAIN_SIZE = 128;
-const dax::Id TBB_GRAIN_SIZE = 1;
+const dax::Id TBB_GRAIN_SIZE = 128;
 
 template<class InputPortalType, class OutputPortalType>
 struct InclusiveScanBodyTBB
@@ -113,47 +113,6 @@ InclusiveScanPortals(InputPortalType inputPortal, OutputPortalType outputPortal)
         body);
   return body.Sum;
 }
-
-#if 0
-// An array portal wrapper that offsets the output array by one for
-// convienience.
-template<class DelegatePortalType>
-class ArrayPortalExclusiveScanOutput
-{
-public:
-  typedef typename DelegatePortalType::ValueType ValueType;
-
-  DAX_CONT_EXPORT
-  ArrayPortalExclusiveScanOutput(const DelegatePortalType &delegatePortal)
-    : DelegatePortal(delegatePortal) {  }
-
-  DAX_EXEC_CONT_EXPORT
-  void Set(dax::Id index, const ValueType &value) {
-    this->DelegatePortal.Set(index+1, value);
-  }
-
-private:
-  DelegatePortalType DelegatePortal;
-};
-
-template<class InputPortalType, class OutputPortalType>
-typename boost::remove_reference<typename OutputPortalType::ValueType>::type
-ExclusiveScanPortals(InputPortalType inputPortal, OutputPortalType outputPortal)
-{
-  ScanBodyTBB<InputPortalType, OutputPortalType>
-      body(inputPortal, outputPortal);
-  dax::Id arrayLength = inputPortal.GetNumberOfValues();
-
-  typedef typename OutputPortalType::ValueType ValueType;
-  outputPortal.Set(0, ValueType(0));
-
-  ::tbb::parallel_scan(
-        ::tbb::blocked_range<dax::Id>(0, arrayLength-1, TBB_GRAIN_SIZE),
-        body);
-
-  return body.Sum + inputPortal.Get(arrayLength-1);
-}
-#endif
 
 template<class InputPortalType, class OutputPortalType>
 struct ExclusiveScanBodyTBB
@@ -384,13 +343,14 @@ DAX_CONT_EXPORT void StreamCompact(
 template<typename T, typename U, class CIn, class CStencil, class COut>
 static void StreamCompact(
     const dax::cont::ArrayHandle<T,CIn,dax::tbb::cont::DeviceAdapterTagTBB>
-        &daxNotUsed(input),
+        &input,
     const dax::cont::ArrayHandle<U,CStencil,dax::tbb::cont::DeviceAdapterTagTBB>
-        &daxNotUsed(stencil),
-    dax::cont::ArrayHandle<T,COut,dax::tbb::cont::DeviceAdapterTagTBB> &daxNotUsed(output),
+        &stencil,
+    dax::cont::ArrayHandle<T,COut,dax::tbb::cont::DeviceAdapterTagTBB> &output,
     dax::tbb::cont::DeviceAdapterTagTBB)
 {
-  //TODO
+  dax::cont::internal::StreamCompactGeneral(
+        input, stencil, output, dax::tbb::cont::DeviceAdapterTagTBB());
 }
 
 template<typename T, class Container>

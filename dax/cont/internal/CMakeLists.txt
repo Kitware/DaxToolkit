@@ -22,6 +22,7 @@ set(headers
   ArrayPortalShrink.h
   Bindings.h
   DeviceAdapterAlgorithm.h
+  DeviceAdapterAlgorithmGeneral.h
   DeviceAdapterAlgorithmSerial.h
   DeviceAdapterError.h
   DeviceAdapterTag.h
