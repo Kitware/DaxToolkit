@@ -53,7 +53,8 @@ typename boost::enable_if<boost::is_base_of<dax::exec::internal::WorkletBase,Wor
   // Schedule the worklet invocations in the execution environment.
   dax::exec::internal::Functor<ControlInvocationSignature>
       bindingFunctor(w, bindings);
-  dax::cont::internal::Schedule(bindingFunctor, count, DeviceAdapterTag());
+  dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>::
+      Schedule(bindingFunctor, count);
   }
 
 # endif // _dax_pp_sizeof___T > 1
