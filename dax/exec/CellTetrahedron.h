@@ -36,9 +36,21 @@ private:
 
 public:
   /// Create a cell for the given work.
-  DAX_EXEC_EXPORT explicit CellTetrahedron()
+  DAX_EXEC_EXPORT CellTetrahedron()
     :Connections()
     { }
+
+  /// Create a cell for the given work from a topology
+  template<class ConnectionsPortalT>
+  DAX_EXEC_EXPORT CellTetrahedron(
+      const dax::exec::internal::TopologyUnstructured<
+        CellTetrahedron,ConnectionsPortalT> &topology,
+      dax::Id cellIndex)
+  {
+   dax::exec::internal::BuildCellConnectionsFromGrid(topology,cellIndex,
+                                           this->Connections);
+  }
+
 
   // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
   // COPY CONSTRUCTOR.
@@ -70,18 +82,15 @@ public:
     return this->Connections;
   }
 
-  // method to set this cell from a grid topology
+  // method to set this cell from a portal
   template<class ConnectionsPortalT>
-  DAX_EXEC_EXPORT void SetPointIndices(
-      const dax::exec::internal::TopologyUnstructured<
-        CellTetrahedron,ConnectionsPortalT> &topology,
-      dax::Id cellIndex)
+  DAX_EXEC_EXPORT void BuildFromGrid(
+   const dax::exec::internal::TopologyUnstructured<
+    CellTetrahedron,ConnectionsPortalT> &topology,
+    dax::Id cellIndex)
   {
-    dax::Id offset = cellIndex*NUM_POINTS;
-    this->Connections[0] = topology.CellConnections.Get(offset + 0);
-    this->Connections[1] = topology.CellConnections.Get(offset + 1);
-    this->Connections[2] = topology.CellConnections.Get(offset + 2);
-    this->Connections[3] = topology.CellConnections.Get(offset + 3);
+    dax::exec::internal::BuildCellConnectionsFromGrid(topology,cellIndex,
+                                           this->Connections);
   }
 
   //  method to set this cell from a different tuple

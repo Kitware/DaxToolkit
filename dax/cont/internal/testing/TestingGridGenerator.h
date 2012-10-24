@@ -92,9 +92,7 @@ public:
   {
     typedef typename GridType::TopologyStructConstExecution TopoType;
     TopoType topo = this->Grid.PrepareForInput();
-    CellType cell;
-    cell.SetPointIndices(topo,index);
-    return cell;
+    return CellType(topo,index);
   }
 
   //get the cell connections (aka topology) at a given cell id

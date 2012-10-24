@@ -53,7 +53,7 @@ public:
     //otherwise call the portal directly
     (void)work;  // Shut up compiler.
     DAX_ASSERT_EXEC(index >= 0, work);
-    this->Cell.SetPointIndices(this->Topo,index);
+    this->Cell.BuildFromGrid(this->Topo,index);
     return this->Cell;
     }
 

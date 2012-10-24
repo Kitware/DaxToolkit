@@ -58,6 +58,12 @@ public:
   ///
   DAX_EXEC_EXPORT Cell();
 
+    /// Cell classes are created internally within Dax, but the constructor
+  /// generally takes on this form.
+  ///
+  template<typename GridType>
+  DAX_EXEC_EXPORT Cell(const GridType& grid, dax::Id cellIndex);
+
   /// Returns the number of points in the cell. Basically regurgitates
   /// NUM_POINTS.
   ///

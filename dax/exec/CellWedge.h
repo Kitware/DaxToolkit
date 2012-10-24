@@ -35,9 +35,20 @@ private:
 
 public:
   /// Create a cell for the given work.
-  DAX_EXEC_EXPORT explicit CellWedge()
+  DAX_EXEC_EXPORT CellWedge()
     :Connections()
     {}
+
+    /// Create a cell for the given work from a topology
+  template<class ConnectionsPortalT>
+  DAX_EXEC_EXPORT CellWedge(
+      const dax::exec::internal::TopologyUnstructured<
+        CellWedge,ConnectionsPortalT> &topology,
+      dax::Id cellIndex)
+  {
+    dax::exec::internal::BuildCellConnectionsFromGrid(topology,cellIndex,
+                                           this->Connections);
+  }
 
   // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
   // COPY CONSTRUCTOR.
@@ -70,20 +81,15 @@ public:
     return this->Connections;
   }
 
-  //  method to set this cell from a portal
+  // method to set this cell from a portal
   template<class ConnectionsPortalT>
-  DAX_EXEC_EXPORT void SetPointIndices(
-    const dax::exec::internal::TopologyUnstructured<
-        CellWedge,ConnectionsPortalT> &topology,
-      dax::Id cellIndex)
+  DAX_EXEC_EXPORT void BuildFromGrid(
+   const dax::exec::internal::TopologyUnstructured<
+    CellWedge,ConnectionsPortalT> &topology,
+    dax::Id cellIndex)
   {
-    const dax::Id offset = cellIndex*NUM_POINTS;
-    this->Connections[0] = topology.CellConnections.Get(offset + 0);
-    this->Connections[1] = topology.CellConnections.Get(offset + 1);
-    this->Connections[2] = topology.CellConnections.Get(offset + 2);
-    this->Connections[3] = topology.CellConnections.Get(offset + 3);
-    this->Connections[4] = topology.CellConnections.Get(offset + 4);
-    this->Connections[5] = topology.CellConnections.Get(offset + 5);
+    dax::exec::internal::BuildCellConnectionsFromGrid(topology,cellIndex,
+                                           this->Connections);
   }
 
   //  method to set this cell from a different tuple

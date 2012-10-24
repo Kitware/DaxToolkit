@@ -37,10 +37,21 @@ private:
 
 public:
   /// Create a cell for the given work.
-  DAX_EXEC_EXPORT explicit CellVoxel()
-    : GridTopology(),
+  DAX_EXEC_EXPORT CellVoxel():
+    GridTopology(),
     Connections()
     {}
+
+  /// Create a cell for the given work from a topology
+  DAX_EXEC_EXPORT CellVoxel(
+      const dax::exec::internal::TopologyUniform &topology,
+      dax::Id cellIndex):
+    GridTopology(topology),
+    Connections()
+  {
+    dax::exec::internal::BuildCellConnectionsFromGrid(topology,cellIndex,
+                                                     this->Connections);
+  }
 
   // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
   // COPY CONSTRUCTOR.
@@ -75,45 +86,15 @@ public:
   }
 
    //  method to set this cell from a grid
-  DAX_EXEC_EXPORT void SetPointIndices(
+  DAX_EXEC_EXPORT void BuildFromGrid(
       const dax::exec::internal::TopologyUniform &topology,
       dax::Id cellIndex)
   {
     //update our grid topology to be the same as the grids that we are now
     //based on
     this->GridTopology = topology;
-
-    dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(
-          cellIndex,
-          this->GridTopology.Extent);
-
-    const dax::Id3 cellVertexToPointIndex[8] = {
-      dax::make_Id3(0, 0, 0),
-      dax::make_Id3(1, 0, 0),
-      dax::make_Id3(1, 1, 0),
-      dax::make_Id3(0, 1, 0),
-      dax::make_Id3(0, 0, 1),
-      dax::make_Id3(1, 0, 1),
-      dax::make_Id3(1, 1, 1),
-      dax::make_Id3(0, 1, 1)
-    };
-
-    this->Connections[0] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[0],
-                                         this->GridTopology.Extent);
-    this->Connections[1] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[1],
-                                         this->GridTopology.Extent);
-    this->Connections[2] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[2],
-                                         this->GridTopology.Extent);
-    this->Connections[3] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[3],
-                                         this->GridTopology.Extent);
-    this->Connections[4] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[4],
-                                         this->GridTopology.Extent);
-    this->Connections[5] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[5],
-                                         this->GridTopology.Extent);
-    this->Connections[6] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[6],
-                                         this->GridTopology.Extent);
-    this->Connections[7] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[7],
-                                         this->GridTopology.Extent);
+    dax::exec::internal::BuildCellConnectionsFromGrid(topology,cellIndex,
+                                                     this->Connections);
   }
 
   /// Get the origin (the location of the point at grid coordinates 0,0,0).

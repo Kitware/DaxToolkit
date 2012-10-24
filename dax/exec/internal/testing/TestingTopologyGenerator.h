@@ -68,9 +68,7 @@ public:
 
   CellType GetCell(dax::Id cellId) const
   {
-    CellType cell;
-    cell.SetPointIndices(this->Topology,cellId);
-    return cell;
+    return CellType(this->Topology,cellId);
   }
 
   dax::Vector3 GetPointCoordinates(dax::Id pointIndex) const {

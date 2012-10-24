@@ -93,8 +93,7 @@ static void TestUnstructuredGrid()
   dax::Id numCells = dax::exec::internal::numberOfCells(uniform);
   for(dax::Id i=0; i < numCells; ++i)
     {
-    dax::exec::CellVoxel vox;
-    vox.SetPointIndices(uniform,i);
+    dax::exec::CellVoxel vox(uniform,i);
     for(dax::Id j=0; j < vox.GetNumberOfPoints(); ++j)
       {
       connections.push_back(vox.GetPointIndex(j));
