@@ -88,11 +88,13 @@ public:
 
 
   //Get the cell at a given index
-  CellType GetCell(dax::Id) const
+  CellType GetCell(dax::Id index) const
   {
     typedef typename GridType::TopologyStructConstExecution TopoType;
     TopoType topo = this->Grid.PrepareForInput();
-    return CellType(topo);
+    CellType cell;
+    cell.SetPointIndices(topo,index);
+    return cell;
   }
 
   //get the cell connections (aka topology) at a given cell id

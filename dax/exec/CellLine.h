@@ -36,10 +36,7 @@ private:
 
 public:
   /// Create a cell for the given work.
-  template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT explicit CellLine(
-    const dax::exec::internal::TopologyUnstructured<
-      CellLine,ExecutionAdapter> &)
+  DAX_EXEC_EXPORT explicit CellLine()
     :Connections()
     { }
 
@@ -64,16 +61,16 @@ public:
   /// the index for the point in point space.
   DAX_EXEC_EXPORT dax::Id GetPointIndex(const dax::Id vertexIndex) const
   {
-    return this->GetPointIndices()[vertexIndex];
+    return this->Connections[vertexIndex];
   }
 
   /// returns the indices for all the points in the cell.
-  DAX_EXEC_EXPORT PointConnectionsType GetPointIndices() const
+  DAX_EXEC_EXPORT const PointConnectionsType& GetPointIndices() const
   {
     return this->Connections;
   }
 
-  // method to set this cell from a portal
+  // method to set this cell from a grid topology
    template<class ConnectionsPortalT>
   DAX_EXEC_EXPORT void SetPointIndices(
       const dax::exec::internal::TopologyUnstructured<

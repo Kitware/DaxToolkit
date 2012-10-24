@@ -32,13 +32,14 @@ public:
   const static dax::Id TOPOLOGICAL_DIMENSIONS = 3;
 
 private:
-  const dax::exec::internal::TopologyUniform GridTopology;
+  dax::exec::internal::TopologyUniform GridTopology;
   PointConnectionsType Connections;
 
 public:
   /// Create a cell for the given work.
-  DAX_EXEC_EXPORT explicit CellVoxel(const dax::exec::internal::TopologyUniform &gs)
-    : GridTopology(gs), Connections()
+  DAX_EXEC_EXPORT explicit CellVoxel()
+    : GridTopology(),
+    Connections()
     {}
 
   // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
@@ -64,7 +65,7 @@ public:
   /// the index for the point in point space.
   DAX_EXEC_EXPORT dax::Id GetPointIndex(const dax::Id vertexIndex) const
   {
-    return this->GetPointIndices()[vertexIndex];
+    return this->Connections[vertexIndex];
   }
 
   /// returns the indices for all the points in the cell.
@@ -73,15 +74,18 @@ public:
     return this->Connections;
   }
 
-   //  method to set this cell from a portal
-  template<class PortalType>
+   //  method to set this cell from a grid
   DAX_EXEC_EXPORT void SetPointIndices(
-       const PortalType &,
+      const dax::exec::internal::TopologyUniform &topology,
       dax::Id cellIndex)
   {
+    //update our grid topology to be the same as the grids that we are now
+    //based on
+    this->GridTopology = topology;
+
     dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(
           cellIndex,
-          this->GetGridTopology().Extent);
+          this->GridTopology.Extent);
 
     const dax::Id3 cellVertexToPointIndex[8] = {
       dax::make_Id3(0, 0, 0),
@@ -95,46 +99,39 @@ public:
     };
 
     this->Connections[0] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[0],
-                                         this->GetGridTopology().Extent);
+                                         this->GridTopology.Extent);
     this->Connections[1] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[1],
-                                         this->GetGridTopology().Extent);
+                                         this->GridTopology.Extent);
     this->Connections[2] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[2],
-                                         this->GetGridTopology().Extent);
+                                         this->GridTopology.Extent);
     this->Connections[3] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[3],
-                                         this->GetGridTopology().Extent);
+                                         this->GridTopology.Extent);
     this->Connections[4] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[4],
-                                         this->GetGridTopology().Extent);
+                                         this->GridTopology.Extent);
     this->Connections[5] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[5],
-                                         this->GetGridTopology().Extent);
+                                         this->GridTopology.Extent);
     this->Connections[6] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[6],
-                                         this->GetGridTopology().Extent);
+                                         this->GridTopology.Extent);
     this->Connections[7] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[7],
-                                         this->GetGridTopology().Extent);
+                                         this->GridTopology.Extent);
   }
 
   /// Get the origin (the location of the point at grid coordinates 0,0,0).
   DAX_EXEC_EXPORT const dax::Vector3 &GetOrigin() const
   {
-    return this->GetGridTopology().Origin;
+    return this->GridTopology.Origin;
   }
 
   /// Get the spacing (the distance between grid points in each dimension).
   DAX_EXEC_EXPORT const dax::Vector3 &GetSpacing() const
   {
-    return this->GetGridTopology().Spacing;
+    return this->GridTopology.Spacing;
   }
 
   /// Get the extent of the grid in which this cell resides.
   DAX_EXEC_EXPORT const dax::Extent3 &GetExtent() const
   {
-    return this->GetGridTopology().Extent;
-  }
-
-  /// Get the grid structure details.  Only useful internally.
-  DAX_EXEC_EXPORT
-  const dax::exec::internal::TopologyUniform &GetGridTopology() const
-  {
-    return this->GridTopology;
+    return this->GridTopology.Extent;
   }
 
 private:

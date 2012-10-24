@@ -56,11 +56,7 @@ public:
   /// Cell classes are created internally within Dax, but the constructor
   /// generally takes on this form.
   ///
-  template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT Cell(
-      const typename Cell::GridStructures<ExecutionAdapter>::TopologyType
-      &topology,
-      dax::Id cellIndex);
+  DAX_EXEC_EXPORT Cell();
 
   /// Returns the number of points in the cell. Basically regurgitates
   /// NUM_POINTS.
@@ -74,11 +70,15 @@ public:
 
   /// Returns the indices for all the vertex connections in the cell.
   ///
-  DAX_EXEC_EXPORT PointConnectionsType GetPointIndices() const;
+  DAX_EXEC_EXPORT const PointConnectionsType& GetPointIndices() const;
 
-  /// Get the cell index. Probably only useful internally.
-  ///
-  DAX_EXEC_EXPORT dax::Id GetIndex() const;
+  /// Specifify the indices that this cell represents given a grid and cell index
+  template<class GridType>
+  DAX_EXEC_EXPORT void SetPointIndices(const GridType &topology, dax::Id cellIndex);
+
+  /// Specifiy the indices of this cell given an other PointConnectionsType object
+  /// Only works on cell types that arent implicit.
+  DAX_EXEC_EXPORT void SetPointIndices(const PointConnectionsType &cellConnections);
 };
 
 }

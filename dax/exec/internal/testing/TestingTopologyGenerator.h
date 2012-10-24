@@ -68,7 +68,7 @@ public:
 
   CellType GetCell(dax::Id cellId) const
   {
-    CellType cell(this->Topology);
+    CellType cell;
     cell.SetPointIndices(this->Topology,cellId);
     return cell;
   }

@@ -35,10 +35,7 @@ private:
 
 public:
   /// Create a cell for the given work.
-  template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT explicit CellWedge(
-    const dax::exec::internal::TopologyUnstructured<
-      CellWedge,ExecutionAdapter> &)
+  DAX_EXEC_EXPORT explicit CellWedge()
     :Connections()
     {}
 
