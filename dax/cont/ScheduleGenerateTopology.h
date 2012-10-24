@@ -23,6 +23,7 @@
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 #include <dax/exec/internal/GridTopologies.h>
 
+#include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 
 namespace dax {
