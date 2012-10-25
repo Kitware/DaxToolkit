@@ -110,6 +110,10 @@ public:
       }
     else if (this->Internals->ControlArrayValid)
       {
+      // If the user writes into the iterator we return, then the execution
+      // array will become invalid. Play it safe and release the execution
+      // resources. (Use the const version to preserve the execution array.)
+      this->ReleaseResourcesExecution();
       return this->Internals->ControlArray.GetPortal();
       }
     else
