@@ -108,7 +108,7 @@ DAX_CONT_EXPORT void LowerBounds(
 /// \brief Output is the first index in input for each item in values that wouldn't alter the ordering of input
 ///
 /// UpperBounds is a vectorized search. From each value in \c values it finds
-/// the first place the item can be inserted in the ordered \c input array and
+/// the last place the item can be inserted in the ordered \c input array and
 /// stores the index in \c output.
 ///
 /// \par Requirements:
