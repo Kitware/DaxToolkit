@@ -85,6 +85,23 @@ dax::Id numberOfPoints(const TopologyUnstructured<T,ExecutionAdapter> &topology)
   return topology.NumberOfPoints;
 }
 
+template<class CellT, class ConnectionsPortalT>
+DAX_EXEC_EXPORT
+void BuildCellConnectionsFromGrid(
+        const dax::exec::internal::TopologyUnstructured<CellT,
+                                            ConnectionsPortalT>& grid,
+        dax::Id cellIndex,
+        typename CellT::PointConnectionsType& connections)
+{
+  const int SIZE = CellT::NUM_POINTS;
+  //we presume grid is a continuous array of this connection type
+  const dax::Id offset = cellIndex*SIZE;
+  for(int i=0; i < SIZE; ++i)
+  {
+    connections[i] = grid.CellConnections.Get(offset + i);
+  }
+}
+
 } //internal
 } //exec
 } //dax

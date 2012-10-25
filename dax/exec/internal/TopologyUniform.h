@@ -84,6 +84,46 @@ dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
   return pointCoordiantes(grid, ijk);
 }
 
+template<class PointConnectionType>
+DAX_EXEC_EXPORT
+void BuildCellConnectionsFromGrid(
+        const dax::exec::internal::TopologyUniform& grid,
+        dax::Id cellIndex,
+        PointConnectionType& connections)
+{
+  dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(
+          cellIndex,
+          grid.Extent);
+
+    const dax::Id3 cellVertexToPointIndex[8] = {
+      dax::make_Id3(0, 0, 0),
+      dax::make_Id3(1, 0, 0),
+      dax::make_Id3(1, 1, 0),
+      dax::make_Id3(0, 1, 0),
+      dax::make_Id3(0, 0, 1),
+      dax::make_Id3(1, 0, 1),
+      dax::make_Id3(1, 1, 1),
+      dax::make_Id3(0, 1, 1)
+    };
+
+    connections[0] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[0],
+                                         grid.Extent);
+    connections[1] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[1],
+                                         grid.Extent);
+    connections[2] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[2],
+                                         grid.Extent);
+    connections[3] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[3],
+                                         grid.Extent);
+    connections[4] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[4],
+                                         grid.Extent);
+    connections[5] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[5],
+                                         grid.Extent);
+    connections[6] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[6],
+                                         grid.Extent);
+    connections[7] = index3ToFlatIndex(ijkCell + cellVertexToPointIndex[7],
+                                         grid.Extent);
+}
+
 }  }  } //namespace dax::exec::internal
 
 #endif //__dax__exec__internal__TopologyUniform_h

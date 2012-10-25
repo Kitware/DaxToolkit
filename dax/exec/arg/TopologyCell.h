@@ -32,32 +32,33 @@ namespace dax { namespace exec { namespace arg {
 template <typename Tags, typename TopologyType>
 class TopologyCell
 {
-  typedef typename TopologyType::CellType ReferenceType;
   TopologyType Topo;
+  typename TopologyType::CellType Cell;
 public:
+  typedef typename TopologyType::CellType CellType;
+  typedef CellType SaveType;
 
-  typedef ReferenceType ReturnType;
-  typedef ReferenceType CellType;
-  typedef typename CellType::PointConnectionsType SaveType;
+  //if we are going with Out tag we create a value storage that holds a copy
+  //otherwise we have to pass a copy, since portals don't have to provide a reference
+  typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
+                                   CellType&,
+                                   CellType const&>::type ReturnType;
 
-  TopologyCell(const TopologyType& t): Topo(t){}
+  TopologyCell(const TopologyType& t): Topo(t), Cell(){}
 
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
-                            const dax::exec::internal::WorkletBase& work) const
+                            const dax::exec::internal::WorkletBase& work)
     {
     //if we have the In tag we have local store so use that value,
     //otherwise call the portal directly
     (void)work;  // Shut up compiler.
     DAX_ASSERT_EXEC(index >= 0, work);
-    return CellType(this->Topo,index);
+    this->Cell.BuildFromGrid(this->Topo,index);
+    return this->Cell;
     }
 
-  DAX_EXEC_EXPORT void SaveExecutionResult(int,
-                       const dax::exec::internal::WorkletBase&) const
-    {
-    }
 
-  DAX_EXEC_EXPORT void SaveExecutionResult(int index, const SaveType& values,
+  DAX_EXEC_EXPORT void SaveExecutionResult(int index,
                        const dax::exec::internal::WorkletBase& work) const
     {
     //Look at the concept map traits. If we have the Out tag
@@ -66,14 +67,26 @@ public:
     //and very bad things could happen
     typedef typename Tags::
         template Has<typename dax::cont::sig::Out>::type HasOutTag;
-    this->saveResult(index,values,work,HasOutTag());
+    this->saveResult(index,this->Cell.GetPointIndices(),work,HasOutTag());
+    }
+
+  DAX_EXEC_EXPORT void SaveExecutionResult(int index, const SaveType& v,
+                       const dax::exec::internal::WorkletBase& work) const
+    {
+    //Look at the concept map traits. If we have the Out tag
+    //we know that we must call our TopoExecArgs SaveExecutionResult.
+    //Otherwise we are an input argument and that behavior is undefined
+    //and very bad things could happen
+    typedef typename Tags::
+        template Has<typename dax::cont::sig::Out>::type HasOutTag;
+    this->saveResult(index,v.GetPointIndices(),work,HasOutTag());
     }
 
   //method enabled when we do have the out tag ( or InOut)
   template <typename HasOutTag>
   DAX_EXEC_EXPORT
   void saveResult(dax::Id index,
-                  const SaveType& values,
+                  const typename SaveType::PointConnectionsType& values,
                   dax::exec::internal::WorkletBase work,
                   HasOutTag,
                   typename boost::enable_if<HasOutTag>::type* = 0) const
@@ -87,10 +100,10 @@ public:
   template <typename HasOutTag>
   DAX_EXEC_EXPORT
   void saveResult(dax::Id,
-                const SaveType&,
-                dax::exec::internal::WorkletBase,
-                HasOutTag,
-                typename boost::disable_if<HasOutTag>::type* = 0) const
+                  const typename SaveType::PointConnectionsType&,
+                  dax::exec::internal::WorkletBase,
+                  HasOutTag,
+                  typename boost::disable_if<HasOutTag>::type* = 0) const
     {
     }
 };
