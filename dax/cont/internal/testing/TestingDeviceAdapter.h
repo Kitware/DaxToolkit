@@ -834,18 +834,12 @@ private:
       TestOutOfMemory();
       TestSchedule();
       TestErrorExecution();
-      TestInclusiveScan();
-      TestExclusiveScan();
+      TestScanInclusive();
+      TestScanExclusive();
       TestScheduleClass();
       TestStreamCompact();
       TestStreamCompactWithStencil();
       TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
-<<<<<<< HEAD
-=======
-      TestScanInclusive();
-      TestScanExclusive();
-      TestErrorExecution();
->>>>>>> HeaderOrder
 
       std::cout << "Doing Worklet tests with all grid type" << std::endl;
       dax::cont::internal::GridTesting::TryAllGridTypes(TestWorklets(),
