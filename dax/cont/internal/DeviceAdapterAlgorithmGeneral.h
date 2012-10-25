@@ -17,6 +17,7 @@
 #define __dax_cont_internal_DeviceAdapterAlgorithmGeneral_h
 
 #include <dax/cont/ArrayContainerControlBasic.h>
+#include <dax/cont/ArrayContainerControlCounting.h>
 #include <dax/cont/ArrayHandle.h>
 
 #include <dax/Functional.h>
@@ -193,12 +194,21 @@ public:
     Algorithm::Schedule(copyKernel, arrayLength);
   }
 
+  /// An implementation of the stencil/output version of StreamCompact that
+  /// works on any DeviceAdapter that implements the three argument
+  /// input/stencil/output version of StreamCompact. The implementation of the
+  /// three argument input/stencil/output StreamCompact can itself internally
+  /// use the general version.
+  ///
   template<typename T, class CStencil, class COut>
   DAX_CONT_EXPORT static void StreamCompact(
-      const dax::cont::ArrayHandle<T,CStencil,DeviceAdapterTag> &daxNotUsed(stencil),
-      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &daxNotUsed(output))
+      const dax::cont::ArrayHandle<T,CStencil,DeviceAdapterTag> &stencil,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &output)
   {
-    //TODO
+    dax::cont::ArrayHandle<
+        dax::Id,dax::cont::ArrayContainerControlTagCounting,DeviceAdapterTag>
+        input(dax::cont::ArrayPortalCounting(stencil.GetNumberOfValues()));
+    Algorithm::StreamCompact(input, stencil, output);
   }
 
   template<typename T, class Container>
