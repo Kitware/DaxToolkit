@@ -143,7 +143,7 @@ private:
 
 public:
   /// An implementation of StreamCompact that works on any DeviceAdapter that
-  /// defines Schedule and ExclusiveScan.
+  /// defines Schedule and ScanExclusive.
   ///
   template<typename T, typename U, class CIn, class CStencil, class COut>
   DAX_CONT_EXPORT static void StreamCompact(
@@ -190,7 +190,7 @@ public:
                                     stencilPortal,
                                     indexPortal,
                                     outputPortal);
-    Algorithm::Schedule(copyKernel, outArrayLength);
+    Algorithm::Schedule(copyKernel, arrayLength);
   }
 
   template<typename T, class CStencil, class COut>
