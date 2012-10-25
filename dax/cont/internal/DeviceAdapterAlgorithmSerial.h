@@ -197,11 +197,11 @@ DAX_CONT_EXPORT void UpperBounds(
   PortalVal valuesPortal = values.PrepareForInput();
   PortalOut outputPortal = output.PrepareForOutput(numberOfValues);
 
-  // std::lower_bound only supports a single value to search for so iterate
+  // std::upper_bound only supports a single value to search for so iterate
   // over all values and search for each one.
   for (dax::Id outputIndex = 0; outputIndex < numberOfValues; outputIndex++)
     {
-    // std::lower_bound returns an iterator to the position where you can
+    // std::upper_bound returns an iterator to the position where you can
     // insert, but we want the distance from the start.
     typename PortalIn::IteratorType resultPos =
         std::upper_bound(inputPortal.GetIteratorBegin(),
@@ -231,7 +231,7 @@ DAX_CONT_EXPORT void UpperBounds(
   dax::Id outputSize = outputPortal.GetNumberOfValues();
   for (dax::Id outputIndex = 0; outputIndex < outputSize; outputIndex++)
     {
-    // std::lower_bound returns an iterator to the position where you can
+    // std::upper_bound returns an iterator to the position where you can
     // insert, but we want the distance from the start.
     typename PortalIn::IteratorType resultPos =
         std::upper_bound(inputPortal.GetIteratorBegin(),
