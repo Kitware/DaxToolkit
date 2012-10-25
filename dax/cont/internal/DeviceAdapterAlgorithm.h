@@ -81,6 +81,8 @@ struct DeviceAdapterAlgorithm
   /// inconsistent results. When the input and output ArrayHandles are the same
   /// ArrayHandle the operation will be done inplace.
   ///
+  /// \return The total sum.
+  ///
   template<typename T, class CIn, class COut>
   DAX_CONT_EXPORT static T ScanInclusive(
       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
@@ -95,6 +97,8 @@ struct DeviceAdapterAlgorithm
   /// custom plus operator for T it must be associative, or you will get
   /// inconsistent results. When the input and output ArrayHandles are the same
   /// ArrayHandle the operation will be done inplace.
+  ///
+  /// \return The total sum.
   ///
   template<typename T, class CIn, class COut>
   DAX_CONT_EXPORT static T ScanExclusive(

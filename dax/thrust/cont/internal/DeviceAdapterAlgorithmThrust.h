@@ -224,11 +224,13 @@ public:
 
     if (numberOfValues <= 0) { return 0; }
 
+    T inputEnd = *(inputIter.second - 1);
+
     typename ThrustIter<T,COut>::Type::first_type result =
         ::thrust::exclusive_scan(inputIter.first,
                                  inputIter.second,
                                  outputIter.first);
-    return *(result - 1);
+    return *(result - 1) + inputEnd;
   }
 
 // Because of some funny code conversions in nvcc, kernels for devices have to

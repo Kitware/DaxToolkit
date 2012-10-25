@@ -167,16 +167,13 @@ private:
         body(inputPortal, outputPortal);
     dax::Id arrayLength = inputPortal.GetNumberOfValues();
 
-    typename boost::remove_reference<typename OutputPortalType::ValueType>::type
-        lastValue = inputPortal.Get(arrayLength-1);
-
     ::tbb::parallel_scan(
           ::tbb::blocked_range<dax::Id>(0, arrayLength, TBB_GRAIN_SIZE),
           body);
 
     // Seems a little weird to me that we would return the last value in the
     // array rather than the sum, but that is how the function is specified.
-    return body.Sum - lastValue;
+    return body.Sum;
   }
 
 public:

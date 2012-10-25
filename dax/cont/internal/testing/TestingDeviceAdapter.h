@@ -586,13 +586,11 @@ private:
           ClearArrayKernel(array.PrepareForOutput(ARRAY_SIZE)),
           ARRAY_SIZE);
 
-    dax::Id lastElement = array.GetPortalConstControl().Get(ARRAY_SIZE-1);
-
-    // we know have an array whose sum = (OFFSET * ARRAY_SIZE) - lastElement,
+    // we know have an array whose sum = (OFFSET * ARRAY_SIZE),
     // let's validate that
     dax::Id sum = Algorithm::ScanExclusive(array, array);
 
-    DAX_TEST_ASSERT(sum == (OFFSET * ARRAY_SIZE) -lastElement,
+    DAX_TEST_ASSERT(sum == (OFFSET * ARRAY_SIZE),
                     "Got bad sum from Exclusive Scan");
 
     //each value should be equal to the Triangle Number of that index
@@ -837,8 +835,8 @@ private:
       TestScanInclusive();
       TestScanExclusive();
       TestScheduleClass();
-      TestStreamCompact();
       TestStreamCompactWithStencil();
+      TestStreamCompact();
       TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
 
       std::cout << "Doing Worklet tests with all grid type" << std::endl;
