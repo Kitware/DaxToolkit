@@ -17,7 +17,6 @@
 set(headers
   ArrayManagerExecutionThrustShare.h
   CheckThrustBackend.h
-  DeviceAdapterTagThrust.h
   )
 
 if(DAX_ENABLE_OPENMP)

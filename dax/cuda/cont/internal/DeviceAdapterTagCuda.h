@@ -18,8 +18,6 @@
 
 #include <dax/cuda/cont/internal/SetThrustForCuda.h>
 
-#include <dax/thrust/cont/internal/DeviceAdapterTagThrust.h>
-
 namespace dax {
 namespace cuda {
 namespace cont {
@@ -28,7 +26,6 @@ namespace cont {
 /// compiled with nvcc.
 ///
 struct DeviceAdapterTagCuda
-    : public dax::thrust::cont::internal::DeviceAdapterTagThrust
 {  };
 
 }

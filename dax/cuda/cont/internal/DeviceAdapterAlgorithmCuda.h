@@ -24,4 +24,18 @@
 // Here are the actual implementation of the algorithms.
 #include <dax/thrust/cont/internal/DeviceAdapterAlgorithmThrust.h>
 
+namespace dax {
+namespace cont {
+namespace internal {
+
+template<>
+struct DeviceAdapterAlgorithm<dax::cuda::cont::DeviceAdapterTagCuda>
+    : public dax::thrust::cont::internal::DeviceAdapterAlgorithmThrust<
+          dax::cuda::cont::DeviceAdapterTagCuda>
+{  };
+
+}
+}
+} // namespace dax::cont::internal
+
 #endif //__dax_cuda_cont_internal_DeviceAdapterAlgorithmCuda_h
