@@ -36,14 +36,14 @@ struct ClearUsedPointsFunctor : public WorkletMapField
   }
 };
 
-struct IndexPlusOne : public WorkletMapField
+struct Index : public WorkletMapField
 {
   typedef void ControlSignature(Field(Out));
   typedef _1 ExecutionSignature(WorkId);
 
   DAX_EXEC_EXPORT dax::Id operator()(dax::Id index) const
   {
-    return index+1;
+    return index;
   }
 };
 
