@@ -20,6 +20,6 @@
 #include <dax/cont/UniformGrid.h>
 class vtkImageData;
 
-void RunPipelineVTK(int pipeline, const dax::cont::UniformGrid &dgrid, vtkImageData* grid);
+void RunPipelineVTK(int pipeline, const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid);
 
 #endif //__PipelineVTK_h

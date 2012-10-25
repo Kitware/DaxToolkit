@@ -23,10 +23,15 @@
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
+<<<<<<< Updated upstream
 
 #include <dax/worklet/Magnitude.worklet>
 
 #include <vector>
+=======
+#include <dax/cont/Schedule.h>
+#include <dax/worklet/Magnitude.worklet>
+>>>>>>> Stashed changes
 
 #include <vtkNew.h>
 #include <vtkFloatArray.h>
@@ -35,12 +40,11 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
-
-#include <piston/piston_math.h>
-#include <piston/choose_container.h>
+#include <vector>
 
 #define SPACE thrust::detail::default_device_space_tag
-
+#include <piston/piston_math.h>
+#include <piston/choose_container.h>
 #include <piston/image3d.h>
 #include <piston/vtk_image3d.h>
 #include <piston/threshold_geometry.h>
@@ -76,9 +80,8 @@ void RunPISTONPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid
   vtkElevationPoints->SetVoidArray(&elev[0],elev.size(),1);
 
   grid->GetPointData()->SetScalars(vtkElevationPoints); //piston on works on active scalars
-  piston::vtk_image3d<dax::Id, dax::Scalar, SPACE> image(grid);
-  piston::threshold_geometry<piston::vtk_image3d<dax::Id, dax::Scalar, SPACE> > threshold(image,0.0f,100.0f);
-
+  piston::vtk_image3d<SPACE> image(grid);
+  piston::threshold_geometry<piston::vtk_image3d<SPACE> > threshold(image,0,100);
 
   Timer timer;
   threshold();

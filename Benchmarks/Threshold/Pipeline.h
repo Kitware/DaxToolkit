@@ -188,6 +188,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
 
   resolveTopology.CompactPointField(intermediate1,resultHandle);
 
+
   double time = timer.elapsed();
   std::cout << "original GetNumberOfCells: " << grid.GetNumberOfCells() << std::endl;
   std::cout << "threshold GetNumberOfCells: " << grid2.GetNumberOfCells() << std::endl;
