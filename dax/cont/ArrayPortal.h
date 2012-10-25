@@ -80,7 +80,6 @@ public:
   /// used, then use that. Otherwise, use IteratorForArrayPortal. Iterators are
   /// not necessary for array portals in the execution environment.
   ///
-  DAX_CONT_EXPORT
   typedef ValueType *IteratorType;
 
   /// Returns an iterator to the beginning of the array. Iterators are not

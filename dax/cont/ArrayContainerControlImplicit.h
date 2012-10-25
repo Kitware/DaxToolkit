@@ -16,6 +16,8 @@
 #ifndef __dax_cont_ArrayContainerControlImplicit
 #define __dax_cont_ArrayContainerControlImplicit
 
+#include <dax/Types.h>
+
 #include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/ErrorControlBadValue.h>
 
