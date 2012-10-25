@@ -243,6 +243,59 @@ DAX_CONT_EXPORT void LowerBounds(
                         outputIter.first);
 }
 
+template<typename T, class CIn, class CVal, class COut, class Adapter>
+DAX_CONT_EXPORT void UpperBounds(
+    const dax::cont::ArrayHandle<T,CIn,Adapter>& input,
+    const dax::cont::ArrayHandle<T,CVal,Adapter>& values,
+    dax::cont::ArrayHandle<dax::Id,COut,Adapter>& output,
+    dax::thrust::cont::internal::DeviceAdapterTagThrust)
+{
+  typedef typename dax::cont::internal::ArrayManagerExecution<T,CIn,Adapter>::
+      ThrustIteratorConstType ThrustIteratorInType;
+  typedef typename dax::cont::internal::ArrayManagerExecution<T,CVal,Adapter>::
+      ThrustIteratorConstType ThrustIteratorValType;
+  typedef typename dax::cont::internal::ArrayManagerExecution<
+      dax::Id,COut,Adapter>::ThrustIteratorType ThrustIteratorOutType;
+
+  dax::Id numberOfValues = values.GetNumberOfValues();
+
+  std::pair<ThrustIteratorInType, ThrustIteratorInType> inputIter =
+      detail::PrepareForInput(input);
+  std::pair<ThrustIteratorValType, ThrustIteratorValType> valuesIter =
+      detail::PrepareForInput(values);
+  std::pair<ThrustIteratorOutType, ThrustIteratorOutType> outputIter =
+      detail::PrepareForOutput(output, numberOfValues);
+
+  ::thrust::upper_bound(inputIter.first,
+                        inputIter.second,
+                        valuesIter.first,
+                        valuesIter.second,
+                        outputIter.first);
+}
+
+template<class CIn, class COut, class Adapter>
+DAX_CONT_EXPORT void UpperBounds(
+    const dax::cont::ArrayHandle<dax::Id,CIn,Adapter> &input,
+    dax::cont::ArrayHandle<dax::Id,COut,Adapter> &values_output,
+    dax::thrust::cont::internal::DeviceAdapterTagThrust)
+{
+  typedef typename dax::cont::internal::ArrayManagerExecution<
+      dax::Id,CIn,Adapter>::ThrustIteratorConstType ThrustIteratorInType;
+  typedef typename dax::cont::internal::ArrayManagerExecution<
+      dax::Id,COut,Adapter>::ThrustIteratorType ThrustIteratorOutType;
+
+  std::pair<ThrustIteratorInType, ThrustIteratorInType> inputIter =
+      detail::PrepareForInput(input);
+  std::pair<ThrustIteratorOutType, ThrustIteratorOutType> outputIter =
+      detail::PrepareForInPlace(values_output);
+
+  ::thrust::upper_bound(inputIter.first,
+                        inputIter.second,
+                        outputIter.first,
+                        outputIter.second,
+                        outputIter.first);
+}
+
 namespace detail {
 
 template<class FunctorType>
