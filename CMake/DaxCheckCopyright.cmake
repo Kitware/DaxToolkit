@@ -47,6 +47,29 @@ if (NOT EXISTS ${copyright_file})
   message(SEND_ERROR "Cannot find DaxCopyrightStatement.txt.")
 endif (NOT EXISTS ${copyright_file})
 
+set(license_file ${Dax_SOURCE_DIR}/LICENSE.txt)
+
+if (NOT EXISTS ${license_file})
+  message(SEND_ERROR "Cannot find LICENSE.txt.")
+endif (NOT EXISTS ${license_file})
+
+# Get a list of third party files (with different copyrights) from the
+# license file.
+file(STRINGS ${license_file} license_lines)
+list(FIND
+  license_lines
+  "- - - - - - - - - - - - - - - - - - - - - - - - do not remove this line"
+  separator_index
+  )
+math(EXPR begin_index "${separator_index} + 1")
+list(LENGTH license_lines license_file_length)
+math(EXPR end_index "${license_file_length} - 1")
+foreach (index RANGE ${begin_index} ${end_index})
+  list(GET license_lines ${index} tpl_file)
+  set(EXCEPTIONS ${EXCEPTIONS} ${tpl_file})
+endforeach(index)
+message("${EXCEPTIONS}")
+
 # Gets the current year (if possible).
 function (get_year var)
   if (UNIX)
@@ -155,6 +178,7 @@ endfunction(get_comment_prefix)
 
 # Check the given file for the appropriate copyright statement.
 function(check_copyright filename)
+
   get_comment_prefix(comment_prefix "${filename}")
 
   # Read in the first 2000 characters of the file and split into lines.
@@ -173,18 +197,18 @@ function(check_copyright filename)
     # header_line's items and cause the compare to fail.
     foreach (header_line IN LISTS header_lines)
       if (copyright_line)
-	string(REGEX MATCH
-	  "^${comment_prefix}[ \t]*${copyright_line}[ \t]*$"
-	  match
-	  "${header_line}"
-	  )
+        string(REGEX MATCH
+          "^${comment_prefix}[ \t]*${copyright_line}[ \t]*$"
+          match
+          "${header_line}"
+          )
       else (copyright_line)
-	if (NOT header_line)
-	  set(match TRUE)
-	endif (NOT header_line)
+        if (NOT header_line)
+          set(match TRUE)
+        endif (NOT header_line)
       endif (copyright_line)
       if (match)
-	break()
+        break()
       endif (match)
     endforeach (header_line)
     if (NOT match)
@@ -199,9 +223,19 @@ foreach (glob_expression ${FILES_TO_CHECK})
     RELATIVE "${Dax_SOURCE_DIR}"
     "${Dax_SOURCE_DIR}/${glob_expression}"
     )
-  list(REMOVE_ITEM file_list ${EXCEPTIONS})
+
   foreach (file ${file_list})
-    message("Checking ${file}")
-    check_copyright("${Dax_SOURCE_DIR}/${file}")
+    set(skip)
+    foreach(exception ${EXCEPTIONS})
+      if(file MATCHES "^${exception}(/.*)?$")
+        # This file is an exception
+        set(skip TRUE)
+      endif(file MATCHES "^${exception}(/.*)?$")
+    endforeach(exception)
+
+    if (NOT skip)
+      message("Checking ${file}")
+      check_copyright("${Dax_SOURCE_DIR}/${file}")
+    endif (NOT skip)
   endforeach (file)
 endforeach (glob_expression)
