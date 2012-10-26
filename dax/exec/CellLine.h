@@ -36,8 +36,8 @@ private:
 
 public:
   /// Create a cell for the given work.
-  DAX_EXEC_EXPORT CellLine()
-    :Connections()
+  DAX_CONT_EXPORT CellLine()
+    :Connections(0)
     { }
 
   /// Create a cell for the given work from a topology

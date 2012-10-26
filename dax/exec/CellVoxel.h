@@ -37,10 +37,18 @@ private:
 
 public:
   /// Create a cell for the given work.
-  DAX_EXEC_EXPORT CellVoxel():
+  DAX_CONT_EXPORT CellVoxel():
     GridTopology(),
-    Connections()
-    {}
+    Connections(0)
+  {
+    // Suppress warnings in the copy constructor about using uninitalized
+    // values. Since this constructor happens on a single thread in the control
+    // environment and then copied around, the overhead is minimal.
+    this->GridTopology.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
+    this->GridTopology.Spacing = dax::make_Vector3(1.0, 1.0, 1.0);
+    this->GridTopology.Extent.Min = dax::make_Id3(0, 0, 0);
+    this->GridTopology.Extent.Max = dax::make_Id3(1, 1, 1);
+  }
 
   /// Create a cell for the given work from a topology
   DAX_EXEC_EXPORT CellVoxel(
