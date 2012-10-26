@@ -336,12 +336,28 @@ public:
             "unexpectedly.  Copy the data to a new array first.");
       }
 
-    this->PrepareForInput();
+    // This code is similar to PrepareForInput except that we have to give a
+    // writable portal instead of the const portal to the execution array
+    // manager so that the data can (potentially) be written to.
+    if (this->Internals->ExecutionArrayValid)
+      {
+      // Nothing to do, data already loaded.
+      }
+    else if (this->Internals->ControlArrayValid)
+      {
+      this->Internals->ExecutionArray.LoadDataForInPlace(
+            this->Internals->ControlArray);
+      this->Internals->ExecutionArrayValid = true;
+      }
+    else
+      {
+      throw dax::cont::ErrorControlBadValue(
+            "ArrayHandle has no data when PrepareForInput called.");
+      }
 
     // Invalidate any control arrays since their data will become invalid when
     // the execution data is overwritten. Don't actually release the control
     // array. It may be shared as the execution array.
-    this->Internals->UserPortalValid = false;
     this->Internals->ControlArrayValid = false;
 
     return this->Internals->ExecutionArray.GetPortal();

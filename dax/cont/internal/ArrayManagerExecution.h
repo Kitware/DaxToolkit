@@ -75,18 +75,19 @@ public:
   /// Allocates a large enough array in the execution environment and copies
   /// the given data to that array. The allocated array can later be accessed
   /// via the GetPortal method. If control and execution share arrays, then
-  /// this method may save the iterators to be returned in the \c GetPortal*
-  /// methods.
-  ///
-  DAX_CONT_EXPORT void LoadDataForInput(
-      typename ContainerType::PortalType portal);
-
-  /// Const version of LoadDataForInput. Functionally equivalent to the
-  /// non-const version except that the non-const versions of GetPortal may not
-  /// be available.
+  /// this method may save the iterators to be returned in the \c
+  /// GetPortalConst method.
   ///
   DAX_CONT_EXPORT void LoadDataForInput(
       typename ContainerType::PortalConstType portal);
+
+  /// Allocates a large enough array in the execution environment and copies
+  /// the given data to that array. The allocated array can later be accessed
+  /// via the GetPortal method. If control and execution share arrays, then
+  /// this method may save the iterators of the container to be returned in the
+  /// \c GetPortal* methods.
+  ///
+  DAX_CONT_EXPORT void LoadDataForInPlace(ContainerType &controlArray);
 
   /// Allocates an array in the execution environment of the specified size.
   /// If control and execution share arrays, then this class can allocate

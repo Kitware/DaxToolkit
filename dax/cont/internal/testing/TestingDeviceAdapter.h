@@ -270,7 +270,8 @@ private:
     dax::cont::ArrayPortalFromIterators<dax::Scalar *>
         inputPortal(inputArray, inputArray+ARRAY_SIZE*2);
     ArrayManagerExecution inputManager;
-    inputManager.LoadDataForInput(inputPortal);
+    inputManager.LoadDataForInput(
+          dax::cont::ArrayPortalFromIterators<const dax::Scalar*>(inputPortal));
 
     // Change size.
     inputManager.Shrink(ARRAY_SIZE);
