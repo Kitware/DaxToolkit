@@ -197,6 +197,8 @@ struct DeviceAdapterAlgorithm
 #include <dax/cuda/cont/internal/DeviceAdapterAlgorithmCuda.h>
 #elif DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_OPENMP
 #include <dax/openmp/cont/internal/DeviceAdapterAlgorithmOpenMP.h>
+#elif DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_TBB
+#include <dax/tbb/cont/internal/DeviceAdapterAlgorithmTBB.h>
 #endif
 
 #endif //__dax_cont_internal_DeviceAdapterAlgorithm_h

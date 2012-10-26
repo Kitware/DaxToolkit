@@ -46,6 +46,10 @@ namespace cont {
 /// \li \c DAX_DEVICE_ADAPTER_OPENMP Schedules an algorithm over multiple
 /// CPU cores using OpenMP compiler directives.  Must be compiling with an
 /// OpenMP-compliant compiler with OpenMP pragmas enabled.
+/// \li \c DAX_DEVICE_ADAPTER_TBB Schedule and runs algorithms on multiple
+/// threads using the Intel Threading Building Blocks (TBB) libraries. Must
+/// have the TBB headers available and the resulting code must be linked with
+/// the TBB libraries.
 ///
 /// See the ArrayManagerExecution.h and DeviceAdapterAlgorithm.h files for
 /// documentation on all the functions and classes that must be

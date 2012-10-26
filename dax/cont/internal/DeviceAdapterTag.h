@@ -21,6 +21,7 @@
 #define DAX_DEVICE_ADAPTER_SERIAL     1
 #define DAX_DEVICE_ADAPTER_CUDA       2
 #define DAX_DEVICE_ADAPTER_OPENMP     3
+#define DAX_DEVICE_ADAPTER_TBB        4
 
 #ifndef DAX_DEVICE_ADAPTER
 #ifdef DAX_CUDA
@@ -47,6 +48,11 @@
 
 #include <dax/openmp/cont/internal/DeviceAdapterTagOpenMP.h>
 #define DAX_DEFAULT_DEVICE_ADAPTER_TAG ::dax::openmp::cont::DeviceAdapterTagOpenMP
+
+#elif DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_TBB
+
+#include <dax/tbb/cont/internal/DeviceAdapterTagTBB.h>
+#define DAX_DEFAULT_DEVICE_ADAPTER_TAG ::dax::tbb::cont::DeviceAdapterTagTBB
 
 #elif DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_ERROR
 
