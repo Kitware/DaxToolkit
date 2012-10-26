@@ -21,6 +21,8 @@
 #include <dax/openmp/cont/internal/DeviceAdapterTagOpenMP.h>
 #include <dax/openmp/cont/internal/ArrayManagerExecutionOpenMP.h>
 
+#include <dax/cont/internal/DeviceAdapterAlgorithm.h>
+
 // Here are the actual implementation of the algorithms.
 #include <dax/thrust/cont/internal/DeviceAdapterAlgorithmThrust.h>
 

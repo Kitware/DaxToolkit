@@ -20,7 +20,6 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
-#include <dax/cont/internal/DeviceAdapterAlgorithm.h>
 
 #include <dax/Functional.h>
 
