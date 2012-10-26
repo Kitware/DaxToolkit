@@ -59,7 +59,8 @@ public:
 
   DAX_CONT_EXPORT BindCellPoints(dax::cont::internal::Bindings<Invocation>& bindings):
     TopoExecArg(bindings.template Get<TopoIndex::value>().GetExecArg()),
-    ExecArg(bindings.template Get<N>().GetExecArg()) {}
+    ExecArg(bindings.template Get<N>().GetExecArg()),
+    Value(ComponentType()) {}
 
 
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id id,
