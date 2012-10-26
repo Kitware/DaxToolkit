@@ -16,8 +16,8 @@
 
 // These macros help tease out when the default template arguments to
 // ArrayHandle are inappropriately used.
-#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
+#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 #include <dax/cont/internal/testing/Testing.h>
@@ -27,7 +27,7 @@
 #include <dax/Types.h>
 #include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/DeviceAdapterSerial.h>
 #include <dax/cont/Scheduler.h>
 
 #include <vector>
@@ -39,7 +39,7 @@ const dax::Id DIM = 64;
 //-----------------------------------------------------------------------------
 template<typename CellType>
 void verifyAverage(const dax::Tuple<dax::Id,CellType::NUM_POINTS> &cellIndex,
-                    const dax::Scalar& computedAverage)
+                   const dax::Scalar& computedAverage)
 {
   dax::Scalar expectedAverage = 0.0;
   for(int i = 0 ; i < CellType::NUM_POINTS;++i)
@@ -48,7 +48,8 @@ void verifyAverage(const dax::Tuple<dax::Id,CellType::NUM_POINTS> &cellIndex,
   }
   expectedAverage /= CellType::NUM_POINTS;
 
-  DAX_TEST_ASSERT(test_equal(computedAverage,expectedAverage),"Got bad average");
+  DAX_TEST_ASSERT(test_equal(computedAverage, expectedAverage),
+                  "Got bad average");
 }
 
 //-----------------------------------------------------------------------------
@@ -85,7 +86,7 @@ struct TestCellAverageWorklet
         dax::cont::DeviceAdapterTagSerial> resultHandle;
 
     std::cout << "Running CellAverage worklet" << std::endl;
-    dax::cont::Scheduler<> scheduler;
+    dax::cont::Scheduler<dax::cont::DeviceAdapterTagSerial> scheduler;
     scheduler.Invoke(dax::worklet::CellAverage(),
                      grid.GetRealGrid(),
                      fieldHandle,
@@ -98,9 +99,8 @@ struct TestCellAverageWorklet
          cellIndex < grid->GetNumberOfCells();
          cellIndex++)
       {
-      verifyAverage<CellType>(
-                               grid.GetCellConnections(cellIndex),
-                               averages[cellIndex]);
+      verifyAverage<CellType>(grid.GetCellConnections(cellIndex),
+                              averages[cellIndex]);
       }
     }
 };
