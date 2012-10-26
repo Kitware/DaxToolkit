@@ -16,6 +16,9 @@
 #ifndef __dax_cont_internal_DeviceAdapterTag_h
 #define __dax_cont_internal_DeviceAdapterTag_h
 
+#include <dax/internal/Configure.h>
+#include <dax/internal/ExportMacros.h>
+
 #define DAX_DEVICE_ADAPTER_ERROR     -1
 #define DAX_DEVICE_ADAPTER_UNDEFINED  0
 #define DAX_DEVICE_ADAPTER_SERIAL     1
@@ -28,7 +31,11 @@
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_CUDA
 #elif defined(DAX_OPENMP) // !DAX_CUDA
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_OPENMP
-#else // !DAX_CUDA && !DAX_OPENMP
+#elif defined(DAX_ENABLE_TBB) // !DAX_CUDA && !DAX_OPENMP
+// Unfortunately, DAX_ENABLE_TBB does not guarantee that TBB is (or isn't)
+// available, but there is no way to check for sure in a header library.
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_TBB
+#else // !DAX_CUDA && !DAX_OPENMP && !DAX_ENABLE_TBB
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 #endif // !DAX_CUDA && !DAX_OPENMP
 #endif // DAX_DEVICE_ADAPTER

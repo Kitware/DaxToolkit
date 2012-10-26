@@ -38,4 +38,9 @@
 #define DAX_SIZE_ID 4
 #endif
 
+// This macro does not definitively determine whether TBB is available. Rather,
+// it tells whether the original Dax repository was configured with TBB. An
+// external project may or may not enable TBB.
+#cmakedefine DAX_ENABLE_TBB
+
 #endif //__dax_internal_Configure_h
