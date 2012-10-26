@@ -28,6 +28,8 @@
 
 #include <dax/tbb/cont/internal/DeviceAdapterTagTBB.h>
 
+#include <algorithm>
+
 namespace dax {
 namespace cont {
 namespace internal {
@@ -44,22 +46,101 @@ namespace internal {
 template<class DeviceAdapterTag>
 struct DeviceAdapterAlgorithmGeneral
 {
+private:
+  template<class InputPortalType, class OutputPortalType>
+  struct CopyKernel {
+    InputPortalType InputPortal;
+    OutputPortalType OutputPortal;
 
+    DAX_CONT_EXPORT
+    CopyKernel(InputPortalType inputPortal, OutputPortalType outputPortal)
+      : InputPortal(inputPortal), OutputPortal(outputPortal) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(dax::Id index) const {
+      this->OutputPortal.Set(index, this->InputPortal.Get(index));
+    }
+
+    DAX_CONT_EXPORT
+    void SetErrorMessageBuffer(const dax::exec::internal::ErrorMessageBuffer &)
+    {  }
+  };
+
+public:
   template<typename T, class CIn, class COut>
   DAX_CONT_EXPORT static void Copy(
-      const dax::cont::ArrayHandle<T, CIn, DeviceAdapterTag> &daxNotUsed(input),
-      dax::cont::ArrayHandle<T, COut, DeviceAdapterTag> &daxNotUsed(output))
+      const dax::cont::ArrayHandle<T, CIn, DeviceAdapterTag> &input,
+      dax::cont::ArrayHandle<T, COut, DeviceAdapterTag> &output)
   {
-    //TODO
+    dax::Id arraySize = input.GetNumberOfValues();
+
+    CopyKernel<
+        typename dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag>::PortalConstExecution,
+        typename dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>::PortalExecution>
+        kernel(input.PrepareForInput(),
+               output.PrepareForOutput(arraySize));
+
+    Algorithm::Schedule(kernel, arraySize);
   }
 
+private:
+  template<class InputPortalType,class ValuesPortalType,class OutputPortalType>
+  struct LowerBoundsKernel {
+    InputPortalType InputPortal;
+    ValuesPortalType ValuesPortal;
+    OutputPortalType OutputPortal;
+
+    DAX_CONT_EXPORT
+    LowerBoundsKernel(InputPortalType inputPortal,
+                      ValuesPortalType valuesPortal,
+                      OutputPortalType outputPortal)
+      : InputPortal(inputPortal),
+        ValuesPortal(valuesPortal),
+        OutputPortal(outputPortal) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(dax::Id index) const {
+      // This method assumes that (1) InputPortalType can return working
+      // iterators in the execution environment and that (2) methods not
+      // specified with DAX_EXEC_EXPORT (such as the STL algorithms) can be
+      // called from the execution environment. Neither one of these is
+      // necessarily true, but it is true for the current uses of this general
+      // function and I don't want to compete with STL if I don't have to.
+
+      typename InputPortalType::IteratorType resultPos =
+          std::lower_bound(this->InputPortal.GetIteratorBegin(),
+                           this->InputPortal.GetIteratorEnd(),
+                           this->ValuesPortal.Get(index));
+
+      dax::Id resultIndex =
+          static_cast<dax::Id>(
+            std::distance(this->InputPortal.GetIteratorBegin(), resultPos));
+      this->OutputPortal.Set(index, resultIndex);
+    }
+
+    DAX_CONT_EXPORT
+    void SetErrorMessageBuffer(const dax::exec::internal::ErrorMessageBuffer &)
+    {  }
+  };
+
+public:
   template<typename T, class CIn, class CVal, class COut>
   DAX_CONT_EXPORT static void LowerBounds(
-      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &daxNotUsed(input),
-      const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag> &daxNotUsed(values),
-      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &daxNotUsed(output))
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
+      const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag> &values,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &output)
   {
-    //TODO
+    dax::Id arraySize = values.GetNumberOfValues();
+
+    LowerBoundsKernel<
+        typename dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag>::PortalConstExecution,
+        typename dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag>::PortalConstExecution,
+        typename dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>::PortalExecution>
+        kernel(input.PrepareForInput(),
+               values.PrepareForInput(),
+               output.PrepareForOutput(arraySize));
+
+    Algorithm::Schedule(kernel, arraySize);
   }
 
   template<class CIn, class COut>
@@ -143,9 +224,6 @@ private:
   };
 
 public:
-  /// An implementation of StreamCompact that works on any DeviceAdapter that
-  /// defines Schedule and ScanExclusive.
-  ///
   template<typename T, typename U, class CIn, class CStencil, class COut>
   DAX_CONT_EXPORT static void StreamCompact(
       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag>& input,
@@ -194,12 +272,6 @@ public:
     Algorithm::Schedule(copyKernel, arrayLength);
   }
 
-  /// An implementation of the stencil/output version of StreamCompact that
-  /// works on any DeviceAdapter that implements the three argument
-  /// input/stencil/output version of StreamCompact. The implementation of the
-  /// three argument input/stencil/output StreamCompact can itself internally
-  /// use the general version.
-  ///
   template<typename T, class CStencil, class COut>
   DAX_CONT_EXPORT static void StreamCompact(
       const dax::cont::ArrayHandle<T,CStencil,DeviceAdapterTag> &stencil,
@@ -211,11 +283,62 @@ public:
     Algorithm::StreamCompact(input, stencil, output);
   }
 
+private:
+  template<class InputPortalType, class StencilPortalType>
+  struct ClassifyUniqueKernel {
+    InputPortalType InputPortal;
+    StencilPortalType StencilPortal;
+
+    DAX_CONT_EXPORT
+    ClassifyUniqueKernel(InputPortalType inputPortal,
+                         StencilPortalType stencilPortal)
+      : InputPortal(inputPortal), StencilPortal(stencilPortal) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(dax::Id index) const {
+      typedef typename StencilPortalType::ValueType ValueType;
+      if (index == 0)
+        {
+        // Always copy first value.
+        this->StencilPortal.Set(index, ValueType(1));
+        }
+      else
+        {
+        ValueType flag = ValueType(this->InputPortal.Get(index-1)
+                                   == this->InputPortal.Get(index));
+        this->StencilPortal.Set(index, flag);
+        }
+    }
+
+    DAX_CONT_EXPORT
+    void SetErrorMessageBuffer(const dax::exec::internal::ErrorMessageBuffer &)
+    {  }
+  };
+
+public:
   template<typename T, class Container>
   DAX_CONT_EXPORT static void Unique(
-      dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &daxNotUsed(values))
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values)
   {
-    //TODO
+    dax::cont::ArrayHandle<
+        dax::Id, dax::cont::ArrayContainerControlTagBasic, DeviceAdapterTag>
+        stencilArray;
+    dax::Id inputSize = values.GetNumberOfValues();
+
+    ClassifyUniqueKernel<
+        typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTag>::PortalConstExecution,
+        typename dax::cont::ArrayHandle<dax::Id,dax::cont::ArrayContainerControlTagBasic,DeviceAdapterTag>::PortalExecution>
+        classifyKernel(values.PrepareForInput(),
+                       stencilArray.PrepareForOutput(inputSize));
+    Algorithm::Schedule(classifyKernel, inputSize);
+
+    dax::cont::ArrayHandle<
+        T, dax::cont::ArrayContainerControlTagBasic, DeviceAdapterTag>
+        outputArray;
+
+    Algorithm::StreamCompact(values, stencilArray, outputArray);
+
+    Algorithm::Copy(outputArray, values);
   }
 
 };
