@@ -25,13 +25,6 @@ namespace dax { namespace exec {
 class CellVertex
 {
 public:
-  template<class ExecutionAdapter>
-  struct GridStructures
-  {
-    typedef dax::exec::internal::TopologyUnstructured<
-        CellVertex,
-        ExecutionAdapter> TopologyType;
-  };
 
   /// static variable that returns the number of points per cell
   const static dax::Id NUM_POINTS = 1;
@@ -39,31 +32,35 @@ public:
   const static dax::Id TOPOLOGICAL_DIMENSIONS = 0;
 
 private:
-  dax::Id CellIndex;
   PointConnectionsType Connections;
-
-  template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT static PointConnectionsType GetPointConnections(
-      const dax::exec::internal::TopologyUnstructured<
-          CellVertex,ExecutionAdapter> &topology,
-      dax::Id cellIndex)
-  {
-    PointConnectionsType connections;
-    dax::Id offset = cellIndex*NUM_POINTS;
-    connections[0] = topology.CellConnections.Get(offset + 0);
-    return connections;
-  }
 
 public:
   /// Create a cell for the given work.
-  template<class ExecutionAdapter>
+  DAX_CONT_EXPORT CellVertex()
+    :Connections(0)
+    { }
+
+  /// Create a cell for the given work from a topology
+  template<class ConnectionsPortalT>
   DAX_EXEC_EXPORT CellVertex(
       const dax::exec::internal::TopologyUnstructured<
-          CellVertex,ExecutionAdapter> &topology,
+        CellVertex,ConnectionsPortalT> &topology,
       dax::Id cellIndex)
-    : CellIndex(cellIndex),
-      Connections(GetPointConnections(topology, cellIndex))
-    { }
+  {
+    dax::exec::internal::BuildCellConnectionsFromGrid(topology,cellIndex,
+                                           this->Connections);
+  }
+
+  // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
+  // COPY CONSTRUCTOR.
+  DAX_EXEC_EXPORT CellVertex(const CellVertex& vert)
+  :Connections(vert.Connections)
+  {}
+
+  // COPY CONSTRUCTOR (Non-Const)
+  DAX_EXEC_EXPORT CellVertex(CellVertex& vert)
+  :Connections(vert.Connections)
+  {}
 
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
@@ -75,17 +72,38 @@ public:
   /// the index for the point in point space.
   DAX_EXEC_EXPORT dax::Id GetPointIndex(const dax::Id vertexIndex) const
   {
-    return this->GetPointIndices()[vertexIndex];
+    return this->Connections[vertexIndex];
   }
 
   /// returns the indices for all the points in the cell.
-  DAX_EXEC_EXPORT PointConnectionsType GetPointIndices() const
+  DAX_EXEC_EXPORT const PointConnectionsType& GetPointIndices() const
   {
     return this->Connections;
   }
 
-  /// Get the cell index.  Probably only useful internally.
-  DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->CellIndex; }
+// method to set this cell from a portal
+  template<class ConnectionsPortalT>
+  DAX_EXEC_EXPORT void BuildFromGrid(
+   const dax::exec::internal::TopologyUnstructured<
+    CellVertex,ConnectionsPortalT> &topology,
+    dax::Id cellIndex)
+  {
+    dax::exec::internal::BuildCellConnectionsFromGrid(topology,cellIndex,
+                                           this->Connections);
+  }
+
+  //  method to set this cell from a different tuple
+  DAX_EXEC_EXPORT void SetPointIndices(
+      const PointConnectionsType & cellConnections)
+  {
+    this->Connections = cellConnections;
+  }
+
+private:
+  // MAKING SURE THAT THERE ARE NO MORE ASSIGNMENTS HAPPENING THAT WILL
+  // POTENTIALLY BRING ABOUT A PERFOMANCE HIT
+  CellVertex & operator = (CellVertex other);
+
 };
 
 }}

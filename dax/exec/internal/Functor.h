@@ -122,6 +122,7 @@ protected:                                                              \
   WorkletType Worklet;                                                  \
   ArgumentsType Arguments;                                              \
 public:                                                                 \
+  DAX_CONT_EXPORT                                                       \
   FunctorImpl(WorkletType worklet, BindingsType& bindings):             \
     Worklet(worklet), Arguments(bindings) {}                            \
   DAX_EXEC_EXPORT void operator()(dax::Id id) const                     \
@@ -168,6 +169,7 @@ class Functor: public detail::FunctorImplLookup<Invocation>::type
 public:
   typedef typename derived::WorkletType WorkletType;
   typedef typename derived::BindingsType BindingsType;
+  DAX_CONT_EXPORT
   Functor(WorkletType worklet, BindingsType& args): derived(worklet, args) {}
   DAX_CONT_EXPORT void SetErrorMessageBuffer(
       dax::exec::internal::ErrorMessageBuffer &errorBuffer) {

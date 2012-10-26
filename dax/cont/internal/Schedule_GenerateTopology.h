@@ -107,12 +107,12 @@ void GenerateNewTopology(
   //for the lower bounds to compute the right indices
   IdArrayHandleType validCellRange;
   validCellRange.PrepareForOutput(numNewCells);
-  this->Invoke(dax::exec::internal::kernel::IndexPlusOne(),
-                   validCellRange);
+  this->Invoke(dax::exec::internal::kernel::Index(),
+                  validCellRange);
 
   //now do the lower bounds of the cell indices so that we figure out
   //which original topology indexs match the new indices.
-  Algorithm::LowerBounds(scannedNewCellCounts, validCellRange);
+  Algorithm::UpperBounds(scannedNewCellCounts, validCellRange);
 
   // We are done with scannedNewCellCounts.
   scannedNewCellCounts.ReleaseResources();
@@ -180,12 +180,12 @@ void GenerateNewTopology(
   //for the lower bounds to compute the right indices
   IdArrayHandleType validCellRange;
   validCellRange.PrepareForOutput(numNewCells);
-  this->Invoke(dax::exec::internal::kernel::IndexPlusOne(),
-                   validCellRange);
+   this->Invoke(dax::exec::internal::kernel::Index(),
+                    validCellRange);
 
   //now do the lower bounds of the cell indices so that we figure out
   //which original topology indexs match the new indices.
-  Algorithm::LowerBounds(scannedNewCellCounts, validCellRange);
+  Algorithm::UpperBounds(scannedNewCellCounts, validCellRange);
 
   // We are done with scannedNewCellCounts.
   scannedNewCellCounts.ReleaseResources();

@@ -366,6 +366,43 @@ public:
     values.Shrink(::thrust::distance(valueIter.first, newEnd));
   }
 
+  template<typename T, class CIn, class CVal, class COut>
+  DAX_CONT_EXPORT static void UpperBounds(
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag>& input,
+      const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag>& values,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag>& output)
+  {
+    dax::Id numberOfValues = values.GetNumberOfValues();
+
+    typename ThrustIterConst<T,CIn>::Type inputIter = PrepareForInput(input);
+    typename ThrustIterConst<T,CVal>::Type valuesIter = PrepareForInput(values);
+    typename ThrustIter<dax::Id,COut>::Type outputIter =
+        PrepareForOutput(output, numberOfValues);
+
+    ::thrust::upper_bound(inputIter.first,
+                          inputIter.second,
+                          valuesIter.first,
+                          valuesIter.second,
+                          outputIter.first);
+  }
+
+  template<class CIn, class COut>
+  DAX_CONT_EXPORT static void UpperBounds(
+      const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTag> &input,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &values_output)
+  {
+    typename ThrustIterConst<dax::Id,CIn>::Type inputIter =
+        PrepareForInput(input);
+    typename ThrustIter<dax::Id,COut>::Type outputIter =
+        PrepareForInPlace(values_output);
+
+    ::thrust::upper_bound(inputIter.first,
+                          inputIter.second,
+                          outputIter.first,
+                          outputIter.second,
+                          outputIter.first);
+  }
+
 };
 
 }

@@ -24,13 +24,6 @@ namespace dax { namespace exec {
 class CellHexahedron
 {
 public:
-  template<class ExecutionAdapter>
-  struct GridStructures
-  {
-    typedef dax::exec::internal::TopologyUnstructured<
-        CellHexahedron,
-        ExecutionAdapter> TopologyType;
-  };
 
   /// static variable that holds the number of points per cell
   const static dax::Id NUM_POINTS = 8;
@@ -38,38 +31,35 @@ public:
   const static dax::Id TOPOLOGICAL_DIMENSIONS = 3;
 
 private:
-  const dax::Id CellIndex;
-  const PointConnectionsType Connections;
-
-  template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT static PointConnectionsType GetPointConnections(
-      const dax::exec::internal::TopologyUnstructured<
-          CellHexahedron,ExecutionAdapter> &topology,
-      dax::Id cellIndex)
-  {
-    PointConnectionsType connections;
-    dax::Id offset = cellIndex*NUM_POINTS;
-    connections[0] = topology.CellConnections.Get(offset + 0);
-    connections[1] = topology.CellConnections.Get(offset + 1);
-    connections[2] = topology.CellConnections.Get(offset + 2);
-    connections[3] = topology.CellConnections.Get(offset + 3);
-    connections[4] = topology.CellConnections.Get(offset + 4);
-    connections[5] = topology.CellConnections.Get(offset + 5);
-    connections[6] = topology.CellConnections.Get(offset + 6);
-    connections[7] = topology.CellConnections.Get(offset + 7);
-    return connections;
-  }
+  PointConnectionsType Connections;
 
 public:
   /// Create a cell for the given work.
-  template<class ExecutionAdapter>
+  DAX_CONT_EXPORT CellHexahedron()
+    :Connections(0)
+    { }
+
+  /// Create a cell for the given work from a topology
+  template<class ConnectionsPortalT>
   DAX_EXEC_EXPORT CellHexahedron(
       const dax::exec::internal::TopologyUnstructured<
-          CellHexahedron,ExecutionAdapter> &topology,
+        CellHexahedron,ConnectionsPortalT> &topology,
       dax::Id cellIndex)
-    : CellIndex(cellIndex),
-      Connections(GetPointConnections(topology, cellIndex))
-    { }
+  {
+    dax::exec::internal::BuildCellConnectionsFromGrid(topology,cellIndex,
+                                           this->Connections);
+  }
+
+  // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
+  // COPY CONSTRUCTOR.
+  DAX_EXEC_EXPORT CellHexahedron(const CellHexahedron& hex)
+  :Connections(hex.Connections)
+  {}
+
+  // COPY CONSTRUCTOR (Non-Const)
+  DAX_EXEC_EXPORT CellHexahedron(CellHexahedron& hex)
+  :Connections(hex.Connections)
+  {}
 
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
@@ -81,18 +71,37 @@ public:
   /// the index for the point in point space.
   DAX_EXEC_EXPORT dax::Id GetPointIndex(const dax::Id vertexIndex) const
   {
-    return this->GetPointIndices()[vertexIndex];
+    return this->Connections[vertexIndex];
   }
 
   /// returns the indices for all the points in the cell.
-  DAX_EXEC_EXPORT
-  const PointConnectionsType &GetPointIndices() const
+  DAX_EXEC_EXPORT const PointConnectionsType& GetPointIndices() const
   {
     return this->Connections;
   }
 
-  /// Get the cell index.  Probably only useful internally.
-  DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->CellIndex; }
+  // method to set this cell from a portal
+  template<class ConnectionsPortalT>
+  DAX_EXEC_EXPORT void BuildFromGrid(
+   const dax::exec::internal::TopologyUnstructured<
+    CellHexahedron,ConnectionsPortalT> &topology,
+    dax::Id cellIndex)
+  {
+    dax::exec::internal::BuildCellConnectionsFromGrid(topology,cellIndex,
+                                           this->Connections);
+  }
+
+  //  method to set this cell from a different tuple
+  DAX_EXEC_EXPORT void SetPointIndices(
+      const PointConnectionsType & cellConnections)
+  {
+    this->Connections = cellConnections;
+  }
+
+private:
+  // MAKING SURE THAT THERE ARE NO MORE ASSIGNMENTS HAPPENING THAT WILL
+  // POTENTIALLY BRING ABOUT A PERFOMANCE HIT
+  CellHexahedron & operator = (CellHexahedron other);
 };
 
 }}

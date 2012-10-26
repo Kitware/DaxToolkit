@@ -319,6 +319,71 @@ public:
     values.Shrink(std::distance(arrayPortal.GetIteratorBegin(), newEnd));
   }
 
+  template<typename T, class CIn, class CVal, class COut>
+  DAX_CONT_EXPORT static void UpperBounds(
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>& input,
+      const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTagSerial>& values,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTagSerial>& output)
+  {
+    typedef typename dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>
+        ::PortalConstExecution PortalIn;
+    typedef typename dax::cont::ArrayHandle<T,CVal,DeviceAdapterTagSerial>
+        ::PortalConstExecution PortalVal;
+    typedef typename dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTagSerial>
+        ::PortalExecution PortalOut;
+
+    dax::Id numberOfValues = values.GetNumberOfValues();
+
+    PortalIn inputPortal = input.PrepareForInput();
+    PortalVal valuesPortal = values.PrepareForInput();
+    PortalOut outputPortal = output.PrepareForOutput(numberOfValues);
+
+    // std::upper_bound only supports a single value to search for so iterate
+    // over all values and search for each one.
+    for (dax::Id outputIndex = 0; outputIndex < numberOfValues; outputIndex++)
+      {
+      // std::upper_bound returns an iterator to the position where you can
+      // insert, but we want the distance from the start.
+      typename PortalIn::IteratorType resultPos =
+          std::upper_bound(inputPortal.GetIteratorBegin(),
+                           inputPortal.GetIteratorEnd(),
+                           valuesPortal.Get(outputIndex));
+      dax::Id resultIndex =
+          static_cast<dax::Id>(std::distance(inputPortal.GetIteratorBegin(),
+                                             resultPos));
+      outputPortal.Set(outputIndex, resultIndex);
+      }
+  }
+
+  template<class CIn, class COut>
+  DAX_CONT_EXPORT static void UpperBounds(
+      const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTagSerial> &input,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTagSerial> &values_output)
+  {
+    typedef typename dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTagSerial>
+        ::PortalConstExecution PortalIn;
+    typedef typename dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTagSerial>
+        ::PortalExecution PortalOut;
+
+    PortalIn inputPortal = input.PrepareForInput();
+    PortalOut outputPortal = values_output.PrepareForInPlace();
+
+    dax::Id outputSize = outputPortal.GetNumberOfValues();
+    for (dax::Id outputIndex = 0; outputIndex < outputSize; outputIndex++)
+      {
+      // std::upper_bound returns an iterator to the position where you can
+      // insert, but we want the distance from the start.
+      typename PortalIn::IteratorType resultPos =
+          std::upper_bound(inputPortal.GetIteratorBegin(),
+                           inputPortal.GetIteratorEnd(),
+                           outputPortal.Get(outputIndex));
+      dax::Id resultIndex =
+          static_cast<dax::Id>(std::distance(inputPortal.GetIteratorBegin(),
+                                             resultPos));
+      outputPortal.Set(outputIndex, resultIndex);
+      }
+  }
+
 };
 
 }
