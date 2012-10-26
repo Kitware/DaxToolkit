@@ -43,6 +43,9 @@ endmacro(DaxConfigureOpenMP)
 macro(DaxConfigureCuda)
   DaxConfigureDevice(Cuda ${ARGV})
 endmacro(DaxConfigureCuda)
+macro(DaxConfigureTBB)
+  DaxConfigureDevice(TBB ${ARGV})
+endmacro(DaxConfigureTBB)
 
 # Used by other macros.
 macro(DaxConfigureDevice device)

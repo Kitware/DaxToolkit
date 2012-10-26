@@ -71,6 +71,19 @@ if (DAX_ENABLE_DOXYGEN)
 endif()
 
 #-----------------------------------------------------------------------------
+# Set up devices selected.
+dax_configure_device(Serial)
+if (DAX_ENABLE_CUDA)
+  dax_configure_device(Cuda)
+endif (DAX_ENABLE_CUDA)
+if (DAX_ENABLE_OPENMP)
+  dax_configure_device(OpenMP)
+endif (DAX_ENABLE_OPENMP)
+if (DAX_ENABLE_TBB)
+  dax_configure_device(TBB)
+endif (DAX_ENABLE_TBB)
+
+#-----------------------------------------------------------------------------
 
 ## Set the directory where the binaries will be stored
 set( EXECUTABLE_OUTPUT_PATH
@@ -195,6 +208,7 @@ install(
     ${Dax_SOURCE_DIR}/CMake/UseDaxSerial.cmake
     ${Dax_SOURCE_DIR}/CMake/UseDaxOpenMP.cmake
     ${Dax_SOURCE_DIR}/CMake/UseDaxCuda.cmake
+    ${Dax_SOURCE_DIR}/CMake/UseDaxTBB.cmake
   DESTINATION ${Dax_INSTALL_CMAKE_MODULE_DIR}
   )
 
