@@ -23,6 +23,7 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
+#include <dax/cont/internal/DeviceAdapterAlgorithm.h>
 #include <dax/cont/internal/DeviceAdapterAlgorithmGeneral.h>
 
 #include <boost/type_traits/remove_reference.hpp>
@@ -37,8 +38,10 @@ namespace cont {
 namespace internal {
 
 template<>
-struct DeviceAdapterAlgorithm<dax::tbb::cont::DeviceAdapterTagTBB>
-    : public DeviceAdapterAlgorithmGeneral<dax::tbb::cont::DeviceAdapterTagTBB>
+struct DeviceAdapterAlgorithm<dax::tbb::cont::DeviceAdapterTagTBB> :
+    DeviceAdapterAlgorithmGeneral<
+        DeviceAdapterAlgorithm<dax::tbb::cont::DeviceAdapterTagTBB>,
+        dax::tbb::cont::DeviceAdapterTagTBB>
 {
 private:
   // The "grain size" of scheduling with TBB.  Not a lot of thought has gone

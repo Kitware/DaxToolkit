@@ -54,8 +54,10 @@ public:
 
 template<>
 struct DeviceAdapterAlgorithm<
-    dax::cont::internal::DeviceAdapterTagTestAlgorithmGeneral>
-    : public dax::cont::internal::DeviceAdapterAlgorithmGeneral<
+           dax::cont::internal::DeviceAdapterTagTestAlgorithmGeneral> :
+    dax::cont::internal::DeviceAdapterAlgorithmGeneral<
+        DeviceAdapterAlgorithm<
+                   dax::cont::internal::DeviceAdapterTagTestAlgorithmGeneral>,
         dax::cont::internal::DeviceAdapterTagTestAlgorithmGeneral>
 {
 private:

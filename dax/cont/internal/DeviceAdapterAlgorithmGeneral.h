@@ -22,8 +22,6 @@
 
 #include <dax/Functional.h>
 
-#include <dax/cont/internal/DeviceAdapterAlgorithm.h>
-
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 
 #include <dax/tbb/cont/internal/DeviceAdapterTagTBB.h>
@@ -39,11 +37,58 @@ namespace internal {
 /// This struct provides algorithms that implement "general" device adapter
 /// algorithms. If a device adapter provides implementations for Schedule,
 /// Sort, and Scan, the rest of the algorithms can be implemented by calling
-/// these functions. An easy way to implement the DeviceAdapterAlgorithm
-/// specialization is to subclass this and override the implementation of
-/// methods as necessary.
+/// these functions.
 ///
-template<class DeviceAdapterTag>
+/// An easy way to implement the DeviceAdapterAlgorithm specialization is to
+/// subclass this and override the implementation of methods as necessary.
+/// As an example, the code would look something like this.
+///
+/// \code{.cpp}
+/// template<>
+/// struct DeviceAdapterAlgorithm<DeviceAdapterTagFoo>
+///    : DeviceAdapterAlgorithmGeneral<DeviceAdapterAlgorithm<DeviceAdapterTagFoo>,
+///                                    DeviceAdapterTagFoo>
+/// {
+///   template<class Functor>
+///   DAX_CONT_EXPORT static void Schedule(Functor functor,
+///                                        dax::Id numInstances)
+///   {
+///     ...
+///   }
+///
+///   template<typename T, class Container>
+///   DAX_CONT_EXPORT static void Sort(
+///       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values)
+///   {
+///     ...
+///   }
+///
+///   template<typename T, class CIn, class COut>
+///   DAX_CONT_EXPORT static T ScanExclusive(
+///       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
+///       dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>& output);
+///   {
+///     ...
+///   }
+///
+///   template<typename T, class CIn, class COut>
+///   DAX_CONT_EXPORT static T ScanInclusive(
+///       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
+///       dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>& output);
+///   {
+///     ...
+///   }
+/// };
+/// \endcode
+///
+/// You might note that DeviceAdapterAlgorithmGeneral has two template
+/// parameters that are redundant. Although the first parameter, the class for
+/// the actual DeviceAdapterAlgorithm class containing Schedule, Sort, and
+/// Scan, is the same as DeviceAdapterAlgorithm<DeviceAdapterTag>, it is made a
+/// separate template parameter to avoid a recursive dependence between
+/// DeviceAdapterAlgorithmGeneral.h and DeviceAdapterAlgorithm.h
+///
+template<class DerivedAlgorithm, class DeviceAdapterTag>
 struct DeviceAdapterAlgorithmGeneral
 {
 private:
@@ -80,7 +125,7 @@ public:
         kernel(input.PrepareForInput(),
                output.PrepareForOutput(arraySize));
 
-    Algorithm::Schedule(kernel, arraySize);
+    DerivedAlgorithm::Schedule(kernel, arraySize);
   }
 
 private:
@@ -140,7 +185,7 @@ public:
                values.PrepareForInput(),
                output.PrepareForOutput(arraySize));
 
-    Algorithm::Schedule(kernel, arraySize);
+    DerivedAlgorithm::Schedule(kernel, arraySize);
   }
 
   template<class CIn, class COut>
@@ -148,14 +193,11 @@ public:
       const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTag> &input,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &values_output)
   {
-    DeviceAdapterAlgorithmGeneral<DeviceAdapterTag>::
+    DeviceAdapterAlgorithmGeneral<DerivedAlgorithm,DeviceAdapterTag>::
         LowerBounds(input, values_output, values_output);
   }
 
 private:
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
-      Algorithm;
-
   template<class StencilPortalType, class OutputPortalType>
   struct StencilToIndexFlagKernel
   {
@@ -249,9 +291,9 @@ public:
         StencilPortalType, IndexPortalType> indexKernel(stencilPortal,
                                                         indexPortal);
 
-    Algorithm::Schedule(indexKernel, arrayLength);
+    DerivedAlgorithm::Schedule(indexKernel, arrayLength);
 
-    dax::Id outArrayLength = Algorithm::ScanExclusive(indices, indices);
+    dax::Id outArrayLength = DerivedAlgorithm::ScanExclusive(indices, indices);
 
     typedef typename dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag>
         ::PortalConstExecution InputPortalType;
@@ -269,7 +311,7 @@ public:
                                     stencilPortal,
                                     indexPortal,
                                     outputPortal);
-    Algorithm::Schedule(copyKernel, arrayLength);
+    DerivedAlgorithm::Schedule(copyKernel, arrayLength);
   }
 
   template<typename T, class CStencil, class COut>
@@ -280,7 +322,7 @@ public:
     dax::cont::ArrayHandle<
         dax::Id,dax::cont::ArrayContainerControlTagCounting,DeviceAdapterTag>
         input(dax::cont::ArrayPortalCounting(stencil.GetNumberOfValues()));
-    Algorithm::StreamCompact(input, stencil, output);
+    DerivedAlgorithm::StreamCompact(input, stencil, output);
   }
 
 private:
@@ -330,15 +372,15 @@ public:
         typename dax::cont::ArrayHandle<dax::Id,dax::cont::ArrayContainerControlTagBasic,DeviceAdapterTag>::PortalExecution>
         classifyKernel(values.PrepareForInput(),
                        stencilArray.PrepareForOutput(inputSize));
-    Algorithm::Schedule(classifyKernel, inputSize);
+    DerivedAlgorithm::Schedule(classifyKernel, inputSize);
 
     dax::cont::ArrayHandle<
         T, dax::cont::ArrayContainerControlTagBasic, DeviceAdapterTag>
         outputArray;
 
-    Algorithm::StreamCompact(values, stencilArray, outputArray);
+    DerivedAlgorithm::StreamCompact(values, stencilArray, outputArray);
 
-    Algorithm::Copy(outputArray, values);
+    DerivedAlgorithm::Copy(outputArray, values);
   }
 
 };
