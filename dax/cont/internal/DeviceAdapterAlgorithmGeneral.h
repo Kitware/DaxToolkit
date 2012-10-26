@@ -305,7 +305,7 @@ private:
       else
         {
         ValueType flag = ValueType(this->InputPortal.Get(index-1)
-                                   == this->InputPortal.Get(index));
+                                   != this->InputPortal.Get(index));
         this->StencilPortal.Set(index, flag);
         }
     }
