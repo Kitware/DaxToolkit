@@ -35,8 +35,8 @@ private:
 
 public:
   /// Create a cell for the given work.
-  DAX_EXEC_EXPORT CellHexahedron()
-    :Connections()
+  DAX_CONT_EXPORT CellHexahedron()
+    :Connections(0)
     { }
 
   /// Create a cell for the given work from a topology

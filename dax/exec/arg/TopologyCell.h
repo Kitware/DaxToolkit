@@ -44,7 +44,7 @@ public:
                                    CellType&,
                                    CellType const&>::type ReturnType;
 
-  TopologyCell(const TopologyType& t): Topo(t), Cell(){}
+  DAX_CONT_EXPORT TopologyCell(const TopologyType& t): Topo(t), Cell(){}
 
   DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
                             const dax::exec::internal::WorkletBase& work)

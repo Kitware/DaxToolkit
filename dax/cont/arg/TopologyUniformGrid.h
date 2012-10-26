@@ -50,27 +50,27 @@ public:
   typedef ExecGridType ExecArg;
   typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Cell>::Tags DomainTags;
 
-  ConceptMap(GridType g): Grid(g) {}
+  DAX_CONT_EXPORT ConceptMap(GridType g): Grid(g) {}
 
-  ExecArg GetExecArg() { return ExecGridType(Topology); }
+  DAX_CONT_EXPORT ExecArg GetExecArg() { return ExecGridType(Topology); }
 
-  void ToExecution(dax::Id, boost::false_type)
+  DAX_CONT_EXPORT void ToExecution(dax::Id, boost::false_type)
     { /* Input  */
     this->Topology = this->Grid.PrepareForInput();
     }
 
   //we need to pass the number of elements to allocate
-  void ToExecution(dax::Id size)
+  DAX_CONT_EXPORT void ToExecution(dax::Id size)
     {
     ToExecution(size,typename Tags::template Has<dax::cont::sig::Out>());
     }
 
-  dax::Id GetDomainLength(sig::Point) const
+  DAX_CONT_EXPORT dax::Id GetDomainLength(sig::Point) const
     {
     return Grid.GetNumberOfPoints();
     }
 
-  dax::Id GetDomainLength(sig::Cell) const
+  DAX_CONT_EXPORT dax::Id GetDomainLength(sig::Cell) const
     {
     return Grid.GetNumberOfCells();
     }
