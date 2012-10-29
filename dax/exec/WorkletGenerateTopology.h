@@ -25,7 +25,6 @@
 #include <dax/cont/sig/Tag.h>
 #include <dax/exec/arg/Bind.h>
 #include <dax/exec/arg/BindCellPoints.h>
-#include <dax/exec/arg/BindCellPointIds.h>
 #include <dax/exec/arg/FieldPortal.h>
 
 #include <boost/mpl/if.hpp>
@@ -48,8 +47,8 @@ public:
 protected:
   typedef dax::cont::arg::Field Field;
   typedef dax::cont::arg::Topology Topology;
-  typedef dax::cont::sig::Point Point;
   typedef dax::cont::sig::Cell Cell;
+  typedef dax::cont::sig::Point Point;
 };
 
 namespace arg {
@@ -67,16 +66,6 @@ public:
     >::type type;
 };
 
-template <int N, typename Invocation>
-class Bind<WorkletGenerateTopology, dax::cont::arg::Topology::PointIds(*)(dax::cont::sig::Arg<N>), Invocation>
-{
-  typedef typename dax::cont::internal::Bindings<Invocation>::template GetType<N>::type ControlBinding;
-  typedef typename dax::cont::arg::ConceptMapTraits<ControlBinding>::Concept Concept;
-  BOOST_STATIC_ASSERT((boost::is_same<dax::cont::arg::Topology,Concept>::value));
-
-public:
-  typedef BindCellPointIds<Invocation, N> type;
-};
 } // namespace arg
 
 }

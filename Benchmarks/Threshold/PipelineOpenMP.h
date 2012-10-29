@@ -19,6 +19,6 @@
 
 #include <dax/cont/UniformGrid.h>
 
-void RunPipelineOpenMP(int pipeline, const dax::cont::UniformGrid<> &grid);
+void RunPipelineOpenMP(const dax::cont::UniformGrid<> &grid);
 
 #endif //__PipelineOpenMP_h

@@ -24,13 +24,6 @@ namespace dax { namespace exec {
 class CellWedge
 {
 public:
-  template<class ExecutionAdapter>
-  struct GridStructures
-  {
-    typedef dax::exec::internal::TopologyUnstructured<
-        CellWedge,
-        ExecutionAdapter> TopologyType;
-  };
 
   /// static variable that holds the number of points per cell
   const static dax::Id NUM_POINTS = 6;
@@ -38,36 +31,35 @@ public:
   const static dax::Id TOPOLOGICAL_DIMENSIONS = 3;
 
 private:
-  const dax::Id CellIndex;
-  const PointConnectionsType Connections;
-
-  template<class ExecutionAdapter>
-  DAX_EXEC_EXPORT static PointConnectionsType GetPointConnections(
-      const dax::exec::internal::TopologyUnstructured<
-          CellWedge,ExecutionAdapter> &topology,
-      dax::Id cellIndex)
-  {
-    PointConnectionsType connections;
-    dax::Id offset = cellIndex*NUM_POINTS;
-    connections[0] = topology.CellConnections.Get(offset + 0);
-    connections[1] = topology.CellConnections.Get(offset + 1);
-    connections[2] = topology.CellConnections.Get(offset + 2);
-    connections[3] = topology.CellConnections.Get(offset + 3);
-    connections[4] = topology.CellConnections.Get(offset + 4);
-    connections[5] = topology.CellConnections.Get(offset + 5);
-    return connections;
-  }
+  PointConnectionsType Connections;
 
 public:
   /// Create a cell for the given work.
-  template<class ExecutionAdapter>
+  DAX_CONT_EXPORT CellWedge()
+    :Connections(0)
+    {}
+
+    /// Create a cell for the given work from a topology
+  template<class ConnectionsPortalT>
   DAX_EXEC_EXPORT CellWedge(
       const dax::exec::internal::TopologyUnstructured<
-          CellWedge,ExecutionAdapter> &topology,
+        CellWedge,ConnectionsPortalT> &topology,
       dax::Id cellIndex)
-    : CellIndex(cellIndex),
-      Connections(GetPointConnections(topology, cellIndex))
-    { }
+  {
+    dax::exec::internal::BuildCellConnectionsFromGrid(topology,cellIndex,
+                                           this->Connections);
+  }
+
+  // A COPY CONSTRUCTOR IS NEEDED TO OVERCOME THE SLOWDOWN DUE TO NVCC'S DEFAULT
+  // COPY CONSTRUCTOR.
+  DAX_EXEC_EXPORT CellWedge(const CellWedge& wge)
+  :Connections(wge.Connections)
+  {}
+
+  // COPY CONSTRUCTOR (Non-Const)
+  DAX_EXEC_EXPORT CellWedge(CellWedge& wge)
+  :Connections(wge.Connections)
+  {}
 
   /// Get the number of points in the cell.
   DAX_EXEC_EXPORT dax::Id GetNumberOfPoints() const
@@ -89,8 +81,29 @@ public:
     return this->Connections;
   }
 
-  /// Get the cell index.  Probably only useful internally.
-  DAX_EXEC_EXPORT dax::Id GetIndex() const { return this->CellIndex; }
+  // method to set this cell from a portal
+  template<class ConnectionsPortalT>
+  DAX_EXEC_EXPORT void BuildFromGrid(
+   const dax::exec::internal::TopologyUnstructured<
+    CellWedge,ConnectionsPortalT> &topology,
+    dax::Id cellIndex)
+  {
+    dax::exec::internal::BuildCellConnectionsFromGrid(topology,cellIndex,
+                                           this->Connections);
+  }
+
+  //  method to set this cell from a different tuple
+  DAX_EXEC_EXPORT void SetPointIndices(
+      const PointConnectionsType & cellConnections)
+  {
+    this->Connections = cellConnections;
+  }
+
+private:
+  // MAKING SURE THAT THERE ARE NO MORE ASSIGNMENTS HAPPENING THAT WILL
+  // POTENTIALLY BRING ABOUT A PERFOMANCE HIT
+  CellWedge & operator = (CellWedge other);
+
 };
 
 }}

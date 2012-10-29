@@ -35,8 +35,6 @@ struct TestCellFunctor
     for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
       {
       CellType cell = topology.GetCell(cellIndex);
-      DAX_TEST_ASSERT(cell.GetIndex() == cellIndex,
-                      "Cell has wrong index.");
       DAX_TEST_ASSERT(cell.GetNumberOfPoints() == CellType::NUM_POINTS,
                       "Cell has wrong number of points");
 

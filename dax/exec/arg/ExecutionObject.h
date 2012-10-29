@@ -13,38 +13,31 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_arg_BindWorkId_h
-#define __dax_exec_arg_BindWorkId_h
-#if defined(DAX_DOXYGEN_ONLY)
+#ifndef __dax_exec_arg_ExecutionObject_h
+#define __dax_exec_arg_ExecutionObject_h
 
-#else // !defined(DAX_DOXYGEN_ONLY)
+/// \namespace dax::exec::arg
+/// \brief Execution environment representation of worklet arguments
 
 #include <dax/Types.h>
-#include <dax/cont/internal/Bindings.h>
-
 #include <dax/exec/internal/WorkletBase.h>
 
 namespace dax { namespace exec { namespace arg {
 
-template <typename Invocation>
-struct BindWorkId
+/// \headerfile ExecutionObject.h dax/exec/arg/ExecutionObject.h
+/// \brief Execution worklet argument generator for Object Field values.
+template <typename Object> class ExecutionObject
 {
-  typedef dax::cont::internal::Bindings<Invocation> AllControlBindings;
+  Object Func;
+public:
+  typedef const Object& ReturnType;
+  typedef Object SaveType;
+  ExecutionObject(Object x): Func(x) {}
 
-  typedef dax::Id ReturnType;
-
-  DAX_CONT_EXPORT BindWorkId(AllControlBindings&){}
-
-  // Explicitly making this copy constructor avoids a warning.  For some
-  // reason the default implementation with the gcc compiler somehow uses
-  // an uninitalized value.  I don't know how since there are no ivars in
-  // this class, but this seems to solve the problem.
-  DAX_EXEC_CONT_EXPORT BindWorkId(const BindWorkId &) {}
-
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id,
-                              const dax::exec::internal::WorkletBase&)
+  DAX_EXEC_EXPORT ReturnType operator()(dax::Id,
+                      const dax::exec::internal::WorkletBase& ) const
     {
-    return id;
+    return this->Func;
     }
 
   DAX_EXEC_EXPORT void SaveExecutionResult(int,
@@ -55,5 +48,4 @@ struct BindWorkId
 
 }}} // namespace dax::exec::arg
 
-#endif // !defined(DAX_DOXYGEN_ONLY)
-#endif //__dax_exec_arg_BindWorkId_h
+#endif //__dax_exec_arg_ExecutionObject_h

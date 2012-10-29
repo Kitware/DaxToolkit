@@ -18,9 +18,10 @@
 
 #include <dax/Types.h>
 
+#include <dax/cont/arg/ExecObject.h>
 #include <dax/cont/sig/Arg.h>
-#include <dax/cont/sig/WorkId.h>
 #include <dax/cont/sig/Tag.h>
+#include <dax/cont/sig/WorkId.h>
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 
 namespace dax {
@@ -52,6 +53,7 @@ public:
   }
 
 protected:
+  typedef dax::cont::arg::ExecObject ExecObject;
   typedef dax::cont::sig::placeholders::_1 _1;
   typedef dax::cont::sig::placeholders::_2 _2;
   typedef dax::cont::sig::placeholders::_3 _3;

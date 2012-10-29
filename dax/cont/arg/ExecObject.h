@@ -13,23 +13,15 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cuda_cont_internal_DeviceAdapterTagCuda_h
-#define __dax_cuda_cont_internal_DeviceAdapterTagCuda_h
+#ifndef __dax_cont_arg_ExecObject_h
+#define __dax_cont_arg_ExecObject_h
 
-#include <dax/cuda/cont/internal/SetThrustForCuda.h>
+namespace dax { namespace cont { namespace arg {
 
-namespace dax {
-namespace cuda {
-namespace cont {
+/// \headerfile ExecObject.h dax/cont/arg/ExecArg.h
+/// \brief Identify ExecObject parameters in worklet \c ControlSignature declarations.
+class ExecObject {};
 
-/// A DeviceAdapter that uses Cuda.  To use this adapter, the code must be
-/// compiled with nvcc.
-///
-struct DeviceAdapterTagCuda
-{  };
+}}} // namespace dax::cont::arg
 
-}
-}
-} // namespace dax::cuda::cont
-
-#endif //__dax_cuda_cont_internal_DeviceAdapterTagCuda_h
+#endif //__dax_cont_arg_ExecObject_h

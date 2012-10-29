@@ -33,6 +33,7 @@
 #include <dax/cont/arg/TopologyUniformGrid.h>
 #include <dax/cont/arg/TopologyUnstructuredGrid.h>
 
+#include <dax/exec/internal/Functor.h>
 #include <dax/exec/internal/WorkletBase.h>
 #include <dax/exec/internal/kernel/ScheduleGenerateTopology.h>
 
@@ -54,14 +55,14 @@ template<class WorkType> class CreateExecutionResources;
 }
 
 template <class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
-class Schedule
+class Scheduler
 {
 public:
 #if __cplusplus >= 201103L
   // Note any changes to this method must be reflected in the
   // C++03 implementation inside "Schedule_Cxx03.h".
   template <class WorkletType, typename...T>
-  void operator()(WorkletType w, T...a) const
+  DAX_CONT_EXPORT void Invoke(WorkletType w, T...a) const
     {
     // Construct the signature of the worklet invocation on the control side.
     typedef WorkletType ControlInvocationSignature(T...);
@@ -76,21 +77,24 @@ public:
 
     // Visit each bound argument to determine the count to be scheduled.
     dax::Id count=1;
-    bindings.ForEach(dax::cont::detail::CollectCount<WorkType>(count));
+    bindings.ForEachCont(dax::cont::detail::CollectCount<WorkType>(count));
 
     // Visit each bound argument to set up its representation in the
     // execution environment.
-    bindings.ForEach(dax::cont::detail::CreateExecutionResources<WorkType>(count));
+    bindings.ForEachCont(
+          dax::cont::detail::CreateExecutionResources<WorkType>(count));
 
     // Schedule the worklet invocations in the execution environment.
-    dax::cont::internal::Schedule<ControlInvocationSignature>
-      (w, bindings, count, DeviceAdapterTag());
+    dax::exec::internal::Functor<ControlInvocationSignature>
+        bindingFunctor(w, bindings);
+    dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>::
+        Schedule(bindingFunctor, count);
     }
 #else // !(__cplusplus >= 201103L)
   // For C++03 use Boost.Preprocessor file iteration to simulate
   // parameter packs by enumerating implementations for all argument
   // counts.
-# include "Schedule_Cxx03.h"
+# include "Scheduler_Cxx03.h"
 #endif // !(__cplusplus >= 201103L)
 };
 

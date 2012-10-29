@@ -26,6 +26,7 @@ set(headers
   CellVoxel.h
   CellWedge.h
   Derivative.h
+  ExecutionObjectBase.h
   Interpolate.h
   ParametricCoordinates.h
   WorkletGenerateTopology.h

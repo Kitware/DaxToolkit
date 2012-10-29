@@ -35,6 +35,7 @@ public:
   DAX_EXEC_CONT_EXPORT WorkletMapField() { }
 protected:
   typedef dax::cont::arg::Field Field;
+
 };
 
 }}

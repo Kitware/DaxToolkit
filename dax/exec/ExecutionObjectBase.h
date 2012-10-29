@@ -13,23 +13,17 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cuda_cont_internal_DeviceAdapterTagCuda_h
-#define __dax_cuda_cont_internal_DeviceAdapterTagCuda_h
 
-#include <dax/cuda/cont/internal/SetThrustForCuda.h>
+#ifndef __dax_exec_ExecutionObjectBase_h
+#define __dax_exec_ExecutionObjectBase_h
 
-namespace dax {
-namespace cuda {
-namespace cont {
+///Base ExecutionObjectBase for execution objects to inherit from so that you can
+///use an arbitrary object as a parameter to a worklet. Any method you want
+///to use on the execution side must be have the DAX_EXEC_EXPORT
+namespace dax { namespace exec {
+class ExecutionObjectBase
+{
+};
+} }
 
-/// A DeviceAdapter that uses Cuda.  To use this adapter, the code must be
-/// compiled with nvcc.
-///
-struct DeviceAdapterTagCuda
-{  };
-
-}
-}
-} // namespace dax::cuda::cont
-
-#endif //__dax_cuda_cont_internal_DeviceAdapterTagCuda_h
+#endif // __dax_exec_ExecutionObjectBase_h

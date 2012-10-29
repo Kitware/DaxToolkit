@@ -31,7 +31,7 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/Scheduler.h>
 #include <dax/cont/ScheduleGenerateTopology.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
@@ -92,17 +92,13 @@ public:
   // Returning a tuple of connections feels a bit clunky.  Is there a better
   // way of specifying the output cell type and generating a cell?
   typedef void ControlSignature(Topology, Topology(Out),Field(In));
-  typedef void ExecutionSignature(Topology::PointIds(_1),
-                                  Topology::PointIds(_2),
-                                  _3);
+  typedef void ExecutionSignature(_1,_2,_3);
 
-  template<int NumInputPoints, int NumOutputPoints, typename T>
+  template<typename InputCellType, typename OutputCellType, typename T>
   DAX_EXEC_EXPORT
-  void operator()(dax::Tuple<dax::Id,NumInputPoints> const& in,
-                  dax::Tuple<dax::Id,NumOutputPoints> &out,
-                  const T&) const
+  void operator()(InputCellType const& in, OutputCellType &out, const T&) const
   {
-    out = in;
+    out.SetPointIndices(in.GetPointIndices());
   }
 };
 
@@ -159,9 +155,9 @@ struct TestThresholdWorklet
       typedef typename ScheduleGT::ClassifyResultType  ClassifyResultType;
       typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
 
-      dax::cont::Schedule<> scheduler;
+      dax::cont::Scheduler<> scheduler;
       ClassifyResultType classification;
-      scheduler(ThresholdClassifyType(min,max),
+      scheduler.Invoke(ThresholdClassifyType(min,max),
                 inGrid, fieldHandle, classification);
 
       //construct the topology generation worklet
@@ -169,7 +165,7 @@ struct TestThresholdWorklet
 
       //schedule it, and verify we can handle more than 2 parameter generate
       //topology worklets
-      scheduler(generateTopo,inGrid, outGrid, 4.0f);
+      scheduler.Invoke(generateTopo,inGrid, outGrid, 4.0f);
 
       //request to also compact the topology
       generateTopo.CompactPointField(fieldHandle,resultHandle);

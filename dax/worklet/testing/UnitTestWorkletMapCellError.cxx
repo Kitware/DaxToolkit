@@ -22,7 +22,7 @@
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/Scheduler.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <dax/cont/internal/testing/Testing.h>
@@ -41,7 +41,8 @@ static void TestCellMapError()
   bool gotError = false;
   try
     {
-    dax::cont::Schedule<>()(dax::worklet::testing::CellMapError(),grid);
+    dax::cont::Scheduler<> scheduler;
+    scheduler.Invoke(dax::worklet::testing::CellMapError(),grid);
     }
   catch (dax::cont::ErrorExecution error)
     {

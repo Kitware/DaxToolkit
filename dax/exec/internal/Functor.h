@@ -33,6 +33,8 @@ public:
   typedef dax::cont::internal::Bindings<Invocation> BindingsType;
   Functor(WorkletType worklet, BindingsType& args);
   void operator()(dax::Id id);
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      dax::exec::internal::ErrorMessageBuffer &errorBuffer);
 };
 
 # else // !defined(DAX_DOXYGEN_ONLY)
@@ -56,9 +58,10 @@ struct SaveOutArgs
 {
 protected:
   const dax::Id Index;
-  dax::exec::internal::WorkletBase& Work;
+  const dax::exec::internal::WorkletBase& Work;
 public:
-  DAX_EXEC_EXPORT SaveOutArgs(dax::Id index, dax::exec::internal::WorkletBase& w):
+  DAX_EXEC_EXPORT SaveOutArgs(dax::Id index,
+                              const dax::exec::internal::WorkletBase& w):
     Index(index), Work(w)
     {}
 
@@ -112,21 +115,22 @@ public:                                                                 \
   typedef typename dax::internal::GetNthType<0, Invocation>::type       \
     WorkletType;                                                        \
   typedef dax::cont::internal::Bindings<Invocation> BindingsType;       \
-private:                                                                \
+protected:                                                              \
   typedef dax::internal::Members<                                       \
       ExecutionSignature, FunctorMemberMap<Invocation>                  \
     > ArgumentsType;                                                    \
   WorkletType Worklet;                                                  \
   ArgumentsType Arguments;                                              \
 public:                                                                 \
+  DAX_CONT_EXPORT                                                       \
   FunctorImpl(WorkletType worklet, BindingsType& bindings):             \
     Worklet(worklet), Arguments(bindings) {}                            \
-  DAX_EXEC_EXPORT void operator()(dax::Id id)                           \
+  DAX_EXEC_EXPORT void operator()(dax::Id id) const                     \
     {                                                                   \
     ArgumentsType instance(this->Arguments);                            \
     _dax_FunctorImpl_##r                                                \
     this->Worklet(_dax_pp_enum___(_dax_FunctorImpl_Argument));          \
-    instance.ForEach(SaveOutArgs(id,this->Worklet));                    \
+    instance.ForEachExec(SaveOutArgs(id,this->Worklet));                \
     }
 
 # if __cplusplus >= 201103L
@@ -165,7 +169,12 @@ class Functor: public detail::FunctorImplLookup<Invocation>::type
 public:
   typedef typename derived::WorkletType WorkletType;
   typedef typename derived::BindingsType BindingsType;
+  DAX_CONT_EXPORT
   Functor(WorkletType worklet, BindingsType& args): derived(worklet, args) {}
+  DAX_CONT_EXPORT void SetErrorMessageBuffer(
+      dax::exec::internal::ErrorMessageBuffer &errorBuffer) {
+    this->Worklet.SetErrorMessageBuffer(errorBuffer);
+  }
 };
 
 }}} // namespace dax::exec::internal

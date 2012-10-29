@@ -23,6 +23,7 @@
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 #include <dax/exec/internal/GridTopologies.h>
 
+#include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 
 namespace dax {
@@ -74,11 +75,14 @@ public:
       const dax::cont::ArrayHandle<T,Container1,DeviceAdapterTag>& input,
       dax::cont::ArrayHandle<T,Container2,DeviceAdapterTag>& output)
     {
-    dax::cont::internal::StreamCompact(input,
-                                       this->PointMask,
-                                       output,
-                                       DeviceAdapterTag());
-    return true;
+    if(this->GetRemoveDuplicatePoints())
+      {
+      dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>::
+          StreamCompact(input, this->PointMask, output);
+
+      return true;
+      }
+    return false;
     }
 
   void SetReleaseClassification(bool b){ ReleaseClassification = b; }

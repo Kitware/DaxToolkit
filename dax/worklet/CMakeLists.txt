@@ -17,10 +17,12 @@
 include_directories(${Boost_INCLUDE_DIRS})
 
 set(worklets
+  CellAverage.worklet
   CellGradient.worklet
   Cosine.worklet
   Elevation.worklet
   Magnitude.worklet
+  PointDataToCellData.worklet
   Sine.worklet
   Square.worklet
   Threshold.worklet

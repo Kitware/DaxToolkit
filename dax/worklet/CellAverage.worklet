@@ -16,28 +16,41 @@
 #ifndef __CellAverage_worklet_
 #define __CellAverage_worklet_
 
+#include <dax/exec/Cell.h>
+#include <dax/exec/VectorOperations.h>
+#include <dax/exec/WorkletMapCell.h>
+#include <dax/exec/WorkletMapField.h>
 
 namespace dax {
 namespace worklet {
 
-template<class CellType>
-DAX_WORKLET void CellAverage(DAX_IN dax::exec::WorkMapCell& work,
-  DAX_IN dax::exec::FieldPoint point_scalar,
-  DAX_OUT dax::exec::FieldCell& cell_attribute)
+namespace{
+struct Add
 {
-  CellType cell(work);
-
-  dax::Scalar avg = 0.0;
-  dax::Id number_of_points = cell.GetNumberOfPoints();
-  for (dax::Id cc=0; cc < number_of_points; cc++)
-    {
-    dax::exec::WorkMapField point_work = cell.GetPoint(cc);
-    avg += point_scalar.GetScalar(point_work);
-    }
-  avg /= number_of_points;
-  cell_attribute.Set(work, avg);
+  dax::Scalar operator()(dax::Scalar a, dax::Scalar b)
+  {
+    return a+b;
+  }
+};
 }
 
+class CellAverage : public dax::exec::WorkletMapCell
+{
+public:
+
+  typedef void ControlSignature(Topology, Field(Point), Field(Out));
+  typedef _3 ExecutionSignature(_1,_2);
+
+  template<class CellType>
+  DAX_EXEC_EXPORT
+  dax::Scalar operator()(
+    CellType,
+    const dax::Tuple<dax::Scalar, CellType::NUM_POINTS>& values) const
+  {
+    Add add;
+    return (dax::exec::VectorReduce(values,add)/CellType::NUM_POINTS);
+  }
+};
 }
 }
 #endif

@@ -195,7 +195,7 @@ public:
 
   typedef dax::cont::ArrayHandle<
       dax::Vector3,
-      dax::cont::ArrayContainerControlImplicit<
+      dax::cont::ArrayContainerControlTagImplicit<
           detail::ArrayPortalFromUniformGridPointCoordinates>,
       DeviceAdapterTag> PointCoordinatesType;
 
