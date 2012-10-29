@@ -92,17 +92,13 @@ public:
   // Returning a tuple of connections feels a bit clunky.  Is there a better
   // way of specifying the output cell type and generating a cell?
   typedef void ControlSignature(Topology, Topology(Out),Field(In));
-  typedef void ExecutionSignature(Topology::PointIds(_1),
-                                  Topology::PointIds(_2),
-                                  _3);
+  typedef void ExecutionSignature(_1,_2,_3);
 
-  template<int NumInputPoints, int NumOutputPoints, typename T>
+  template<typename InputCellType, typename OutputCellType, typename T>
   DAX_EXEC_EXPORT
-  void operator()(dax::Tuple<dax::Id,NumInputPoints> const& in,
-                  dax::Tuple<dax::Id,NumOutputPoints> &out,
-                  const T&) const
+  void operator()(InputCellType const& in, OutputCellType &out, const T&) const
   {
-    out = in;
+    out.SetPointIndices(in.GetPointIndices());
   }
 };
 

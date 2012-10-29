@@ -476,8 +476,8 @@ private:
 
   static DAX_CONT_EXPORT void TestOrderedUniqueValues()
   {
-    std::cout << "-------------------------------------------" << std::endl;
-    std::cout << "Testing Sort, Unique, and LowerBounds" << std::endl;
+    std::cout << "-------------------------------------------------" << std::endl;
+    std::cout << "Testing Sort, Unique, LowerBounds and UpperBounds" << std::endl;
     dax::Id testData[ARRAY_SIZE];
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
       {
@@ -486,12 +486,14 @@ private:
     IdArrayHandle input = MakeArrayHandle(testData, ARRAY_SIZE);
 
     IdArrayHandle handle;
+    IdArrayHandle handle1;
     IdArrayHandle temp;
     Algorithm::Copy(input,handle);
     Algorithm::Copy(handle,temp);
     Algorithm::Sort(temp);
     Algorithm::Unique(temp);
     Algorithm::LowerBounds(temp,input,handle);
+    Algorithm::UpperBounds(temp,input,handle1);
 
     // Check to make sure that temp was resized correctly during Unique.
     // (This was a discovered bug at one point.)
@@ -506,23 +508,30 @@ private:
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
       {
       dax::Id value = handle.GetPortalConstControl().Get(i);
-      DAX_TEST_ASSERT(value == i % 50, "Got bad value");
+      dax::Id value1 = handle1.GetPortalConstControl().Get(i);
+      DAX_TEST_ASSERT(value == i % 50, "Got bad value (LowerBounds)");
+      DAX_TEST_ASSERT(value1 >= i % 50, "Got bad value (UpperBounds)");
       }
 
-    std::cout << "Testing Sort, Unique, and LowerBounds with random values" << std::endl;
+    std::cout << "Testing Sort, Unique, LowerBounds and UpperBounds with random values"
+              << std::endl;
     //now test it works when the id are not incrementing
     const dax::Id RANDOMDATA_SIZE = 6;
     dax::Id randomData[RANDOMDATA_SIZE];
-    randomData[0]=500;  //2
-    randomData[1]=955;  //3
-    randomData[2]=955;  //3
-    randomData[3]=120;  //0
-    randomData[4]=320;  //1
-    randomData[5]=955;  //3
+    randomData[0]=500;  // 2 (lower), 3 (upper)
+    randomData[1]=955;  // 3 (lower), 4 (upper)
+    randomData[2]=955;  // 3 (lower), 4 (upper)
+    randomData[3]=120;  // 0 (lower), 1 (upper)
+    randomData[4]=320;  // 1 (lower), 2 (upper)
+    randomData[5]=955;  // 3 (lower), 4 (upper)
 
     //change the control structure under the handle
     input = MakeArrayHandle(randomData, RANDOMDATA_SIZE);
     Algorithm::Copy(input,handle);
+    DAX_TEST_ASSERT(handle.GetNumberOfValues() == RANDOMDATA_SIZE,
+                    "Handle incorrect size after setting new control data");
+
+    Algorithm::Copy(input,handle1);
     DAX_TEST_ASSERT(handle.GetNumberOfValues() == RANDOMDATA_SIZE,
                     "Handle incorrect size after setting new control data");
 
@@ -532,17 +541,30 @@ private:
     Algorithm::Sort(temp);
     Algorithm::Unique(temp);
     Algorithm::LowerBounds(temp,handle);
+    Algorithm::UpperBounds(temp,handle1);
 
     DAX_TEST_ASSERT(handle.GetNumberOfValues() == RANDOMDATA_SIZE,
                     "LowerBounds returned incorrect size");
 
     handle.CopyInto(randomData);
-    DAX_TEST_ASSERT(randomData[0] == 2, "Got bad value");
-    DAX_TEST_ASSERT(randomData[1] == 3, "Got bad value");
-    DAX_TEST_ASSERT(randomData[2] == 3, "Got bad value");
-    DAX_TEST_ASSERT(randomData[3] == 0, "Got bad value");
-    DAX_TEST_ASSERT(randomData[4] == 1, "Got bad value");
-    DAX_TEST_ASSERT(randomData[5] == 3, "Got bad value");
+    DAX_TEST_ASSERT(randomData[0] == 2, "Got bad value - LowerBounds");
+    DAX_TEST_ASSERT(randomData[1] == 3, "Got bad value - LowerBounds");
+    DAX_TEST_ASSERT(randomData[2] == 3, "Got bad value - LowerBounds");
+    DAX_TEST_ASSERT(randomData[3] == 0, "Got bad value - LowerBounds");
+    DAX_TEST_ASSERT(randomData[4] == 1, "Got bad value - LowerBounds");
+    DAX_TEST_ASSERT(randomData[5] == 3, "Got bad value - LowerBounds");
+
+    DAX_TEST_ASSERT(handle1.GetNumberOfValues() == RANDOMDATA_SIZE,
+                    "UppererBounds returned incorrect size");
+
+    handle1.CopyInto(randomData);
+
+    DAX_TEST_ASSERT(randomData[0] == 3, "Got bad value - UpperBound");
+    DAX_TEST_ASSERT(randomData[1] == 4, "Got bad value - UpperBound");
+    DAX_TEST_ASSERT(randomData[2] == 4, "Got bad value - UpperBound");
+    DAX_TEST_ASSERT(randomData[3] == 1, "Got bad value - UpperBound");
+    DAX_TEST_ASSERT(randomData[4] == 2, "Got bad value - UpperBound");
+    DAX_TEST_ASSERT(randomData[5] == 4, "Got bad value - UpperBound");
   }
 
   static DAX_CONT_EXPORT void TestScanInclusive()

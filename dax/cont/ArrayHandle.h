@@ -21,7 +21,7 @@
 #include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/Assert.h>
 #include <dax/cont/ErrorControlBadValue.h>
-#include <dax/cont/internal/ArrayManagerExecution.h>
+#include <dax/cont/internal/ArrayTransfer.h>
 #include <dax/cont/internal/DeviceAdapterTag.h>
 
 #include <boost/concept_check.hpp>
@@ -65,16 +65,15 @@ private:
   typedef dax::cont::internal::ArrayContainerControl<T,ArrayContainerControlTag>
       ArrayContainerControlType;
   typedef dax::cont::internal
-      ::ArrayManagerExecution<T,ArrayContainerControlTag,DeviceAdapterTag>
-      ArrayManagerExecutionType;
+      ::ArrayTransfer<T,ArrayContainerControlTag,DeviceAdapterTag>
+      ArrayTransferType;
 public:
   typedef T ValueType;
   typedef typename ArrayContainerControlType::PortalType PortalControl;
   typedef typename ArrayContainerControlType::PortalConstType
       PortalConstControl;
-  typedef typename ArrayManagerExecutionType::PortalType PortalExecution;
-  typedef typename ArrayManagerExecutionType::PortalConstType
-      PortalConstExecution;
+  typedef typename ArrayTransferType::PortalExecution PortalExecution;
+  typedef typename ArrayTransferType::PortalConstExecution PortalConstExecution;
 
   /// Constructs an empty ArrayHandle. Typically used for output or
   /// intermediate arrays that will be filled by a Dax algorithm.
@@ -283,7 +282,7 @@ public:
       throw dax::cont::ErrorControlBadValue(
             "ArrayHandle has no data when PrepareForInput called.");
       }
-    return this->Internals->ExecutionArray.GetPortalConst();
+    return this->Internals->ExecutionArray.GetPortalConstExecution();
   }
 
   /// Prepares (allocates) this array to be used as an output from an operation
@@ -316,7 +315,7 @@ public:
     // assumption anyway.)
     this->Internals->ExecutionArrayValid = true;
 
-    return this->Internals->ExecutionArray.GetPortal();
+    return this->Internals->ExecutionArray.GetPortalExecution();
   }
 
   /// Prepares this array to be used in an in-place operation (both as input
@@ -360,7 +359,7 @@ public:
     // array. It may be shared as the execution array.
     this->Internals->ControlArrayValid = false;
 
-    return this->Internals->ExecutionArray.GetPortal();
+    return this->Internals->ExecutionArray.GetPortalExecution();
   }
 
 private:
@@ -371,7 +370,7 @@ private:
     ArrayContainerControlType ControlArray;
     bool ControlArrayValid;
 
-    ArrayManagerExecutionType ExecutionArray;
+    ArrayTransferType ExecutionArray;
     bool ExecutionArrayValid;
   };
 

@@ -63,8 +63,8 @@ struct DeviceAdapterAlgorithm
   ///
   /// This version of lower bounds performs an in place operation where each
   /// value in the \c values_output array is replaced by the index in \c input
-  /// where it occurs. Because this is an in place operation, the of the arrays
-  /// is limited to dax::Id.
+  /// where it occurs. Because this is an in place operation, the type of the
+  /// arrays is limited to dax::Id.
   ///
   template<class CIn, class COut>
   DAX_CONT_EXPORT static void LowerBounds(
@@ -176,6 +176,33 @@ struct DeviceAdapterAlgorithm
   template<typename T, class Container>
   DAX_CONT_EXPORT static void Unique(
       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag>& values);
+
+  /// \brief Output is the first index in input for each item in values that wouldn't alter the ordering of input
+  ///
+  /// UpperBounds is a vectorized search. From each value in \c values it finds
+  /// the last place the item can be inserted in the ordered \c input array and
+  /// stores the index in \c output.
+  ///
+  /// \par Requirements:
+  /// \arg \c input must already be sorted
+  ///
+  template<typename T, class CIn, class CVal, class COut>
+  DAX_CONT_EXPORT static void UpperBounds(
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag___>& input,
+      const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag___>& values,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag___>& output);
+
+  /// \brief A special version of UpperBounds that does an in place operation.
+  ///
+  /// This version of lower bounds performs an in place operation where each
+  /// value in the \c values_output array is replaced by the index in \c input
+  /// where it occurs. Because this is an in place operation, the type of the
+  /// arrays is limited to dax::Id.
+  ///
+  template<class CIn, class COut>
+  DAX_CONT_EXPORT static void UpperBounds(
+      const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTag___>& input,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag___>& values_output);
 };
 #else // DAX_DOXYGEN_ONLY
     ;

@@ -31,6 +31,20 @@ struct VectorTraitsTagMultipleComponents { };
 ///
 struct VectorTraitsTagSingleComponent { };
 
+namespace detail {
+
+template<int numComponents>
+struct VectorTraitsMultipleComponentChooser {
+  typedef VectorTraitsTagMultipleComponents Type;
+};
+
+template<>
+struct VectorTraitsMultipleComponentChooser<1> {
+  typedef VectorTraitsTagSingleComponent Type;
+};
+
+} // namespace detail
+
 /// The VectorTraits class gives several static members that define how
 /// to use a given type as a vector.
 ///
@@ -48,10 +62,8 @@ struct VectorTraits {
   /// "real" vector). This tag can be useful for creating specialized functions
   /// when a vector is really just a scalar.
   ///
-  typedef VectorTraitsTagMultipleComponents HasMultipleComponents;
-  // Note in implementing the above: this will only work if all vector types
-  // really have multiple components. If that is not the case, there needs to
-  // be some template specialization magic to correctly choose.
+  typedef typename detail::VectorTraitsMultipleComponentChooser<
+      NUM_COMPONENTS>::Type HasMultipleComponents;
 
   /// Returns the value in a given component of the vector.
   ///

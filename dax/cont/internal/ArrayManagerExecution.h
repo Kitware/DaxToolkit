@@ -46,7 +46,7 @@ class ArrayManagerExecution
 #ifdef DAX_DOXYGEN_ONLY
 {
 private:
-  typedef dax::cont::ArrayContainerControl<T,ArrayContainerControlTag>
+  typedef dax::cont::internal::ArrayContainerControl<T,ArrayContainerControlTag>
       ContainerType;
 
 public:
@@ -92,7 +92,7 @@ public:
   /// Allocates an array in the execution environment of the specified size.
   /// If control and execution share arrays, then this class can allocate
   /// data using the given ArrayContainerExecution and remember its iterators
-  /// so that it can be used directly in the exeuction environment.
+  /// so that it can be used directly in the execution environment.
   ///
   DAX_CONT_EXPORT void AllocateArrayForOutput(ContainerType &controlArray,
                                               dax::Id numberOfValues);
