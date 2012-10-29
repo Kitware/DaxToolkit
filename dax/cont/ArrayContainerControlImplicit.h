@@ -118,13 +118,16 @@ public:
     return this->Portal.GetNumberOfValues();
   }
 
-  DAX_CONT_EXPORT void LoadDataForInput(PortalControl portal) {
-    this->Portal = portal;
-    this->PortalValid = true;
-  }
   DAX_CONT_EXPORT void LoadDataForInput(PortalConstControl portal) {
     this->Portal = portal;
     this->PortalValid = true;
+  }
+
+  DAX_CONT_EXPORT void LoadDataForInPlace(
+      ContainerType &daxNotUsed(controlArray))
+  {
+    throw dax::cont::ErrorControlBadValue(
+          "Implicit arrays cannot be used for output or in place.");
   }
 
   DAX_CONT_EXPORT void AllocateArrayForOutput(
