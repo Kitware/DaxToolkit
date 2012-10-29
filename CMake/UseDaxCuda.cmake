@@ -14,6 +14,10 @@
 ##
 ##=============================================================================
 
+if (Dax_Cuda_initialize_complete)
+  return()
+endif (Dax_Cuda_initialize_complete)
+
 set(Dax_Cuda_FOUND ${Dax_ENABLE_CUDA})
 if (NOT Dax_Cuda_FOUND)
   message(STATUS "This build of Dax does not include Cuda.")
@@ -62,4 +66,5 @@ if (Dax_Cuda_FOUND)
     ${THRUST_INCLUDE_DIR}
     ${Dax_INCLUDE_DIRS}
     )
+  set(Dax_Cuda_initialize_complete TRUE)
 endif (Dax_Cuda_FOUND)

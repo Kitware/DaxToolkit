@@ -14,6 +14,10 @@
 ##
 ##=============================================================================
 
+if (Dax_Serial_initialize_complete)
+  return()
+endif (Dax_Serial_initialize_complete)
+
 # Find the Boost library.
 if (NOT Dax_Serial_FOUND)
   find_package(Boost ${Dax_REQUIRED_BOOST_VERSION})
@@ -32,4 +36,6 @@ if (Dax_Serial_FOUND)
     ${Boost_INCLUDE_DIRS}
     ${Dax_INCLUDE_DIRS}
     )
+
+  set(Dax_Serial_initialize_complete TRUE)
 endif (Dax_Serial_FOUND)

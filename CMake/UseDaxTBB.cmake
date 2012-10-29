@@ -14,6 +14,10 @@
 ##
 ##=============================================================================
 
+if (Dax_TBB_initialize_complete)
+  return()
+endif (Dax_TBB_initialize_complete)
+
 set(Dax_TBB_FOUND ${Dax_ENABLE_TBB})
 if (NOT Dax_TBB_FOUND)
   message(STATUS "This build of Dax does not include TBB.")
@@ -47,4 +51,6 @@ if (Dax_TBB_FOUND)
     ${Dax_INCLUDE_DIRS}
     )
   link_libraries(${TBB_LIBRARIES})
+
+  set(Dax_TBB_initialize_complete TRUE)
 endif (Dax_TBB_FOUND)
