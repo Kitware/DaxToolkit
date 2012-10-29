@@ -261,9 +261,8 @@ void TestCustomContainer()
   OutputArrayType outputArray;
 
   std::cout << "Do a simple operation on the arrays." << std::endl;
-  dax::cont::internal::Copy(inputArray,
-                            outputArray,
-                            dax::openmp::cont::DeviceAdapterTagOpenMP());
+  dax::cont::internal::DeviceAdapterAlgorithm<
+      dax::openmp::cont::DeviceAdapterTagOpenMP>::Copy(inputArray, outputArray);
 
   std::cout << "Check the result." << std::endl;
   OutputArrayType::PortalConstControl outputPortal =

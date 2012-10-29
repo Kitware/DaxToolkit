@@ -62,6 +62,36 @@ namespace thrust {
 namespace cont {
 namespace internal {
 
+namespace detail {
+
+// Tags to specify what type of thrust iterator to use.
+struct ThrustIteratorTransformTag {  };
+struct ThrustIteratorDevicePtrTag {  };
+
+// Traits to help classify what thrust iterators will be used.
+template<class IteratorType>
+struct ThrustIteratorTag {
+  typedef ThrustIteratorTransformTag Type;
+};
+template<typename T>
+struct ThrustIteratorTag<T *> {
+  typedef ThrustIteratorDevicePtrTag Type;
+};
+template<typename T>
+struct ThrustIteratorTag<const T*> {
+  typedef ThrustIteratorDevicePtrTag Type;
+};
+
+template<typename T> struct ThrustStripPointer;
+template<typename T> struct ThrustStripPointer<T *> {
+  typedef T Type;
+};
+template<typename T> struct ThrustStripPointer<const T *> {
+  typedef const T Type;
+};
+
+} // namespace detail
+
 /// This class can be subclassed to implement the DeviceAdapterAlgorithm for a
 /// device that uses thrust as its implementation. The subclass should pass in
 /// the correct device adapter tag as the template parameter.
@@ -69,7 +99,11 @@ namespace internal {
 template<class DeviceAdapterTag>
 struct DeviceAdapterAlgorithmThrust
 {
+  // Because of some funny code conversions in nvcc, kernels for devices have to
+  // be public.
+  #ifndef DAX_CUDA
 private:
+  #endif
   template<class PortalType>
   struct PortalValue {
     typedef typename PortalType::ValueType ValueType;
@@ -112,62 +146,38 @@ private:
     PortalType Portal;
   };
 
-  // Tags to specify what type of thrust iterator to use.
-  struct IteratorTransformTag {  };
-  struct IteratorDevicePtrTag {  };
-
-  // Traits to help classify what thrust iterators will be used.
-  template<class IteratorType>
-  struct IteratorTag {
-    typedef IteratorTransformTag Type;
-  };
-  template<typename T>
-  struct IteratorTag<T *> {
-    typedef IteratorDevicePtrTag Type;
-  };
-  template<typename T>
-  struct IteratorTag<const T*> {
-    typedef IteratorDevicePtrTag Type;
-  };
-
-  template<typename T> struct StripPointer;
-  template<typename T> struct StripPointer<T *> {
-    typedef T Type;
-  };
-  template<typename T> struct StripPointer<const T *> {
-    typedef const T Type;
-  };
-
+private:
   template<class PortalType, class Tag> struct IteratorChooser;
   template<class PortalType>
-  struct IteratorChooser<PortalType, IteratorTransformTag> {
+  struct IteratorChooser<PortalType, detail::ThrustIteratorTransformTag> {
     typedef ::thrust::transform_iterator<
         LookupFunctor<PortalType>,
         ::thrust::counting_iterator<dax::Id> > Type;
   };
   template<class PortalType>
-  struct IteratorChooser<PortalType, IteratorDevicePtrTag> {
+  struct IteratorChooser<PortalType, detail::ThrustIteratorDevicePtrTag> {
     typedef ::thrust::device_ptr<
-        typename StripPointer<typename PortalType::IteratorType>::Type> Type;
+        typename detail::ThrustStripPointer<
+            typename PortalType::IteratorType>::Type> Type;
   };
 
   template<class PortalType>
   struct IteratorTraits
   {
     typedef typename PortalType::IteratorType BaseIteratorType;
-    typedef typename IteratorTag<BaseIteratorType>::Type Tag;
+    typedef typename detail::ThrustIteratorTag<BaseIteratorType>::Type Tag;
     typedef typename IteratorChooser<PortalType, Tag>::Type IteratorType;
   };
 
   template<typename T>
-  DAX_CONT_EXPORT
+  DAX_CONT_EXPORT static
   ::thrust::device_ptr<T>
   MakeDevicePtr(T *iter)
   {
     return ::thrust::device_ptr<T>(iter);
   }
   template<typename T>
-  DAX_CONT_EXPORT
+  DAX_CONT_EXPORT static
   ::thrust::device_ptr<const T>
   MakeDevicePtr(const T *iter)
   {
@@ -175,9 +185,9 @@ private:
   }
 
   template<class PortalType>
-  DAX_CONT_EXPORT
+  DAX_CONT_EXPORT static
   typename IteratorTraits<PortalType>::IteratorType
-  MakeIteratorBegin(PortalType portal, IteratorTransformTag)
+  MakeIteratorBegin(PortalType portal, detail::ThrustIteratorTransformTag)
   {
     return ::thrust::make_transform_iterator(
           ::thrust::make_counting_iterator(dax::Id(0)),
@@ -185,15 +195,15 @@ private:
   }
 
   template<class PortalType>
-  DAX_CONT_EXPORT
+  DAX_CONT_EXPORT static
   typename IteratorTraits<PortalType>::IteratorType
-  MakeIteratorBegin(PortalType portal, IteratorDevicePtrTag)
+  MakeIteratorBegin(PortalType portal, detail::ThrustIteratorDevicePtrTag)
   {
     return MakeDevicePtr(portal.GetIteratorBegin());
   }
 
   template<class PortalType>
-  DAX_CONT_EXPORT
+  DAX_CONT_EXPORT static
   typename IteratorTraits<PortalType>::IteratorType
   IteratorBegin(PortalType portal)
   {
@@ -201,7 +211,7 @@ private:
     return MakeIteratorBegin(portal, IteratorTag());
   }
   template<class PortalType>
-  DAX_CONT_EXPORT
+  DAX_CONT_EXPORT static
   typename IteratorTraits<PortalType>::IteratorType
   IteratorEnd(PortalType portal)
   {
@@ -211,8 +221,8 @@ private:
 //-----------------------------------------------------------------------------
 
   template<class InputPortal, class OutputPortal>
-  DAX_CONT_EXPORT void CopyPortal(const InputPortal &input,
-                                  const OutputPortal &output)
+  DAX_CONT_EXPORT static void CopyPortal(const InputPortal &input,
+                                         const OutputPortal &output)
   {
     ::thrust::copy(IteratorBegin(input),
                    IteratorEnd(input),
@@ -220,9 +230,9 @@ private:
   }
 
   template<class InputPortal, class ValuesPortal, class OutputPortal>
-  DAX_CONT_EXPORT void LowerBoundsPortal(const InputPortal &input,
-                                         const ValuesPortal &values,
-                                         const OutputPortal &output)
+  DAX_CONT_EXPORT static void LowerBoundsPortal(const InputPortal &input,
+                                                const ValuesPortal &values,
+                                                const OutputPortal &output)
   {
     ::thrust::lower_bound(IteratorBegin(input),
                           IteratorEnd(input),
@@ -232,8 +242,9 @@ private:
   }
 
   template<class InputPortal, class OutputPortal>
-  DAX_CONT_EXPORT void LowerBoundsPortal(const InputPortal &input,
-                                         const OutputPortal &values_output)
+  DAX_CONT_EXPORT static
+  void LowerBoundsPortal(const InputPortal &input,
+                         const OutputPortal &values_output)
   {
     ::thrust::lower_bound(IteratorBegin(input),
                           IteratorEnd(input),
@@ -243,9 +254,9 @@ private:
   }
 
   template<class InputPortal, class OutputPortal>
-  DAX_CONT_EXPORT typename InputPortal::ValueType ScanExclusivePortal(
-      const InputPortal &input,
-      const OutputPortal &output)
+  DAX_CONT_EXPORT static
+  typename InputPortal::ValueType ScanExclusivePortal(const InputPortal &input,
+                                                      const OutputPortal &output)
   {
     ::thrust::exclusive_scan(IteratorBegin(input),
                              IteratorEnd(input),
@@ -256,9 +267,9 @@ private:
   }
 
   template<class InputPortal, class OutputPortal>
-  DAX_CONT_EXPORT typename InputPortal::ValueType ScanInclusivePortal(
-      const InputPortal &input,
-      const OutputPortal &output)
+  DAX_CONT_EXPORT static
+  typename InputPortal::ValueType ScanInclusivePortal(const InputPortal &input,
+                                                      const OutputPortal &output)
   {
     ::thrust::inclusive_scan(IteratorBegin(input),
                              IteratorEnd(input),
@@ -269,14 +280,14 @@ private:
   }
 
   template<class ValuesPortal>
-  DAX_CONT_EXPORT void SortPortal(const ValuesPortal &values)
+  DAX_CONT_EXPORT static void SortPortal(const ValuesPortal &values)
   {
     ::thrust::sort(IteratorBegin(values),
                    IteratorEnd(values));
   }
 
   template<class StencilPortal>
-  DAX_CONT_EXPORT dax::Id CountIfPortal(const StencilPortal &stencil)
+  DAX_CONT_EXPORT static dax::Id CountIfPortal(const StencilPortal &stencil)
   {
     typedef typename StencilPortal::ValueType ValueType;
     return ::thrust::count_if(IteratorBegin(stencil),
@@ -287,10 +298,10 @@ private:
   template<class ValueIterator,
            class StencilPortal,
            class OutputPortal>
-  DAX_CONT_EXPORT void CopyIfPortal(ValueIterator valuesBegin,
-                                    ValueIterator valuesEnd,
-                                    const StencilPortal &stencil,
-                                    const OutputPortal &output)
+  DAX_CONT_EXPORT static void CopyIfPortal(ValueIterator valuesBegin,
+                                           ValueIterator valuesEnd,
+                                           const StencilPortal &stencil,
+                                           const OutputPortal &output)
   {
     typedef typename StencilPortal::ValueType ValueType;
     ::thrust::copy_if(valuesBegin,
@@ -303,10 +314,10 @@ private:
   template<class ValueIterator,
            class StencilArrayHandle,
            class OutputArrayHandle>
-  DAX_CONT_EXPORT void RemoveIf(ValueIterator valuesBegin,
-                                ValueIterator valuesEnd,
-                                const StencilArrayHandle& stencil,
-                                OutputArrayHandle& output)
+  DAX_CONT_EXPORT static void RemoveIf(ValueIterator valuesBegin,
+                                       ValueIterator valuesEnd,
+                                       const StencilArrayHandle& stencil,
+                                       OutputArrayHandle& output)
   {
     dax::Id numLeft = CountIfPortal(stencil.PrepareForInput());
 
@@ -319,9 +330,10 @@ private:
   template<class InputPortal,
            class StencilArrayHandle,
            class OutputArrayHandle>
-  DAX_CONT_EXPORT void StreamCompactPortal(const InputPortal& inputPortal,
-                                           const StencilArrayHandle &stencil,
-                                           OutputArrayHandle& output)
+  DAX_CONT_EXPORT static
+  void StreamCompactPortal(const InputPortal& inputPortal,
+                           const StencilArrayHandle &stencil,
+                           OutputArrayHandle& output)
   {
     RemoveIf(IteratorBegin(inputPortal),
              IteratorEnd(inputPortal),
@@ -332,7 +344,7 @@ private:
   // A simple wrapper around unique that returns the size of the array.
   // This would not be necessary if we had an auto keyword.
   template<class IteratorType>
-  DAX_CONT_EXPORT
+  DAX_CONT_EXPORT static
   dax::Id UniqueIterator(IteratorType first, IteratorType last)
   {
     IteratorType newLast = ::thrust::unique(first, last);
@@ -340,15 +352,17 @@ private:
   }
 
   template<class ValuesPortal>
-  DAX_CONT_EXPORT dax::Id UniquePortal(const ValuesPortal values)
+  DAX_CONT_EXPORT static
+  dax::Id UniquePortal(const ValuesPortal values)
   {
     return UniqueIterator(IteratorBegin(values), IteratorEnd(values));
   }
 
   template<class InputPortal, class ValuesPortal, class OutputPortal>
-  DAX_CONT_EXPORT void UpperBoundsPortal(const InputPortal &input,
-                                         const ValuesPortal &values,
-                                         const OutputPortal &output)
+  DAX_CONT_EXPORT static
+  void UpperBoundsPortal(const InputPortal &input,
+                         const ValuesPortal &values,
+                         const OutputPortal &output)
   {
     ::thrust::upper_bound(IteratorBegin(input),
                           IteratorEnd(input),
@@ -358,8 +372,9 @@ private:
   }
 
   template<class InputPortal, class OutputPortal>
-  DAX_CONT_EXPORT void UpperBoundsPortal(const InputPortal &input,
-                                         const OutputPortal &values_output)
+  DAX_CONT_EXPORT static
+  void UpperBoundsPortal(const InputPortal &input,
+                         const OutputPortal &values_output)
   {
     ::thrust::upper_bound(IteratorBegin(input),
                           IteratorEnd(input),
@@ -372,7 +387,7 @@ private:
 
 public:
   template<typename T, class CIn, class COut>
-  DAX_CONT_EXPORT void Copy(
+  DAX_CONT_EXPORT static void Copy(
       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
       dax::cont::ArrayHandle<T,COut,DeviceAdapterTag> &output)
   {
@@ -382,7 +397,7 @@ public:
   }
 
   template<typename T, class CIn, class CVal, class COut>
-  DAX_CONT_EXPORT void LowerBounds(
+  DAX_CONT_EXPORT static void LowerBounds(
       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag>& input,
       const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag>& values,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag>& output)
@@ -394,7 +409,7 @@ public:
   }
 
   template<class CIn, class COut>
-  DAX_CONT_EXPORT void LowerBounds(
+  DAX_CONT_EXPORT static void LowerBounds(
       const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTag> &input,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &values_output)
   {
@@ -403,7 +418,7 @@ public:
   }
 
   template<typename T, class CIn, class COut>
-  DAX_CONT_EXPORT T ScanExclusive(
+  DAX_CONT_EXPORT static T ScanExclusive(
       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
       dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>& output)
   {
@@ -418,7 +433,7 @@ public:
                                output.PrepareForOutput(numberOfValues));
   }
   template<typename T, class CIn, class COut>
-  DAX_CONT_EXPORT T ScanInclusive(
+  DAX_CONT_EXPORT static T ScanInclusive(
       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
       dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>& output)
   {
@@ -482,14 +497,14 @@ public:
   }
 
   template<typename T, class Container>
-  DAX_CONT_EXPORT void Sort(
+  DAX_CONT_EXPORT static void Sort(
       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag>& values)
   {
     SortPortal(values.PrepareForInPlace());
   }
 
   template<typename T, class CStencil, class COut>
-  DAX_CONT_EXPORT void StreamCompact(
+  DAX_CONT_EXPORT static void StreamCompact(
       const dax::cont::ArrayHandle<T,CStencil,DeviceAdapterTag>& stencil,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag>& output)
   {
@@ -506,7 +521,7 @@ public:
            class CIn,
            class CStencil,
            class COut>
-  DAX_CONT_EXPORT void StreamCompact(
+  DAX_CONT_EXPORT static void StreamCompact(
       const dax::cont::ArrayHandle<U,CIn,DeviceAdapterTag>& input,
       const dax::cont::ArrayHandle<T,CStencil,DeviceAdapterTag>& stencil,
       dax::cont::ArrayHandle<U,COut,DeviceAdapterTag>& output)
@@ -515,7 +530,7 @@ public:
   }
 
   template<typename T, class Container>
-  DAX_CONT_EXPORT void Unique(
+  DAX_CONT_EXPORT static void Unique(
       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values)
   {
     dax::Id newSize = UniquePortal(values.PrepareForInPlace());
@@ -524,7 +539,7 @@ public:
   }
 
   template<typename T, class CIn, class CVal, class COut>
-  DAX_CONT_EXPORT void UpperBounds(
+  DAX_CONT_EXPORT static void UpperBounds(
       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag>& input,
       const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag>& values,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag>& output)
@@ -536,7 +551,7 @@ public:
   }
 
   template<class CIn, class COut>
-  DAX_CONT_EXPORT void UpperBounds(
+  DAX_CONT_EXPORT static void UpperBounds(
       const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTag> &input,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &values_output)
   {

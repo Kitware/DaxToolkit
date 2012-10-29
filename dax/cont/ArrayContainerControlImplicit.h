@@ -93,10 +93,10 @@ public:
 
 template<typename T, class ArrayPortalType, class DeviceAdapterTag>
 class ArrayTransfer<
-    T, ArrayContainerControlImplicit<ArrayPortalType>, DeviceAdapterTag>
+    T, ArrayContainerControlTagImplicit<ArrayPortalType>, DeviceAdapterTag>
 {
 private:
-  typedef ArrayContainerControlImplicit<ArrayPortalType>
+  typedef ArrayContainerControlTagImplicit<ArrayPortalType>
       ArrayContainerControlTag;
   typedef dax::cont::internal::ArrayContainerControl<T,ArrayContainerControlTag>
       ContainerType;
