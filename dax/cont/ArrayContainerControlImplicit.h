@@ -17,7 +17,9 @@
 #define __dax_cont_ArrayContainerControlImplicit
 
 #include <dax/cont/ArrayContainerControl.h>
+#include <dax/cont/Assert.h>
 #include <dax/cont/ErrorControlBadValue.h>
+#include <dax/cont/internal/ArrayTransfer.h>
 
 namespace dax {
 namespace cont {
@@ -87,6 +89,86 @@ public:
   void ReleaseResources() {
     throw dax::cont::ErrorControlBadValue("Implicit arrays are read-only.");
   }
+};
+
+template<typename T, class ArrayPortalType, class DeviceAdapterTag>
+class ArrayTransfer<
+    T, ArrayContainerControlTagImplicit<ArrayPortalType>, DeviceAdapterTag>
+{
+private:
+  typedef ArrayContainerControlTagImplicit<ArrayPortalType>
+      ArrayContainerControlTag;
+  typedef dax::cont::internal::ArrayContainerControl<T,ArrayContainerControlTag>
+      ContainerType;
+
+public:
+  typedef T ValueType;
+
+  typedef typename ContainerType::PortalType PortalControl;
+  typedef typename ContainerType::PortalConstType PortalConstControl;
+  typedef PortalControl PortalExecution;
+  typedef PortalConstControl PortalConstExecution;
+
+  ArrayTransfer() : PortalValid(false) {  }
+
+  DAX_CONT_EXPORT dax::Id GetNumberOfValues() const {
+    DAX_ASSERT_CONT(this->PortalValid);
+    return this->Portal.GetNumberOfValues();
+  }
+
+  DAX_CONT_EXPORT void LoadDataForInput(PortalControl portal) {
+    this->Portal = portal;
+    this->PortalValid = true;
+  }
+  DAX_CONT_EXPORT void LoadDataForInput(PortalConstControl portal) {
+    this->Portal = portal;
+    this->PortalValid = true;
+  }
+
+  DAX_CONT_EXPORT void AllocateArrayForOutput(
+      ContainerType &daxNotUsed(controlArray),
+      dax::Id daxNotUsed(numberOfValues))
+  {
+    throw dax::cont::ErrorControlBadValue(
+          "Implicit arrays cannot be used for output.");
+  }
+  DAX_CONT_EXPORT void RetrieveOutputData(
+      ContainerType &daxNotUsed(controlArray)) const
+  {
+    throw dax::cont::ErrorControlBadValue(
+          "Implicit arrays cannot be used for output.");
+  }
+
+  template <class IteratorTypeControl>
+  DAX_CONT_EXPORT void CopyInto(IteratorTypeControl dest) const
+  {
+    DAX_ASSERT_CONT(this->PortalValid);
+    std::copy(this->Portal.GetIteratorBegin(),
+              this->Portal.GetIteratorEnd(),
+              dest);
+  }
+
+  DAX_CONT_EXPORT void Shrink(dax::Id daxNotUsed(numberOfValues))
+  {
+    throw dax::cont::ErrorControlBadValue("Implicit arrays cannot be resized.");
+  }
+
+  DAX_CONT_EXPORT PortalExecution GetPortalExecution()
+  {
+    throw dax::cont::ErrorControlBadValue(
+          "Implicit arrays are read-only.  (Get the const portal.)");
+  }
+  DAX_CONT_EXPORT PortalConstExecution GetPortalConstExecution() const
+  {
+    DAX_ASSERT_CONT(this->PortalValid);
+    return this->Portal;
+  }
+
+  DAX_CONT_EXPORT void ReleaseResources() {  }
+
+private:
+  PortalConstExecution Portal;
+  bool PortalValid;
 };
 
 } // namespace internal

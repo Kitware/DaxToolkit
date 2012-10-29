@@ -40,7 +40,7 @@ public:
   ArrayPortalFromIterators(IteratorType begin, IteratorType end)
     : BeginIterator(begin), EndIterator(end) {  }
 
-  DAX_EXEC_EXPORT
+  DAX_EXEC_CONT_EXPORT
   dax::Id GetNumberOfValues() const {
     // Not using std::distance because on CUDA it cannot be used on a device.
     return (this->EndIterator - this->BeginIterator);

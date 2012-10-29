@@ -13,64 +13,64 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_internal_ArrayManagerExecution_h
-#define __dax_cont_internal_ArrayManagerExecution_h
+#ifndef __dax_cont_internal_ArrayTransfer_h
+#define __dax_cont_internal_ArrayTransfer_h
 
-#include <dax/cont/internal/DeviceAdapterTag.h>
+#include <dax/cont/ArrayContainerControl.h>
+#include <dax/cont/internal/ArrayManagerExecution.h>
 
 namespace dax {
 namespace cont {
 namespace internal {
 
-/// \brief Class that manages data in the execution environment.
+/// \brief Class that manages the transfer of data between control and execution.
 ///
-/// This templated class must be partially specialized for each
-/// DeviceAdapterTag crated, which will define the implementation for that tag.
+/// This templated class provides a mechanism (used by the ArrayHandle) to
+/// transfer data from the control environment to the execution environment and
+/// back. The interface for ArrayTransfer is nearly identical to that of
+/// ArrayManagerExecution and the default implementation simply delegates all
+/// calls to that class.
 ///
-/// This is a class that is responsible for allocating data in the execution
-/// environment and copying data back and forth between control and
-/// execution. It is also expected that this class will automatically release
-/// any resources in its destructor.
-///
-/// This class typically takes on one of two forms. If the control and
-/// execution environments have seperate memory spaces, then this class
-/// behaves how you would expect. It allocates/deallocates arrays and copies
-/// data. However, if the control and execution environments share the same
-/// memory space, this class should delegate all its operations to the
-/// ArrayContainerControl. The latter can probably be implemented with a
-/// trivial subclass of
-/// dax::cont::internal::ArrayManagerExecutionShareWithControl.
+/// The primary motivation for having a separate class is that the
+/// ArrayManagerExecution is meant to be specialized for each device adapter
+/// whee as the ArrayTransfer is meant to be specialized for each array
+/// container (or specific combination of container and device adapter). Thus,
+/// transfers for most containers will be delegated through the
+/// ArrayManagerExecution, but some containers, like implicit containers, will
+/// be specialized to transfer through a different path.
 ///
 template<typename T, class ArrayContainerControlTag, class DeviceAdapterTag>
-class ArrayManagerExecution
-#ifdef DAX_DOXYGEN_ONLY
+class ArrayTransfer
 {
 private:
   typedef dax::cont::internal::ArrayContainerControl<T,ArrayContainerControlTag>
       ContainerType;
+  typedef dax::cont::internal::ArrayManagerExecution<
+      T,ArrayContainerControlTag,DeviceAdapterTag> ArrayManagerType;
 
 public:
   /// The type of value held in the array (dax::Scalar, dax::Vector3, etc.)
   ///
   typedef T ValueType;
 
-  /// An array portal that can be used in the execution environment to access
-  /// portions of the arrays. This example defines the portal with a pointer,
-  /// but any portal with methods that can be called and data that can be
-  /// accessed from the execution environment can be used.
+  /// An array portal that can be used in the control environment.
   ///
-  typedef dax::exec::internal::ArrayPortalFromIterators<ValueType*> PortalType;
+  typedef typename ContainerType::PortalType PortalControl;
+  typedef typename ContainerType::PortalConstType PortalConstControl;
 
-  /// Const version of PortalType.  You must be able to cast PortalType to
-  /// PortalConstType.
+  /// An array portal that can be used in the execution environment.
   ///
-  typedef dax::exec::internal::ArrayPortalFromIterators<const ValueType*>
-      PortalConstType;
+  typedef typename ArrayManagerType::PortalType PortalExecution;
+  typedef typename ArrayManagerType::PortalConstType PortalConstExecution;
+
 
   /// Returns the number of values stored in the array.  Results are undefined
   /// if data has not been loaded or allocated.
   ///
-  DAX_CONT_EXPORT dax::Id GetNumberOfValues() const;
+  DAX_CONT_EXPORT dax::Id GetNumberOfValues() const
+  {
+    return this->ArrayManager.GetNumberOfValues();
+  }
 
   /// Allocates a large enough array in the execution environment and copies
   /// the given data to that array. The allocated array can later be accessed
@@ -78,15 +78,19 @@ public:
   /// this method may save the iterators to be returned in the \c GetPortal*
   /// methods.
   ///
-  DAX_CONT_EXPORT void LoadDataForInput(
-      typename ContainerType::PortalType portal);
+  DAX_CONT_EXPORT void LoadDataForInput(PortalControl portal)
+  {
+    this->ArrayManager.LoadDataForInput(portal);
+  }
 
   /// Const version of LoadDataForInput. Functionally equivalent to the
   /// non-const version except that the non-const versions of GetPortal may not
   /// be available.
   ///
-  DAX_CONT_EXPORT void LoadDataForInput(
-      typename ContainerType::PortalConstType portal);
+  DAX_CONT_EXPORT void LoadDataForInput(PortalConstControl portal)
+  {
+    this->ArrayManager.LoadDataForInput(portal);
+  }
 
   /// Allocates an array in the execution environment of the specified size.
   /// If control and execution share arrays, then this class can allocate
@@ -94,7 +98,10 @@ public:
   /// so that it can be used directly in the execution environment.
   ///
   DAX_CONT_EXPORT void AllocateArrayForOutput(ContainerType &controlArray,
-                                              dax::Id numberOfValues);
+                                              dax::Id numberOfValues)
+  {
+    this->ArrayManager.AllocateArrayForOutput(controlArray, numberOfValues);
+  }
 
   /// Allocates data in the given ArrayContainerControl and copies data held
   /// in the execution environment (managed by this class) into the control
@@ -102,7 +109,10 @@ public:
   /// This method should only be called after AllocateArrayForOutput is
   /// called.
   ///
-  DAX_CONT_EXPORT void RetrieveOutputData(ContainerType &controlArray) const;
+  DAX_CONT_EXPORT void RetrieveOutputData(ContainerType &controlArray) const
+  {
+    this->ArrayManager.RetrieveOutputData(controlArray);
+  }
 
   /// Similar to RetrieveOutputData except that instead of writing to the
   /// controlArray itself, it writes to the given control environment
@@ -111,7 +121,10 @@ public:
   /// and exeuction have seperate memory spaces).
   ///
   template <class IteratorTypeControl>
-  DAX_CONT_EXPORT void CopyInto(IteratorTypeControl dest) const;
+  DAX_CONT_EXPORT void CopyInto(IteratorTypeControl dest) const
+  {
+    this->ArrayManager.CopyInto(dest);
+  }
 
   /// \brief Reduces the size of the array without changing its values.
   ///
@@ -122,44 +135,42 @@ public:
   /// (returned from GetNumberOfValues). That is, this method can only be used
   /// to shorten the array, not lengthen.
   ///
-  DAX_CONT_EXPORT void Shrink(dax::Id numberOfValues);
+  DAX_CONT_EXPORT void Shrink(dax::Id numberOfValues)
+  {
+    this->ArrayManager.Shrink(numberOfValues);
+  }
 
   /// Returns an array portal that can be used in the execution environment.
   /// This portal was defined in either LoadDataForInput or
   /// AllocateArrayForOutput. If control and environment share memory space,
   /// this class may return the iterator from the \c controlArray.
   ///
-  DAX_CONT_EXPORT PortalType GetPortal();
+  DAX_CONT_EXPORT PortalExecution GetPortalExecution()
+  {
+    return this->ArrayManager.GetPortal();
+  }
 
   /// Const version of GetPortal.
   ///
-  DAX_CONT_EXPORT PortalConstType GetPortalConst() const;
+  DAX_CONT_EXPORT PortalConstExecution GetPortalConstExecution() const
+  {
+    return this->ArrayManager.GetPortalConst();
+  }
 
   /// Frees any resources (i.e. memory) allocated for the exeuction
   /// environment, if any.
   ///
-  DAX_CONT_EXPORT void ReleaseResources();
+  DAX_CONT_EXPORT void ReleaseResources()
+  {
+    this->ArrayManager.ReleaseResources();
+  }
+
+private:
+  ArrayManagerType ArrayManager;
 };
-#else // DAX_DOXGEN_ONLY
-;
-#endif // DAX_DOXYGEN_ONLY
 
 }
 }
 } // namespace dax::cont::internal
 
-
-//-----------------------------------------------------------------------------
-// These includes are intentionally placed here after the declaration of the
-// ArrayManagerExecution template prototype, which all the implementations
-// need.
-
-#if DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_SERIAL
-#include <dax/cont/internal/ArrayManagerExecutionSerial.h>
-#elif DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_CUDA
-#include <dax/cuda/cont/internal/ArrayManagerExecutionCuda.h>
-#elif DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_OPENMP
-#include <dax/openmp/cont/internal/ArrayManagerExecutionOpenMP.h>
-#endif
-
-#endif //__dax_cont_internal_ArrayManagerExecution_h
+#endif //__dax_cont_internal_ArrayTransfer_h
