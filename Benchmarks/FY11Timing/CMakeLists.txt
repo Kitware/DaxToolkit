@@ -16,21 +16,16 @@
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_OPENMP)
-  find_package(OpenMP REQUIRED)
-
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  dax_configure_device(OpenMP)
 endif (DAX_ENABLE_OPENMP)
 
 if (DAX_ENABLE_CUDA)
-  find_package(CUDA REQUIRED)
+  dax_configure_device(Cuda)
 endif (DAX_ENABLE_CUDA)
 
-include_directories(${Boost_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
-
-if (DAX_ENABLE_THRUST)
-  include_directories(${THRUST_INCLUDE_DIR})
-endif (DAX_ENABLE_THRUST)
+if (DAX_ENABLE_TBB)
+  dax_configure_device(TBB)
+endif (DAX_ENABLE_TBB)
 
 #-----------------------------------------------------------------------------
 configure_file(
@@ -79,6 +74,21 @@ if (DAX_ENABLE_OPENMP)
   add_test(FY11TimingOpenMP3-128
     ${EXECUTABLE_OUTPUT_PATH}/FY11TimingOpenMP --pipeline 3 --size 128)
 endif (DAX_ENABLE_OPENMP)
+
+#-----------------------------------------------------------------------------
+if (DAX_ENABLE_TBB)
+  add_executable(FY11TimingTBB ${sources} ${headers} PipelineTBB.cxx)
+  target_link_libraries(FY11TimingTBB
+    ${Boost_LIBRARIES}
+    )
+
+  add_test(FY11TimingTBB1-128
+    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingTBB --pipeline 1 --size 128)
+  add_test(FY11TimingTBB2-128
+    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingTBB --pipeline 2 --size 128)
+  add_test(FY11TimingTBB3-128
+    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingTBB --pipeline 3 --size 128)
+endif (DAX_ENABLE_TBB)
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_CUDA)
