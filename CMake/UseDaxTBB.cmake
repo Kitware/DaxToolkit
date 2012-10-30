@@ -33,7 +33,7 @@ if (Dax_TBB_FOUND)
   endif (NOT Boost_FOUND)
 endif (Dax_TBB_FOUND)
 
-# Find OpenMP support.
+# Find TBB support.
 if (Dax_TBB_FOUND)
   find_package(TBB)
 
