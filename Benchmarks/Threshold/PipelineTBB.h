@@ -14,13 +14,13 @@
 //
 //=============================================================================
 
-#ifndef __PipelineOpenMP_h
-#define __PipelineOpenMP_h
+#ifndef __PipelineTBB_h
+#define __PipelineTBB_h
 
 #include <dax/cont/UniformGrid.h>
 #include <dax/tbb/cont/DeviceAdapterTBB.h>
 
-void RunPipelineOpenMP(
+void RunPipelineTBB(
     const dax::cont::UniformGrid<dax::tbb::cont::DeviceAdapterTagTBB> &grid);
 
-#endif //__PipelineOpenMP_h
+#endif //__PipelineTBB_h

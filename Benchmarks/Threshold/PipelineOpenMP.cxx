@@ -14,14 +14,14 @@
 //
 //=============================================================================
 
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_TBB
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_OPENMP
 
-#include "PipelineTBB.h"
+#include "PipelineOpenMP.h"
 
 #include "Pipeline.h"
 
-void RunPipelineTBB(
-    const dax::cont::UniformGrid<dax::tbb::cont::DeviceAdapterTagTBB> &grid)
+void RunPipelineOpenMP(
+    const dax::cont::UniformGrid<> &grid)
 {
   RunDAXPipeline(grid);
 }
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 
   dax::cont::UniformGrid<> grid = CreateInputStructure(MAX_SIZE);
 
-  RunPipelineTBB(grid);
+  RunPipelineOpenMP(grid);
 
   return 0;
 }
