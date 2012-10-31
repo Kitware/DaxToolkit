@@ -21,6 +21,7 @@ set(headers
   Members.h
   ParameterPackCxx03.h
   Tags.h
+  WorkletSignatureFunctions.h
   )
 
 dax_declare_headers(${headers})
