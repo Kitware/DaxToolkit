@@ -90,6 +90,14 @@ public:
                        arrayPortal.GetIteratorEnd());
   }
 
+  /// Allocates the appropriate size of the array and copies the given data
+  /// into the array.
+  ///
+  DAX_CONT_EXPORT void LoadDataForInPlace(ContainerType &controlArray)
+  {
+    this->LoadDataForInput(controlArray.GetPortalConst());
+  }
+
   /// Allocates the array to the given size.
   ///
   DAX_CONT_EXPORT void AllocateArrayForOutput(

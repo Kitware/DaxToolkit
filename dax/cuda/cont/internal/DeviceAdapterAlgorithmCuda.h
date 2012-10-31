@@ -21,6 +21,8 @@
 #include <dax/cuda/cont/internal/DeviceAdapterTagCuda.h>
 #include <dax/cuda/cont/internal/ArrayManagerExecutionCuda.h>
 
+#include <dax/cont/internal/DeviceAdapterAlgorithm.h>
+
 // Here are the actual implementation of the algorithms.
 #include <dax/thrust/cont/internal/DeviceAdapterAlgorithmThrust.h>
 

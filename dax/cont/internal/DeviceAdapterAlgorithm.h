@@ -81,6 +81,8 @@ struct DeviceAdapterAlgorithm
   /// inconsistent results. When the input and output ArrayHandles are the same
   /// ArrayHandle the operation will be done inplace.
   ///
+  /// \return The total sum.
+  ///
   template<typename T, class CIn, class COut>
   DAX_CONT_EXPORT static T ScanInclusive(
       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
@@ -95,6 +97,8 @@ struct DeviceAdapterAlgorithm
   /// custom plus operator for T it must be associative, or you will get
   /// inconsistent results. When the input and output ArrayHandles are the same
   /// ArrayHandle the operation will be done inplace.
+  ///
+  /// \return The total sum.
   ///
   template<typename T, class CIn, class COut>
   DAX_CONT_EXPORT static T ScanExclusive(
@@ -141,9 +145,9 @@ struct DeviceAdapterAlgorithm
   /// we can't know the number of elements that will be removed by the stream
   /// compaction algorithm.
   ///
-  template<typename T, class CIn, class COut>
+  template<typename T, class CStencil, class COut>
   DAX_CONT_EXPORT static void StreamCompact(
-      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
+      const dax::cont::ArrayHandle<T,CStencil,DeviceAdapterTag> &stencil,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &output);
 
   /// \brief Performs stream compaction to remove unwanted elements in the input array.
@@ -156,11 +160,11 @@ struct DeviceAdapterAlgorithm
   /// number of elements that will be removed by the stream compaction
   /// algorithm.
   ///
-  template<typename T, typename U, class Container>
+  template<typename T, typename U, class CIn, class CStencil, class COut>
   DAX_CONT_EXPORT static void StreamCompact(
-      const dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &input,
-      const dax::cont::ArrayHandle<U,Container,DeviceAdapterTag> &v,
-      dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &output);
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
+      const dax::cont::ArrayHandle<U,CStencil,DeviceAdapterTag> &stencil,
+      dax::cont::ArrayHandle<T,COut,DeviceAdapterTag> &output);
 
   /// \brief Reduce an array to only the unique values it contains
   ///
@@ -220,6 +224,8 @@ struct DeviceAdapterAlgorithm
 #include <dax/cuda/cont/internal/DeviceAdapterAlgorithmCuda.h>
 #elif DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_OPENMP
 #include <dax/openmp/cont/internal/DeviceAdapterAlgorithmOpenMP.h>
+#elif DAX_DEVICE_ADAPTER == DAX_DEVICE_ADAPTER_TBB
+#include <dax/tbb/cont/internal/DeviceAdapterAlgorithmTBB.h>
 #endif
 
 #endif //__dax_cont_internal_DeviceAdapterAlgorithm_h

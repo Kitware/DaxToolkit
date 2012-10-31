@@ -23,6 +23,7 @@ set(headers
   ArrayTransfer.h
   Bindings.h
   DeviceAdapterAlgorithm.h
+  DeviceAdapterAlgorithmGeneral.h
   DeviceAdapterAlgorithmSerial.h
   DeviceAdapterError.h
   DeviceAdapterTag.h

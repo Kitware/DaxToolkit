@@ -16,6 +16,8 @@
 #ifndef __dax_cont_ArrayContainerControlImplicit
 #define __dax_cont_ArrayContainerControlImplicit
 
+#include <dax/Types.h>
+
 #include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/Assert.h>
 #include <dax/cont/ErrorControlBadValue.h>
@@ -116,13 +118,16 @@ public:
     return this->Portal.GetNumberOfValues();
   }
 
-  DAX_CONT_EXPORT void LoadDataForInput(PortalControl portal) {
-    this->Portal = portal;
-    this->PortalValid = true;
-  }
   DAX_CONT_EXPORT void LoadDataForInput(PortalConstControl portal) {
     this->Portal = portal;
     this->PortalValid = true;
+  }
+
+  DAX_CONT_EXPORT void LoadDataForInPlace(
+      ContainerType &daxNotUsed(controlArray))
+  {
+    throw dax::cont::ErrorControlBadValue(
+          "Implicit arrays cannot be used for output or in place.");
   }
 
   DAX_CONT_EXPORT void AllocateArrayForOutput(

@@ -14,16 +14,30 @@
 //
 //=============================================================================
 
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_OPENMP
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_TBB
 
-#include "PipelineOpenMP.h"
+#include "PipelineTBB.h"
 
 #include "Pipeline.h"
 
-void RunPipelineOpenMP(
-    const dax::cont::UniformGrid<> &grid)
+void RunPipelineTBB(int pipeline, const dax::cont::UniformGrid<> &grid)
 {
-  RunDAXPipeline(grid);
+  switch (pipeline)
+    {
+    case 1:
+      RunPipeline1(grid);
+      break;
+    case 2:
+      RunPipeline2(grid);
+      break;
+    case 3:
+      RunPipeline3(grid);
+      break;
+    default:
+      std::cout << "Invalid pipeline selected." << std::endl;
+      exit(1);
+      break;
+    }
 }
 
 // This is kind of a hack. I'd rather the main files be consolidated
@@ -53,7 +67,10 @@ int main(int argc, char* argv[])
 
   dax::cont::UniformGrid<> grid = CreateInputStructure(MAX_SIZE);
 
-  RunPipelineOpenMP(grid);
+  int pipeline = parser.pipeline();
+  std::cout << "Pipeline #" << pipeline << std::endl;
+
+  RunPipelineTBB(pipeline, grid);
 
   return 0;
 }

@@ -14,6 +14,10 @@
 ##
 ##=============================================================================
 
+if (Dax_OpenMP_initialize_complete)
+  return()
+endif (Dax_OpenMP_initialize_complete)
+
 set(Dax_OpenMP_FOUND ${Dax_ENABLE_OPENMP})
 if (NOT Dax_OpenMP_FOUND)
   message(STATUS "This build of Dax does not include OpenMP.")
@@ -63,4 +67,6 @@ if (Dax_OpenMP_FOUND)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+
+  set(Dax_OpenMP_initialize_complete TRUE)
 endif (Dax_OpenMP_FOUND)

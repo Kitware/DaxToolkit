@@ -14,4 +14,10 @@
 ##
 ##=============================================================================
 
-add_subdirectory(cont)
+set(headers
+  ArrayManagerExecutionTBB.h
+  DeviceAdapterAlgorithmTBB.h
+  DeviceAdapterTagTBB.h
+  )
+
+dax_declare_headers(${headers})

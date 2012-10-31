@@ -169,12 +169,14 @@ public:
                      inputPortal.GetIteratorEnd(),
                      outputPortal.GetIteratorBegin());
 
+    T fullSum = outputPortal.Get(numberOfValues - 1);
+
     // Shift right by one
     std::copy_backward(outputPortal.GetIteratorBegin(),
                        outputPortal.GetIteratorEnd()-1,
                        outputPortal.GetIteratorEnd());
-    outputPortal.GetIteratorBegin()[0]=0;
-    return outputPortal.Get(numberOfValues - 1);
+    outputPortal.Set(0, 0);
+    return fullSum;
   }
 
 private:

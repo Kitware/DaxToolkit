@@ -14,4 +14,12 @@
 ##
 ##=============================================================================
 
-add_subdirectory(cont)
+set(headers
+  DeviceAdapterTBB.h
+  )
+
+add_subdirectory(internal)
+
+dax_declare_headers(${headers})
+
+add_subdirectory(testing)

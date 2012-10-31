@@ -14,28 +14,43 @@
 ##
 ##=============================================================================
 
-if (Dax_Serial_initialize_complete)
+if (Dax_TBB_initialize_complete)
   return()
-endif (Dax_Serial_initialize_complete)
+endif (Dax_TBB_initialize_complete)
+
+set(Dax_TBB_FOUND ${Dax_ENABLE_TBB})
+if (NOT Dax_TBB_FOUND)
+  message(STATUS "This build of Dax does not include TBB.")
+endif (NOT Dax_TBB_FOUND)
 
 # Find the Boost library.
-if (NOT Dax_Serial_FOUND)
+if (Dax_TBB_FOUND)
   find_package(Boost ${Dax_REQUIRED_BOOST_VERSION})
 
   if (NOT Boost_FOUND)
     message(STATUS "Boost not found")
-    set(Dax_Serial_FOUND FALSE)
-  else(NOT Boost_FOUND)
-    set(Dax_Serial_FOUND TRUE)
+    set(Dax_TBB_FOUND)
   endif (NOT Boost_FOUND)
-endif (NOT Dax_Serial_FOUND)
+endif (Dax_TBB_FOUND)
+
+# Find TBB support.
+if (Dax_TBB_FOUND)
+  find_package(TBB)
+
+  if (NOT TBB_FOUND)
+    message(STATUS "TBB not found")
+    set(Dax_TBB_FOUND)
+  endif (NOT TBB_FOUND)
+endif (Dax_TBB_FOUND)
 
 # Set up all these dependent packages (if they were all found).
-if (Dax_Serial_FOUND)
+if (Dax_TBB_FOUND)
   include_directories(
     ${Boost_INCLUDE_DIRS}
+    ${TBB_INCLUDE_DIRS}
     ${Dax_INCLUDE_DIRS}
     )
+  link_libraries(${TBB_LIBRARIES})
 
-  set(Dax_Serial_initialize_complete TRUE)
-endif (Dax_Serial_FOUND)
+  set(Dax_TBB_initialize_complete TRUE)
+endif (Dax_TBB_FOUND)

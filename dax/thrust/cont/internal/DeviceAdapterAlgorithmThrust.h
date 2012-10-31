@@ -20,7 +20,6 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
-#include <dax/cont/internal/DeviceAdapterAlgorithm.h>
 
 #include <dax/Functional.h>
 
@@ -258,12 +257,16 @@ private:
   typename InputPortal::ValueType ScanExclusivePortal(const InputPortal &input,
                                                       const OutputPortal &output)
   {
+    // Use iterator to get value so that thrust device_ptr has chance to handle
+    // data on device.
+    typename InputPortal::ValueType inputEnd = *(IteratorEnd(input) - 1);
+
     ::thrust::exclusive_scan(IteratorBegin(input),
                              IteratorEnd(input),
                              IteratorBegin(output));
 
     //return the value at the last index in the array, as that is the sum
-    return *(IteratorEnd(output) - 1);
+    return *(IteratorEnd(output) - 1) + inputEnd;
   }
 
   template<class InputPortal, class OutputPortal>

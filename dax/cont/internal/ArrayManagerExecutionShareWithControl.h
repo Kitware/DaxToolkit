@@ -70,13 +70,13 @@ public:
 
   /// Saves the given iterators to be returned later.
   ///
-  DAX_CONT_EXPORT void LoadDataForInput(PortalType portal)
+  DAX_CONT_EXPORT void LoadDataForInPlace(ContainerType &controlArray)
   {
     // This only works if there is a valid cast from non-const to const
     // iterator.
-    this->LoadDataForInput(PortalConstType(portal));
+    this->LoadDataForInput(controlArray.GetPortalConst());
 
-    this->Portal = portal;
+    this->Portal = controlArray.GetPortal();
     this->PortalValid = true;
   }
 

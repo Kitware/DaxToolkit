@@ -31,6 +31,7 @@ set(Dax_PATCH_VERSION "@Dax_PATCH_VERSION@")
 # but does not guarantee the dependent compilers and libraries are available.
 set(Dax_ENABLE_CUDA "@DAX_ENABLE_CUDA@")
 set(Dax_ENABLE_OPENMP "@DAX_ENABLE_OPENMP@")
+set(Dax_ENABLE_TBB "@DAX_ENABLE_TBB@")
 
 # Use these macros to configure your build to the various devices supported
 # by Dax.
@@ -43,6 +44,9 @@ endmacro(DaxConfigureOpenMP)
 macro(DaxConfigureCuda)
   DaxConfigureDevice(Cuda ${ARGV})
 endmacro(DaxConfigureCuda)
+macro(DaxConfigureTBB)
+  DaxConfigureDevice(TBB ${ARGV})
+endmacro(DaxConfigureTBB)
 
 # Used by other macros.
 macro(DaxConfigureDevice device)
@@ -62,3 +66,4 @@ set(Dax_CMAKE_MODULE_PATH "@Dax_CMAKE_MODULE_PATH_CONFIG@")
 set(USE_Dax_Serial "@Dax_CMAKE_MODULE_PATH_CONFIG@/UseDaxSerial.cmake")
 set(USE_Dax_OpenMP "@Dax_CMAKE_MODULE_PATH_CONFIG@/UseDaxOpenMP.cmake")
 set(USE_Dax_Cuda "@Dax_CMAKE_MODULE_PATH_CONFIG@/UseDaxCuda.cmake")
+set(USE_Dax_TBB "@Dax_CMAKE_MODULE_PATH_CONFIG@/UseDaxTBB.cmake")

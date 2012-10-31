@@ -71,7 +71,33 @@ struct TemplatedTests
     SetContainer(controlArray, INPUT_VALUE);
 
     ArrayManagerType executionArray;
-    executionArray.LoadDataForInput(controlArray.GetPortal());
+    executionArray.LoadDataForInput(controlArray.GetPortalConst());
+
+    // Although the ArrayManagerExecutionShareWithControl class wraps the
+    // control array portal in a different array portal, it should still
+    // give the same iterator (to avoid any unnecessary indirection).
+    DAX_TEST_ASSERT(
+          controlArray.GetPortalConst().GetIteratorBegin() ==
+          executionArray.GetPortalConst().GetIteratorBegin(),
+          "Execution array manager not holding control array iterators.");
+
+    std::vector<ValueType> copyBack(ARRAY_SIZE);
+    executionArray.CopyInto(copyBack.begin());
+
+    DAX_TEST_ASSERT(CheckArray(copyBack.begin(), copyBack.end(), INPUT_VALUE),
+                    "Did not get correct array back.");
+  }
+
+  void InPlaceData()
+  {
+    const ValueType INPUT_VALUE = dax::cont::VectorFill<ValueType>(2350);
+
+    ArrayContainerType controlArray;
+    controlArray.Allocate(ARRAY_SIZE);
+    SetContainer(controlArray, INPUT_VALUE);
+
+    ArrayManagerType executionArray;
+    executionArray.LoadDataForInPlace(controlArray);
 
     // Although the ArrayManagerExecutionShareWithControl class wraps the
     // control array portal in a different array portal, it should still
@@ -120,7 +146,7 @@ struct TemplatedTests
   void operator()() {
 
     InputData();
-
+    InPlaceData();
     OutputData();
 
   }

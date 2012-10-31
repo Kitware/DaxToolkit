@@ -14,4 +14,7 @@
 ##
 ##=============================================================================
 
-add_subdirectory(cont)
+set(unit_tests
+  UnitTestDeviceAdapterTBB.cxx
+  )
+dax_unit_tests(SOURCES ${unit_tests})

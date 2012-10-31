@@ -14,14 +14,13 @@
 //
 //=============================================================================
 
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_OPENMP
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_TBB
 
-#include "PipelineOpenMP.h"
+#include "PipelineTBB.h"
 
 #include "Pipeline.h"
 
-void RunPipelineOpenMP(
-    const dax::cont::UniformGrid<> &grid)
+void RunPipelineTBB(const dax::cont::UniformGrid<> &grid)
 {
   RunDAXPipeline(grid);
 }
@@ -53,7 +52,7 @@ int main(int argc, char* argv[])
 
   dax::cont::UniformGrid<> grid = CreateInputStructure(MAX_SIZE);
 
-  RunPipelineOpenMP(grid);
+  RunPipelineTBB(grid);
 
   return 0;
 }

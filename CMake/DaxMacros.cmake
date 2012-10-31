@@ -155,3 +155,13 @@ macro(dax_disable_troublesome_thrust_warnings_var flags_var)
   string(REPLACE "-Wall" "" new_flags "${new_flags}")
   set(${flags_var} "${new_flags}")
 endmacro(dax_disable_troublesome_thrust_warnings_var)
+
+# Set up configuration for a given device.
+macro(dax_configure_device device)
+  string(TOUPPER "${device}" device_uppercase)
+  set(Dax_ENABLE_${device_uppercase} ON)
+  include("${Dax_SOURCE_DIR}/CMake/UseDax${device}.cmake")
+  if(NOT Dax_${device}_FOUND)
+    message(SEND_ERROR "Could not configure for using Dax with ${device}")
+  endif(NOT Dax_${device}_FOUND)
+endmacro(dax_configure_device)
