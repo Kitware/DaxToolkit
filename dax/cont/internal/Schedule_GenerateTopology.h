@@ -18,6 +18,47 @@
 //General methods that all version of the generate topology use
 #if !defined(BOOST_PP_IS_ITERATING)
 private:
+
+//This is used to generate the implict VisitIndex values.
+//If GenerateVisitIndex is equal to a boost false type, we
+template<bool GenerateVisitIndex,
+         typename Algorithm,
+         typename HandleType>
+struct MakeVisitIndexControlType
+{
+  typedef HandleType Type;
+
+  template<typename Scheduler, typename OtherHandleType>
+  void operator()(Scheduler &scheduler,
+                  const OtherHandleType& inputCellIds, Type& visitIndices) const
+  {
+    //To determine the number of times we have already visited
+    //the current input cell, we take the lower bounds of the
+    //input cell id array. The resulting number subtracted from the WorkId
+    //gives us the number of times we have visited that cell
+    visitIndices.PrepareForOutput(inputCellIds.GetNumberOfValues());
+    Algorithm::LowerBounds(inputCellIds, inputCellIds, visitIndices);
+    scheduler.Invoke(dax::exec::internal::kernel::ComputeVisitIndex(),
+                     visitIndices);
+  }
+};
+
+template<typename Algorithm, typename HandleType>
+struct MakeVisitIndexControlType<false,Algorithm,HandleType>
+{
+  typedef int Type;
+
+  template<typename Scheduler, typename OtherHandleType>
+  void operator()(Scheduler &scheduler,
+                  const OtherHandleType& daxNotUsed(handle), Type& value) const
+  {
+    //The visitIndex is not requested, so we fill in the control side argument
+    //with a integer value that will be parsed by the bindings code, but
+    //won't be uploaded to the execution env.
+    value = 0;
+  }
+};
+
 template<class InGridType, class OutGridType, typename MaskType>
 void FillPointMask(const InGridType &inGrid,
                        const OutGridType &outGrid,
@@ -190,13 +231,51 @@ void GenerateNewTopology(
   // We are done with scannedNewCellCounts.
   scannedNewCellCounts.ReleaseResources();
 
+  //we need to scan the args of the generate topology worklet
+  //and determine if we have the VisitIndex signature. If we do,
+  //we have to call a different Invoke algorithm, which properly uploads
+  //the visitIndex information. Since this information is slow to compute we don't
+  //want to always upload the information, instead we want to see if the user
+  //has requested it.
+  typedef dax::internal::ReplaceAndExtendSignatures<
+              WorkType,
+              dax::cont::sig::VisitIndex,
+              dax::cont::sig::to_placeholder,
+              dax::cont::arg::Field>  ModifiedWorkletSignatures;
+
+  typedef typename ModifiedWorkletSignatures::found VisitIndexFound;
+
+  typedef MakeVisitIndexControlType<VisitIndexFound::value,
+              Algorithm,
+              IdArrayHandleType> VisitContFunction;
+  typedef typename VisitContFunction::Type VisitContType;
+
+  //generate the visitIndex, if we don't need it we will create a dummy
+  //control side signature argument that is just a constant value dax::Id
+  VisitContType visitIndex;
+  VisitContFunction()(*this,validCellRange,visitIndex);
+
+  //now that we have index generated, we have to build the new worklet
+  //that has the updated signature
+  typedef typename dax::internal::BuildSignature<
+            typename ModifiedWorkletSignatures::ControlSignature>::type NewContSig;
+  typedef typename dax::internal::BuildSignature<
+            typename ModifiedWorkletSignatures::ExecutionSignature>::type NewExecSig;
+
+  //make sure to pass the user worklet down to the new derived worklet, so
+  //that we get any member variable values that they have set
+  dax::exec::internal::kernel::DerivedWorklet<WorkType,NewContSig,NewExecSig>
+    derivedWorklet(newTopo.GetWorklet());
+
   //we get our magic here. we need to wrap some paramemters and pass
-  //them to the real scheduler
-  this->Invoke(newTopo.GetWorklet(),
+  //them to the real scheduler. The visitIndex must be last, as that is the
+  //hardcoded location the ReplaceAndExtendSignatures will place it at
+  this->Invoke(derivedWorklet,
                    dax::cont::make_MapAdapter(validCellRange,inputGrid,
                                              inputGrid.GetNumberOfCells()),
                    outputGrid,
-                  _SGT_pp_args___(a));
+                  _SGT_pp_args___(a),
+                  visitIndex);
   //call this here as we have stripped out the input and output grids
   if(newTopo.GetRemoveDuplicatePoints())
     {
