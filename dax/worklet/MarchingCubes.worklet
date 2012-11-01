@@ -1,0 +1,154 @@
+//=============================================================================
+//
+//  Copyright (c) Kitware, Inc.
+//  All rights reserved.
+//  See LICENSE.txt for details.
+//
+//  This software is distributed WITHOUT ANY WARRANTY; without even
+//  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+//  PURPOSE.  See the above copyright notice for more information.
+//
+//  Copyright 2012 Sandia Corporation.
+//  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+//  the U.S. Government retains certain rights in this software.
+//
+//=============================================================================
+
+#ifndef __MarchingCubes_worklet_
+#define __MarchingCubes_worklet_
+
+#include <dax/exec/Cell.h>
+#include <dax/exec/VectorOperations.h>
+#include <dax/exec/WorkletDetermineNewCellCount.h>
+#include <dax/exec/WorkletGenerateMangledTopology.h>
+#include <dax/Extent.h>
+
+#include <dax/worklets/internal/MarchingCubesTable.h>
+
+namespace dax {
+namespace worklet {
+
+// --------------------------------------------------- GetVoxelClassification()
+template<typename T>
+inline unsigned char GetVoxelClassification(const T isoValue,const dax::Tuple<T,8>& values )
+{
+  return ((values[0] <= isoValue) << 0 |
+          (values[1] <= isoValue) << 1 |
+          (values[2] <= isoValue) << 2 |
+          (values[3] <= isoValue) << 3 |
+          (values[4] <= isoValue) << 4 |
+          (values[5] <= isoValue) << 5 |
+          (values[6] <= isoValue) << 6 |
+          (values[7] <= isoValue) << 7);
+}
+
+// ------------------------------------------------------------------- Classify
+class MarchingCubesClassify : public dax::exec::WorkletDetermineNewCellCount
+{
+public:
+  // .................................................................... cnstr
+  DAX_CONT_EXPORT
+  MarchingCubesClassify(dax::Scalar isoValue)
+    : IsoValue(isoValue) {  }
+
+  // ....................................................................... ()
+  template<class InputCellType>
+  DAX_EXEC_EXPORT
+  void operator()(const InputCellType &daxNotUsed(cell),
+                  const dax::Tuple<dax::Scalar,InputCellType::NUM_POINTS> &values,
+                  dax::Id &newCellCount) const
+  {
+    unsigned char voxelClass = GetVoxelClassification(IsoValue,values);
+    newCellCount =  dax::worklet::internal::marchingcubes::numFaces[voxelClass];
+  }
+
+private:
+  // ..................................................................... vars
+  dax::Scalar IsoValue;
+};
+
+// -----------------------------------------------------------------------edges
+// These should probleble be available through the voxel class
+static int edges[12][2] = { {0,1}, {1,2}, {3,2}, {0,3},
+                            {4,5}, {5,6}, {7,6}, {4,7},
+                            {0,4}, {1,5}, {3,7}, {2,6}};
+
+// ----------------------------------------------------- cellVertexToPointIndex
+static dax::Vector3 cellVertexToPointIndex[8] = {
+  dax::make_Vector3(0, 0, 0),
+  dax::make_Vector3(1, 0, 0),
+  dax::make_Vector3(1, 1, 0),
+  dax::make_Vector3(0, 1, 0),
+  dax::make_Vector3(0, 0, 1),
+  dax::make_Vector3(1, 0, 1),
+  dax::make_Vector3(1, 1, 1),
+  dax::make_Vector3(0, 1, 1)
+};
+
+// ------------------------------------------------------------------- Topology
+//MarchingCubes only works when the topology is the same for input and output/
+//The only special case so far is converting CellVoxel to CellHexahedron
+class MarchingCubesTopology : public dax::exec::WorkletGenerateMangledTopology
+{
+public:
+  // .................................................................... cnstr
+  DAX_CONT_EXPORT
+  MarchingCubesTopology(dax::Scalar isoValue)
+    : IsoValue(isoValue){ }
+
+  // ....................................................................... ()
+  // Returning a tuple of connections feels a bit clunky.  Is there a better
+  // way of specifying the output cell type and generating a cell?
+  template<class InputCellType>
+  DAX_EXEC_EXPORT
+  void operator()(const InputCellType &inputCell,
+                  const dax::Tuple<dax::Scalar,InputCellType::NUM_POINTS> &values,
+                  dax::Tuple<dax::Vector3,3*5> &outVertex)const
+                  //OutputPortalType &output) const
+                  //dax::Tuple<dax::Id,OutputCellSize> &outputConnections) const
+  {
+    unsigned char voxelClass = GetVoxelClassification(IsoValue,values);
+    dax::worklet::internal::marchingcubes::TriangleCases*triCase =
+        (dax::worklet::internal::marchingcubes::TriangleCases*)
+        dax::worklet::internal::marchingcubes::triTable + voxelClass;
+    int *edge = triCase->edges;
+
+    // Move the coordinates by the index
+    dax::Id3 temp = dax::flatIndexToIndex3Cell(inputCell.GetIndex(),
+                                               inputCell.GetExtent());
+    dax::Vector3 index3 = inputCell.GetOrigin() + dax::make_Vector3(temp[0],
+                                                                    temp[1],
+                                                                    temp[2]);
+    dax::Id current = 0;
+    for (; edge[0] > -1; edge+=3)
+      {
+      for (int i = 0; i < 3; ++i)
+        {
+        int* vert = edges[edge[i]];
+
+        // Find the weight for linear interpolation
+        float den = values[vert[1]]-values[vert[0]];
+        float num = IsoValue - values[vert[0]];
+        float t =  num/den ;
+
+        // Get the cell vertex wrt the point index
+        dax::Vector3 x1 = cellVertexToPointIndex[vert[0]];
+        dax::Vector3 x2 = cellVertexToPointIndex[vert[1]];
+        dax::Vector3 x = x1 + t * (x2-x1);
+
+        // Adding the point to output. TODO: The triangles generated are clock
+        // wise so we need to change to anticlock wise.
+        outVertex[current] = x+index3;
+        current++;
+        }
+      }
+  }
+
+private:
+  dax::Scalar IsoValue;
+};
+
+}
+} //dax::worklet
+
+#endif

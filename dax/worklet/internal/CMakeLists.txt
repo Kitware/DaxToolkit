@@ -14,6 +14,8 @@
 ##
 ##=============================================================================
 
-add_subdirectory(FY11Timing)
-add_subdirectory(MarchingCubes)
-add_subdirectory(Threshold)
+set(headers
+  MarchingCubesTable.h
+  )
+
+dax_declare_headers(${headers})
