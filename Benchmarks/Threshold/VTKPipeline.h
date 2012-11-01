@@ -22,7 +22,7 @@
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
-#include <dax/cont/Schedule.h>
+#include <dax/cont/Scheduler.h>
 
 #include <dax/worklet/Magnitude.worklet>
 #include <dax/worklet/Threshold.worklet>
@@ -57,7 +57,8 @@ void RunVTKPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid)
   dax::cont::ArrayHandle<dax::Scalar> elevHandle;
 
   //use dax to compute the elevation
-  dax::cont::Schedule<>()(dax::worklet::Magnitude(),
+  dax::cont::Scheduler<> schedule;
+  schedule.Invoke(dax::worklet::Magnitude(),
                         dgrid.GetPointCoordinates(),
                         elevHandle);
 
