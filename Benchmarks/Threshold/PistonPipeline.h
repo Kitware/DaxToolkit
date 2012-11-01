@@ -36,7 +36,6 @@
 
 #include <vector>
 
-#define SPACE thrust::detail::default_device_space_tag
 #include <piston/piston_math.h>
 #include <piston/choose_container.h>
 #include <piston/image3d.h>

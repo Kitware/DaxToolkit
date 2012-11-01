@@ -18,11 +18,15 @@
 #define BOOST_SP_DISABLE_THREADS
 
 #include <dax/cuda/cont/DeviceAdapterCuda.h>
+
+//set up piston
+#define SPACE thrust::detail::default_device_space_tag
+
 #include <vtkImageData.h>
 #include <vtkNew.h>
 
-#include "PipelinePISTON.h"
-#include "PISTONPipeline.h"
+#include "PipelineCudaPiston.h"
+#include "PistonPipeline.h"
 
 void RunPipelinePISTON(int pipeline, const dax::cont::UniformGrid<>& dgrid, vtkImageData* grid)
 {
