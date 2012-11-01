@@ -23,15 +23,9 @@
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
-<<<<<<< Updated upstream
-
 #include <dax/worklet/Magnitude.worklet>
 
 #include <vector>
-=======
-#include <dax/cont/Schedule.h>
-#include <dax/worklet/Magnitude.worklet>
->>>>>>> Stashed changes
 
 #include <vtkNew.h>
 #include <vtkFloatArray.h>
