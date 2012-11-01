@@ -23,6 +23,7 @@
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 #include <dax/exec/internal/GridTopologies.h>
 
+#include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
 
 namespace dax {
@@ -76,10 +77,8 @@ public:
     {
     if(this->GetRemoveDuplicatePoints())
       {
-      dax::cont::internal::StreamCompact(input,
-                                       this->PointMask,
-                                       output,
-                                       DeviceAdapterTag());
+      dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>::
+          StreamCompact(input, this->PointMask, output);
 
       return true;
       }

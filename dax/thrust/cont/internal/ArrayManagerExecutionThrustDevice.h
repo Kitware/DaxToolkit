@@ -137,7 +137,7 @@ public:
                       ::thrust::raw_pointer_cast(&(*this->Array.end())));
   }
 
-  DAX_CONT_EXPORT PortalConstType GetPortalConst()
+  DAX_CONT_EXPORT PortalConstType GetPortalConst() const
   {
     return PortalConstType(::thrust::raw_pointer_cast(&(*this->Array.cbegin())),
                            ::thrust::raw_pointer_cast(&(*this->Array.cend())));

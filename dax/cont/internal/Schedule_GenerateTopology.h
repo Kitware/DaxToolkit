@@ -48,11 +48,13 @@ void RemoveDuplicatePoints(const InGridType &inGrid,
     // Here we are assuming OutGridType is an UnstructuredGrid so that we
     // can set point and connectivity information.
 
+    typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
+        Algorithm;
+
     //extract the point coordinates that we need for the new topology
-    dax::cont::internal::StreamCompact(inGrid.GetPointCoordinates(),
-                                       mask,
-                                       outGrid.GetPointCoordinates(),
-                                       DeviceAdapterTag());
+    Algorithm::StreamCompact(inGrid.GetPointCoordinates(),
+                             mask,
+                             outGrid.GetPointCoordinates());
 
     typedef typename OutGridType::CellConnectionsType CellConnectionsType;
     typedef typename OutGridType::PointCoordinatesType PointCoordinatesType;
@@ -66,15 +68,11 @@ void RemoveDuplicatePoints(const InGridType &inGrid,
     typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
         DeviceAdapterTag> IdArrayHandleType;
     IdArrayHandleType usedPointIndices;
-    dax::cont::internal::Copy(outGrid.GetCellConnections(),
-                              usedPointIndices,
-                              DeviceAdapterTag());
-    dax::cont::internal::Sort(usedPointIndices, DeviceAdapterTag());
-    dax::cont::internal::Unique(usedPointIndices, DeviceAdapterTag());
+    Algorithm::Copy(outGrid.GetCellConnections(), usedPointIndices);
+    Algorithm::Sort(usedPointIndices);
+    Algorithm::Unique(usedPointIndices);
     // Modify the connections of outGrid to point to compacted points.
-    dax::cont::internal::LowerBounds(usedPointIndices,
-                                     outGrid.GetCellConnections(),
-                                     DeviceAdapterTag());
+    Algorithm::LowerBounds(usedPointIndices, outGrid.GetCellConnections());
     }
   }
 
@@ -88,6 +86,8 @@ void GenerateNewTopology(
     const InputGrid& inputGrid,
     OutputGrid& outputGrid) const
   {
+  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
+      Algorithm;
   typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
       DeviceAdapterTag> IdArrayHandleType;
 
@@ -95,9 +95,8 @@ void GenerateNewTopology(
   //of cells in the output
   IdArrayHandleType scannedNewCellCounts;
   const dax::Id numNewCells =
-      dax::cont::internal::InclusiveScan(newTopo.GetClassification(),
-                                         scannedNewCellCounts,
-                                         DeviceAdapterTag());
+      Algorithm::ScanInclusive(newTopo.GetClassification(),
+                               scannedNewCellCounts);
 
   if(newTopo.GetReleaseClassification())
     {
@@ -108,14 +107,12 @@ void GenerateNewTopology(
   //for the lower bounds to compute the right indices
   IdArrayHandleType validCellRange;
   validCellRange.PrepareForOutput(numNewCells);
-  this->Invoke(dax::exec::internal::kernel::IndexPlusOne(),
-                   validCellRange);
+  this->Invoke(dax::exec::internal::kernel::Index(),
+                  validCellRange);
 
   //now do the lower bounds of the cell indices so that we figure out
   //which original topology indexs match the new indices.
-  dax::cont::internal::LowerBounds(scannedNewCellCounts,
-                                   validCellRange,
-                                   DeviceAdapterTag());
+  Algorithm::UpperBounds(scannedNewCellCounts, validCellRange);
 
   // We are done with scannedNewCellCounts.
   scannedNewCellCounts.ReleaseResources();
@@ -162,6 +159,8 @@ void GenerateNewTopology(
     OutputGrid& outputGrid,
     _SGT_pp_params___(a)) const
   {
+  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
+      Algorithm;
   typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
       DeviceAdapterTag> IdArrayHandleType;
 
@@ -169,9 +168,8 @@ void GenerateNewTopology(
   //of cells in the output
   IdArrayHandleType scannedNewCellCounts;
   const dax::Id numNewCells =
-      dax::cont::internal::InclusiveScan(newTopo.GetClassification(),
-                                         scannedNewCellCounts,
-                                         DeviceAdapterTag());
+      Algorithm::ScanInclusive(newTopo.GetClassification(),
+                               scannedNewCellCounts);
 
   if(newTopo.GetReleaseClassification())
     {
@@ -182,14 +180,12 @@ void GenerateNewTopology(
   //for the lower bounds to compute the right indices
   IdArrayHandleType validCellRange;
   validCellRange.PrepareForOutput(numNewCells);
-  this->Invoke(dax::exec::internal::kernel::IndexPlusOne(),
-                   validCellRange);
+   this->Invoke(dax::exec::internal::kernel::Index(),
+                    validCellRange);
 
   //now do the lower bounds of the cell indices so that we figure out
   //which original topology indexs match the new indices.
-  dax::cont::internal::LowerBounds(scannedNewCellCounts,
-                                   validCellRange,
-                                   DeviceAdapterTag());
+  Algorithm::UpperBounds(scannedNewCellCounts, validCellRange);
 
   // We are done with scannedNewCellCounts.
   scannedNewCellCounts.ReleaseResources();

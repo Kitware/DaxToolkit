@@ -25,7 +25,6 @@
 #include <dax/cont/sig/Tag.h>
 #include <dax/exec/arg/Bind.h>
 #include <dax/exec/arg/BindCellPoints.h>
-#include <dax/exec/arg/BindCellPointIds.h>
 
 #include <boost/mpl/if.hpp>
 #include <boost/type_traits/is_same.hpp>
@@ -65,17 +64,6 @@ public:
     BindCellPoints<Invocation, N>,
     BindDirect<Invocation, N>
     >::type type;
-};
-
-template <int N, typename Invocation>
-class Bind<WorkletMapCell, dax::cont::arg::Topology::PointIds(*)(dax::cont::sig::Arg<N>), Invocation>
-{
-  typedef typename dax::cont::internal::Bindings<Invocation>::template GetType<N>::type ControlBinding;
-  typedef typename dax::cont::arg::ConceptMapTraits<ControlBinding>::Concept Concept;
-  BOOST_STATIC_ASSERT((boost::is_same<dax::cont::arg::Topology,Concept>::value));
-
-public:
-  typedef BindCellPointIds<Invocation, N> type;
 };
 } // namespace arg
 

@@ -28,64 +28,70 @@ namespace dax {
 namespace cont {
 namespace internal {
 
-namespace detail {
-
-template<class FunctorType>
-class ScheduleKernelOpenMP
+template<>
+struct DeviceAdapterAlgorithm<dax::openmp::cont::DeviceAdapterTagOpenMP>
+    : public dax::thrust::cont::internal::DeviceAdapterAlgorithmThrust<
+          dax::openmp::cont::DeviceAdapterTagOpenMP>
 {
-public:
-  DAX_CONT_EXPORT ScheduleKernelOpenMP(const FunctorType &functor)
-    : Functor(functor)
-  {  }
-
-  DAX_CONT_EXPORT void SetErrorMessageBuffer(
-      const dax::exec::internal::ErrorMessageBuffer &errorMessage)
-  {
-    this->ErrorMessage = errorMessage;
-    this->Functor.SetErrorMessageBuffer(errorMessage);
-  }
-
-  DAX_EXEC_EXPORT void operator()(dax::Id index) const {
-    // The OpenMP device adapter causes array classes to be shared between
-    // control and execution environment. This means that it is possible for an
-    // exception to be thrown even though this is typically not allowed.
-    // Throwing an exception from here is bad because there are several
-    // simultaneous threads running. Get around the problem by catching the
-    // error and setting the message buffer as expected.
-    try
-      {
-      this->Functor(index);
-      }
-    catch (dax::cont::Error error)
-      {
-      this->ErrorMessage.RaiseError(error.GetMessage().c_str());
-      }
-    catch (...)
-      {
-      this->ErrorMessage.RaiseError(
-          "Unexpected error in execution environment.");
-      }
-  }
-
 private:
-  FunctorType Functor;
-  dax::exec::internal::ErrorMessageBuffer ErrorMessage;
+  typedef dax::thrust::cont::internal::DeviceAdapterAlgorithmThrust<
+      dax::openmp::cont::DeviceAdapterTagOpenMP> Superclass;
+
+  template<class FunctorType>
+  class ScheduleKernel
+  {
+  public:
+    DAX_CONT_EXPORT ScheduleKernel(const FunctorType &functor)
+      : Functor(functor)
+    {  }
+
+    DAX_CONT_EXPORT void SetErrorMessageBuffer(
+        dax::exec::internal::ErrorMessageBuffer &errorMessage)
+    {
+      this->ErrorMessage = errorMessage;
+      this->Functor.SetErrorMessageBuffer(errorMessage);
+    }
+
+    DAX_EXEC_EXPORT void operator()(dax::Id index) const {
+      // The OpenMP device adapter causes array classes to be shared between
+      // control and execution environment. This means that it is possible for an
+      // exception to be thrown even though this is typically not allowed.
+      // Throwing an exception from here is bad because there are several
+      // simultaneous threads running. Get around the problem by catching the
+      // error and setting the message buffer as expected.
+      try
+        {
+        this->Functor(index);
+        }
+      catch (dax::cont::Error error)
+        {
+        this->ErrorMessage.RaiseError(error.GetMessage().c_str());
+        }
+      catch (...)
+        {
+        this->ErrorMessage.RaiseError(
+            "Unexpected error in execution environment.");
+        }
+    }
+
+  private:
+    FunctorType Functor;
+    dax::exec::internal::ErrorMessageBuffer ErrorMessage;
+  };
+
+public:
+  // Override the thrust version of Schedule to handle exceptions that can occur
+  // because we are running on a CPU.
+  template<class FunctorType>
+  DAX_CONT_EXPORT
+  static void Schedule(FunctorType functor, dax::Id numInstances)
+  {
+    Superclass::Schedule(
+          DeviceAdapterAlgorithm::ScheduleKernel<FunctorType>(functor),
+          numInstances);
+  }
+
 };
-
-} // namespace detail
-
-// Override the thrust version of Schedule to handle exceptions that can occur
-// because we are running on a CPU.
-template<class FunctorType>
-DAX_CONT_EXPORT void LegacySchedule(
-    FunctorType functor,
-    dax::Id numInstances,
-    dax::openmp::cont::DeviceAdapterTagOpenMP)
-{
-  dax::cont::internal::LegacySchedule(detail::ScheduleKernelOpenMP<FunctorType>(functor),
-           numInstances,
-           dax::thrust::cont::internal::DeviceAdapterTagThrust());
-}
 
 }
 }

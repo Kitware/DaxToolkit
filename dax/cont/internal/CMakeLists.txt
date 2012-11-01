@@ -20,6 +20,7 @@ set(headers
   ArrayManagerExecutionSerial.h
   ArrayManagerExecutionShareWithControl.h
   ArrayPortalShrink.h
+  ArrayTransfer.h
   Bindings.h
   DeviceAdapterAlgorithm.h
   DeviceAdapterAlgorithmSerial.h
