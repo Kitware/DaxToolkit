@@ -16,16 +16,17 @@
 #ifndef __dax_exec_WorkletGenerateTopology_h
 #define __dax_exec_WorkletGenerateTopology_h
 
-#include <dax/exec/internal/WorkletBase.h>
 #include <dax/cont/arg/ConceptMap.h>
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/arg/Topology.h>
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/Tag.h>
+#include <dax/cont/sig/VisitIndex.h>
 #include <dax/exec/arg/Bind.h>
 #include <dax/exec/arg/BindCellPoints.h>
 #include <dax/exec/arg/FieldPortal.h>
+#include <dax/exec/internal/WorkletBase.h>
 
 #include <boost/mpl/if.hpp>
 #include <boost/type_traits/is_same.hpp>
@@ -49,6 +50,7 @@ protected:
   typedef dax::cont::arg::Topology Topology;
   typedef dax::cont::sig::Cell Cell;
   typedef dax::cont::sig::Point Point;
+  typedef dax::cont::sig::VisitIndex VisitIndex;
 };
 
 namespace arg {

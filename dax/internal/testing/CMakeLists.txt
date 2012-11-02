@@ -25,5 +25,6 @@ set(unit_tests
   UnitTestMembers.cxx
   UnitTestTags.cxx
   UnitTestTesting.cxx
+  UnitTestWorkletSignatureFunctions.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

@@ -24,6 +24,17 @@ namespace exec {
 namespace internal {
 namespace kernel {
 
+template<class Worklet, typename CSig, typename ESig>
+class DerivedWorklet : public Worklet
+{
+public:
+  DerivedWorklet(const Worklet& worklet):
+    Worklet(worklet)
+    {}
+  typedef CSig ControlSignature;
+  typedef ESig ExecutionSignature;
+};
+
 struct ClearUsedPointsFunctor : public WorkletMapField
 {
   typedef void ControlSignature(Field(Out));
@@ -56,6 +67,17 @@ struct GetUsedPointsFunctor : public WorkletMapField
   DAX_EXEC_EXPORT void operator()(T& t) const
   {
     t = static_cast<T>(1);
+  }
+};
+
+struct ComputeVisitIndex : public WorkletMapField
+{
+  typedef void ControlSignature(Field(Out));
+  typedef void ExecutionSignature(_1,WorkId);
+
+  DAX_EXEC_EXPORT void operator()(dax::Id& visitIndex, const dax::Id& workId) const
+  {
+    visitIndex = workId - visitIndex;
   }
 };
 
