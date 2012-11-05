@@ -21,6 +21,7 @@ set(headers
   Derivative.h
   ExecutionObjectBase.h
   Interpolate.h
+  InterpolateLine.h
   ParametricCoordinates.h
   WorkletGenerateTopology.h
   WorkletMapCell.h
