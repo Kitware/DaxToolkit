@@ -13,7 +13,7 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#include <dax/exec/InterpolateLine.h>
+#include <dax/exec/Interpolate.h>
 #include <dax/Types.h>
 
 #include <dax/internal/testing/Testing.h>

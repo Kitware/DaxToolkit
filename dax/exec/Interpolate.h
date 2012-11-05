@@ -45,6 +45,15 @@ DAX_EXEC_EXPORT ValueType CellInterpolate(
   return result;
 }
 
+//-----------------------------------------------------------------------------
+template<typename ValueType,typename WeightType>
+DAX_EXEC_EXPORT ValueType InterpolateLine(
+    const ValueType &a,
+    const ValueType &b,
+    const WeightType &w)
+{
+  return a + w * (b-a);
+}
 }};
 
 #endif //__dax_exec_Interpolate_h
