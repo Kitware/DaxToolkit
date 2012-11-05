@@ -21,7 +21,7 @@
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
 #include <dax/cont/Scheduler.h>
-#include <dax/cont/ScheduleMapAdapter.h>
+#include <dax/cont/PermutationContainer.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 

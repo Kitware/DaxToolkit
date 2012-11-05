@@ -14,14 +14,15 @@
 //
 //=============================================================================
 
-#ifndef __dax_cont_ScheduleMapAdapter_h
-#define __dax_cont_ScheduleMapAdapter_h
+#ifndef __dax_cont_PermutationContainer_h
+#define __dax_cont_PermutationContainer_h
 
 #include <dax/Types.h>
 
-namespace dax { namespace cont {
+namespace dax {
+namespace cont {
 
-/// \headerfile ScheduleMapAdapter.h dax/cont/ScheduleMapAdapter.h
+/// \headerfile PermutationContainer.h dax/cont/PermutationContainer.h
 /// \brief  Creates a Key Value pair of objects that will be used
 /// as a single parameter on the execution side for a worklet.
 
@@ -34,50 +35,49 @@ namespace dax { namespace cont {
 /// will call GetNumberOfValues() on it and pass that value to the
 /// ConceptMap of the Value Object as the size to upload ( ToExecution method ).
 /// If the object doesn't have a size since it self, you can set
-/// the SetValueSize method on the ScheduleMapAdapter to give a custom allocation
+/// the SetValueSize method on the PermutationContainer to give a custom allocation
 /// size
 
-template<class KClassType,
-         class VClassType>
-class ScheduleMapAdapter
+template<class KeyType,
+         class ValueType>
+class PermutationContainer
 {
-private:
-  typedef KClassType KeyClassType;
-  typedef VClassType ValueClassType;
-
-  KeyClassType& Key_;
-  ValueClassType& Value_;
-  dax::Id ValueSizeToAllocate;
 public:
-  DAX_CONT_EXPORT ScheduleMapAdapter(KeyClassType& k,
-                                     ValueClassType& v,
-                                     dax::Id valueLen):
+  DAX_CONT_EXPORT PermutationContainer(KeyType& k,
+                                       ValueType& v,
+                                       dax::Id valueLen):
     Key_(k),
     Value_(v),
     ValueSizeToAllocate(valueLen)
-    {
-    }
+  {
+  }
 
   DAX_CONT_EXPORT void SetValueSize(dax::Id v) { this->ValueSizeToAllocate = v; }
   DAX_CONT_EXPORT dax::Id GetValueSize() const
-    {
+  {
     return this->ValueSizeToAllocate;
-    }
+  }
 
   //should really only be used by the FieldMap Concept
-  DAX_CONT_EXPORT KeyClassType Key() const { return Key_; }
-  DAX_CONT_EXPORT ValueClassType Value() const { return Value_; }
+  DAX_CONT_EXPORT KeyType Key() const { return Key_; }
+  DAX_CONT_EXPORT ValueType Value() const { return Value_; }
+
+private:
+
+  KeyType& Key_;
+  ValueType& Value_;
+  dax::Id ValueSizeToAllocate;
 };
 
 
 template<class Key, class Value>
 DAX_CONT_EXPORT
-dax::cont::ScheduleMapAdapter<Key,Value>
+dax::cont::PermutationContainer<Key,Value>
 make_MapAdapter(Key& k,Value& v, dax::Id valueLen)
-  {
-  return dax::cont::ScheduleMapAdapter<Key,Value>(k,v,valueLen);
-  }
+{
+  return dax::cont::PermutationContainer<Key,Value>(k,v,valueLen);
+}
 
 } } // namespace dax::cont
 
-#endif // __dax_cont_ScheduleMapAdapter_h
+#endif // __dax_cont_PermutationContainer_h
