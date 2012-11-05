@@ -14,16 +14,21 @@
 //
 //=============================================================================
 
-#include <dax/cont/DeviceAdapterSerial.h>
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_OPENMP
+#include <dax/openmp/cont/DeviceAdapterOpenMP.h>
+
+//set up piston
+#define SPACE thrust::detail::default_device_space_tag
+
 #include <vtkImageData.h>
 #include <vtkNew.h>
 
-#include "PipelineVTK.h"
-#include "VTKPipeline.h"
+#include "PipelineOpenMPPiston.h"
+#include "PistonPipeline.h"
 
-void RunPipelineVTK(int pipeline, const dax::cont::UniformGrid<>& dgrid, vtkImageData* grid)
+void RunPipelinePISTON(int pipeline, const dax::cont::UniformGrid<>& dgrid, vtkImageData* grid)
 {
-  RunVTKPipeline(dgrid,grid);
+  RunPISTONPipeline(dgrid,grid);
 }
 
 #include "ArgumentsParser.h"
@@ -32,6 +37,7 @@ void RunPipelineVTK(int pipeline, const dax::cont::UniformGrid<>& dgrid, vtkImag
 //create a dax and vtk image structure of the same size
 dax::cont::UniformGrid<> CreateStructures(vtkImageData *grid, dax::Id dim)
 {
+
   grid->SetOrigin(0.0, 0.0, 0.0);
   grid->SetSpacing(1.0, 1.0, 1.0);
   grid->SetExtent(0, dim-1,0, dim-1,0, dim-1);
@@ -60,7 +66,7 @@ int main(int argc, char* argv[])
   int pipeline = parser.pipeline();
   std::cout << "Pipeline #" << pipeline << std::endl;
 
-  RunPipelineVTK(pipeline, dgrid, grid.GetPointer());
+  RunPipelinePISTON(pipeline, dgrid, grid.GetPointer());
 
   return 0;
 }

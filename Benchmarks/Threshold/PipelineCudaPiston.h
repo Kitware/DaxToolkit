@@ -14,8 +14,8 @@
 //
 //=============================================================================
 
-#ifndef __PipelinePISTON_h
-#define __PipelinePISTON_h
+#ifndef __PipelineCudaPiston_h
+#define __PipelineCudaPiston_h
 
 #include <dax/cont/UniformGrid.h>
 
@@ -23,4 +23,4 @@ class vtkImageData;
 
 void RunPipelinePISTON(int pipeline, const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid);
 
-#endif //__PipelinePISTON_h
+#endif //__PipelineCudaPiston_h

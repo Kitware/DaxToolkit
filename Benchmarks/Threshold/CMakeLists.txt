@@ -106,25 +106,45 @@ endif()
 #-----------------------------------------------------------------------------
 if(DAX_ENABLE_PISTON_THRESHOLD_BENCHMARK)
   set(pistonHeaders
-    PISTONPipeline.h
+    PistonPipeline.h
     )
   include(${VTK_USE_FILE})
   include_directories(${PISTON_INCLUDE})
-  cuda_add_executable(ThresholdTimingPISTON ${sources} ${pistonHeaders} PipelinePISTON.cu)
-  set_source_files_properties(${pistonHeaders} PROPERTIES HEADER_FILE_ONLY TRUE)
-  target_link_libraries(ThresholdTimingPISTON
-    ${Boost_LIBRARIES}
-    vtkCommonCore
-    vtkCommonDataModel
-    vtkCommonExecutionModel
-    vtkFiltersCore
-    vtkFiltersGeometry
-    )
 
-  add_test(ThresholdTimingPiston1-128
-    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingPISTON --pipeline 1 --size 128)
-  add_test(ThresholdTimingPiston1-256
-    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingPISTON --pipeline 1 --size 256)
+  if (DAX_ENABLE_OPENMP)
+    add_executable(ThresholdTimingOpenMPPiston ${sources} ${pistonHeaders} PipelineOpenMPPiston.cxx)
+    target_link_libraries(ThresholdTimingOpenMPPiston
+      ${Boost_LIBRARIES}
+      vtkCommonCore
+      vtkCommonDataModel
+      vtkCommonExecutionModel
+      vtkFiltersCore
+      vtkFiltersGeometry
+      )
+
+    add_test(ThresholdTimingOpenMPP1-128
+      ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingOpenMPPiston --pipeline 1 --size 128)
+    add_test(ThresholdTimingOpenMP1-256
+      ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingOpenMPPiston --pipeline 1 --size 256)
+  endif()
+
+  if (DAX_ENABLE_CUDA)
+    cuda_add_executable(ThresholdTimingCudaPiston ${sources} ${pistonHeaders} PipelineCudaPiston.cu)
+    set_source_files_properties(${pistonHeaders} PROPERTIES HEADER_FILE_ONLY TRUE)
+    target_link_libraries(ThresholdTimingCudaPiston
+      ${Boost_LIBRARIES}
+      vtkCommonCore
+      vtkCommonDataModel
+      vtkCommonExecutionModel
+      vtkFiltersCore
+      vtkFiltersGeometry
+      )
+
+    add_test(ThresholdTimingPiston1-128
+      ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingCudaPiston --pipeline 1 --size 128)
+    add_test(ThresholdTimingPiston1-256
+      ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingCudaPiston --pipeline 1 --size 256)
+  endif()
 endif()
 
 #-----------------------------------------------------------------------------
