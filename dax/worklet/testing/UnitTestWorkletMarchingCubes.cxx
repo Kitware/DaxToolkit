@@ -108,8 +108,7 @@ struct TestMarchingCubesWorklet
       std::cout << "Got error: " << error.GetMessage() << std::endl;
       DAX_TEST_ASSERT(true==false,error.GetMessage());
       }
-
-    DAX_TEST_ASSERT(outGrid.GetNumberOfCells()*3==outGridCoordinates.GetNumberOfValues(),
+    DAX_TEST_ASSERT(outGrid.GetNumberOfCells()==outGridCoordinates.GetNumberOfValues(),
                     "Incorrect number of points in the output grid");
 
     }
