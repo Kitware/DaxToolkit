@@ -89,8 +89,8 @@ public:
 
 
   template<class InputCellType, class OutputCellType>
-  DAX_EXEC_EXPORT void operator()(const InputCellType &inputCell,
-                                  const OutputCellType &outCell,
+  DAX_EXEC_EXPORT void operator()(const InputCellType &daxNotUsed(inputCell),
+                                  const OutputCellType &daxNotUsed(outCell),
                                   const dax::Tuple<dax::Scalar,InputCellType::NUM_POINTS> &values,
                                   const dax::Tuple<dax::Vector3,InputCellType::NUM_POINTS> &coordinates,
                                   dax::Tuple<dax::Vector3,OutputCellType::NUM_POINTS>& outCoordinates,
