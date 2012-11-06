@@ -181,9 +181,9 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
            grid, intermediate1, classification);
 
   ScheduleGT resolveTopology(classification);
-  resolveTopology.SetRemoveDuplicatePoints(false);
+  //resolveTopology.SetRemoveDuplicatePoints(false);
   schedule.Invoke(resolveTopology,grid,grid2);
-  //resolveTopology.CompactPointField(intermediate1,resultHandle);
+  resolveTopology.CompactPointField(intermediate1,resultHandle);
 
 
   double time = timer.elapsed();
@@ -197,10 +197,10 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
 
 
   //rough dump to file
- std::ofstream file;
- file.open ("daxResult.vtk");
- PrintContentsToStream(grid2,file);
- file.close();
+//  std::ofstream file;
+//  file.open ("daxResult.vtk");
+//  PrintContentsToStream(grid2,file);
+//  file.close();
 
   CheckValues(resultHandle);
 }
