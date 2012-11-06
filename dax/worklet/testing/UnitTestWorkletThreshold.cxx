@@ -89,15 +89,15 @@ void CheckValues(dax::cont::ArrayHandle<T,Container,Device> arrayHandle)
 class TestThresholdTopology : public dax::exec::WorkletGenerateTopology
 {
 public:
-  // Returning a tuple of connections feels a bit clunky.  Is there a better
-  // way of specifying the output cell type and generating a cell?
   typedef void ControlSignature(Topology, Topology(Out),Field(In));
-  typedef void ExecutionSignature(_1,_2,_3);
+  typedef void ExecutionSignature(_1,_2,_3,VisitIndex);
 
   template<typename InputCellType, typename OutputCellType, typename T>
   DAX_EXEC_EXPORT
-  void operator()(InputCellType const& in, OutputCellType &out, const T&) const
+  void operator()(InputCellType const& in, OutputCellType &out, const T&,
+                  const dax::Id& visit_index) const
   {
+    DAX_TEST_ASSERT(visit_index==0, "Encountered bad visit index value.");
     out.SetPointIndices(in.GetPointIndices());
   }
 };
@@ -186,7 +186,8 @@ struct TestThresholdWorklet
 //-----------------------------------------------------------------------------
 void TestThreshold()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestThresholdWorklet());
+  dax::cont::internal::GridTesting::TryAllGridTypes(TestThresholdWorklet(),
+                     dax::cont::internal::GridTesting::TypeCheckUniformGrid());
   }
 } // Anonymous namespace
 

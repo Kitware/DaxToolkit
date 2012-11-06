@@ -14,16 +14,16 @@
 ##
 ##=============================================================================
 
-set(headers
-  ExportMacros.h
-  GetNthType.h
-  MathSystemFunctions.h
-  Members.h
-  ParameterPackCxx03.h
-  Tags.h
-  WorkletSignatureFunctions.h
-  )
+#-----------------------------------------------------------------------------
+#Include VTK so we can benchmark agianst it
+option(DAX_ENABLE_VTK_TESTING FALSE)
+if(DAX_ENABLE_VTK_TESTING)
+  find_package(VTK REQUIRED)
+endif()
 
-dax_declare_headers(${headers})
-
-add_subdirectory(testing)
+#-----------------------------------------------------------------------------
+if(DAX_ENABLE_VTK_TESTING)
+  include(${VTK_USE_FILE})
+  add_executable(testMC TestMarchingCubes.cxx)
+  target_link_libraries(testMC vtkCommonDataModel vtkIOGeometry)
+endif()

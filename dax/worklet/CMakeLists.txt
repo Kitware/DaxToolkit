@@ -30,4 +30,5 @@ set(worklets
 
 dax_declare_worklets(${worklets})
 
+add_subdirectory(internal)
 add_subdirectory(testing)

@@ -38,6 +38,16 @@ namespace placeholders {
 
 } // namespace placeholders
 
+
+/// \headerfile Arg.h dax/cont/sig/Arg.h
+/// \brief Converts type T to a Arg placeholder, presumes T::value returns an integer
+/// Is designed as a boost mpl metafunction.
+struct to_placeholder
+{
+  template<typename T>
+  struct apply { typedef dax::cont::sig::Arg<T::value> type; };
+};
+
 }}} // namespace dax::cont::sig
 
 #endif //__dax_cont_sig_Arg_h
