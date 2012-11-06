@@ -111,8 +111,7 @@ void PrintContentsToStream(dax::cont::UnstructuredGrid<T>& grid, Stream &stream)
   stream << "POINTS " << num_points << " float" << std::endl;
 
   std::vector<dax::Vector3> contPoints(num_points);
-  grid.GetCoordinatesHandle().SetNewControlData(contPoints.begin(),contPoints.end());
-  grid.GetCoordinatesHandle().CompleteAsOutput();
+  grid.GetPointCoordinates().CopyInto(contPoints.begin());
 
   for(dax::Id i=0; i < num_points; ++i)
     {
@@ -132,8 +131,7 @@ void PrintContentsToStream(dax::cont::UnstructuredGrid<T>& grid, Stream &stream)
   stream << "CELLS " << num_cells << " " << num_cells  * (T::NUM_POINTS+1) << std::endl;
 
   std::vector<dax::Id> contTopo(num_cells*T::NUM_POINTS);
-  grid.GetTopologyHandle().SetNewControlData(contTopo.begin(),contTopo.end());
-  grid.GetTopologyHandle().CompleteAsOutput();
+  grid.GetCellConnections().CopyInto(contTopo.begin());
 
   dax::Id index=0;
   for(dax::Id i=0; i < num_cells; ++i,index+=8)
