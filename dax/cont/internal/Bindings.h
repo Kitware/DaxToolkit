@@ -32,6 +32,12 @@
 
 # include <boost/mpl/identity.hpp>
 # include <boost/mpl/if.hpp>
+# include <boost/mpl/equal.hpp>
+# include <boost/mpl/less.hpp>
+# include <boost/mpl/greater.hpp>
+# include <boost/mpl/not.hpp>
+# include <boost/mpl/logical.hpp>
+# include <boost/mpl/assert.hpp>
 # include <boost/static_assert.hpp>
 # include <boost/type_traits/function_traits.hpp>
 # include <boost/type_traits/is_same.hpp>
@@ -92,7 +98,16 @@ class BindingsMembers<Worklet(T...)>
   typedef typename Worklet::ControlSignature ControlSig;
   typedef boost::function_traits<ControlSig> ControlSigTraits;
   BOOST_STATIC_ASSERT((boost::is_same<typename ControlSigTraits::result_type, void>::value));
-  BOOST_STATIC_ASSERT((ControlSigTraits::arity == sizeof...(T)));
+
+  typedef boost::mpl::int_<ControlSigTraits::arity> ControlSigInt;
+  typedef boost::mpl::int_<sizeof...(T)> ParametersSigInt;
+
+  BOOST_STATIC_ASSERT_MSG((!boost::mpl::less< ControlSigInt,  ParametersSigInt>::value),
+                          "ERROR: Fewer arguments passed than specified by Control Signature");
+  BOOST_STATIC_ASSERT_MSG((!boost::mpl::greater< ControlSigInt,  ParametersSigInt>::value),
+                          "ERROR: More arguments passed that of the Control Signature");
+  BOOST_STATIC_ASSERT_MSG((boost::mpl::equal< ControlSigInt,  ParametersSigInt>::value),
+                          "ERROR: Please make sure the arguments passed match that of the Control Signature");
  public:
   typedef dax::internal::Members<void(T...), BindingsMemberMap<Worklet> > type;
 };
@@ -135,7 +150,16 @@ class BindingsMembers<Worklet(_dax_pp_T___)>
   typedef typename Worklet::ControlSignature ControlSig;
   typedef boost::function_traits<ControlSig> ControlSigTraits;
   BOOST_STATIC_ASSERT((boost::is_same<typename ControlSigTraits::result_type, void>::value));
-  BOOST_STATIC_ASSERT((ControlSigTraits::arity == _dax_pp_sizeof___T));
+
+  typedef boost::mpl::int_<ControlSigTraits::arity> ControlSigInt;
+  typedef boost::mpl::int_<_dax_pp_sizeof___T> ParametersSigInt;
+
+  BOOST_MPL_ASSERT_MSG((boost::mpl::not_<boost::mpl::less< ControlSigInt,  ParametersSigInt> >::value),
+                       "@@@ERROR: Fewer arguments passed than specified by Control Signature@@@", (void));
+  BOOST_MPL_ASSERT_MSG((<boost::mpl::greater< ControlSigInt,  ParametersSigInt>::value),
+                       "@@@ERROR: More arguments passed that of the Control Signature@@@", (void));
+//  BOOST_STATIC_ASSERT_MSG((boost::mpl::equal< ControlSigInt,  ParametersSigInt>::value),
+//                          "ERROR: Please make sure the arguments passed match that of the Control Signature");
  public:
   typedef dax::internal::Members<void(_dax_pp_T___), BindingsMemberMap<Worklet> > type;
 };
