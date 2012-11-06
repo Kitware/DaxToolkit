@@ -111,8 +111,7 @@ void PrintContentsToStream(dax::cont::UnstructuredGrid<T>& grid, Stream &stream)
   stream << "POINTS " << num_points << " float" << std::endl;
 
   std::vector<dax::Vector3> contPoints(num_points);
-  grid.GetCoordinatesHandle().SetNewControlData(contPoints.begin(),contPoints.end());
-  grid.GetCoordinatesHandle().CompleteAsOutput();
+  grid.GetPointCoordinates().CopyInto(contPoints.begin());
 
   for(dax::Id i=0; i < num_points; ++i)
     {
@@ -123,7 +122,7 @@ void PrintContentsToStream(dax::cont::UnstructuredGrid<T>& grid, Stream &stream)
       stream << std::endl; //pump new line after each 3rd vector
       }
     }
-  if(num_points%3==2)
+  if(num_points%3!=0)
     {
     stream << std::endl;
     }
@@ -132,8 +131,7 @@ void PrintContentsToStream(dax::cont::UnstructuredGrid<T>& grid, Stream &stream)
   stream << "CELLS " << num_cells << " " << num_cells  * (T::NUM_POINTS+1) << std::endl;
 
   std::vector<dax::Id> contTopo(num_cells*T::NUM_POINTS);
-  grid.GetTopologyHandle().SetNewControlData(contTopo.begin(),contTopo.end());
-  grid.GetTopologyHandle().CompleteAsOutput();
+  grid.GetCellConnections().CopyInto(contTopo.begin());
 
   dax::Id index=0;
   for(dax::Id i=0; i < num_cells; ++i,index+=8)
@@ -141,20 +139,18 @@ void PrintContentsToStream(dax::cont::UnstructuredGrid<T>& grid, Stream &stream)
     stream << T::NUM_POINTS << " ";
     stream << contTopo[index+0] << " ";
     stream << contTopo[index+1] << " ";
-    stream << contTopo[index+3] << " ";
     stream << contTopo[index+2] << " ";
+    stream << contTopo[index+3] << " ";
     stream << contTopo[index+4] << " ";
     stream << contTopo[index+5] << " ";
-    stream << contTopo[index+7] << " ";
     stream << contTopo[index+6] << " ";
-
-    stream << std::endl;
+    stream << contTopo[index+7] << std::endl;
     }
   stream << std::endl;
   stream << "CELL_TYPES " << num_cells << std::endl;
   for(dax::Id i=0; i < num_cells; ++i)
     {
-    stream << "11" << std::endl; //11 is voxel && 12 is hexa
+    stream << "12" << std::endl; //11 is voxel && 12 is hexa
     }
   }
 
