@@ -122,7 +122,7 @@ void PrintContentsToStream(dax::cont::UnstructuredGrid<T>& grid, Stream &stream)
       stream << std::endl; //pump new line after each 3rd vector
       }
     }
-  if(num_points%3==2)
+  if(num_points%3!=0)
     {
     stream << std::endl;
     }
@@ -139,20 +139,18 @@ void PrintContentsToStream(dax::cont::UnstructuredGrid<T>& grid, Stream &stream)
     stream << T::NUM_POINTS << " ";
     stream << contTopo[index+0] << " ";
     stream << contTopo[index+1] << " ";
-    stream << contTopo[index+3] << " ";
     stream << contTopo[index+2] << " ";
+    stream << contTopo[index+3] << " ";
     stream << contTopo[index+4] << " ";
     stream << contTopo[index+5] << " ";
-    stream << contTopo[index+7] << " ";
     stream << contTopo[index+6] << " ";
-
-    stream << std::endl;
+    stream << contTopo[index+7] << std::endl;
     }
   stream << std::endl;
   stream << "CELL_TYPES " << num_cells << std::endl;
   for(dax::Id i=0; i < num_cells; ++i)
     {
-    stream << "11" << std::endl; //11 is voxel && 12 is hexa
+    stream << "12" << std::endl; //11 is voxel && 12 is hexa
     }
   }
 

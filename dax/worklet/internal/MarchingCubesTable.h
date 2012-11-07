@@ -25,7 +25,7 @@ namespace internal{
 namespace marchingcubes{
 
 // ------------------------------------------------------------------- numFaces
-static DAX_EXEC_CONSTANT_EXPORT int numFaces[256] =
+DAX_EXEC_CONSTANT_EXPORT const int numFaces[256] =
 { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 2,
   1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 3,
   1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 3,
@@ -52,7 +52,7 @@ struct TriangleCases
 // ................................................................... triTable
 // Edges to intersect.  Three at a time form a triangle. Comments at
 // end of line indicate case number (0->255) and base case number (0->15).
-static DAX_EXEC_CONSTANT_EXPORT TriangleCases triTable[] = {
+DAX_EXEC_CONSTANT_EXPORT const TriangleCases triTable[] = {
   {{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}}, /* 0 0 */
   {{ 0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}}, /* 1 1 */
   {{ 0, 9, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}}, /* 2 1 */

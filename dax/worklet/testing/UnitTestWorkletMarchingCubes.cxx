@@ -55,8 +55,9 @@ struct TestMarchingCubesWorklet
     dax::cont::UnstructuredGrid<dax::exec::CellTriangle> outGrid;
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
-    std::vector<dax::Scalar> field(inGrid->GetNumberOfPoints());
-    for (dax::Id pointIndex = 0; pointIndex < field.size(); pointIndex++)
+    dax::Id numPoints = inGrid->GetNumberOfPoints();
+    std::vector<dax::Scalar> field(numPoints);
+    for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
       {
       dax::Vector3 coordinates = inGrid.GetPointCoordinates(pointIndex);
       field[pointIndex] = dax::dot(coordinates, trueGradient);

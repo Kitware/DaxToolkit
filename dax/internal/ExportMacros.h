@@ -31,11 +31,11 @@
 #ifdef DAX_CUDA
 #define DAX_EXEC_EXPORT inline __device__
 #define DAX_EXEC_CONT_EXPORT inline __device__ __host__
-#define DAX_EXEC_CONSTANT_EXPORT __device__ __constant__ const
+#define DAX_EXEC_CONSTANT_EXPORT __device__ __constant__
 #else
 #define DAX_EXEC_EXPORT inline
 #define DAX_EXEC_CONT_EXPORT inline
-#define DAX_EXEC_CONSTANT_EXPORT const
+#define DAX_EXEC_CONSTANT_EXPORT
 #endif
 
 #define DAX_CONT_EXPORT inline
