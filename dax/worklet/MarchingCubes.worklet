@@ -40,7 +40,8 @@ namespace worklet {
 
 // --------------------------------------------------- GetVoxelClassification()
 template<typename T>
-inline unsigned char GetVoxelClassification(const T isoValue,const dax::Tuple<T,8>& values )
+DAX_EXEC_EXPORT
+unsigned char GetVoxelClassification(const T isoValue,const dax::Tuple<T,8>& values )
 {
   return ((values[0] <= isoValue) << 0 |
           (values[1] <= isoValue) << 1 |
