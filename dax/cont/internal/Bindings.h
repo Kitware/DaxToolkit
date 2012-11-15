@@ -32,12 +32,6 @@
 
 
 # include <boost/mpl/if.hpp>
-# include <boost/mpl/less.hpp>
-# include <boost/mpl/not.hpp>
-# include <boost/mpl/assert.hpp>
-# include <boost/static_assert.hpp>
-# include <boost/type_traits/function_traits.hpp>
-# include <boost/type_traits/is_same.hpp>
 
 namespace dax { namespace cont { namespace internal {
 
@@ -92,25 +86,6 @@ struct GetConceptAndTagsImpl< R (*)(T...) >
 template <typename Worklet, typename...T>
 class BindingsMembers<Worklet(T...)>
 {
-  typedef typename Worklet::ControlSignature ControlSig;
-  typedef boost::function_traits<ControlSig> ControlSigTraits;
-  BOOST_STATIC_ASSERT((boost::is_same<typename ControlSigTraits::result_type, void>::value));
-
-  //we define the control signature length and the number of user parameters
-  //as compile time definintions to make the boost asserts easier to read
-  typedef boost::mpl::int_<ControlSigTraits::arity> ControlSigLength;
-  typedef boost::mpl::int_<sizeof...(T)> NumberOfUserParameters;
-
-  //user passed in not enough parameters
-  typedef boost::mpl::not_< boost::mpl::less< NumberOfUserParameters,
-                          ControlSigLength> > NotEnoughUserParameters;
-  //user passed in too many parameters
-  typedef boost::mpl::not_< boost::mpl::less<ControlSigLength,
-                          NumberOfUserParameters> > TooManyUserParameters;
-
-  BOOST_MPL_ASSERT( (NotEnoughUserParameters) );
-  BOOST_MPL_ASSERT( (TooManyUserParameters) );
-
  public:
   typedef dax::internal::Members<void(T...), BindingsMemberMap<Worklet> > type;
 };
@@ -150,31 +125,6 @@ struct GetConceptAndTagsImpl< R (*)(_dax_pp_T___) >
 template <typename Worklet, _dax_pp_typename___T>
 class BindingsMembers<Worklet(_dax_pp_T___)>
 {
-  typedef typename Worklet::ControlSignature ControlSig;
-  typedef boost::function_traits<ControlSig> ControlSigTraits;
-  BOOST_MPL_ASSERT((boost::is_same<typename ControlSigTraits::result_type, void>));
-  //we define the control signature length and the number of user parameters
-  //as compile time definintions to make the boost asserts easier to read
-  typedef boost::mpl::int_<ControlSigTraits::arity> ControlSigLength;
-  typedef boost::mpl::int_<_dax_pp_sizeof___T> NumberOfUserParameters;
-
-
-  //user passed in not enough parameters
-  typedef boost::mpl::not_< boost::mpl::less< NumberOfUserParameters,
-                          ControlSigLength> > NotEnoughUserParameters;
-  //user passed in too many parameters
-  typedef boost::mpl::not_< boost::mpl::less<ControlSigLength,
-                          NumberOfUserParameters> > TooManyUserParameters;
-
-  BOOST_MPL_ASSERT( (NotEnoughUserParameters) );
-  BOOST_MPL_ASSERT( (TooManyUserParameters) );
-
-  // BOOST_MPL_ASSERT_MSG((boost::mpl::not_<boost::mpl::less< ControlSigInt,  ParametersSigInt> >::value),
-  //                      "@@@ERROR: Fewer arguments passed than specified by Control Signature@@@", (void));
-  // BOOST_MPL_ASSERT_MSG((<boost::mpl::greater< ControlSigInt,  ParametersSigInt>::value),
-                       // "@@@ERROR: More arguments passed that of the Control Signature@@@", (void));
-//  BOOST_STATIC_ASSERT_MSG((boost::mpl::equal< ControlSigInt,  ParametersSigInt>::value),
-//                          "ERROR: Please make sure the arguments passed match that of the Control Signature");
  public:
   typedef dax::internal::Members<void(_dax_pp_T___), BindingsMemberMap<Worklet> > type;
 };
