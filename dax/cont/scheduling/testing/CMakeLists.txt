@@ -18,5 +18,6 @@ set(unit_tests
   UnitTestAddVisitIndexArg.cxx
   UnitTestCollectCount.cxx
   UnitTestCreateExecutionResources.cxx
+  UnitTestDetermineScheduler.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
