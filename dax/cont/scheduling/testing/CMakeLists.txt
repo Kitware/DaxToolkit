@@ -19,5 +19,6 @@ set(unit_tests
   UnitTestCollectCount.cxx
   UnitTestCreateExecutionResources.cxx
   UnitTestDetermineScheduler.cxx
+  UnitTestVerifyUserArgLength.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
