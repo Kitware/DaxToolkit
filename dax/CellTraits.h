@@ -31,12 +31,12 @@ struct CellTraits
 {
   /// Constant containing the number of vertices per cell.
   ///
-  const static dax::Id NUM_POINTS = 4;
+  const static int NUM_VERTICES = 4;
 
   /// This defines the topological dimensions of the class. 3 for polyhedra,
   /// 2 for polygons, 1 for lines, 0 for points.
   ///
-  const static dax::Id TOPOLOGICAL_DIMENSIONS = 3;
+  const static int TOPOLOGICAL_DIMENSIONS = 3;
 };
 #else // DAX_DOXYGEN_ONLY
     ;
@@ -45,43 +45,43 @@ struct CellTraits
 //-----------------------------------------------------------------------------
 
 template<> struct CellTraits<dax::CellTagHexahedron> {
-  const static dax::Id NUM_POINTS = 8;
-  const static dax::Id TOPOLOGICAL_DIMENSIONS = 3;
+  const static int NUM_VERTICES = 8;
+  const static int TOPOLOGICAL_DIMENSIONS = 3;
 };
 
 template<> struct CellTraits<dax::CellTagLine> {
-  const static dax::Id NUM_POINTS = 2;
-  const static dax::Id TOPOLOGICAL_DIMENSIONS = 1;
+  const static int NUM_VERTICES = 2;
+  const static int TOPOLOGICAL_DIMENSIONS = 1;
 };
 
 template<> struct CellTraits<dax::CellTagQuadrilateral> {
-  const static dax::Id NUM_POINTS = 4;
-  const static dax::Id TOPOLOGICAL_DIMENSIONS = 2;
+  const static int NUM_VERTICES = 4;
+  const static int TOPOLOGICAL_DIMENSIONS = 2;
 };
 
 template<> struct CellTraits<dax::CellTagTetrahedron> {
-  const static dax::Id NUM_POINTS = 4;
-  const static dax::Id TOPOLOGICAL_DIMENSIONS = 3;
+  const static int NUM_VERTICES = 4;
+  const static int TOPOLOGICAL_DIMENSIONS = 3;
 };
 
 template<> struct CellTraits<dax::CellTagTriangle> {
-  const static dax::Id NUM_POINTS = 3;
-  const static dax::Id TOPOLOGICAL_DIMENSIONS = 2;
+  const static int NUM_VERTICES = 3;
+  const static int TOPOLOGICAL_DIMENSIONS = 2;
 };
 
 template<> struct CellTraits<dax::CellTagVertex> {
-  const static dax::Id NUM_POINTS = 1;
-  const static dax::Id TOPOLOGICAL_DIMENSIONS = 0;
+  const static int NUM_VERTICES = 1;
+  const static int TOPOLOGICAL_DIMENSIONS = 0;
 };
 
 template<> struct CellTraits<dax::CellTagVoxel> {
-  const static dax::Id NUM_POINTS = 8;
-  const static dax::Id TOPOLOGICAL_DIMENSIONS = 3;
+  const static int NUM_VERTICES = 8;
+  const static int TOPOLOGICAL_DIMENSIONS = 3;
 };
 
 template<> struct CellTraits<dax::CellTagWedge> {
-  const static dax::Id NUM_POINTS = 6;
-  const static dax::Id TOPOLOGICAL_DIMENSIONS = 3;
+  const static int NUM_VERTICES = 6;
+  const static int TOPOLOGICAL_DIMENSIONS = 3;
 };
 
 } // namespace dax
