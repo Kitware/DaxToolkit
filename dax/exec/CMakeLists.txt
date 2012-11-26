@@ -25,6 +25,7 @@ set(headers
   CellVertex.h
   CellVoxel.h
   CellWedge.h
+  CellField.h
   CellVertices.h
   Derivative.h
   ExecutionObjectBase.h
