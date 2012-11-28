@@ -53,10 +53,10 @@ public:
   }
 
   dax::Id GetNumberOfPoints() const {
-    return this->Topology->GetNumberOfPoints();
+    return this->Topology.GetNumberOfPoints();
   }
   dax::Id GetNumberOfCells() const {
-    return this->Topology->GetNumberOfCells();
+    return this->Topology.GetNumberOfCells();
   }
 
   TopologyType GetTopology() const { return this->Topology; }
@@ -188,7 +188,8 @@ private:
     dax::exec::CellVertices<dax::CellTagVoxel> voxelVertices =
         TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
                                              cellIndex);
-    return dax::exec::CellVertices<dax::CellTagHexahedron>(voxelVertices);
+    return dax::exec::CellVertices<dax::CellTagHexahedron>(
+          voxelVertices.GetPointIndices());
   }
 
   template<class PT>

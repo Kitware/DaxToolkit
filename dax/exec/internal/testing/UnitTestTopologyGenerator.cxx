@@ -16,7 +16,9 @@
 
 #include <dax/exec/internal/testing/TestingTopologyGenerator.h>
 
-#include <dax/exec/Cell.h>
+#include <dax/CellTag.h>
+
+#include <dax/exec/CellVertices.h>
 
 #include <dax/exec/internal/ArrayPortalFromIterators.h>
 #include <dax/exec/internal/GridTopologies.h>
@@ -46,13 +48,13 @@ void TestVoxelGrid()
                   "Bad extent");
 }
 
-template<class CellType>
-void TestUnstructuredGrid()
+template<class CellTag>
+void TestUnstructuredGrid(CellTag)
 {
   typedef dax::exec::internal::ArrayPortalFromIterators<
       std::vector<dax::Id>::iterator> ConnectionsPortal;
   typedef dax::exec::internal::TopologyUnstructured
-      <CellType,ConnectionsPortal> TopologyType;
+      <CellTag,ConnectionsPortal> TopologyType;
 
   dax::exec::internal::TestTopology<TopologyType> generator;
   TopologyType topology = generator.GetTopology();
@@ -64,16 +66,19 @@ void TestUnstructuredGrid()
   dax::Id connectionIndex = 0;
   for (dax::Id cellIndex=0; cellIndex < topology.NumberOfCells; cellIndex++)
     {
-    dax::Tuple<dax::Id, CellType::NUM_POINTS> expectedConnections =
+    dax::exec::CellVertices<CellTag> expectedConnections =
         generator.GetCellConnections(cellIndex);
-    for (dax::Id pointIndex=0; pointIndex < CellType::NUM_POINTS; pointIndex++)
+    for (dax::Id vertexIndex=0;
+         vertexIndex < expectedConnections.NUM_VERTICES;
+         vertexIndex++)
       {
       dax::Id connection = topology.CellConnections.Get(connectionIndex);
       DAX_TEST_ASSERT(connection >= 0, "Bad cell connection");
       DAX_TEST_ASSERT(connection < topology.NumberOfPoints,
                       "Bad cell connection");
-      DAX_TEST_ASSERT(connection == expectedConnections[pointIndex],
-                      "Bad cell connection");
+      DAX_TEST_ASSERT(
+            connection == expectedConnections.GetPointIndex(vertexIndex),
+            "Bad cell connection");
       connectionIndex++;
       }
     }
@@ -82,22 +87,22 @@ void TestUnstructuredGrid()
 void TestHexahedronGrid()
 {
   std::cout << "Testing hexahedron grid." << std::endl;
-  typedef dax::exec::CellHexahedron CellType;
-  TestUnstructuredGrid<CellType>();
+  typedef dax::CellTagHexahedron CellTag;
+  TestUnstructuredGrid(CellTag());
 }
 
 void TestTetrahedronGrid()
 {
   std::cout << "Testing tetrahedron grid." << std::endl;
-  typedef dax::exec::CellTetrahedron CellType;
-  TestUnstructuredGrid<CellType>();
+  typedef dax::CellTagTetrahedron CellTag;
+  TestUnstructuredGrid(CellTag());
 }
 
 void TestTriangleGrid()
 {
   std::cout << "Testing triangle grid." << std::endl;
-  typedef dax::exec::CellTriangle CellType;
-  TestUnstructuredGrid<CellType>();
+  typedef dax::CellTagTriangle CellTag;
+  TestUnstructuredGrid(CellTag());
 }
 
 struct TestTemplatedTopology {
