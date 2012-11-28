@@ -54,10 +54,10 @@ private:
   const dax::Id Offset;
 };
 
-template<class CellTag, typename T>
+template<typename T, class CellTag>
 struct CellFieldTests
 {
-  typedef dax::exec::CellField<CellTag, T> CVType;
+  typedef dax::exec::CellField<T,CellTag> CVType;
   const static dax::Id NUM_VERTICES = CVType::NUM_VERTICES;
 
   static void TestSizesMatch()
@@ -164,7 +164,7 @@ struct TestCellFieldFunctorType
   template<typename T>
   void operator()(T)
   {
-    CellFieldTests<CellTag, T>::TestAll();
+    CellFieldTests<T, CellTag>::TestAll();
   }
 };
 

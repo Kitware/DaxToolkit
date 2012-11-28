@@ -178,7 +178,7 @@ struct ParametricCoordinates<dax::CellTagVertex>
 template<class CellTag>
 DAX_EXEC_EXPORT
 dax::Vector3 ParametricCoordinatesToWorldCoordinates(
-    const dax::exec::CellField<CellTag,dax::Vector3> &vertexCoordinates,
+    const dax::exec::CellField<dax::Vector3,CellTag> &vertexCoordinates,
     const dax::Vector3 &parametricCoords,
     CellTag)
 {
@@ -190,7 +190,7 @@ dax::Vector3 ParametricCoordinatesToWorldCoordinates(
 template<>
 DAX_EXEC_EXPORT
 dax::Vector3 ParametricCoordinatesToWorldCoordinates(
-    const dax::exec::CellField<dax::CellTagVoxel,dax::Vector3> &vertexCoordinates,
+    const dax::exec::CellField<dax::Vector3,dax::CellTagVoxel> &vertexCoordinates,
     const dax::Vector3 &parametricCoords,
     dax::CellTagVoxel)
 {
@@ -204,7 +204,7 @@ dax::Vector3 ParametricCoordinatesToWorldCoordinates(
 }
 
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellField<dax::CellTagVoxel,dax::Vector3> &vertexCoordinates,
+    const dax::exec::CellField<dax::Vector3,dax::CellTagVoxel> &vertexCoordinates,
     const dax::Vector3 &worldCoords,
     dax::CellTagVoxel)
 {
@@ -226,11 +226,11 @@ namespace detail {
 template<class CellTag>
 class JacobianFunctor3DCell {
   // Be careful!  Don't let member go out of scope!
-  const dax::exec::CellField<CellTag,dax::Vector3> &VertexCoordinates;
+  const dax::exec::CellField<dax::Vector3,CellTag> &VertexCoordinates;
 public:
   DAX_EXEC_EXPORT
   JacobianFunctor3DCell(
-      const dax::exec::CellField<CellTag,dax::Vector3> &vertexCoords)
+      const dax::exec::CellField<dax::Vector3,CellTag> &vertexCoords)
     : VertexCoordinates(vertexCoords) {  }
   DAX_EXEC_EXPORT
   dax::math::Matrix3x3 operator()(dax::Vector3 pcoords) const {
@@ -243,11 +243,11 @@ public:
 template<class CellTag>
 class CoodinatesFunctor3DCell {
   // Be careful!  Don't let member go out of scope!
-  const dax::exec::CellField<CellTag,dax::Vector3> &VertexCoordinates;
+  const dax::exec::CellField<dax::Vector3,CellTag> &VertexCoordinates;
 public:
   DAX_EXEC_EXPORT
   CoodinatesFunctor3DCell(
-      const dax::exec::CellField<CellTag,dax::Vector3> &vertexCoords)
+      const dax::exec::CellField<dax::Vector3,CellTag> &vertexCoords)
     : VertexCoordinates(vertexCoords) {  }
   DAX_EXEC_EXPORT
   dax::Vector3 operator()(dax::Vector3 pcoords) const {
@@ -259,7 +259,7 @@ public:
 } // Namespace detail
 
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellField<dax::CellTagHexahedron,dax::Vector3> &vertexCoords,
+    const dax::exec::CellField<dax::Vector3,dax::CellTagHexahedron> &vertexCoords,
     const dax::Vector3 &worldCoords,
     dax::CellTagHexahedron)
 {
@@ -271,7 +271,7 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 }
 
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellField<dax::CellTagWedge,dax::Vector3> &vertexCoords,
+    const dax::exec::CellField<dax::Vector3,dax::CellTagWedge> &vertexCoords,
     const dax::Vector3 &worldCoords,
     dax::CellTagWedge)
 {
@@ -284,7 +284,7 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 
 //-----------------------------------------------------------------------------
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellField<dax::CellTagTetrahedron,dax::Vector3>
+    const dax::exec::CellField<dax::Vector3,dax::CellTagTetrahedron>
         &vertexCoordinates,
     const dax::Vector3 &worldCoords,
     dax::CellTagTetrahedron)
@@ -334,7 +334,7 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 
 //-----------------------------------------------------------------------------
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellField<dax::CellTagTriangle,dax::Vector3>
+    const dax::exec::CellField<dax::Vector3,dax::CellTagTriangle>
         &vertexCoordinates,
     const dax::Vector3 &worldCoords,
     dax::CellTagTriangle)
@@ -427,13 +427,13 @@ namespace detail {
 
 class QuadrilateralJacobianFunctor {
   // Be careful!  Don't let member go out of scope!
-  const dax::exec::CellField<dax::CellTagQuadrilateral,dax::Vector3>
+  const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral>
       &VertexCoordinates;
   const dax::Id3 &DimensionSwizzle;
 public:
   DAX_EXEC_EXPORT
   QuadrilateralJacobianFunctor(
-      const dax::exec::CellField<dax::CellTagQuadrilateral,dax::Vector3>
+      const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral>
           &vertexCoords,
       const dax::Id3 &dimensionSwizzle)
     : VertexCoordinates(vertexCoords), DimensionSwizzle(dimensionSwizzle) {  }
@@ -474,13 +474,13 @@ public:
 };
 
 class QuadrilateralCoodinatesFunctor {
-  const dax::exec::CellField<dax::CellTagQuadrilateral,dax::Vector3>
+  const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral>
       &VertexCoordinates;
   const dax::Id3 &DimensionSwizzle;
 public:
   DAX_EXEC_EXPORT
   QuadrilateralCoodinatesFunctor(
-      const dax::exec::CellField<dax::CellTagQuadrilateral,dax::Vector3>
+      const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral>
           &vertexCoordinates,
       const dax::Id3 &dimensionSwizzle)
     : VertexCoordinates(vertexCoordinates),
@@ -499,7 +499,7 @@ public:
 } // Namespace detail
 
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellField<dax::CellTagQuadrilateral,dax::Vector3>
+    const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral>
         &vertexCoords,
     const dax::Vector3 &worldCoords,
     dax::CellTagQuadrilateral)
@@ -544,7 +544,7 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 
 //-----------------------------------------------------------------------------
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellField<dax::CellTagLine,dax::Vector3> &vertexCoords,
+    const dax::exec::CellField<dax::Vector3,dax::CellTagLine> &vertexCoords,
     const dax::Vector3 &worldCoords,
     dax::CellTagLine)
 {
@@ -566,7 +566,7 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 
 //-----------------------------------------------------------------------------
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellField<dax::CellTagVertex,dax::Vector3>
+    const dax::exec::CellField<dax::Vector3,dax::CellTagVertex>
       &daxNotUsed(vertexCoords),
     const dax::Vector3 &daxNotUsed(worldCoords),
     dax::CellTagVertex)

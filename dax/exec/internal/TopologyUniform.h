@@ -16,13 +16,8 @@
 #ifndef __dax__exec__internal__TopologyUniform_h
 #define __dax__exec__internal__TopologyUniform_h
 
+#include <dax/CellTag.h>
 #include <dax/Extent.h>
-
-namespace dax {
-namespace exec {
-class CellVoxel;
-}
-}
 
 namespace dax {
 namespace exec {
@@ -32,57 +27,52 @@ namespace internal {
 /// rectilinear grid.
 ///
 struct TopologyUniform {
-  typedef dax::exec::CellVoxel CellType;
+  typedef dax::CellTagVoxel CellTag;
 
   Vector3 Origin;
   Vector3 Spacing;
   Extent3 Extent;
+
+  /// Returns the number of points in a uniform rectilinear grid.
+  ///
+  DAX_EXEC_EXPORT
+  dax::Id GetNumberOfPoints() const
+  {
+    dax::Id3 dims = dax::extentDimensions(this->Extent);
+    return dims[0]*dims[1]*dims[2];
+  }
+
+  /// Returns the number of cells in a uniform rectilinear grid.
+  ///
+  DAX_EXEC_EXPORT
+  dax::Id GetNumberOfCells() const
+  {
+    dax::Id3 dims = dax::extentDimensions(this->Extent)
+                    - dax::make_Id3(1, 1, 1);
+    return dims[0]*dims[1]*dims[2];
+  }
+
+  /// Returns the point position in a structured grid for a given i, j, and k
+  /// value stored in /c ijk
+  ///
+  DAX_EXEC_EXPORT
+  dax::Vector3 GetPointCoordiantes(dax::Id3 ijk) const
+  {
+    return dax::make_Vector3(this->Origin[0] + ijk[0] * this->Spacing[0],
+                             this->Origin[1] + ijk[1] * this->Spacing[1],
+                             this->Origin[2] + ijk[2] * this->Spacing[2]);
+  }
+
+  /// Returns the point position in a structured grid for a given index
+  /// which is represented by /c pointIndex
+  ///
+  DAX_EXEC_EXPORT
+  dax::Vector3 GetPointCoordiantes(dax::Id pointIndex) const
+  {
+    dax::Id3 ijk = flatIndexToIndex3(pointIndex, this->Extent);
+    return this->GetPointCoordiantes(ijk);
+  }
 } __attribute__ ((aligned(4)));
-
-/// Returns the number of points in a uniform rectilinear grid.
-///
-DAX_EXEC_EXPORT
-dax::Id numberOfPoints(const TopologyUniform &GridTopology)
-{
-  dax::Id3 dims = dax::extentDimensions(GridTopology.Extent);
-  return dims[0]*dims[1]*dims[2];
-}
-
-/// Returns the number of cells in a uniform rectilinear grid.
-///
-template<typename T>
-DAX_EXEC_EXPORT
-dax::Id numberOfCells(const T &GridTopology)
-{
-  dax::Id3 dims = dax::extentDimensions(GridTopology.Extent)
-                  - dax::make_Id3(1, 1, 1);
-  return dims[0]*dims[1]*dims[2];
-}
-
-/// Returns the point position in a structured grid for a given i, j, and k
-/// value stored in /c ijk
-///
-DAX_EXEC_EXPORT
-dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
-                              dax::Id3 ijk)
-{
-  dax::Vector3 origin = grid.Origin;
-  dax::Vector3 spacing = grid.Spacing;
-  return dax::make_Vector3(origin[0] + ijk[0] * spacing[0],
-                           origin[1] + ijk[1] * spacing[1],
-                           origin[2] + ijk[2] * spacing[2]);
-}
-
-/// Returns the point position in a structured grid for a given index
-/// which is represented by /c pointIndex
-///
-DAX_EXEC_EXPORT
-dax::Vector3 pointCoordiantes(const TopologyUniform &grid,
-                              dax::Id pointIndex)
-{
-  dax::Id3 ijk = flatIndexToIndex3(pointIndex, grid.Extent);
-  return pointCoordiantes(grid, ijk);
-}
 
 template<class PointConnectionType>
 DAX_EXEC_EXPORT

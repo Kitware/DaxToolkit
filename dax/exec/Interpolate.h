@@ -27,7 +27,7 @@ namespace dax { namespace exec {
 //-----------------------------------------------------------------------------
 template<typename ValueType, class CellTag>
 DAX_EXEC_EXPORT ValueType CellInterpolate(
-    const dax::exec::CellField<CellTag,ValueType> &pointFieldValues,
+    const dax::exec::CellField<ValueType,CellTag> &pointFieldValues,
     const dax::Vector3 &parametricCoords,
     CellTag)
 {

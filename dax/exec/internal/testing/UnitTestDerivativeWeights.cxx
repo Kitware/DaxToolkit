@@ -16,6 +16,8 @@
 
 #include <dax/exec/internal/DerivativeWeights.h>
 
+#include <dax/CellTraits.h>
+
 #include <dax/exec/ParametricCoordinates.h>
 
 #include <dax/exec/internal/testing/TestingTopologyGenerator.h>
@@ -24,13 +26,14 @@
 
 namespace {
 
-template<class CellType>
+template<class CellTag>
 void TestWeightOnVertex(dax::Vector3 weight,
                         dax::Vector3 derivativePCoord,
-                        dax::Vector3 vertexPCoord)
+                        dax::Vector3 vertexPCoord,
+                        CellTag)
 {
   dax::Vector3 signs = 2.0*vertexPCoord - dax::make_Vector3(1.0, 1.0, 1.0);
-  if (CellType::TOPOLOGICAL_DIMENSIONS < 3) { signs[2] = 0.0; }
+  if (dax::CellTraits<CellTag>::TOPOLOGICAL_DIMENSIONS < 3) { signs[2] = 0.0; }
 
   if (vertexPCoord == derivativePCoord)
     {
@@ -67,9 +70,10 @@ void TestWeightOnVertex(dax::Vector3 weight,
 // Wedge is linear in two dimensions and nonlinear in third.  Has
 // weird derivatives.
 template<>
-void TestWeightOnVertex<dax::exec::CellWedge>(dax::Vector3 weight,
-                                              dax::Vector3 derivativePCoord,
-                                              dax::Vector3 vertexPCoord)
+void TestWeightOnVertex(dax::Vector3 weight,
+                        dax::Vector3 derivativePCoord,
+                        dax::Vector3 vertexPCoord,
+                        dax::CellTagWedge)
 {
   dax::Scalar zFactor = ((vertexPCoord[2] == 0.0)
                          ? (1.0 - derivativePCoord[2]): derivativePCoord[2]);
@@ -103,12 +107,13 @@ void TestWeightOnVertex<dax::exec::CellWedge>(dax::Vector3 weight,
     }
 }
 
-template<class CellType>
+template<class CellTag>
 void TestWeightInMiddle(dax::Vector3 weight,
-                        dax::Vector3 vertexPCoord)
+                        dax::Vector3 vertexPCoord,
+                        CellTag)
 {
   dax::Scalar expectedWeight = 0.0;
-  switch (CellType::TOPOLOGICAL_DIMENSIONS)
+  switch (dax::CellTraits<CellTag>::TOPOLOGICAL_DIMENSIONS)
     {
     case 3:  expectedWeight = 0.25;  break;
     case 2:  expectedWeight = 0.5;   break;
@@ -116,7 +121,7 @@ void TestWeightInMiddle(dax::Vector3 weight,
     }
 
   for (int component = 0;
-       component < CellType::TOPOLOGICAL_DIMENSIONS;
+       component < dax::CellTraits<CellTag>::TOPOLOGICAL_DIMENSIONS;
        component++)
     {
     if (vertexPCoord[component] < 0.5)
@@ -131,8 +136,9 @@ void TestWeightInMiddle(dax::Vector3 weight,
 }
 
 template<>
-void TestWeightInMiddle<dax::exec::CellWedge>(dax::Vector3 weight,
-                                              dax::Vector3 vertexPCoord)
+void TestWeightInMiddle(dax::Vector3 weight,
+                        dax::Vector3 vertexPCoord,
+                        dax::CellTagWedge)
 {
   dax::Scalar zFactor = 0.5;
   dax::Scalar zSign = ((vertexPCoord[2] == 0.0) ? -1.0 : 1.0);
@@ -161,44 +167,44 @@ void TestWeightInMiddle<dax::exec::CellWedge>(dax::Vector3 weight,
     }
 }
 
-template<class CellType>
-void TestDerivativeWeights()
+template<class CellTag>
+void TestDerivativeWeights(CellTag)
 {
+  const int NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
+
   // Check Derivative at each corner.
   for (dax::Id vertexIndex = 0;
-       vertexIndex < CellType::NUM_POINTS;
+       vertexIndex < NUM_VERTICES;
        vertexIndex++)
     {
     dax::Vector3 pcoords =
-        dax::exec::ParametricCoordinates<CellType>::Vertex()[vertexIndex];
+        dax::exec::ParametricCoordinates<CellTag>::Vertex()[vertexIndex];
 
-    dax::Tuple<dax::Vector3,CellType::NUM_POINTS> weights =
-        dax::exec::internal::DerivativeWeights<CellType>(pcoords);
+    dax::Tuple<dax::Vector3,NUM_VERTICES> weights =
+        dax::exec::internal::DerivativeWeights(pcoords, CellTag());
 
-    for (dax::Id weightIndex = 0;
-         weightIndex < CellType::NUM_POINTS;
-         weightIndex++)
+    for (dax::Id weightIndex = 0; weightIndex < NUM_VERTICES; weightIndex++)
       {
       dax::Vector3 vertexPCoords =
-          dax::exec::ParametricCoordinates<CellType>::Vertex()[weightIndex];
+          dax::exec::ParametricCoordinates<CellTag>::Vertex()[weightIndex];
 
-      TestWeightOnVertex<CellType>(weights[weightIndex],
-                                   pcoords,
-                                   vertexPCoords);
+      TestWeightOnVertex(weights[weightIndex],
+                         pcoords,
+                         vertexPCoords,
+                         CellTag());
       }
     }
 
   // Check for Derivative at middle.
-  dax::Tuple<dax::Vector3,CellType::NUM_POINTS> weights =
-      dax::exec::internal::DerivativeWeights<CellType>(
-        dax::exec::ParametricCoordinates<CellType>::Center());
-  for (dax::Id weightIndex = 0; weightIndex < CellType::NUM_POINTS; weightIndex++)
+  dax::Tuple<dax::Vector3,NUM_VERTICES> weights =
+      dax::exec::internal::DerivativeWeights(
+        dax::exec::ParametricCoordinates<CellTag>::Center(), CellTag());
+  for (dax::Id weightIndex = 0; weightIndex < NUM_VERTICES; weightIndex++)
     {
     dax::Vector3 vertexPCoords =
-        dax::exec::ParametricCoordinates<CellType>::Vertex()[weightIndex];
+        dax::exec::ParametricCoordinates<CellTag>::Vertex()[weightIndex];
 
-    TestWeightInMiddle<CellType>(weights[weightIndex],
-                                 vertexPCoords);
+    TestWeightInMiddle(weights[weightIndex], vertexPCoords, CellTag());
     }
 }
 
@@ -206,22 +212,22 @@ void TestDerivativeWeights()
 // They don't have implementations for DerivativeWeights, and the checks in
 // this test would be wrong if they did.
 template<>
-void TestDerivativeWeights<dax::exec::CellTetrahedron>()
+void TestDerivativeWeights(dax::CellTagTetrahedron)
 {
   std::cout << "  No derivative weights for tetrahedra.  Skiping." << std::endl;
 }
 template<>
-void TestDerivativeWeights<dax::exec::CellTriangle>()
+void TestDerivativeWeights(dax::CellTagTriangle)
 {
   std::cout << "  No derivative weights for triangles.  Skiping." << std::endl;
 }
 template<>
-void TestDerivativeWeights<dax::exec::CellLine>()
+void TestDerivativeWeights(dax::CellTagLine)
 {
   std::cout << "  No derivative weights for lines.  Skiping." << std::endl;
 }
 template<>
-void TestDerivativeWeights<dax::exec::CellVertex>()
+void TestDerivativeWeights(dax::CellTagVertex)
 {
   std::cout << "  No derivative weights for vertices.  Skiping." << std::endl;
 }
@@ -230,7 +236,7 @@ struct TestDerivativeWeightsFunctor
 {
   template<class TopologyGenType>
   void operator()(const TopologyGenType &) const {
-    TestDerivativeWeights<typename TopologyGenType::CellType>();
+    TestDerivativeWeights(typename TopologyGenType::CellTag());
   }
 };
 

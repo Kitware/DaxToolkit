@@ -26,7 +26,7 @@ namespace exec {
 ///
 /// This class is really is a convienience wrapper around a dax::Tuple.
 ///
-template<class CellTag, typename FieldType>
+template<typename FieldType, class CellTag>
 class CellField
 {
 public:

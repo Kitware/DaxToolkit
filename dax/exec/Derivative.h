@@ -38,7 +38,7 @@ template<class CellTag>
 DAX_EXEC_EXPORT dax::Vector3 CellDerivativeAxisAligned(
     const dax::Vector3 &parametricCoords,
     const dax::Vector3 &axisAlignedWidths,
-    const dax::exec::CellField<CellTag, dax::Scalar> &fieldValues,
+    const dax::exec::CellField<dax::Scalar, CellTag> &fieldValues,
     CellTag)
 {
   const dax::Id NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
@@ -63,8 +63,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivativeAxisAligned(
 ///
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const dax::Vector3 &parametricCoords,
-    const dax::exec::CellField<dax::CellTagVoxel, dax::Vector3> &vertCoords,
-    const dax::exec::CellField<dax::CellTagVoxel, dax::Scalar> &fieldValues,
+    const dax::exec::CellField<dax::Vector3, dax::CellTagVoxel> &vertCoords,
+    const dax::exec::CellField<dax::Scalar, dax::CellTagVoxel> &fieldValues,
     dax::CellTagVoxel)
 {
   dax::Vector3 axisAlignedWidths =
@@ -121,8 +121,8 @@ dax::math::Matrix3x3 make_JacobianFor3DCell(
 template<class CellTag>
 DAX_EXEC_EXPORT dax::Vector3 CellDerivativeFor3DCell(
     const dax::Vector3 &parametricCoords,
-    const dax::exec::CellField<CellTag, dax::Vector3> &vertCoords,
-    const dax::exec::CellField<CellTag, dax::Scalar> &fieldValues,
+    const dax::exec::CellField<dax::Vector3, CellTag> &vertCoords,
+    const dax::exec::CellField<dax::Scalar, CellTag> &fieldValues,
     CellTag)
 {
   const dax::Id NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
@@ -173,8 +173,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivativeFor3DCell(
 
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const dax::Vector3 &parametricCoords,
-    const dax::exec::CellField<dax::CellTagHexahedron,dax::Vector3> &vertCoords,
-    const dax::exec::CellField<dax::CellTagHexahedron,dax::Scalar> &fieldValues,
+    const dax::exec::CellField<dax::Vector3,dax::CellTagHexahedron> &vertCoords,
+    const dax::exec::CellField<dax::Scalar,dax::CellTagHexahedron> &fieldValues,
     dax::CellTagHexahedron)
 {
   return detail::CellDerivativeFor3DCell(
@@ -183,8 +183,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
 
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const dax::Vector3 &parametricCoords,
-    const dax::exec::CellField<dax::CellTagWedge,dax::Vector3> &vertCoords,
-    const dax::exec::CellField<dax::CellTagWedge,dax::Scalar> &fieldValues,
+    const dax::exec::CellField<dax::Vector3,dax::CellTagWedge> &vertCoords,
+    const dax::exec::CellField<dax::Scalar,dax::CellTagWedge> &fieldValues,
     dax::CellTagWedge)
 {
   return detail::CellDerivativeFor3DCell(

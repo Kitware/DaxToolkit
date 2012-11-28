@@ -36,7 +36,7 @@ namespace internal {
 template<typename T, class ConnectionsPortalT>
 struct TopologyUnstructured
 {
-  typedef T CellType;
+  typedef T CellTag;
   typedef ConnectionsPortalT CellConnectionsPortalType;
 
   TopologyUnstructured()
@@ -65,25 +65,23 @@ struct TopologyUnstructured
   CellConnectionsPortalType CellConnections;
   dax::Id NumberOfPoints;
   dax::Id NumberOfCells;
+
+  /// Returns the number of cells in a unstructured grid.
+  ///
+  DAX_EXEC_EXPORT
+  dax::Id GetNumberOfCells() const
+  {
+    return this->NumberOfCells;
+  }
+
+  /// Returns the number of points in a unstructured grid.
+  ///
+  DAX_EXEC_EXPORT
+  dax::Id GetNumberOfPoints() const
+  {
+    return this->NumberOfPoints;
+  }
 };
-
-/// Returns the number of cells in a unstructured grid.
-///
-template<typename T, class ExecutionAdapter>
-DAX_EXEC_EXPORT
-dax::Id numberOfCells(const TopologyUnstructured<T, ExecutionAdapter> &topology)
-{
-  return topology.NumberOfCells;
-}
-
-/// Returns the number of points in a unstructured grid.
-///
-template<typename T, class ExecutionAdapter>
-DAX_EXEC_EXPORT
-dax::Id numberOfPoints(const TopologyUnstructured<T,ExecutionAdapter> &topology)
-{
-  return topology.NumberOfPoints;
-}
 
 template<class CellT, class ConnectionsPortalT>
 DAX_EXEC_EXPORT
