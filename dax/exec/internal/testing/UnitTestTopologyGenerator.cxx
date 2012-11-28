@@ -76,9 +76,8 @@ void TestUnstructuredGrid(CellTag)
       DAX_TEST_ASSERT(connection >= 0, "Bad cell connection");
       DAX_TEST_ASSERT(connection < topology.NumberOfPoints,
                       "Bad cell connection");
-      DAX_TEST_ASSERT(
-            connection == expectedConnections.GetPointIndex(vertexIndex),
-            "Bad cell connection");
+      DAX_TEST_ASSERT(connection == expectedConnections[vertexIndex],
+                      "Bad cell connection");
       connectionIndex++;
       }
     }

@@ -31,13 +31,13 @@ class CellField
 {
 public:
   const static int NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
-  typedef dax::Tuple<FieldType, NUM_VERTICES> ValuesTupleType;
+  typedef dax::Tuple<FieldType, NUM_VERTICES> TupleType;
 
   DAX_EXEC_EXPORT
   CellField() {  }
 
   DAX_EXEC_EXPORT
-  CellField(const ValuesTupleType &values)
+  CellField(const TupleType &values)
     : Values(values) {  }
 
   // Although this copy constructor should be identical to the default copy
@@ -48,28 +48,26 @@ public:
     : Values(src.Values) {  }
 
   DAX_EXEC_EXPORT
-  FieldType GetValue(int vertexIndex) const
-  {
+  const FieldType &operator[](int vertexIndex) const {
     return this->Values[vertexIndex];
   }
 
   DAX_EXEC_EXPORT
-  void SetValue(int vertexIndex, FieldType fieldValue)
-  {
-    this->Values[vertexIndex] = fieldValue;
+  FieldType &operator[](int vertexIndex) {
+    return this->Values[vertexIndex];
   }
 
   DAX_EXEC_EXPORT
-  const ValuesTupleType &GetValues() const { return this->Values; }
+  const TupleType &GetAsTuple() const { return this->Values; }
 
   DAX_EXEC_EXPORT
-  void SetValues(const ValuesTupleType fieldValues)
+  void SetFromTuple(const TupleType &fieldValues)
   {
     this->Values = fieldValues;
   }
 
 private:
-  ValuesTupleType Values;
+  TupleType Values;
 };
 
 }

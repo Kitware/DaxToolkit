@@ -16,8 +16,7 @@
 #ifndef __dax_exec_CellVertices_h
 #define __dax_exec_CellVertices_h
 
-#include <dax/CellTraits.h>
-#include <dax/Types.h>
+#include <dax/exec/CellField.h>
 
 namespace dax {
 namespace exec {
@@ -27,49 +26,27 @@ namespace exec {
 /// This class is really is a convienience wrapper around a dax::Tuple.
 ///
 template<class CellTag>
-class CellVertices
+class CellVertices : public dax::exec::CellField<dax::Id, CellTag>
 {
+private:
+  typedef dax::exec::CellField<dax::Id, CellTag> Superclass;
 public:
-  const static int NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
-  typedef dax::Tuple<dax::Id, NUM_VERTICES> PointIndicesType;
+  const static int NUM_VERTICES = Superclass::NUM_VERTICES;
+  typedef typename Superclass::TupleType TupleType;
 
   DAX_EXEC_EXPORT
   CellVertices() {  }
 
   DAX_EXEC_EXPORT
-  CellVertices(const PointIndicesType &pointIndices)
-    : PointIndices(pointIndices) {  }
+  CellVertices(const TupleType &pointIndices)
+    : Superclass(pointIndices) {  }
 
   // Although this copy constructor should be identical to the default copy
   // constructor, we have noticed that NVCC's default copy constructor can
   // incur a significant slowdown.
   DAX_EXEC_EXPORT
   CellVertices(const CellVertices &src)
-    : PointIndices(src.PointIndices) {  }
-
-  DAX_EXEC_EXPORT
-  dax::Id GetPointIndex(int vertexIndex) const
-  {
-    return this->PointIndices[vertexIndex];
-  }
-
-  DAX_EXEC_EXPORT
-  void SetPointIndex(int vertexIndex, dax::Id pointIndex)
-  {
-    this->PointIndices[vertexIndex] = pointIndex;
-  }
-
-  DAX_EXEC_EXPORT
-  const PointIndicesType &GetPointIndices() const { return this->PointIndices; }
-
-  DAX_EXEC_EXPORT
-  void SetPointIndices(const PointIndicesType pointIndices)
-  {
-    this->PointIndices = pointIndices;
-  }
-
-private:
-  PointIndicesType PointIndices;
+    : Superclass(src) {  }
 };
 
 }

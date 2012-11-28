@@ -36,10 +36,10 @@ DAX_EXEC_EXPORT ValueType CellInterpolate(
   dax::Tuple<dax::Scalar, numVerts> weights =
       dax::exec::internal::InterpolationWeights(parametricCoords, CellTag());
 
-  ValueType result = pointFieldValues.GetValue(0) * weights[0];
+  ValueType result = pointFieldValues[0] * weights[0];
   for (dax::Id vertexId = 1; vertexId < numVerts; vertexId++)
     {
-    result = result + pointFieldValues.GetValue(vertexId) * weights[vertexId];
+    result = result + pointFieldValues[vertexId] * weights[vertexId];
     }
 
   return result;

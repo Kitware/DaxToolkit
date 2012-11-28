@@ -194,11 +194,10 @@ dax::Vector3 ParametricCoordinatesToWorldCoordinates(
     const dax::Vector3 &parametricCoords,
     dax::CellTagVoxel)
 {
-  dax::Vector3 axisAlignedWidths
-      = vertexCoordinates.GetValue(6) - vertexCoordinates.GetValue(0);
+  dax::Vector3 axisAlignedWidths = vertexCoordinates[6] - vertexCoordinates[0];
   dax::Vector3 cellOffset = axisAlignedWidths * parametricCoords;
 
-  dax::Vector3 minCoord = vertexCoordinates.GetValue(0);
+  dax::Vector3 minCoord = vertexCoordinates[0];
 
   return cellOffset + minCoord;
 }
@@ -208,12 +207,11 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
     const dax::Vector3 &worldCoords,
     dax::CellTagVoxel)
 {
-  dax::Vector3 minCoord = vertexCoordinates.GetValue(0);
+  dax::Vector3 minCoord = vertexCoordinates[0];
 
   dax::Vector3 cellOffset = worldCoords - minCoord;
 
-  dax::Vector3 axisAlignedWidths
-      = vertexCoordinates.GetValue(6) - vertexCoordinates.GetValue(0);
+  dax::Vector3 axisAlignedWidths = vertexCoordinates[6] - vertexCoordinates[0];
   return cellOffset / axisAlignedWidths;
 }
 
@@ -236,7 +234,7 @@ public:
   dax::math::Matrix3x3 operator()(dax::Vector3 pcoords) const {
     return dax::exec::detail::make_JacobianFor3DCell(
           dax::exec::internal::DerivativeWeights(pcoords, CellTag()),
-          this->VertexCoordinates.GetValues());
+          this->VertexCoordinates.GetAsTuple());
   }
 };
 
@@ -312,13 +310,11 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   //
 
   dax::Vector3 pcoords(dax::Scalar(0));
-  const dax::Tuple<dax::Vector3,4> &vertexCoords =
-      vertexCoordinates.GetValues();
 
-  const dax::Vector3 vec0 = vertexCoords[1] - vertexCoords[0];
-  const dax::Vector3 vec1 = vertexCoords[2] - vertexCoords[0];
-  const dax::Vector3 vec2 = vertexCoords[3] - vertexCoords[0];
-  const dax::Vector3 coordVec = worldCoords - vertexCoords[0];
+  const dax::Vector3 vec0 = vertexCoordinates[1] - vertexCoordinates[0];
+  const dax::Vector3 vec1 = vertexCoordinates[2] - vertexCoordinates[0];
+  const dax::Vector3 vec2 = vertexCoordinates[3] - vertexCoordinates[0];
+  const dax::Vector3 coordVec = worldCoords - vertexCoordinates[0];
 
   dax::Vector3 planeNormal = dax::math::Cross(vec1, vec2);
   pcoords[0] = dax::dot(coordVec, planeNormal)/dax::dot(vec0, planeNormal);
@@ -399,18 +395,16 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   //
 
   dax::Vector3 pcoords(dax::Scalar(0));
-  const dax::Tuple<dax::Vector3,3> &vertexCoords =
-      vertexCoordinates.GetValues();
   dax::Vector3 triangleNormal =
-      dax::math::TriangleNormal(vertexCoords[0],
-                                vertexCoords[1],
-                                vertexCoords[2]);
+      dax::math::TriangleNormal(vertexCoordinates[0],
+                                vertexCoordinates[1],
+                                vertexCoordinates[2]);
 
   for (int dimension = 0; dimension < 2; dimension++)
     {
-    const dax::Vector3 &p0 = vertexCoords[0];
-    const dax::Vector3 &p1 = vertexCoords[dimension+1];
-    const dax::Vector3 &p2 = vertexCoords[2-dimension];
+    const dax::Vector3 &p0 = vertexCoordinates[0];
+    const dax::Vector3 &p1 = vertexCoordinates[dimension+1];
+    const dax::Vector3 &p2 = vertexCoordinates[2-dimension];
     dax::Vector3 planeNormal = dax::math::Cross(triangleNormal, p2-p0);
 
     dax::Scalar d =
@@ -460,7 +454,7 @@ public:
     for (int vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
       {
       const dax::Vector3 &dweight = derivativeWeights[vertexIndex];
-      const dax::Vector3 &coord = this->VertexCoordinates.GetValue(vertexIndex);
+      const dax::Vector3 &coord = this->VertexCoordinates[vertexIndex];
 
       jacobian(0,0) += coord[this->DimensionSwizzle[0]] * dweight[0];
       jacobian(0,1) += coord[this->DimensionSwizzle[0]] * dweight[1];
@@ -509,9 +503,9 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   // creating a dimension swizzle and using the first two dimensions.
 
   dax::Id3 dimensionSwizzle;
-  dax::Vector3 normal = dax::math::TriangleNormal(vertexCoords.GetValue(0),
-                                                  vertexCoords.GetValue(1),
-                                                  vertexCoords.GetValue(2));
+  dax::Vector3 normal = dax::math::TriangleNormal(vertexCoords[0],
+                                                  vertexCoords[1],
+                                                  vertexCoords[2]);
   dax::Vector3 absNormal = dax::math::Abs(normal);
   if (absNormal[0] < absNormal[1])
     {
@@ -557,8 +551,8 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   // of this over the length of the segment, which is mag(vec). Thus, the
   // parametric coordinate is dot(vec,wcoords-vertexCoords[0])/mag(vec)^2.
 
-  dax::Vector3 vec = vertexCoords.GetValue(1) - vertexCoords.GetValue(0);
-  dax::Scalar numerator = dax::dot(vec, worldCoords - vertexCoords.GetValue(0));
+  dax::Vector3 vec = vertexCoords[1] - vertexCoords[0];
+  dax::Scalar numerator = dax::dot(vec, worldCoords - vertexCoords[0]);
   dax::Scalar denominator = dax::math::MagnitudeSquared(vec);
 
   return dax::make_Vector3(numerator/denominator, 0.0, 0.0);

@@ -51,7 +51,7 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivativeAxisAligned(
 
   for (dax::Id vertexId = 0; vertexId < NUM_VERTICES; vertexId++)
     {
-    sum = sum + fieldValues.GetValue(vertexId) * derivativeWeights[vertexId];
+    sum = sum + fieldValues[vertexId] * derivativeWeights[vertexId];
     }
 
   return sum/axisAlignedWidths;
@@ -67,8 +67,7 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const dax::exec::CellField<dax::Scalar, dax::CellTagVoxel> &fieldValues,
     dax::CellTagVoxel)
 {
-  dax::Vector3 axisAlignedWidths =
-      vertCoords.GetValue(6) - vertCoords.GetValue(0);
+  dax::Vector3 axisAlignedWidths = vertCoords[6] - vertCoords[0];
   return CellDerivativeAxisAligned(parametricCoords,
                                    axisAlignedWidths,
                                    fieldValues,
@@ -136,7 +135,7 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivativeFor3DCell(
   dax::math::Matrix3x3 jacobianTranspose =
       dax::math::MatrixTranspose(
         detail::make_JacobianFor3DCell(derivativeWeights,
-                                       vertCoords.GetValues()));
+                                       vertCoords.GetAsTuple()));
 
   // Find the derivative of the field in parametric coordinate space. That is,
   // find the vector [ds/du, ds/dv, ds/dw].
@@ -145,7 +144,7 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivativeFor3DCell(
     {
     parametricDerivative =
         parametricDerivative
-        + (fieldValues.GetValue(pointIndex) * derivativeWeights[pointIndex]);
+        + (fieldValues[pointIndex] * derivativeWeights[pointIndex]);
     }
 
   // If we write out the matrices below, it should become clear that the
