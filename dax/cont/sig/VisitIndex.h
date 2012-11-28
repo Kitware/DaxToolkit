@@ -13,13 +13,18 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
+#ifndef __dax_cont_sig_VisitIndex_h
+#define __dax_cont_sig_VisitIndex_h
 
-#ifndef __PipelineVTK_h
-#define __PipelineVTK_h
+/// \namespace dax::cont::sig::placeholders
+/// \brief Placeholders for worklet \c ExecutionSignature declarations.
 
-#include <dax/cont/UniformGrid.h>
-class vtkImageData;
+namespace dax { namespace cont { namespace sig {
 
-void RunPipelineVTK(int pipeline, const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid);
+/// \headerfile VisitIndex.h dax/cont/sig/VisitIndex.h
+/// \brief Reference worklet Id in the \c ExecutionSignature declarations.
+class VisitIndex {};
 
-#endif //__PipelineVTK_h
+}}} // namespace dax::cont::sig
+
+#endif //__dax_cont_sig_VisitIndex_h

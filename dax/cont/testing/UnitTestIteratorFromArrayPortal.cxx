@@ -53,7 +53,7 @@ struct TemplatedTests
     dax::Id index = 0;
     for (IteratorType iter = begin; iter != end; iter++)
       {
-      if (*iter != ExpectedValue(index, value)) return false;
+      if (ValueType(*iter) != ExpectedValue(index, value)) return false;
       index++;
       }
     return true;
@@ -89,8 +89,9 @@ struct TemplatedTests
     middle = begin + ARRAY_SIZE/2;
     DAX_TEST_ASSERT(std::distance(begin, middle) == ARRAY_SIZE/2,
                     "Bad distance to middle.");
-    DAX_TEST_ASSERT(*middle == ExpectedValue(ARRAY_SIZE/2, ORIGINAL_VALUE()),
-                    "Bad value at middle.");
+    DAX_TEST_ASSERT(
+          ValueType(*middle) == ExpectedValue(ARRAY_SIZE/2, ORIGINAL_VALUE()),
+          "Bad value at middle.");
   }
 
   template<class ArrayPortalType>

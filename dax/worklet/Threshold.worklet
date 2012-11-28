@@ -50,18 +50,19 @@ template<typename ValueType>
 class ThresholdClassify : public dax::exec::WorkletMapCell
 {
 public:
-  typedef void ControlSignature(Topology, Field(Point), Field(Out));
-  typedef _3 ExecutionSignature(_1, _2);
+  typedef void ControlSignature(Topology,Field(Point), Field(Out));
+  typedef _3 ExecutionSignature(_2);
+
 
 
   DAX_CONT_EXPORT
   ThresholdClassify(ValueType thresholdMin, ValueType thresholdMax)
     : ThresholdMin(thresholdMin), ThresholdMax(thresholdMax) {  }
 
-  template<typename CellType>
+  template<int NUM_POINTS>
   DAX_EXEC_EXPORT
-  dax::Id operator()(const CellType&,
-      const dax::Tuple<ValueType,CellType::NUM_POINTS> &values) const
+  dax::Id operator()(
+      const dax::Tuple<ValueType,NUM_POINTS> &values) const
   {
     ThresholdFunction<ValueType> threshold(this->ThresholdMin,
                                            this->ThresholdMax);

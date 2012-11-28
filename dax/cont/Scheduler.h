@@ -23,6 +23,7 @@
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/Tag.h>
+#include <dax/cont/sig/VisitIndex.h>
 
 #include <dax/cont/ScheduleGenerateTopology.h>
 #include <dax/cont/ScheduleMapAdapter.h>
@@ -36,6 +37,10 @@
 #include <dax/exec/internal/Functor.h>
 #include <dax/exec/internal/WorkletBase.h>
 #include <dax/exec/internal/kernel/ScheduleGenerateTopology.h>
+
+//needed to parse signature arguments to determine what implicit
+//args we need to upload to execution
+#include <dax/internal/WorkletSignatureFunctions.h>
 
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_base_of.hpp>

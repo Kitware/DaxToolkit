@@ -22,9 +22,11 @@
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
+#include <dax/cont/Scheduler.h>
 
-#include <dax/cont/worklet/Elevation.h>
-#include <dax/cont/worklet/Threshold.h>
+#include <dax/worklet/Magnitude.worklet>
+#include <dax/worklet/Threshold.worklet>
+
 
 #include <vector>
 
@@ -47,18 +49,20 @@ void PrintResults(int pipeline, double time, const char* name)
             << pipeline << "," << time << std::endl;
 }
 
-void RunVTKPipeline(const dax::cont::UniformGrid &dgrid, vtkImageData* grid)
+void RunVTKPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid)
 {
   std::cout << "Running pipeline 1: Elevation -> Threshold" << std::endl;
 
   std::vector<dax::Scalar> elev(dgrid.GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Scalar> elevHandle(elev.begin(),elev.end());
+  dax::cont::ArrayHandle<dax::Scalar> elevHandle;
 
   //use dax to compute the elevation
-  dax::worklet::Elevation elevWorklet(dax::make_Vector3(0.0, 0.0, 0.0),
-                          dax::make_Vector3(0.0, 0.0, 1.0),
-                          dax::make_Vector2(0.0, 1.0));
-  dax::cont::Schedule<>(elevWorklet, dgrid, dgrid.GetPoints(), elevHandle);
+  dax::cont::Scheduler<> schedule;
+  schedule.Invoke(dax::worklet::Magnitude(),
+                        dgrid.GetPointCoordinates(),
+                        elevHandle);
+
+  elevHandle.CopyInto(elev.begin());
 
   //now that the results are back on the cpu, do threshold with VTK
   vtkSmartPointer<vtkFloatArray> vtkElevationPoints = vtkSmartPointer<vtkFloatArray>::New();

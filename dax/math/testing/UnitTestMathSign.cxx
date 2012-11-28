@@ -24,6 +24,19 @@ using namespace std;
 
 namespace {
 
+template<typename OutT, typename InT>
+void Copy(OutT &out, const InT &in)
+{
+  typedef dax::VectorTraits<OutT> OutTraits;
+  typedef dax::VectorTraits<InT> InTraits;
+  DAX_TEST_ASSERT(OutTraits::NUM_COMPONENTS <= InTraits::NUM_COMPONENTS,
+                  "Need to update test for bigger vectors.");
+  for (int index = 0; index < OutTraits::NUM_COMPONENTS; index++)
+    {
+    OutTraits::SetComponent(out, index, InTraits::GetComponent(in, index));
+    }
+}
+
 template<typename VectorType>
 void TestAbs(VectorType negative, VectorType positive)
 {
@@ -79,16 +92,18 @@ void TestCopySign(dax::Scalar negative, dax::Scalar positive)
                   "Did not copy positive sign.");
 }
 
-void AbsInput(dax::Scalar &negative, dax::Scalar &positive, int component) {
-  DAX_TEST_ASSERT(component < 4, "Need to update test for bigger vectors.");
-  negative = dax::make_Vector4(0.0, -0.5, -3241.12, -4e12)[component];
-  positive = dax::make_Vector4(0.0,  0.5,  3241.12,  4e12)[component];
+template<typename T>
+void AbsInput(T &negative, T &positive, dax::Scalar)
+{
+  Copy(negative, dax::make_Vector4(0.0, -0.5, -3241.12, -4e12));
+  Copy(positive, dax::make_Vector4(0.0,  0.5,  3241.12,  4e12));
 }
 
-void AbsInput(dax::Id &negative, dax::Id &positive, int component) {
-  DAX_TEST_ASSERT(component < 3, "Need to update test for bigger vectors.");
-  negative = dax::make_Id3(0, -23, -652)[component];
-  positive = dax::make_Id3(0,  23,  652)[component];
+template<typename T>
+void AbsInput(T &negative, T &positive, dax::Id)
+{
+  Copy(negative, dax::make_Id3(0, -23, -652));
+  Copy(positive, dax::make_Id3(0,  23,  652));
 }
 
 struct TestSignFunctor
@@ -96,12 +111,7 @@ struct TestSignFunctor
   template <typename T> void operator()(const T&) const {
     typedef dax::VectorTraits<T> Traits;
     T negative, positive;
-    for (int index = 0; index < Traits::NUM_COMPONENTS; index++)
-      {
-      AbsInput(Traits::GetComponent(negative, index),
-               Traits::GetComponent(positive, index),
-               index);
-      }
+    AbsInput(negative, positive, typename Traits::ComponentType());
     TestAbs(negative, positive);
   }
 };

@@ -31,9 +31,11 @@
 #ifdef DAX_CUDA
 #define DAX_EXEC_EXPORT inline __device__
 #define DAX_EXEC_CONT_EXPORT inline __device__ __host__
+#define DAX_EXEC_CONSTANT_EXPORT __device__ __constant__
 #else
 #define DAX_EXEC_EXPORT inline
 #define DAX_EXEC_CONT_EXPORT inline
+#define DAX_EXEC_CONSTANT_EXPORT
 #endif
 
 #define DAX_CONT_EXPORT inline
@@ -45,8 +47,6 @@
 /// is providing a specialization that does not need that parameter.
 #define daxNotUsed(parameter_name)
 
-// Worklet macros.
-#define DAX_WORKLET DAX_EXEC_EXPORT
 
 // Check boost support under CUDA
 #ifdef DAX_CUDA
