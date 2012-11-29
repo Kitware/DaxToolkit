@@ -22,7 +22,7 @@
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/IteratorFromArrayPortal.h>
 
-#include <dax/exec/CellVoxel.h>
+#include <dax/CellTag.h>
 
 #include <dax/exec/internal/TopologyUniform.h>
 
@@ -92,7 +92,7 @@ template <class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class UniformGrid
 {
 public:
-  typedef dax::exec::CellVoxel CellType;
+  typedef dax::CellTagVoxel CellTag;
   typedef UniformGridTag GridTypeTag;
 
   DAX_CONT_EXPORT

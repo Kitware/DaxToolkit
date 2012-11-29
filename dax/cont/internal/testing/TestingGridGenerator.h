@@ -17,9 +17,10 @@
 #ifndef __dax_cont_internal_TestingGridGenerator_h
 #define __dax_cont_internal_TestingGridGenerator_h
 
+#include <dax/CellTag.h>
+#include <dax/CellTraits.h>
 #include <dax/Types.h>
 
-#include <dax/exec/Cell.h>
 #include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
@@ -193,7 +194,7 @@ private:
   // ............................................................... Hexahedron
   void BuildGrid(
     dax::cont::UnstructuredGrid<
-    dax::exec::CellHexahedron,
+    dax::CellTagHexahedron,
     ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
     &grid)
     {
@@ -204,7 +205,8 @@ private:
       //copy the point info over to the unstructured grid
       this->MakeInfoPoints(uniform);
 
-      dax::Id numPointsPerCell = ::dax::exec::CellHexahedron::NUM_POINTS;
+      typedef dax::CellTagHexahedron CellTag;
+      dax::Id numPointsPerCell = dax::CellTraits<CellTag>::NUM_VERTICES;
       dax::Id totalCells = 1;
       const dax::Id vertexIdList[] =
         {
@@ -217,7 +219,7 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-             dax::exec::CellHexahedron,
+             CellTag,
              ArrayContainerControlTag,
              ArrayContainerControlTag,
              DeviceAdapterTag>(
@@ -228,7 +230,7 @@ private:
   // .............................................................. Tetrahedron
   void BuildGrid(
     dax::cont::UnstructuredGrid<
-    dax::exec::CellTetrahedron,
+    dax::CellTagTetrahedron,
     ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
     &grid)
     {
@@ -237,7 +239,8 @@ private:
 
       this->MakeInfoPoints(uniform);
 
-      dax::Id numPointsPerCell = ::dax::exec::CellTetrahedron::NUM_POINTS;
+      typedef dax::CellTagTetrahedron CellTag;
+      dax::Id numPointsPerCell = dax::CellTraits<CellTag>::NUM_VERTICES;
       dax::Id totalCells = 2;
       const dax::Id vertexIdList[] =
         {
@@ -251,7 +254,7 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-             dax::exec::CellTetrahedron,
+             CellTag,
              ArrayContainerControlTag,
              ArrayContainerControlTag,
              DeviceAdapterTag>(
@@ -262,7 +265,7 @@ private:
   // .................................................................... Wedge
   void BuildGrid(
     dax::cont::UnstructuredGrid<
-    dax::exec::CellWedge,
+    dax::CellTagWedge,
     ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
     &grid)
     {
@@ -271,7 +274,8 @@ private:
 
       this->MakeInfoPoints(uniform);
 
-      dax::Id numPointsPerCell = ::dax::exec::CellWedge::NUM_POINTS;
+      typedef dax::CellTagWedge CellTag;
+      dax::Id numPointsPerCell = dax::CellTraits<CellTag>::NUM_VERTICES;
       dax::Id totalCells = 2;
       const dax::Id vertexIdList[] =
         {
@@ -284,7 +288,7 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-             dax::exec::CellWedge,
+             CellTag,
              ArrayContainerControlTag,
              ArrayContainerControlTag,
              DeviceAdapterTag>(
@@ -295,7 +299,7 @@ private:
   // ................................................................. Triangle
   void BuildGrid(
     dax::cont::UnstructuredGrid<
-    dax::exec::CellTriangle,
+    dax::CellTagTriangle,
     ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
     &grid)
     {
@@ -305,7 +309,8 @@ private:
 
       this->MakeInfoPoints(uniform);
 
-      dax::Id numPointsPerCell = ::dax::exec::CellTriangle::NUM_POINTS;
+      typedef dax::CellTagTriangle CellTag;
+      dax::Id numPointsPerCell = dax::CellTraits<CellTag>::NUM_VERTICES;
       dax::Id totalCells = 12;
       const dax::Id vertexIdList[] =
         {
@@ -323,7 +328,7 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-             dax::exec::CellTriangle,
+             CellTag,
              ArrayContainerControlTag,
              ArrayContainerControlTag,
              DeviceAdapterTag>(
@@ -334,7 +339,7 @@ private:
   // ............................................................ Quadrilateral
   void BuildGrid(
     dax::cont::UnstructuredGrid<
-    dax::exec::CellQuadrilateral,
+    dax::CellTagQuadrilateral,
     ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
     &grid)
     {
@@ -343,7 +348,8 @@ private:
 
       this->MakeInfoPoints(uniform);
 
-      dax::Id numPointsPerCell = ::dax::exec::CellQuadrilateral::NUM_POINTS;
+      typedef dax::CellTagQuadrilateral CellTag;
+      dax::Id numPointsPerCell = dax::CellTraits<CellTag>::NUM_VERTICES;
       dax::Id totalCells = 6;
       const dax::Id vertexIdList[] =
         {
@@ -361,7 +367,7 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-             dax::exec::CellQuadrilateral,
+             CellTag,
              ArrayContainerControlTag,
              ArrayContainerControlTag,
              DeviceAdapterTag>(
@@ -372,7 +378,7 @@ private:
   // ..................................................................... Line
   void BuildGrid(
     dax::cont::UnstructuredGrid<
-    dax::exec::CellLine,
+    dax::CellTagLine,
     ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
     &grid)
     {
@@ -381,7 +387,8 @@ private:
 
       this->MakeInfoPoints(uniform);
 
-      dax::Id numPointsPerCell = ::dax::exec::CellLine::NUM_POINTS;
+      typedef dax::CellTagLine CellTag;
+      dax::Id numPointsPerCell = dax::CellTraits<CellTag>::NUM_VERTICES;
       dax::Id totalCells = 12;
       const dax::Id vertexIdList[] =
         {
@@ -399,7 +406,7 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-             dax::exec::CellLine,
+              CellTag,
               ArrayContainerControlTag,
               ArrayContainerControlTag,
               DeviceAdapterTag>(
@@ -410,7 +417,7 @@ private:
   // ................................................................... Vertex
   void BuildGrid(
     dax::cont::UnstructuredGrid<
-    dax::exec::CellVertex,
+    dax::CellTagVertex,
     ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
     &grid)
     {
@@ -419,7 +426,8 @@ private:
 
       this->MakeInfoPoints(uniform);
 
-      dax::Id numPointsPerCell = ::dax::exec::CellVertex::NUM_POINTS;
+      typedef dax::CellTagVertex CellTag;
+      dax::Id numPointsPerCell = dax::CellTraits<CellTag>::NUM_VERTICES;
       dax::Id totalCells = 8;
       const dax::Id vertexIdList[] =
         {
@@ -432,7 +440,7 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-              dax::exec::CellVertex,
+              CellTag,
               ArrayContainerControlTag,
               ArrayContainerControlTag,
               DeviceAdapterTag>(
@@ -493,49 +501,49 @@ struct GridTesting
             function, "dax::UniformGrid"));
 
     dax::cont::UnstructuredGrid<
-        dax::exec::CellHexahedron,
+        dax::CellTagHexahedron,
         ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
         hexGrid;
     check(hexGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Hexahedron"));
 
     dax::cont::UnstructuredGrid<
-        dax::exec::CellTetrahedron,
+        dax::CellTagTetrahedron,
         ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
         tetGrid;
     check(tetGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Tetrahedrons"));
 
     dax::cont::UnstructuredGrid<
-        dax::exec::CellWedge,
+        dax::CellTagWedge,
         ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
         wedgeGrid;
     check(wedgeGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Wedges"));
 
     dax::cont::UnstructuredGrid<
-        dax::exec::CellTriangle,
+        dax::CellTagTriangle,
         ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
         triGrid;
     check(triGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Triangles"));
 
     dax::cont::UnstructuredGrid<
-        dax::exec::CellQuadrilateral,
+        dax::CellTagQuadrilateral,
         ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
         quadGrid;
     check(quadGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Quadrilaterals"));
 
     dax::cont::UnstructuredGrid<
-        dax::exec::CellLine,
+        dax::CellTagLine,
         ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
         lineGrid;
     check(lineGrid, InternalPrintOnInvoke<FunctionType>(
             function, "dax::UnstructuredGrid of Lines"));
 
     dax::cont::UnstructuredGrid<
-        dax::exec::CellVertex,
+        dax::CellTagVertex,
         ArrayContainerControlTag,ArrayContainerControlTag,DeviceAdapterTag>
         vertGrid;
     check(vertGrid, InternalPrintOnInvoke<FunctionType>(

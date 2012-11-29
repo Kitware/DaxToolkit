@@ -18,7 +18,6 @@
 #define __dax_cont_internal_ScheduleGenerateTopology_h
 
 #include <dax/Types.h>
-#include <dax/exec/Cell.h>
 
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 #include <dax/exec/internal/GridTopologies.h>

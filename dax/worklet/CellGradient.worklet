@@ -16,7 +16,7 @@
 #ifndef __CellGradient_worklet_
 #define __CellGradient_worklet_
 
-#include <dax/exec/Cell.h>
+#include <dax/exec/CellField.h>
 #include <dax/exec/Derivative.h>
 #include <dax/exec/ParametricCoordinates.h>
 #include <dax/exec/WorkletMapCell.h>
@@ -32,19 +32,19 @@ public:
   typedef void ControlSignature(Topology, Field(Point), Field(Point), Field(Out));
   typedef _4 ExecutionSignature(_1,_2,_3);
 
-  template<class CellType>
+  template<class CellTag>
   DAX_EXEC_EXPORT
   dax::Vector3 operator()(
-      CellType cell,
-      const dax::Tuple<dax::Vector3,CellType::NUM_POINTS>& coords,
-      const dax::Tuple<dax::Scalar,CellType::NUM_POINTS>& pointField) const
+      CellTag cellTag,
+      const dax::exec::CellField<CellTag,dax::Vector3> &coords,
+      const dax::exec::CellField<CellTag,dax::Scalar> &pointField) const
   {
     dax::Vector3 parametricCellCenter =
-        dax::exec::ParametricCoordinates<CellType>::Center();
-    return dax::exec::CellDerivative(cell,
-                                         parametricCellCenter,
-                                         coords,
-                                         pointField);
+        dax::exec::ParametricCoordinates<CellTag>::Center();
+    return dax::exec::CellDerivative(parametricCellCenter,
+                                     coords,
+                                     pointField,
+                                     cellTag);
   }
 };
 
