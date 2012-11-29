@@ -22,6 +22,8 @@
 
 #include <dax/internal/testing/Testing.h>
 
+#include <boost/type_traits/remove_const.hpp>
+
 namespace dax {
 namespace testing {
 
@@ -38,19 +40,19 @@ inline void CompareDimensionalityTags(dax::TypeTraitsVectorTag,
   // If we are here, everything is fine.
 }
 
-} // namespace detail
-
 /// Compares some manual arithmetic through type traits to arithmetic with
 /// the Tuple class.
 template <class T>
-static void TestVectorType(const T &vector)
+static void TestVectorTypeImpl(
+    const typename boost::remove_const<T>::type &vector)
 {
   typedef typename dax::VectorTraits<T> Traits;
   typedef typename Traits::ComponentType ComponentType;
   static const int NUM_COMPONENTS = Traits::NUM_COMPONENTS;
+  typedef typename boost::remove_const<T>::type NonConstT;
 
   {
-  T result;
+  NonConstT result;
   const ComponentType multiplier = 4;
   for (int i = 0; i < NUM_COMPONENTS; i++)
     {
@@ -61,7 +63,7 @@ static void TestVectorType(const T &vector)
   }
 
   {
-  T result;
+  NonConstT result;
   const ComponentType multiplier = 7;
   for (int i = 0; i < NUM_COMPONENTS; i++)
     {
@@ -91,8 +93,6 @@ static void TestVectorType(const T &vector)
         typename dax::VectorTraits<T>::HasMultipleComponents());
 }
 
-namespace detail {
-
 inline void CheckVectorComponentsTag(dax::VectorTraitsTagMultipleComponents)
 {
   // If we are running here, everything is fine.
@@ -121,6 +121,15 @@ inline void CheckScalarComponentsTag(dax::VectorTraitsTagSingleComponent)
 }
 
 } // namespace detail
+
+/// Compares some manual arithmetic through type traits to arithmetic with
+/// the Tuple class.
+template <class T>
+static void TestVectorType(const T &vector)
+{
+  detail::TestVectorTypeImpl<T>(vector);
+  detail::TestVectorTypeImpl<const T>(vector);
+}
 
 /// Checks to make sure that the HasMultipleComponents tag is actually for a
 /// single component. Should only be called for "vector" classes that actually
