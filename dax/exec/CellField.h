@@ -81,34 +81,7 @@ namespace dax {
 /// like a vector.
 ///
 template<typename FieldType, class CellTag>
-struct VectorTraits<const dax::exec::CellField<FieldType, CellTag> >
-{
-  typedef const dax::exec::CellField<FieldType,CellTag> CellFieldType;
-  typedef FieldType ComponentType;
-  static const int NUM_COMPONENTS = CellFieldType::NUM_VERTICES;
-  typedef typename internal::VectorTraitsMultipleComponentChooser<
-      NUM_COMPONENTS>::Type HasMultipleComponents;
-
-  DAX_EXEC_EXPORT
-  static const ComponentType &GetComponent(const CellFieldType &vector,
-                                           int component) {
-    return vector[component];
-  }
-
-  DAX_EXEC_CONT_EXPORT
-  static dax::Tuple<ComponentType,NUM_COMPONENTS>
-  ToTuple(CellFieldType &vector)
-  {
-    return vector.GetAsTuple();
-  }
-};
-
-/// Implementation of VectorTraits for a CellField so that it can be treated
-/// like a vector.
-///
-template<typename FieldType, class CellTag>
 struct VectorTraits<dax::exec::CellField<FieldType, CellTag> >
-    : public VectorTraits<const dax::exec::CellField<FieldType, CellTag> >
 {
   typedef dax::exec::CellField<FieldType,CellTag> CellFieldType;
   typedef FieldType ComponentType;
@@ -132,6 +105,12 @@ struct VectorTraits<dax::exec::CellField<FieldType, CellTag> >
     vector[component] = value;
   }
 
+  DAX_EXEC_CONT_EXPORT
+  static dax::Tuple<ComponentType,NUM_COMPONENTS>
+  ToTuple(const CellFieldType &vector)
+  {
+    return vector.GetAsTuple();
+  }
 };
 
 /// Implementation of TypeTraits for a CellField.
