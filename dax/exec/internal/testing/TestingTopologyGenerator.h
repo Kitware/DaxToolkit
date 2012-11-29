@@ -34,10 +34,11 @@ namespace dax {
 namespace exec {
 namespace internal {
 
-template<class TopologyType>
+template<class TopologyT>
 class TestTopology
 {
 public:
+  typedef TopologyT TopologyType;
   typedef typename TopologyType::CellTag CellTag;
 
 private:

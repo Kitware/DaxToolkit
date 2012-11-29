@@ -106,73 +106,32 @@ void TestTriangleGrid()
 
 struct TestTemplatedTopology {
   template<class TopologyGenerator>
-  void operator()(TopologyGenerator &daxNotUsed(topologyGenerator)) const {
-    std::cout << "Test disabled.  Original test checked created fields and "
-              << "work objects.  When fields objects were removed, these "
-              << "features ceased to exist." << std::endl;
-#if 0
-    typedef typename TopologyGenerator::ExecutionAdapter ExecutionAdapter;
-    std::vector<dax::Vector3> pointArray;
+  void operator()(const TopologyGenerator &topologyGenerator) const {
+    typedef typename TopologyGenerator::CellTag CellTag;
 
-    dax::exec::FieldCoordinatesIn<ExecutionAdapter> fieldCoord =
-        topologyGenerator.GetCoordinates();
+    typename TopologyGenerator::TopologyType topology =
+        topologyGenerator.GetTopology();
 
-    std::cout << "Set point field." << std::endl;
-    dax::exec::FieldPointOut<dax::Vector3, ExecutionAdapter> fieldOut =
-        dax::exec::internal::CreateField<dax::exec::FieldPointOut>(
-          topologyGenerator, pointArray);
-    dax::Id numPoints = topologyGenerator.GetNumberOfPoints();
-    for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
+    std::cout << "Checking consistent cell topology" << std::endl;
+    for (dax::Id cellIndex = 0;
+         cellIndex < topology.GetNumberOfCells();
+         cellIndex++)
       {
-      this->CopyField(dax::exec::internal::CreateWorkMapField(topologyGenerator,
-                                                              pointIndex),
-                      fieldCoord,
-                      fieldOut);
-      }
+      dax::exec::CellVertices<CellTag> generatorVertices =
+          topologyGenerator.GetCellConnections(cellIndex);
+      dax::exec::CellVertices<CellTag> topologyVertices =
+          topology.GetCellConnection(cellIndex);
 
-    std::cout << "Check point field via cells." << std::endl;
-    dax::exec::FieldPointIn<dax::Vector3, ExecutionAdapter> fieldIn =
-        dax::exec::internal::CreateField<dax::exec::FieldPointIn>(
-          topologyGenerator, pointArray);
-    dax::Id numCells = topologyGenerator.GetNumberOfCells();
-    for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
-      {
-      this->TestFieldsEqual(
-            dax::exec::internal::CreateWorkMapCell(topologyGenerator,
-                                                   cellIndex),
-            fieldCoord,
-            fieldIn);
-      }
-#endif
-  }
-#if 0
-private:
-  template<class WorkType, class FieldInType, class FieldOutType>
-  void CopyField(const WorkType &work,
-                 FieldInType fieldIn,
-                 FieldOutType fieldOut) const
-  {
-    work.SetFieldValue(fieldOut, work.GetFieldValue(fieldIn));
-  }
-
-  template<class WorkType, class FieldType1, class FieldType2>
-  void TestFieldsEqual(const WorkType &work,
-                       FieldType1 field1,
-                       FieldType2 field2) const
-  {
-    typedef typename WorkType::CellType CellType;
-
-    dax::Tuple<dax::Vector3,CellType::NUM_POINTS> values1 =
-        work.GetFieldValues(field1);
-    dax::Tuple<dax::Vector3,CellType::NUM_POINTS> values2 =
-        work.GetFieldValues(field2);
-    for (dax::Id index = 0; index < CellType::NUM_POINTS; index++)
-      {
-      DAX_TEST_ASSERT(test_equal(values1[index], values2[index]),
-                      "Did not get same coordinates in different work type.");
+      for (int vertexIndex = 0;
+           vertexIndex < dax::CellTraits<CellTag>::NUM_VERTICES;
+           vertexIndex++)
+        {
+        DAX_TEST_ASSERT(
+              generatorVertices[vertexIndex] == topologyVertices[vertexIndex],
+              "Topology returned unexpected cell connection.");
+        }
       }
   }
-#endif
 };
 
 void TestTopologyGenerator()

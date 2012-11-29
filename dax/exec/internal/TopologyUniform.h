@@ -19,6 +19,8 @@
 #include <dax/CellTag.h>
 #include <dax/Extent.h>
 
+#include <dax/exec/CellVertices.h>
+
 namespace dax {
 namespace exec {
 namespace internal {
@@ -72,31 +74,30 @@ struct TopologyUniform {
     dax::Id3 ijk = flatIndexToIndex3(pointIndex, this->Extent);
     return this->GetPointCoordiantes(ijk);
   }
+
+  /// Returns the point indices for all vertices.
+  ///
+  DAX_EXEC_EXPORT
+  dax::exec::CellVertices<CellTag> GetCellConnection(dax::Id cellIndex)
+  {
+    dax::Id3 dimensions = dax::extentDimensions(this->Extent);
+
+    dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(cellIndex, this->Extent);
+
+    dax::exec::CellVertices<CellTag> connections;
+    connections[0] = index3ToFlatIndex(ijkCell, this->Extent);
+    connections[1] = connections[0] + 1;
+    connections[2] = connections[0] + dimensions[0] + 1;
+    connections[3] = connections[0] + dimensions[0];
+
+    connections[4] = connections[0] + dimensions[0]*dimensions[1];
+    connections[5] = connections[1] + dimensions[0]*dimensions[1];
+    connections[6] = connections[2] + dimensions[0]*dimensions[1];
+    connections[7] = connections[3] + dimensions[0]*dimensions[1];
+
+    return connections;
+  }
 } __attribute__ ((aligned(4)));
-
-template<class PointConnectionType>
-DAX_EXEC_EXPORT
-void BuildCellConnectionsFromGrid(
-        const dax::exec::internal::TopologyUniform& grid,
-        dax::Id cellIndex,
-        PointConnectionType& connections)
-{
-  dax::Id3 dimensions = dax::extentDimensions(grid.Extent);
-
-  dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(
-          cellIndex,
-          grid.Extent);
-
-  connections[0] = index3ToFlatIndex(ijkCell, grid.Extent);
-  connections[1] = connections[0] + 1;
-  connections[2] = connections[0] + dimensions[0] + 1;
-  connections[3] = connections[0] + dimensions[0];
-
-  connections[4] = connections[0] + dimensions[0]*dimensions[1];
-  connections[5] = connections[1] + dimensions[0]*dimensions[1];
-  connections[6] = connections[2] + dimensions[0]*dimensions[1];
-  connections[7] = connections[3] + dimensions[0]*dimensions[1];
-}
 
 }  }  } //namespace dax::exec::internal
 

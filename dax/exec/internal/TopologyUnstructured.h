@@ -18,6 +18,8 @@
 
 #include <dax/Types.h>
 
+#include <dax/exec/CellVertices.h>
+
 namespace dax {
 namespace exec {
 namespace internal {
@@ -81,24 +83,23 @@ struct TopologyUnstructured
   {
     return this->NumberOfPoints;
   }
-};
 
-template<class CellT, class ConnectionsPortalT>
-DAX_EXEC_EXPORT
-void BuildCellConnectionsFromGrid(
-        const dax::exec::internal::TopologyUnstructured<CellT,
-                                            ConnectionsPortalT>& grid,
-        dax::Id cellIndex,
-        typename CellT::PointConnectionsType& connections)
-{
-  const int SIZE = CellT::NUM_POINTS;
-  //we presume grid is a continuous array of this connection type
-  const dax::Id offset = cellIndex*SIZE;
-  for(int i=0; i < SIZE; ++i)
+  /// Returns the point indices for all vertices.
+  ///
+  DAX_EXEC_EXPORT
+  dax::exec::CellVertices<CellTag> GetCellConnection(dax::Id cellIndex)
   {
-    connections[i] = grid.CellConnections.Get(offset + i);
+    const int NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
+    dax::Id startConnectionIndex = cellIndex * NUM_VERTICES;
+    dax::exec::CellVertices<CellTag> vertices;
+    for (dax::Id vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
+      {
+      vertices[vertexIndex] =
+          this->CellConnections.Get(startConnectionIndex + vertexIndex);
+      }
+    return vertices;
   }
-}
+};
 
 } //internal
 } //exec
