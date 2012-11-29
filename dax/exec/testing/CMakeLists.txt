@@ -15,7 +15,6 @@
 ##=============================================================================
 
 set(unit_tests
-  UnitTestCells.cxx
   UnitTestCellField.cxx
   UnitTestCellVertices.cxx
   UnitTestDerivative.cxx

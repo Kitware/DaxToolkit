@@ -21,6 +21,10 @@
 #include <dax/exec/internal/testing/TestingTopologyGenerator.h>
 
 #include <dax/internal/testing/Testing.h>
+#include <dax/testing/VectorTraitsTests.h>
+
+#include <boost/mpl/if.hpp>
+#include <boost/type_traits/is_same.hpp>
 
 namespace
 {
@@ -54,22 +58,100 @@ private:
   const dax::Id Offset;
 };
 
+struct ComponentsChecker
+{
+  template<class CellFieldType>
+  void operator()(const CellFieldType &)
+  {
+    dax::testing::TestVectorComponentsTag<CellFieldType>();
+  }
+};
+struct ComponentsCheckerVertex
+{
+  template<class CellFieldType>
+  void operator()(const CellFieldType &)
+  {
+    dax::testing::TestScalarComponentsTag<CellFieldType>();
+  }
+};
+
+template<typename T, class CellTag>
+struct CellFieldVectorTraitsTests
+{
+  void operator()()
+  {
+    // The vector traits test assumes scalar components, which we don't
+    // guarantee.  Specialize for that.
+    std::cout << "Skipping traits test for non-scalar field." << std::endl;
+  }
+};
+template<class CellTag>
+struct CellFieldVectorTraitsTests<dax::Scalar, CellTag>
+{
+  void operator()()
+  {
+    std::cout << "  Testing compliance with VectorTraits." << std::endl;
+
+    TestValueGenerator<dax::Scalar> values;
+    dax::exec::CellField<dax::Scalar,CellTag> field;
+
+    for (int vertexIndex = 0;
+         vertexIndex < dax::CellTraits<CellTag>::NUM_VERTICES;
+         vertexIndex++)
+      {
+      field[vertexIndex] = values[vertexIndex];
+      }
+
+    dax::testing::TestVectorType(field);
+
+    typename boost::mpl::if_<
+        boost::is_same<CellTag, dax::CellTagVertex>,
+        ComponentsCheckerVertex,
+        ComponentsChecker>::type()(field);
+  }
+};
+template<class CellTag>
+struct CellFieldVectorTraitsTests<dax::Id, CellTag>
+{
+  void operator()()
+  {
+    std::cout << "  Testing compliance with VectorTraits." << std::endl;
+
+    TestValueGenerator<dax::Id> values;
+    dax::exec::CellField<dax::Id,CellTag> field;
+
+    for (int vertexIndex = 0;
+         vertexIndex < dax::CellTraits<CellTag>::NUM_VERTICES;
+         vertexIndex++)
+      {
+      field[vertexIndex] = values[vertexIndex];
+      }
+
+    dax::testing::TestVectorType(field);
+
+    typename boost::mpl::if_<
+        boost::is_same<CellTag, dax::CellTagVertex>,
+        ComponentsCheckerVertex,
+        ComponentsChecker>::type()(field);
+  }
+};
+
 template<typename T, class CellTag>
 struct CellFieldTests
 {
-  typedef dax::exec::CellField<T,CellTag> CVType;
-  const static dax::Id NUM_VERTICES = CVType::NUM_VERTICES;
+  typedef dax::exec::CellField<T,CellTag> CFType;
+  const static dax::Id NUM_VERTICES = CFType::NUM_VERTICES;
 
   static void TestSizesMatch()
   {
     std::cout << "  Testing sizes." << std::endl;
 
-    DAX_TEST_ASSERT(NUM_VERTICES == CVType::NUM_VERTICES,
+    DAX_TEST_ASSERT(NUM_VERTICES == CFType::NUM_VERTICES,
                     "Test has wrong number of vertices?");
     DAX_TEST_ASSERT(
-          CVType::NUM_VERTICES == dax::CellTraits<CellTag>::NUM_VERTICES,
+          CFType::NUM_VERTICES == dax::CellTraits<CellTag>::NUM_VERTICES,
           "CellField reports wrong number of points.");
-    DAX_TEST_ASSERT(NUM_VERTICES == CVType::ValuesTupleType::NUM_COMPONENTS,
+    DAX_TEST_ASSERT(NUM_VERTICES == CFType::TupleType::NUM_COMPONENTS,
                     "CellField tuple has wrong number of components.");
   }
 
@@ -79,14 +161,14 @@ struct CellFieldTests
               << std::endl;
 
     TestValueGenerator<T> values;
-    CVType vertices;
+    CFType field;
 
     for (int vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
       {
-      vertices.SetValue(vertexIndex, values[vertexIndex]);
+      field[vertexIndex] = values[vertexIndex];
       }
 
-    const typename CVType::ValuesTupleType &valueTuple = vertices.GetValues();
+    const typename CFType::TupleType &valueTuple = field.GetAsTuple();
     for (int vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
       {
       DAX_TEST_ASSERT(valueTuple[vertexIndex] == values[vertexIndex],
@@ -100,21 +182,20 @@ struct CellFieldTests
               << std::endl;
 
     TestValueGenerator<T> values;
-    typename CVType::ValuesTupleType valueTuple;
+    typename CFType::TupleType valueTuple;
 
     for (int vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
       {
       valueTuple[vertexIndex] = values[vertexIndex];
       }
 
-    CVType vertices;
-    vertices.SetValues(valueTuple);
+    CFType field;
+    field.SetFromTuple(valueTuple);
 
     for (int vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
       {
-      DAX_TEST_ASSERT(
-            vertices.GetValue(vertexIndex) == values[vertexIndex],
-            "Got wrong point index.");
+      DAX_TEST_ASSERT(field[vertexIndex] == values[vertexIndex],
+                      "Got wrong point index.");
       }
   }
 
@@ -124,28 +205,31 @@ struct CellFieldTests
               << std::endl;
 
     TestValueGenerator<T> values;
-    typename CVType::ValuesTupleType valueTuple;
+    typename CFType::TupleType valueTuple;
 
     for (int vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
       {
       valueTuple[vertexIndex] = values[vertexIndex];
       }
 
-    CVType vertices(valueTuple);
+    CFType field(valueTuple);
     for (int vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
       {
-      DAX_TEST_ASSERT(
-            vertices.GetValue(vertexIndex) == values[vertexIndex],
-            "Got wrong point index.");
+      DAX_TEST_ASSERT(field[vertexIndex] == values[vertexIndex],
+                      "Got wrong point index.");
       }
 
-    CVType verticesCopy(vertices);
+    CFType fieldCopy(field);
     for (int vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
       {
-      DAX_TEST_ASSERT(
-            verticesCopy.GetValue(vertexIndex) == values[vertexIndex],
-            "Got wrong point index.");
+      DAX_TEST_ASSERT(fieldCopy[vertexIndex] == values[vertexIndex],
+                      "Got wrong point index.");
       }
+  }
+
+  static void TestVectorTraits()
+  {
+    CellFieldVectorTraitsTests<T, CellTag>()();
   }
 
   static void TestAll()
@@ -154,6 +238,7 @@ struct CellFieldTests
     TestSet1GetAll();
     TestSetAllGet1();
     TestConstructors();
+    TestVectorTraits();
   }
 
 };
@@ -168,36 +253,19 @@ struct TestCellFieldFunctorType
   }
 };
 
-//struct TestCellFieldFunctor
-//{
-//  template<class TopologyGenType>
-//  void operator()(const TopologyGenType &topology)
-//  {
-//    typedef typename TopologyGenType::CellType CellType;
-//    typedef typename CellType::PointConnectionsType PointConnectionsType;
-
-//    dax::Id numCells = topology.GetNumberOfCells();
-//    for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
-//      {
-//      CellType cell = topology.GetCell(cellIndex);
-//      DAX_TEST_ASSERT(cell.GetNumberOfPoints() == CellType::NUM_POINTS,
-//                      "Cell has wrong number of points");
-
-//      PointConnectionsType cellConnections = cell.GetPointIndices();
-//      PointConnectionsType expectedConnections =
-//          topology.GetCellConnections(cellIndex);
-//      DAX_TEST_ASSERT(test_equal(cellConnections, expectedConnections),
-//                      "Cell has unexpected connections.");
-//      }
-//  }
-//};
+struct TestCellFieldFunctor
+{
+  template<class TopologyGenType>
+  void operator()(const TopologyGenType &)
+  {
+    typedef typename TopologyGenType::CellTag CellTag;
+    dax::internal::Testing::TryAllTypes(TestCellFieldFunctorType<CellTag>());
+  }
+};
 
 void TestCellField()
 {
-  // Enable all tests once the TryAllTopologyTypes uses cell tags.
-//  dax::exec::internal::TryAllTopologyTypes(TestCellFieldFunctor());
-  dax::internal::Testing::TryAllTypes(
-        TestCellFieldFunctorType<dax::CellTagHexahedron>());
+  dax::exec::internal::TryAllTopologyTypes(TestCellFieldFunctor());
 }
 
 } // anonymous namespace

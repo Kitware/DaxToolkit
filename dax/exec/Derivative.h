@@ -194,8 +194,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
 //-----------------------------------------------------------------------------
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const dax::Vector3 &daxNotUsed(parametricCoords),
-    const dax::Tuple<dax::Vector3,dax::CellTraits<dax::CellTagTetrahedron>::NUM_VERTICES>&vertCoords,
-    const dax::Tuple<dax::Scalar,dax::CellTraits<dax::CellTagTetrahedron>::NUM_VERTICES>&fieldValues,
+    const dax::exec::CellField<dax::Vector3,dax::CellTagTetrahedron> &vertCoords,
+    const dax::exec::CellField<dax::Scalar,dax::CellTagTetrahedron> &fieldValues,
     dax::CellTagTetrahedron)
 {
   // The scalar values of the four points in a tetrahedron completely specify a
@@ -254,8 +254,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
 //-----------------------------------------------------------------------------
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const dax::Vector3 &daxNotUsed(parametricCoords),
-    const dax::Tuple<dax::Vector3,dax::CellTraits<dax::CellTagTriangle>::NUM_VERTICES>&vertCoords,
-    const dax::Tuple<dax::Scalar,dax::CellTraits<dax::CellTagTriangle>::NUM_VERTICES>&fieldValues,
+    const dax::exec::CellField<dax::Vector3,dax::CellTagTriangle> &vertCoords,
+    const dax::exec::CellField<dax::Scalar,dax::CellTagTriangle> &fieldValues,
     dax::CellTagTriangle)
 {
   // The scalar values of the three points in a triangle completely specify a
@@ -388,8 +388,8 @@ dax::math::Matrix2x2 make_JacobianForQuadrilateral(
 
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const dax::Vector3 &parametricCoords,
-    const dax::Tuple<dax::Vector3,dax::CellTraits<dax::CellTagQuadrilateral>::NUM_VERTICES>&vertCoords,
-    const dax::Tuple<dax::Scalar,dax::CellTraits<dax::CellTagQuadrilateral>::NUM_VERTICES>&fieldValues,
+    const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral> &vertCoords,
+    const dax::exec::CellField<dax::Scalar,dax::CellTagQuadrilateral> &fieldValues,
     dax::CellTagQuadrilateral)
 {
   const dax::Id NUM_VERTICES =
@@ -405,7 +405,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
 
   detail::QuadrilateralSpace space;
   dax::Tuple<dax::Vector2,NUM_VERTICES> vertCoords2D;
-  detail::make_SpaceForQuadrilateral(vertCoords, space, vertCoords2D);
+  detail::make_SpaceForQuadrilateral(
+        vertCoords.GetAsTuple(), space, vertCoords2D);
 
   // For reasons that should become apparent in a moment, we actually want
   // the transpose of the Jacobian.
@@ -453,8 +454,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
 //-----------------------------------------------------------------------------
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const dax::Vector3 &daxNotUsed(parametricCoords),
-    const dax::Tuple<dax::Vector3,dax::CellTraits<dax::CellTagLine>::NUM_VERTICES>&vertCoords,
-    const dax::Tuple<dax::Scalar,dax::CellTraits<dax::CellTagLine>::NUM_VERTICES>&fieldValues,
+    const dax::exec::CellField<dax::Vector3,dax::CellTagLine> &vertCoords,
+    const dax::exec::CellField<dax::Scalar,dax::CellTagLine> &fieldValues,
     dax::CellTagLine)
 {
   // The derivative of a line is in the direction of the line. Its length is
@@ -472,8 +473,8 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
 //-----------------------------------------------------------------------------
 DAX_EXEC_EXPORT dax::Vector3 CellDerivative(
     const dax::Vector3 &daxNotUsed(parametricCoords),
-    const dax::Tuple<dax::Vector3,dax::CellTraits<dax::CellTagVertex>::NUM_VERTICES>&daxNotUsed(vertCoords),
-    const dax::Tuple<dax::Scalar,dax::CellTraits<dax::CellTagVertex>::NUM_VERTICES>&daxNotUsed(fieldValues),
+    const dax::exec::CellField<dax::Vector3,dax::CellTagVertex> &daxNotUsed(vertCoords),
+    const dax::exec::CellField<dax::Scalar,dax::CellTagVertex> &daxNotUsed(fieldValues),
     dax::CellTagVertex)
 {
   return dax::make_Vector3(0, 0, 0);

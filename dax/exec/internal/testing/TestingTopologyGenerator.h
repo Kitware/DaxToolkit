@@ -81,7 +81,7 @@ public:
          vertexIndex++)
       {
       dax::Id pointIndex = cellConnections[vertexIndex];
-      coordinates.SetValue(vertexIndex, this->GetPointCoordinates(pointIndex));
+      coordinates[vertexIndex] = this->GetPointCoordinates(pointIndex);
       }
     return coordinates;
   }
@@ -98,7 +98,7 @@ public:
          vertexIndex++)
       {
       dax::Id pointIndex = cellConnections[vertexIndex];
-      fieldValues.SetValue(vertexIndex, portal.Get(pointIndex));
+      fieldValues[vertexIndex] = portal.Get(pointIndex);
       }
     return fieldValues;
   }
@@ -116,7 +116,7 @@ public:
          vertexIndex++)
       {
       dax::Id pointIndex = cellConnections[vertexIndex];
-      fieldValues.SetValue(vertexIndex, *(begin + pointIndex));
+      fieldValues[vertexIndex] = *(begin + pointIndex);
       }
     return fieldValues;
   }
