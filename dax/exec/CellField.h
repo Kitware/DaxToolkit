@@ -18,6 +18,8 @@
 
 #include <dax/CellTraits.h>
 #include <dax/Types.h>
+#include <dax/TypeTraits.h>
+#include <dax/VectorTraits.h>
 
 namespace dax {
 namespace exec {
@@ -72,5 +74,79 @@ private:
 
 }
 } // namespace dax::exec
+
+namespace dax {
+
+/// Implementation of VectorTraits for a CellField so that it can be treated
+/// like a vector.
+///
+template<typename FieldType, class CellTag>
+struct VectorTraits<const dax::exec::CellField<FieldType, CellTag> >
+{
+  typedef const dax::exec::CellField<FieldType,CellTag> CellFieldType;
+  typedef FieldType ComponentType;
+  static const int NUM_COMPONENTS = CellFieldType::NUM_VERTICES;
+  typedef typename internal::VectorTraitsMultipleComponentChooser<
+      NUM_COMPONENTS>::Type HasMultipleComponents;
+
+  DAX_EXEC_EXPORT
+  static const ComponentType &GetComponent(const CellFieldType &vector,
+                                           int component) {
+    return vector[component];
+  }
+
+  DAX_EXEC_CONT_EXPORT
+  static dax::Tuple<ComponentType,NUM_COMPONENTS>
+  ToTuple(CellFieldType &vector)
+  {
+    return vector.GetAsTuple();
+  }
+};
+
+/// Implementation of VectorTraits for a CellField so that it can be treated
+/// like a vector.
+///
+template<typename FieldType, class CellTag>
+struct VectorTraits<dax::exec::CellField<FieldType, CellTag> >
+    : public VectorTraits<const dax::exec::CellField<FieldType, CellTag> >
+{
+  typedef dax::exec::CellField<FieldType,CellTag> CellFieldType;
+  typedef FieldType ComponentType;
+  static const int NUM_COMPONENTS = CellFieldType::NUM_VERTICES;
+  typedef typename internal::VectorTraitsMultipleComponentChooser<
+      NUM_COMPONENTS>::Type HasMultipleComponents;
+
+  DAX_EXEC_EXPORT
+  static const ComponentType &GetComponent(const CellFieldType &vector,
+                                           int component) {
+    return vector[component];
+  }
+  DAX_EXEC_EXPORT
+  static ComponentType &GetComponent(CellFieldType &vector, int component) {
+    return vector[component];
+  }
+
+  DAX_EXEC_EXPORT static void SetComponent(CellFieldType &vector,
+                                           int component,
+                                           ComponentType value) {
+    vector[component] = value;
+  }
+
+};
+
+/// Implementation of TypeTraits for a CellField.
+///
+template<typename FieldType, class CellTag>
+struct TypeTraits<dax::exec::CellField<FieldType, CellTag> > {
+  typedef typename TypeTraits<FieldType>::NumericTag NumericTag;
+  typedef dax::TypeTraitsVectorTag DimensionalityTag;
+};
+template<typename FieldType>
+struct TypeTraits<dax::exec::CellField<FieldType, dax::CellTagVertex> > {
+  typedef typename TypeTraits<FieldType>::NumericTag NumericTag;
+  typedef dax::TypeTraitsScalarTag DimensionalityTag;
+};
+
+} // namespace dax
 
 #endif //__dax_exec_CellField_h
