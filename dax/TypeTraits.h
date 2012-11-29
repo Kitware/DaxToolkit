@@ -71,6 +71,12 @@ public:
 
 #endif //DAX_DOXYGEN_ONLY
 
+// Const types should have the same traits as their non-const counterparts.
+//
+template<typename T>
+struct TypeTraits<const T> : TypeTraits<T>
+{  };
+
 #define DAX_BASIC_REAL_TYPE(T) \
 template<> struct TypeTraits<T> { \
   typedef TypeTraitsRealTag NumericTag; \
