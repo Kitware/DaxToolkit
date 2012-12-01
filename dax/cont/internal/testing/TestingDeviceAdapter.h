@@ -749,7 +749,7 @@ private:
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing basic map cell worklet" << std::endl;
 
-    if (GridType::CellType::TOPOLOGICAL_DIMENSIONS < 3)
+    if (dax::CellTraits<typename GridType::CellTag>::TOPOLOGICAL_DIMENSIONS < 3)
       {
       std::cout << "Skipping.  Too hard to check gradient "
                 << "on cells with topological dimension < 3" << std::endl;

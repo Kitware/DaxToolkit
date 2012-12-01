@@ -26,6 +26,7 @@
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
+
 #include <vector>
 
 #include <iostream>
@@ -54,8 +55,10 @@ private:
     };
   GridStorage<GridType> Info;
 
+  typedef typename GridType::TopologyStructConstExecution TopoType;
+
 public:
-  typedef typename GridType::CellType CellType;
+  typedef typename GridType::CellTag CellTag;
   TestGrid(const dax::Id& size)
     :Size(size),
      Grid(),
@@ -87,42 +90,43 @@ public:
     return this->Grid.ComputePointCoordinates(index);
   }
 
+  // I commented out these functions because as far as I know there is no need
+  // to get information for a particular cell in a control environment test.
 
-  //Get the cell at a given index
-  CellType GetCell(dax::Id index) const
-  {
-    typedef typename GridType::TopologyStructConstExecution TopoType;
-    TopoType topo = this->Grid.PrepareForInput();
-    return CellType(topo,index);
-  }
+//private:
+//  TopoType GetTopology() const
+//  {
+//    return this->Grid.PrepareForInput();
+//  }
 
-  //get the cell connections (aka topology) at a given cell id
-  dax::Tuple<dax::Id, CellType::NUM_POINTS> GetCellConnections(dax::Id cellId) const
-  {
-    CellType c = this->GetCell(cellId);
-    return c.GetPointIndices();
-  }
+//public:
+//  //get the cell connections (aka topology) at a given cell id
+//  dax::exec::CellVertices<CellTag> GetCellConnections(dax::Id cellId) const
+//  {
+//    return this->GetTopology().GetCellConnections(cellId);
+//  }
 
-  /// This convienience function allows you to generate the Cell
-  // point coordinates for any given data set
-  dax::Tuple<dax::Vector3,CellType::NUM_POINTS> GetCellVertexCoordinates(dax::Id cellIndex) const
-  {
-    typedef typename GridType::PointCoordinatesType CoordType;
+//  /// This convienience function allows you to generate the Cell
+//  /// point coordinates for any given data set
+//  dax::exec::CellField<dax::Vector3,CellTag>
+//  GetCellVertexCoordinates(dax::Id cellIndex) const
+//  {
+//    typedef typename GridType::PointCoordinatesType CoordType;
 
-    //get the point ids for this cell
-    dax::Tuple<dax::Id, CellType::NUM_POINTS> cellConnections =
-        this->GetCellConnections(cellIndex);
+//    //get the point ids for this cell
+//    dax::exec::CellVertices<CellTag> cellConnections =
+//        this->GetCellConnections(cellIndex);
 
-    //get all the points for data set
-    CoordType allCoords = this->Grid.GetPointCoordinates();
+//    //get all the points for data set
+//    CoordType allCoords = this->Grid.GetPointCoordinates();
 
-    dax::Tuple<dax::Vector3,CellType::NUM_POINTS> coordinates;
-    for (dax::Id index = 0; index < CellType::NUM_POINTS; index++)
-      {
-      coordinates[index] = allCoords.GetPortalConstControl().Get(cellConnections[index]);
-      }
-    return coordinates;
-  }
+//    dax::exec::CellField<dax::Vector3,CellTag> coordinates;
+//    for (dax::Id index = 0; index < coordinates.NUM_VERTICES; index++)
+//      {
+//      coordinates[index] = allCoords.GetPortalConstControl().Get(cellConnections[index]);
+//      }
+//    return coordinates;
+//  }
 
   ~TestGrid()
   {
@@ -205,8 +209,8 @@ private:
       //copy the point info over to the unstructured grid
       this->MakeInfoPoints(uniform);
 
-      typedef dax::CellTagHexahedron CellTag;
-      dax::Id numPointsPerCell = dax::CellTraits<CellTag>::NUM_VERTICES;
+      dax::Id numPointsPerCell =
+          dax::CellTraits<dax::CellTagHexahedron>::NUM_VERTICES;
       dax::Id totalCells = 1;
       const dax::Id vertexIdList[] =
         {
@@ -219,7 +223,7 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-             CellTag,
+             dax::CellTagHexahedron,
              ArrayContainerControlTag,
              ArrayContainerControlTag,
              DeviceAdapterTag>(
@@ -239,8 +243,8 @@ private:
 
       this->MakeInfoPoints(uniform);
 
-      typedef dax::CellTagTetrahedron CellTag;
-      dax::Id numPointsPerCell = dax::CellTraits<CellTag>::NUM_VERTICES;
+      dax::Id numPointsPerCell
+          = dax::CellTraits<dax::CellTagTetrahedron>::NUM_VERTICES;
       dax::Id totalCells = 2;
       const dax::Id vertexIdList[] =
         {
@@ -254,7 +258,7 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-             CellTag,
+             dax::CellTagTetrahedron,
              ArrayContainerControlTag,
              ArrayContainerControlTag,
              DeviceAdapterTag>(
@@ -274,8 +278,8 @@ private:
 
       this->MakeInfoPoints(uniform);
 
-      typedef dax::CellTagWedge CellTag;
-      dax::Id numPointsPerCell = dax::CellTraits<CellTag>::NUM_VERTICES;
+      dax::Id numPointsPerCell
+          = dax::CellTraits<dax::CellTagWedge>::NUM_VERTICES;
       dax::Id totalCells = 2;
       const dax::Id vertexIdList[] =
         {
@@ -288,7 +292,7 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-             CellTag,
+             dax::CellTagWedge,
              ArrayContainerControlTag,
              ArrayContainerControlTag,
              DeviceAdapterTag>(
@@ -309,8 +313,8 @@ private:
 
       this->MakeInfoPoints(uniform);
 
-      typedef dax::CellTagTriangle CellTag;
-      dax::Id numPointsPerCell = dax::CellTraits<CellTag>::NUM_VERTICES;
+      dax::Id numPointsPerCell =
+          dax::CellTraits<dax::CellTagTriangle>::NUM_VERTICES;
       dax::Id totalCells = 12;
       const dax::Id vertexIdList[] =
         {
@@ -328,7 +332,7 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-             CellTag,
+             dax::CellTagTriangle,
              ArrayContainerControlTag,
              ArrayContainerControlTag,
              DeviceAdapterTag>(
@@ -348,8 +352,8 @@ private:
 
       this->MakeInfoPoints(uniform);
 
-      typedef dax::CellTagQuadrilateral CellTag;
-      dax::Id numPointsPerCell = dax::CellTraits<CellTag>::NUM_VERTICES;
+      dax::Id numPointsPerCell =
+          dax::CellTraits<dax::CellTagQuadrilateral>::NUM_VERTICES;
       dax::Id totalCells = 6;
       const dax::Id vertexIdList[] =
         {
@@ -367,7 +371,7 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-             CellTag,
+             dax::CellTagQuadrilateral,
              ArrayContainerControlTag,
              ArrayContainerControlTag,
              DeviceAdapterTag>(
@@ -387,8 +391,8 @@ private:
 
       this->MakeInfoPoints(uniform);
 
-      typedef dax::CellTagLine CellTag;
-      dax::Id numPointsPerCell = dax::CellTraits<CellTag>::NUM_VERTICES;
+      dax::Id numPointsPerCell =
+          dax::CellTraits<dax::CellTagLine>::NUM_VERTICES;
       dax::Id totalCells = 12;
       const dax::Id vertexIdList[] =
         {
@@ -406,7 +410,7 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-              CellTag,
+              dax::CellTagLine,
               ArrayContainerControlTag,
               ArrayContainerControlTag,
               DeviceAdapterTag>(
@@ -426,8 +430,8 @@ private:
 
       this->MakeInfoPoints(uniform);
 
-      typedef dax::CellTagVertex CellTag;
-      dax::Id numPointsPerCell = dax::CellTraits<CellTag>::NUM_VERTICES;
+      dax::Id numPointsPerCell =
+          dax::CellTraits<dax::CellTagVertex>::NUM_VERTICES;
       dax::Id totalCells = 8;
       const dax::Id vertexIdList[] =
         {
@@ -440,7 +444,7 @@ private:
                              totalCells);
 
       grid = dax::cont::UnstructuredGrid<
-              CellTag,
+              dax::CellTagVertex,
               ArrayContainerControlTag,
               ArrayContainerControlTag,
               DeviceAdapterTag>(

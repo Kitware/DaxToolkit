@@ -120,7 +120,7 @@ struct TestTemplatedTopology {
       dax::exec::CellVertices<CellTag> generatorVertices =
           topologyGenerator.GetCellConnections(cellIndex);
       dax::exec::CellVertices<CellTag> topologyVertices =
-          topology.GetCellConnection(cellIndex);
+          topology.GetCellConnections(cellIndex);
 
       for (int vertexIndex = 0;
            vertexIndex < dax::CellTraits<CellTag>::NUM_VERTICES;
