@@ -19,6 +19,7 @@
 #include <dax/Types.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/exec/Assert.h>
+#include <dax/exec/CellVertices.h>
 
 #include <dax/exec/internal/FieldAccess.h>
 #include <dax/exec/internal/WorkletBase.h>
@@ -33,29 +34,32 @@ template <typename Tags, typename TopologyType>
 class TopologyCell
 {
   TopologyType Topo;
-  typename TopologyType::CellType Cell;
 public:
-  typedef typename TopologyType::CellType CellType;
-  typedef CellType SaveType;
+  typedef typename TopologyType::CellTag CellTag;
+  typedef CellTag SaveType;
 
-  //if we are going with Out tag we create a value storage that holds a copy
-  //otherwise we have to pass a copy, since portals don't have to provide a reference
-  typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
-                                   CellType&,
-                                   CellType const&>::type ReturnType;
+  // CellTag is an empty class so we don't need to worry about the return type
+  // based on in or out (although for other derived units like the point ids,
+  // it matters substantially).
+  typedef CellTag ReturnType;
+//  //if we are going with Out tag we create a value storage that holds a copy
+//  //otherwise we have to pass a copy, since portals don't have to provide a reference
+//  typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
+//                                   CellTag&,
+//                                   CellTag const&>::type ReturnType;
 
-  DAX_CONT_EXPORT TopologyCell(const TopologyType& t): Topo(t), Cell(){}
+  DAX_CONT_EXPORT TopologyCell(const TopologyType& t): Topo(t) {  }
 
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
-                            const dax::exec::internal::WorkletBase& work)
-    {
+  DAX_EXEC_EXPORT ReturnType operator()(
+      dax::Id index,
+      const dax::exec::internal::WorkletBase& work)
+  {
     //if we have the In tag we have local store so use that value,
     //otherwise call the portal directly
     (void)work;  // Shut up compiler.
     DAX_ASSERT_EXEC(index >= 0, work);
-    this->Cell.BuildFromGrid(this->Topo,index);
-    return this->Cell;
-    }
+    return CellTag();
+  }
 
 
   DAX_EXEC_EXPORT void SaveExecutionResult(int index,
@@ -86,13 +90,13 @@ public:
   template <typename HasOutTag>
   DAX_EXEC_EXPORT
   void saveResult(dax::Id index,
-                  const typename SaveType::PointConnectionsType& values,
+                  const dax::exec::CellVertices<SaveType> &values,
                   dax::exec::internal::WorkletBase work,
                   HasOutTag,
                   typename boost::enable_if<HasOutTag>::type* = 0) const
     {
     dax::exec::internal::FieldSetMultiple(this->Topo.CellConnections,
-                                        CellType::NUM_POINTS * index,
+                                        dax::CellTraits<CellTag>::NUM_VERTICES * index,
                                         values,
                                         work);
     }
@@ -100,7 +104,7 @@ public:
   template <typename HasOutTag>
   DAX_EXEC_EXPORT
   void saveResult(dax::Id,
-                  const typename SaveType::PointConnectionsType&,
+                  const dax::exec::CellVertices<SaveType> &,
                   dax::exec::internal::WorkletBase,
                   HasOutTag,
                   typename boost::disable_if<HasOutTag>::type* = 0) const
