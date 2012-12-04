@@ -78,7 +78,7 @@ struct TopologyUniform {
   /// Returns the point indices for all vertices.
   ///
   DAX_EXEC_EXPORT
-  dax::exec::CellVertices<CellTag> GetCellConnections(dax::Id cellIndex)
+  dax::exec::CellVertices<CellTag> GetCellConnections(dax::Id cellIndex) const
   {
     dax::Id3 dimensions = dax::extentDimensions(this->Extent);
 

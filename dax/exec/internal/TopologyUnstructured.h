@@ -87,7 +87,7 @@ struct TopologyUnstructured
   /// Returns the point indices for all vertices.
   ///
   DAX_EXEC_EXPORT
-  dax::exec::CellVertices<CellTag> GetCellConnections(dax::Id cellIndex)
+  dax::exec::CellVertices<CellTag> GetCellConnections(dax::Id cellIndex) const
   {
     const int NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
     dax::Id startConnectionIndex = cellIndex * NUM_VERTICES;

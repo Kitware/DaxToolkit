@@ -36,8 +36,8 @@ public:
   DAX_EXEC_EXPORT
   dax::Vector3 operator()(
       CellTag cellTag,
-      const dax::exec::CellField<CellTag,dax::Vector3> &coords,
-      const dax::exec::CellField<CellTag,dax::Scalar> &pointField) const
+      const dax::exec::CellField<dax::Vector3,CellTag> &coords,
+      const dax::exec::CellField<dax::Scalar,CellTag> &pointField) const
   {
     dax::Vector3 parametricCellCenter =
         dax::exec::ParametricCoordinates<CellTag>::Center();

@@ -59,7 +59,7 @@ public:
   // Accessor methods to set and get the vertex point ids since the topology
   // is private.  (Is this the right thing to do?)
   DAX_EXEC_EXPORT
-  const dax::exec::CellVertices<CellTag> &GetPointIndices(
+  dax::exec::CellVertices<CellTag> GetPointIndices(
       dax::Id index,
       const dax::exec::internal::WorkletBase &work) const
   {

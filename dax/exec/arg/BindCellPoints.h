@@ -26,6 +26,9 @@
 #include <dax/cont/internal/FindBinding.h>
 #include <dax/cont/sig/Tag.h>
 
+#include <dax/exec/CellField.h>
+#include <dax/exec/CellVertices.h>
+
 #include <dax/exec/internal/WorkletBase.h>
 
 #include <boost/utility/enable_if.hpp>
@@ -46,10 +49,10 @@ class BindCellPoints
   ExecArgType ExecArg;
 
   typedef typename ExecArgType::ValueType ComponentType;
-  typedef typename TopoExecArgType::CellType CellType;
+  typedef typename TopoExecArgType::CellTag CellTag;
 
 public:
-  typedef dax::Tuple<ComponentType,CellType::NUM_POINTS> ValueType;
+  typedef dax::exec::CellField<ComponentType,CellTag> ValueType;
   ValueType Value;
 
   typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
@@ -60,24 +63,27 @@ public:
   DAX_CONT_EXPORT BindCellPoints(dax::cont::internal::Bindings<Invocation>& bindings):
     TopoExecArg(bindings.template Get<TopoIndex::value>().GetExecArg()),
     ExecArg(bindings.template Get<N>().GetExecArg()),
-    Value(ComponentType()) {}
+    Value() {}
 
 
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id,
-                        const dax::exec::internal::WorkletBase& work)
+  DAX_EXEC_EXPORT ReturnType operator()(
+      dax::Id cellIndex,
+      const dax::exec::internal::WorkletBase& work)
     {
-    const CellType& cell = this->TopoExecArg.operator()(id,work);
-
-    const dax::Tuple<dax::Id,CellType::NUM_POINTS>& ids = cell.GetPointIndices();
-    for(int i=0; i < CellType::NUM_POINTS; ++i)
+    dax::exec::CellVertices<CellTag> pointIndices =
+        this->TopoExecArg.GetPointIndices(cellIndex, work);
+    for(int vertexIndex = 0;
+        vertexIndex < pointIndices.NUM_VERTICES;
+        ++vertexIndex)
       {
-      this->Value[i] = this->ExecArg(ids[i], work);
+      this->Value[vertexIndex] = this->ExecArg(pointIndices[vertexIndex], work);
       }
     return this->Value;
     }
 
-  DAX_EXEC_EXPORT void SaveExecutionResult(int id,
-                       const dax::exec::internal::WorkletBase& worklet) const
+  DAX_EXEC_EXPORT void SaveExecutionResult(
+      int cellIndex,
+      const dax::exec::internal::WorkletBase& worklet) const
     {
     //Look at the concept map traits. If we have the Out tag
     //we know that we must call our ExecArgs SaveExecutionResult.
@@ -85,22 +91,25 @@ public:
     //and very bad things could happen
     typedef typename Tags::
           template Has<typename dax::cont::sig::Out>::type HasOutTag;
-    this->saveResult(id,worklet,HasOutTag());
+    this->saveResult(cellIndex,worklet,HasOutTag());
     }
 
   //method enabled when we do have the out tag ( or InOut)
   template <typename HasOutTag>
   DAX_EXEC_EXPORT
-  void saveResult(int id,
+  void saveResult(int cellIndex,
                   const dax::exec::internal::WorkletBase& work,
                   HasOutTag,
                   typename boost::enable_if<HasOutTag>::type* = 0) const
     {
-    const CellType& cell = this->TopoExecArg.operator()(id,work);
-    const dax::Tuple<dax::Id,CellType::NUM_POINTS>& ids = cell.GetPointIndices();
-    for(int i=0; i < CellType::NUM_POINTS; ++i)
+    dax::exec::CellVertices<CellTag> pointIndices =
+        this->TopoExecArg.GetPointIndices(cellIndex, work);
+    for(int vertexIndex = 0;
+        vertexIndex < pointIndices.NUM_VERTICES;
+        ++vertexIndex)
       {
-      this->ExecArg.SaveExecutionResult(ids[i],this->Value[i],work);
+      this->ExecArg.SaveExecutionResult(pointIndices[vertexIndex],
+                                        this->Value[vertexIndex],work);
       }
     }
 
