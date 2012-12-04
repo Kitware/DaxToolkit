@@ -16,6 +16,7 @@
 
 set(headers
   Bind.h
+  BindCellPointIds.h
   BindCellPoints.h
   BindDirect.h
   BindWorkId.h

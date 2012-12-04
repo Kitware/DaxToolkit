@@ -20,7 +20,10 @@ namespace dax { namespace cont { namespace arg {
 
 /// \headerfile Topology.h dax/cont/arg/Topology.h
 /// \brief Identify topology parameters in worklet \c ControlSignature declarations.
-class Topology { };
+class Topology {
+public:
+  class PointIds {  };
+};
 
 }}} // namespace dax::cont::arg
 

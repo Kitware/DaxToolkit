@@ -42,11 +42,6 @@ public:
   // based on in or out (although for other derived units like the point ids,
   // it matters substantially).
   typedef CellTag ReturnType;
-//  //if we are going with Out tag we create a value storage that holds a copy
-//  //otherwise we have to pass a copy, since portals don't have to provide a reference
-//  typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
-//                                   CellTag&,
-//                                   CellTag const&>::type ReturnType;
 
   DAX_CONT_EXPORT TopologyCell(const TopologyType& t): Topo(t) {  }
 
@@ -61,6 +56,32 @@ public:
     return CellTag();
   }
 
+  // Accessor methods to set and get the vertex point ids since the topology
+  // is private.  (Is this the right thing to do?)
+  DAX_EXEC_EXPORT
+  const dax::exec::CellVertices<CellTag> &GetPointIndices(
+      dax::Id index,
+      const dax::exec::internal::WorkletBase &work) const
+  {
+    (void)work;  // Shut up compiler.
+    DAX_ASSERT_EXEC(index >= 0, work);
+    return this->Topo.GetCellConnections(index);
+  }
+
+  DAX_EXEC_EXPORT
+  void SetPointIndices(
+      dax::Id index,
+      const dax::exec::CellVertices<CellTag> &vertices,
+      const dax::exec::internal::WorkletBase &work) const
+  {
+    (void)work;  // Shut up compiler.
+    DAX_ASSERT_EXEC(index >= 0, work);
+    dax::exec::internal::FieldSetMultiple(
+          this->Topo.CellConnections,
+          index * dax::CellTraits<CellTag>::NUM_VERTICES,
+          vertices.GetAsTuple(),
+          work);
+  }
 
   DAX_EXEC_EXPORT void SaveExecutionResult(int index,
                        const dax::exec::internal::WorkletBase& work) const
