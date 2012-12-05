@@ -34,17 +34,17 @@ public:
   const static int NUM_VERTICES = Superclass::NUM_VERTICES;
   typedef typename Superclass::TupleType TupleType;
 
-  DAX_EXEC_EXPORT
+  DAX_EXEC_CONT_EXPORT
   CellVertices() {  }
 
-  DAX_EXEC_EXPORT
+  DAX_EXEC_CONT_EXPORT
   CellVertices(const TupleType &pointIndices)
     : Superclass(pointIndices) {  }
 
   // Although this copy constructor should be identical to the default copy
   // constructor, we have noticed that NVCC's default copy constructor can
   // incur a significant slowdown.
-  DAX_EXEC_EXPORT
+  DAX_EXEC_CONT_EXPORT
   CellVertices(const CellVertices &src)
     : Superclass(src) {  }
 };

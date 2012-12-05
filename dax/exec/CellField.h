@@ -35,17 +35,21 @@ public:
   const static int NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
   typedef dax::Tuple<FieldType, NUM_VERTICES> TupleType;
 
-  DAX_EXEC_EXPORT
+  DAX_EXEC_CONT_EXPORT
   CellField() {  }
 
-  DAX_EXEC_EXPORT
+  DAX_EXEC_CONT_EXPORT
   CellField(const TupleType &values)
     : Values(values) {  }
+
+  DAX_CONT_EXPORT
+  CellField(const FieldType &value)
+    : Values(value) {  }
 
   // Although this copy constructor should be identical to the default copy
   // constructor, we have noticed that NVCC's default copy constructor can
   // incur a significant slowdown.
-  DAX_EXEC_EXPORT
+  DAX_EXEC_CONT_EXPORT
   CellField(const CellField &src)
     : Values(src.Values) {  }
 
