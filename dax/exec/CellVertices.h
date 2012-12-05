@@ -38,15 +38,16 @@ public:
   CellVertices() {  }
 
   DAX_EXEC_CONT_EXPORT
-  CellVertices(const TupleType &pointIndices)
-    : Superclass(pointIndices) {  }
+  CellVertices(const TupleType &pointIndices) : Superclass(pointIndices) {  }
+
+  DAX_CONT_EXPORT
+  CellVertices(dax::Id index) : Superclass(index) {  }
 
   // Although this copy constructor should be identical to the default copy
   // constructor, we have noticed that NVCC's default copy constructor can
   // incur a significant slowdown.
   DAX_EXEC_CONT_EXPORT
-  CellVertices(const CellVertices &src)
-    : Superclass(src) {  }
+  CellVertices(const CellVertices &src) : Superclass(src) {  }
 };
 
 }
