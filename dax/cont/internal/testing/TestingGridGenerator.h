@@ -90,43 +90,40 @@ public:
     return this->Grid.ComputePointCoordinates(index);
   }
 
-  // I commented out these functions because as far as I know there is no need
-  // to get information for a particular cell in a control environment test.
+private:
+  TopoType GetTopology() const
+  {
+    return this->Grid.PrepareForInput();
+  }
 
-//private:
-//  TopoType GetTopology() const
-//  {
-//    return this->Grid.PrepareForInput();
-//  }
+public:
+  //get the cell connections (aka topology) at a given cell id
+  dax::exec::CellVertices<CellTag> GetCellConnections(dax::Id cellId) const
+  {
+    return this->GetTopology().GetCellConnections(cellId);
+  }
 
-//public:
-//  //get the cell connections (aka topology) at a given cell id
-//  dax::exec::CellVertices<CellTag> GetCellConnections(dax::Id cellId) const
-//  {
-//    return this->GetTopology().GetCellConnections(cellId);
-//  }
+  /// This convienience function allows you to generate the Cell
+  /// point coordinates for any given data set
+  dax::exec::CellField<dax::Vector3,CellTag>
+  GetCellVertexCoordinates(dax::Id cellIndex) const
+  {
+    typedef typename GridType::PointCoordinatesType CoordType;
 
-//  /// This convienience function allows you to generate the Cell
-//  /// point coordinates for any given data set
-//  dax::exec::CellField<dax::Vector3,CellTag>
-//  GetCellVertexCoordinates(dax::Id cellIndex) const
-//  {
-//    typedef typename GridType::PointCoordinatesType CoordType;
+    //get the point ids for this cell
+    dax::exec::CellVertices<CellTag> cellConnections =
+        this->GetCellConnections(cellIndex);
 
-//    //get the point ids for this cell
-//    dax::exec::CellVertices<CellTag> cellConnections =
-//        this->GetCellConnections(cellIndex);
+    //get all the points for data set
+    CoordType allCoords = this->Grid.GetPointCoordinates();
 
-//    //get all the points for data set
-//    CoordType allCoords = this->Grid.GetPointCoordinates();
-
-//    dax::exec::CellField<dax::Vector3,CellTag> coordinates;
-//    for (dax::Id index = 0; index < coordinates.NUM_VERTICES; index++)
-//      {
-//      coordinates[index] = allCoords.GetPortalConstControl().Get(cellConnections[index]);
-//      }
-//    return coordinates;
-//  }
+    dax::exec::CellField<dax::Vector3,CellTag> coordinates;
+    for (dax::Id index = 0; index < coordinates.NUM_VERTICES; index++)
+      {
+      coordinates[index] = allCoords.GetPortalConstControl().Get(cellConnections[index]);
+      }
+    return coordinates;
+  }
 
   ~TestGrid()
   {

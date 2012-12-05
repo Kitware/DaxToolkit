@@ -17,7 +17,8 @@
 #ifndef __Threshold_worklet_
 #define __Threshold_worklet_
 
-#include <dax/exec/Cell.h>
+#include <dax/exec/CellField.h>
+#include <dax/exec/CellVertices.h>
 #include <dax/exec/VectorOperations.h>
 #include <dax/exec/WorkletMapCell.h>
 #include <dax/exec/WorkletGenerateTopology.h>
@@ -59,10 +60,10 @@ public:
   ThresholdClassify(ValueType thresholdMin, ValueType thresholdMax)
     : ThresholdMin(thresholdMin), ThresholdMax(thresholdMax) {  }
 
-  template<int NUM_POINTS>
+  template<class CellTag>
   DAX_EXEC_EXPORT
   dax::Id operator()(
-      const dax::Tuple<ValueType,NUM_POINTS> &values) const
+      const dax::exec::CellField<ValueType,CellTag> &values) const
   {
     ThresholdFunction<ValueType> threshold(this->ThresholdMin,
                                            this->ThresholdMax);
@@ -77,16 +78,16 @@ private:
 class ThresholdTopology : public dax::exec::WorkletGenerateTopology
 {
 public:
-  // Returning a tuple of connections feels a bit clunky.  Is there a better
-  // way of specifying the output cell type and generating a cell?
   typedef void ControlSignature(Topology, Topology(Out));
-  typedef void ExecutionSignature(_1,_2);
+  typedef void ExecutionSignature(Topology::PointIds(_1),
+                                  Topology::PointIds(_2));
 
-  template<typename InputCellType, typename OutputCellType>
+  template<typename InputCellTag, typename OutputCellTag>
   DAX_EXEC_EXPORT
-  void operator()(InputCellType const& in, OutputCellType &out) const
+  void operator()(const dax::exec::CellVertices<InputCellTag> &inVertices,
+                  dax::exec::CellVertices<OutputCellTag> &outVertices) const
   {
-    out.SetPointIndices(in.GetPointIndices());
+    outVertices.SetFromTuple(inVertices.GetAsTuple());
   }
 };
 

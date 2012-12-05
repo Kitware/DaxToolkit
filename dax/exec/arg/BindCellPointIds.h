@@ -65,7 +65,7 @@ public:
       const dax::exec::internal::WorkletBase& work)
     {
     // Should there be a check to see if we already go the cell connection?
-    this->Value = this->TopoExecArg.GetCellConnections(index, work);
+    this->Value = this->TopoExecArg.GetPointIndices(index, work);
     return this->Value;
     }
 
@@ -106,13 +106,13 @@ public:
                   HasOutTag,
                   typename boost::enable_if<HasOutTag>::type* = 0) const
     {
-    this->TopoExecArg.SetCellConnections(index, values, work);
+    this->TopoExecArg.SetPointIndices(index, values, work);
     }
 
   template <typename HasOutTag>
   DAX_EXEC_EXPORT
   void saveResult(dax::Id,
-                  const typename SaveType::PointConnectionsType&,
+                  const SaveType&,
                   dax::exec::internal::WorkletBase,
                   HasOutTag,
                   typename boost::disable_if<HasOutTag>::type* = 0) const

@@ -16,7 +16,7 @@
 #ifndef __CellAverage_worklet_
 #define __CellAverage_worklet_
 
-#include <dax/exec/Cell.h>
+#include <dax/exec/CellField.h>
 #include <dax/exec/VectorOperations.h>
 #include <dax/exec/WorkletMapCell.h>
 #include <dax/exec/WorkletMapField.h>
@@ -41,14 +41,13 @@ public:
   typedef void ControlSignature(Topology, Field(Point), Field(Out));
   typedef _3 ExecutionSignature(_1,_2);
 
-  template<class CellType>
+  template<class CellTag>
   DAX_EXEC_EXPORT
   dax::Scalar operator()(
-    CellType,
-    const dax::Tuple<dax::Scalar, CellType::NUM_POINTS>& values) const
+    CellTag, const dax::exec::CellField<dax::Scalar,CellTag> &values) const
   {
     Add add;
-    return (dax::exec::VectorReduce(values,add)/CellType::NUM_POINTS);
+    return (dax::exec::VectorReduce(values,add)/values.NUM_VERTICES);
   }
 };
 }

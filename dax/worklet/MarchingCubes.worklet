@@ -17,7 +17,8 @@
 #ifndef __MarchingCubes_worklet_
 #define __MarchingCubes_worklet_
 
-#include <dax/exec/Cell.h>
+#include <dax/CellTag.h>
+#include <dax/exec/CellField.h>
 #include <dax/exec/VectorOperations.h>
 #include <dax/exec/WorkletMapCell.h>
 #include <dax/exec/WorkletGenerateTopology.h>
@@ -41,7 +42,8 @@ namespace worklet {
 // --------------------------------------------------- GetVoxelClassification()
 template<typename T>
 DAX_EXEC_EXPORT
-unsigned char GetVoxelClassification(const T isoValue,const dax::Tuple<T,8>& values )
+unsigned char GetVoxelClassification(const T isoValue,
+                                     const dax::Tuple<T,8>& values )
 {
   return ((values[0] <= isoValue) << 0 |
           (values[1] <= isoValue) << 1 |
@@ -58,17 +60,18 @@ class MarchingCubesClassify : public dax::exec::WorkletMapCell
 {
 public:
   typedef void ControlSignature(Topology, Field(Point), Field(Out));
-  typedef _3 ExecutionSignature(_1,_2);
+  typedef _3 ExecutionSignature(_2);
 
   DAX_CONT_EXPORT MarchingCubesClassify(dax::Scalar isoValue)
     : IsoValue(isoValue) {  }
 
-  template<class InputCellType>
+  template<class InputCellTag>
   DAX_EXEC_EXPORT
-  dax::Id operator()(const InputCellType &daxNotUsed(cell),
-                     const dax::Tuple<dax::Scalar,InputCellType::NUM_POINTS> &values) const
+  dax::Id operator()(
+      const dax::exec::CellField<dax::Scalar,InputCellTag> &values) const
   {
-    unsigned char voxelClass = GetVoxelClassification(IsoValue,values);
+    unsigned char voxelClass = GetVoxelClassification(IsoValue,
+                                                      values.GetAsTuple());
     return dax::worklet::internal::marchingcubes::numFaces[voxelClass];
   }
 private:
@@ -81,29 +84,45 @@ class MarchingCubesTopology : public dax::exec::WorkletGenerateTopology
 {
 public:
 
-  typedef void ControlSignature(Topology, Topology(Out), Field(Point,In),
-                                Field(Point,In),Field(Out));
-  typedef void ExecutionSignature(_1,_2,_3, _4,_5,VisitIndex,WorkId);
+  typedef void ControlSignature(Topology,
+                                Topology(Out),
+                                Field(Point,In),
+                                Field(Point,In),
+                                Field(Out));
+  typedef void ExecutionSignature(_1,
+                                  Topology::PointIds(_2),
+                                  _3,
+                                  _4,
+                                  _5,
+                                  VisitIndex,
+                                  WorkId);
 
   DAX_CONT_EXPORT MarchingCubesTopology(dax::Scalar isoValue)
     : IsoValue(isoValue){ }
 
 
-  template<class InputCellType, class OutputCellType>
-  DAX_EXEC_EXPORT void operator()(const InputCellType &daxNotUsed(inputCell),
-                                  OutputCellType& outCell,
-                                  const dax::Tuple<dax::Scalar,InputCellType::NUM_POINTS> &values,
-                                  const dax::Tuple<dax::Vector3,InputCellType::NUM_POINTS> &coordinates,
-                                  dax::Tuple<dax::Vector3,OutputCellType::NUM_POINTS>& outCoordinates,
-                                  const dax::Id& inputCellVisitIndex,
-                                  const dax::Id& workId) const
+  template<class InputCellTag>
+  DAX_EXEC_EXPORT void operator()(
+      InputCellTag,
+      dax::exec::CellVertices<dax::CellTagTriangle> &outVertices,
+      const dax::exec::CellField<dax::Scalar,InputCellTag> &values,
+      const dax::exec::CellField<dax::Vector3,InputCellTag> &coordinates,
+      // The following argument needs to be fixed. It should be expressed
+      // as a CellField class, but we do not yet have the ability to output
+      // point data values from the generate topology worklet. Currently it
+      // is a hack that defines a cell field as a tuple of coordinates for
+      // each cell.
+      dax::Tuple<dax::Vector3, 3> &outCoordinates,
+      const dax::Id& inputCellVisitIndex,
+      const dax::Id& workId) const
   {
-    // These should probleble be available through the voxel class
+    // These should probably be available through the voxel class
     const int voxelVertEdges[12][2] = { {0,1}, {1,2}, {3,2}, {0,3},
                             {4,5}, {5,6}, {7,6}, {4,7},
                             {0,4}, {1,5}, {3,7}, {2,6}};
 
-    const unsigned char voxelClass = GetVoxelClassification(IsoValue,values);
+    const unsigned char voxelClass =
+        GetVoxelClassification(IsoValue, values.GetAsTuple());
 
     const dax::worklet::internal::marchingcubes::TriangleCases * const triCase =
         (dax::worklet::internal::marchingcubes::TriangleCases*)
@@ -112,24 +131,25 @@ public:
     const int * const TriCaseEdge = triCase->edges + inputCellVisitIndex * 3;
 
     //we need to save the coordinates and the connectivity
-    typename OutputCellType::PointConnectionsType connectivity;
-    for (int i = 0; i < 3; ++i)
+    for (int outVertIndex = 0;
+         outVertIndex < outVertices.NUM_VERTICES;
+         ++outVertIndex)
       {
-      const int * const vert = voxelVertEdges[TriCaseEdge[i]];
+      const int * const vert = voxelVertEdges[TriCaseEdge[outVertIndex]];
 
       // Find the weight for linear interpolation
       const dax::Scalar den = values[vert[1]]-values[vert[0]];
       const dax::Scalar num = IsoValue - values[vert[0]];
       const dax::Scalar t =  num/den ;
 
+      // TODO: Move interpolate to a math function.
       //a + t * (a-b)
-      outCoordinates[i] = ::interpolate(coordinates[vert[0]],
-                                                  coordinates[vert[1]],
-                                                  t);
-      connectivity[i] = workId * OutputCellType::NUM_POINTS + i;
+      outCoordinates[outVertIndex] = ::interpolate(coordinates[vert[0]],
+                                                   coordinates[vert[1]],
+                                                   t);
+      outVertices[outVertIndex] =
+          workId*outVertices.NUM_VERTICES + outVertIndex;
       }
-
-      outCell.SetPointIndices(connectivity);
   }
 
 private:

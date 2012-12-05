@@ -24,6 +24,7 @@
 
 #include <dax/worklet/CellGradient.worklet>
 
+#include <dax/CellTraits.h>
 #include <dax/Types.h>
 #include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
@@ -37,18 +38,21 @@ namespace {
 const dax::Id DIM = 64;
 
 //-----------------------------------------------------------------------------
-template<typename CellType>
-void verifyGradient(const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &pointCoordinates,
-                    const dax::Vector3& computedGradient,
-                    const dax::Vector3& trueGradient)
+template<typename CellTag>
+void verifyGradient(
+    const dax::exec::CellField<dax::Vector3,CellTag> &pointCoordinates,
+    const dax::Vector3& computedGradient,
+    const dax::Vector3& trueGradient)
 {
   //the true gradient needs to be fixed based on the toplogical demensions
+  const int TOPOLOGICAL_DIMENSIONS =
+      dax::CellTraits<CellTag>::TOPOLOGICAL_DIMENSIONS;
   dax::Vector3 expectedGradient;
-  if (CellType::TOPOLOGICAL_DIMENSIONS == 3)
+  if (TOPOLOGICAL_DIMENSIONS == 3)
     {
     expectedGradient = trueGradient;
     }
-  else if (CellType::TOPOLOGICAL_DIMENSIONS == 2)
+  else if (TOPOLOGICAL_DIMENSIONS == 2)
     {
     dax::Vector3 normal = dax::math::TriangleNormal(
           pointCoordinates[0], pointCoordinates[1], pointCoordinates[2]);
@@ -56,13 +60,13 @@ void verifyGradient(const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &pointCo
     expectedGradient =
         trueGradient - dax::dot(trueGradient,normal)*normal;
     }
-  else if (CellType::TOPOLOGICAL_DIMENSIONS == 1)
+  else if (TOPOLOGICAL_DIMENSIONS == 1)
     {
     dax::Vector3 direction =
         dax::math::Normal(pointCoordinates[1]-pointCoordinates[0]);
     expectedGradient = direction * dax::dot(direction, trueGradient);
     }
-  else if (CellType::TOPOLOGICAL_DIMENSIONS == 0)
+  else if (TOPOLOGICAL_DIMENSIONS == 0)
     {
     expectedGradient = dax::make_Vector3(0, 0, 0);
     }
@@ -71,7 +75,8 @@ void verifyGradient(const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &pointCo
     DAX_TEST_FAIL("Unknown cell dimension.");
     }
 
-  DAX_TEST_ASSERT(test_equal(computedGradient,expectedGradient),"Got bad gradient");
+  DAX_TEST_ASSERT(test_equal(computedGradient,expectedGradient),
+                  "Got bad gradient");
 }
 
 //-----------------------------------------------------------------------------
@@ -81,7 +86,6 @@ struct TestCellGradientWorklet
   template<typename GridType>
   void operator()(const GridType&) const
     {
-    typedef typename GridType::CellType CellType;
     dax::cont::internal::TestGrid<
         GridType,
         dax::cont::ArrayContainerControlTagBasic,
@@ -124,10 +128,9 @@ struct TestCellGradientWorklet
          cellIndex < grid->GetNumberOfCells();
          cellIndex++)
       {
-      verifyGradient<CellType>(
-                               grid.GetCellVertexCoordinates(cellIndex),
-                               gradient[cellIndex],
-                               trueGradient);
+      verifyGradient(grid.GetCellVertexCoordinates(cellIndex),
+                     gradient[cellIndex],
+                     trueGradient);
       }
     }
 };
