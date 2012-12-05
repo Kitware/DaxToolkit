@@ -31,7 +31,7 @@ struct VectorTraitsTagMultipleComponents { };
 ///
 struct VectorTraitsTagSingleComponent { };
 
-namespace detail {
+namespace internal {
 
 template<int numComponents>
 struct VectorTraitsMultipleComponentChooser {
@@ -49,7 +49,9 @@ struct VectorTraitsMultipleComponentChooser<1> {
 /// to use a given type as a vector.
 ///
 template<class VectorType>
-struct VectorTraits {
+struct VectorTraits
+#ifdef DAX_DOXYGEN_ONLY
+{
   /// Type of the components in the vector.
   ///
   typedef typename VectorType::ComponentType ComponentType;
@@ -62,19 +64,71 @@ struct VectorTraits {
   /// "real" vector). This tag can be useful for creating specialized functions
   /// when a vector is really just a scalar.
   ///
-  typedef typename detail::VectorTraitsMultipleComponentChooser<
+  typedef typename internal::VectorTraitsMultipleComponentChooser<
       NUM_COMPONENTS>::Type HasMultipleComponents;
 
   /// Returns the value in a given component of the vector.
   ///
   DAX_EXEC_CONT_EXPORT static const ComponentType &GetComponent(
       const typename boost::remove_const<VectorType>::type &vector,
-      int component) {
-    return vector[component];
-  }
+      int component);
   DAX_EXEC_CONT_EXPORT static ComponentType &GetComponent(
       typename boost::remove_const<VectorType>::type &vector,
-      int component) {
+      int component);
+
+  /// Changes the value in a given component of the vector.
+  ///
+  DAX_EXEC_CONT_EXPORT static void SetComponent(VectorType &vector,
+                                                int component,
+                                                ComponentType value);
+
+  /// Converts whatever type this vector is into the standard Dax Tuple.
+  ///
+  DAX_EXEC_CONT_EXPORT
+  static dax::Tuple<ComponentType,NUM_COMPONENTS>
+  ToTuple(const VectorType &vector);
+};
+#else // DAX_DOXYGEN_ONLY
+    ;
+#endif // DAX_DOXYGEN_ONLY
+
+// This partial specialization allows you to define a non-const version of
+// VectorTraits and have it still work for const version.
+//
+template<typename T>
+struct VectorTraits<const T> : VectorTraits<T>
+{  };
+
+template<typename T, int Size>
+struct VectorTraits<dax::Tuple<T,Size> >
+{
+  typedef dax::Tuple<T,Size> VectorType;
+
+  /// Type of the components in the vector.
+  ///
+  typedef typename VectorType::ComponentType ComponentType;
+
+  /// Number of components in the vector.
+  ///
+  static const int NUM_COMPONENTS = VectorType::NUM_COMPONENTS;
+
+  /// A tag specifying whether this vector has multiple components (i.e. is a
+  /// "real" vector). This tag can be useful for creating specialized functions
+  /// when a vector is really just a scalar.
+  ///
+  typedef typename internal::VectorTraitsMultipleComponentChooser<
+      NUM_COMPONENTS>::Type HasMultipleComponents;
+
+  /// Returns the value in a given component of the vector.
+  ///
+  DAX_EXEC_CONT_EXPORT
+  static const ComponentType &GetComponent(const VectorType &vector,
+                                           int component)
+  {
+    return vector[component];
+  }
+  DAX_EXEC_CONT_EXPORT
+  static ComponentType &GetComponent(VectorType &vector, int component) {
     return vector[component];
   }
 
@@ -84,6 +138,15 @@ struct VectorTraits {
                                                 int component,
                                                 ComponentType value) {
     vector[component] = value;
+  }
+
+  /// Converts whatever type this vector is into the standard Dax Tuple.
+  ///
+  DAX_EXEC_CONT_EXPORT
+  static dax::Tuple<ComponentType,NUM_COMPONENTS>
+  ToTuple(const VectorType &vector)
+  {
+    return vector;
   }
 };
 
@@ -111,16 +174,22 @@ struct VectorTraitsBasic {
                                                 ComponentType value) {
     vector = value;
   }
+
+  DAX_EXEC_CONT_EXPORT
+  static dax::Tuple<ScalarType,1> ToTuple(const ScalarType &vector)
+  {
+    return dax::Tuple<ScalarType,1>(vector);
+  }
 };
 }
 
 #define DAX_BASIC_TYPE_VECTOR(type) \
   template<> \
   struct VectorTraits<type> \
-      : public dax::internal::VectorTraitsBasic<type> { }; \
+      : public dax::internal::VectorTraitsBasic<type> { };/* \
   template<> \
   struct VectorTraits<const type> \
-      : public dax::internal::VectorTraitsBasic<type> { }
+      : public dax::internal::VectorTraitsBasic<type> { }*/
 
 /// Allows you to treat basic types as if they were vectors.
 
