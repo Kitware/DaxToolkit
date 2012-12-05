@@ -16,7 +16,8 @@
 
 #include <dax/cont/UnstructuredGrid.h>
 
-#include <dax/exec/CellHexahedron.h>
+#include <dax/CellTag.h>
+#include <dax/CellTraits.h>
 
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 #include <dax/cont/internal/testing/Testing.h>
@@ -27,7 +28,7 @@ void TestUnstructuredGrid()
 {
   const dax::Id DIM = 5;
 
-  typedef dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> GridType;
+  typedef dax::cont::UnstructuredGrid<dax::CellTagHexahedron> GridType;
   dax::cont::internal::TestGrid<GridType> gridGen(DIM);
   GridType grid = gridGen.GetRealGrid();
 
@@ -46,9 +47,11 @@ void TestUnstructuredGrid()
 
   GridType::CellConnectionsType::PortalConstControl connections
       = grid.GetCellConnections().GetPortalConstControl();
-  for (dax::Id index = 0;
-       index < grid.GetNumberOfCells() * dax::exec::CellHexahedron::NUM_POINTS;
-       index++)
+  DAX_TEST_ASSERT(connections.GetNumberOfValues() ==
+                  (grid.GetNumberOfCells()
+                   * dax::CellTraits<dax::CellTagHexahedron>::NUM_VERTICES),
+                  "Wrong number of values in connections array.");
+  for (dax::Id index = 0; index < connections.GetNumberOfValues(); index++)
     {
     DAX_TEST_ASSERT(connections.Get(index)==topology.CellConnections.Get(index),
                     "Bad connection.");
