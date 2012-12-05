@@ -18,6 +18,8 @@
 #include <iostream>
 #include "Timer.h"
 
+#include <dax/CellTag.h>
+
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/ScheduleGenerateTopology.h>
@@ -158,7 +160,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
 {
   std::cout << "Running pipeline 1: Magnitude -> Threshold" << std::endl;
 
-  dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> grid2;
+  dax::cont::UnstructuredGrid<dax::CellTagHexahedron> grid2;
 
   dax::cont::ArrayHandle<dax::Scalar> intermediate1;
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
