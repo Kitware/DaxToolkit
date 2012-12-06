@@ -23,7 +23,6 @@ set(headers
   ArrayContainerControlConstantValue.h
   ArrayContainerControlImplicit.h
   ArrayContainerControlPermutation.h
-  ArrayContainerControlPermutation1.h
   ArrayHandle.h
   ArrayHandleConstantValue.h
   ArrayHandleCounting.h

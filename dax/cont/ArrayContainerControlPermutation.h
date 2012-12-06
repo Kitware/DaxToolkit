@@ -23,51 +23,52 @@
 namespace dax {
 namespace cont {
 
-/// \brief An implicit array portal that returns a permuted value.
+/// \brief An permutation array portal wraps and permutes two key-value portals.
 ///
-/// This array portal points to an implicit array (perhaps it should not be but
-/// for the time being it is). The array comprises of two arrays one with the
-/// Key and other with the Value. The Key holds the index into Value array and
-/// returns the corresponding value. So for example if the Key array = [0,2,3,5]
-/// and Value array = [8,6,4,9,8,3]. The array[2] = Value[Key[2]] =
-/// Value[3] = 9.
+/// The array portal comprises of two arrays portals one with the Key and other
+/// with the Value. The Key holds the index into Value array and returns the
+/// corresponding value. So for example if we have a permutation array portal
+/// called PermuteArray with portal Key = [0,2,3,5] and portal Value =
+/// [8,6,4,9,8,3]. Then
+///
+/// PermuteArray[0] = Value[Key[0]] = Value[0] = 8.
+/// PermuteArray[1] = Value[Key[1]] = Value[2] = 4.
+/// PermuteArray[2] = Value[Key[2]] = Value[3] = 9. etc ...
 ///
 /// The ArrayPortalPermutation is used in an ArrayHandle with an
 /// ArrayContainerControlTagPermutation container.
 ///
+template <class KClassType,class VClassType>
 class ArrayPortalPermutation
 {
 public:
-  typedef dax::Id ValueType;
+  typedef KClassType KeyPortalType;
+  typedef VClassType ValuePortalType;
+  typedef typename ValuePortalType::ValueType ValueType;
 
   DAX_EXEC_CONT_EXPORT
-  ArrayPortalPermutation(): KeyLength(0), ValueLength(0) {}
+  ArrayPortalPermutation() {}
 
-  DAX_EXEC_CONT_EXPORT ArrayPortalPermutation(dax::Id* k,
-                                              dax::Id keyLen,
-                                              ValueType* v,
-                                              dax::Id valueLen):
+  DAX_EXEC_CONT_EXPORT
+  ArrayPortalPermutation(KeyPortalType k,
+                         ValuePortalType v):
     Key_(k),
-    Value_(v),
-    KeyLength(keyLen),
-    ValueLength(valueLen)
+    Value_(v)
     {
-      for (dax::Id i = 0; i < keyLen; ++i)
-        {
-        DAX_ASSERT_CONT(k[i] < valueLen);
-        }
     }
 
   DAX_EXEC_CONT_EXPORT
-  dax::Id GetNumberOfValues() const { return this->KeyLength; }
+  dax::Id GetNumberOfValues() const { return this->Key_.GetNumberOfValues (); }
 
   DAX_EXEC_CONT_EXPORT
   ValueType Get(dax::Id index) const
   {
-    return this->Value_[this->Key_[index]];
+    return this->Value_.Get(this->Key_.Get(index));
   }
 
-  typedef dax::cont::IteratorFromArrayPortal<ArrayPortalPermutation> IteratorType;
+  typedef dax::cont::IteratorFromArrayPortal <ArrayPortalPermutation < KeyPortalType,
+                                                                       ValuePortalType> >
+  IteratorType;
 
   DAX_CONT_EXPORT
   IteratorType GetIteratorBegin() const
@@ -78,31 +79,71 @@ public:
   DAX_CONT_EXPORT
   IteratorType GetIteratorEnd() const
   {
-    return IteratorType(*this, this->KeyLength);
+    return IteratorType(*this, this->Key_.GetNumberOfValues ());
   }
 
 private:
-  dax::Id* Key_;
-  ValueType* Value_;
-  dax::Id KeyLength;
-  dax::Id ValueLength;
+  KeyPortalType Key_;
+  ValuePortalType Value_;
 };
 
-/// \brief An implicit array storing consecutive indices.
-///
-/// This array portal points to an implicit array (perhaps it should not be but
-/// for the time being it is). The array comprises of two arrays one with the
-/// Key and other with the Value. The Key holds the index into Value array and
-/// returns the corresponding value. So for example if the Key array = [0,2,3,5]
-/// and Value array = [8,6,4,9,8,3]. The array[2] = Value[Key[2]] =
-/// Value[3] = 9.
-///
-/// When creating an ArrayHandle with an ArrayContainerControlTagImplicit
-/// container, use an ArrayPortalPermutation to establish the array.
-///
-typedef ArrayContainerControlTagImplicit<dax::cont::ArrayPortalPermutation>
-    ArrayContainerControlTagPermutation;
+template<class KeyPortalType,class ValuePortalType>
+struct ArrayContainerControlTagPermutation {
+  typedef ArrayPortalPermutation <KeyPortalType,
+                                  ValuePortalType> PortalType;
+};
 
+namespace internal {
+
+template<class KeyPortalType,class ValuePortalType>
+class ArrayContainerControl<
+    typename ValuePortalType::ValueType,
+    ArrayContainerControlTagPermutation<KeyPortalType,ValuePortalType> >
+{
+public:
+  typedef typename ValuePortalType::ValueType ValueType;
+  typedef ArrayPortalPermutation <KeyPortalType,
+                                  ValuePortalType> PortalConstType;
+
+  // This is meant to be invalid. Because Permutation1 arrays are read only, you
+  // should only be able to use the const version.
+  struct PortalType {
+    typedef void *ValueType;
+    typedef void *IteratorType;
+  };
+
+  // All these methods do nothing but raise errors.
+  PortalType GetPortal() {
+    throw dax::cont::ErrorControlBadValue("Permutation1 arrays are read-only.");
+  }
+  PortalConstType GetPortalConst() const {
+    // This does not work because the ArrayHandle holds the constant
+    // ArrayPortal, not the container.
+    throw dax::cont::ErrorControlBadValue(
+          "Permutation1 container does not store array portal.  "
+          "Perhaps you did not set the ArrayPortal when "
+          "constructing the ArrayHandle.");
+  }
+  dax::Id GetNumberOfValues() const {
+    // This does not work because the ArrayHandle holds the constant
+    // ArrayPortal, not the container.
+    throw dax::cont::ErrorControlBadValue(
+          "Permutation1 container does not store array portal.  "
+          "Perhaps you did not set the ArrayPortal when "
+          "constructing the ArrayHandle.");
+  }
+  void Allocate(dax::Id daxNotUsed(numberOfValues)) {
+    throw dax::cont::ErrorControlBadValue("Permutation1 arrays are read-only.");
+  }
+  void Shrink(dax::Id daxNotUsed(numberOfValues)) {
+    throw dax::cont::ErrorControlBadValue("Permutation1 arrays are read-only.");
+  }
+  void ReleaseResources() {
+    throw dax::cont::ErrorControlBadValue("Permutation1 arrays are read-only.");
+  }
+};
+
+}
 }
 }
 
