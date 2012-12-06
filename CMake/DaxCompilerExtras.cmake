@@ -14,6 +14,10 @@
 ##
 ##=============================================================================
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  set(CMAKE_COMPILER_IS_CLANGXX 1)
+endif()
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
 
   include(CheckCXXCompilerFlag)
