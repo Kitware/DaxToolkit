@@ -84,17 +84,17 @@ public:
           work);
   }
 
-  DAX_EXEC_EXPORT void SaveExecutionResult(int index,
-                       const dax::exec::internal::WorkletBase& work) const
-    {
-    //Look at the concept map traits. If we have the Out tag
-    //we know that we must call our TopoExecArgs SaveExecutionResult.
-    //Otherwise we are an input argument and that behavior is undefined
-    //and very bad things could happen
-    typedef typename Tags::
-        template Has<typename dax::cont::sig::Out>::type HasOutTag;
-    this->saveResult(index,this->Cell.GetPointIndices(),work,HasOutTag());
-    }
+//  DAX_EXEC_EXPORT void SaveExecutionResult(int index,
+//                       const dax::exec::internal::WorkletBase& work) const
+//    {
+//    //Look at the concept map traits. If we have the Out tag
+//    //we know that we must call our TopoExecArgs SaveExecutionResult.
+//    //Otherwise we are an input argument and that behavior is undefined
+//    //and very bad things could happen
+//    typedef typename Tags::
+//        template Has<typename dax::cont::sig::Out>::type HasOutTag;
+//    this->saveResult(index,this->Cell.GetPointIndices(),work,HasOutTag());
+//    }
 
   DAX_EXEC_EXPORT void SaveExecutionResult(int index, const SaveType& v,
                        const dax::exec::internal::WorkletBase& work) const
