@@ -65,6 +65,7 @@ public:
   {
     (void)work;  // Shut up compiler.
     DAX_ASSERT_EXEC(index >= 0, work);
+    DAX_ASSERT_EXEC(index < Topo.GetNumberOfCells(), work);
     return this->Topo.GetCellConnections(index);
   }
 
