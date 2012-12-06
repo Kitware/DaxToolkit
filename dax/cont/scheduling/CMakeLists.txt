@@ -15,9 +15,17 @@
 ##=============================================================================
 
 set(headers
-  VisitIndexWorklets.h
-  GenerateTopologyWorklets.h
+  AddVisitIndexArg.h
+  CollectCount.h
+  CreateExecutionResources.h
+  DetermineScheduler.h
+  Scheduler.h
+  SchedulerDefault.h
+  SchedulerGenerateTopology.h
+  SchedulerTags.h
+  VerifyUserArgLength.h
   )
 
 dax_declare_headers(${headers})
 
+add_subdirectory(testing)

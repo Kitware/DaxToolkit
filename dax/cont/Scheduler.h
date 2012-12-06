@@ -1,6 +1,3 @@
-#ifndef __dax_cont_Schedule_h
-#define __dax_cont_Schedule_h
-
 //=============================================================================
 //
 //  Copyright (c) Kitware, Inc.
@@ -16,34 +13,18 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
+#if !defined(BOOST_PP_IS_ITERATING)
+
+#ifndef __dax_cont_Scheduler_h
+#define __dax_cont_Scheduler_h
 
 #include <dax/Types.h>
-#include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/arg/ConceptMap.h>
-#include <dax/cont/internal/Bindings.h>
-#include <dax/cont/sig/Arg.h>
-#include <dax/cont/sig/Tag.h>
-#include <dax/cont/sig/VisitIndex.h>
 
-#include <dax/cont/ScheduleGenerateTopology.h>
-#include <dax/cont/ScheduleMapAdapter.h>
+#include <dax/cont/scheduling/DetermineScheduler.h>
 
-#include <dax/cont/arg/FieldArrayHandle.h>
-#include <dax/cont/arg/FieldConstant.h>
-#include <dax/cont/arg/FieldMap.h>
-#include <dax/cont/arg/TopologyUniformGrid.h>
-#include <dax/cont/arg/TopologyUnstructuredGrid.h>
-
-#include <dax/exec/internal/Functor.h>
-#include <dax/exec/internal/WorkletBase.h>
-#include <dax/exec/internal/kernel/ScheduleGenerateTopology.h>
-
-//needed to parse signature arguments to determine what implicit
-//args we need to upload to execution
-#include <dax/internal/WorkletSignatureFunctions.h>
-
-#include <boost/utility/enable_if.hpp>
-#include <boost/type_traits/is_base_of.hpp>
+//include all the specialization of the scheduler class
+#include <dax/cont/scheduling/SchedulerDefault.h>
+#include <dax/cont/scheduling/SchedulerGenerateTopology.h>
 
 #if !(__cplusplus >= 201103L)
 # include <dax/internal/ParameterPackCxx03.h>
@@ -51,132 +32,46 @@
 
 namespace dax { namespace cont {
 
-namespace detail
-{
-//forward declare schedule functors that are needed to execute worklets
-//the implementation details are at the bottom of this file
-template <class WorkType> class CollectCount;
-template<class WorkType> class CreateExecutionResources;
-}
-
 template <class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class Scheduler
 {
 public:
 #if __cplusplus >= 201103L
   // Note any changes to this method must be reflected in the
-  // C++03 implementation inside "Schedule_Cxx03.h".
+  // C++03 implementation.
   template <class WorkletType, typename...T>
   DAX_CONT_EXPORT void Invoke(WorkletType w, T...a) const
     {
-    // Construct the signature of the worklet invocation on the control side.
-    typedef WorkletType ControlInvocationSignature(T...);
-    typedef typename WorkletType::WorkType WorkType;
-
-    // Bind concrete arguments T...a to the concepts declared in the
-    // worklet ControlSignature through ConceptMap specializations.
-    // The concept maps also know how to make the arguments available
-    // in the execution environment.
-    dax::cont::internal::Bindings<ControlInvocationSignature>
-      bindings(a...);
-
-    // Visit each bound argument to determine the count to be scheduled.
-    dax::Id count=1;
-    bindings.ForEachCont(dax::cont::detail::CollectCount<WorkType>(count));
-
-    // Visit each bound argument to set up its representation in the
-    // execution environment.
-    bindings.ForEachCont(
-          dax::cont::detail::CreateExecutionResources<WorkType>(count));
-
-    // Schedule the worklet invocations in the execution environment.
-    dax::exec::internal::Functor<ControlInvocationSignature>
-        bindingFunctor(w, bindings);
-    dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>::
-        Schedule(bindingFunctor, count);
+    typedef typename dax::cont::scheduling::DetermineScheduler<
+                                  WorkletType>::SchedulerTag SchedulerTag;
+    typedef dax::cont::scheduling::Scheduler<DeviceAdapterTag,SchedulerTag> Scheduler;
+    const Scheduler realScheduler;
+    realScheduler.Invoke(w,a...);
     }
 #else // !(__cplusplus >= 201103L)
   // For C++03 use Boost.Preprocessor file iteration to simulate
   // parameter packs by enumerating implementations for all argument
   // counts.
-# include "Scheduler_Cxx03.h"
+#     define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/cont/Scheduler.h>))
+#     include BOOST_PP_ITERATE()
 #endif // !(__cplusplus >= 201103L)
 };
 
 
-namespace detail
-{
-template <class WorkType>
-class CollectCount
-{
-  dax::Id& Count;
-public:
-  CollectCount(dax::Id& c): Count(c) { this->Count = 1; }
-
-  template <typename C, typename A>
-  void operator()(const dax::cont::arg::ConceptMap<C,A>& c)
-    {
-    //determine the concept and traits of the concept we
-    //have. This will be used to look up the domains that the concept
-    //has, and if one of those domains match our domina, we know we
-    //can ask it for the size/len
-    typedef dax::cont::arg::ConceptMap<C,A> ConceptType;
-    typedef dax::cont::arg::ConceptMapTraits<ConceptType> Traits;
-    typedef typename Traits::DomainTags DomainTags;
-    typedef typename DomainTags::
-            template Has<typename WorkType::DomainType>::type HasDomain;
-
-    this->getCount<ConceptType,HasDomain>(c);
-    }
-
-  template <typename ConceptType, typename HasDomain>
-  typename boost::enable_if<HasDomain>::type
-    getCount(const ConceptType& concept)
-    {
-    dax::Id c = concept.GetDomainLength(typename WorkType::DomainType());
-    if(this->Count <= 1)
-      {
-      this->Count = c;
-      }
-    else if(c > 0 && c < this->Count)
-      {
-      // TODO: Consolidate counts from multiple bindings.
-      // Outputs may need to be given the count to allocate.
-      this->Count = c;
-      }
-    }
-
-  template <typename ConceptType, typename HasDomain>
-  typename boost::disable_if<HasDomain>::type
-    getCount(const ConceptType&)
-    {
-      //this concept map doesn't have the domain tag we are interested
-      //in so we ignore it
-    }
-};
-
-template <class WorkType>
-class CreateExecutionResources
-{
-protected:
-  const dax::Id NumElementsToAlloc;
-public:
-  CreateExecutionResources(dax::Id size):
-    NumElementsToAlloc(size)
-    {}
-
-  template <typename C, typename A>
-  void operator()(dax::cont::arg::ConceptMap<C,A>& concept) const
-    {
-    //we must call to execution on everything.
-    concept.ToExecution(NumElementsToAlloc);
-    }
-};
-
-
-}
-
-
-} }
-
+} } //namespace da™x::cont
 #endif //__dax_cont_Schedule_h
+
+#else // defined(BOOST_PP_IS_ITERATING)
+#if _dax_pp_sizeof___T > 0
+  template <class WorkletType, _dax_pp_typename___T>
+  DAX_CONT_EXPORT void Invoke(WorkletType w, _dax_pp_params___(a)) const
+    {
+    typedef typename dax::cont::scheduling::DetermineScheduler<
+                                WorkletType>::SchedulerTag SchedulerTag;
+    typedef dax::cont::scheduling::Scheduler<DeviceAdapterTag,SchedulerTag> Scheduler;
+    const Scheduler realScheduler;
+    realScheduler.Invoke(w,_dax_pp_args___(a));
+    }
+#     endif // _dax_pp_sizeof___T > 1
+# endif // defined(BOOST_PP_IS_ITERATING)
+

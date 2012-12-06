@@ -14,10 +14,11 @@
 ##
 ##=============================================================================
 
-set(headers
-  VisitIndexWorklets.h
-  GenerateTopologyWorklets.h
+set(unit_tests
+  UnitTestAddVisitIndexArg.cxx
+  UnitTestCollectCount.cxx
+  UnitTestCreateExecutionResources.cxx
+  UnitTestDetermineScheduler.cxx
+  UnitTestVerifyUserArgLength.cxx
   )
-
-dax_declare_headers(${headers})
-
+dax_unit_tests(SOURCES ${unit_tests})

@@ -62,5 +62,6 @@ configure_file(
   )
 
 add_subdirectory(arg)
+add_subdirectory(scheduling)
 add_subdirectory(sig)
 add_subdirectory(testing)

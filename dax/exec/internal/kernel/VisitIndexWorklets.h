@@ -13,8 +13,8 @@
 //
 //=============================================================================
 
-#ifndef __dax_exec_internal_kernel_ScheduleGenerateTopology_h
-#define __dax_exec_internal_kernel_ScheduleGenerateTopology_h
+#ifndef __dax_exec_internal_kernel_VisitIndexWorklet_h
+#define __dax_exec_internal_kernel_VisitIndexWorklet_h
 
 #include <dax/Types.h>
 #include <dax/exec/WorkletMapField.h>
@@ -35,40 +35,6 @@ public:
   typedef ESig ExecutionSignature;
 };
 
-struct ClearUsedPointsFunctor : public WorkletMapField
-{
-  typedef void ControlSignature(Field(Out));
-  typedef void ExecutionSignature(_1);
-
-  template<typename T>
-  DAX_EXEC_EXPORT void operator()(T &t) const
-  {
-    t = static_cast<T>(0);
-  }
-};
-
-struct Index : public WorkletMapField
-{
-  typedef void ControlSignature(Field(Out));
-  typedef _1 ExecutionSignature(WorkId);
-
-  DAX_EXEC_EXPORT dax::Id operator()(dax::Id index) const
-  {
-    return index;
-  }
-};
-
-struct GetUsedPointsFunctor : public WorkletMapField
-{
-  typedef void ControlSignature(Field(Out));
-  typedef void ExecutionSignature(_1);
-
-  template<typename T>
-  DAX_EXEC_EXPORT void operator()(T& t) const
-  {
-    t = static_cast<T>(1);
-  }
-};
 
 struct ComputeVisitIndex : public WorkletMapField
 {
@@ -87,4 +53,4 @@ struct ComputeVisitIndex : public WorkletMapField
 } //dax::exec::internal::kernel
 
 
-#endif // SCHEDULEGENERATETOPOLOGY_H
+#endif // __dax_exec_internal_kernel_VisitIndexWorklet_h
