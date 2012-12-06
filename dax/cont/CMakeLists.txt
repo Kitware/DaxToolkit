@@ -25,6 +25,7 @@ set(headers
   ArrayPortal.h
   ArrayPortalFromIterators.h
   Assert.h
+  CountingArrayHandle.h
   DeviceAdapter.h
   DeviceAdapterSerial.h
   Error.h
