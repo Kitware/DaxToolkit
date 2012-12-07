@@ -16,9 +16,10 @@
 #ifndef __dax_cont_ArrayContainerControlPermutation_h
 #define __dax_cont_ArrayContainerControlPermutation_h
 
-#include <dax/cont/ArrayContainerControlImplicit.h>
 #include <dax/cont/ArrayPortal.h>
 #include <dax/cont/IteratorFromArrayPortal.h>
+#include <dax/cont/ArrayContainerControl.h>
+#include <dax/cont/ErrorControlBadValue.h>
 
 namespace dax {
 namespace cont {
@@ -105,7 +106,7 @@ public:
   typedef ArrayPortalPermutation <KeyPortalType,
                                   ValuePortalType> PortalConstType;
 
-  // This is meant to be invalid. Because Permutation1 arrays are read only, you
+  // This is meant to be invalid. Because Permutation arrays are read only, you
   // should only be able to use the const version.
   struct PortalType {
     typedef void *ValueType;
@@ -114,13 +115,13 @@ public:
 
   // All these methods do nothing but raise errors.
   PortalType GetPortal() {
-    throw dax::cont::ErrorControlBadValue("Permutation1 arrays are read-only.");
+    throw dax::cont::ErrorControlBadValue("Permutation arrays are read-only.");
   }
   PortalConstType GetPortalConst() const {
     // This does not work because the ArrayHandle holds the constant
     // ArrayPortal, not the container.
     throw dax::cont::ErrorControlBadValue(
-          "Permutation1 container does not store array portal.  "
+          "Permutation container does not store array portal.  "
           "Perhaps you did not set the ArrayPortal when "
           "constructing the ArrayHandle.");
   }
@@ -128,18 +129,18 @@ public:
     // This does not work because the ArrayHandle holds the constant
     // ArrayPortal, not the container.
     throw dax::cont::ErrorControlBadValue(
-          "Permutation1 container does not store array portal.  "
+          "Permutation container does not store array portal.  "
           "Perhaps you did not set the ArrayPortal when "
           "constructing the ArrayHandle.");
   }
   void Allocate(dax::Id daxNotUsed(numberOfValues)) {
-    throw dax::cont::ErrorControlBadValue("Permutation1 arrays are read-only.");
+    throw dax::cont::ErrorControlBadValue("Permutation arrays are read-only.");
   }
   void Shrink(dax::Id daxNotUsed(numberOfValues)) {
-    throw dax::cont::ErrorControlBadValue("Permutation1 arrays are read-only.");
+    throw dax::cont::ErrorControlBadValue("Permutation arrays are read-only.");
   }
   void ReleaseResources() {
-    throw dax::cont::ErrorControlBadValue("Permutation1 arrays are read-only.");
+    throw dax::cont::ErrorControlBadValue("Permutation arrays are read-only.");
   }
 };
 
