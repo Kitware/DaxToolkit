@@ -62,7 +62,7 @@ struct MakeVisitIndexControlType<false,Algorithm,HandleType>
   typedef dax::Id Type;
 
   template<class Scheduler, typename OtherHandleType>
-  void operator()(Scheduler &scheduler,
+  void operator()(Scheduler &daxNotUsed(scheduler),
                   const OtherHandleType& daxNotUsed(handle), Type& value) const
   {
     //The visitIndex is not requested, so we fill in the control side argument
