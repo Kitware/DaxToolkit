@@ -81,19 +81,21 @@ void RunVTKPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid)
 
   vtkNew<vtkMarchingCubes> marching;
   marching->SetInputConnection(producer->GetOutputPort());
+
+  Timer timer;
   marching->ComputeNormalsOff();
   marching->ComputeGradientsOff();
   marching->ComputeScalarsOn();
   marching->SetNumberOfContours(1);
   marching->SetValue(0, ISOVALUE);
 
-  Timer timer;
+
   marching->Update();
   double time = timer.elapsed();
 
   vtkSmartPointer<vtkPolyData> out = marching->GetOutput();
 
-  std::cout << "number of coordinates in: " << dgrid.GetNumberOfPoints() << std::endl;
+  std::cout << "number of coordinates in: " << grid->GetNumberOfPoints() << std::endl;
   std::cout << "number of coordinates out: " << out->GetNumberOfPoints() << std::endl;
   std::cout << "number of cells out: " << out->GetNumberOfCells() << std::endl;
 
