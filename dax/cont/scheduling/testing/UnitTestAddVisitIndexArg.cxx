@@ -49,7 +49,7 @@ struct ConvertToBoost
 
 struct WithVisitIndexWorklet : public dax::exec::WorkletGenerateTopology
 {
-  static float TestValue;
+  float TestValue;
   typedef void ControlSignature(Topology(In),Topology(Out));
   typedef void ExecutionSignature(_1,_2,VisitIndex);
 
@@ -62,7 +62,7 @@ struct WithVisitIndexWorklet : public dax::exec::WorkletGenerateTopology
 
 struct WithoutVisitIndexWorklet : public dax::exec::WorkletGenerateTopology
 {
-  static float TestValue;
+  float TestValue;
   typedef void ControlSignature(Topology(In),Topology(Out));
   typedef void ExecutionSignature(_1,_2);
 
