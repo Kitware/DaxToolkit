@@ -37,6 +37,7 @@ if(DAX_ENABLE_VTK_MARCHING_CUBES_BENCHMARK)
     vtkCommonCore
     vtkCommonDataModel
     vtkCommonExecutionModel
+    vtkCommonMisc
     vtkFiltersCore
     vtkFiltersGeometry
     REQUIRED)
@@ -52,6 +53,7 @@ if(DAX_ENABLE_PISTON_MARCHING_CUBES_BENCHMARK)
     vtkCommonCore
     vtkCommonDataModel
     vtkCommonExecutionModel
+    vtkCommonMisc
     vtkFiltersCore
     vtkFiltersGeometry
     REQUIRED)
@@ -93,6 +95,7 @@ if(DAX_ENABLE_VTK_MARCHING_CUBES_BENCHMARK)
     vtkCommonCore
     vtkCommonDataModel
     vtkCommonExecutionModel
+    vtkCommonMisc
     vtkFiltersCore
     vtkFiltersGeometry
     )
@@ -118,6 +121,7 @@ if(DAX_ENABLE_PISTON_MARCHING_CUBES_BENCHMARK)
       vtkCommonCore
       vtkCommonDataModel
       vtkCommonExecutionModel
+      vtkCommonMisc
       vtkFiltersCore
       vtkFiltersGeometry
       )
@@ -136,6 +140,7 @@ if(DAX_ENABLE_PISTON_MARCHING_CUBES_BENCHMARK)
       vtkCommonCore
       vtkCommonDataModel
       vtkCommonExecutionModel
+      vtkCommonMisc
       vtkFiltersCore
       vtkFiltersGeometry
       )

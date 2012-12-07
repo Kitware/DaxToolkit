@@ -40,7 +40,7 @@
 #include <piston/choose_container.h>
 #include <piston/image3d.h>
 #include <piston/vtk_image3d.h>
-#include <piston/threshold_geometry.h>
+#include <piston/marching_cube.h>
 
 namespace
 {
@@ -74,14 +74,12 @@ void RunPISTONPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid
 
   grid->GetPointData()->SetScalars(vtkElevationPoints); //piston on works on active scalars
   piston::vtk_image3d<SPACE> image(grid);
-  piston::threshold_geometry<piston::vtk_image3d<SPACE> > threshold(image,0,100);
+  piston::marching_cube<piston::vtk_image3d<SPACE>,piston::vtk_image3d<SPACE> > marching(image,image,100);
 
   Timer timer;
-  threshold();
+  marching();
   double time = timer.elapsed();
 
-  std::cout << "original GetNumberOfCells: " << dgrid.GetNumberOfCells() << std::endl;
-  std::cout << "threshold GetNumberOfCells: " << threshold.valid_cell_indices.size() << std::endl;
   PrintResults(1, time, "Piston");
 }
 
