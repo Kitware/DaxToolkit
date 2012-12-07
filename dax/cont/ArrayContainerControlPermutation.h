@@ -67,6 +67,12 @@ public:
     return this->Value_.Get(this->Key_.Get(index));
   }
 
+  DAX_EXEC_CONT_EXPORT
+  void Set(dax::Id index, const ValueType &value) const
+  {
+    this->Value_.Set(this->Key_.Get(index),value);
+  }
+
   typedef dax::cont::IteratorFromArrayPortal <ArrayPortalPermutation < KeyPortalType,
                                                                        ValuePortalType> >
   IteratorType;

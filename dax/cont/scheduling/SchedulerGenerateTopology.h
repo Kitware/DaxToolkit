@@ -24,11 +24,7 @@
 #include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/cont/sig/VisitIndex.h>
-
-#include <dax/cont/ScheduleGenerateTopology.h>
-#include <dax/cont/ScheduleMapAdapter.h>
 #include <dax/cont/Scheduler.h>
-
 #include <dax/cont/scheduling/SchedulerTags.h>
 #include <dax/cont/scheduling/SchedulerDefault.h>
 #include <dax/cont/scheduling/VerifyUserArgLength.h>

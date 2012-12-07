@@ -36,28 +36,53 @@ void TestPermutationArray()
     {
     arrayKey[i] = i % VALUE_ARRAY_SIZE;
     }
+  dax::Id arrayValue[VALUE_ARRAY_SIZE];
 
   typedef IdArrayPortal KeyPortalType;
-  typedef dax::cont::ArrayPortalCounting ValuePortalType;
+  typedef IdArrayPortal ReadWriteValuePortalType;
+  typedef dax::cont::ArrayPortalCounting ReadOnlyValuePortalType;
 
+
+  // Make  readWrite array from portals
   KeyPortalType keyPortal(arrayKey,arrayKey + ARRAY_SIZE);
-  ValuePortalType valuePortal(VALUE_ARRAY_SIZE);
-
-  dax::cont::ArrayPortalPermutation <KeyPortalType,ValuePortalType>
-      portal(keyPortal,valuePortal);
+  ReadWriteValuePortalType readWriteValuePortal(arrayValue,arrayValue + VALUE_ARRAY_SIZE);
+  dax::cont::ArrayPortalPermutation <KeyPortalType,ReadWriteValuePortalType>
+      readWritePortal(keyPortal, readWriteValuePortal);
 
   dax::cont::ArrayHandle<dax::Id,
                          dax::cont::ArrayContainerControlTagPermutation
-        <KeyPortalType,ValuePortalType> >
-      array(portal);
+        <KeyPortalType,ReadWriteValuePortalType> >
+      readWriteArray(readWritePortal);
 
-  DAX_TEST_ASSERT(array.GetNumberOfValues() == ARRAY_SIZE,
-                  "Array has wrong size.");
+  // Make readOnly array from portals
+  ReadOnlyValuePortalType readOnlyValuePortaly(VALUE_ARRAY_SIZE);
+  dax::cont::ArrayPortalPermutation <KeyPortalType,ReadOnlyValuePortalType>
+      readOnlyPortal(keyPortal, readOnlyValuePortaly);
+
+  dax::cont::ArrayHandle<dax::Id,
+                         dax::cont::ArrayContainerControlTagPermutation
+        <KeyPortalType,ReadOnlyValuePortalType> >
+      readOnlyArray(readOnlyPortal);
+
+  // copy readOnlyArray to readWriteArray (i.e readWriteArray = readOnlyArray)
+  for (dax::Id index=0; index < ARRAY_SIZE; index++)
+    {
+    readWriteArray.GetPortalConstControl ().Set (index,
+                                           readOnlyArray.GetPortalConstControl ().Get(index));
+    }
+
+  DAX_TEST_ASSERT(readWriteArray.GetNumberOfValues() == ARRAY_SIZE,
+                  "ReadWriteArray has wrong size.");
+
+  DAX_TEST_ASSERT(readOnlyArray.GetNumberOfValues() == ARRAY_SIZE,
+                  "ReadOnlyArray has wrong size.");
 
   for (dax::Id index = 0; index < ARRAY_SIZE; index++)
     {
-    DAX_TEST_ASSERT(array.GetPortalConstControl().Get(index) == valuePortal.Get(index%VALUE_ARRAY_SIZE),
-                    "Array has unexpected value.");
+    DAX_TEST_ASSERT(readOnlyArray.GetPortalConstControl().Get(index) ==  readOnlyValuePortaly.Get(index%VALUE_ARRAY_SIZE),
+                    "ReadOnlyArray has unexpected value.");
+    DAX_TEST_ASSERT(readWriteArray.GetPortalConstControl().Get(index) ==  readOnlyValuePortaly.Get(index%VALUE_ARRAY_SIZE),
+                    "ReadWriteArray has unexpected value.");
     }
 }
 
