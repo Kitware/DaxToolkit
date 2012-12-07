@@ -28,8 +28,11 @@ const dax::Id CONSTANT_VALUE = 100;
 void TestConstantValueArray()
 {
   std::cout << "Creating array." << std::endl;
-  dax::cont::ArrayPortalConstantValue portal(CONSTANT_VALUE,ARRAY_SIZE);
-  dax::cont::ArrayHandle<dax::Id, dax::cont::ArrayContainerControlTagConstantValue>
+  dax::cont::ArrayPortalConstantValue<dax::Id>
+      portal(CONSTANT_VALUE,ARRAY_SIZE);
+  dax::cont::ArrayHandle<dax::Id,
+                         dax::cont::ArrayContainerControlTagConstantValue
+                         <dax::cont::ArrayPortalConstantValue,dax::Id> >
       array(portal);
   DAX_TEST_ASSERT(array.GetNumberOfValues() == ARRAY_SIZE,
                   "Array has wrong size.");

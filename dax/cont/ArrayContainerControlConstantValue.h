@@ -16,33 +16,35 @@
 #ifndef __dax_cont_ArrayContainerControlConstantValue_h
 #define __dax_cont_ArrayContainerControlConstantValue_h
 
-#include <dax/cont/ArrayContainerControlImplicit.h>
 #include <dax/cont/ArrayPortal.h>
 #include <dax/cont/IteratorFromArrayPortal.h>
+#include <dax/cont/ArrayContainerControl.h>
+#include <dax/cont/ErrorControlBadValue.h>
 
 namespace dax {
 namespace cont {
 
-/// \brief An implicit array portal that returns an constant value
+/// \brief An array portal that returns an constant value
 ///
-/// This array portal points to an implicit array (that is, an array that is
-/// defined functionally rather than actually stored in memory). The array
+/// This array portal is similar to an implicit array i.e an array that is
+/// defined functionally rather than actually stored in memory. The array
 /// comprises of a single constant value for each index. If the array is asked
 /// to hold constant value 10 then the values are [10, 10, 10, 10,...].
 ///
 /// The ArrayPortalConstantValue is used in an ArrayHandle with an
 /// ArrayContainerControlTagConstantValue container.
 ///
+template <class ConstantValueType>
 class ArrayPortalConstantValue
 {
 public:
-  typedef dax::Id ValueType;
+  typedef ConstantValueType ValueType;
 
   DAX_EXEC_CONT_EXPORT
   ArrayPortalConstantValue() : ConstantValue(0),LastIndex(0) {  }
 
   DAX_EXEC_CONT_EXPORT
-  ArrayPortalConstantValue(dax::Id constantValue,dax::Id numValues) :
+  ArrayPortalConstantValue(ValueType constantValue,dax::Id numValues) :
     ConstantValue(constantValue),LastIndex(numValues)
   {  }
 
@@ -50,9 +52,11 @@ public:
   dax::Id GetNumberOfValues() const { return this->LastIndex; }
 
   DAX_EXEC_CONT_EXPORT
-  ValueType Get(dax::Id index) const { return this->ConstantValue; }
+  ValueType Get(dax::Id daxNotUsed(index)) const { return this->ConstantValue; }
 
-  typedef dax::cont::IteratorFromArrayPortal<ArrayPortalConstantValue> IteratorType;
+  typedef dax::cont::IteratorFromArrayPortal < ArrayPortalConstantValue
+                                               < ConstantValueType > >
+  IteratorType;
 
   DAX_CONT_EXPORT
   IteratorType GetIteratorBegin() const
@@ -78,23 +82,77 @@ private:
   // The last index given by this portal (exclusive).
   dax::Id LastIndex;
 
-  dax::Id ConstantValue;
+  ValueType ConstantValue;
 };
 
-/// \brief An implicit array storing a constant value.
+/// \brief An array portal that returns an constant value
 ///
-/// This array container points to an implicit array (that is, an array that is
-/// defined functionally rather than actually stored in memory). The array
+/// This array portal is similar to an implicit array i.e an array that is
+/// defined functionally rather than actually stored in memory. The array
 /// comprises of a single constant value for each index. If the array is asked
 /// to hold constant value 10 then the values are [10, 10, 10, 10,...].
 ///
-/// When creating an ArrayHandle with an ArrayContainerControlTagImplicit
+/// When creating an ArrayHandle with an ArrayContainerControlTagConstantValue
 /// container, use an ArrayPortalConstantValue to establish the array.
 ///
-typedef ArrayContainerControlTagImplicit<dax::cont::ArrayPortalConstantValue>
-    ArrayContainerControlTagConstantValue;
+template < template <class ConstantValueType> class ArrayPortalType,
+           class ConstantValueType>
+struct ArrayContainerControlTagConstantValue{
+  typedef ArrayPortalType<ConstantValueType> PortalType;
+};
 
-}
-}
+namespace internal {
+
+template<template <class ConstantValueType> class ArrayPortalType,
+         class ConstantValueType>
+class ArrayContainerControl<
+    typename ArrayPortalType<ConstantValueType>::ValueType,
+    ArrayContainerControlTagConstantValue <ArrayPortalType,
+                                           ConstantValueType> >
+{
+public:
+  typedef typename ArrayPortalType<ConstantValueType>::ValueType ValueType;
+  typedef ArrayPortalType<ConstantValueType> PortalConstType;
+
+  // This is meant to be invalid. Because ConstantValue arrays are read only, you
+  // should only be able to use the const version.
+  struct PortalType {
+    typedef void *ValueType;
+    typedef void *IteratorType;
+  };
+
+  // All these methods do nothing but raise errors.
+  PortalType GetPortal() {
+    throw dax::cont::ErrorControlBadValue("ConstantValue arrays are read-only.");
+  }
+  PortalConstType GetPortalConst() const {
+    // This does not work because the ArrayHandle holds the constant
+    // ArrayPortal, not the container.
+    throw dax::cont::ErrorControlBadValue(
+          "ConstantValue container does not store array portal.  "
+          "Perhaps you did not set the ArrayPortal when "
+          "constructing the ArrayHandle.");
+  }
+  dax::Id GetNumberOfValues() const {
+    // This does not work because the ArrayHandle holds the constant
+    // ArrayPortal, not the container.
+    throw dax::cont::ErrorControlBadValue(
+          "ConstantValue container does not store array portal.  "
+          "Perhaps you did not set the ArrayPortal when "
+          "constructing the ArrayHandle.");
+  }
+  void Allocate(dax::Id daxNotUsed(numberOfValues)) {
+    throw dax::cont::ErrorControlBadValue("ConstantValue arrays are read-only.");
+  }
+  void Shrink(dax::Id daxNotUsed(numberOfValues)) {
+    throw dax::cont::ErrorControlBadValue("ConstantValue arrays are read-only.");
+  }
+  void ReleaseResources() {
+    throw dax::cont::ErrorControlBadValue("ConstantValue arrays are read-only.");
+  }
+};
+} // internal
+} // cont
+} // dax
 
 #endif //__dax_cont_ArrayContainerControlConstantValue_h
