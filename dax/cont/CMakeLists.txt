@@ -20,6 +20,7 @@ set(headers
   ArrayContainerControl.h
   ArrayContainerControlBasic.h
   ArrayContainerControlCounting.h
+  ArrayContainerControlConstantValue.h
   ArrayContainerControlImplicit.h
   ArrayHandle.h
   ArrayPortal.h
