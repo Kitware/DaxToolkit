@@ -70,8 +70,8 @@ public:
       dax::Id cellIndex,
       const dax::exec::internal::WorkletBase& work)
     {
-    dax::exec::CellVertices<CellTag> pointIndices =
-        this->TopoExecArg.GetPointIndices(cellIndex, work);
+    const dax::exec::CellVertices<CellTag>& pointIndices = this->TopoExecArg(
+                                                               cellIndex, work);
     for(int vertexIndex = 0;
         vertexIndex < pointIndices.NUM_VERTICES;
         ++vertexIndex)
@@ -102,8 +102,8 @@ public:
                   HasOutTag,
                   typename boost::enable_if<HasOutTag>::type* = 0) const
     {
-    dax::exec::CellVertices<CellTag> pointIndices =
-        this->TopoExecArg.GetPointIndices(cellIndex, work);
+    const dax::exec::CellVertices<CellTag>& pointIndices = this->TopoExecArg(
+                                                               cellIndex, work);
     for(int vertexIndex = 0;
         vertexIndex < pointIndices.NUM_VERTICES;
         ++vertexIndex)

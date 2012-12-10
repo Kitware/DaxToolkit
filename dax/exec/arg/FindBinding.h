@@ -25,8 +25,8 @@
 #include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/cont/sig/WorkId.h>
-#include <dax/exec/arg/BindCellPointIds.h>
 #include <dax/exec/arg/BindCellPoints.h>
+#include <dax/exec/arg/BindCellTag.h>
 #include <dax/exec/arg/BindDirect.h>
 #include <dax/exec/arg/BindWorkId.h>
 #include <dax/Types.h>
@@ -54,7 +54,7 @@ class BindArg<dax::cont::sig::Cell,
               N>
 {
 public:
-  typedef BindDirect<Invocation,N> type;
+  typedef BindCellTag<Invocation,N> type;
 };
 
 //specialize on arg to field mapping, with Field(Point) being understood
@@ -102,7 +102,7 @@ class FindBinding<WorkletType,
                   Invocation>
 {
 public:
-  typedef BindCellPointIds<Invocation,N> type;
+  typedef BindDirect<Invocation,N> type;
 };
 
 

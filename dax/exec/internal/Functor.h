@@ -45,7 +45,7 @@ public:
 
 # include <dax/Types.h>
 # include <dax/cont/internal/Bindings.h>
-# include <dax/exec/arg/Bind.h>
+# include <dax/exec/arg/FindBinding.h>
 # include <dax/exec/internal/WorkletBase.h>
 # include <dax/internal/GetNthType.h>
 # include <dax/internal/Members.h>
