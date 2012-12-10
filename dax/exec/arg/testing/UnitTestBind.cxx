@@ -30,7 +30,7 @@ using dax::cont::sig::placeholders::_1;
 struct WorkType1 : public dax::exec::internal::WorkletBase
 
 {
-  typedef WorkType1 WorkType;
+  typedef WorkType1 DomainType;
 };
 
 struct Worklet1: public WorkType1
@@ -43,7 +43,7 @@ void Bind()
 {
   typedef Worklet1 Invocation1(float);
   dax::cont::internal::Bindings<Invocation1> cb1(1.0f);
-  dax::exec::arg::Bind<WorkType1, _1, Invocation1>::type eb1_1(cb1);
+  dax::exec::arg::FindBinding<WorkType1, _1, Invocation1>::type eb1_1(cb1);
   DAX_TEST_ASSERT(eb1_1(0,Worklet1()) == 1.0f, "Execution environment binding is not 1.0f");
 }
 

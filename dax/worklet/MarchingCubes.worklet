@@ -19,6 +19,7 @@
 
 #include <dax/CellTag.h>
 #include <dax/exec/CellField.h>
+#include <dax/exec/CellVertices.h>
 #include <dax/exec/VectorOperations.h>
 #include <dax/exec/WorkletMapCell.h>
 #include <dax/exec/WorkletGenerateTopology.h>
@@ -90,7 +91,7 @@ public:
                                 Field(Point,In),
                                 Field(Out));
   typedef void ExecutionSignature(_1,
-                                  Topology::PointIds(_2),
+                                  Vertices(_2),
                                   _3,
                                   _4,
                                   _5,

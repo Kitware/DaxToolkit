@@ -76,12 +76,10 @@ template <typename Invocation>
 struct FunctorMemberMap
 {
   typedef typename dax::internal::GetNthType<0, Invocation>::type WorkletType;
-  typedef typename WorkletType::WorkType WorkType;
-
   template <int Id, typename Parameter>
   struct Get
   {
-    typedef typename arg::Bind<WorkType, Parameter, Invocation>::type type;
+  typedef typename arg::FindBinding<WorkletType, Parameter, Invocation>::type type;
   };
 };
 

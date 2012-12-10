@@ -19,28 +19,96 @@
 
 #else // !defined(DAX_DOXYGEN_ONLY)
 
-#include <dax/Types.h>
+#include <dax/cont/arg/Field.h>
+#include <dax/cont/arg/Topology.h>
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Arg.h>
+#include <dax/cont/sig/Tag.h>
 #include <dax/cont/sig/WorkId.h>
+#include <dax/exec/arg/BindCellPointIds.h>
+#include <dax/exec/arg/BindCellPoints.h>
 #include <dax/exec/arg/BindDirect.h>
 #include <dax/exec/arg/BindWorkId.h>
+#include <dax/Types.h>
+
+#include <boost/mpl/if.hpp>
+#include <boost/type_traits/is_same.hpp>
 
 
 namespace dax { namespace exec { namespace arg {
 
-template <typename WorkType, typename Parameter, typename Invocation> class Bind;
-
-template <typename WorkType, int N, typename Invocation>
-class Bind<WorkType, dax::cont::sig::Arg<N>, Invocation>
+//bind returns a specific execution and control signature binding
+//only specialized for bindings that refer to a control side argument
+template <typename DomainType, typename Tags, typename Invocation,int N>
+class BindArg
 {
 public:
   typedef BindDirect<Invocation, N> type;
 };
 
+//specialize on Topology to pure arg binding, which is a BindCellTag mapping
+template<typename Tags, typename Invocation, int N>
+class BindArg<dax::cont::sig::Cell,
+              dax::cont::arg::Topology(Tags),
+              Invocation,
+              N>
+{
+public:
+  typedef BindDirect<Invocation,N> type;
+};
+
+//specialize on arg to field mapping, with Field(Point) being understood
+//as a specialization of the default bind direct behavior
+template<typename Tags, typename Invocation, int N>
+class BindArg<dax::cont::sig::Cell,
+              dax::cont::arg::Field(Tags),
+              Invocation,
+              N>
+{
+public:
+  typedef typename boost::mpl::if_<
+    typename Tags::template Has<dax::cont::sig::Point>,
+    BindCellPoints<Invocation, N>,
+    BindDirect<Invocation, N>
+    >::type type;
+};
+
+
+//find binding finds the correct binding for a parameter
+//the main job is to extract out the control signature position and tag
+//from Invocation if it exists
+template <typename WorkletType, typename Parameter, typename Invocation>
+class FindBinding;
+
+//bind find the specialization for arg binding based on control side tags
+template <typename WorkletType, int N, typename Invocation>
+class FindBinding<WorkletType, dax::cont::sig::Arg<N>, Invocation>
+{
+  typedef typename WorkletType::DomainType DomainType;
+  typedef typename dax::cont::internal::Bindings<Invocation>::template GetType<N>::type ControlBinding;
+  typedef typename dax::cont::arg::ConceptMapTraits<ControlBinding>::Concept Concept;
+  typedef typename dax::cont::arg::ConceptMapTraits<ControlBinding>::Tags Tags;
+public:
+  //second argument is the control concept type ( Field, Topo ), and the tags
+  typedef typename BindArg<DomainType,Concept(Tags),Invocation,N>::type type;
+};
+
+
+//specialize on Topology to Vertices(_N) binding, which is a BindCellVerts mapping
+//since the user wants the cell vertices not cell tag
+template<typename WorkletType, int N, typename Invocation>
+class FindBinding<WorkletType,
+                  dax::cont::arg::Topology::Vertices(*)(dax::cont::sig::Arg<N>),
+                  Invocation>
+{
+public:
+  typedef BindCellPointIds<Invocation,N> type;
+};
+
+
 //bind workid in the execution signature to th bindworkId class
-template <typename WorkType, typename Invocation>
-class Bind<WorkType, dax::cont::sig::WorkId, Invocation>
+template <typename WorkletType, typename Invocation>
+class FindBinding<WorkletType, dax::cont::sig::WorkId, Invocation>
 {
 public:
   typedef BindWorkId<Invocation> type;

@@ -22,7 +22,7 @@ namespace dax { namespace cont { namespace arg {
 /// \brief Identify topology parameters in worklet \c ControlSignature declarations.
 class Topology {
 public:
-  class PointIds {  };
+  class Vertices {  };
 };
 
 }}} // namespace dax::cont::arg

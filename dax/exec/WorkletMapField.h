@@ -29,7 +29,6 @@ namespace dax { namespace exec {
 class WorkletMapField : public dax::exec::internal::WorkletBase
 {
 public:
-  typedef WorkletMapField WorkType;
   typedef dax::cont::sig::Domain DomainType;
 
   DAX_EXEC_CONT_EXPORT WorkletMapField() { }
