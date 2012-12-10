@@ -32,7 +32,7 @@ typename boost::enable_if<boost::is_base_of<dax::exec::internal::WorkletBase,Wor
   {
   // Construct the signature of the worklet invocation on the control side.
   typedef WorkletType ControlInvocationSignature(_dax_pp_T___);
-  typedef typename WorkletType::WorkType WorkType;
+  typedef typename WorkletType::DomainType DomainType;
 
   // Bind concrete arguments T...a to the concepts declared in the
   // worklet ControlSignature through ConceptMap specializations.
@@ -43,12 +43,12 @@ typename boost::enable_if<boost::is_base_of<dax::exec::internal::WorkletBase,Wor
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count=1;
-  bindings.ForEachCont(dax::cont::detail::CollectCount<WorkType>(count));
+  bindings.ForEachCont(dax::cont::detail::CollectCount<DomainType>(count));
 
   // Visit each bound argument to set up its representation in the
   // execution environment.
   bindings.ForEachCont(
-        dax::cont::detail::CreateExecutionResources<WorkType>(count));
+        dax::cont::detail::CreateExecutionResources(count));
 
   // Schedule the worklet invocations in the execution environment.
   dax::exec::internal::Functor<ControlInvocationSignature>

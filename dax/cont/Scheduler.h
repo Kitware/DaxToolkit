@@ -55,8 +55,26 @@ namespace detail
 {
 //forward declare schedule functors that are needed to execute worklets
 //the implementation details are at the bottom of this file
-template <class WorkType> class CollectCount;
-template<class WorkType> class CreateExecutionResources;
+template <class DomainType> class CollectCount;
+
+class CreateExecutionResources
+{
+protected:
+  const dax::Id NumElementsToAlloc;
+public:
+  CreateExecutionResources(dax::Id size):
+    NumElementsToAlloc(size)
+    {}
+
+  template <typename C, typename A>
+  void operator()(dax::cont::arg::ConceptMap<C,A>& concept) const
+    {
+    //we must call to execution on everything.
+    concept.ToExecution(NumElementsToAlloc);
+    }
+};
+
+
 }
 
 template <class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
@@ -71,7 +89,7 @@ public:
     {
     // Construct the signature of the worklet invocation on the control side.
     typedef WorkletType ControlInvocationSignature(T...);
-    typedef typename WorkletType::WorkType WorkType;
+    typedef typename WorkletType::DomainType DomainType;
 
     // Bind concrete arguments T...a to the concepts declared in the
     // worklet ControlSignature through ConceptMap specializations.
@@ -82,12 +100,12 @@ public:
 
     // Visit each bound argument to determine the count to be scheduled.
     dax::Id count=1;
-    bindings.ForEachCont(dax::cont::detail::CollectCount<WorkType>(count));
+    bindings.ForEachCont(dax::cont::detail::CollectCount<DomainType>(count));
 
     // Visit each bound argument to set up its representation in the
     // execution environment.
     bindings.ForEachCont(
-          dax::cont::detail::CreateExecutionResources<WorkType>(count));
+          dax::cont::detail::CreateExecutionResources(count));
 
     // Schedule the worklet invocations in the execution environment.
     dax::exec::internal::Functor<ControlInvocationSignature>
@@ -106,7 +124,7 @@ public:
 
 namespace detail
 {
-template <class WorkType>
+template <class DomainType>
 class CollectCount
 {
   dax::Id& Count;
@@ -124,7 +142,7 @@ public:
     typedef dax::cont::arg::ConceptMapTraits<ConceptType> Traits;
     typedef typename Traits::DomainTags DomainTags;
     typedef typename DomainTags::
-            template Has<typename WorkType::DomainType>::type HasDomain;
+            template Has<DomainType>::type HasDomain;
 
     this->getCount<ConceptType,HasDomain>(c);
     }
@@ -133,7 +151,7 @@ public:
   typename boost::enable_if<HasDomain>::type
     getCount(const ConceptType& concept)
     {
-    dax::Id c = concept.GetDomainLength(typename WorkType::DomainType());
+    dax::Id c = concept.GetDomainLength(DomainType());
     if(this->Count <= 1)
       {
       this->Count = c;
@@ -154,25 +172,6 @@ public:
       //in so we ignore it
     }
 };
-
-template <class WorkType>
-class CreateExecutionResources
-{
-protected:
-  const dax::Id NumElementsToAlloc;
-public:
-  CreateExecutionResources(dax::Id size):
-    NumElementsToAlloc(size)
-    {}
-
-  template <typename C, typename A>
-  void operator()(dax::cont::arg::ConceptMap<C,A>& concept) const
-    {
-    //we must call to execution on everything.
-    concept.ToExecution(NumElementsToAlloc);
-    }
-};
-
 
 }
 
