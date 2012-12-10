@@ -20,6 +20,7 @@
 #include <dax/cont/IteratorFromArrayPortal.h>
 #include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/ErrorControlBadValue.h>
+#include <dax/cont/internal/ArrayTransfer.h>
 
 namespace dax {
 namespace cont {
@@ -151,6 +152,90 @@ public:
     throw dax::cont::ErrorControlBadValue("ConstantValue arrays are read-only.");
   }
 };
+
+template<typename T, template <class T> class ArrayPortalType, class DeviceAdapterTag>
+class ArrayTransfer<
+    T, ArrayContainerControlTagConstantValue<ArrayPortalType,T>, DeviceAdapterTag>
+{
+private:
+  typedef ArrayContainerControlTagConstantValue<ArrayPortalType,T>
+      ArrayContainerControlTag;
+  typedef dax::cont::internal::ArrayContainerControl<T,ArrayContainerControlTag>
+      ContainerType;
+
+public:
+  typedef T ValueType;
+
+  typedef typename ContainerType::PortalType PortalControl;
+  typedef typename ContainerType::PortalConstType PortalConstControl;
+  typedef PortalControl PortalExecution;
+  typedef PortalConstControl PortalConstExecution;
+
+  ArrayTransfer() : PortalValid(false) {  }
+
+  DAX_CONT_EXPORT dax::Id GetNumberOfValues() const {
+    DAX_ASSERT_CONT(this->PortalValid);
+    return this->Portal.GetNumberOfValues();
+  }
+
+  DAX_CONT_EXPORT void LoadDataForInput(PortalConstControl portal) {
+    this->Portal = portal;
+    this->PortalValid = true;
+  }
+
+  DAX_CONT_EXPORT void LoadDataForInPlace(
+      ContainerType &daxNotUsed(controlArray))
+  {
+    throw dax::cont::ErrorControlBadValue(
+          "ConstantValue arrays cannot be used for output or in place.");
+  }
+
+  DAX_CONT_EXPORT void AllocateArrayForOutput(
+      ContainerType &daxNotUsed(controlArray),
+      dax::Id daxNotUsed(numberOfValues))
+  {
+    throw dax::cont::ErrorControlBadValue(
+          "ConstantValue arrays cannot be used for output.");
+  }
+  DAX_CONT_EXPORT void RetrieveOutputData(
+      ContainerType &daxNotUsed(controlArray)) const
+  {
+    throw dax::cont::ErrorControlBadValue(
+          "ConstantValue arrays cannot be used for output.");
+  }
+
+  template <class IteratorTypeControl>
+  DAX_CONT_EXPORT void CopyInto(IteratorTypeControl dest) const
+  {
+    DAX_ASSERT_CONT(this->PortalValid);
+    std::copy(this->Portal.GetIteratorBegin(),
+              this->Portal.GetIteratorEnd(),
+              dest);
+  }
+
+  DAX_CONT_EXPORT void Shrink(dax::Id daxNotUsed(numberOfValues))
+  {
+    throw dax::cont::ErrorControlBadValue("ConstantValue arrays cannot be resized.");
+  }
+
+  DAX_CONT_EXPORT PortalExecution GetPortalExecution()
+  {
+    throw dax::cont::ErrorControlBadValue(
+          "ConstantValue arrays are read-only.  (Get the const portal.)");
+  }
+  DAX_CONT_EXPORT PortalConstExecution GetPortalConstExecution() const
+  {
+    DAX_ASSERT_CONT(this->PortalValid);
+    return this->Portal;
+  }
+
+  DAX_CONT_EXPORT void ReleaseResources() {  }
+
+private:
+  PortalConstExecution Portal;
+  bool PortalValid;
+};
+
 } // internal
 } // cont
 } // dax
