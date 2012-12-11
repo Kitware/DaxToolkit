@@ -21,6 +21,7 @@ set(unit_tests
   UnitTestArrayContainerControlImplicit.cxx
   UnitTestArrayHandle.cxx
   UnitTestArrayPortalFromIterators.cxx
+  UnitTestConstantValueArrayHandle.cxx
   UnitTestCountingArrayHandle.cxx
   UnitTestDeviceAdapterAlgorithmDependency.cxx
   UnitTestDeviceAdapterSerial.cxx
