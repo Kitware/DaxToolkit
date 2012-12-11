@@ -20,9 +20,9 @@ set(unit_tests
   UnitTestArrayContainerControlConstantValue.cxx
   UnitTestArrayContainerControlImplicit.cxx
   UnitTestArrayHandle.cxx
+  UnitTestArrayHandleConstantValue.cxx
+  UnitTestArrayHandleCounting.cxx
   UnitTestArrayPortalFromIterators.cxx
-  UnitTestConstantValueArrayHandle.cxx
-  UnitTestCountingArrayHandle.cxx
   UnitTestDeviceAdapterAlgorithmDependency.cxx
   UnitTestDeviceAdapterSerial.cxx
   UnitTestIteratorFromArrayPortal.cxx

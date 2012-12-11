@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_CountingArrayHandle_h
-#define __dax_cont_CountingArrayHandle_h
+#ifndef __dax_cont_ArrayHandleCounting_h
+#define __dax_cont_ArrayHandleCounting_h
 
 #include <dax/cont/ArrayContainerControlCounting.h>
 #include <dax/cont/ArrayHandle.h>
@@ -22,11 +22,11 @@
 namespace dax {
 namespace cont {
 
-/// CountingArrayHandles are a specialization of ArrayHandles. By default it
+/// ArrayHandleCountings are a specialization of ArrayHandles. By default it
 /// contains a counting implicit array portal. An implicit array is a array
 /// portal with a function generating values and holds no memory. The counting
 /// implicit array simply returns the value of the index.
-class CountingArrayHandle : public ArrayHandle < dax::Id,
+class ArrayHandleCounting : public ArrayHandle < dax::Id,
                                  ArrayContainerControlTagCounting>
 {
 public:
@@ -35,21 +35,21 @@ public:
   superclass;
   typedef dax::cont::ArrayPortalCounting PortalType;
 
-  CountingArrayHandle(dax::Id length)
+  ArrayHandleCounting(dax::Id length)
     :superclass(PortalType(length))
   {
   }
 };
 
-/// A convenience function for creating an CountingArrayHandle. It only takes
-/// the length of the array and constructs a CountingArrayHandle of that length.
+/// A convenience function for creating an ArrayHandleCounting. It only takes
+/// the length of the array and constructs a ArrayHandleCounting of that length.
 DAX_CONT_EXPORT
-CountingArrayHandle make_CountingArrayHandle(dax::Id length)
+ArrayHandleCounting make_ArrayHandleCounting(dax::Id length)
 {
-  return CountingArrayHandle(length);
+  return ArrayHandleCounting(length);
 }
 
 }
 }
 
-#endif //__dax_cont_CountingArrayHandle_h
+#endif //__dax_cont_ArrayHandleCounting_h

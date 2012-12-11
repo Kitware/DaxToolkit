@@ -18,7 +18,7 @@
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 
 #include <dax/cont/ArrayContainerControlConstantValue.h>
-#include <dax/cont/ConstantValueArrayHandle.h>
+#include <dax/cont/ArrayHandleConstantValue.h>
 
 #include <dax/cont/internal/testing/Testing.h>
 
@@ -28,12 +28,12 @@ const dax::Id ARRAY_SIZE = 10;
 const dax::Id CONSTANT_VALUE = 100;
 void TestConstantValueArray()
 {
-  typedef dax::cont::ConstantValueArrayHandle<dax::Id> ArrayHandleType;
+  typedef dax::cont::ArrayHandleConstantValue<dax::Id> ArrayHandleType;
 
   std::cout << "Creating array." << std::endl;
   ArrayHandleType arrayConst(CONSTANT_VALUE,ARRAY_SIZE);
   ArrayHandleType arrayMake =
-      dax::cont::make_ConstantValueArrayHandle(CONSTANT_VALUE,
+      dax::cont::make_ArrayHandleConstantValue(CONSTANT_VALUE,
                                                ARRAY_SIZE);
   DAX_TEST_ASSERT(arrayConst.GetNumberOfValues() == ARRAY_SIZE,
                   "ConstantValue Array using constructor has wrong size.");
@@ -53,7 +53,7 @@ void TestConstantValueArray()
 
 } // annonymous namespace
 
-int UnitTestConstantValueArrayHandle(int, char *[])
+int UnitTestArrayHandleConstantValue(int, char *[])
 {
   return dax::cont::internal::Testing::Run(TestConstantValueArray);
 }
