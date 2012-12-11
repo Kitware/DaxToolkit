@@ -15,7 +15,8 @@
 ##=============================================================================
 
 set(headers
-  ScheduleGenerateTopology.h
+  VisitIndexWorklets.h
+  GenerateTopologyWorklets.h
   )
 
 dax_declare_headers(${headers})

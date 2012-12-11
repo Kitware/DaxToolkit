@@ -14,6 +14,11 @@
 ##
 ##=============================================================================
 
-add_subdirectory(FY11Timing)
-add_subdirectory(MarchingCubes)
-add_subdirectory(Threshold)
+set(unit_tests
+  UnitTestAddVisitIndexArg.cxx
+  UnitTestCollectCount.cxx
+  UnitTestCreateExecutionResources.cxx
+  UnitTestDetermineScheduler.cxx
+  UnitTestVerifyUserArgLength.cxx
+  )
+dax_unit_tests(SOURCES ${unit_tests})

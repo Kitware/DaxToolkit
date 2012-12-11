@@ -28,17 +28,25 @@
 namespace dax {
 namespace cont {
 
+//we need a base class with no template parameters so that the scheduling triats
+//infastructure can properly determine when a worklet is derived from
+//ScheduleGenerateTopology
+namespace internal {
+  class ScheduleGenerateTopologyBase {};
+}
+
 /// ScheduleGenerateTopology is the control enviorment representation of a
 /// an algorithm that takes a classification of a given input topology
 /// and will generate a new topology, but doesn't create new cells
-
 template<
-    class WorkletType,
+    class WorkletType_,
     class DeviceAdapterTag= DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 
-class ScheduleGenerateTopology
+class ScheduleGenerateTopology :
+    public dax::cont::internal::ScheduleGenerateTopologyBase
 {
 public:
+  typedef WorkletType_ WorkletType;
   //classify type is the type
   typedef dax::Id ClassifyType;
 

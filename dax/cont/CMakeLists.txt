@@ -20,11 +20,13 @@ set(headers
   ArrayContainerControl.h
   ArrayContainerControlBasic.h
   ArrayContainerControlCounting.h
+  ArrayContainerControlConstantValue.h
   ArrayContainerControlImplicit.h
   ArrayHandle.h
   ArrayPortal.h
   ArrayPortalFromIterators.h
   Assert.h
+  CountingArrayHandle.h
   DeviceAdapter.h
   DeviceAdapterSerial.h
   Error.h
@@ -61,5 +63,6 @@ configure_file(
   )
 
 add_subdirectory(arg)
+add_subdirectory(scheduling)
 add_subdirectory(sig)
 add_subdirectory(testing)

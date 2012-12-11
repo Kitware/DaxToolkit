@@ -14,6 +14,18 @@
 ##
 ##=============================================================================
 
-add_subdirectory(FY11Timing)
-add_subdirectory(MarchingCubes)
-add_subdirectory(Threshold)
+set(headers
+  AddVisitIndexArg.h
+  CollectCount.h
+  CreateExecutionResources.h
+  DetermineScheduler.h
+  Scheduler.h
+  SchedulerDefault.h
+  SchedulerGenerateTopology.h
+  SchedulerTags.h
+  VerifyUserArgLength.h
+  )
+
+dax_declare_headers(${headers})
+
+add_subdirectory(testing)
