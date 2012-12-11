@@ -72,18 +72,10 @@ public:
   }
 
 private:
-  // The current implementation of this class only allows you to specify the
-  // number of indices and then gives indices 0..(size-1). This is the most
-  // common case although there may be uses for offset indices (starting at
-  // something other than 0) or different strides. These are easy enough to
-  // implement, but I have not because I currently have no need for them and
-  // they require a bit more state (that must be copied around). If these extra
-  // features are needed, they can be added in the future.
+  ValueType ConstantValue;
 
   // The last index given by this portal (exclusive).
   dax::Id LastIndex;
-
-  ValueType ConstantValue;
 };
 
 /// \brief An array portal that returns an constant value
@@ -96,24 +88,22 @@ private:
 /// When creating an ArrayHandle with an ArrayContainerControlTagConstantValue
 /// container, use an ArrayPortalConstantValue to establish the array.
 ///
-template < template <class ConstantValueType> class ArrayPortalType,
-           class ConstantValueType>
-struct ArrayContainerControlTagConstantValue{
-  typedef ArrayPortalType<ConstantValueType> PortalType;
+template < typename ValueType >
+struct ArrayContainerControlTagConstantValue
+{
+  typedef ValueType ConstantValueType;
 };
 
 namespace internal {
 
-template<template <class ConstantValueType> class ArrayPortalType,
-         class ConstantValueType>
+template< typename ConstantValueType>
 class ArrayContainerControl<
-    typename ArrayPortalType<ConstantValueType>::ValueType,
-    ArrayContainerControlTagConstantValue <ArrayPortalType,
-                                           ConstantValueType> >
+    ConstantValueType,
+    dax::cont::ArrayContainerControlTagConstantValue <ConstantValueType> >
 {
 public:
-  typedef typename ArrayPortalType<ConstantValueType>::ValueType ValueType;
-  typedef ArrayPortalType<ConstantValueType> PortalConstType;
+  typedef ConstantValueType ValueType;
+  typedef dax::cont::ArrayPortalConstantValue<ConstantValueType> PortalConstType;
 
   // This is meant to be invalid. Because ConstantValue arrays are read only, you
   // should only be able to use the const version.
@@ -153,15 +143,14 @@ public:
   }
 };
 
-template<typename T, template <class T> class ArrayPortalType, class DeviceAdapterTag>
+template<typename T, class DeviceAdapterTag>
 class ArrayTransfer<
-    T, ArrayContainerControlTagConstantValue<ArrayPortalType,T>, DeviceAdapterTag>
+    T, ArrayContainerControlTagConstantValue<T>, DeviceAdapterTag>
 {
 private:
-  typedef ArrayContainerControlTagConstantValue<ArrayPortalType,T>
-      ArrayContainerControlTag;
+  typedef ArrayContainerControlTagConstantValue<T>  ArrayContainerControlTag;
   typedef dax::cont::internal::ArrayContainerControl<T,ArrayContainerControlTag>
-      ContainerType;
+                                                    ContainerType;
 
 public:
   typedef T ValueType;

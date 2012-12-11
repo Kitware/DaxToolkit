@@ -30,13 +30,11 @@ namespace cont {
 /// returns a single value for each of the index.
 template <typename ConstantValueType>
 class ConstantValueArrayHandle: public ArrayHandle < ConstantValueType,
-    dax::cont::ArrayContainerControlTagConstantValue
-     <dax::cont::ArrayPortalConstantValue,ConstantValueType> >
+    dax::cont::ArrayContainerControlTagConstantValue<ConstantValueType> >
 {
 public:
   typedef ArrayHandle < ConstantValueType,
-      dax::cont::ArrayContainerControlTagConstantValue
-       <dax::cont::ArrayPortalConstantValue,ConstantValueType> >
+      dax::cont::ArrayContainerControlTagConstantValue<ConstantValueType> >
   superclass;
   typedef typename dax::cont::ArrayPortalConstantValue<ConstantValueType> PortalType;
 
