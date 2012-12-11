@@ -47,7 +47,7 @@ public:
 
   typedef CellVerticesType SaveType;
 
-  DAX_CONT_EXPORT TopologyCell(const TopologyType& t): Topo(t) {  }
+  DAX_CONT_EXPORT TopologyCell(const TopologyType& t): Topo(t), Cell(0) {  }
 
   DAX_EXEC_EXPORT ReturnType operator()(
       dax::Id index,
