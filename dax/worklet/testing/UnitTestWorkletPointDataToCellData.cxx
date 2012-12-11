@@ -37,16 +37,18 @@ namespace {
 const dax::Id DIM = 64;
 
 //-----------------------------------------------------------------------------
-template<typename CellType>
-void verifyCellData(const dax::Tuple<dax::Id,CellType::NUM_POINTS> &cellIndex,
+template<typename CellTag>
+void verifyCellData(const dax::exec::CellVertices<CellTag> &cellVertices,
                     const dax::Scalar& computedCellData)
 {
   dax::Scalar expectedCellData = 0.0;
-  for(int i = 0 ; i < CellType::NUM_POINTS;++i)
+  for (int vertexIndex = 0;
+       vertexIndex < cellVertices.NUM_VERTICES;
+       ++vertexIndex)
   {
-    expectedCellData += cellIndex[i];
+    expectedCellData += cellVertices[vertexIndex];
   }
-  expectedCellData /= CellType::NUM_POINTS;
+  expectedCellData /= cellVertices.NUM_VERTICES;
   DAX_TEST_ASSERT(test_equal(computedCellData,expectedCellData),"Got bad average");
 }
 
@@ -57,7 +59,6 @@ struct TestPointDataToCellDataWorklet
   template<typename GridType>
   void operator()(const GridType&) const
     {
-    typedef typename GridType::CellType CellType;
     dax::cont::internal::TestGrid<
         GridType,
         dax::cont::ArrayContainerControlTagBasic,
@@ -97,9 +98,8 @@ struct TestPointDataToCellDataWorklet
          cellIndex < grid->GetNumberOfCells();
          cellIndex++)
       {
-      verifyCellData<CellType>(
-                               grid.GetCellConnections(cellIndex),
-                               cellData[cellIndex]);
+      verifyCellData(grid.GetCellConnections(cellIndex),
+                     cellData[cellIndex]);
       }
     }
 };

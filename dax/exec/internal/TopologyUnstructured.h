@@ -18,6 +18,8 @@
 
 #include <dax/Types.h>
 
+#include <dax/exec/CellVertices.h>
+
 namespace dax {
 namespace exec {
 namespace internal {
@@ -36,7 +38,7 @@ namespace internal {
 template<typename T, class ConnectionsPortalT>
 struct TopologyUnstructured
 {
-  typedef T CellType;
+  typedef T CellTag;
   typedef ConnectionsPortalT CellConnectionsPortalType;
 
   TopologyUnstructured()
@@ -65,42 +67,39 @@ struct TopologyUnstructured
   CellConnectionsPortalType CellConnections;
   dax::Id NumberOfPoints;
   dax::Id NumberOfCells;
-};
 
-/// Returns the number of cells in a unstructured grid.
-///
-template<typename T, class ExecutionAdapter>
-DAX_EXEC_EXPORT
-dax::Id numberOfCells(const TopologyUnstructured<T, ExecutionAdapter> &topology)
-{
-  return topology.NumberOfCells;
-}
-
-/// Returns the number of points in a unstructured grid.
-///
-template<typename T, class ExecutionAdapter>
-DAX_EXEC_EXPORT
-dax::Id numberOfPoints(const TopologyUnstructured<T,ExecutionAdapter> &topology)
-{
-  return topology.NumberOfPoints;
-}
-
-template<class CellT, class ConnectionsPortalT>
-DAX_EXEC_EXPORT
-void BuildCellConnectionsFromGrid(
-        const dax::exec::internal::TopologyUnstructured<CellT,
-                                            ConnectionsPortalT>& grid,
-        dax::Id cellIndex,
-        typename CellT::PointConnectionsType& connections)
-{
-  const int SIZE = CellT::NUM_POINTS;
-  //we presume grid is a continuous array of this connection type
-  const dax::Id offset = cellIndex*SIZE;
-  for(int i=0; i < SIZE; ++i)
+  /// Returns the number of cells in a unstructured grid.
+  ///
+  DAX_EXEC_EXPORT
+  dax::Id GetNumberOfCells() const
   {
-    connections[i] = grid.CellConnections.Get(offset + i);
+    return this->NumberOfCells;
   }
-}
+
+  /// Returns the number of points in a unstructured grid.
+  ///
+  DAX_EXEC_EXPORT
+  dax::Id GetNumberOfPoints() const
+  {
+    return this->NumberOfPoints;
+  }
+
+  /// Returns the point indices for all vertices.
+  ///
+  DAX_EXEC_EXPORT
+  dax::exec::CellVertices<CellTag> GetCellConnections(dax::Id cellIndex) const
+  {
+    const int NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
+    dax::Id startConnectionIndex = cellIndex * NUM_VERTICES;
+    dax::exec::CellVertices<CellTag> vertices;
+    for (dax::Id vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
+      {
+      vertices[vertexIndex] =
+          this->CellConnections.Get(startConnectionIndex + vertexIndex);
+      }
+    return vertices;
+  }
+};
 
 } //internal
 } //exec

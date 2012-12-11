@@ -17,23 +17,24 @@
 #ifndef __dax_exec_Interpolate_h
 #define __dax_exec_Interpolate_h
 
-#include <dax/exec/Cell.h>
+#include <dax/CellTraits.h>
+#include <dax/exec/CellField.h>
 
 #include <dax/exec/internal/InterpolationWeights.h>
 
 namespace dax { namespace exec {
 
 //-----------------------------------------------------------------------------
-template<typename ValueType, class CellType>
+template<typename ValueType, class CellTag>
 DAX_EXEC_EXPORT ValueType CellInterpolate(
-    const CellType &daxNotUsed(cell),
-    const dax::Tuple<ValueType,CellType::NUM_POINTS> &pointFieldValues,
-    const dax::Vector3 &parametricCoords)
+    const dax::exec::CellField<ValueType,CellTag> &pointFieldValues,
+    const dax::Vector3 &parametricCoords,
+    CellTag)
 {
-  const dax::Id numVerts = CellType::NUM_POINTS;
+  const dax::Id numVerts = dax::CellTraits<CellTag>::NUM_VERTICES;
 
   dax::Tuple<dax::Scalar, numVerts> weights =
-      dax::exec::internal::InterpolationWeights<CellType>(parametricCoords);
+      dax::exec::internal::InterpolationWeights(parametricCoords, CellTag());
 
   ValueType result = pointFieldValues[0] * weights[0];
   for (dax::Id vertexId = 1; vertexId < numVerts; vertexId++)

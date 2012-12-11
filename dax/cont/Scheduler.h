@@ -57,8 +57,8 @@ public:
 #endif // !(__cplusplus >= 201103L)
 };
 
+} } //namespace dax::cont
 
-} } //namespace da™x::cont
 #endif //__dax_cont_Schedule_h
 
 #else // defined(BOOST_PP_IS_ITERATING)
@@ -74,4 +74,3 @@ public:
     }
 #     endif // _dax_pp_sizeof___T > 1
 # endif // defined(BOOST_PP_IS_ITERATING)
-

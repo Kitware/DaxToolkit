@@ -21,7 +21,6 @@
 
 namespace dax { namespace cont { namespace scheduling {
 
-template <class WorkType>
 class CreateExecutionResources
 {
 protected:

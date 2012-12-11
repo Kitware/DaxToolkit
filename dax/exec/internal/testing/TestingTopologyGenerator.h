@@ -18,9 +18,10 @@
 
 #include <dax/Types.h>
 
-#include <dax/exec/Cell.h>
-
+#include <dax/CellTag.h>
 #include <dax/exec/internal/ArrayPortalFromIterators.h>
+#include <dax/exec/CellField.h>
+#include <dax/exec/CellVertices.h>
 #include <dax/exec/internal/GridTopologies.h>
 
 #include <dax/internal/testing/Testing.h>
@@ -33,11 +34,12 @@ namespace dax {
 namespace exec {
 namespace internal {
 
-template<class TopologyType>
+template<class TopologyT>
 class TestTopology
 {
 public:
-  typedef typename TopologyType::CellType CellType;
+  typedef TopologyT TopologyType;
+  typedef typename TopologyType::CellTag CellTag;
 
 private:
   TopologyType Topology;
@@ -52,66 +54,70 @@ public:
   }
 
   dax::Id GetNumberOfPoints() const {
-    return numberOfPoints(this->Topology);
+    return this->Topology.GetNumberOfPoints();
   }
   dax::Id GetNumberOfCells() const {
-    return numberOfCells(this->Topology);
+    return this->Topology.GetNumberOfCells();
   }
 
   TopologyType GetTopology() const { return this->Topology; }
 
-  dax::Tuple<dax::Id, CellType::NUM_POINTS>
+  dax::exec::CellVertices<CellTag>
   GetCellConnections(dax::Id cellId) const
   {
     return TestTopology::GetCellConnectionsImpl(this->Topology, cellId);
-  }
-
-  CellType GetCell(dax::Id cellId) const
-  {
-    return CellType(this->Topology,cellId);
   }
 
   dax::Vector3 GetPointCoordinates(dax::Id pointIndex) const {
     return this->CoordinatesArray[pointIndex];
   }
 
-  dax::Tuple<dax::Vector3,CellType::NUM_POINTS>
+  dax::exec::CellField<dax::Vector3,CellTag>
   GetCellVertexCoordinates(dax::Id cellIndex) const {
-    dax::Tuple<dax::Id, CellType::NUM_POINTS> cellConnections =
+    dax::exec::CellVertices<CellTag> cellConnections =
         this->GetCellConnections(cellIndex);
-    dax::Tuple<dax::Vector3,CellType::NUM_POINTS> coordinates;
-    for (dax::Id index = 0; index < CellType::NUM_POINTS; index++)
+    dax::exec::CellField<dax::Vector3,CellTag> coordinates;
+    for (dax::Id vertexIndex = 0;
+         vertexIndex < dax::CellTraits<CellTag>::NUM_VERTICES;
+         vertexIndex++)
       {
-      coordinates[index] = this->GetPointCoordinates(cellConnections[index]);
+      dax::Id pointIndex = cellConnections[vertexIndex];
+      coordinates[vertexIndex] = this->GetPointCoordinates(pointIndex);
       }
     return coordinates;
   }
 
   template<class ArrayPortalType>
-  dax::Tuple<typename ArrayPortalType::ValueType, CellType::NUM_POINTS>
+  dax::exec::CellField<typename ArrayPortalType::ValueType, CellTag>
   GetFieldValues(dax::Id cellId, const ArrayPortalType &portal) const {
     typedef typename ArrayPortalType::ValueType ValueType;
-    dax::Tuple<dax::Id, CellType::NUM_POINTS> cellConnections =
+    dax::exec::CellVertices<CellTag> cellConnections =
         this->GetCellConnections(cellId);
-    dax::Tuple<ValueType,CellType::NUM_POINTS> fieldValues;
-    for (dax::Id index = 0; index < CellType::NUM_POINTS; index++)
+    dax::exec::CellField<ValueType,CellTag> fieldValues;
+    for (dax::Id vertexIndex = 0;
+         vertexIndex < dax::CellTraits<CellTag>::NUM_VERTICES;
+         vertexIndex++)
       {
-      fieldValues[index] = portal.Get(cellConnections[index]);
+      dax::Id pointIndex = cellConnections[vertexIndex];
+      fieldValues[vertexIndex] = portal.Get(pointIndex);
       }
     return fieldValues;
   }
 
   template<class IteratorType>
-  dax::Tuple<typename std::iterator_traits<IteratorType>::value_type,
-             CellType::NUM_POINTS>
+  dax::exec::CellField<typename std::iterator_traits<IteratorType>::value_type,
+                       CellTag>
   GetFieldValuesIterator(dax::Id cellId, IteratorType begin) const {
     typedef typename std::iterator_traits<IteratorType>::value_type ValueType;
-    dax::Tuple<dax::Id, CellType::NUM_POINTS> cellConnections =
+    dax::exec::CellVertices<CellTag> cellConnections =
         this->GetCellConnections(cellId);
-    dax::Tuple<ValueType,CellType::NUM_POINTS> fieldValues;
-    for (dax::Id index = 0; index < CellType::NUM_POINTS; index++)
+    dax::exec::CellField<ValueType,CellTag> fieldValues;
+    for (dax::Id vertexIndex = 0;
+         vertexIndex < dax::CellTraits<CellTag>::NUM_VERTICES;
+         vertexIndex++)
       {
-      fieldValues[index] = *(begin + cellConnections[index]);
+      dax::Id pointIndex = cellConnections[vertexIndex];
+      fieldValues[vertexIndex] = *(begin + pointIndex);
       }
     return fieldValues;
   }
@@ -127,9 +133,9 @@ private:
     return topology;
   }
 
-  static dax::Tuple<dax::Id,8> GetCellConnectionsImpl(
-      const dax::exec::internal::TopologyUniform &topology,
-      dax::Id flatCellIndex)
+  static dax::exec::CellVertices<dax::CellTagVoxel>
+  GetCellConnectionsImpl(const dax::exec::internal::TopologyUniform &topology,
+                         dax::Id flatCellIndex)
   {
     //this only works for voxel/hexahedron
     const dax::Id3 cellVertexToPointIndex[8] = {
@@ -144,17 +150,17 @@ private:
     };
     const dax::Extent3 extent = topology.Extent;
 
-    dax::Tuple<dax::Id,8> connections;
+    dax::exec::CellVertices<dax::CellTagVoxel> connections;
 
     dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(flatCellIndex, extent);
-    for(dax::Id relativePointIndex = 0;
-        relativePointIndex < 8;
-        relativePointIndex++)
+    for(dax::Id vertexIndex = 0;
+        vertexIndex < 8;
+        vertexIndex++)
       {
-      dax::Id3 ijkPoint = ijkCell+cellVertexToPointIndex[relativePointIndex];
+      dax::Id3 ijkPoint = ijkCell+cellVertexToPointIndex[vertexIndex];
 
       dax::Id pointIndex = index3ToFlatIndex(ijkPoint, extent);
-      connections[relativePointIndex] = pointIndex;
+      connections[vertexIndex] = pointIndex;
       }
     return connections;
   }
@@ -165,27 +171,31 @@ private:
   {
     topology = TestTopology::GetCoreTopology();
 
-    dax::Id numPoints = dax::exec::internal::numberOfPoints(topology);
+    dax::Id numPoints = topology.GetNumberOfPoints();
     coords.resize(numPoints);
-    for (dax::Id index = 0; index < numPoints; index++)
+    for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
       {
-      coords[index] = dax::exec::internal::pointCoordiantes(topology, index);
+      coords[pointIndex] = topology.GetPointCoordiantes(pointIndex);
       }
   }
 
   template<class PT>
-  static dax::Tuple<dax::Id,8> GetCellConnectionsImpl(
+  static dax::exec::CellVertices<dax::CellTagHexahedron>
+  GetCellConnectionsImpl(
       const dax::exec::internal::TopologyUnstructured<
-          dax::exec::CellHexahedron,PT> &daxNotUsed(topology),
+          dax::CellTagHexahedron,PT> &daxNotUsed(topology),
       dax::Id cellIndex)
   {
-    return TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
-                                                cellIndex);
+    dax::exec::CellVertices<dax::CellTagVoxel> voxelVertices =
+        TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
+                                             cellIndex);
+    return dax::exec::CellVertices<dax::CellTagHexahedron>(
+          voxelVertices.GetAsTuple());
   }
 
   template<class PT>
   static void BuildTopology(dax::exec::internal::TopologyUnstructured
-                            <dax::exec::CellHexahedron,PT>
+                            <dax::CellTagHexahedron,PT>
                             &topology,
                             std::vector<dax::Vector3> &coordArray,
                             std::vector<dax::Id> &connectArray)
@@ -194,12 +204,11 @@ private:
     dax::exec::internal::TopologyUniform uniformTopology =
         TestTopology::GetCoreTopology();
 
-    typedef dax::exec::CellHexahedron CellType;
+    typedef dax::CellTagHexahedron CellTag;
+    const int NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
 
-    topology.NumberOfCells =
-        dax::exec::internal::numberOfCells(uniformTopology);
-    topology.NumberOfPoints =
-        dax::exec::internal::numberOfPoints(uniformTopology);
+    topology.NumberOfCells = uniformTopology.GetNumberOfCells();
+    topology.NumberOfPoints = uniformTopology.GetNumberOfPoints();
 
     coordArray.resize(topology.NumberOfPoints);
 
@@ -208,8 +217,7 @@ private:
          pointIndex < topology.NumberOfPoints;
          pointIndex++)
       {
-      dax::Vector3 coord =
-          dax::exec::internal::pointCoordiantes(uniformTopology, pointIndex);
+      dax::Vector3 coord = uniformTopology.GetPointCoordiantes(pointIndex);
       // Perterb coordinates so that they are not axis aligned.
       coord[0] += dax::Scalar(0.5)*coord[2];
       coord[1] += coord[2];
@@ -217,39 +225,38 @@ private:
       }
 
     // Make connections
-    connectArray.reserve(topology.NumberOfCells*CellType::NUM_POINTS);
+    connectArray.reserve(topology.NumberOfCells*NUM_VERTICES);
 
     for(dax::Id flatCellIndex = 0;
         flatCellIndex < topology.NumberOfCells;
         flatCellIndex++)
       {
-      dax::Tuple<dax::Id,CellType::NUM_POINTS> pointConnections =
+      dax::exec::CellVertices<dax::CellTagVoxel> pointConnections =
           TestTopology::GetCellConnectionsImpl(uniformTopology, flatCellIndex);
-      for(dax::Id relativePointIndex = 0;
-          relativePointIndex < CellType::NUM_POINTS;
-          relativePointIndex++)
+      for(dax::Id vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
         {
-        connectArray.push_back(pointConnections[relativePointIndex]);
+        connectArray.push_back(pointConnections[vertexIndex]);
         }
       }
     DAX_TEST_ASSERT(dax::Id(connectArray.size())
-                    == topology.NumberOfCells*CellType::NUM_POINTS,
+                    == topology.NumberOfCells*NUM_VERTICES,
                     "Bad connection array size.");
 
     topology.CellConnections = PT(connectArray.begin(), connectArray.end());
   }
 
   template<class PT>
-  static dax::Tuple<dax::Id,4> GetCellConnectionsImpl(
+  static dax::exec::CellVertices<dax::CellTagTetrahedron>
+  GetCellConnectionsImpl(
       const dax::exec::internal::TopologyUnstructured<
-          dax::exec::CellTetrahedron,PT> &,
+          dax::CellTagTetrahedron,PT> &,
       dax::Id cellIndex)
   {
     // Tetrahedron meshes are a Freudenthal subdivision of hexahedra.
-    dax::Tuple<dax::Id,8> hexConnections =
+    dax::exec::CellVertices<dax::CellTagVoxel> hexConnections =
         TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
                                              cellIndex/6);
-    dax::Tuple<dax::Id,4> tetConnections;
+    dax::exec::CellVertices<dax::CellTagTetrahedron> tetConnections;
     switch (cellIndex%6)
       {
       case 0:
@@ -296,18 +303,19 @@ private:
 
   template<class PT>
   static void BuildTopology(dax::exec::internal::TopologyUnstructured
-                            <dax::exec::CellTetrahedron,PT>
+                            <dax::CellTagTetrahedron,PT>
                             &topology,
                             std::vector<dax::Vector3> &coordArray,
                             std::vector<dax::Id> &connectArray)
   {
     // Base this topology on the hexahedron topology.
     dax::exec::internal::TopologyUnstructured<
-        dax::exec::CellHexahedron,PT> hexTopology;
+        dax::CellTagHexahedron,PT> hexTopology;
     std::vector<dax::Id> hexConnections;
     BuildTopology(hexTopology, coordArray, hexConnections);
 
-    typedef dax::exec::CellTetrahedron CellType;
+    typedef dax::CellTagTetrahedron CellType;
+    const int NUM_VERTICES = dax::CellTraits<CellType>::NUM_VERTICES;
 
     // Our tetrahedron mesh will be a Freudenthal tetrahedronization of a
     // hexahedron mesh.  This results in 6 tetrahedra for each hexahedron.
@@ -316,11 +324,11 @@ private:
     topology.NumberOfPoints = hexTopology.NumberOfPoints;
 
     // Make connections.
-    connectArray.reserve(topology.NumberOfCells*CellType::NUM_POINTS);
+    connectArray.reserve(topology.NumberOfCells*NUM_VERTICES);
 
     for (dax::Id cellIndex = 0; cellIndex < topology.NumberOfCells; cellIndex++)
       {
-      dax::Tuple<dax::Id,CellType::NUM_POINTS> pointConnections
+      dax::exec::CellVertices<CellTag> pointConnections
           = TestTopology::GetCellConnectionsImpl(topology, cellIndex);
 
       connectArray.push_back(pointConnections[0]);
@@ -329,24 +337,24 @@ private:
       connectArray.push_back(pointConnections[3]);
       }
     DAX_TEST_ASSERT(dax::Id(connectArray.size())
-                    == topology.NumberOfCells*CellType::NUM_POINTS,
+                    == topology.NumberOfCells*NUM_VERTICES,
                     "Bad connection array size.");
 
     topology.CellConnections = PT(connectArray.begin(), connectArray.end());
   }
 
   template<class PT>
-  static dax::Tuple<dax::Id,6> GetCellConnectionsImpl(
-      const dax::exec::internal::TopologyUnstructured<
-          dax::exec::CellWedge,PT> &,
+  static dax::exec::CellVertices<dax::CellTagWedge>
+  GetCellConnectionsImpl(
+      const dax::exec::internal::TopologyUnstructured<dax::CellTagWedge,PT> &,
       dax::Id cellIndex)
   {
     // Wedge meshes are based on hex meshes.  They have 2x the cells.
     // See the comment in BuildTopology.
-    dax::Tuple<dax::Id,8> hexConnections =
+    dax::exec::CellVertices<dax::CellTagVoxel> hexConnections =
         TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
                                              cellIndex/2);
-    dax::Tuple<dax::Id,6> wedgeConnections;
+    dax::exec::CellVertices<dax::CellTagWedge> wedgeConnections;
     if (cellIndex%2 == 0)
       {
       wedgeConnections[0] = hexConnections[0];
@@ -370,17 +378,18 @@ private:
 
   template<class PT>
   static void BuildTopology(dax::exec::internal::TopologyUnstructured
-                            <dax::exec::CellWedge, PT> &topology,
+                            <dax::CellTagWedge, PT> &topology,
                             std::vector<dax::Vector3> &coordArray,
                             std::vector<dax::Id> &connectArray)
   {
     // Base this topology on the hexahedron topology.
     dax::exec::internal::TopologyUnstructured<
-        dax::exec::CellHexahedron,PT> hexTopology;
+        dax::CellTagHexahedron,PT> hexTopology;
     std::vector<dax::Id> hexConnections;
     BuildTopology(hexTopology, coordArray, hexConnections);
 
-    typedef dax::exec::CellWedge CellType;
+    typedef dax::CellTagWedge CellType;
+    const int NUM_VERTICES = dax::CellTraits<CellType>::NUM_VERTICES;
 
     // Our wedge mesh will have two wedges for each hexahedron. The wedges are
     // formed by cutting the hexahedron along the x/y diagonal.
@@ -388,11 +397,11 @@ private:
     topology.NumberOfPoints = hexTopology.NumberOfPoints;
 
     // Make connections.
-    connectArray.reserve(topology.NumberOfCells*CellType::NUM_POINTS);
+    connectArray.reserve(topology.NumberOfCells*NUM_VERTICES);
 
     for (dax::Id cellIndex = 0; cellIndex < topology.NumberOfCells; cellIndex++)
       {
-      dax::Tuple<dax::Id,CellType::NUM_POINTS> pointConnections
+      dax::exec::CellVertices<CellTag> pointConnections
           = TestTopology::GetCellConnectionsImpl(topology, cellIndex);
 
       connectArray.push_back(pointConnections[0]);
@@ -403,24 +412,25 @@ private:
       connectArray.push_back(pointConnections[5]);
       }
     DAX_TEST_ASSERT(dax::Id(connectArray.size())
-                    == topology.NumberOfCells*CellType::NUM_POINTS,
+                    == topology.NumberOfCells*NUM_VERTICES,
                     "Bad connection array size.");
 
     topology.CellConnections = PT(connectArray.begin(), connectArray.end());
   }
 
   template<class PT>
-  static dax::Tuple<dax::Id,3> GetCellConnectionsImpl(
+  static dax::exec::CellVertices<dax::CellTagTriangle>
+  GetCellConnectionsImpl(
       const dax::exec::internal::TopologyUnstructured<
-          dax::exec::CellTriangle,PT> &daxNotUsed(topology),
+          dax::CellTagTriangle,PT> &daxNotUsed(topology),
       dax::Id cellIndex)
   {
     // Triangle meshes are based on hex meshes.  They have 2x the cells.
     // See the comment in BuildTopology.
-    dax::Tuple<dax::Id,8> hexConnections =
+    dax::exec::CellVertices<dax::CellTagVoxel> hexConnections =
         TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
                                              cellIndex/2);
-    dax::Tuple<dax::Id,3> triConnections;
+    dax::exec::CellVertices<dax::CellTagTriangle> triConnections;
     if (cellIndex%2 == 0)
       {
       triConnections[0] = hexConnections[0];
@@ -438,17 +448,18 @@ private:
 
   template<class PT>
   static void BuildTopology(dax::exec::internal::TopologyUnstructured
-                            <dax::exec::CellTriangle, PT> &topology,
+                            <dax::CellTagTriangle, PT> &topology,
                             std::vector<dax::Vector3> &coordArray,
                             std::vector<dax::Id> &connectArray)
   {
     // Base this topology on the hexahedron topology.
     dax::exec::internal::TopologyUnstructured<
-        dax::exec::CellHexahedron,PT> hexTopology;
+        dax::CellTagHexahedron,PT> hexTopology;
     std::vector<dax::Id> hexConnections;
     BuildTopology(hexTopology, coordArray, hexConnections);
 
-    typedef dax::exec::CellTriangle CellType;
+    typedef dax::CellTagTriangle CellType;
+    const int NUM_VERTICES = dax::CellTraits<CellType>::NUM_VERTICES;
 
     // Our triangle mesh will have two triangles for each hexahedron. The edges
     // of the triangles come from diagonals of the faces. The two triangles do
@@ -461,11 +472,11 @@ private:
     topology.NumberOfPoints = hexTopology.NumberOfPoints;
 
     // Make connections.
-    connectArray.reserve(topology.NumberOfCells*CellType::NUM_POINTS);
+    connectArray.reserve(topology.NumberOfCells*NUM_VERTICES);
 
     for (dax::Id cellIndex = 0; cellIndex < topology.NumberOfCells; cellIndex++)
       {
-      dax::Tuple<dax::Id,CellType::NUM_POINTS> pointConnections
+      dax::exec::CellVertices<dax::CellTagTriangle> pointConnections
           = TestTopology::GetCellConnectionsImpl(topology, cellIndex);
 
       connectArray.push_back(pointConnections[0]);
@@ -473,23 +484,24 @@ private:
       connectArray.push_back(pointConnections[2]);
       }
     DAX_TEST_ASSERT(dax::Id(connectArray.size())
-                    == topology.NumberOfCells*CellType::NUM_POINTS,
+                    == topology.NumberOfCells*NUM_VERTICES,
                     "Bad connection array size.");
 
     topology.CellConnections = PT(connectArray.begin(), connectArray.end());
   }
 
   template<class PT>
-  static dax::Tuple<dax::Id,4> GetCellConnectionsImpl(
+  static dax::exec::CellVertices<dax::CellTagQuadrilateral>
+  GetCellConnectionsImpl(
       const dax::exec::internal::TopologyUnstructured<
-          dax::exec::CellQuadrilateral,PT> &daxNotUsed(topology),
+          dax::CellTagQuadrilateral,PT> &daxNotUsed(topology),
       dax::Id cellIndex)
   {
     // Quadrilateral meshes are based on hex meshes.
-    dax::Tuple<dax::Id,8> hexConnections =
+    dax::exec::CellVertices<dax::CellTagVoxel> hexConnections =
         TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
                                              cellIndex);
-    dax::Tuple<dax::Id,4> quadConnections;
+    dax::exec::CellVertices<dax::CellTagQuadrilateral> quadConnections;
     quadConnections[0] = hexConnections[0];
     quadConnections[1] = hexConnections[2];
     quadConnections[2] = hexConnections[6];
@@ -500,17 +512,18 @@ private:
 
   template<class PT>
   static void BuildTopology(dax::exec::internal::TopologyUnstructured
-                            <dax::exec::CellQuadrilateral,PT> &topology,
+                            <dax::CellTagQuadrilateral,PT> &topology,
                             std::vector<dax::Vector3> &coordArray,
                             std::vector<dax::Id> &connectArray)
   {
     // Base this topology on the hexahedron topology.
-    dax::exec::internal::TopologyUnstructured<
-        dax::exec::CellHexahedron,PT> hexTopology;
+    dax::exec::internal::TopologyUnstructured<dax::CellTagHexahedron,PT>
+        hexTopology;
     std::vector<dax::Id> hexConnections;
     BuildTopology(hexTopology, coordArray, hexConnections);
 
-    typedef dax::exec::CellQuadrilateral CellType;
+    typedef dax::CellTagQuadrilateral CellType;
+    const int NUM_VERTICES = dax::CellTraits<CellType>::NUM_VERTICES;
 
     // Our mesh will have one quadrilateral for each hexahedron that cuts the
     // hexahedron diagonally in the x-y direction.
@@ -519,11 +532,11 @@ private:
     topology.NumberOfPoints = hexTopology.NumberOfPoints;
 
     // Make connections.
-    connectArray.reserve(topology.NumberOfCells*CellType::NUM_POINTS);
+    connectArray.reserve(topology.NumberOfCells*NUM_VERTICES);
 
     for (dax::Id cellIndex = 0; cellIndex < topology.NumberOfCells; cellIndex++)
       {
-      dax::Tuple<dax::Id,CellType::NUM_POINTS> pointConnections
+      dax::exec::CellVertices<dax::CellTagQuadrilateral> pointConnections
           = TestTopology::GetCellConnectionsImpl(topology, cellIndex);
 
       connectArray.push_back(pointConnections[0]);
@@ -532,24 +545,24 @@ private:
       connectArray.push_back(pointConnections[3]);
       }
     DAX_TEST_ASSERT(dax::Id(connectArray.size())
-                    == topology.NumberOfCells*CellType::NUM_POINTS,
+                    == topology.NumberOfCells*NUM_VERTICES,
                     "Bad connection array size.");
 
     topology.CellConnections = PT(connectArray.begin(), connectArray.end());
   }
 
   template<class PT>
-  static dax::Tuple<dax::Id,2> GetCellConnectionsImpl(
-      const dax::exec::internal::TopologyUnstructured<
-          dax::exec::CellLine,PT> &daxNotUsed(topology),
-      dax::Id cellIndex)
+  static dax::exec::CellVertices<dax::CellTagLine>
+  GetCellConnectionsImpl(const dax::exec::internal::TopologyUnstructured<
+                             dax::CellTagLine,PT> &daxNotUsed(topology),
+                         dax::Id cellIndex)
   {
     // Line meshes are based on hex meshes.  They have 7x the cells.
     // See the comment in BuildTopology.
-    dax::Tuple<dax::Id,8> hexConnections =
+    dax::exec::CellVertices<dax::CellTagVoxel> hexConnections=
         TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
                                              cellIndex/7);
-    dax::Tuple<dax::Id,2> lineConnections;
+    dax::exec::CellVertices<dax::CellTagLine> lineConnections;
     switch (cellIndex%7)
       {
       case 0:
@@ -588,17 +601,18 @@ private:
 
   template<class PT>
   static void BuildTopology(dax::exec::internal::TopologyUnstructured
-                            <dax::exec::CellLine,PT> &topology,
+                            <dax::CellTagLine,PT> &topology,
                             std::vector<dax::Vector3> &coordArray,
                             std::vector<dax::Id> &connectArray)
   {
     // Base this topology on the hexahedron topology.
     dax::exec::internal::TopologyUnstructured<
-        dax::exec::CellHexahedron,PT> hexTopology;
+        dax::CellTagHexahedron,PT> hexTopology;
     std::vector<dax::Id> hexConnections;
     BuildTopology(hexTopology, coordArray, hexConnections);
 
-    typedef dax::exec::CellLine CellType;
+    typedef dax::CellTagLine CellType;
+    const int NUM_VERTICES = dax::CellTraits<CellType>::NUM_VERTICES;
 
     // Our line mesh will have 7 lines for each hexahedron.  One line for
     // each of the 3 edges connected to vertex 0 and one line for each
@@ -607,52 +621,53 @@ private:
     topology.NumberOfPoints = hexTopology.NumberOfPoints;
 
     // Make connections.
-    connectArray.reserve(topology.NumberOfCells*CellType::NUM_POINTS);
+    connectArray.reserve(topology.NumberOfCells*NUM_VERTICES);
 
     for (dax::Id cellIndex = 0; cellIndex < topology.NumberOfCells; cellIndex++)
       {
-      dax::Tuple<dax::Id,CellType::NUM_POINTS> pointConnections
+      dax::exec::CellVertices<dax::CellTagLine> pointConnections
           = TestTopology::GetCellConnectionsImpl(topology, cellIndex);
 
       connectArray.push_back(pointConnections[0]);
       connectArray.push_back(pointConnections[1]);
       }
     DAX_TEST_ASSERT(dax::Id(connectArray.size())
-                    == topology.NumberOfCells*CellType::NUM_POINTS,
+                    == topology.NumberOfCells*NUM_VERTICES,
                     "Bad connection array size.");
 
     topology.CellConnections = PT(connectArray.begin(), connectArray.end());
   }
 
   template<class PT>
-  static dax::Tuple<dax::Id,1> GetCellConnectionsImpl(
-      const dax::exec::internal::TopologyUnstructured<
-          dax::exec::CellVertex,PT> &daxNotUsed(topology),
-      dax::Id cellIndex)
+  static dax::exec::CellVertices<dax::CellTagVertex>
+  GetCellConnectionsImpl(const dax::exec::internal::TopologyUnstructured<
+                             dax::CellTagVertex,PT> &daxNotUsed(topology),
+                         dax::Id cellIndex)
   {
     // Vertex meshes are based on hex meshes.  Each cell is just the first
     // vertex of the hex cell.
-    dax::Tuple<dax::Id,8> hexConnections =
+    dax::exec::CellVertices<dax::CellTagVoxel> hexConnections =
         TestTopology::GetCellConnectionsImpl(TestTopology::GetCoreTopology(),
-                                             cellIndex/7);
-    dax::Tuple<dax::Id,1> vertexConnections;
+                                             cellIndex);
+    dax::exec::CellVertices<dax::CellTagVertex> vertexConnections;
     vertexConnections[0] = hexConnections[0];
     return vertexConnections;
   }
 
   template<class PT>
   static void BuildTopology(dax::exec::internal::TopologyUnstructured
-                            <dax::exec::CellVertex,PT> &topology,
+                            <dax::CellTagVertex,PT> &topology,
                             std::vector<dax::Vector3> &coordArray,
                             std::vector<dax::Id> &connectArray)
   {
     // Base this topology on the hexahedron topology.
     dax::exec::internal::TopologyUnstructured<
-        dax::exec::CellHexahedron,PT> hexTopology;
+        dax::CellTagHexahedron,PT> hexTopology;
     std::vector<dax::Id> hexConnections;
     BuildTopology(hexTopology, coordArray, hexConnections);
 
-    typedef dax::exec::CellVertex CellType;
+    typedef dax::CellTagVertex CellType;
+    const int NUM_VERTICES = dax::CellTraits<CellType>::NUM_VERTICES;
 
     // Our line mesh will have 7 lines for each hexahedron.  One line for
     // each of the 3 edges connected to vertex 0 and one line for each
@@ -661,17 +676,17 @@ private:
     topology.NumberOfPoints = hexTopology.NumberOfPoints;
 
     // Make connections.
-    connectArray.reserve(topology.NumberOfCells*CellType::NUM_POINTS);
+    connectArray.reserve(topology.NumberOfCells*NUM_VERTICES);
 
     for (dax::Id cellIndex = 0; cellIndex < topology.NumberOfCells; cellIndex++)
       {
-      dax::Tuple<dax::Id,CellType::NUM_POINTS> pointConnections
+      dax::exec::CellVertices<CellTag> pointConnections
           = TestTopology::GetCellConnectionsImpl(topology, cellIndex);
 
       connectArray.push_back(pointConnections[0]);
       }
     DAX_TEST_ASSERT(dax::Id(connectArray.size())
-                    == topology.NumberOfCells*CellType::NUM_POINTS,
+                    == topology.NumberOfCells*NUM_VERTICES,
                     "Bad connection array size.");
 
     topology.CellConnections = PT(connectArray.begin(), connectArray.end());
@@ -684,44 +699,44 @@ void TryAllTopologyTypes(FunctionType function)
   typedef dax::exec::internal::ArrayPortalFromIterators<
       std::vector<dax::Id>::iterator> ConnectionPortal;
 
-  std::cout << "--- dax::exec::CellVertex" << std::endl;
+  std::cout << "--- dax::CellTagVertex" << std::endl;
   TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::exec::CellVertex,ConnectionPortal> > vertexTopology;
+      <dax::CellTagVertex,ConnectionPortal> > vertexTopology;
   function(vertexTopology);
 
-  std::cout << "--- dax::exec::CellLine" << std::endl;
+  std::cout << "--- dax::CellTagLine" << std::endl;
   TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::exec::CellLine,ConnectionPortal> > lineTopology;
+      <dax::CellTagLine,ConnectionPortal> > lineTopology;
   function(lineTopology);
 
-  std::cout << "--- dax::exec::CellTriangle" << std::endl;
+  std::cout << "--- dax::CellTagTriangle" << std::endl;
   TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::exec::CellTriangle,ConnectionPortal> > triangleTopology;
+      <dax::CellTagTriangle,ConnectionPortal> > triangleTopology;
   function(triangleTopology);
 
-  std::cout << "--- dax::exec::CellQuadrilateral" << std::endl;
+  std::cout << "--- dax::CellTagQuadrilateral" << std::endl;
   TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::exec::CellQuadrilateral,ConnectionPortal> >
+      <dax::CellTagQuadrilateral,ConnectionPortal> >
       quadrilateralTopology;
   function(quadrilateralTopology);
 
-  std::cout << "--- dax::exec::CellVoxel" << std::endl;
+  std::cout << "--- dax::CellTagVoxel" << std::endl;
   TestTopology<dax::exec::internal::TopologyUniform> voxelTopology;
   function(voxelTopology);
 
-  std::cout << "--- dax::exec::CellHexahedron" << std::endl;
+  std::cout << "--- dax::CellTagHexahedron" << std::endl;
   TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::exec::CellHexahedron,ConnectionPortal> > hexahedronTopology;
+      <dax::CellTagHexahedron,ConnectionPortal> > hexahedronTopology;
   function(hexahedronTopology);
 
-  std::cout << "--- dax::exec::CellTetrahedron" << std::endl;
+  std::cout << "--- dax::CellTagTetrahedron" << std::endl;
   TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::exec::CellTetrahedron,ConnectionPortal> > tetrahedronTopology;
+      <dax::CellTagTetrahedron,ConnectionPortal> > tetrahedronTopology;
   function(tetrahedronTopology);
 
-  std::cout << "--- dax::exec::CellWedge" << std::endl;
+  std::cout << "--- dax::CellTagWedge" << std::endl;
   TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::exec::CellWedge,ConnectionPortal> > wedgeTopology;
+      <dax::CellTagWedge,ConnectionPortal> > wedgeTopology;
   function(wedgeTopology);
 }
 

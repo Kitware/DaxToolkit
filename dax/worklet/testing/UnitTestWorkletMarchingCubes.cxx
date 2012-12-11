@@ -27,6 +27,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <dax/CellTag.h>
 #include <dax/TypeTraits.h>
 
 #include <dax/cont/ArrayHandle.h>
@@ -52,7 +53,7 @@ struct TestMarchingCubesWorklet
   void operator()(const GridType&) const
     {
     dax::cont::internal::TestGrid<dax::cont::UniformGrid<> > inGrid(DIM);
-    dax::cont::UnstructuredGrid<dax::exec::CellTriangle> outGrid;
+    dax::cont::UnstructuredGrid<dax::CellTagTriangle> outGrid;
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
     dax::Id numPoints = inGrid->GetNumberOfPoints();

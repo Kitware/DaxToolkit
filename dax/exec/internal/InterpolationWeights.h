@@ -16,23 +16,16 @@
 #ifndef __dax__exec__internal__InterpolationWeights_h
 #define __dax__exec__internal__InterpolationWeights_h
 
+#include <dax/CellTag.h>
 #include <dax/Types.h>
-
-#include <dax/exec/Cell.h>
 
 namespace dax {
 namespace exec {
 namespace internal {
 
-template<class CellType>
-DAX_EXEC_EXPORT
-dax::Tuple<dax::Scalar, CellType::NUM_POINTS>
-InterpolationWeights(const dax::Vector3 &pcoords);
-
-template<>
 DAX_EXEC_EXPORT
 dax::Tuple<dax::Scalar, 8>
-InterpolationWeights<dax::exec::CellVoxel>(const dax::Vector3 &pcoords)
+InterpolationWeights(const dax::Vector3 &pcoords, dax::CellTagVoxel)
 {
   const dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
 
@@ -49,19 +42,17 @@ InterpolationWeights<dax::exec::CellVoxel>(const dax::Vector3 &pcoords)
   return weights;
 }
 
-template<>
 DAX_EXEC_EXPORT
 dax::Tuple<dax::Scalar, 8>
-InterpolationWeights<dax::exec::CellHexahedron>(const dax::Vector3 &pcoords)
+InterpolationWeights(const dax::Vector3 &pcoords, dax::CellTagHexahedron)
 {
   // Hexahedron is the same as a voxel.
-  return InterpolationWeights<dax::exec::CellVoxel>(pcoords);
+  return InterpolationWeights(pcoords, dax::CellTagVoxel());
 }
 
-template<>
 DAX_EXEC_EXPORT
 dax::Tuple<dax::Scalar, 4>
-InterpolationWeights<dax::exec::CellTetrahedron>(const dax::Vector3 &pcoords)
+InterpolationWeights(const dax::Vector3 &pcoords, dax::CellTagTetrahedron)
 {
   dax::Tuple<dax::Scalar, 4> weights;
   weights[0] = 1 - pcoords[0] - pcoords[1] - pcoords[2];
@@ -71,10 +62,9 @@ InterpolationWeights<dax::exec::CellTetrahedron>(const dax::Vector3 &pcoords)
   return weights;
 }
 
-template<>
 DAX_EXEC_EXPORT
 dax::Tuple<dax::Scalar, 6>
-InterpolationWeights<dax::exec::CellWedge>(const dax::Vector3 &pcoords)
+InterpolationWeights(const dax::Vector3 &pcoords, dax::CellTagWedge)
 {
   dax::Tuple<dax::Scalar, 6> weights;
   weights[0] = (1 - pcoords[0] - pcoords[1]) * (1 - pcoords[2]);
@@ -86,10 +76,9 @@ InterpolationWeights<dax::exec::CellWedge>(const dax::Vector3 &pcoords)
   return weights;
 }
 
-template<>
 DAX_EXEC_EXPORT
 dax::Tuple<dax::Scalar, 3>
-InterpolationWeights<dax::exec::CellTriangle>(const dax::Vector3 &pcoords)
+InterpolationWeights(const dax::Vector3 &pcoords, dax::CellTagTriangle)
 {
   dax::Tuple<dax::Scalar, 3> weights;
   weights[0] = 1 - pcoords[0] - pcoords[1];
@@ -98,10 +87,9 @@ InterpolationWeights<dax::exec::CellTriangle>(const dax::Vector3 &pcoords)
   return weights;
 }
 
-template<>
 DAX_EXEC_EXPORT
 dax::Tuple<dax::Scalar, 4>
-InterpolationWeights<dax::exec::CellQuadrilateral>(const dax::Vector3 &pcoords)
+InterpolationWeights(const dax::Vector3 &pcoords, dax::CellTagQuadrilateral)
 {
   const dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
 
@@ -114,10 +102,9 @@ InterpolationWeights<dax::exec::CellQuadrilateral>(const dax::Vector3 &pcoords)
   return weights;
 }
 
-template<>
 DAX_EXEC_EXPORT
 dax::Tuple<dax::Scalar, 2>
-InterpolationWeights<dax::exec::CellLine>(const dax::Vector3 &pcoords)
+InterpolationWeights(const dax::Vector3 &pcoords, dax::CellTagLine)
 {
   dax::Tuple<dax::Scalar, 2> weights;
   weights[0] = 1 - pcoords[0];
@@ -125,10 +112,9 @@ InterpolationWeights<dax::exec::CellLine>(const dax::Vector3 &pcoords)
   return weights;
 }
 
-template<>
 DAX_EXEC_EXPORT
 dax::Tuple<dax::Scalar, 1>
-InterpolationWeights<dax::exec::CellVertex>(const dax::Vector3 &)
+InterpolationWeights(const dax::Vector3 &, dax::CellTagVertex)
 {
   dax::Tuple<dax::Scalar, 1> weights(dax::Scalar(1));
   return weights;

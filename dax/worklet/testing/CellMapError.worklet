@@ -16,7 +16,6 @@
 #ifndef __CellMapError_worklet_
 #define __CellMapError_worklet_
 
-#include <dax/exec/Cell.h>
 #include <dax/exec/WorkletMapCell.h>
 
 
@@ -30,9 +29,9 @@ public:
   typedef void ControlSignature(Topology);
   typedef void ExecutionSignature(_1);
 
-  template<class CellType>
+  template<class CellTag>
   DAX_EXEC_EXPORT
-  void operator()(const CellType& daxNotUsed(cell)) const
+  void operator()(CellTag) const
   {
     this->RaiseError("Testing execution error system.");
   }

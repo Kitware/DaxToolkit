@@ -16,7 +16,7 @@
 #ifndef __PointDataToCellData_worklet_
 #define __PointDataToCellData_worklet_
 
-#include <dax/exec/Cell.h>
+#include <dax/exec/CellField.h>
 #include <dax/exec/Interpolate.h>
 #include <dax/exec/ParametricCoordinates.h>
 #include <dax/exec/WorkletMapCell.h>
@@ -31,14 +31,14 @@ public:
   typedef void ControlSignature(Topology,Field(Point), Field(Out));
   typedef _3 ExecutionSignature(_1,_2);
 
-  template<class CellType>
+  template<class CellTag>
   DAX_EXEC_EXPORT
   dax::Scalar operator()(
-    CellType cell,
-    const dax::Tuple<dax::Scalar, CellType::NUM_POINTS>& pointField) const
+      CellTag cellTag,
+      const dax::exec::CellField<dax::Scalar,CellTag> &pointField) const
   {
-    dax::Vector3 center =  dax::exec::ParametricCoordinates<CellType>::Center();
-    return dax::exec::CellInterpolate(cell,pointField,center);
+    dax::Vector3 center =  dax::exec::ParametricCoordinates<CellTag>::Center();
+    return dax::exec::CellInterpolate(pointField,center,cellTag);
   }
 };
 }

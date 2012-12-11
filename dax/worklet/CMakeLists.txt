@@ -22,6 +22,7 @@ set(worklets
   Cosine.worklet
   Elevation.worklet
   Magnitude.worklet
+  MarchingCubes.worklet
   PointDataToCellData.worklet
   Sine.worklet
   Square.worklet

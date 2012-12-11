@@ -17,6 +17,8 @@
 #ifndef __dax_cont_UnstructuredGrid_h
 #define __dax_cont_UnstructuredGrid_h
 
+#include <dax/CellTraits.h>
+
 #include <dax/cont/ArrayHandle.h>
 
 #include <dax/exec/internal/TopologyUnstructured.h>
@@ -31,7 +33,7 @@ struct UnstructuredGridTag {  };
 /// A subtag of UnstructuredGridTag that specifies the type of cell in the grid
 /// through templating.
 ///
-template<class CellType>
+template<class CellTag>
 struct UnstructuredGridOfCell : UnstructuredGridTag {  };
 
 /// This class defines the topology of an unstructured grid. An unstructured
@@ -45,8 +47,8 @@ template <
 class UnstructuredGrid
 {
 public:
-  typedef CellT CellType;
-  typedef UnstructuredGridOfCell<CellType> GridTypeTag;
+  typedef CellT CellTag;
+  typedef UnstructuredGridOfCell<CellTag> GridTypeTag;
 
   typedef dax::cont::ArrayHandle<
       dax::Id, CellConnectionsContainerControlTag, DeviceAdapterTag>
@@ -63,7 +65,8 @@ public:
                    PointCoordinatesType pointCoordinates)
     : CellConnections(cellConnections), PointCoordinates(pointCoordinates)
   {
-    DAX_ASSERT_CONT(this->CellConnections.GetNumberOfValues() % CellType::NUM_POINTS == 0);
+    DAX_ASSERT_CONT((this->CellConnections.GetNumberOfValues()
+                     % dax::CellTraits<CellTag>::NUM_VERTICES) == 0);
   }
 
   /// The CellConnections array defines the connectivity of the mesh. The
@@ -121,11 +124,12 @@ public:
   ///
   DAX_CONT_EXPORT
   dax::Id GetNumberOfCells() const {
-    return this->CellConnections.GetNumberOfValues() / CellType::NUM_POINTS;
+    return (this->CellConnections.GetNumberOfValues()
+            / dax::CellTraits<CellTag>::NUM_VERTICES);
   }
 
   typedef dax::exec::internal::TopologyUnstructured<
-      CellType, typename CellConnectionsType::PortalConstExecution>
+      CellTag, typename CellConnectionsType::PortalConstExecution>
       TopologyStructConstExecution;
 
   /// Prepares this topology to be used as an input to an operation in the
@@ -140,7 +144,7 @@ public:
   }
 
   typedef dax::exec::internal::TopologyUnstructured<
-      CellType, typename CellConnectionsType::PortalExecution>
+      CellTag, typename CellConnectionsType::PortalExecution>
       TopologyStructExecution;
 
   /// Prepares this topology to be used as an output to an operation that
@@ -156,7 +160,7 @@ public:
     // redundant, too.
     return TopologyStructExecution(
           this->CellConnections.PrepareForOutput(
-            numberOfCells*CellType::NUM_POINTS),
+            numberOfCells*dax::CellTraits<CellTag>::NUM_VERTICES),
           0,
           numberOfCells);
   }

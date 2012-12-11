@@ -53,7 +53,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
 {
   std::cout << "Running pipeline 1: Magnitude -> MarchingCubes" << std::endl;
 
-  dax::cont::UnstructuredGrid<dax::exec::CellTriangle> outGrid;
+  dax::cont::UnstructuredGrid<dax::CellTagTriangle> outGrid;
 
   dax::cont::ArrayHandle<dax::Scalar> intermediate1;
   dax::cont::Scheduler<> schedule;

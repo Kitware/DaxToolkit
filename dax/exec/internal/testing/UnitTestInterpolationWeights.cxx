@@ -24,24 +24,23 @@
 
 namespace {
 
-template<class CellType>
-void CheckVertexWeights(
-    )
+template<class CellTag>
+void CheckVertexWeights(CellTag)
 {
   std::cout << "  Checking weights of vertices." << std::endl;
 
-  const dax::Id NUM_POINTS = CellType::NUM_POINTS;
-  dax::Tuple<dax::Vector3,NUM_POINTS> vertexParametricCoords =
-      dax::exec::ParametricCoordinates<CellType>::Vertex();
+  const dax::Id NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
+  dax::Tuple<dax::Vector3,NUM_VERTICES> vertexParametricCoords =
+      dax::exec::ParametricCoordinates<CellTag>::Vertex();
 
-  for (dax::Id vertexIndex = 0; vertexIndex < NUM_POINTS; vertexIndex++)
+  for (dax::Id vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
     {
     dax::Vector3 pcoords = vertexParametricCoords[vertexIndex];
 
-    dax::Tuple<dax::Scalar, NUM_POINTS> weights =
-        dax::exec::internal::InterpolationWeights<CellType>(pcoords);
+    dax::Tuple<dax::Scalar, NUM_VERTICES> weights =
+        dax::exec::internal::InterpolationWeights(pcoords, CellTag());
 
-    for (dax::Id weightIndex = 0; weightIndex < NUM_POINTS; weightIndex++)
+    for (dax::Id weightIndex = 0; weightIndex < NUM_VERTICES; weightIndex++)
       {
       if (weightIndex == vertexIndex)
         {
@@ -57,32 +56,32 @@ void CheckVertexWeights(
     }
 }
 
-template<class CellType>
-void CheckCenterWeight()
+template<class CellTag>
+void CheckCenterWeight(CellTag)
 {
   std::cout << "  Checking weight at center." << std::endl;
 
-  const dax::Id NUM_POINTS = CellType::NUM_POINTS;
+  const dax::Id NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
 
-  dax::Tuple<dax::Scalar, NUM_POINTS> weights =
-      dax::exec::internal::InterpolationWeights<CellType>(
-        dax::exec::ParametricCoordinates<CellType>::Center());
+  dax::Tuple<dax::Scalar, NUM_VERTICES> weights =
+      dax::exec::internal::InterpolationWeights(
+        dax::exec::ParametricCoordinates<CellTag>::Center(), CellTag());
 
-  for (dax::Id weightIndex = 0; weightIndex < NUM_POINTS; weightIndex++)
+  for (dax::Id weightIndex = 0; weightIndex < NUM_VERTICES; weightIndex++)
     {
     DAX_TEST_ASSERT(test_equal(weights[weightIndex],
-                               dax::Scalar(1.0/NUM_POINTS)),
+                               dax::Scalar(1.0/NUM_VERTICES)),
                     "Got bad interpolation weight");
     }
 }
 
 //-----------------------------------------------------------------------------
-template<class CellType>
-void TestInterpolationWeights()
+template<class CellTag>
+void TestInterpolationWeights(CellTag)
 {
-  CheckVertexWeights<CellType>();
+  CheckVertexWeights(CellTag());
 
-  CheckCenterWeight<CellType>();
+  CheckCenterWeight(CellTag());
 }
 
 //-----------------------------------------------------------------------------
@@ -90,7 +89,7 @@ struct TestInterpolationWeightsFunctor
 {
   template<class TopologyGenType>
   void operator()(const TopologyGenType &) const {
-    TestInterpolationWeights<typename TopologyGenType::CellType>();
+    TestInterpolationWeights(typename TopologyGenType::CellTag());
   }
 };
 

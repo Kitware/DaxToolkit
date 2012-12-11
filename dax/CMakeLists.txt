@@ -17,6 +17,8 @@
 include_directories(${Boost_INCLUDE_DIRS})
 
 set(headers
+  CellTag.h
+  CellTraits.h
   Extent.h
   Functional.h
   Types.h

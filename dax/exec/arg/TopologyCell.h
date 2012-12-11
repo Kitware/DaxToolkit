@@ -19,6 +19,7 @@
 #include <dax/Types.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/exec/Assert.h>
+#include <dax/exec/CellVertices.h>
 
 #include <dax/exec/internal/FieldAccess.h>
 #include <dax/exec/internal/WorkletBase.h>
@@ -29,34 +30,35 @@
 
 namespace dax { namespace exec { namespace arg {
 
+
+//TopologyCell is a base class type that is never actually used. Instead
+//It is always wrapped by a BindCell* class. Be it BindCellTag or BindCellVertices
 template <typename Tags, typename TopologyType>
 class TopologyCell
 {
-  TopologyType Topo;
-  typename TopologyType::CellType Cell;
 public:
-  typedef typename TopologyType::CellType CellType;
-  typedef CellType SaveType;
+  typedef typename TopologyType::CellTag CellTag;
+  typedef dax::exec::CellVertices<CellTag> CellVerticesType;
 
-  //if we are going with Out tag we create a value storage that holds a copy
-  //otherwise we have to pass a copy, since portals don't have to provide a reference
+  //if we are going with Out tag
   typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
-                                   CellType&,
-                                   CellType const&>::type ReturnType;
+                                   CellVerticesType&,
+                                   CellVerticesType const&>::type ReturnType;
 
-  DAX_CONT_EXPORT TopologyCell(const TopologyType& t): Topo(t), Cell(){}
+  typedef CellVerticesType SaveType;
 
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
-                            const dax::exec::internal::WorkletBase& work)
-    {
-    //if we have the In tag we have local store so use that value,
-    //otherwise call the portal directly
+  DAX_CONT_EXPORT TopologyCell(const TopologyType& t): Topo(t) {  }
+
+  DAX_EXEC_EXPORT ReturnType operator()(
+      dax::Id index,
+      const dax::exec::internal::WorkletBase& work)
+  {
     (void)work;  // Shut up compiler.
     DAX_ASSERT_EXEC(index >= 0, work);
-    this->Cell.BuildFromGrid(this->Topo,index);
+    DAX_ASSERT_EXEC(index < Topo.GetNumberOfCells(), work);
+    this->Cell = this->Topo.GetCellConnections(index);
     return this->Cell;
-    }
-
+  }
 
   DAX_EXEC_EXPORT void SaveExecutionResult(int index,
                        const dax::exec::internal::WorkletBase& work) const
@@ -67,7 +69,7 @@ public:
     //and very bad things could happen
     typedef typename Tags::
         template Has<typename dax::cont::sig::Out>::type HasOutTag;
-    this->saveResult(index,this->Cell.GetPointIndices(),work,HasOutTag());
+    this->saveResult(index,this->Cell,work,HasOutTag());
     }
 
   DAX_EXEC_EXPORT void SaveExecutionResult(int index, const SaveType& v,
@@ -79,33 +81,37 @@ public:
     //and very bad things could happen
     typedef typename Tags::
         template Has<typename dax::cont::sig::Out>::type HasOutTag;
-    this->saveResult(index,v.GetPointIndices(),work,HasOutTag());
+    this->saveResult(index,v,work,HasOutTag());
     }
 
   //method enabled when we do have the out tag ( or InOut)
   template <typename HasOutTag>
   DAX_EXEC_EXPORT
   void saveResult(dax::Id index,
-                  const typename SaveType::PointConnectionsType& values,
+                  const SaveType &values,
                   dax::exec::internal::WorkletBase work,
                   HasOutTag,
                   typename boost::enable_if<HasOutTag>::type* = 0) const
     {
     dax::exec::internal::FieldSetMultiple(this->Topo.CellConnections,
-                                        CellType::NUM_POINTS * index,
-                                        values,
+                                        dax::CellTraits<CellTag>::NUM_VERTICES * index,
+                                        values.GetAsTuple(),
                                         work);
     }
 
   template <typename HasOutTag>
   DAX_EXEC_EXPORT
   void saveResult(dax::Id,
-                  const typename SaveType::PointConnectionsType&,
+                  const SaveType &,
                   dax::exec::internal::WorkletBase,
                   HasOutTag,
                   typename boost::disable_if<HasOutTag>::type* = 0) const
     {
     }
+
+private:
+  TopologyType Topo;
+  CellVerticesType Cell;
 };
 
 

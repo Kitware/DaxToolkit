@@ -42,7 +42,7 @@ private:
 
 struct WorkType1
 {
-  typedef WorkType1 WorkType;
+  typedef WorkType1 DomainType;
 };
 
 struct Worklet1: public WorkType1

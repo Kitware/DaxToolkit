@@ -97,14 +97,13 @@ void ExecResources()
     for(int i=0; i <VECTOR_LENGTH; ++i) { v[i] = static_cast<dax::Scalar>(i);}
 
   typedef Worklet1 Sig(std::vector<dax::Scalar>);
-  typedef Worklet1::WorkType WorkType;
 
   dax::cont::internal::Bindings<Sig> bindings(v);
 
   // Visit each bound argument to determine the count to be scheduled.
   const dax::Id count(VECTOR_LENGTH);
   bindings.ForEachCont(
-             dax::cont::scheduling::CreateExecutionResources<WorkType>(count));
+             dax::cont::scheduling::CreateExecutionResources(count));
 
 
   for (int i=0; i < VECTOR_LENGTH; ++i)

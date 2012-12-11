@@ -49,14 +49,14 @@ void CollectCount()
   //verify that a single constant value returns a collect count of 1
   {
   typedef Worklet1 Sig(int);
-  typedef Worklet1::WorkType WorkType;
+  typedef Worklet1::DomainType DomainType;
 
   int constantFieldArg=4;
   dax::cont::internal::Bindings<Sig> bindings(constantFieldArg);
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count;
-  bindings.ForEachCont(dax::cont::scheduling::CollectCount<WorkType>(count));
+  bindings.ForEachCont(dax::cont::scheduling::CollectCount<DomainType>(count));
   DAX_TEST_ASSERT((count == 1),
                   "CollectCount must be 1 when we have a constant field arg");
   }
@@ -64,7 +64,7 @@ void CollectCount()
   //verify that a single array returns a count equal to its size
   {
   typedef Worklet1 Sig(dax::cont::ArrayHandle<dax::Scalar> );
-  typedef Worklet1::WorkType WorkType;
+  typedef Worklet1::DomainType DomainType;
 
 
   const dax::Id size(7);
@@ -75,7 +75,7 @@ void CollectCount()
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count;
-  bindings.ForEachCont(dax::cont::scheduling::CollectCount<WorkType>(count));
+  bindings.ForEachCont(dax::cont::scheduling::CollectCount<DomainType>(count));
   DAX_TEST_ASSERT((count == size),
               "CollectCount was not the length of the array.");
   }
@@ -91,14 +91,14 @@ void CollectCount()
 
 
   typedef Worklet2 TwoArgSig(dax::cont::ArrayHandle<dax::Scalar>, int);
-  typedef Worklet2::WorkType WorkType;
+  typedef Worklet2::DomainType DomainType;
 
   dax::cont::internal::Bindings<TwoArgSig> bindings(scalarHandle,
                                                     constantFieldArg);
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count;
-  bindings.ForEachCont(dax::cont::scheduling::CollectCount<WorkType>(count));
+  bindings.ForEachCont(dax::cont::scheduling::CollectCount<DomainType>(count));
 
   DAX_TEST_ASSERT((count == size),
                   "CollectCount was not the length of the array.");
@@ -110,7 +110,7 @@ void CollectCount()
                                                           scalarHandle);
 
   secondBindings.ForEachCont(
-                         dax::cont::scheduling::CollectCount<WorkType>(count));
+                         dax::cont::scheduling::CollectCount<DomainType>(count));
 
   DAX_TEST_ASSERT((count == size),
                   "CollectCount was not the length of the array.");

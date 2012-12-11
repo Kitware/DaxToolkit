@@ -17,8 +17,10 @@
 #ifndef __dax_exec_ParametricCoordinates_h
 #define __dax_exec_ParametricCoordinates_h
 
+#include <dax/CellTag.h>
+#include <dax/CellTraits.h>
 #include <dax/Types.h>
-#include <dax/exec/Cell.h>
+#include <dax/exec/CellField.h>
 #include <dax/exec/Derivative.h>
 #include <dax/exec/Interpolate.h>
 
@@ -32,7 +34,7 @@ namespace exec {
 //-----------------------------------------------------------------------------
 /// Defines the parametric coordinates for special locations in cells.
 ///
-template<class CellType>
+template<class CellTag>
 struct ParametricCoordinates
 #ifdef DAX_DOXYGEN_ONLY
 {
@@ -42,14 +44,15 @@ struct ParametricCoordinates
 
   /// The location of each vertex.
   ///
-  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3,CellType::NUM_POINTS> Vertex();
+  DAX_EXEC_EXPORT static
+  dax::Tuple<dax::Vector3,dax::CellTraits<CellTag>::NUM_VERTICES> Vertex();
 };
 #else //DAX_DOXYGEN_ONLY
     ;
 #endif
 
 template<>
-struct ParametricCoordinates<dax::exec::CellHexahedron>
+struct ParametricCoordinates<dax::CellTagHexahedron>
 {
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(0.5, 0.5, 0.5);
@@ -70,11 +73,11 @@ struct ParametricCoordinates<dax::exec::CellHexahedron>
 };
 
 template<>
-struct ParametricCoordinates<dax::exec::CellVoxel>
-    : public ParametricCoordinates<dax::exec::CellHexahedron> {  };
+struct ParametricCoordinates<dax::CellTagVoxel>
+    : public ParametricCoordinates<dax::CellTagHexahedron> {  };
 
 template<>
-struct ParametricCoordinates<dax::exec::CellTetrahedron>
+struct ParametricCoordinates<dax::CellTagTetrahedron>
 {
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(0.25, 0.25, 0.25);
@@ -91,7 +94,7 @@ struct ParametricCoordinates<dax::exec::CellTetrahedron>
 };
 
 template<>
-struct ParametricCoordinates<dax::exec::CellWedge>
+struct ParametricCoordinates<dax::CellTagWedge>
 {
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(1.0/3.0, 1.0/3.0, 0.5);
@@ -110,7 +113,7 @@ struct ParametricCoordinates<dax::exec::CellWedge>
 };
 
 template<>
-struct ParametricCoordinates<dax::exec::CellTriangle>
+struct ParametricCoordinates<dax::CellTagTriangle>
 {
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(1.0/3.0, 1.0/3.0, 0.0);
@@ -126,7 +129,7 @@ struct ParametricCoordinates<dax::exec::CellTriangle>
 };
 
 template<>
-struct ParametricCoordinates<dax::exec::CellQuadrilateral>
+struct ParametricCoordinates<dax::CellTagQuadrilateral>
 {
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(0.5, 0.5, 0.0);
@@ -143,7 +146,7 @@ struct ParametricCoordinates<dax::exec::CellQuadrilateral>
 };
 
 template<>
-struct ParametricCoordinates<dax::exec::CellLine>
+struct ParametricCoordinates<dax::CellTagLine>
 {
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(0.5, 0.0, 0.0);
@@ -158,7 +161,7 @@ struct ParametricCoordinates<dax::exec::CellLine>
 };
 
 template<>
-struct ParametricCoordinates<dax::exec::CellVertex>
+struct ParametricCoordinates<dax::CellTagVertex>
 {
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(0.0, 0.0, 0.0);
@@ -172,115 +175,117 @@ struct ParametricCoordinates<dax::exec::CellVertex>
 };
 
 //-----------------------------------------------------------------------------
-template<class CellType>
-DAX_EXEC_EXPORT dax::Vector3 ParametricCoordinatesToWorldCoordinates(
-    const CellType &cell,
-    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &vertexCoordinates,
-    const dax::Vector3 &parametricCoords)
+template<class CellTag>
+DAX_EXEC_EXPORT
+dax::Vector3 ParametricCoordinatesToWorldCoordinates(
+    const dax::exec::CellField<dax::Vector3,CellTag> &vertexCoordinates,
+    const dax::Vector3 &parametricCoords,
+    CellTag)
 {
-  return dax::exec::CellInterpolate(cell, vertexCoordinates, parametricCoords);
+  return dax::exec::CellInterpolate(
+        vertexCoordinates, parametricCoords, CellTag());
 }
 
 //-----------------------------------------------------------------------------
 template<>
 DAX_EXEC_EXPORT
-dax::Vector3 ParametricCoordinatesToWorldCoordinates<dax::exec::CellVoxel>(
-    const dax::exec::CellVoxel &cell,
-    const dax::Tuple<dax::Vector3,CellVoxel::NUM_POINTS> &vertexCoordinates,
-    const dax::Vector3 &parametricCoords)
+dax::Vector3 ParametricCoordinatesToWorldCoordinates(
+    const dax::exec::CellField<dax::Vector3,dax::CellTagVoxel> &vertexCoordinates,
+    const dax::Vector3 &parametricCoords,
+    dax::CellTagVoxel)
 {
-  dax::Vector3 spacing = cell.GetSpacing();
-  dax::Vector3 cellOffset = spacing * parametricCoords;
+  dax::Vector3 axisAlignedWidths = vertexCoordinates[6] - vertexCoordinates[0];
+  dax::Vector3 cellOffset = axisAlignedWidths * parametricCoords;
 
-  // We only really need the coordinate value for index 0.
   dax::Vector3 minCoord = vertexCoordinates[0];
 
   return cellOffset + minCoord;
 }
 
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellVoxel &cell,
-    const dax::Tuple<dax::Vector3,CellVoxel::NUM_POINTS> &vertexCoordinates,
-    const dax::Vector3 &worldCoords)
+    const dax::exec::CellField<dax::Vector3,dax::CellTagVoxel> &vertexCoordinates,
+    const dax::Vector3 &worldCoords,
+    dax::CellTagVoxel)
 {
-  // We only really need the coordinate value for index 0.
   dax::Vector3 minCoord = vertexCoordinates[0];
 
   dax::Vector3 cellOffset = worldCoords - minCoord;
 
-  dax::Vector3 spacing = cell.GetSpacing();
-  return cellOffset / spacing;
+  dax::Vector3 axisAlignedWidths = vertexCoordinates[6] - vertexCoordinates[0];
+  return cellOffset / axisAlignedWidths;
 }
+
+// TODO: Special versions of parametric to world and vice versa for voxels
+// that requires only origin and spacing.
 
 //-----------------------------------------------------------------------------
 namespace detail {
 
-template<class CellType>
+template<class CellTag>
 class JacobianFunctor3DCell {
-  const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &VertexCoordinates;
+  // Be careful!  Don't let member go out of scope!
+  const dax::exec::CellField<dax::Vector3,CellTag> &VertexCoordinates;
 public:
   DAX_EXEC_EXPORT
   JacobianFunctor3DCell(
-      const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &vertexCoords)
+      const dax::exec::CellField<dax::Vector3,CellTag> &vertexCoords)
     : VertexCoordinates(vertexCoords) {  }
   DAX_EXEC_EXPORT
   dax::math::Matrix3x3 operator()(dax::Vector3 pcoords) const {
     return dax::exec::detail::make_JacobianFor3DCell(
-          dax::exec::internal::DerivativeWeights<CellType>(pcoords),
-          this->VertexCoordinates);
+          dax::exec::internal::DerivativeWeights(pcoords, CellTag()),
+          this->VertexCoordinates.GetAsTuple());
   }
 };
 
-template<class CellType>
+template<class CellTag>
 class CoodinatesFunctor3DCell {
-  const CellType &Cell;
-  const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &VertexCoords;
+  // Be careful!  Don't let member go out of scope!
+  const dax::exec::CellField<dax::Vector3,CellTag> &VertexCoordinates;
 public:
   DAX_EXEC_EXPORT
   CoodinatesFunctor3DCell(
-      const CellType &cell,
-      const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &vertexCoords)
-    : Cell(cell), VertexCoords(vertexCoords) {  }
+      const dax::exec::CellField<dax::Vector3,CellTag> &vertexCoords)
+    : VertexCoordinates(vertexCoords) {  }
   DAX_EXEC_EXPORT
   dax::Vector3 operator()(dax::Vector3 pcoords) const {
     return dax::exec::ParametricCoordinatesToWorldCoordinates(
-          this->Cell, this->VertexCoords, pcoords);
+          this->VertexCoordinates, pcoords, CellTag());
   }
 };
 
 } // Namespace detail
 
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellHexahedron &cell,
-    const dax::Tuple<dax::Vector3,CellVoxel::NUM_POINTS> &vertexCoords,
-    const dax::Vector3 &worldCoords)
+    const dax::exec::CellField<dax::Vector3,dax::CellTagHexahedron> &vertexCoords,
+    const dax::Vector3 &worldCoords,
+    dax::CellTagHexahedron)
 {
   return dax::math::NewtonsMethod(
-        detail::JacobianFunctor3DCell<dax::exec::CellHexahedron>(vertexCoords),
-        detail::CoodinatesFunctor3DCell<dax::exec::CellHexahedron>(
-          cell, vertexCoords),
+        detail::JacobianFunctor3DCell<dax::CellTagHexahedron>(vertexCoords),
+        detail::CoodinatesFunctor3DCell<dax::CellTagHexahedron>(vertexCoords),
         worldCoords,
         dax::make_Vector3(0.5, 0.5, 0.5));
 }
 
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellWedge &cell,
-    const dax::Tuple<dax::Vector3,CellWedge::NUM_POINTS> &vertexCoords,
-    const dax::Vector3 &worldCoords)
+    const dax::exec::CellField<dax::Vector3,dax::CellTagWedge> &vertexCoords,
+    const dax::Vector3 &worldCoords,
+    dax::CellTagWedge)
 {
   return dax::math::NewtonsMethod(
-        detail::JacobianFunctor3DCell<dax::exec::CellWedge>(vertexCoords),
-        detail::CoodinatesFunctor3DCell<dax::exec::CellWedge>(
-          cell,vertexCoords),
+        detail::JacobianFunctor3DCell<dax::CellTagWedge>(vertexCoords),
+        detail::CoodinatesFunctor3DCell<dax::CellTagWedge>(vertexCoords),
         worldCoords,
         dax::make_Vector3(0.5, 0.5, 0.5));
 }
 
 //-----------------------------------------------------------------------------
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellTetrahedron &daxNotUsed(cell),
-    const dax::Tuple<dax::Vector3,CellTetrahedron::NUM_POINTS> &vertexCoords,
-    const dax::Vector3 &worldCoords)
+    const dax::exec::CellField<dax::Vector3,dax::CellTagTetrahedron>
+        &vertexCoordinates,
+    const dax::Vector3 &worldCoords,
+    dax::CellTagTetrahedron)
 {
   // We solve the world to parametric coordinates problem for tetrahedra
   // similarly to that for triangles. Before understanding this code, you
@@ -306,10 +311,10 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 
   dax::Vector3 pcoords(dax::Scalar(0));
 
-  const dax::Vector3 vec0 = vertexCoords[1] - vertexCoords[0];
-  const dax::Vector3 vec1 = vertexCoords[2] - vertexCoords[0];
-  const dax::Vector3 vec2 = vertexCoords[3] - vertexCoords[0];
-  const dax::Vector3 coordVec = worldCoords - vertexCoords[0];
+  const dax::Vector3 vec0 = vertexCoordinates[1] - vertexCoordinates[0];
+  const dax::Vector3 vec1 = vertexCoordinates[2] - vertexCoordinates[0];
+  const dax::Vector3 vec2 = vertexCoordinates[3] - vertexCoordinates[0];
+  const dax::Vector3 coordVec = worldCoords - vertexCoordinates[0];
 
   dax::Vector3 planeNormal = dax::math::Cross(vec1, vec2);
   pcoords[0] = dax::dot(coordVec, planeNormal)/dax::dot(vec0, planeNormal);
@@ -325,9 +330,10 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 
 //-----------------------------------------------------------------------------
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellTriangle &daxNotUsed(cell),
-    const dax::Tuple<dax::Vector3,CellTriangle::NUM_POINTS> &vertexCoords,
-    const dax::Vector3 &worldCoords)
+    const dax::exec::CellField<dax::Vector3,dax::CellTagTriangle>
+        &vertexCoordinates,
+    const dax::Vector3 &worldCoords,
+    dax::CellTagTriangle)
 {
   // We will solve the world to parametric coordinates problem geometrically.
   // Consider the parallelogram formed by wcoords and p0 of the triangle and
@@ -390,15 +396,15 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 
   dax::Vector3 pcoords(dax::Scalar(0));
   dax::Vector3 triangleNormal =
-      dax::math::TriangleNormal(vertexCoords[0],
-                                vertexCoords[1],
-                                vertexCoords[2]);
+      dax::math::TriangleNormal(vertexCoordinates[0],
+                                vertexCoordinates[1],
+                                vertexCoordinates[2]);
 
   for (int dimension = 0; dimension < 2; dimension++)
     {
-    const dax::Vector3 &p0 = vertexCoords[0];
-    const dax::Vector3 &p1 = vertexCoords[dimension+1];
-    const dax::Vector3 &p2 = vertexCoords[2-dimension];
+    const dax::Vector3 &p0 = vertexCoordinates[0];
+    const dax::Vector3 &p1 = vertexCoordinates[dimension+1];
+    const dax::Vector3 &p2 = vertexCoordinates[2-dimension];
     dax::Vector3 planeNormal = dax::math::Cross(triangleNormal, p2-p0);
 
     dax::Scalar d =
@@ -414,22 +420,23 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 namespace detail {
 
 class QuadrilateralJacobianFunctor {
-  const dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS>
+  // Be careful!  Don't let member go out of scope!
+  const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral>
       &VertexCoordinates;
   const dax::Id3 &DimensionSwizzle;
 public:
   DAX_EXEC_EXPORT
   QuadrilateralJacobianFunctor(
-      const dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS>
-      &vertexCoords,
+      const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral>
+          &vertexCoords,
       const dax::Id3 &dimensionSwizzle)
     : VertexCoordinates(vertexCoords), DimensionSwizzle(dimensionSwizzle) {  }
   DAX_EXEC_EXPORT
   dax::math::Matrix2x2 operator()(dax::Vector2 pcoords) const {
-    const int NUM_POINTS = dax::exec::CellQuadrilateral::NUM_POINTS;
+    const int NUM_VERTICES =
+        dax::CellTraits<dax::CellTagQuadrilateral>::NUM_VERTICES;
 
-    const dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS>
-        derivativeWeights =
+    const dax::Tuple<dax::Vector3,NUM_VERTICES> derivativeWeights =
         dax::exec::internal::DerivativeWeightsQuadrilateral(pcoords);
 
     // Create the Jacobian matrix of the form
@@ -444,10 +451,10 @@ public:
     // dimension indices in DimensionSwizzle.  (d is partial derivative)
 
     dax::math::Matrix2x2 jacobian(0);
-    for (int pointIndex = 0; pointIndex < NUM_POINTS; pointIndex++)
+    for (int vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
       {
-      const dax::Vector3 &dweight = derivativeWeights[pointIndex];
-      const dax::Vector3 &coord = this->VertexCoordinates[pointIndex];
+      const dax::Vector3 &dweight = derivativeWeights[vertexIndex];
+      const dax::Vector3 &coord = this->VertexCoordinates[vertexIndex];
 
       jacobian(0,0) += coord[this->DimensionSwizzle[0]] * dweight[0];
       jacobian(0,1) += coord[this->DimensionSwizzle[0]] * dweight[1];
@@ -461,27 +468,23 @@ public:
 };
 
 class QuadrilateralCoodinatesFunctor {
-  const dax::exec::CellQuadrilateral &Cell;
-  const dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS>
-      &VertexCoords;
+  const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral>
+      &VertexCoordinates;
   const dax::Id3 &DimensionSwizzle;
 public:
   DAX_EXEC_EXPORT
   QuadrilateralCoodinatesFunctor(
-      const dax::exec::CellQuadrilateral &cell,
-      const dax::Tuple<dax::Vector3,dax::exec::CellQuadrilateral::NUM_POINTS>
-          &vertexCoords,
+      const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral>
+          &vertexCoordinates,
       const dax::Id3 &dimensionSwizzle)
-    : Cell(cell),
-      VertexCoords(vertexCoords),
+    : VertexCoordinates(vertexCoordinates),
       DimensionSwizzle(dimensionSwizzle) {  }
   DAX_EXEC_EXPORT
   dax::Vector2 operator()(dax::Vector2 pcoords) const {
     dax::Vector3 pcoords3D(pcoords[0], pcoords[1], 0);
     dax::Vector3 wcoords =
-        dax::exec::ParametricCoordinatesToWorldCoordinates(this->Cell,
-                                                           this->VertexCoords,
-                                                           pcoords3D);
+        dax::exec::ParametricCoordinatesToWorldCoordinates(
+          this->VertexCoordinates, pcoords3D, dax::CellTagQuadrilateral());
     return dax::make_Vector2(wcoords[this->DimensionSwizzle[0]],
                              wcoords[this->DimensionSwizzle[1]]);
   }
@@ -490,9 +493,10 @@ public:
 } // Namespace detail
 
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellQuadrilateral &cell,
-    const dax::Tuple<dax::Vector3,CellQuadrilateral::NUM_POINTS> &vertexCoords,
-    const dax::Vector3 &worldCoords)
+    const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral>
+        &vertexCoords,
+    const dax::Vector3 &worldCoords,
+    dax::CellTagQuadrilateral)
 {
   // We have an overconstrained system, so just pick two coordinates to work
   // with (the two most different from the normal).  We will do this by
@@ -500,8 +504,8 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 
   dax::Id3 dimensionSwizzle;
   dax::Vector3 normal = dax::math::TriangleNormal(vertexCoords[0],
-                                                        vertexCoords[1],
-                                                        vertexCoords[2]);
+                                                  vertexCoords[1],
+                                                  vertexCoords[2]);
   dax::Vector3 absNormal = dax::math::Abs(normal);
   if (absNormal[0] < absNormal[1])
     {
@@ -524,8 +528,7 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   dax::Vector2 pcoords =
       dax::math::NewtonsMethod(
         detail::QuadrilateralJacobianFunctor(vertexCoords, dimensionSwizzle),
-        detail::QuadrilateralCoodinatesFunctor(
-          cell,vertexCoords, dimensionSwizzle),
+        detail::QuadrilateralCoodinatesFunctor(vertexCoords, dimensionSwizzle),
         dax::make_Vector2(worldCoords[dimensionSwizzle[0]],
                           worldCoords[dimensionSwizzle[1]]),
         dax::make_Vector2(0.5, 0.5));
@@ -535,9 +538,9 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 
 //-----------------------------------------------------------------------------
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellLine &daxNotUsed(cell),
-    const dax::Tuple<dax::Vector3,CellLine::NUM_POINTS> &vertexCoords,
-    const dax::Vector3 &worldCoords)
+    const dax::exec::CellField<dax::Vector3,dax::CellTagLine> &vertexCoords,
+    const dax::Vector3 &worldCoords,
+    dax::CellTagLine)
 {
   // Because this is a line, there is only one vaild parametric coordinate. Let
   // vec be the vector from the first point to the second point
@@ -557,10 +560,10 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
 
 //-----------------------------------------------------------------------------
 DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
-    const dax::exec::CellVertex &daxNotUsed(cell),
-    const dax::Tuple<dax::Vector3,CellVertex::NUM_POINTS>
+    const dax::exec::CellField<dax::Vector3,dax::CellTagVertex>
       &daxNotUsed(vertexCoords),
-    const dax::Vector3 &daxNotUsed(worldCoords))
+    const dax::Vector3 &daxNotUsed(worldCoords),
+    dax::CellTagVertex)
 {
   return dax::make_Vector3(0.0, 0.0, 0.0);
 }

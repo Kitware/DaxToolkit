@@ -26,7 +26,7 @@ using dax::cont::arg::Field;
 
 struct WorkType1 : public dax::exec::internal::WorkletBase
 {
-  typedef WorkType1 WorkType;
+  typedef WorkType1 DomainType;
 };
 
 struct Worklet1: public WorkType1

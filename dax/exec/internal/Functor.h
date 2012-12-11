@@ -45,7 +45,7 @@ public:
 
 # include <dax/Types.h>
 # include <dax/cont/internal/Bindings.h>
-# include <dax/exec/arg/Bind.h>
+# include <dax/exec/arg/FindBinding.h>
 # include <dax/exec/internal/WorkletBase.h>
 # include <dax/internal/GetNthType.h>
 # include <dax/internal/Members.h>
@@ -76,12 +76,10 @@ template <typename Invocation>
 struct FunctorMemberMap
 {
   typedef typename dax::internal::GetNthType<0, Invocation>::type WorkletType;
-  typedef typename WorkletType::WorkType WorkType;
-
   template <int Id, typename Parameter>
   struct Get
   {
-    typedef typename arg::Bind<WorkType, Parameter, Invocation>::type type;
+  typedef typename arg::FindBinding<WorkletType, Parameter, Invocation>::type type;
   };
 };
 

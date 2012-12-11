@@ -27,6 +27,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <dax/CellTag.h>
 #include <dax/TypeTraits.h>
 
 #include <dax/cont/ArrayHandle.h>
@@ -90,15 +91,17 @@ class TestThresholdTopology : public dax::exec::WorkletGenerateTopology
 {
 public:
   typedef void ControlSignature(Topology, Topology(Out),Field(In));
-  typedef void ExecutionSignature(_1,_2,_3,VisitIndex);
+  typedef void ExecutionSignature(Vertices(_1), Vertices(_2), _3, VisitIndex);
 
-  template<typename InputCellType, typename OutputCellType, typename T>
+  template<typename InputCellTag, typename OutputCellTag, typename T>
   DAX_EXEC_EXPORT
-  void operator()(InputCellType const& in, OutputCellType &out, const T&,
+  void operator()(const dax::exec::CellVertices<InputCellTag> &inVertices,
+                  dax::exec::CellVertices<OutputCellTag> &outVertices,
+                  const T&,
                   const dax::Id& visit_index) const
   {
     DAX_TEST_ASSERT(visit_index==0, "Encountered bad visit index value.");
-    out.SetPointIndices(in.GetPointIndices());
+    outVertices.SetFromTuple(inVertices.GetAsTuple());
   }
 };
 
@@ -119,7 +122,7 @@ struct TestThresholdWorklet
   void operator()(const dax::cont::UniformGrid<>&) const
     {
     dax::cont::internal::TestGrid<dax::cont::UniformGrid<> > in(DIM);
-    dax::cont::UnstructuredGrid<dax::exec::CellHexahedron> out;
+    dax::cont::UnstructuredGrid<dax::CellTagHexahedron> out;
 
     this->GridThreshold(in.GetRealGrid(),out);
     }

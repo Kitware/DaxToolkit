@@ -24,7 +24,7 @@
 
 namespace dax { namespace cont { namespace scheduling {
 
-template <class WorkType>
+template <class DomainType>
 class CollectCount
 {
   dax::Id& Count;
@@ -42,7 +42,7 @@ public:
     typedef dax::cont::arg::ConceptMapTraits<ConceptType> Traits;
     typedef typename Traits::DomainTags DomainTags;
     typedef typename DomainTags::
-            template Has<typename WorkType::DomainType>::type HasDomain;
+            template Has<DomainType>::type HasDomain;
 
     this->getCount<ConceptType,HasDomain>(c);
     }
@@ -51,7 +51,7 @@ public:
   typename boost::enable_if<HasDomain>::type
     getCount(const ConceptType& concept)
     {
-    dax::Id c = concept.GetDomainLength(typename WorkType::DomainType());
+    dax::Id c = concept.GetDomainLength(DomainType());
     if(this->Count <= 1)
       {
       this->Count = c;
