@@ -26,18 +26,27 @@ namespace cont {
 /// contains a counting implicit array portal. An implicit array is a array
 /// portal with a function generating values and holds no memory. The counting
 /// implicit array simply returns the value of the index.
-typedef dax::cont::ArrayHandle < dax::Id,
-                                 dax::cont::ArrayContainerControlTagCounting>
-CountingArrayHandle;
+class CountingArrayHandle : public ArrayHandle < dax::Id,
+                                 ArrayContainerControlTagCounting>
+{
+public:
+  typedef ArrayHandle < dax::Id,
+                        ArrayContainerControlTagCounting>
+  superclass;
+  typedef dax::cont::ArrayPortalCounting PortalType;
+
+  CountingArrayHandle(dax::Id length)
+    :superclass(PortalType(length))
+  {
+  }
+};
 
 /// A convenience function for creating an CountingArrayHandle. It only takes
 /// the length of the array and constructs a CountingArrayHandle of that length.
 DAX_CONT_EXPORT
 CountingArrayHandle make_CountingArrayHandle(dax::Id length)
 {
-  typedef dax::cont::ArrayPortalCounting PortalType;
-  typedef CountingArrayHandle CountingArrayHandleType;
-  return CountingArrayHandleType(PortalType(length));
+  return CountingArrayHandle(length);
 }
 
 }
