@@ -24,10 +24,10 @@ set(headers
   ArrayContainerControlImplicit.h
   ArrayHandle.h
   ArrayHandleConstantValue.h
+  ArrayHandleCounting.h
   ArrayPortal.h
   ArrayPortalFromIterators.h
   Assert.h
-  CountingArrayHandle.h
   DeviceAdapter.h
   DeviceAdapterSerial.h
   Error.h

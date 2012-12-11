@@ -17,7 +17,7 @@
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
 #include <dax/cont/ArrayContainerControlCounting.h>
-#include <dax/cont/CountingArrayHandle.h>
+#include <dax/cont/ArrayHandleCounting.h>
 
 #include <dax/cont/internal/testing/Testing.h>
 
@@ -28,8 +28,8 @@ const dax::Id ARRAY_SIZE = 10;
 void TestCountingArray()
 {
   std::cout << "Creating counting array." << std::endl;
-  dax::cont::CountingArrayHandle arrayConst(ARRAY_SIZE);
-  dax::cont::CountingArrayHandle arrayMake = dax::cont::make_CountingArrayHandle(ARRAY_SIZE);
+  dax::cont::ArrayHandleCounting arrayConst(ARRAY_SIZE);
+  dax::cont::ArrayHandleCounting arrayMake = dax::cont::make_ArrayHandleCounting(ARRAY_SIZE);
   DAX_TEST_ASSERT(arrayConst.GetNumberOfValues() == ARRAY_SIZE,
                   "Counting array using constructor has wrong size.");
 
@@ -48,7 +48,7 @@ void TestCountingArray()
 
 } // annonymous namespace
 
-int UnitTestCountingArrayHandle(int, char *[])
+int UnitTestArrayHandleCounting(int, char *[])
 {
   return dax::cont::internal::Testing::Run(TestCountingArray);
 }
