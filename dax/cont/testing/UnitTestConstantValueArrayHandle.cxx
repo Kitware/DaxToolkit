@@ -28,20 +28,26 @@ const dax::Id ARRAY_SIZE = 10;
 const dax::Id CONSTANT_VALUE = 100;
 void TestConstantValueArray()
 {
-  typedef typename dax::cont::ConstantValueArrayHandle<dax::Id>::type ArrayHandleType;
+  typedef dax::cont::ConstantValueArrayHandle<dax::Id> ArrayHandleType;
 
   std::cout << "Creating array." << std::endl;
-  ArrayHandleType array = dax::cont::make_ConstantValueArrayHandle(CONSTANT_VALUE,
-                                                                        ARRAY_SIZE);
+  ArrayHandleType arrayConst(CONSTANT_VALUE,ARRAY_SIZE);
+  ArrayHandleType arrayMake =
+      dax::cont::make_ConstantValueArrayHandle(CONSTANT_VALUE,
+                                               ARRAY_SIZE);
+  DAX_TEST_ASSERT(arrayConst.GetNumberOfValues() == ARRAY_SIZE,
+                  "ConstantValue Array using constructor has wrong size.");
 
-  DAX_TEST_ASSERT(array.GetNumberOfValues() == ARRAY_SIZE,
-                  "Array has wrong size.");
+  DAX_TEST_ASSERT(arrayMake.GetNumberOfValues() == ARRAY_SIZE,
+                  "ConstantValue Array using make has wrong size.");
 
   std::cout << "Testing values" << std::endl;
   for (dax::Id index = 0; index < ARRAY_SIZE; index++)
     {
-    DAX_TEST_ASSERT(array.GetPortalConstControl().Get(index) == CONSTANT_VALUE,
-                    "Array has unexpected value.");
+    DAX_TEST_ASSERT(arrayConst.GetPortalConstControl().Get(index) == CONSTANT_VALUE,
+                    "ConstantValue Array using constructor has unexpected value.");
+    DAX_TEST_ASSERT(arrayMake.GetPortalConstControl().Get(index) == CONSTANT_VALUE,
+                    "ConstantValue Array using make has unexpected value.");
     }
 }
 

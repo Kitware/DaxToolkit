@@ -29,12 +29,21 @@ namespace cont {
 /// implicit array, this too holds no memory.  The ConstantValue array simply
 /// returns a single value for each of the index.
 template <typename ConstantValueType>
-struct ConstantValueArrayHandle
-{
-  typedef ArrayHandle < ConstantValueType,
+class ConstantValueArrayHandle: public ArrayHandle < ConstantValueType,
     dax::cont::ArrayContainerControlTagConstantValue
      <dax::cont::ArrayPortalConstantValue,ConstantValueType> >
-  type;
+{
+public:
+  typedef ArrayHandle < ConstantValueType,
+      dax::cont::ArrayContainerControlTagConstantValue
+       <dax::cont::ArrayPortalConstantValue,ConstantValueType> >
+  superclass;
+  typedef typename dax::cont::ArrayPortalConstantValue<ConstantValueType> PortalType;
+
+  ConstantValueArrayHandle(ConstantValueType value,dax::Id length)
+    :superclass(PortalType(value,length))
+  {
+  }
 };
 
 /// A convenience function for creating a ConstantValueArrayHandle. It only
@@ -43,12 +52,10 @@ struct ConstantValueArrayHandle
 /// specified constant value for each index.
 template<typename ConstantValueType>
 DAX_CONT_EXPORT
-typename ConstantValueArrayHandle<ConstantValueType>::type
+ConstantValueArrayHandle<ConstantValueType>
 make_ConstantValueArrayHandle(ConstantValueType value,dax::Id length)
 {
-  typedef dax::cont::ArrayPortalConstantValue<ConstantValueType> PortalType;
-  typedef typename ConstantValueArrayHandle<ConstantValueType>::type ConstantValueArrayHandleType;
-  return  ConstantValueArrayHandleType(PortalType(value,length));
+  return ConstantValueArrayHandle<ConstantValueType>(value,length);
 }
 
 }
