@@ -68,8 +68,9 @@ public:
     {
     typedef typename dax::cont::scheduling::DetermineScheduler<
                                 WorkletType>::SchedulerTag SchedulerTag;
-    typedef dax::cont::scheduling::Scheduler<DeviceAdapterTag,SchedulerTag> Scheduler;
-    const Scheduler realScheduler;
+    typedef dax::cont::scheduling::Scheduler<DeviceAdapterTag,SchedulerTag>
+        RealScheduler;
+    const RealScheduler realScheduler;
     realScheduler.Invoke(w,_dax_pp_args___(a));
     }
 #     endif // _dax_pp_sizeof___T > 1
