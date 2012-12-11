@@ -23,11 +23,11 @@ set(headers
   ArrayContainerControlConstantValue.h
   ArrayContainerControlImplicit.h
   ArrayHandle.h
+  ArrayHandleConstantValue.h
   ArrayPortal.h
   ArrayPortalFromIterators.h
   Assert.h
   CountingArrayHandle.h
-  ConstantValueArrayHandle.h
   DeviceAdapter.h
   DeviceAdapterSerial.h
   Error.h
