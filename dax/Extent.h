@@ -50,7 +50,7 @@ DAX_EXEC_CONT_EXPORT dax::Id3 extentPointDimensions(const Extent3 &extent)
 /// then s then t directions.  This method converts a flat index to the r,s,t
 /// 3d indices.
 DAX_EXEC_CONT_EXPORT dax::Id3 flatIndexToIndex3(dax::Id index,
-                                                       const Extent3 &extent)
+                                                const Extent3 &extent)
 {
   //efficient implementation that tries to reduce the number of temporary variables
   const dax::Id3 dims = extentDimensions(extent);
@@ -98,6 +98,21 @@ dax::Id index3ToFlatIndexCell(dax::Id3 ijk, const Extent3 &pointExtent)
                         ijk[2] - pointExtent.Min[2]);
   return deltas[0] + dims[0]*(deltas[1] + dims[1]*deltas[2]);
 }
+
+/// Returns the first point id for a given cell index and extent
+DAX_EXEC_CONT_EXPORT
+dax::Id indexToConnectivityIndex(dax::Id index, const Extent3 &extent)
+{
+  const dax::Id3 cell_dims = extentDimensions(extent);
+  const dax::Id3 point_dims = extentPointDimensions(extent);
+  dax::Id3 deltas(
+          index % point_dims[0],
+          (index / point_dims[0]) % point_dims[1],
+          (index / (point_dims[0] * point_dims[1])));
+  return deltas[0] + cell_dims[0]*(deltas[1] + cell_dims[1]*deltas[2]);
+}
+
+
 
 }
 
