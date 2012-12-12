@@ -21,39 +21,29 @@
 #include <dax/exec/CellField.h>
 #include <dax/exec/CellVertices.h>
 #include <dax/exec/VectorOperations.h>
-#include <dax/exec/WorkletMapCell.h>
 #include <dax/exec/WorkletGenerateTopology.h>
+#include <dax/exec/WorkletMapCell.h>
 #include <dax/Extent.h>
+#include <dax/math/VectorAnalysis.h>
 
 #include <dax/worklet/internal/MarchingCubesTable.h>
-
-namespace
-{
-  DAX_EXEC_EXPORT
-  dax::Vector3 interpolate(dax::Vector3 pointOne, dax::Vector3 pointTwo, dax::Scalar t)
-    {
-      //Cuda has lerp(a,b,t) which shoudl be used whenever possible for this
-      return pointOne + t * (pointOne-pointTwo);
-    }
-}
 
 namespace dax {
 namespace worklet {
 
 // --------------------------------------------------- GetVoxelClassification()
-template<typename T>
+template<typename T, typename U>
 DAX_EXEC_EXPORT
-unsigned char GetVoxelClassification(const T isoValue,
-                                     const dax::Tuple<T,8>& values )
+int GetVoxelClassification(const T isoValue, const U& values )
 {
-  return ((values[0] <= isoValue) << 0 |
-          (values[1] <= isoValue) << 1 |
-          (values[2] <= isoValue) << 2 |
-          (values[3] <= isoValue) << 3 |
-          (values[4] <= isoValue) << 4 |
-          (values[5] <= isoValue) << 5 |
-          (values[6] <= isoValue) << 6 |
-          (values[7] <= isoValue) << 7);
+  return ((values[0] > isoValue) << 0 |
+          (values[1] > isoValue) << 1 |
+          (values[2] > isoValue) << 2 |
+          (values[3] > isoValue) << 3 |
+          (values[4] > isoValue) << 4 |
+          (values[5] > isoValue) << 5 |
+          (values[6] > isoValue) << 6 |
+          (values[7] > isoValue) << 7);
 }
 
 // -----------------------------------------------------------------------------
@@ -71,9 +61,8 @@ public:
   dax::Id operator()(
       const dax::exec::CellField<dax::Scalar,InputCellTag> &values) const
   {
-    unsigned char voxelClass = GetVoxelClassification(IsoValue,
-                                                      values.GetAsTuple());
-    return dax::worklet::internal::marchingcubes::numFaces[voxelClass];
+    const int voxelClass = GetVoxelClassification(IsoValue,values);
+    return dax::worklet::internal::marchingcubes::NumFaces[voxelClass];
   }
 private:
   dax::Scalar IsoValue;
@@ -117,37 +106,34 @@ public:
       const dax::Id& inputCellVisitIndex,
       const dax::Id& workId) const
   {
+    using dax::worklet::internal::marchingcubes::TriTable;
     // These should probably be available through the voxel class
-    const int voxelVertEdges[12][2] = { {0,1}, {1,2}, {3,2}, {0,3},
-                            {4,5}, {5,6}, {7,6}, {4,7},
-                            {0,4}, {1,5}, {3,7}, {2,6}};
+    const unsigned char voxelVertEdges[12][2] ={
+        {0,1}, {1,2}, {3,2}, {0,3},
+        {4,5}, {5,6}, {7,6}, {4,7},
+        {0,4}, {1,5}, {2,6}, {3,7},
+      };
 
-    const unsigned char voxelClass =
+    const int voxelClass =
         GetVoxelClassification(IsoValue, values.GetAsTuple());
 
-    const dax::worklet::internal::marchingcubes::TriangleCases * const triCase =
-        (dax::worklet::internal::marchingcubes::TriangleCases*)
-        dax::worklet::internal::marchingcubes::triTable + voxelClass;
-
-    const int * const TriCaseEdge = triCase->edges + inputCellVisitIndex * 3;
-
     //we need to save the coordinates and the connectivity
-    for (int outVertIndex = 0;
+    for (dax::Id outVertIndex = 0;
          outVertIndex < outVertices.NUM_VERTICES;
          ++outVertIndex)
       {
-      const int * const vert = voxelVertEdges[TriCaseEdge[outVertIndex]];
+      const unsigned char edge = TriTable[voxelClass][(inputCellVisitIndex*3)+outVertIndex];
+      const int vertA = voxelVertEdges[edge][0];
+      const int vertB = voxelVertEdges[edge][1];
 
       // Find the weight for linear interpolation
-      const dax::Scalar den = values[vert[1]]-values[vert[0]];
-      const dax::Scalar num = IsoValue - values[vert[0]];
+      const dax::Scalar den = values[vertB]-values[vertA];
+      const dax::Scalar num = IsoValue - values[vertA];
       const dax::Scalar t =  num/den ;
 
-      // TODO: Move interpolate to a math function.
-      //a + t * (a-b)
-      outCoordinates[outVertIndex] = ::interpolate(coordinates[vert[0]],
-                                                   coordinates[vert[1]],
-                                                   t);
+      outCoordinates[outVertIndex] = dax::math::Lerp(coordinates[vertA],
+                                                     coordinates[vertB],
+                                                     t);
       outVertices[outVertIndex] =
           workId*outVertices.NUM_VERTICES + outVertIndex;
       }
