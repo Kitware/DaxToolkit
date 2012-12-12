@@ -21,21 +21,12 @@
 #include <dax/exec/CellField.h>
 #include <dax/exec/CellVertices.h>
 #include <dax/exec/VectorOperations.h>
-#include <dax/exec/WorkletMapCell.h>
 #include <dax/exec/WorkletGenerateTopology.h>
+#include <dax/exec/WorkletMapCell.h>
 #include <dax/Extent.h>
+#include <dax/math/VectorAnalysis.h>
 
 #include <dax/worklet/internal/MarchingCubesTable.h>
-
-namespace detail
-{
-  DAX_EXEC_EXPORT
-  dax::Vector3 interpolate(dax::Vector3 pointOne, dax::Vector3 pointTwo, dax::Scalar t)
-    {
-      //Cuda has lerp(a,b,t) which shoudl be used whenever possible for this
-      return pointOne + t * (pointTwo-pointOne);
-    }
-}
 
 namespace dax {
 namespace worklet {
@@ -140,9 +131,9 @@ public:
       const dax::Scalar num = IsoValue - values[vertA];
       const dax::Scalar t =  num/den ;
 
-      outCoordinates[outVertIndex] = detail::interpolate(coordinates[vertA],
-                                                         coordinates[vertB],
-                                                         t);
+      outCoordinates[outVertIndex] = dax::math::Lerp(coordinates[vertA],
+                                                     coordinates[vertB],
+                                                     t);
       outVertices[outVertIndex] =
           workId*outVertices.NUM_VERTICES + outVertIndex;
       }
