@@ -85,9 +85,7 @@ private:
     DAX_ASSERT_CONT(index >= 0);
     DAX_ASSERT_CONT(index < this->GetNumberOfValues());
 
-    IteratorType position = this->BeginIterator;
-    std::advance(position, index);
-    return position;
+    return this->BeginIterator + index;
   }
 };
 

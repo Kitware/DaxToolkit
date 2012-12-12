@@ -80,20 +80,20 @@ struct TopologyUniform {
   DAX_EXEC_EXPORT
   dax::exec::CellVertices<CellTag> GetCellConnections(dax::Id cellIndex) const
   {
-    dax::Id3 dimensions = dax::extentDimensions(this->Extent);
-
-    dax::Id3 ijkCell = dax::flatIndexToIndex3Cell(cellIndex, this->Extent);
+    const dax::Id3 dimensions = dax::extentDimensions(this->Extent);
+    const dax::Id pointIndex = indexToConnectivityIndex(cellIndex,this->Extent);
 
     dax::exec::CellVertices<CellTag> connections;
-    connections[0] = index3ToFlatIndex(ijkCell, this->Extent);
+    connections[0] = pointIndex;
     connections[1] = connections[0] + 1;
     connections[2] = connections[0] + dimensions[0] + 1;
     connections[3] = connections[0] + dimensions[0];
 
-    connections[4] = connections[0] + dimensions[0]*dimensions[1];
-    connections[5] = connections[1] + dimensions[0]*dimensions[1];
-    connections[6] = connections[2] + dimensions[0]*dimensions[1];
-    connections[7] = connections[3] + dimensions[0]*dimensions[1];
+    const dax::Id layerSize = dimensions[0]*dimensions[1];
+    connections[4] = connections[0] + layerSize;
+    connections[5] = connections[1] + layerSize;
+    connections[6] = connections[2] + layerSize;
+    connections[7] = connections[3] + layerSize;
 
     return connections;
   }
