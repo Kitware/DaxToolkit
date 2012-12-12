@@ -115,30 +115,29 @@ public:
       const dax::Id& inputCellVisitIndex,
       const dax::Id& workId) const
   {
+    using dax::worklet::internal::marchingcubes::TriTable;
     // These should probably be available through the voxel class
-    const int voxelVertEdges[12][2] = { {0,1}, {1,2}, {3,2}, {0,3},
-                            {4,5}, {5,6}, {7,6}, {4,7},
-                            {0,4}, {1,5}, {3,7}, {2,6}};
+    const unsigned char voxelVertEdges[12][2] ={
+        {0,1}, {1,2}, {3,2}, {0,3},
+        {4,5}, {5,6}, {7,6}, {4,7},
+        {0,4}, {1,5}, {2,6}, {3,7},
+      };
 
-    const unsigned char voxelClass =
+    const int voxelClass =
         GetVoxelClassification(IsoValue, values.GetAsTuple());
 
-    const dax::worklet::internal::marchingcubes::TriangleCases * const triCase =
-        (dax::worklet::internal::marchingcubes::TriangleCases*)
-        dax::worklet::internal::marchingcubes::triTable + voxelClass;
-
-    const int * const TriCaseEdge = triCase->edges + inputCellVisitIndex * 3;
-
     //we need to save the coordinates and the connectivity
-    for (int outVertIndex = 0;
+    for (dax::Id outVertIndex = 0;
          outVertIndex < outVertices.NUM_VERTICES;
          ++outVertIndex)
       {
-      const int * const vert = voxelVertEdges[TriCaseEdge[outVertIndex]];
+      const unsigned char edge = TriTable[voxelClass][(inputCellVisitIndex*3)+outVertIndex];
+      const int vertA = voxelVertEdges[edge][0];
+      const int vertB = voxelVertEdges[edge][1];
 
       // Find the weight for linear interpolation
-      const dax::Scalar den = values[vert[1]]-values[vert[0]];
-      const dax::Scalar num = IsoValue - values[vert[0]];
+      const dax::Scalar den = values[vertB]-values[vertA];
+      const dax::Scalar num = IsoValue - values[vertA];
       const dax::Scalar t =  num/den ;
 
       outCoordinates[outVertIndex] = detail::interpolate(coordinates[vertA],
