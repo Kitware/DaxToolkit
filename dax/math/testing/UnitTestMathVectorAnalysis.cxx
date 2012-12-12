@@ -59,6 +59,12 @@ VectorType normal(const VectorType& vt)
   return temp;
 }
 
+template<typename T,typename W>
+T lerp (const T &a, const T &b, const W &w)
+{
+  return a + w *(b -a);
+}
+
 }
 
 template<typename VectorType>
@@ -91,6 +97,26 @@ void TestVector(const VectorType& vector)
     dax::math::Normalize(normalizedVector);
     DAX_TEST_ASSERT(test_equal(normalizedVector, internal::normal(vector)),
                     "Inplace Normalized vector failed test.");
+    }
+}
+
+template <typename VectorType>
+void TestLerp(const VectorType& a,
+              const VectorType& b,
+              const VectorType& w,
+              const dax::Scalar& wS)
+{
+  VectorType lhs = internal::lerp(a,b,w);
+  VectorType rhs = dax::math::Lerp(a,b,w);
+  if(lhs != rhs)
+    {
+    DAX_TEST_FAIL("Vectors with Vector weight do not lerp() correctly");
+    }
+  VectorType lhsS = internal::lerp(a,b,wS);
+  VectorType rhsS = dax::math::Lerp(a,b,wS);
+  if(lhsS != rhsS)
+    {
+    DAX_TEST_FAIL("Vectors with Scalar weight do not lerp() correctly");
     }
 }
 
@@ -165,6 +191,24 @@ struct TestLinearFunctor
     TestVector(normalizedVector);
     TestVector(posVec);
     TestVector(negVec);
+
+    T weight(0.5);
+    dax::Scalar weightS(0.5);
+    TestLerp(zeroVector,normalizedVector,weight,weightS);
+    TestLerp(zeroVector,posVec,weight,weightS);
+    TestLerp(zeroVector,negVec,weight,weightS);
+
+    TestLerp(normalizedVector,zeroVector,weight,weightS);
+    TestLerp(normalizedVector,posVec,weight,weightS);
+    TestLerp(normalizedVector,negVec,weight,weightS);
+
+    TestLerp(posVec,zeroVector,weight,weightS);
+    TestLerp(posVec,normalizedVector,weight,weightS);
+    TestLerp(posVec,negVec,weight,weightS);
+
+    TestLerp(negVec,zeroVector,weight,weightS);
+    TestLerp(negVec,normalizedVector,weight,weightS);
+    TestLerp(negVec,posVec,weight,weightS);
   }
 };
 
