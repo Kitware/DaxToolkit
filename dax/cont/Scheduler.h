@@ -25,6 +25,7 @@
 //include all the specialization of the scheduler class
 #include <dax/cont/scheduling/SchedulerDefault.h>
 #include <dax/cont/scheduling/SchedulerGenerateTopology.h>
+#include <dax/cont/PermutationContainer.h>
 
 #if !(__cplusplus >= 201103L)
 # include <dax/internal/ParameterPackCxx03.h>

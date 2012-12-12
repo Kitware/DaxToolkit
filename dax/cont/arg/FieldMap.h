@@ -20,7 +20,7 @@
 #include <dax/Types.h>
 #include <dax/cont/arg/ConceptMap.h>
 #include <dax/cont/arg/Field.h>
-#include <dax/cont/ScheduleMapAdapter.h>
+#include <dax/cont/PermutationContainer.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/cont/ErrorControlBadValue.h>
 
@@ -36,13 +36,13 @@ namespace dax { namespace cont { namespace arg {
 /// the first as the workId
 /// The item Key is the item that will actually be passed to the worklet
 template <typename Concept, typename Tags, typename Key, typename Value>
-class ConceptMap< Concept(Tags), dax::cont::ScheduleMapAdapter<Key,Value> >
+class ConceptMap< Concept(Tags), dax::cont::PermutationContainer<Key,Value> >
 {
   typedef dax::internal::Tags<dax::cont::sig::Tag(dax::cont::sig::In)> KeyTags;
 
   typedef dax::cont::arg::ConceptMap<Field(KeyTags), Key > KeyFieldType;
   typedef dax::cont::arg::ConceptMap<Concept(Tags), Value > ValueFieldType;
-  typedef dax::cont::ScheduleMapAdapter<Key,Value> InputType;
+  typedef dax::cont::PermutationContainer<Key,Value> InputType;
 
   InputType MapAdapter;
   KeyFieldType KeyConcept;

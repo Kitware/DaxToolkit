@@ -19,6 +19,7 @@ set(unit_tests
   UnitTestArrayContainerControlCounting.cxx
   UnitTestArrayContainerControlConstantValue.cxx
   UnitTestArrayContainerControlImplicit.cxx
+  UnitTestArrayContainerControlPermutation.cxx
   UnitTestArrayHandle.cxx
   UnitTestArrayHandleConstantValue.cxx
   UnitTestArrayHandleCounting.cxx

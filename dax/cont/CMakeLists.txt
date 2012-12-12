@@ -22,6 +22,7 @@ set(headers
   ArrayContainerControlCounting.h
   ArrayContainerControlConstantValue.h
   ArrayContainerControlImplicit.h
+  ArrayContainerControlPermutation.h
   ArrayHandle.h
   ArrayHandleConstantValue.h
   ArrayHandleCounting.h
@@ -38,7 +39,7 @@ set(headers
   ErrorExecution.h
   IteratorFromArrayPortal.h
   Scheduler.h
-  ScheduleMapAdapter.h
+  PermutationContainer.h
   ScheduleGenerateTopology.h
   UniformGrid.h
   UnstructuredGrid.h
