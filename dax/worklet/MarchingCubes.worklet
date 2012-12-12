@@ -41,19 +41,18 @@ namespace dax {
 namespace worklet {
 
 // --------------------------------------------------- GetVoxelClassification()
-template<typename T>
+template<typename T, typename U>
 DAX_EXEC_EXPORT
-unsigned char GetVoxelClassification(const T isoValue,
-                                     const dax::Tuple<T,8>& values )
+int GetVoxelClassification(const T isoValue, const U& values )
 {
-  return ((values[0] <= isoValue) << 0 |
-          (values[1] <= isoValue) << 1 |
-          (values[2] <= isoValue) << 2 |
-          (values[3] <= isoValue) << 3 |
-          (values[4] <= isoValue) << 4 |
-          (values[5] <= isoValue) << 5 |
-          (values[6] <= isoValue) << 6 |
-          (values[7] <= isoValue) << 7);
+  return ((values[0] > isoValue) << 0 |
+          (values[1] > isoValue) << 1 |
+          (values[2] > isoValue) << 2 |
+          (values[3] > isoValue) << 3 |
+          (values[4] > isoValue) << 4 |
+          (values[5] > isoValue) << 5 |
+          (values[6] > isoValue) << 6 |
+          (values[7] > isoValue) << 7);
 }
 
 // -----------------------------------------------------------------------------
@@ -71,9 +70,8 @@ public:
   dax::Id operator()(
       const dax::exec::CellField<dax::Scalar,InputCellTag> &values) const
   {
-    unsigned char voxelClass = GetVoxelClassification(IsoValue,
-                                                      values.GetAsTuple());
-    return dax::worklet::internal::marchingcubes::numFaces[voxelClass];
+    const int voxelClass = GetVoxelClassification(IsoValue,values);
+    return dax::worklet::internal::marchingcubes::NumFaces[voxelClass];
   }
 private:
   dax::Scalar IsoValue;
