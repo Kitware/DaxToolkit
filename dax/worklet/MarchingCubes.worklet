@@ -27,13 +27,13 @@
 
 #include <dax/worklet/internal/MarchingCubesTable.h>
 
-namespace
+namespace detail
 {
   DAX_EXEC_EXPORT
   dax::Vector3 interpolate(dax::Vector3 pointOne, dax::Vector3 pointTwo, dax::Scalar t)
     {
       //Cuda has lerp(a,b,t) which shoudl be used whenever possible for this
-      return pointOne + t * (pointOne-pointTwo);
+      return pointOne + t * (pointTwo-pointOne);
     }
 }
 
@@ -143,11 +143,9 @@ public:
       const dax::Scalar num = IsoValue - values[vert[0]];
       const dax::Scalar t =  num/den ;
 
-      // TODO: Move interpolate to a math function.
-      //a + t * (a-b)
-      outCoordinates[outVertIndex] = ::interpolate(coordinates[vert[0]],
-                                                   coordinates[vert[1]],
-                                                   t);
+      outCoordinates[outVertIndex] = detail::interpolate(coordinates[vertA],
+                                                         coordinates[vertB],
+                                                         t);
       outVertices[outVertIndex] =
           workId*outVertices.NUM_VERTICES + outVertIndex;
       }
