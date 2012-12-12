@@ -19,6 +19,7 @@ set(unit_tests
   UnitTestCellVertices.cxx
   UnitTestDerivative.cxx
   UnitTestInterpolate.cxx
+  UnitTestInterpolateLine.cxx
   UnitTestParametricCoordinates.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

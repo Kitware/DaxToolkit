@@ -19,8 +19,8 @@
 
 #include <dax/CellTraits.h>
 #include <dax/exec/CellField.h>
-
 #include <dax/exec/internal/InterpolationWeights.h>
+#include <dax/math/VectorAnalysis.h>
 
 namespace dax { namespace exec {
 
@@ -45,6 +45,15 @@ DAX_EXEC_EXPORT ValueType CellInterpolate(
   return result;
 }
 
+//-----------------------------------------------------------------------------
+template<typename ValueType,typename WeightType>
+DAX_EXEC_EXPORT ValueType InterpolateLine(
+    const ValueType &a,
+    const ValueType &b,
+    const WeightType &w)
+{
+  return dax::math::Lerp(a,b,w);
+}
 }};
 
 #endif //__dax_exec_Interpolate_h

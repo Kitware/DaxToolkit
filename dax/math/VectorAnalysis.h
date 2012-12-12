@@ -28,6 +28,71 @@
 namespace dax {
 namespace math {
 
+
+// ----------------------------------------------------------------------------
+namespace detail {
+template<typename ValueType>
+DAX_EXEC_CONT_EXPORT ValueType lerp_template(
+    const ValueType &a,
+    const ValueType &b,
+    const ValueType &w)
+{
+  return a + w * (b-a);
+}
+
+template<typename ValueType>
+DAX_EXEC_CONT_EXPORT ValueType lerp_template(
+    const ValueType &a,
+    const ValueType &b,
+    const Scalar &w)
+{
+  return a + w * (b-a);
+}
+}
+
+/// \brief Returns the linera interpolation of two scalar or vector values based on weight
+///
+/// lerp interpolates return the linerar interpolation of x and y based on w.  x
+/// and y are Scalars or vectors of same lenght. w can either be a scalar or a
+/// vector of the same lenght as x and y. If w is outside [0,1] then lerp
+/// exterpolates. If w=0 => a is returned if w=1 => b is returned.
+///
+DAX_EXEC_CONT_EXPORT dax::Scalar Lerp(dax::Scalar x,
+                                      dax::Scalar y,
+                                      dax::Scalar w) {
+ return x + w * (y-x);
+}
+DAX_EXEC_CONT_EXPORT dax::Vector2 Lerp(dax::Vector2 x,
+                                       dax::Vector2 y,
+                                       dax::Scalar w) {
+  return detail::lerp_template(x,y,w);
+}
+DAX_EXEC_CONT_EXPORT dax::Vector3 Lerp(dax::Vector3 x,
+                                       dax::Vector3 y,
+                                       dax::Scalar w) {
+  return detail::lerp_template(x,y,w);
+}
+DAX_EXEC_CONT_EXPORT dax::Vector4 Lerp(dax::Vector4 x,
+                                       dax::Vector4 y,
+                                       dax::Scalar w) {
+  return detail::lerp_template(x,y,w);
+}
+DAX_EXEC_CONT_EXPORT dax::Vector2 Lerp(dax::Vector2 x,
+                                       dax::Vector2 y,
+                                       dax::Vector2 w) {
+  return detail::lerp_template(x,y,w);
+}
+DAX_EXEC_CONT_EXPORT dax::Vector3 Lerp(dax::Vector3 x,
+                                       dax::Vector3 y,
+                                       dax::Vector3 w) {
+  return detail::lerp_template(x,y,w);
+}
+DAX_EXEC_CONT_EXPORT dax::Vector4 Lerp(dax::Vector4 x,
+                                       dax::Vector4 y,
+                                       dax::Vector4 w) {
+  return detail::lerp_template(x,y,w);
+}
+
 // ----------------------------------------------------------------------------
 namespace detail {
 template <typename T>
@@ -179,6 +244,7 @@ DAX_EXEC_CONT_EXPORT dax::Vector3 TriangleNormal(const dax::Vector3 &a,
 {
   return dax::math::Cross(b-a, c-a);
 }
+
 
 }
 } // namespace dax::math
