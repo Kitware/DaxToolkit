@@ -22,85 +22,150 @@
 
 #include <dax/cont/ArrayHandleCounting.h>
 #include <dax/cont/ArrayHandlePermutation.h>
-#include <dax/cont/ArrayPortalFromIterators.h>
+#include <dax/cont/internal/ArrayPortalFromIterators.h>
 #include <dax/cont/ArrayHandle.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace {
 
 const dax::Id ARRAY_SIZE = 10;
-const dax::Id VALUE_ARRAY_SIZE = 3;
-void TestPermutationArray()
+
+template<typename T>
+struct CountByThree
 {
-  // Make Key array
-  dax::Id arrayKey[ARRAY_SIZE];
-  for (dax::Id i=0; i<ARRAY_SIZE;++i)
+  CountByThree(): Value() {}
+  explicit CountByThree(T t): Value(t) {}
+
+  bool operator==(const T& other) const
+    { return Value == other; }
+
+  bool operator==(const CountByThree<T>& other) const
+    { return Value == other.Value; }
+
+  CountByThree<T> operator+(dax::Id count) const
+  { return CountByThree<T>(Value+(count*3)); }
+
+  CountByThree<T>& operator++()
+    { ++Value; ++Value; ++Value; return *this; }
+
+  friend std::ostream& operator<< (std::ostream& os, const CountByThree<T>& obj)
+    { os << obj.Value; return os; }
+  T Value;
+};
+
+
+template< typename ValueType>
+struct TemplatedTests
+{
+  typedef dax::cont::ArrayHandleCounting<ValueType> CountingArrayHandleType;
+
+  typedef dax::cont::ArrayHandlePermutation<
+            dax::cont::ArrayHandle<dax::Id>, //key type
+            CountingArrayHandleType > ArrayPermHandleType;
+
+  typedef dax::cont::ArrayHandlePermutation<
+            dax::cont::ArrayHandleCounting<dax::Id>, //key type
+            CountingArrayHandleType > ArrayCountPermHandleType;
+
+  void operator()( const ValueType startingValue )
+  {
+    dax::Id everyOtherBuffer[ARRAY_SIZE/2];
+    dax::Id fullBuffer[ARRAY_SIZE];
+
+    for (dax::Id index = 0; index < ARRAY_SIZE; index++)
+      {
+      everyOtherBuffer[index/2] = index; //1,3,5,7,9
+      fullBuffer[index] = index;
+      }
+
+  {
+  //verify the different constructors work
+  CountingArrayHandleType counting(startingValue,ARRAY_SIZE);
+  dax::cont::ArrayHandleCounting<dax::Id> keys(dax::Id(0),ARRAY_SIZE);
+
+  ArrayCountPermHandleType permutation_constructor(keys,counting);
+
+  ArrayCountPermHandleType make_permutation_constructor =
+      dax::cont::make_ArrayHandlePermutation(
+              dax::cont::make_ArrayHandleCounting(dax::Id(0),ARRAY_SIZE),
+              dax::cont::make_ArrayHandleCounting(startingValue, ARRAY_SIZE));
+
+  }
+
+  //make a short permutation array, verify its length and values
+  {
+  dax::cont::ArrayHandle<dax::Id> keys =
+      dax::cont::make_ArrayHandle(everyOtherBuffer, ARRAY_SIZE/2);
+  CountingArrayHandleType values(startingValue,ARRAY_SIZE);
+
+  ArrayPermHandleType permutation =
+      dax::cont::make_ArrayHandlePermutation(keys,values);
+
+  typename ArrayPermHandleType::PortalConstControl permPortal =
+                                      permutation.GetPortalConstControl();
+
+  //now lets try to actually get some values of these permutation arrays
+  ValueType correct_value = startingValue;
+  for(int i=0; i < ARRAY_SIZE/2; ++i)
     {
-    arrayKey[i] = i % VALUE_ARRAY_SIZE;
+    ++correct_value; //the permutation should have every other value
+    ValueType v = permPortal.Get(i);
+    DAX_TEST_ASSERT(v == correct_value, "Count By Three permutation wrong");
+    ++correct_value;
     }
 
-  // Make Value array
-  dax::Id arrayValue[VALUE_ARRAY_SIZE];
+  }
 
-  // Make KeyPortal
-  typedef ::dax::cont::ArrayPortalFromIterators < dax::Id* > KeyPortalType;
-  KeyPortalType keyPortal(arrayKey,
-                          arrayKey + ARRAY_SIZE);
+  //make a long permutation array, verify its length and values
+  {
+  dax::cont::ArrayHandle<dax::Id> keys =
+      dax::cont::make_ArrayHandle(fullBuffer, ARRAY_SIZE);
+  CountingArrayHandleType values(startingValue,ARRAY_SIZE);
 
-  // Make readWritePermutationArray (using constructor) from Key Portal and
-  // ValuePortal
-  typedef KeyPortalType ReadWriteValuePortalType;
-  ReadWriteValuePortalType readWriteValuePortal(arrayValue,
-                                                arrayValue + VALUE_ARRAY_SIZE);
-  dax::cont::ArrayHandlePermutation <KeyPortalType,ReadWriteValuePortalType>
-      readWriteArray(keyPortal, readWriteValuePortal);
+  ArrayPermHandleType permutation =
+      dax::cont::make_ArrayHandlePermutation(keys,values);
 
+  typename ArrayPermHandleType::PortalConstControl permPortal =
+                                              permutation.GetPortalConstControl();
 
-
-
-  typedef dax::cont::ArrayHandle<dax::Id> StandardKeyHandle;
-  StandardKeyHandle keyHandle = dax::cont::make_ArrayHandle(arrayKey,ARRAY_SIZE);
-
-  // Make readOnlyPermutationArray (using make_ArrayHandlePermutation) from
-  // keyPortal and valueArray
-  typedef dax::cont::ArrayHandleCounting ReadOnlyArrayType;
-  ReadOnlyArrayType readOnlyValueArray(VALUE_ARRAY_SIZE);
-
-  typedef dax::cont::ArrayHandlePermutation <
-                                    StandardKeyHandle::PortalConstControl,
-                                    ReadOnlyArrayType::PortalConstControl> ReadPermType;
-
-  ReadPermType readOnlyArray =
-                dax::cont::make_ArrayHandlePermutation(keyHandle,readOnlyValueArray);
-
-  // copy readOnlyArray to readWriteArray (i.e readWriteArray = readOnlyArray)
-  for (dax::Id index=0; index < ARRAY_SIZE; index++)
+  //now lets try to actually get some values of these permutation arrays
+  ValueType correct_value = startingValue;
+  for(int i=0; i < ARRAY_SIZE; ++i)
     {
-    readWriteArray.GetPortalConstControl().
-      Set (index, readOnlyArray.GetPortalConstControl ().Get(index));
+    ValueType v = permPortal.Get(i);
+    DAX_TEST_ASSERT(v == correct_value, "Full permutation wrong");
+    ++correct_value;
     }
+  }
 
-  DAX_TEST_ASSERT(readWriteArray.GetNumberOfValues() == ARRAY_SIZE,
-                  "ReadWriteArray has wrong size.");
 
-  DAX_TEST_ASSERT(readOnlyArray.GetNumberOfValues() == ARRAY_SIZE,
-                  "ReadOnlyArray has wrong size.");
+  }
+};
 
-  for (dax::Id index = 0; index < ARRAY_SIZE; index++)
-    {
-    DAX_TEST_ASSERT(readOnlyArray.GetPortalConstControl().Get(index)
-                    ==  readOnlyValueArray.GetPortalConstControl ().Get(index%VALUE_ARRAY_SIZE),
-                    "ReadOnlyArray has unexpected value.");
-    DAX_TEST_ASSERT(readWriteArray.GetPortalConstControl().Get(index)
-                    ==  readOnlyValueArray.GetPortalConstControl ().Get(index%VALUE_ARRAY_SIZE),
-                    "ReadWriteArray has unexpected value.");
-    }
+struct TestFunctor
+{
+  template <typename T>
+  void operator()(const T t)
+  {
+    TemplatedTests<T> tests;
+    tests(t);
+  }
+};
+
+void TestArrayHandlePermutation()
+{
+  TestFunctor()( dax::Id(0) );
+  TestFunctor()( dax::Scalar(0) );
+  TestFunctor()( CountByThree<dax::Id>(12) );
+  TestFunctor()( CountByThree<dax::Scalar>(1.2f) );
 }
+
+
 
 } // annonymous namespace
 
 int UnitTestArrayHandlePermutation(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestPermutationArray);
+  return dax::cont::testing::Testing::Run(TestArrayHandlePermutation);
 }

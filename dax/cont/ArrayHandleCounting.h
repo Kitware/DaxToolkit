@@ -41,6 +41,8 @@ public:
     :Superclass(PortalType(startingValue, length))
   {
   }
+
+  ArrayHandleCounting():Superclass() {}
 };
 
 /// A convenience function for creating an ArrayHandleCounting. It takes the

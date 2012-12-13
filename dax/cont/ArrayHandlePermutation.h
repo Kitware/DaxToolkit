@@ -18,52 +18,67 @@
 
 #include <dax/Types.h>
 
-#include <dax/cont/ArrayContainerControlPermutation.h>
+#include <dax/cont/internal/ArrayContainerControlPermutation.h>
 #include <dax/cont/ArrayHandle.h>
 
 namespace dax {
 namespace cont {
 
-/// ArrayHandlePermutation are a speclization of ArrayHandles. By default it
-/// contains an ArrayPortalPermutation. An ArrayPortalPermutation is an array
-/// portal which takes in two array portals namely KeyPortal and
-/// ValuePortal. The KeyPortal has the holds the index into the ValuePotal. So
-/// for example if we want to access element 10 from a PermutationArrayHandle
-/// names array we get array[10] = ValuePotal[ KeyPortal[10]]. Like an implicit
-/// array this too does not hold any memory.
-template <typename KeyPortalType, typename ValuePortalType>
-class ArrayHandlePermutation: public ArrayHandle <dax::Id,
-      ArrayContainerControlTagPermutation
-        <KeyPortalType,ValuePortalType> >
+/// ArrayHandlePermutation are a specialization of ArrayHandles.
+/// It takes two delegate array handle and makes a new handle that access
+/// the corresponding entries in the second handle given the re-indexing scheme
+/// of the first array. This generally requires that the key (first param) is
+/// of an integer type.
+///
+
+template <typename KeyHandleType,
+          typename ValueHandleType,
+          class DeviceAdapterTag_ = DAX_DEFAULT_DEVICE_ADAPTER_TAG >
+class ArrayHandlePermutation
+    : public ArrayHandle <
+      typename dax::cont::internal::ArrayContainerControlPermutationTypes<
+               KeyHandleType,ValueHandleType>::ValueType,
+      typename dax::cont::internal::ArrayContainerControlPermutationTypes<
+               KeyHandleType,ValueHandleType>::ArrayContainerControlTag,
+      DeviceAdapterTag_>
 {
 private:
-  typedef typename dax::cont::ArrayPortalPermutation <KeyPortalType,ValuePortalType>
-    PortalType;
-public:
-  typedef ArrayHandle <dax::Id,ArrayContainerControlTagPermutation
-    <KeyPortalType,ValuePortalType> >
-  superclass;
+  typedef dax::cont::internal::ArrayContainerControlPermutationTypes<
+      KeyHandleType,ValueHandleType> PermTypes;
 
-  ArrayHandlePermutation(KeyPortalType keyPortal, ValuePortalType valuePortal)
-    :superclass(PortalType(keyPortal,valuePortal))
+public:
+  typedef typename PermTypes::ValueType ValueType;
+  typedef typename PermTypes::ArrayContainerControlTag ArrayContainerControlTag;
+  typedef DeviceAdapterTag_ DeviceAdapterTag;
+
+   typedef dax::cont::ArrayHandle< ValueType, ArrayContainerControlTag,
+                                   DeviceAdapterTag> Superclass;
+private:
+  typedef dax::cont::internal::ArrayTransfer<
+      ValueType,ArrayContainerControlTag,DeviceAdapterTag> ArrayTransferType;
+
+public:
+  ArrayHandlePermutation(const KeyHandleType& keyHandle,
+                         const ValueHandleType& valueHandle)
+    : Superclass(
+        typename PermTypes::ArrayContainerControlType(keyHandle,valueHandle),
+        true,
+        ArrayTransferType(keyHandle,valueHandle),
+        false)
   {
   }
+
 };
 
-/// make_ArrayHandlePermutation is convenience funciton to generate an
+/// make_ArrayHandlePermutation is convenience function to generate an
 /// ArrayHandlePermutation.  It takes in a Key Handle and Value Handle as
 /// inputs to generate a ArrayHandlePermutation.
 template <typename KeyHandle, typename ValueHandle>
 DAX_CONT_EXPORT
-ArrayHandlePermutation<
-      typename KeyHandle::PortalConstControl,
-      typename ValueHandle::PortalConstControl>
+dax::cont::ArrayHandlePermutation<KeyHandle,ValueHandle>
 make_ArrayHandlePermutation(KeyHandle key, ValueHandle value)
 {
-  typedef typename KeyHandle::PortalConstControl KeyPortalType;
-  typedef typename ValueHandle::PortalConstControl ValuePortalType;
-  return ArrayHandlePermutation<KeyPortalType,ValuePortalType>(key.GetPortalConstControl(),
-                                                               value.GetPortalConstControl());
+  return ArrayHandlePermutation<KeyHandle,ValueHandle>(key,value);
 }
 
 }
