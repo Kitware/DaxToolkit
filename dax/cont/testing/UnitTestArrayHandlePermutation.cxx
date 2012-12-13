@@ -14,7 +14,11 @@
 //
 //=============================================================================
 
-#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
+//This sets up the ArrayHandle semantics to allocate pointers and share memory
+//between control and execution.
+#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
+
 
 #include <dax/cont/ArrayHandleCounting.h>
 #include <dax/cont/ArrayHandlePermutation.h>
@@ -52,15 +56,23 @@ void TestPermutationArray()
   dax::cont::ArrayHandlePermutation <KeyPortalType,ReadWriteValuePortalType>
       readWriteArray(keyPortal, readWriteValuePortal);
 
+
+
+
+  typedef dax::cont::ArrayHandle<dax::Id> StandardKeyHandle;
+  StandardKeyHandle keyHandle = dax::cont::make_ArrayHandle(arrayKey,ARRAY_SIZE);
+
   // Make readOnlyPermutationArray (using make_ArrayHandlePermutation) from
   // keyPortal and valueArray
   typedef dax::cont::ArrayHandleCounting ReadOnlyArrayType;
   ReadOnlyArrayType readOnlyValueArray(VALUE_ARRAY_SIZE);
-  dax::cont::ArrayHandlePermutation <KeyPortalType,
-                                     ReadOnlyArrayType::PortalType>
-    readOnlyArray =
-    make_ArrayHandlePermutation(keyPortal,
-                                readOnlyValueArray.GetPortalConstControl ());
+
+  typedef dax::cont::ArrayHandlePermutation <
+                                    StandardKeyHandle::PortalConstControl,
+                                    ReadOnlyArrayType::PortalConstControl> ReadPermType;
+
+  ReadPermType readOnlyArray =
+                dax::cont::make_ArrayHandlePermutation(keyHandle,readOnlyValueArray);
 
   // copy readOnlyArray to readWriteArray (i.e readWriteArray = readOnlyArray)
   for (dax::Id index=0; index < ARRAY_SIZE; index++)

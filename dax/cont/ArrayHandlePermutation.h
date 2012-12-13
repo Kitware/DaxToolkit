@@ -36,13 +36,13 @@ class ArrayHandlePermutation: public ArrayHandle <dax::Id,
       ArrayContainerControlTagPermutation
         <KeyPortalType,ValuePortalType> >
 {
+private:
+  typedef typename dax::cont::ArrayPortalPermutation <KeyPortalType,ValuePortalType>
+    PortalType;
 public:
   typedef ArrayHandle <dax::Id,ArrayContainerControlTagPermutation
     <KeyPortalType,ValuePortalType> >
   superclass;
-
-  typedef typename dax::cont::ArrayPortalPermutation <KeyPortalType,ValuePortalType>
-    PortalType;
 
   ArrayHandlePermutation(KeyPortalType keyPortal, ValuePortalType valuePortal)
     :superclass(PortalType(keyPortal,valuePortal))
@@ -51,14 +51,19 @@ public:
 };
 
 /// make_ArrayHandlePermutation is convenience funciton to generate an
-/// ArrayHandlePermutation.  It takes in a KeyPortal and a Value portal as
+/// ArrayHandlePermutation.  It takes in a Key Handle and Value Handle as
 /// inputs to generate a ArrayHandlePermutation.
-template <typename KeyPortalType, typename ValuePortalType>
+template <typename KeyHandle, typename ValueHandle>
 DAX_CONT_EXPORT
-ArrayHandlePermutation<KeyPortalType,ValuePortalType>
-make_ArrayHandlePermutation(KeyPortalType key,ValuePortalType value)
+ArrayHandlePermutation<
+      typename KeyHandle::PortalConstControl,
+      typename ValueHandle::PortalConstControl>
+make_ArrayHandlePermutation(KeyHandle key, ValueHandle value)
 {
-  return ArrayHandlePermutation<KeyPortalType,ValuePortalType>(key,value);
+  typedef typename KeyHandle::PortalConstControl KeyPortalType;
+  typedef typename ValueHandle::PortalConstControl ValuePortalType;
+  return ArrayHandlePermutation<KeyPortalType,ValuePortalType>(key.GetPortalConstControl(),
+                                                               value.GetPortalConstControl());
 }
 
 }
