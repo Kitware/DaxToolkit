@@ -16,6 +16,7 @@
 
 set(headers
   ConceptMap.h
+  ExecObject.h
   ExecutionObject.h
   Field.h
   FieldArrayHandle.h
