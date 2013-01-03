@@ -56,7 +56,7 @@ public:
 
 #if __cplusplus >= 201103L
   // Note any changes to this method must be reflected in the
-  // C++03 implementation inside "Schedule_Cxx03.h".
+  // C++03 implementation.
   template <class WorkletType, typename...T>
   DAX_CONT_EXPORT void Invoke(WorkletType w, T...a) const
     {
