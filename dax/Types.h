@@ -239,6 +239,7 @@ public:
       {
       this->Components[i] = src[i];
       }
+    return *this;
   }
 
   DAX_EXEC_CONT_EXPORT const ComponentType &operator[](int idx) const {
@@ -303,6 +304,7 @@ public:
   operator=(const Tuple<ComponentType, NUM_COMPONENTS> &src)
   {
     internal::copy_vector<NUM_COMPONENTS>()(this->Components, src.Components);
+    return *this;
   }
 
   DAX_EXEC_CONT_EXPORT const ComponentType &operator[](int idx) const {
@@ -363,6 +365,7 @@ public:
   operator=(const Tuple<ComponentType, NUM_COMPONENTS> &src)
   {
     internal::copy_vector<NUM_COMPONENTS>()(this->Components, src.Components);
+    return *this;
   }
 
   DAX_EXEC_CONT_EXPORT const ComponentType &operator[](int idx) const {
@@ -424,6 +427,7 @@ public:
   operator=(const Tuple<ComponentType, NUM_COMPONENTS> &src)
   {
     internal::copy_vector<NUM_COMPONENTS>()(this->Components, src.Components);
+    return *this;
   }
 
   DAX_EXEC_CONT_EXPORT const ComponentType &operator[](int idx) const {
