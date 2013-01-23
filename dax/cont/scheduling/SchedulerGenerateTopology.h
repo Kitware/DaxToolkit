@@ -124,7 +124,7 @@ DAX_CONT_EXPORT void GenerateNewTopology(
   //we get our magic here. we need to wrap some paramemters and pass
   //them to the real scheduler
   this->DefaultScheduler.Invoke(newTopo.GetWorklet(),
-                   dax::cont::make_MapAdapter(validCellRange,inputGrid,
+                   dax::cont::make_Permutation(validCellRange,inputGrid,
                                              inputGrid.GetNumberOfCells()),
                    outputGrid);
   //call this here as we have stripped out the input and output grids
@@ -152,7 +152,7 @@ DAX_CONT_EXPORT void FillPointMask(const InGridType &inGrid,
   // Mark every point that is used at least once.
   // This only works when outGrid is an UnstructuredGrid.
   this->DefaultScheduler.Invoke(dax::exec::internal::kernel::GetUsedPointsFunctor(),
-           dax::cont::make_MapAdapter(outGrid.GetCellConnections(),
+           dax::cont::make_Permutation(outGrid.GetCellConnections(),
            mask,
            inGrid.GetNumberOfPoints()));
   }
@@ -290,7 +290,7 @@ DAX_CONT_EXPORT void GenerateNewTopology(
   //them to the real scheduler. The visitIndex must be last, as that is the
   //hardcoded location the ReplaceAndExtendSignatures will place it at
   this->DefaultScheduler.Invoke(derivedWorklet,
-                   dax::cont::make_MapAdapter(validCellRange,inputGrid,
+                   dax::cont::make_Permutation(validCellRange,inputGrid,
                                              inputGrid.GetNumberOfCells()),
                    outputGrid,
                   _dax_pp_args___(a),

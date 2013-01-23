@@ -406,7 +406,7 @@ private:
 
     std::cout << "Running clear on subset." << std::endl;
     scheduler.Invoke(ClearArrayMapKernel(),
-          make_MapAdapter(subSetLookupHandle,fullFieldHandle,ARRAY_SIZE));
+          make_Permutation(subSetLookupHandle,fullFieldHandle,ARRAY_SIZE));
 
     for (dax::Id index = 0; index < ARRAY_SIZE; index+=2)
       {
