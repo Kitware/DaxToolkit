@@ -88,9 +88,24 @@ public:
   DAX_CONT_EXPORT
   static void Schedule(FunctorType functor, dax::Id numInstances)
   {
-    Superclass::Schedule(
-          DeviceAdapterAlgorithm::ScheduleKernel<FunctorType>(functor),
-          numInstances);
+     Superclass::Schedule(
+           DeviceAdapterAlgorithm::ScheduleKernel<FunctorType>(functor),
+           numInstances);
+  }
+
+  template<class FunctorType, class IndiceType, class GridType>
+  DAX_CONT_EXPORT
+  static void ScheduleOnCells(FunctorType functor,
+                              const IndiceType& numInstances,
+                              GridType gridType)
+  {
+    //default behavior for the general algorithm is to defer to the default
+    //schedule implementation. if you want to customize schedule for certain
+    //grid types, you need to specialize this method
+     Superclass::ScheduleOnCells(
+           DeviceAdapterAlgorithm::ScheduleKernel<FunctorType>(functor),
+           numInstances,
+           gridType);
   }
 
 };

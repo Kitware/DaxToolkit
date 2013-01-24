@@ -23,6 +23,7 @@
 #include <dax/cont/internal/DeviceAdapterAlgorithm.h>
 #include <dax/cont/internal/DeviceAdapterTagSerial.h>
 
+#include <dax/exec/internal/IJKIndex.h>
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 
 #include <boost/iterator/counting_iterator.hpp>
@@ -223,7 +224,48 @@ public:
       throw dax::cont::ErrorExecution(errorString);
       }
   }
+  template<class FunctorType, class GridType>
+  DAX_CONT_EXPORT
+  static void ScheduleOnCells(FunctorType functor, dax::Id count, GridType)
+  {
+    //default behavior for the general algorithm is to defer to the default
+    //schedule implementation. if you want to customize schedule for certain
+    //grid types, you need to specialize this method
+    typedef dax::cont::DeviceAdapterTagSerial DTag;
+    DeviceAdapterAlgorithm<DTag>::Schedule(functor, count);
+  }
 
+  template<class FunctorType, class GridType>
+  DAX_CONT_EXPORT
+  static void ScheduleOnCells(FunctorType functor, dax::Id3 dims, GridType)
+  {
+    const dax::Id MESSAGE_SIZE = 1024;
+    char errorString[MESSAGE_SIZE];
+    errorString[0] = '\0';
+    dax::exec::internal::ErrorMessageBuffer
+        errorMessage(errorString, MESSAGE_SIZE);
+
+    functor.SetErrorMessageBuffer(errorMessage);
+
+    dax::exec::internal::IJKIndex index(dims);
+    for( dax::Id k=0; k!=dims[2]; ++k)
+      {
+      index.setK(k);
+      for( dax::Id j=0; j!=dims[1]; ++j)
+        {
+        index.setJ(j);
+        for (dax::Id i=0; i < dims[0]; ++i)
+          {
+          index.setI(i);
+          functor(index);
+          }
+        }
+      }
+    if (errorMessage.IsErrorRaised())
+      {
+      throw dax::cont::ErrorExecution(errorString);
+      }
+  }
 
   template<typename T, class Container>
   DAX_CONT_EXPORT static void Sort(

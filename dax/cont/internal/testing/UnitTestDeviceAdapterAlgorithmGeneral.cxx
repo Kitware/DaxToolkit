@@ -72,6 +72,18 @@ public:
     Algorithm::Schedule(functor, numInstances);
   }
 
+  template<class FunctorType, class IndiceType, class GridType>
+  DAX_CONT_EXPORT
+  static void ScheduleOnCells(FunctorType functor,
+                              const IndiceType& count,
+                              GridType gtype)
+  {
+    //default behavior for the general algorithm is to defer to the default
+    //schedule implementation. if you want to customize schedule for certain
+    //grid types, you need to specialize this method
+    Algorithm::ScheduleOnCells(functor,count,gtype);
+  }
+
   template<typename T, class CIn, class COut>
   DAX_CONT_EXPORT static T ScanInclusive(
       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagTestAlgorithmGeneral> &input,

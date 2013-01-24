@@ -126,6 +126,31 @@ struct DeviceAdapterAlgorithm
   DAX_CONT_EXPORT static void Schedule(Functor functor,
                                        dax::Id numInstances);
 
+  /// \brief Schedule many instances of a function to run on concurrent threads.
+  ///
+  /// Calls the \c functor on several threads. This is the function used in the
+  /// control environment to spawn activity in the execution environment. \c
+  /// functor is a function-like object that can be invoked with the calling
+  /// specification <tt>functor(dax::Id index)</tt>. It also has a method called
+  /// from the control environment to establish the error reporting buffer with
+  /// the calling specification <tt>functor.SetErrorMessageBuffer(const
+  /// dax::exec::internal::ErrorMessageBuffer &errorMessage)</tt>. This object
+  /// can be stored in the functor's state such that if RaiseError is called on
+  /// it in the execution environment, an ErrorExecution will be thrown from
+  /// Schedule.
+  ///
+  /// The argument of the invoked functor uniquely identifies the thread or
+  /// instance of the invocation. There should be one invocation for each index
+  /// in the range [0, \c numInstances].
+  ///
+  /// This function is an optional function that device adapters can specialize
+  /// on to handle better cell based iteration. Primarly used for better
+  /// uniform grid iteration.
+  template<class Functor, class IndiceType, class GridTypeTag>
+  DAX_CONT_EXPORT static void Schedule(Functor functor,
+                                       IndiceType numInstances,
+                                       GridTypeTag gridType);
+
   /// \brief Unstable ascending sort of input array.
   ///
   /// Sorts the contents of \c values so that they in ascending value. Doesn't
