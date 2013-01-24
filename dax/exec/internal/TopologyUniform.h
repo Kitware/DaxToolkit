@@ -20,7 +20,8 @@
 #include <dax/Extent.h>
 
 #include <dax/exec/CellVertices.h>
-
+#include <dax/exec/internal/FlatIndex.h>
+#include <dax/exec/internal/IJKIndex.h>
 namespace dax {
 namespace exec {
 namespace internal {
@@ -78,7 +79,51 @@ struct TopologyUniform {
   /// Returns the point indices for all vertices.
   ///
   DAX_EXEC_EXPORT
-  dax::exec::CellVertices<CellTag> GetCellConnections(dax::Id cellIndex) const
+  dax::exec::CellVertices<CellTag> GetCellConnections(const dax::exec::internal::IJKIndex& cellIndex) const
+  {
+    const dax::Id x_dim = this->Extent.Max[0] - this->Extent.Min[0] + 1;
+    const dax::Id y_dim = this->Extent.Max[1] - this->Extent.Min[1] + 1;
+    const dax::Id layerSize = x_dim*y_dim;
+
+    const dax::Id pointIndex = cellIndex.i() + x_dim *
+                              (cellIndex.j() + y_dim * cellIndex.k());
+
+    dax::exec::CellVertices<CellTag> connections;
+    connections[0] = pointIndex;
+    connections[1] = connections[0] + 1;
+    connections[2] = connections[0] + x_dim + 1;
+    connections[3] = connections[0] + x_dim;
+    connections[4] = connections[0] + layerSize;
+    connections[5] = connections[1] + layerSize;
+    connections[6] = connections[2] + layerSize;
+    connections[7] = connections[3] + layerSize;
+
+    return connections;
+  }
+
+  DAX_EXEC_EXPORT
+  dax::exec::CellVertices<CellTag> GetCellConnections(const dax::exec::internal::FlatIndex& cellIndex) const
+  {
+    const dax::Id3 dimensions = dax::extentDimensions(this->Extent);
+    const dax::Id pointIndex = indexToConnectivityIndex(cellIndex.value(),this->Extent);
+
+    dax::exec::CellVertices<CellTag> connections;
+    connections[0] = pointIndex;
+    connections[1] = connections[0] + 1;
+    connections[2] = connections[0] + dimensions[0] + 1;
+    connections[3] = connections[0] + dimensions[0];
+
+    const dax::Id layerSize = dimensions[0]*dimensions[1];
+    connections[4] = connections[0] + layerSize;
+    connections[5] = connections[1] + layerSize;
+    connections[6] = connections[2] + layerSize;
+    connections[7] = connections[3] + layerSize;
+
+    return connections;
+  }
+
+  DAX_EXEC_EXPORT
+  dax::exec::CellVertices<CellTag> GetCellConnections(const dax::Id& cellIndex) const
   {
     const dax::Id3 dimensions = dax::extentDimensions(this->Extent);
     const dax::Id pointIndex = indexToConnectivityIndex(cellIndex,this->Extent);
