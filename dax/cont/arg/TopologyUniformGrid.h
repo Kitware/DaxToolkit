@@ -47,6 +47,11 @@ class ConceptMap<Topology(Tags), dax::cont::UniformGrid< DeviceTag > >
   TopologyType Topology;
 
 public:
+  //All Topology binding classes must export the cell tag and grid tag
+  //This allows us to do better scheduling based on cell / grid types
+  typedef typename GridType::CellTag CellTypeTag;
+  typedef typename GridType::GridTypeTag GridTypeTag;
+
   typedef ExecGridType ExecArg;
   typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Cell>::Tags DomainTags;
 
@@ -88,6 +93,11 @@ class ConceptMap<Topology(Tags), const dax::cont::UniformGrid< DeviceTag > >
   TopologyType Topology;
 
 public:
+  //All Topology binding classes must export the cell tag and grid tag
+  //This allows us to do better scheduling based on cell / grid types
+  typedef typename GridType::CellTag CellTypeTag;
+  typedef typename GridType::GridTypeTag GridTypeTag;
+
   typedef ExecGridType ExecArg;
   typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Cell>::Tags DomainTags;
 
