@@ -20,6 +20,7 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ArrayPortal.h>
 #include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/internal/GridTags.h>
 #include <dax/cont/IteratorFromArrayPortal.h>
 
 #include <dax/CellTag.h>
@@ -28,10 +29,6 @@
 
 namespace dax {
 namespace cont {
-
-/// A tag you can use to identify when a grid is a uniform grid.
-///
-struct UniformGridTag {  };
 
 namespace detail {
 
@@ -96,7 +93,7 @@ class UniformGrid
 {
 public:
   typedef dax::CellTagVoxel CellTag;
-  typedef UniformGridTag GridTypeTag;
+  typedef dax::cont::internal::UniformGridTag GridTypeTag;
 
   DAX_CONT_EXPORT
   UniformGrid()
