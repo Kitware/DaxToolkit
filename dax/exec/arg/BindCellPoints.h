@@ -66,9 +66,9 @@ public:
     ExecArg(bindings.template Get<N>().GetExecArg()),
     Value(ComponentType()) {}
 
-
+  template<typename IndexType>
   DAX_EXEC_EXPORT ReturnType operator()(
-      dax::Id cellIndex,
+      const IndexType& cellIndex,
       const dax::exec::internal::WorkletBase& work)
     {
     const dax::exec::CellVertices<CellTag>& pointIndices = this->TopoExecArg(

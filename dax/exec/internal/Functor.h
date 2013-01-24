@@ -46,6 +46,8 @@ public:
 # include <dax/Types.h>
 # include <dax/cont/internal/Bindings.h>
 # include <dax/exec/arg/FindBinding.h>
+# include <dax/exec/internal/FlatIndex.h>
+# include <dax/exec/internal/IJKIndex.h>
 # include <dax/exec/internal/WorkletBase.h>
 # include <dax/internal/GetNthType.h>
 # include <dax/internal/Members.h>
@@ -124,17 +126,21 @@ public:                                                                 \
   DAX_CONT_EXPORT                                                       \
   FunctorImpl(WorkletType worklet, BindingsType& bindings):             \
     Worklet(worklet), Arguments(bindings) {}                            \
-  DAX_EXEC_EXPORT void operator()(dax::Id id) const                     \
+  DAX_EXEC_EXPORT void operator()(dax::Id i) const                      \
     {                                                                   \
+    dax::exec::internal::FlatIndex id(i);                               \
     _dax_FunctorImpl_##r                                                \
     this->Worklet(_dax_pp_enum___(_dax_FunctorImpl_Argument));          \
-    Arguments.ForEachExec(SaveOutArgs<dax::exec::internal::FlatIndex>(dax::exec::internal::FlatIndex(id),this->Worklet));               \
+    Arguments.ForEachExec(                                              \
+      SaveOutArgs<dax::exec::internal::FlatIndex>(id,this->Worklet));   \
     }                                                                   \
-  DAX_EXEC_EXPORT void operator()(dax::exec::internal::IJKIndex id) const \
+  DAX_EXEC_EXPORT void operator()(                                      \
+                                dax::exec::internal::IJKIndex id) const \
     {                                                                   \
     _dax_FunctorImpl_##r                                                \
     this->Worklet(_dax_pp_enum___(_dax_FunctorImpl_Argument));          \
-    Arguments.ForEachExec(SaveOutArgs<dax::exec::internal::IJKIndex>(id,this->Worklet));               \
+    Arguments.ForEachExec(                                              \
+      SaveOutArgs<dax::exec::internal::IJKIndex>(id,this->Worklet));    \
     }
 
 # if __cplusplus >= 201103L

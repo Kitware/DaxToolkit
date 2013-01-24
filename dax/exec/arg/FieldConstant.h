@@ -34,7 +34,8 @@ public:
   typedef T SaveType;
   FieldConstant(T x): Value(x) {}
 
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id,
+  template<typename IndexType>
+  DAX_EXEC_EXPORT ReturnType operator()(const IndexType&,
                       const dax::exec::internal::WorkletBase& ) const
     {
     return this->Value;

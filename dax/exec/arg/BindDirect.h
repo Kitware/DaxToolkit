@@ -42,13 +42,14 @@ public:
   DAX_CONT_EXPORT BindDirect(AllControlBindings& bindings):
     ExecArg(bindings.template Get<N>().GetExecArg()) {}
 
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id,
+  template<typename IndexType>
+  DAX_EXEC_EXPORT ReturnType operator()(const IndexType& id,
                       const dax::exec::internal::WorkletBase& worklet)
     {
     return this->ExecArg(id, worklet);
     }
 
-  DAX_EXEC_EXPORT void SaveExecutionResult(int id,
+  DAX_EXEC_EXPORT void SaveExecutionResult(dax::Id id,
                        const dax::exec::internal::WorkletBase& worklet)
     {
     //Look at the concept map traits. If we have the Out tag
