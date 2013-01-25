@@ -36,8 +36,8 @@ DAX_EXEC_CONT_EXPORT dax::Id3 extentDimensions(const Extent3 &extent)
                   extent.Max[2] - extent.Min[2] + 1);
 }
 
-/// Given an extent, returns the point dimensions in each direction. instead of cell
-DAX_EXEC_CONT_EXPORT dax::Id3 extentPointDimensions(const Extent3 &extent)
+/// Given an extent, returns the cell dimensions in each direction. instead of point
+DAX_EXEC_CONT_EXPORT dax::Id3 extentCellDimensions(const Extent3 &extent)
 {
   //efficient implementation that uses no temporary id3 to create dimensions
   return dax::Id3(extent.Max[0] - extent.Min[0],
@@ -63,14 +63,14 @@ DAX_EXEC_CONT_EXPORT dax::Id3 flatIndexToIndex3(dax::Id index,
 /// Same as flatIndexToIndex3 except performed for cells using extents for
 /// for points, which have one more in every direction than cells.
 DAX_EXEC_CONT_EXPORT
-dax::Id3 flatIndexToIndex3Cell(dax::Id index, const Extent3 &pointExtent)
+dax::Id3 flatIndexToIndex3Cell(dax::Id index, const Extent3 &extent)
 {
   //efficient implementation that tries to reduce the number of temporary variables
-  const dax::Id3 dims = extentPointDimensions(pointExtent);
+  const dax::Id3 dims = extentCellDimensions(extent);
   return dax::Id3(
-          (index % dims[0]) + pointExtent.Min[0],
-          ((index / dims[0]) % dims[1]) + pointExtent.Min[1],
-          ((index / (dims[0] * dims[1]))) + pointExtent.Min[2]);
+          (index % dims[0]) + extent.Min[0],
+          ((index / dims[0]) % dims[1]) + extent.Min[1],
+          ((index / (dims[0] * dims[1]))) + extent.Min[2]);
 }
 
 /// Elements in structured grids have a single index with 0 being the entry at
@@ -90,12 +90,12 @@ DAX_EXEC_CONT_EXPORT dax::Id index3ToFlatIndex(dax::Id3 ijk,
 /// Same as index3ToFlatIndex except performed for cells using extents for
 /// for points, which have one more in every direction than cells.
 DAX_EXEC_CONT_EXPORT
-dax::Id index3ToFlatIndexCell(dax::Id3 ijk, const Extent3 &pointExtent)
+dax::Id index3ToFlatIndexCell(dax::Id3 ijk, const Extent3 &extent)
 {
-  const dax::Id3 dims = extentPointDimensions(pointExtent);
-  const dax::Id3 deltas(ijk[0] - pointExtent.Min[0],
-                        ijk[1] - pointExtent.Min[1],
-                        ijk[2] - pointExtent.Min[2]);
+  const dax::Id3 dims = extentCellDimensions(extent);
+  const dax::Id3 deltas(ijk[0] - extent.Min[0],
+                        ijk[1] - extent.Min[1],
+                        ijk[2] - extent.Min[2]);
   return deltas[0] + dims[0]*(deltas[1] + dims[1]*deltas[2]);
 }
 
@@ -103,13 +103,13 @@ dax::Id index3ToFlatIndexCell(dax::Id3 ijk, const Extent3 &pointExtent)
 DAX_EXEC_CONT_EXPORT
 dax::Id indexToConnectivityIndex(dax::Id index, const Extent3 &extent)
 {
-  const dax::Id3 cell_dims = extentDimensions(extent);
-  const dax::Id3 point_dims = extentPointDimensions(extent);
+  const dax::Id3 p_dims = extentDimensions(extent);
+  const dax::Id3 c_dims = extentCellDimensions(extent);
   dax::Id3 deltas(
-          index % point_dims[0],
-          (index / point_dims[0]) % point_dims[1],
-          (index / (point_dims[0] * point_dims[1])));
-  return deltas[0] + cell_dims[0]*(deltas[1] + cell_dims[1]*deltas[2]);
+          index % c_dims[0],
+          (index / c_dims[0]) % c_dims[1],
+          (index / (c_dims[0] * c_dims[1])));
+  return deltas[0] + p_dims[0]*(deltas[1] + p_dims[1]*deltas[2]);
 }
 
 
