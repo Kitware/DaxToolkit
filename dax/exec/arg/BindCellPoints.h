@@ -38,8 +38,9 @@ namespace dax { namespace exec { namespace arg {
 template <typename Invocation, int N>
 class BindCellPoints
 {
-  typedef typename dax::cont::internal::FindBinding<Invocation, dax::cont::arg::Topology>::type TopoIndex;
-  typedef typename dax::cont::internal::Bindings<Invocation>::template GetType<TopoIndex::value>::type TopoControlBinding;
+  typedef typename dax::cont::internal::Bindings<Invocation> BindingsType;
+  typedef typename dax::cont::internal::FindBinding<BindingsType, dax::cont::arg::Topology>::type TopoIndex;
+  typedef typename BindingsType::template GetType<TopoIndex::value>::type TopoControlBinding;
   typedef typename TopoControlBinding::ExecArg TopoExecArgType;
   TopoExecArgType TopoExecArg;
 

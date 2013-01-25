@@ -32,21 +32,21 @@ namespace detail {
 
 template <typename Concept> struct FindBindingFailed;
 
-template <typename Invocation, typename Concept, unsigned int I, unsigned int N>
+template <typename Binding, typename Concept, unsigned int I, unsigned int N>
 class FindBindingImpl
 {
-  typedef typename dax::cont::internal::Bindings<Invocation>::template GetType<I>::type ConceptMap;
+  typedef typename Binding::template GetType<I>::type ConceptMap;
   typedef typename dax::cont::arg::ConceptMapTraits<ConceptMap>::Concept BindingConcept;
 public:
   typedef typename boost::mpl::if_<boost::is_same<BindingConcept, Concept>,
                                    boost::mpl::identity< boost::integral_constant<unsigned int,I> >,
-                                   FindBindingImpl<Invocation, Concept, I+1, N>
+                                   FindBindingImpl<Binding, Concept, I+1, N>
                                    >::type::type type;
 };
-template <typename Invocation, typename Concept, unsigned int N>
-class FindBindingImpl<Invocation, Concept, N, N>
+template <typename Binding, typename Concept, unsigned int N>
+class FindBindingImpl<Binding, Concept, N, N>
 {
-  typedef typename dax::cont::internal::Bindings<Invocation>::template GetType<N>::type ConceptMap;
+  typedef typename Binding::template GetType<N>::type ConceptMap;
   typedef typename dax::cont::arg::ConceptMapTraits<ConceptMap>::Concept BindingConcept;
 public:
   typedef typename boost::mpl::if_<boost::is_same<BindingConcept, Concept>,
@@ -54,13 +54,17 @@ public:
                                    FindBindingFailed<Concept> >::type type;
 };
 
+
 } // namespace detail
 
-template <typename Invocation, typename Concept>
+template <typename Bindings, typename Concept>
 struct FindBinding
 {
-  typedef typename detail::FindBindingImpl<Invocation, Concept, 1, boost::function_traits<Invocation>::arity>::type type;
+  enum{ len = boost::function_traits<typename Bindings::Invocation>::arity};
+  typedef typename detail::FindBindingImpl<Bindings, Concept,1,len>::type type;
 };
+
+
 
 }}} // namespace dax::cont::internal
 
