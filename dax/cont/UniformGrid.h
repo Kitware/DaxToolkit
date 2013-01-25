@@ -145,8 +145,7 @@ public:
   ///
   DAX_CONT_EXPORT
   dax::Id GetNumberOfCells() const {
-    dax::Id3 dims = dax::extentDimensions(this->GetExtent())
-                    - dax::make_Id3(1, 1, 1);
+    dax::Id3 dims = dax::extentCellDimensions(this->GetExtent());
     return dims[0]*dims[1]*dims[2];
   }
 
