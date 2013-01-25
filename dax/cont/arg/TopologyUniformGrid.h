@@ -52,12 +52,16 @@ public:
   typedef typename GridType::CellTag CellTypeTag;
   typedef typename GridType::GridTypeTag GridTypeTag;
 
+  typedef GridType ContArg;
   typedef ExecGridType ExecArg;
   typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Cell>::Tags DomainTags;
 
   DAX_CONT_EXPORT ConceptMap(GridType g): Grid(g) {}
 
   DAX_CONT_EXPORT ExecArg GetExecArg() { return ExecGridType(Topology); }
+
+  //All topology fields are required by scheduler to expose the cont arg
+  DAX_CONT_EXPORT const ContArg& GetContArg() const { return this->Grid; }
 
   DAX_CONT_EXPORT void ToExecution(dax::Id, boost::false_type)
     { /* Input  */
@@ -98,12 +102,16 @@ public:
   typedef typename GridType::CellTag CellTypeTag;
   typedef typename GridType::GridTypeTag GridTypeTag;
 
+  typedef GridType ContArg;
   typedef ExecGridType ExecArg;
   typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Cell>::Tags DomainTags;
 
   ConceptMap(GridType g): Grid(g) {}
 
   ExecArg GetExecArg() { return ExecGridType(Topology); }
+
+  //All topology fields are required by scheduler to expose the cont arg
+  DAX_CONT_EXPORT const ContArg& GetContArg() const { return this->Grid; }
 
   void ToExecution(dax::Id, boost::false_type)
     { /* Input  */
