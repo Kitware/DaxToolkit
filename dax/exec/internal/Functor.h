@@ -46,7 +46,6 @@ public:
 # include <dax/Types.h>
 # include <dax/cont/internal/Bindings.h>
 # include <dax/exec/arg/FindBinding.h>
-# include <dax/exec/internal/FlatIndex.h>
 # include <dax/exec/internal/IJKIndex.h>
 # include <dax/exec/internal/WorkletBase.h>
 # include <dax/internal/GetNthType.h>
@@ -72,6 +71,25 @@ public:
   DAX_EXEC_EXPORT void operator()(BindType& execArg) const
     {
     execArg.SaveExecutionResult(Index.value(),Work);
+    }
+};
+
+template<>
+struct SaveOutArgs<dax::Id>
+{
+protected:
+  const dax::Id Index;
+  const dax::exec::internal::WorkletBase& Work;
+public:
+  DAX_EXEC_EXPORT SaveOutArgs(dax::Id index,
+                              const dax::exec::internal::WorkletBase& w):
+    Index(index), Work(w)
+    {}
+
+  template <typename BindType>
+  DAX_EXEC_EXPORT void operator()(BindType& execArg) const
+    {
+    execArg.SaveExecutionResult(Index,Work);
     }
 };
 
@@ -126,13 +144,12 @@ public:                                                                 \
   DAX_CONT_EXPORT                                                       \
   FunctorImpl(WorkletType worklet, BindingsType& bindings):             \
     Worklet(worklet), Arguments(bindings) {}                            \
-  DAX_EXEC_EXPORT void operator()(dax::Id i) const                      \
+  DAX_EXEC_EXPORT void operator()(dax::Id id) const                     \
     {                                                                   \
-    dax::exec::internal::FlatIndex id(i);                               \
     _dax_FunctorImpl_##r                                                \
     this->Worklet(_dax_pp_enum___(_dax_FunctorImpl_Argument));          \
     Arguments.ForEachExec(                                              \
-      SaveOutArgs<dax::exec::internal::FlatIndex>(id,this->Worklet));   \
+    SaveOutArgs<dax::Id>(id,this->Worklet));                            \
     }                                                                   \
   DAX_EXEC_EXPORT void operator()(                                      \
                                 dax::exec::internal::IJKIndex id) const \

@@ -20,6 +20,7 @@
 #else // !defined(DAX_DOXYGEN_ONLY)
 
 #include <dax/Types.h>
+#include <dax/CellTag.h>
 #include <dax/cont/arg/ConceptMap.h>
 #include <dax/cont/arg/Topology.h>
 #include <dax/cont/internal/Bindings.h>
@@ -28,6 +29,7 @@
 
 #include <dax/exec/CellField.h>
 #include <dax/exec/CellVertices.h>
+#include <dax/exec/internal/IJKIndex.h>
 
 #include <dax/exec/internal/WorkletBase.h>
 
@@ -71,13 +73,12 @@ public:
       const IndexType& cellIndex,
       const dax::exec::internal::WorkletBase& work)
     {
-    const dax::exec::CellVertices<CellTag>& pointIndices = this->TopoExecArg(
-                                                               cellIndex, work);
+    const dax::exec::CellVertices<CellTag>& pointIndices = this->TopoExecArg(cellIndex, work);
     for(int vertexIndex = 0;
         vertexIndex < pointIndices.NUM_VERTICES;
         ++vertexIndex)
       {
-      this->Value[vertexIndex] = this->ExecArg(pointIndices[vertexIndex], work);
+      this->Value[vertexIndex] = this->ExecArg(pointIndices[vertexIndex],work);
       }
     return this->Value;
     }

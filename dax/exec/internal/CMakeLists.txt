@@ -25,7 +25,6 @@ set(headers
   TopologyUniform.h
   TopologyUnstructured.h
   WorkletBase.h
-  FlatIndex.h
   IJKIndex.h
   )
 
