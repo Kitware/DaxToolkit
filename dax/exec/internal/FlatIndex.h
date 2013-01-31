@@ -29,7 +29,20 @@ struct FlatIndex
   const dax::Id& value() const { return Index; }
 
   DAX_EXEC_EXPORT
+  bool operator == (dax::Id v) const{ return this->Index == v;}
+
+  DAX_EXEC_EXPORT
+  bool operator != (dax::Id v) const{ return this->Index != v;}
+
+  DAX_EXEC_EXPORT
+  bool operator < (dax::Id v) const{ return this->Index < v;}
+
+  DAX_EXEC_EXPORT
+  bool operator >= (dax::Id v) const{ return this->Index >= v;}
+
+  DAX_EXEC_EXPORT
   dax::Id operator* (dax::Id v) const{ return this->Index * v;}
+
 
 private:
   dax::Id Index;

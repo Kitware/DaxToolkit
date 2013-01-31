@@ -46,6 +46,7 @@ public:
                                    CellVerticesType const&>::type ReturnType;
 
   typedef CellVerticesType SaveType;
+  typedef CellVerticesType ValueType;
 
   DAX_CONT_EXPORT TopologyCell(const TopologyType& t): Topo(t), Cell(0) {  }
 
@@ -110,8 +111,8 @@ public:
     {
     }
 
-private:
   TopologyType Topo;
+private:
   CellVerticesType Cell;
 };
 
