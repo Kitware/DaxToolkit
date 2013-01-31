@@ -25,6 +25,7 @@ set(unit_tests
   UnitTestErrorMessageBuffer.cxx
   UnitTestFunctor.cxx
   UnitTestGridTopologies.cxx
+  UnitTestIJKIndex.cxx
   UnitTestInterpolationWeights.cxx
   UnitTestTopologyGenerator.cxx
   )

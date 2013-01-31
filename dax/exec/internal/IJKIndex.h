@@ -27,13 +27,12 @@ struct IJKIndex
     IJK(0,0,0),
     Dims(dims)
     {
-    this->CachedValue = this->Dims[0] * this->Dims[1];
+    this->CachedValue = IJK[0] + Dims[0]*(IJK[1] + Dims[1]*IJK[2]);
     }
 
   DAX_EXEC_CONT_EXPORT void updateCache()
     {
-    this->CachedValue =
-        this->Dims[0] * (this->IJK[1] + this->Dims[1] * IJK[2]);
+    this->CachedValue = Dims[0]*(IJK[1] + Dims[1] * IJK[2]);
     }
 
   DAX_EXEC_EXPORT dax::Id value() const
@@ -47,6 +46,8 @@ struct IJKIndex
   DAX_EXEC_EXPORT const dax::Id& j() const { return this->IJK[1]; }
 
   DAX_EXEC_EXPORT const dax::Id& k() const { return this->IJK[2]; }
+
+  DAX_EXEC_EXPORT const dax::Id3 ijk() const { return this->IJK; }
 
   DAX_CONT_EXPORT void setI(dax::Id v) { this->IJK[0]=v; }
 
