@@ -38,6 +38,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_scan.h>
 #include <tbb/parallel_sort.h>
+#include <tbb/partitioner.h>
 
 namespace dax {
 namespace cont {
@@ -73,14 +74,17 @@ private:
     DAX_EXEC_EXPORT
     void operator()(const ::tbb::blocked_range<dax::Id> &range, Tag)
     {
+      //use temp variable instead of member variable to reduce false sharing
+      ValueType temp = this->Sum;
       for (dax::Id index = range.begin(); index < range.end(); index++)
         {
-        this->Sum = this->Sum + this->InputPortal.Get(index);
+        temp = temp + this->InputPortal.Get(index);
         if (Tag::is_final_scan())
           {
-          this->OutputPortal.Set(index, this->Sum);
+          this->OutputPortal.Set(index, temp);
           }
         }
+      this->Sum = temp;
     }
 
     DAX_EXEC_CONT_EXPORT
@@ -136,15 +140,17 @@ private:
     DAX_EXEC_EXPORT
     void operator()(const ::tbb::blocked_range<dax::Id> &range, Tag)
     {
+      ValueType temp = this->Sum;
       for (dax::Id index = range.begin(); index < range.end(); index++)
         {
         ValueType inputValue = this->InputPortal.Get(index);
         if (Tag::is_final_scan())
           {
-          this->OutputPortal.Set(index, this->Sum);
+          this->OutputPortal.Set(index, temp);
           }
-        this->Sum = this->Sum + inputValue;
+        temp = temp + inputValue;
         }
+      this->Sum = temp;
     }
 
     DAX_EXEC_CONT_EXPORT
