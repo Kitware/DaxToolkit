@@ -126,8 +126,8 @@ template <typename Invocation> struct FunctorImplLookup
 };
 # endif // !(__cplusplus >= 201103L)
 
-#define _dax_FunctorImpl_Argument(n) Arguments.template Get<n>()(id,this->Worklet)
-#define _dax_FunctorImpl_T0          Arguments.template Get<0>()(id,this->Worklet) =
+#define _dax_FunctorImpl_Argument(n) instance.template Get<n>()(id,this->Worklet)
+#define _dax_FunctorImpl_T0          instance.template Get<0>()(id,this->Worklet) =
 #define _dax_FunctorImpl_void
 #define _dax_FunctorImpl(r)                                             \
 public:                                                                 \
@@ -139,24 +139,26 @@ protected:                                                              \
       ExecutionSignature, FunctorMemberMap<Invocation>                  \
     > ArgumentsType;                                                    \
   WorkletType Worklet;                                                  \
-  mutable ArgumentsType Arguments;                                      \
+  const ArgumentsType Arguments;                                        \
 public:                                                                 \
   DAX_CONT_EXPORT                                                       \
   FunctorImpl(WorkletType worklet, BindingsType& bindings):             \
     Worklet(worklet), Arguments(bindings) {}                            \
   DAX_EXEC_EXPORT void operator()(dax::Id id) const                     \
     {                                                                   \
+    ArgumentsType instance(this->Arguments);                            \
     _dax_FunctorImpl_##r                                                \
     this->Worklet(_dax_pp_enum___(_dax_FunctorImpl_Argument));          \
-    Arguments.ForEachExec(                                              \
-    SaveOutArgs<dax::Id>(id,this->Worklet));                            \
+    instance.ForEachExec(                                               \
+        SaveOutArgs<dax::Id>(id,this->Worklet));                        \
     }                                                                   \
   DAX_EXEC_EXPORT void operator()(                                      \
                                 dax::exec::internal::IJKIndex id) const \
     {                                                                   \
+    ArgumentsType instance(this->Arguments);                            \
     _dax_FunctorImpl_##r                                                \
     this->Worklet(_dax_pp_enum___(_dax_FunctorImpl_Argument));          \
-    Arguments.ForEachExec(                                              \
+    instance.ForEachExec(                                               \
       SaveOutArgs<dax::exec::internal::IJKIndex>(id,this->Worklet));    \
     }
 
