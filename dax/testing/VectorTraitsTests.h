@@ -58,7 +58,8 @@ static void TestVectorTypeImpl(
     {
     Traits::SetComponent(result, i, multiplier*Traits::GetComponent(vector, i));
     }
-  DAX_TEST_ASSERT(Traits::ToTuple(result) == multiplier*Traits::ToTuple(vector),
+  DAX_TEST_ASSERT(test_equal(Traits::ToTuple(result),
+                             multiplier*Traits::ToTuple(vector)),
                   "Got bad result for scalar multiple");
   }
 
@@ -70,7 +71,8 @@ static void TestVectorTypeImpl(
     Traits::GetComponent(result, i)
         = multiplier * Traits::GetComponent(vector, i);
     }
-  DAX_TEST_ASSERT(Traits::ToTuple(result) == multiplier*Traits::ToTuple(vector),
+  DAX_TEST_ASSERT(test_equal(Traits::ToTuple(result),
+                             multiplier*Traits::ToTuple(vector)),
                   "Got bad result for scalar multiple");
   }
 
@@ -83,7 +85,8 @@ static void TestVectorTypeImpl(
     result += component * component;
     }
   DAX_TEST_ASSERT(
-        result == dax::dot(Traits::ToTuple(vector), Traits::ToTuple(vector)),
+        test_equal(result,
+                   dax::dot(Traits::ToTuple(vector), Traits::ToTuple(vector))),
         "Got bad result for dot product");
   }
 
