@@ -26,6 +26,8 @@
 // Here are the actual implementation of the algorithms.
 #include <dax/thrust/cont/internal/DeviceAdapterAlgorithmThrust.h>
 
+#include <omp.h>
+
 namespace dax {
 namespace cont {
 namespace internal {
@@ -93,10 +95,55 @@ public:
           numInstances);
   }
 
+  DAX_CONT_EXPORT static void Synchronize()
+  {
+    // Nothing to do. This OpenMP schedules all of its operations using a
+    // split/join paradigm. This means that the if the control threaad is
+    // calling this method, then nothing should be running in the execution
+    // environment.
+  }
+
 };
 
 }
 }
 } // namespace dax::cont::internal
+
+namespace dax {
+namespace cont {
+
+// Add prototype for Timer template, which might not be defined yet.
+template<class DeviceAdapter> class Timer;
+
+/// OpenMP contains its own high resolution timer.
+///
+template<>
+class Timer<dax::openmp::cont::DeviceAdapterTagOpenMP>
+{
+public:
+  DAX_CONT_EXPORT Timer()
+  {
+    this->Reset();
+  }
+  DAX_CONT_EXPORT void Reset()
+  {
+    dax::cont::internal::DeviceAdapterAlgorithm<
+        dax::openmp::cont::DeviceAdapterTagOpenMP>::Synchronize();
+    this->StartTime = omp_get_wtime();
+  }
+  DAX_CONT_EXPORT dax::Scalar GetElapsedTime()
+  {
+    dax::cont::internal::DeviceAdapterAlgorithm<
+        dax::openmp::cont::DeviceAdapterTagOpenMP>::Synchronize();
+    double currentTime = omp_get_wtime();
+    return static_cast<dax::Scalar>(currentTime - this->StartTime);
+  }
+
+private:
+  double StartTime;
+};
+
+}
+} // namespace dax::cont
 
 #endif //__dax_openmp_cont_internal_DeviceAdapterAlgorithmOpenMP_h
