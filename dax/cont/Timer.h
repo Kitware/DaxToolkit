@@ -39,7 +39,8 @@ namespace cont {
 /// more accurate timers.
 ///
 template<class DeviceAdapter = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
-class Timer{
+class Timer
+{
 public:
   /// When a timer is constructed, all threads are synchronized and the
   /// current time is marked so that GetElapsedTime returns the number of

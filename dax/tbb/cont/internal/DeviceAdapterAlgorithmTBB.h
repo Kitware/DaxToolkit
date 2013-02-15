@@ -32,6 +32,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_scan.h>
 #include <tbb/parallel_sort.h>
+#include <tbb/tick_count.h>
 
 namespace dax {
 namespace cont {
@@ -290,10 +291,54 @@ public:
                          arrayPortal.GetIteratorEnd());
   }
 
+  DAX_CONT_EXPORT static void Synchronize()
+  {
+    // Nothing to do. This device schedules all of its operations using a
+    // split/join paradigm. This means that the if the control threaad is
+    // calling this method, then nothing should be running in the execution
+    // environment.
+  }
+
 };
 
 }
 }
 } // namespace dax::cont::internal
+
+namespace dax {
+namespace cont {
+
+// Add prototype for Timer template, which might not be defined yet.
+template<class DeviceAdapter> class Timer;
+
+/// TBB contains its own high resolution timer.
+///
+template<>
+class Timer<dax::tbb::cont::DeviceAdapterTagTBB>
+{
+public:
+  DAX_CONT_EXPORT Timer()
+  {
+    this->Reset();
+  }
+  DAX_CONT_EXPORT void Reset()
+  {
+    dax::cont::internal::DeviceAdapterAlgorithm<
+        dax::tbb::cont::DeviceAdapterTagTBB>::Synchronize();
+    this->StartTime = ::tbb::tick_count::now();
+  }
+  DAX_CONT_EXPORT dax::Scalar GetElapsedTime()
+  {
+    ::tbb::tick_count currentTime = ::tbb::tick_count::now();
+    ::tbb::tick_count::interval_t elapsedTime = currentTime - this->StartTime;
+    return static_cast<dax::Scalar>(elapsedTime.seconds());
+  }
+
+private:
+  ::tbb::tick_count StartTime;
+};
+
+}
+}
 
 #endif //__dax_tbb_cont_internal_DeviceAdapterAlgorithmTBB_h
