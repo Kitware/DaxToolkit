@@ -139,12 +139,9 @@ if (NOT DAX_DISABLE_KITS)
   # List of Boost features used:
   # * Smart Ptr
   # * program options
-  # * timer
   find_package(Boost ${Dax_REQUIRED_BOOST_VERSION} REQUIRED
     COMPONENTS
       program_options # only needed for the testing executables
-      timer # only needed for the testing executables
-      system # only need for timer for testing executables
   )
 
 #-----------------------------------------------------------------------------

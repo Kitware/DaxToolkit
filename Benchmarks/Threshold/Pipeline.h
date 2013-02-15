@@ -16,13 +16,13 @@
 
 #include <stdio.h>
 #include <iostream>
-#include "Timer.h"
 
 #include <dax/CellTag.h>
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/ScheduleGenerateTopology.h>
+#include <dax/cont/Timer.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
@@ -170,7 +170,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
         grid.GetPointCoordinates(),
         intermediate1);
 
-  Timer timer;
+  dax::cont::Timer<> timer;
 
   typedef dax::cont::ScheduleGenerateTopology<dax::worklet::ThresholdTopology> ScheduleGT;
   typedef ScheduleGT::ClassifyResultType  ClassifyResultType;
@@ -186,7 +186,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
   resolveTopology.CompactPointField(intermediate1,resultHandle);
 
 
-  double time = timer.elapsed();
+  double time = timer.GetElapsedTime();
   std::cout << "original GetNumberOfCells: " << grid.GetNumberOfCells() << std::endl;
   std::cout << "threshold GetNumberOfCells: " << grid2.GetNumberOfCells() << std::endl;
 
