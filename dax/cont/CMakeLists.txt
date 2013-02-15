@@ -41,6 +41,7 @@ set(headers
   Scheduler.h
   PermutationContainer.h
   ScheduleGenerateTopology.h
+  Timer.h
   UniformGrid.h
   UnstructuredGrid.h
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
