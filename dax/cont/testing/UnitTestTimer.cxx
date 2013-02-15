@@ -38,7 +38,7 @@ void Time()
 
   std::cout << "Elapsed time: " << elapsedTime << std::endl;
 
-  DAX_TEST_ASSERT(elapsedTime > 1.0,
+  DAX_TEST_ASSERT(elapsedTime > 0.999,
                   "Timer did not capture full second wait.");
   DAX_TEST_ASSERT(elapsedTime < 2.0,
                   "Timer counted too far or system really busy.");

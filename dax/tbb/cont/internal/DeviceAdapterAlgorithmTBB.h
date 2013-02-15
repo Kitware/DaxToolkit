@@ -339,6 +339,6 @@ private:
 };
 
 }
-}
+} // namespace dax::cont
 
 #endif //__dax_tbb_cont_internal_DeviceAdapterAlgorithmTBB_h
