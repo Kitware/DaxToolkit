@@ -21,6 +21,7 @@
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
 #include <dax/cont/Scheduler.h>
+#include <dax/cont/Timer.h>
 #include <dax/cont/PermutationContainer.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
@@ -35,6 +36,10 @@
 
 #include <utility>
 #include <vector>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 namespace dax {
 namespace cont {
@@ -321,6 +326,29 @@ private:
 #endif
   }
 
+  DAX_CONT_EXPORT static void TestTimer()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing Timer" << std::endl;
+
+    dax::cont::Timer<DeviceAdapterTag> timer;
+
+#ifndef _WIN32
+    sleep(1);
+#else
+    Sleep(1000);
+#endif
+
+    dax::Scalar elapsedTime = timer.GetElapsedTime();
+
+    std::cout << "Elapsed time: " << elapsedTime << std::endl;
+
+    DAX_TEST_ASSERT(elapsedTime > 1.0,
+                    "Timer did not capture full second wait.");
+    DAX_TEST_ASSERT(elapsedTime < 2.0,
+                    "Timer counted too far or system really busy.");
+  }
+
   static DAX_CONT_EXPORT void TestSchedule()
   {
     std::cout << "-------------------------------------------" << std::endl;
@@ -331,11 +359,19 @@ private:
     IdArrayManagerExecution manager;
     manager.AllocateArrayForOutput(container, ARRAY_SIZE);
 
+    std::cout << "Starting timer." << std::endl;
+    dax::cont::Timer<DeviceAdapterTag> timer;
+
     std::cout << "Running clear." << std::endl;
     Algorithm::Schedule(ClearArrayKernel(manager.GetPortal()), ARRAY_SIZE);
 
     std::cout << "Running add." << std::endl;
     Algorithm::Schedule(AddArrayKernel(manager.GetPortal()), ARRAY_SIZE);
+
+    std::cout << "Checking time." << std::endl;
+    dax::Scalar elapsedTime = timer.GetElapsedTime();
+    DAX_TEST_ASSERT((elapsedTime > 0) && (elapsedTime < 10),
+                    "Timer reported unexpected time for scheduling.");
 
     std::cout << "Checking results." << std::endl;
     manager.RetrieveOutputData(container);
@@ -853,6 +889,7 @@ private:
       std::cout << "Doing DeviceAdapter tests" << std::endl;
       TestArrayManagerExecution();
       TestOutOfMemory();
+      TestTimer();
       TestSchedule();
       TestErrorExecution();
       TestScanInclusive();

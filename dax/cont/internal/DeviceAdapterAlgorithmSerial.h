@@ -307,6 +307,11 @@ public:
     DAX_ASSERT_CONT(outputIndex == outputSize);
   }
 
+  DAX_CONT_EXPORT static void Synchronize()
+  {
+    // Nothing to do. This device is serial and has no asynchronous operations.
+  }
+
   template<typename T, class Container>
   DAX_CONT_EXPORT static void Unique(
       dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>& values)

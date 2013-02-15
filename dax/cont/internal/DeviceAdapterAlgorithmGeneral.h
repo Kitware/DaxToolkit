@@ -36,8 +36,8 @@ namespace internal {
 ///
 /// This struct provides algorithms that implement "general" device adapter
 /// algorithms. If a device adapter provides implementations for Schedule,
-/// Sort, and Scan, the rest of the algorithms can be implemented by calling
-/// these functions.
+/// Sort, Scan, and Synchronize, the rest of the algorithms can be implemented
+/// by calling these functions.
 ///
 /// An easy way to implement the DeviceAdapterAlgorithm specialization is to
 /// subclass this and override the implementation of methods as necessary.

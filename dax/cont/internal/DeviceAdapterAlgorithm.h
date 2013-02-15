@@ -166,6 +166,12 @@ struct DeviceAdapterAlgorithm
       const dax::cont::ArrayHandle<U,CStencil,DeviceAdapterTag> &stencil,
       dax::cont::ArrayHandle<T,COut,DeviceAdapterTag> &output);
 
+  /// \brief Completes any asynchronous operations running on the device.
+  ///
+  /// Waits for any asynchronous operations running on the device to complete.
+  ///
+  DAX_CONT_EXPORT static void Synchronize();
+
   /// \brief Reduce an array to only the unique values it contains
   ///
   /// Removes all duplicate values in \c values that are adjacent to each

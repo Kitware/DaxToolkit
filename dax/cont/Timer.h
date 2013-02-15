@@ -55,7 +55,7 @@ public:
   ///
   DAX_CONT_EXPORT void Reset()
   {
-    // TODO: Synchronize threads.
+    dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapter>::Synchronize();
     this->StartTime = this->GetCurrentTime();
   }
 
@@ -67,7 +67,7 @@ public:
   ///
   DAX_CONT_EXPORT dax::Scalar GetElapsedTime()
   {
-    // TODO: Synchronize threads.
+    dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapter>::Synchronize();
     TimeStamp currentTime = this->GetCurrentTime();
 
     dax::Scalar elapsedTime;
