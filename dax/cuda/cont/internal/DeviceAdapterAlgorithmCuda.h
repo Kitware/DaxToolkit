@@ -45,29 +45,19 @@ struct DeviceAdapterAlgorithm<dax::cuda::cont::DeviceAdapterTagCuda>
 
 };
 
-}
-}
-} // namespace dax::cont::internal
-
-namespace dax {
-namespace cont {
-
-// Add prototype for Timer template, which might not be defined yet.
-template<class DeviceAdapter> class Timer;
-
 /// CUDA contains its own high resolution timer.
 ///
 template<>
-class Timer<dax::cuda::cont::DeviceAdapterTagCuda>
+class DeviceAdapterTimerImplementation<dax::cuda::cont::DeviceAdapterTagCuda>
 {
 public:
-  DAX_CONT_EXPORT Timer()
+  DAX_CONT_EXPORT DeviceAdapterTimerImplementation()
   {
     cudaEventCreate(&this->StartEvent);
     cudaEventCreate(&this->EndEvent);
     this->Reset();
   }
-  DAX_CONT_EXPORT ~Timer()
+  DAX_CONT_EXPORT ~DeviceAdapterTimerImplementation()
   {
     cudaEventDestroy(this->StartEvent);
     cudaEventDestroy(this->EndEvent);
@@ -89,14 +79,15 @@ public:
 
 private:
   // Copying CUDA events is problematic.
-  Timer(const Timer<dax::cuda::cont::DeviceAdapterTagCuda> &);
-  void operator=(const Timer<dax::cuda::cont::DeviceAdapterTagCuda> &);
+  DeviceAdapterTimerImplementation(const DeviceAdapterTimerImplementation<dax::cuda::cont::DeviceAdapterTagCuda> &);
+  void operator=(const DeviceAdapterTimerImplementation<dax::cuda::cont::DeviceAdapterTagCuda> &);
 
   cudaEvent_t StartEvent;
   cudaEvent_t EndEvent;
 };
 
 }
-} // namespace dax::cont
+}
+} // namespace dax::cont::internal
 
 #endif //__dax_cuda_cont_internal_DeviceAdapterAlgorithmCuda_h

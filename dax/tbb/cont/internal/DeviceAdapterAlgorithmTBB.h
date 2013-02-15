@@ -301,23 +301,13 @@ public:
 
 };
 
-}
-}
-} // namespace dax::cont::internal
-
-namespace dax {
-namespace cont {
-
-// Add prototype for Timer template, which might not be defined yet.
-template<class DeviceAdapter> class Timer;
-
 /// TBB contains its own high resolution timer.
 ///
 template<>
-class Timer<dax::tbb::cont::DeviceAdapterTagTBB>
+class DeviceAdapterTimerImplementation<dax::tbb::cont::DeviceAdapterTagTBB>
 {
 public:
-  DAX_CONT_EXPORT Timer()
+  DAX_CONT_EXPORT DeviceAdapterTimerImplementation()
   {
     this->Reset();
   }
@@ -329,6 +319,8 @@ public:
   }
   DAX_CONT_EXPORT dax::Scalar GetElapsedTime()
   {
+    dax::cont::internal::DeviceAdapterAlgorithm<
+        dax::tbb::cont::DeviceAdapterTagTBB>::Synchronize();
     ::tbb::tick_count currentTime = ::tbb::tick_count::now();
     ::tbb::tick_count::interval_t elapsedTime = currentTime - this->StartTime;
     return static_cast<dax::Scalar>(elapsedTime.seconds());
@@ -339,6 +331,7 @@ private:
 };
 
 }
-} // namespace dax::cont
+}
+} // namespace dax::cont::internal
 
 #endif //__dax_tbb_cont_internal_DeviceAdapterAlgorithmTBB_h

@@ -105,23 +105,13 @@ public:
 
 };
 
-}
-}
-} // namespace dax::cont::internal
-
-namespace dax {
-namespace cont {
-
-// Add prototype for Timer template, which might not be defined yet.
-template<class DeviceAdapter> class Timer;
-
 /// OpenMP contains its own high resolution timer.
 ///
 template<>
-class Timer<dax::openmp::cont::DeviceAdapterTagOpenMP>
+class DeviceAdapterTimerImplementation<dax::openmp::cont::DeviceAdapterTagOpenMP>
 {
 public:
-  DAX_CONT_EXPORT Timer()
+  DAX_CONT_EXPORT DeviceAdapterTimerImplementation()
   {
     this->Reset();
   }
@@ -144,6 +134,7 @@ private:
 };
 
 }
-} // namespace dax::cont
+}
+} // namespace dax::cont::internal
 
 #endif //__dax_openmp_cont_internal_DeviceAdapterAlgorithmOpenMP_h
