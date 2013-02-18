@@ -14,6 +14,7 @@
 ##
 ##=============================================================================
 
+add_subdirectory(BlackScholes)
 add_subdirectory(FY11Timing)
 add_subdirectory(MarchingCubes)
 add_subdirectory(Threshold)
