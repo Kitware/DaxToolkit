@@ -16,11 +16,11 @@
 
 #include <stdio.h>
 #include <iostream>
-#include "Timer.h"
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/ScheduleGenerateTopology.h>
+#include <dax/cont/Timer.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
@@ -61,7 +61,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
         grid.GetPointCoordinates(),
         intermediate1);
 
-  Timer timer;
+  dax::cont::Timer<> timer;
 
   //schedule marching cubes worklet generate step, saving
   //the coordinates into outGridCoordinates.
@@ -90,7 +90,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
                    grid.GetPointCoordinates(),
                    outGridCoordinates);
 
-  double time = timer.elapsed();
+  double time = timer.GetElapsedTime();
 
   std::cout << "number of coordinates in: " << grid.GetNumberOfPoints() << std::endl;
   std::cout << "number of coordinates out: " << outGridCoordinates.GetNumberOfValues() << std::endl;

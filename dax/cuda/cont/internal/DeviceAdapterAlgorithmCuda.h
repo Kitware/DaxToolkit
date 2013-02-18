@@ -26,6 +26,8 @@
 // Here are the actual implementation of the algorithms.
 #include <dax/thrust/cont/internal/DeviceAdapterAlgorithmThrust.h>
 
+#include <cuda.h>
+
 namespace dax {
 namespace cont {
 namespace internal {
@@ -34,7 +36,55 @@ template<>
 struct DeviceAdapterAlgorithm<dax::cuda::cont::DeviceAdapterTagCuda>
     : public dax::thrust::cont::internal::DeviceAdapterAlgorithmThrust<
           dax::cuda::cont::DeviceAdapterTagCuda>
-{  };
+{
+
+  DAX_CONT_EXPORT static void Synchronize()
+  {
+    cudaError_t error = cudaDeviceSynchronize();
+  }
+
+};
+
+/// CUDA contains its own high resolution timer.
+///
+template<>
+class DeviceAdapterTimerImplementation<dax::cuda::cont::DeviceAdapterTagCuda>
+{
+public:
+  DAX_CONT_EXPORT DeviceAdapterTimerImplementation()
+  {
+    cudaEventCreate(&this->StartEvent);
+    cudaEventCreate(&this->EndEvent);
+    this->Reset();
+  }
+  DAX_CONT_EXPORT ~DeviceAdapterTimerImplementation()
+  {
+    cudaEventDestroy(this->StartEvent);
+    cudaEventDestroy(this->EndEvent);
+  }
+
+  DAX_CONT_EXPORT void Reset()
+  {
+    cudaEventRecord(this->StartEvent, 0);
+  }
+
+  DAX_CONT_EXPORT dax::Scalar GetElapsedTime()
+  {
+    cudaEventRecord(this->EndEvent, 0);
+    cudaEventSynchronize(this->EndEvent);
+    float elapsedTime;
+    cudaEventElapsedTime(&elapsedTime, this->StartEvent, this->EndEvent);
+    return static_cast<dax::Scalar>(elapsedTime);
+  }
+
+private:
+  // Copying CUDA events is problematic.
+  DeviceAdapterTimerImplementation(const DeviceAdapterTimerImplementation<dax::cuda::cont::DeviceAdapterTagCuda> &);
+  void operator=(const DeviceAdapterTimerImplementation<dax::cuda::cont::DeviceAdapterTagCuda> &);
+
+  cudaEvent_t StartEvent;
+  cudaEvent_t EndEvent;
+};
 
 }
 }

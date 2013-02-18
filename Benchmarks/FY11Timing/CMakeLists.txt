@@ -43,7 +43,6 @@ set(sources
   #PipelineDebug.cxx
   #FY11Timing.cxx
   ArgumentsParser.cxx
-  Timer.cxx
   )
 
 #-----------------------------------------------------------------------------

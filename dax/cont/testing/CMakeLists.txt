@@ -28,6 +28,7 @@ set(unit_tests
   UnitTestDeviceAdapterSerial.cxx
   UnitTestIteratorFromArrayPortal.cxx
   UnitTestSchedule.cxx
+  UnitTestTimer.cxx
   UnitTestUniformGrid.cxx
   UnitTestUnstructuredGrid.cxx
   UnitTestVectorOperations.cxx

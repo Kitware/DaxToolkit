@@ -78,7 +78,6 @@ set(headers
 
 set(sources
   ArgumentsParser.cxx
-  Timer.cxx
   )
 
 #-----------------------------------------------------------------------------
