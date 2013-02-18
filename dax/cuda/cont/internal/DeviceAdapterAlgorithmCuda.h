@@ -72,9 +72,11 @@ public:
   {
     cudaEventRecord(this->EndEvent, 0);
     cudaEventSynchronize(this->EndEvent);
-    float elapsedTime;
-    cudaEventElapsedTime(&elapsedTime, this->StartEvent, this->EndEvent);
-    return static_cast<dax::Scalar>(elapsedTime);
+    float elapsedTimeMilliseconds;
+    cudaEventElapsedTime(&elapsedTimeMilliseconds,
+                         this->StartEvent,
+                         this->EndEvent);
+    return static_cast<dax::Scalar>(0.001f*elapsedTimeMilliseconds);
   }
 
 private:
