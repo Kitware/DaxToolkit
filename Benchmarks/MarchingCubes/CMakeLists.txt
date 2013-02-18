@@ -65,13 +65,6 @@ if(DAX_ENABLE_PISTON_MARCHING_CUBES_BENCHMARK)
 endif()
 
 #-----------------------------------------------------------------------------
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/MarchingCubesConfig.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/MarchingCubesConfig.h
-  @ONLY
-  )
-
-#-----------------------------------------------------------------------------
 set(headers
   Pipeline.h
   )
