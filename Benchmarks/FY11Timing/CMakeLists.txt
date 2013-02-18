@@ -28,20 +28,11 @@ if (DAX_ENABLE_TBB)
 endif (DAX_ENABLE_TBB)
 
 #-----------------------------------------------------------------------------
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/FY11TimingConfig.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/FY11TimingConfig.h
-  @ONLY
-  )
-
-#-----------------------------------------------------------------------------
 set(headers
   Pipeline.h
   )
 
 set(sources
-  #PipelineDebug.cxx
-  #FY11Timing.cxx
   ArgumentsParser.cxx
   )
 
@@ -108,11 +99,3 @@ if (DAX_ENABLE_CUDA)
     ${EXECUTABLE_OUTPUT_PATH}/FY11TimingCuda --pipeline 3 --size 128)
 endif (DAX_ENABLE_CUDA)
 
-
-#-----------------------------------------------------------------------------
-#add_test(FY11Timing1-256
-#  ${EXECUTABLE_OUTPUT_PATH}/FY11Timing --pipeline 1 --size 256)
-#add_test(FY11Timing2-256
-#  ${EXECUTABLE_OUTPUT_PATH}/FY11Timing --pipeline 2 --size 256)
-#add_test(FY11Timing3-256
-#  ${EXECUTABLE_OUTPUT_PATH}/FY11Timing --pipeline 3 --size 256)

@@ -63,13 +63,6 @@ if(DAX_ENABLE_PISTON_THRESHOLD_BENCHMARK)
 endif()
 
 #-----------------------------------------------------------------------------
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/ThresholdConfig.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/ThresholdConfig.h
-  @ONLY
-  )
-
-#-----------------------------------------------------------------------------
 set(headers
   Pipeline.h
   )
