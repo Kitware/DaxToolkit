@@ -1,4 +1,4 @@
-##=============================================================================
+  ##=============================================================================
 ##
 ##  Copyright (c) Kitware, Inc.
 ##  All rights reserved.
@@ -15,17 +15,14 @@
 ##=============================================================================
 
 #-----------------------------------------------------------------------------
-if (DAX_ENABLE_OPENMP)
-  dax_configure_device(OpenMP)
-endif (DAX_ENABLE_OPENMP)
-
-if (DAX_ENABLE_CUDA)
-  dax_configure_device(Cuda)
-endif (DAX_ENABLE_CUDA)
-
-if (DAX_ENABLE_TBB)
-  dax_configure_device(TBB)
-endif (DAX_ENABLE_TBB)
+macro(add_timing_tests target)
+  add_test(${target}1-128
+    ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline 1 --size 128)
+  add_test(${target}2-128
+    ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline 2 --size 128)
+  add_test(${target}3-128
+    ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline 3 --size 128)
+endmacro()
 
 #-----------------------------------------------------------------------------
 set(headers
@@ -33,69 +30,46 @@ set(headers
   )
 
 set(sources
+  main.cxx
   ArgumentsParser.cxx
   )
 
-#-----------------------------------------------------------------------------
-add_executable(FY11TimingSerial ${sources} ${headers} PipelineSerial.cxx)
 set_source_files_properties(${headers} PROPERTIES HEADER_FILE_ONLY TRUE)
-target_link_libraries(FY11TimingSerial
-  ${Boost_LIBRARIES}
-  )
 
-add_test(FY11TimingSerial1-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingSerial --pipeline 1 --size 128)
-add_test(FY11TimingSerial2-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingSerial --pipeline 2 --size 128)
-add_test(FY11TimingSerial3-128
-  ${EXECUTABLE_OUTPUT_PATH}/FY11TimingSerial --pipeline 3 --size 128)
+#-----------------------------------------------------------------------------
+add_executable(FY11TimingSerial ${sources} ${headers} )
+set_dax_device_adapter(FY11TimingSerial DAX_DEVICE_ADAPTER_SERIAL)
+target_link_libraries(FY11TimingSerial ${Boost_LIBRARIES})
+add_timing_tests(FY11TimingSerial)
+
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_OPENMP)
-  add_executable(FY11TimingOpenMP ${sources} ${headers} PipelineOpenMP.cxx)
-  target_link_libraries(FY11TimingOpenMP
-    ${Boost_LIBRARIES}
-    )
-
-  add_test(FY11TimingOpenMP1-128
-    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingOpenMP --pipeline 1 --size 128)
-  add_test(FY11TimingOpenMP2-128
-    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingOpenMP --pipeline 2 --size 128)
-  add_test(FY11TimingOpenMP3-128
-    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingOpenMP --pipeline 3 --size 128)
+  add_executable(FY11TimingOpenMP ${sources} ${headers})
+  set_dax_device_adapter(FY11TimingOpenMP DAX_DEVICE_ADAPTER_OPENMP)
+  target_link_libraries(FY11TimingOpenMP ${Boost_LIBRARIES})
+  add_timing_tests(FY11TimingOpenMP)
 endif (DAX_ENABLE_OPENMP)
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_TBB)
-  add_executable(FY11TimingTBB ${sources} ${headers} PipelineTBB.cxx)
-  target_link_libraries(FY11TimingTBB
-    ${Boost_LIBRARIES}
-    )
-
-  add_test(FY11TimingTBB1-128
-    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingTBB --pipeline 1 --size 128)
-  add_test(FY11TimingTBB2-128
-    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingTBB --pipeline 2 --size 128)
-  add_test(FY11TimingTBB3-128
-    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingTBB --pipeline 3 --size 128)
+  add_executable(FY11TimingTBB ${sources} ${headers})
+  set_dax_device_adapter(FY11TimingTBB DAX_DEVICE_ADAPTER_TBB)
+  target_link_libraries(FY11TimingTBB ${Boost_LIBRARIES})
+  add_timing_tests(FY11TimingTBB)
 endif (DAX_ENABLE_TBB)
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_CUDA)
-  dax_disable_troublesome_thrust_warnings()
-  cuda_add_executable(FY11TimingCuda
-    ${sources} ${headers} PipelineCuda.h PipelineCuda.cu
-    )
-  set_source_files_properties(PipelineCuda.h PROPERTIES HEADER_FILE_ONLY TRUE)
-  target_link_libraries(FY11TimingCuda
-    ${Boost_LIBRARIES}
+  set(cuda_sources
+    main.cu
+    ArgumentsParser.cxx
     )
 
-  add_test(FY11TimingCuda1-128
-    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingCuda --pipeline 1 --size 128)
-  add_test(FY11TimingCuda2-128
-    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingCuda --pipeline 2 --size 128)
-  add_test(FY11TimingCuda3-128
-    ${EXECUTABLE_OUTPUT_PATH}/FY11TimingCuda --pipeline 3 --size 128)
+  dax_disable_troublesome_thrust_warnings()
+  cuda_add_executable(FY11TimingCuda ${cuda_sources} ${headers})
+  set_dax_device_adapter(FY11TimingCuda DAX_DEVICE_ADAPTER_CUDA)
+  target_link_libraries(FY11TimingCuda ${Boost_LIBRARIES})
+  add_timing_tests(FY11TimingCuda)
 endif (DAX_ENABLE_CUDA)
 
