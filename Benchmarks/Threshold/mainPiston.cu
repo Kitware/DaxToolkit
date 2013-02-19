@@ -14,41 +14,23 @@
 //
 //=============================================================================
 
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_CUDA
 #define BOOST_SP_DISABLE_THREADS
 
-#include <dax/cuda/cont/DeviceAdapterCuda.h>
+//included after defining the device adapter
+#ifndef DAX_DEVICE_ADAPTER
+  #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_CUDA
+#endif
 
-//set up piston
-#define SPACE thrust::detail::default_device_space_tag
-
-#include <vtkImageData.h>
-#include <vtkNew.h>
-
-#include "PipelineCudaPiston.h"
 #include "PistonPipeline.h"
-
-void RunPipelinePISTON(int pipeline, const dax::cont::UniformGrid<>& dgrid, vtkImageData* grid)
-{
-  RunPISTONPipeline(dgrid,grid);
-}
-
 #include "ArgumentsParser.h"
 
-
-//create a dax and vtk image structure of the same size
-dax::cont::UniformGrid<> CreateStructures(vtkImageData *grid, dax::Id dim)
+dax::cont::UniformGrid<> CreateInputStructure(dax::Id dim)
 {
-
-  grid->SetOrigin(0.0, 0.0, 0.0);
-  grid->SetSpacing(1.0, 1.0, 1.0);
-  grid->SetExtent(0, dim-1,0, dim-1,0, dim-1);
-
-  dax::cont::UniformGrid<> dgrid;
-  dgrid.SetOrigin(dax::make_Vector3(0.0, 0.0, 0.0));
-  dgrid.SetSpacing(dax::make_Vector3(1.0, 1.0, 1.0));
-  dgrid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(dim-1, dim-1, dim-1));
-  return dgrid;
+  dax::cont::UniformGrid<> grid;
+  grid.SetOrigin(dax::make_Vector3(0.0, 0.0, 0.0));
+  grid.SetSpacing(dax::make_Vector3(1.0, 1.0, 1.0));
+  grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(dim-1, dim-1, dim-1));
+  return grid;
 }
 
 int main(int argc, char* argv[])
@@ -62,13 +44,12 @@ int main(int argc, char* argv[])
   //init grid vars from parser
   const dax::Id MAX_SIZE = parser.problemSize();
 
-  vtkNew<vtkImageData> grid;
-  dax::cont::UniformGrid<> dgrid = CreateStructures(grid.GetPointer(),MAX_SIZE);
+  dax::cont::UniformGrid<> dgrid = CreateInputStructure(MAX_SIZE);
 
   int pipeline = parser.pipeline();
   std::cout << "Pipeline #" << pipeline << std::endl;
 
-  RunPipelinePISTON(pipeline, dgrid, grid.GetPointer());
+  RunPISTONPipeline(dgrid);
 
   return 0;
 }

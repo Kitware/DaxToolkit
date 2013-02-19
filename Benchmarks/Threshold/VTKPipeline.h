@@ -16,17 +16,16 @@
 
 #include <stdio.h>
 #include <iostream>
-#include "Timer.h"
 
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/Scheduler.h>
+#include <dax/cont/Timer.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
-#include <dax/cont/Scheduler.h>
 
 #include <dax/worklet/Magnitude.worklet>
 #include <dax/worklet/Threshold.worklet>
-
 
 #include <vector>
 
@@ -86,9 +85,9 @@ void RunVTKPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid)
   threshold->Update();
   threshold->ThresholdBetween(0,100);
 
-  Timer timer;
+  dax::cont::Timer<> timer;
   threshold->Update();
-  double time = timer.elapsed();
+  double time = timer.GetElapsedTime();
 
   vtkSmartPointer<vtkUnstructuredGrid> out = threshold->GetOutput();
 

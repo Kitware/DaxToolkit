@@ -14,21 +14,9 @@
 //
 //=============================================================================
 
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
-
-#include "PipelineSerial.h"
-
+#include "ArgumentsParser.h"
 #include "Pipeline.h"
 
-void RunPipelineSerial(const dax::cont::UniformGrid<> &grid)
-{
-  RunDAXPipeline(grid);
-}
-
-// This is kind of a hack. I'd rather the main files be consolidated
-// into one.  See FY11Timing.cxx for the rational.
-
-#include "ArgumentsParser.h"
 
 dax::cont::UniformGrid<> CreateInputStructure(dax::Id dim)
 {
@@ -52,7 +40,6 @@ int main(int argc, char* argv[])
 
   dax::cont::UniformGrid<> grid = CreateInputStructure(MAX_SIZE);
 
-  RunPipelineSerial(grid);
-
+  RunDAXPipeline(grid);
   return 0;
 }
