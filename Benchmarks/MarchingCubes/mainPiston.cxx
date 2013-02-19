@@ -14,22 +14,8 @@
 //
 //=============================================================================
 
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_OPENMP
-
-#include "PipelineOpenMP.h"
-
-#include "Pipeline.h"
-
-void RunPipelineOpenMP(
-    const dax::cont::UniformGrid<> &grid)
-{
-  RunDAXPipeline(grid);
-}
-
-// This is kind of a hack. I'd rather the main files be consolidated
-// into one.  See FY11Timing.cxx for the rational.
-
 #include "ArgumentsParser.h"
+#include "PistonPipeline.h"
 
 dax::cont::UniformGrid<> CreateInputStructure(dax::Id dim)
 {
@@ -51,9 +37,12 @@ int main(int argc, char* argv[])
   //init grid vars from parser
   const dax::Id MAX_SIZE = parser.problemSize();
 
-  dax::cont::UniformGrid<> grid = CreateInputStructure(MAX_SIZE);
+  dax::cont::UniformGrid<> dgrid = CreateInputStructure(MAX_SIZE);
 
-  RunPipelineOpenMP(grid);
+  int pipeline = parser.pipeline();
+  std::cout << "Pipeline #" << pipeline << std::endl;
+
+  RunPISTONPipeline(dgrid);
 
   return 0;
 }
