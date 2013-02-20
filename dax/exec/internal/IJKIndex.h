@@ -27,30 +27,20 @@ struct IJKIndex
     IJK(0,0,0),
     Dims(dims)
     {
-    this->CachedValue = IJK[0] + Dims[0]*(IJK[1] + Dims[1]*IJK[2]);
+    this->CachedValue = this->IJK[0] + this->Dims[0]*
+                        (this->IJK[1] + this->Dims[1]* this->IJK[2]);
     }
 
-  DAX_EXEC_CONT_EXPORT void updateCache()
-    {
-    this->CachedValue = Dims[0]*(IJK[1] + Dims[1] * IJK[2]);
-    }
-
-  DAX_EXEC_EXPORT dax::Id value() const
+  DAX_EXEC_EXPORT dax::Id GetValue() const
     { return this->CachedValue + this->IJK[0]; }
 
-  DAX_EXEC_EXPORT const dax::Id& i() const { return this->IJK[0]; }
+  DAX_EXEC_EXPORT const dax::Id3 GetIJK() const { return this->IJK; }
 
-  DAX_EXEC_EXPORT const dax::Id& j() const { return this->IJK[1]; }
+  DAX_CONT_EXPORT void SetI(dax::Id v) { this->IJK[0]=v; }
 
-  DAX_EXEC_EXPORT const dax::Id& k() const { return this->IJK[2]; }
+  DAX_CONT_EXPORT void SetJ(dax::Id v) { this->IJK[1]=v; this->UpdateCache(); }
 
-  DAX_EXEC_EXPORT const dax::Id3 ijk() const { return this->IJK; }
-
-  DAX_CONT_EXPORT void setI(dax::Id v) { this->IJK[0]=v; }
-
-  DAX_CONT_EXPORT void setJ(dax::Id v) { this->IJK[1]=v; this->updateCache(); }
-
-  DAX_CONT_EXPORT void setK(dax::Id v) { this->IJK[2]=v; this->updateCache(); }
+  DAX_CONT_EXPORT void SetK(dax::Id v) { this->IJK[2]=v; this->UpdateCache(); }
 
   DAX_EXEC_EXPORT
   bool operator == (dax::Id v) const
@@ -73,6 +63,14 @@ struct IJKIndex
 
 
 private:
+
+  DAX_EXEC_CONT_EXPORT void UpdateCache()
+    {
+    this->CachedValue = this->Dims[0]*
+                          (this->IJK[1] + this->Dims[1] * this->IJK[2]);
+    }
+
+
   dax::Id3 IJK, Dims;
   dax::Id CachedValue;
 };

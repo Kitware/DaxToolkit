@@ -32,16 +32,16 @@ static void TestGridIJK(const Grid &gridstruct)
   dax::Id correctFlatCellIndex=0;
   for(dax::Id k = 0; k < dims[2]; ++k)
     {
-    ijkIndex.setK(k);
+    ijkIndex.SetK(k);
     for(dax::Id j = 0; j < dims[1]; ++j)
       {
-      ijkIndex.setJ(j);
+      ijkIndex.SetJ(j);
       for(dax::Id i = 0; i < dims[0]; ++i)
         {
-        ijkIndex.setI(i);
+        ijkIndex.SetI(i);
 
         //compare this i to the extent functions
-        DAX_TEST_ASSERT(ijkIndex.value() == correctFlatCellIndex,
+        DAX_TEST_ASSERT(ijkIndex.GetValue() == correctFlatCellIndex,
                   "ijk value method returned wrong cell index");
 
         ++correctFlatCellIndex;

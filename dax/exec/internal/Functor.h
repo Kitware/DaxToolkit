@@ -70,7 +70,7 @@ public:
   template <typename BindType>
   DAX_EXEC_EXPORT void operator()(BindType& execArg) const
     {
-    execArg.SaveExecutionResult(Index.value(),Work);
+    execArg.SaveExecutionResult(Index.GetValue(),Work);
     }
 };
 

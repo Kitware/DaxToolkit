@@ -108,9 +108,9 @@ public:
     if(cellScheduler.isValidForGridScheduling())
       {
       // Schedule the worklet invocations in the execution environment.
-      dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>::ScheduleOnCells(bindingFunctor,
-                          cellScheduler.gridCount(),
-                          cellScheduler.gridTag());
+      dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>::Schedule(
+                          bindingFunctor,
+                          cellScheduler.gridCount());
       }
     else
       {
@@ -188,9 +188,9 @@ public:
     if(cellScheduler.isValidForGridScheduling())
       {
       // Schedule the worklet invocations in the execution environment.
-      dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>::ScheduleOnCells(bindingFunctor,
-                          cellScheduler.gridCount(),
-                          cellScheduler.gridTag());
+      dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>::Schedule(
+                          bindingFunctor,
+                          cellScheduler.gridCount());
       }
     else
       {

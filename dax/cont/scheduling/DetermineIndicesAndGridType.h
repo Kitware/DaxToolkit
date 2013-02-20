@@ -93,10 +93,6 @@ public:
     {
     }
 
-  //return an instance of the grid tag we are working on
-  GridTypeTag gridTag() const { return GridTypeTag(); }
-
-
   //return the proper exec object that can be used to dispatch
   GridIndexType gridCount() const
   {

@@ -224,20 +224,10 @@ public:
       throw dax::cont::ErrorExecution(errorString);
       }
   }
-  template<class FunctorType, class GridType>
-  DAX_CONT_EXPORT
-  static void ScheduleOnCells(FunctorType functor, dax::Id count, GridType)
-  {
-    //default behavior for the general algorithm is to defer to the default
-    //schedule implementation. if you want to customize schedule for certain
-    //grid types, you need to specialize this method
-    typedef dax::cont::DeviceAdapterTagSerial DTag;
-    DeviceAdapterAlgorithm<DTag>::Schedule(functor, count);
-  }
 
-  template<class FunctorType, class GridType>
+  template<class FunctorType>
   DAX_CONT_EXPORT
-  static void ScheduleOnCells(FunctorType functor, dax::Id3 dims, GridType)
+  static void Schedule(FunctorType functor, dax::Id3 rangeMax)
   {
     const dax::Id MESSAGE_SIZE = 1024;
     char errorString[MESSAGE_SIZE];
@@ -247,16 +237,16 @@ public:
 
     functor.SetErrorMessageBuffer(errorMessage);
 
-    dax::exec::internal::IJKIndex index(dims);
-    for( dax::Id k=0; k!=dims[2]; ++k)
+    dax::exec::internal::IJKIndex index(rangeMax);
+    for( dax::Id k=0; k!=rangeMax[2]; ++k)
       {
-      index.setK(k);
-      for( dax::Id j=0; j!=dims[1]; ++j)
+      index.SetK(k);
+      for( dax::Id j=0; j!=rangeMax[1]; ++j)
         {
-        index.setJ(j);
-        for (dax::Id i=0; i < dims[0]; ++i)
+        index.SetJ(j);
+        for (dax::Id i=0; i < rangeMax[0]; ++i)
           {
-          index.setI(i);
+          index.SetI(i);
           functor(index);
           }
         }

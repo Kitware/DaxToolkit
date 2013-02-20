@@ -144,12 +144,11 @@ struct DeviceAdapterAlgorithm
   /// in the range [0, \c numInstances].
   ///
   /// This function is an optional function that device adapters can specialize
-  /// on to handle better cell based iteration. Primarly used for better
+  /// on to handle better cell based iteration. Primary used for better
   /// uniform grid iteration.
-  template<class Functor, class IndiceType, class GridTypeTag>
+  template<class Functor, class IndiceType>
   DAX_CONT_EXPORT static void Schedule(Functor functor,
-                                       IndiceType numInstances,
-                                       GridTypeTag gridType);
+                                       dax::Id3 rangeMax);
 
   /// \brief Unstable ascending sort of input array.
   ///

@@ -49,7 +49,7 @@ public:
                        const dax::exec::internal::IJKIndex& index ):
     XDim(dims[0])
   {
-    const dax::Id3 &ijk = index.ijk();
+    const dax::Id3 &ijk = index.GetIJK();
     this->FirstPointIndex =  ijk[0] + ijk[1] * dims[0] + ijk[2] * dims[0] * dims[1];
     this->SecondPointIndex = this->FirstPointIndex + (dims[0] * dims[1]);
   }

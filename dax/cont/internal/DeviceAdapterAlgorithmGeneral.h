@@ -267,25 +267,6 @@ private:
   };
 
 public:
-  template<class FunctorType, class GridType>
-  DAX_CONT_EXPORT
-  static void ScheduleOnCells(FunctorType functor, dax::Id count, GridType)
-  {
-    //default behavior for the general algorithm is to defer to the default
-    //schedule implementation. if you want to customize schedule for certain
-    //grid types, you need to specialize this method
-    DerivedAlgorithm::Schedule(functor, count);
-  }
-
-  template<class FunctorType, class GridType>
-  DAX_CONT_EXPORT
-  static void ScheduleOnCells(FunctorType functor, dax::Id3 dims, GridType)
-  {
-    //default behavior for the general algorithm is to defer to the default
-    //schedule implementation. if you want to customize schedule for certain
-    //grid types, you need to specialize this method
-    DerivedAlgorithm::Schedule(functor, dims[0]*dims[1]*dims[2]);
-  }
 
   template<typename T, typename U, class CIn, class CStencil, class COut>
   DAX_CONT_EXPORT static void StreamCompact(

@@ -499,26 +499,15 @@ public:
       }
   }
 
-  template<class FunctorType, class GridType>
+  template<class FunctorType>
   DAX_CONT_EXPORT
-  static void ScheduleOnCells(FunctorType functor, const dax::Id& count, GridType)
+  static void Schedule(FunctorType functor, const dax::Id3& rangeMax)
   {
     //default behavior for the general algorithm is to defer to the default
     //schedule implementation. if you want to customize schedule for certain
     //grid types, you need to specialize this method
     typedef DeviceAdapterAlgorithmThrust<DeviceAdapterTag> DAAT;
-    DAAT::Schedule(functor, count);
-  }
-
-  template<class FunctorType, class GridType>
-  DAX_CONT_EXPORT
-  static void ScheduleOnCells(FunctorType functor, const dax::Id3& dims, GridType)
-  {
-    //default behavior for the general algorithm is to defer to the default
-    //schedule implementation. if you want to customize schedule for certain
-    //grid types, you need to specialize this method
-    typedef DeviceAdapterAlgorithmThrust<DeviceAdapterTag> DAAT;
-    DAAT::Schedule(functor, dims[0]*dims[1]*dims[2]);
+    DAAT::Schedule(functor, rangeMax[0]*rangeMax[1]*rangeMax[2]);
   }
 
   template<typename T, class Container>

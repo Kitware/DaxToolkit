@@ -114,7 +114,7 @@ public:
     {
     //if we have the In tag we have local store so use that value,
     //otherwise call the portal directly
-    return this->Storage.Get(index.value(), this->Portal,work);
+    return this->Storage.Get(index.GetValue(), this->Portal,work);
     }
 
   template<typename IndexType>
@@ -123,7 +123,7 @@ public:
     {
     //if we have the In tag we have local store so use that value,
     //otherwise call the portal directly
-    return this->Storage.Get(index.value(), this->Portal,work);
+    return this->Storage.Get(index.GetValue(), this->Portal,work);
     }
 
   DAX_EXEC_EXPORT ReturnType operator()(const dax::Id& index,

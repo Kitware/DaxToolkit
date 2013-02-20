@@ -72,16 +72,11 @@ public:
     Algorithm::Schedule(functor, numInstances);
   }
 
-  template<class FunctorType, class IndiceType, class GridType>
-  DAX_CONT_EXPORT
-  static void ScheduleOnCells(FunctorType functor,
-                              const IndiceType& count,
-                              GridType gtype)
+  template<class Functor>
+  DAX_CONT_EXPORT static void Schedule(Functor functor,
+                                       dax::Id3 rangeMax)
   {
-    //default behavior for the general algorithm is to defer to the default
-    //schedule implementation. if you want to customize schedule for certain
-    //grid types, you need to specialize this method
-    Algorithm::ScheduleOnCells(functor,count,gtype);
+    Algorithm::Schedule(functor, rangeMax);
   }
 
   template<typename T, class CIn, class COut>

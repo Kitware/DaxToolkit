@@ -93,19 +93,15 @@ public:
            numInstances);
   }
 
-  template<class FunctorType, class IndiceType, class GridType>
+  template<class FunctorType>
   DAX_CONT_EXPORT
-  static void ScheduleOnCells(FunctorType functor,
-                              const IndiceType& numInstances,
-                              GridType gridType)
+  static void Schedule(FunctorType functor, dax::Id3 rangeMax)
   {
     //default behavior for the general algorithm is to defer to the default
-    //schedule implementation. if you want to customize schedule for certain
-    //grid types, you need to specialize this method
-     Superclass::ScheduleOnCells(
+    //schedule implementation.
+    Superclass::Schedule(
            DeviceAdapterAlgorithm::ScheduleKernel<FunctorType>(functor),
-           numInstances,
-           gridType);
+           rangeMax);
   }
 
 };

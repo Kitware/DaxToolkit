@@ -33,7 +33,7 @@
 #include <dax/exec/internal/IJKIndex.h>
 #include <boost/type_traits/remove_reference.hpp>
 
-#include <tbb/blocked_range2d.h>
+#include <tbb/blocked_range3d.h>
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_scan.h>
@@ -287,21 +287,12 @@ public:
       }
   }
 
-  template<class FunctorType, class GridType>
-  DAX_CONT_EXPORT
-  static void ScheduleOnCells(FunctorType functor, dax::Id count, GridType)
-  {
-    DeviceAdapterAlgorithm<dax::tbb::cont::DeviceAdapterTagTBB>::Schedule(
-                                                                  functor,
-                                                                  count);
-  }
-
   template<class FunctorType>
-  class ScheduleUniformGridKernel
+  class ScheduleKernelId3
   {
   public:
-    DAX_CONT_EXPORT ScheduleUniformGridKernel(const FunctorType &functor,
-                                              const dax::Id3& dims)
+    DAX_CONT_EXPORT ScheduleKernelId3(const FunctorType &functor,
+                                      const dax::Id3& dims)
       : Functor(functor),
         Dims(dims)
       {  }
@@ -314,19 +305,19 @@ public:
     }
 
     DAX_EXEC_EXPORT
-    void operator()(const ::tbb::blocked_range2d<dax::Id> &range) const {
+    void operator()(const ::tbb::blocked_range3d<dax::Id> &range) const {
       try
       {
       dax::exec::internal::IJKIndex index(this->Dims);
-      for( dax::Id k=range.rows().begin(); k!=range.rows().end(); ++k)
+      for( dax::Id k=range.pages().begin(); k!=range.pages().end(); ++k)
         {
-        index.setK(k);
-        for( dax::Id j=range.cols().begin(); j!=range.cols().end(); ++j)
+        index.SetK(k);
+        for( dax::Id j=range.rows().begin(); j!=range.rows().end(); ++j)
           {
-          index.setJ(j);
-          for (dax::Id i=0; i < this->Dims[0]; ++i)
+          index.SetJ(j);
+          for( dax::Id i=range.cols().begin(); i!=range.cols().end(); ++i)
             {
-            index.setI(i);
+            index.SetI(i);
             this->Functor(index);
             }
           }
@@ -348,42 +339,10 @@ public:
     dax::exec::internal::ErrorMessageBuffer ErrorMessage;
   };
 
-  template<class FunctorType, class GridType>
-  DAX_CONT_EXPORT
-  static void ScheduleOnCells(FunctorType functor,
-                       dax::Id3 dims,
-                       GridType)
-  {
-    //we need to extract from the functor that uniform grid information
-    const dax::Id MESSAGE_SIZE = 1024;
-    char errorString[MESSAGE_SIZE];
-    errorString[0] = '\0';
-    dax::exec::internal::ErrorMessageBuffer
-        errorMessage(errorString, MESSAGE_SIZE);
-
-    functor.SetErrorMessageBuffer(errorMessage);
-
-    //4: use the extents and number of cells to determine the blocked_rang2
-    //that will best suited for this grid. Presumption is that we are 3d
-    //in the future we will have to make special calls for 2d uniform grids
-    ::tbb::blocked_range2d<dax::Id> range(0,
-                                          dims[2],
-                                          0,
-                                          dims[1]);
-
-    ScheduleUniformGridKernel<FunctorType> kernel(functor,dims);
-    ::tbb::parallel_for(range, kernel);
-
-    if (errorMessage.IsErrorRaised())
-      {
-      throw dax::cont::ErrorExecution(errorString);
-      }
-  }
-
   template<class FunctorType>
   DAX_CONT_EXPORT
-  static void Schedule(FunctorType functor, dax::Id,
-                       dax::cont::internal::UniformGridTag)
+  static void Schedule(FunctorType functor,
+                       dax::Id3 rangeMax)
   {
     //we need to extract from the functor that uniform grid information
     const dax::Id MESSAGE_SIZE = 1024;
@@ -394,39 +353,20 @@ public:
 
     functor.SetErrorMessageBuffer(errorMessage);
 
+    //memory is generally setup in a way that iterating the first range
+    //in the tightest loop has the best cache coherence.
+    ::tbb::blocked_range3d<dax::Id> range(0, rangeMax[2],
+                                          0, rangeMax[1],
+                                          0, rangeMax[0]);
 
-    //1: find the topology argument
-    typedef typename FunctorType::BindingsType BindingsType;
-    typedef typename dax::cont::internal::FindBinding<
-                                    BindingsType,
-                                    dax::cont::arg::Topology>::type TopoIndex;
-    typedef typename BindingsType::template GetType<
-                            TopoIndex::value>::type TopoControlBinding;
-
-    //2: now that we have the execution arg object we can extract the grid
-    typedef typename TopoControlBinding::ExecArg TopoExecArgType;
-    TopoExecArgType TopoExecArg;
-
-    //3: have the grid, extract the extents
-    const dax::Extent3& extents = TopoExecArg.Extent;
-
-    //4: use the extents and number of cells to determine the blocked_rang2
-    //that will best suited for this grid. Presumption is that we are 3d
-    //in the future we will have to make special calls for 2d uniform grids
-    ::tbb::blocked_range2d<dax::Id> range(extents.Min[0],
-                                          extents.Max[0],
-                                          extents.Min[1],
-                                          extents.Max[1]);
-
-    ScheduleUniformGridKernel<FunctorType> kernel(functor,extents);
+    ScheduleKernelId3<FunctorType> kernel(functor,rangeMax);
     ::tbb::parallel_for(range, kernel);
+
     if (errorMessage.IsErrorRaised())
       {
       throw dax::cont::ErrorExecution(errorString);
       }
-
   }
-
 
   template<typename T, class Container>
   DAX_CONT_EXPORT static void Sort(
