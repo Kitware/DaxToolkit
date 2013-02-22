@@ -125,7 +125,7 @@ function(dax_unit_tests)
           PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS_WARN_EXTRA})
       endif(DAX_EXTRA_COMPILER_WARNINGS)
     endif (DAX_UT_CUDA)
-    target_link_libraries(${test_prog} ${DAX_UT_LIBRARIES})
+    target_link_libraries(${test_prog} ${DAX_UT_LIBRARIES} ${DAX_TIMING_LIBS})
     foreach (test ${DAX_UT_SOURCES})
       get_filename_component(tname ${test} NAME_WE)
       add_test(NAME ${tname}
