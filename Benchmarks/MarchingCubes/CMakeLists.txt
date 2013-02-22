@@ -71,7 +71,8 @@ endif (DAX_ENABLE_OPENMP)
 if (DAX_ENABLE_TBB)
   add_executable(MarchingCubesTimingTBB ${sources} ${headers})
   set_dax_device_adapter(MarchingCubesTimingTBB DAX_DEVICE_ADAPTER_TBB)
-  target_link_libraries(MarchingCubesTimingTBB ${Boost_LIBRARIES})
+  target_link_libraries(MarchingCubesTimingTBB ${Boost_LIBRARIES}
+                                               ${DAX_TIMING_LIBS})
   add_timing_tests(MarchingCubesTimingTBB)
 endif (DAX_ENABLE_TBB)
 
