@@ -18,16 +18,8 @@
 #include <vtkImageData.h>
 #include <vtkNew.h>
 
-#include "PipelineVTK.h"
-#include "VTKPipeline.h"
-
-void RunPipelineVTK(int, const dax::cont::UniformGrid<>& dgrid, vtkImageData* grid)
-{
-  RunVTKPipeline(dgrid,grid);
-}
-
 #include "ArgumentsParser.h"
-
+#include "VTKPipeline.h"
 
 //create a dax and vtk image structure of the same size
 dax::cont::UniformGrid<> CreateStructures(vtkImageData *grid, dax::Id dim)
@@ -60,7 +52,7 @@ int main(int argc, char* argv[])
   int pipeline = parser.pipeline();
   std::cout << "Pipeline #" << pipeline << std::endl;
 
-  RunPipelineVTK(pipeline, dgrid, grid.GetPointer());
+  RunVTKPipeline(dgrid, grid.GetPointer());
 
   return 0;
 }

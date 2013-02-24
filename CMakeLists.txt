@@ -71,6 +71,13 @@ if (DAX_ENABLE_DOXYGEN)
 endif()
 
 #-----------------------------------------------------------------------------
+# setup timing libs we need to link too
+set(DAX_TIMING_LIBS)
+if(UNIX AND NOT APPLE)
+  set(DAX_TIMING_LIBS rt)
+endif()
+
+#-----------------------------------------------------------------------------
 # Set up devices selected.
 dax_configure_device(Serial)
 if (DAX_ENABLE_CUDA)

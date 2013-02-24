@@ -15,19 +15,6 @@
 ##=============================================================================
 
 #-----------------------------------------------------------------------------
-if (DAX_ENABLE_OPENMP)
-  dax_configure_device(OpenMP)
-endif (DAX_ENABLE_OPENMP)
-
-if (DAX_ENABLE_CUDA)
-  dax_configure_device(Cuda)
-endif (DAX_ENABLE_CUDA)
-
-if (DAX_ENABLE_TBB)
-  dax_configure_device(TBB)
-endif (DAX_ENABLE_TBB)
-
-#-----------------------------------------------------------------------------
 set(headers
   BlackScholes.h
   )
@@ -37,31 +24,30 @@ set_source_files_properties(${headers} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 #-----------------------------------------------------------------------------
 add_executable(BlackScholesSerial ${headers} main.cxx)
+set_dax_device_adapter(BlackScholesSerial DAX_DEVICE_ADAPTER_SERIAL)
 add_test(BlackScholesSerial ${EXECUTABLE_OUTPUT_PATH}/BlackScholesSerial)
-set_target_properties(BlackScholesSerial PROPERTIES COMPILE_FLAGS
-                      -DDAX_DEVICE_ADAPTER=DAX_DEVICE_ADAPTER_SERIAL)
 
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_OPENMP)
   add_executable(BlackScholesOpenMP ${headers} main.cxx)
-  set_target_properties(BlackScholesOpenMP PROPERTIES COMPILE_FLAGS
-                        -DDAX_DEVICE_ADAPTER=DAX_DEVICE_ADAPTER_OPENMP)
+  set_dax_device_adapter(BlackScholesOpenMP DAX_DEVICE_ADAPTER_OPENMP)
+  add_test(BlackScholesOpenMP ${EXECUTABLE_OUTPUT_PATH}/BlackScholesOpenMP)
 endif (DAX_ENABLE_OPENMP)
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_TBB)
   add_executable(BlackScholesTBB ${headers} main.cxx)
-  set_target_properties(BlackScholesTBB PROPERTIES COMPILE_FLAGS
-                        -DDAX_DEVICE_ADAPTER=DAX_DEVICE_ADAPTER_TBB)
+  set_dax_device_adapter(BlackScholesTBB DAX_DEVICE_ADAPTER_TBB)
+  add_test(BlackScholesTBB ${EXECUTABLE_OUTPUT_PATH}/BlackScholesTBB)
+  target_link_libraries(BlackScholesTBB ${DAX_TIMING_LIBS})
 endif (DAX_ENABLE_TBB)
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_CUDA)
   dax_disable_troublesome_thrust_warnings()
   cuda_add_executable(BlackScholesCuda ${headers} main.cu)
-  set_target_properties(BlackScholesCuda PROPERTIES COMPILE_FLAGS
-                        -DDAX_DEVICE_ADAPTER=DAX_DEVICE_ADAPTER_CUDA)
-  add_test(BlackScholesCuda
-    ${EXECUTABLE_OUTPUT_PATH}/BlackScholesCuda)
+  set_dax_device_adapter(BlackScholesCuda DAX_DEVICE_ADAPTER_CUDA)
+  add_test(BlackScholesCuda ${EXECUTABLE_OUTPUT_PATH}/BlackScholesCuda)
+
 endif (DAX_ENABLE_CUDA)

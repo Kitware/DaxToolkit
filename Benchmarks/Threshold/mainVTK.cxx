@@ -14,30 +14,25 @@
 //
 //=============================================================================
 
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_OPENMP
-
-#include "PipelineOpenMP.h"
-
-#include "Pipeline.h"
-
-void RunPipelineOpenMP(
-    const dax::cont::UniformGrid<> &grid)
-{
-  RunDAXPipeline(grid);
-}
-
-// This is kind of a hack. I'd rather the main files be consolidated
-// into one.  See FY11Timing.cxx for the rational.
+#include <dax/cont/DeviceAdapterSerial.h>
+#include <vtkImageData.h>
+#include <vtkNew.h>
 
 #include "ArgumentsParser.h"
+#include "VTKPipeline.h"
 
-dax::cont::UniformGrid<> CreateInputStructure(dax::Id dim)
+//create a dax and vtk image structure of the same size
+dax::cont::UniformGrid<> CreateStructures(vtkImageData *grid, dax::Id dim)
 {
-  dax::cont::UniformGrid<> grid;
-  grid.SetOrigin(dax::make_Vector3(0.0, 0.0, 0.0));
-  grid.SetSpacing(dax::make_Vector3(1.0, 1.0, 1.0));
-  grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(dim-1, dim-1, dim-1));
-  return grid;
+  grid->SetOrigin(0.0, 0.0, 0.0);
+  grid->SetSpacing(1.0, 1.0, 1.0);
+  grid->SetExtent(0, dim-1,0, dim-1,0, dim-1);
+
+  dax::cont::UniformGrid<> dgrid;
+  dgrid.SetOrigin(dax::make_Vector3(0.0, 0.0, 0.0));
+  dgrid.SetSpacing(dax::make_Vector3(1.0, 1.0, 1.0));
+  dgrid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(dim-1, dim-1, dim-1));
+  return dgrid;
 }
 
 int main(int argc, char* argv[])
@@ -51,9 +46,13 @@ int main(int argc, char* argv[])
   //init grid vars from parser
   const dax::Id MAX_SIZE = parser.problemSize();
 
-  dax::cont::UniformGrid<> grid = CreateInputStructure(MAX_SIZE);
+  vtkNew<vtkImageData> grid;
+  dax::cont::UniformGrid<> dgrid = CreateStructures(grid.GetPointer(),MAX_SIZE);
 
-  RunPipelineOpenMP(grid);
+  int pipeline = parser.pipeline();
+  std::cout << "Pipeline #" << pipeline << std::endl;
+
+  RunVTKPipeline(dgrid, grid.GetPointer());
 
   return 0;
 }

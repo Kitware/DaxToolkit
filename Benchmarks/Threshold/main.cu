@@ -14,36 +14,15 @@
 //
 //=============================================================================
 
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
+#define BOOST_SP_DISABLE_THREADS
 
-#include "PipelineSerial.h"
-
-#include "Pipeline.h"
-
-void RunPipelineSerial(int pipeline, const dax::cont::UniformGrid<> &grid)
-{
-  switch (pipeline)
-    {
-    case 1:
-      RunPipeline1(grid);
-      break;
-    case 2:
-      RunPipeline2(grid);
-      break;
-    case 3:
-      RunPipeline3(grid);
-      break;
-    default:
-      std::cout << "Invalid pipeline selected." << std::endl;
-      exit(1);
-      break;
-    }
-}
-
-// This is kind of a hack. I'd rather the main files be consolidated
-// into one.  See FY11Timing.cxx for the rational.
+//included after defining the device adapter
+#ifndef DAX_DEVICE_ADAPTER
+  #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_CUDA
+#endif
 
 #include "ArgumentsParser.h"
+#include "Pipeline.h"
 
 dax::cont::UniformGrid<> CreateInputStructure(dax::Id dim)
 {
@@ -70,7 +49,7 @@ int main(int argc, char* argv[])
   int pipeline = parser.pipeline();
   std::cout << "Pipeline #" << pipeline << std::endl;
 
-  RunPipelineSerial(pipeline, grid);
+  RunDAXPipeline(grid);
 
   return 0;
 }

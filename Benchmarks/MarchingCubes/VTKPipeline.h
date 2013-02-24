@@ -16,8 +16,8 @@
 
 #include <stdio.h>
 #include <iostream>
-#include "Timer.h"
 
+#include <dax/cont/Timer.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
@@ -42,9 +42,7 @@
 namespace
 {
 
-
 dax::Scalar ISOVALUE = 100;
-
 
 void PrintResults(int pipeline, double time, const char* name)
 {
@@ -82,7 +80,7 @@ void RunVTKPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid)
   vtkNew<vtkMarchingCubes> marching;
   marching->SetInputConnection(producer->GetOutputPort());
 
-  Timer timer;
+  dax::cont::Timer<> timer;
   marching->ComputeNormalsOff();
   marching->ComputeGradientsOff();
   marching->ComputeScalarsOn();
@@ -91,7 +89,7 @@ void RunVTKPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid)
 
 
   marching->Update();
-  double time = timer.elapsed();
+  double time = timer.GetElapsedTime();
 
   vtkSmartPointer<vtkPolyData> out = marching->GetOutput();
 

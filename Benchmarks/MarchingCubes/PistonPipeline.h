@@ -14,25 +14,15 @@
 //
 //=============================================================================
 
-
-
 #include <stdio.h>
 #include <iostream>
-#include "Timer.h"
 
-#include <dax/cont/Scheduler.h>
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/Scheduler.h>
+#include <dax/cont/Timer.h>
 #include <dax/cont/UniformGrid.h>
+#include <dax/Extent.h>
 #include <dax/worklet/Magnitude.worklet>
-
-#include <vector>
-
-#include <vtkNew.h>
-#include <vtkFloatArray.h>
-#include <vtkImageData.h>
-#include <vtkMarchingCubes.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 
 #include <vector>
 
@@ -44,6 +34,34 @@
 
 namespace
 {
+
+dax::Scalar ISOVALUE = 100;
+
+struct piston_scalar_image3d : piston::image3d< >
+{
+  typedef ::thrust::device_vector<dax::Scalar> PointDataContainer;
+  PointDataContainer point_data_vector;
+  typedef PointDataContainer::iterator PointDataIterator;
+
+  piston_scalar_image3d(dax::Id xsize, dax::Id ysize, dax::Id zsize,
+                        const std::vector<dax::Scalar> &data)
+    : piston::image3d< >(xsize, ysize, zsize),
+      point_data_vector(data)
+  {
+    assert(this->NPoints == this->point_data_vector.size());
+  }
+
+  DAX_EXEC_CONT_EXPORT
+  PointDataIterator point_data_begin() {
+    return this->point_data_vector.begin();
+  }
+
+  DAX_EXEC_CONT_EXPORT
+  PointDataIterator point_data_end() {
+    return this->point_data_vector.end();
+  }
+};
+
 void PrintResults(int pipeline, double time, const char* name)
 {
   std::cout << "Elapsed time: " << time << " seconds." << std::endl;
@@ -51,34 +69,32 @@ void PrintResults(int pipeline, double time, const char* name)
             << pipeline << "," << time << std::endl;
 }
 
-void RunPISTONPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid)
+void RunPISTONPipeline(const dax::cont::UniformGrid<> &grid)
 {
   std::cout << "Running pipeline 1: Elevation -> MarchingCubes" << std::endl;
 
-  std::vector<dax::Scalar> elev(dgrid.GetNumberOfPoints());
+  std::vector<dax::Scalar> elev(grid.GetNumberOfPoints());
   dax::cont::ArrayHandle<dax::Scalar> elevHandle = dax::cont::make_ArrayHandle(elev);
 
   //use dax to compute the magnitude
   dax::cont::Scheduler<> scheduler;
   scheduler.Invoke(dax::worklet::Magnitude(),
-            dgrid.GetPointCoordinates(),
+            grid.GetPointCoordinates(),
             elevHandle);
 
   //return results to host
   elevHandle.CopyInto(elev.begin());
 
-  //now that the results are back on the cpu, do threshold with VTK
-  vtkSmartPointer<vtkFloatArray> vtkElevationPoints = vtkSmartPointer<vtkFloatArray>::New();
-  vtkElevationPoints->SetName("Elevation");
-  vtkElevationPoints->SetVoidArray(&elev[0],elev.size(),1);
+  //now that the results are back on the cpu, do threshold with piston
+  dax::Id3 dims = dax::extentCellDimensions(grid.GetExtent());
+  piston_scalar_image3d image(dims[0], dims[1], dims[2], elev);
 
-  grid->GetPointData()->SetScalars(vtkElevationPoints); //piston on works on active scalars
-  piston::vtk_image3d<SPACE> image(grid);
-  piston::marching_cube<piston::vtk_image3d<SPACE>,piston::vtk_image3d<SPACE> > marching(image,image,100);
+  typedef piston::marching_cube<piston_scalar_image3d,piston_scalar_image3d> MC;
+  MC marching(image,image,ISOVALUE);
 
-  Timer timer;
+  dax::cont::Timer<> timer;
   marching();
-  double time = timer.elapsed();
+  double time = timer.GetElapsedTime();
 
   PrintResults(1, time, "Piston");
 }
