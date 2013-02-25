@@ -19,6 +19,7 @@ set(unit_tests
   UnitTestExecutionObject.cxx
   UnitTestFieldArrayHandle.cxx
   UnitTestFieldConstant.cxx
+  UnitTestGeometryGrids.cxx
   UnitTestTopologyGrids.cxx
   )
 

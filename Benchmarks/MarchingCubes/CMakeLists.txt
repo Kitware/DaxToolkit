@@ -40,6 +40,14 @@ macro(add_timing_tests target)
     ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline 1 --size 256)
 endmacro()
 
+macro(add_resolveDuplicate_timing_tests target)
+  add_test(${target}ResolveDuplicatePoints-128
+    ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline 2 --size 128)
+    add_test(${target}ResolveDuplicatePoints-256
+    ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline 2 --size 256)    
+endmacro()    
+
+
 #-----------------------------------------------------------------------------
 set(headers
   Pipeline.h
@@ -57,6 +65,7 @@ add_executable(MarchingCubesTimingSerial ${sources} ${headers} )
 set_dax_device_adapter(MarchingCubesTimingSerial DAX_DEVICE_ADAPTER_SERIAL)
 target_link_libraries(MarchingCubesTimingSerial ${Boost_LIBRARIES})
 add_timing_tests(MarchingCubesTimingSerial)
+add_resolveDuplicate_timing_tests(MarchingCubesTimingSerial)
 
 
 #-----------------------------------------------------------------------------
@@ -65,6 +74,7 @@ if (DAX_ENABLE_OPENMP)
   set_dax_device_adapter(MarchingCubesTimingOpenMP DAX_DEVICE_ADAPTER_OPENMP)
   target_link_libraries(MarchingCubesTimingOpenMP ${Boost_LIBRARIES})
   add_timing_tests(MarchingCubesTimingOpenMP)
+  add_resolveDuplicate_timing_tests(MarchingCubesTimingOpenMP)
 endif (DAX_ENABLE_OPENMP)
 
 #-----------------------------------------------------------------------------
@@ -74,6 +84,7 @@ if (DAX_ENABLE_TBB)
   target_link_libraries(MarchingCubesTimingTBB ${Boost_LIBRARIES}
                                                ${DAX_TIMING_LIBS})
   add_timing_tests(MarchingCubesTimingTBB)
+  add_resolveDuplicate_timing_tests(MarchingCubesTimingTBB)
 endif (DAX_ENABLE_TBB)
 
 #-----------------------------------------------------------------------------
@@ -88,6 +99,7 @@ if (DAX_ENABLE_CUDA)
   set_dax_device_adapter(MarchingCubesTimingCuda DAX_DEVICE_ADAPTER_CUDA)
   target_link_libraries(MarchingCubesTimingCuda ${Boost_LIBRARIES})
   add_timing_tests(MarchingCubesTimingCuda)
+  add_resolveDuplicate_timing_tests(MarchingCubesTimingCuda)
 endif (DAX_ENABLE_CUDA)
 
 

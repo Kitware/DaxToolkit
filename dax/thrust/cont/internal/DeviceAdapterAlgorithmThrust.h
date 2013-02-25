@@ -240,6 +240,21 @@ private:
                           IteratorBegin(output));
   }
 
+  template<class InputPortal, class ValuesPortal, class OutputPortal,
+           class Compare>
+  DAX_CONT_EXPORT static void LowerBoundsPortal(const InputPortal &input,
+                                                const ValuesPortal &values,
+                                                const OutputPortal &output,
+                                                Compare comp)
+  {
+    ::thrust::lower_bound(IteratorBegin(input),
+                          IteratorEnd(input),
+                          IteratorBegin(values),
+                          IteratorEnd(values),
+                          IteratorBegin(output),
+                          comp);
+  }  
+
   template<class InputPortal, class OutputPortal>
   DAX_CONT_EXPORT static
   void LowerBoundsPortal(const InputPortal &input,
@@ -287,6 +302,15 @@ private:
   {
     ::thrust::sort(IteratorBegin(values),
                    IteratorEnd(values));
+  }
+
+  template<class ValuesPortal, class Compare>
+  DAX_CONT_EXPORT static void SortPortal(const ValuesPortal &values,
+                                         Compare comp)
+  {
+    ::thrust::sort(IteratorBegin(values),
+                   IteratorEnd(values),
+                   comp);
   }
 
   template<class StencilPortal>
@@ -411,6 +435,20 @@ public:
                       output.PrepareForOutput(numberOfValues));
   }
 
+  template<typename T, class CIn, class CVal, class COut, class Compare>
+  DAX_CONT_EXPORT static void LowerBounds(
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag>& input,
+      const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag>& values,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag>& output,
+      Compare comp)
+  {
+    dax::Id numberOfValues = values.GetNumberOfValues();
+    LowerBoundsPortal(input.PrepareForInput(),
+                      values.PrepareForInput(),
+                      output.PrepareForOutput(numberOfValues),
+                      comp);
+  }  
+
   template<class CIn, class COut>
   DAX_CONT_EXPORT static void LowerBounds(
       const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTag> &input,
@@ -516,6 +554,15 @@ public:
   {
     SortPortal(values.PrepareForInPlace());
   }
+
+
+  template<typename T, class Container, class Compare>
+  DAX_CONT_EXPORT static void Sort(
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterTag>& values,
+      Compare comp)
+  {
+    SortPortal(values.PrepareForInPlace(),comp);
+  }    
 
   template<typename T, class CStencil, class COut>
   DAX_CONT_EXPORT static void StreamCompact(

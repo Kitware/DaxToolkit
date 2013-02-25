@@ -22,6 +22,8 @@
 #include <dax/cont/arg/FieldArrayHandle.h>
 #include <dax/cont/arg/FieldConstant.h>
 #include <dax/cont/arg/FieldMap.h>
+#include <dax/cont/arg/GeometryUniformGrid.h>
+#include <dax/cont/arg/GeometryUnstructuredGrid.h>
 #include <dax/cont/arg/TopologyUniformGrid.h>
 #include <dax/cont/arg/TopologyUnstructuredGrid.h>
 

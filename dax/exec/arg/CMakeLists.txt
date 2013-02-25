@@ -24,6 +24,7 @@ set(headers
   FieldMap.h
   FieldPortal.h
   FindBinding.h
+  GeometryCell.h
   TopologyCell.h
   )
 

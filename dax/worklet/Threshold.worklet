@@ -22,7 +22,7 @@
 #include <dax/exec/VectorOperations.h>
 #include <dax/exec/WorkletMapCell.h>
 #include <dax/exec/WorkletGenerateTopology.h>
-#include <dax/math/Compare.h>
+#include <dax/VectorTraits.h>
 
 namespace dax {
 namespace worklet {
@@ -41,8 +41,7 @@ struct ThresholdFunction {
 
   DAX_EXEC_EXPORT void operator()(T value)
   {
-    valid &= (dax::math::GreaterEqual()(value,Min)) &&
-             (dax::math::LessEqual()(value,Max));
+    valid &= value >= this->Min && value <= this->Max;
   }
 };
 

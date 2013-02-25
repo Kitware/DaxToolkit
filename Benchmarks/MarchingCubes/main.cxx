@@ -40,6 +40,6 @@ int main(int argc, char* argv[])
 
   dax::cont::UniformGrid<> grid = CreateInputStructure(MAX_SIZE);
 
-  RunDAXPipeline(grid);
+  RunDAXPipeline(grid, parser.pipeline());
   return 0;
 }

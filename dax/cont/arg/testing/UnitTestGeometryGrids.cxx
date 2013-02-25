@@ -14,23 +14,23 @@
 //
 //=============================================================================
 
-#include <dax/cont/arg/TopologyUniformGrid.h>
-#include <dax/cont/arg/TopologyUnstructuredGrid.h>
+#include <dax/cont/arg/GeometryUniformGrid.h>
+#include <dax/cont/arg/GeometryUnstructuredGrid.h>
 
 #include <dax/cont/internal/testing/Testing.h>
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Tag.h>
-#include <dax/exec/WorkletMapField.h>
+#include <dax/exec/WorkletMapCell.h>
 
 namespace{
-using dax::cont::arg::Topology;
+using dax::cont::arg::Geometry;
 
 
-struct Worklet1: public dax::exec::WorkletMapField
+struct Worklet1: public dax::exec::WorkletMapCell
 {
-  typedef void ControlSignature(Topology(In),Topology(Out));
+  typedef void ControlSignature(Geometry(In),Geometry(Out));
 };
 
 template<typename T, typename U>
@@ -49,7 +49,6 @@ void verifyConstBindingExists(const T& t, const U& u)
   (void)binded;
 }
 
-
 //-----------------------------------------------------------------------------
 struct BindTopoGrids
 {
@@ -58,7 +57,7 @@ struct BindTopoGrids
     {
     dax::cont::internal::TestGrid<GridType> grid(4);
     verifyBindingExists<GridType,GridType>( grid.GetRealGrid(), grid.GetRealGrid() );
-    verifyBindingExists<GridType,GridType>( grid.GetRealGrid(), grid.GetRealGrid() );
+    verifyConstBindingExists<GridType,GridType>( grid.GetRealGrid(), grid.GetRealGrid() );
     }
 };
 
@@ -68,7 +67,7 @@ void TopoGrids()
   }
 }
 
-int UnitTestTopologyGrids(int, char *[])
+int UnitTestGeometryGrids(int, char *[])
 {
   return dax::cont::internal::Testing::Run(TopoGrids);
 }

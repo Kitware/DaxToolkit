@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
   int pipeline = parser.pipeline();
   std::cout << "Pipeline #" << pipeline << std::endl;
 
-  RunDAXPipeline(grid);
+  RunDAXPipeline(grid,parser.pipeline());
 
   return 0;
 }

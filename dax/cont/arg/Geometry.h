@@ -13,24 +13,15 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_scheduling_SchedulerTags_h
-#define __dax_cont_scheduling_SchedulerTags_h
+#ifndef __dax_cont_arg_Geometry_h
+#define __dax_cont_arg_Geometry_h
 
+namespace dax { namespace cont { namespace arg {
 
-namespace dax { namespace cont { namespace scheduling {
+/// \headerfile Geometry.h dax/cont/arg/Geometry.h
+/// \brief Identify Geometry parameters in worklet \c ControlSignature declarations.
+class Geometry { };
 
-//tag to used to specify the default algorithm
-struct ScheduleDefaultTag{};
+}}} // namespace dax::cont::arg
 
-//tag to used to specify a cell based invocation
-struct ScheduleCellsTag{};
-
-//tag used to specify the Topology Generation
-struct GenerateTopologyTag{};
-
-//tag used to specify the Coordinates Generation
-struct GenerateInterpolatedCellsTag{};
-
-} } } //dax::cont::scheduling
-
-#endif //__dax_cont_scheduling_SchedulerTags_h
+#endif //__dax_cont_arg_Geometry_h

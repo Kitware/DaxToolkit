@@ -20,18 +20,16 @@
 #include <dax/CellTag.h>
 #include <dax/exec/CellField.h>
 #include <dax/exec/CellVertices.h>
-#include <dax/exec/VectorOperations.h>
-#include <dax/exec/WorkletGenerateTopology.h>
+#include <dax/exec/InterpolatedCellPoints.h>
+#include <dax/exec/WorkletInterpolatedCell.h>
 #include <dax/exec/WorkletMapCell.h>
-#include <dax/Extent.h>
-#include <dax/math/VectorAnalysis.h>
 
 #include <dax/worklet/internal/MarchingCubesTable.h>
 
 namespace dax {
 namespace worklet {
 
-// --------------------------------------------------- GetVoxelClassification()
+// -----------------------------------------------------------------------------
 template<typename T, typename U>
 DAX_EXEC_EXPORT
 int GetVoxelClassification(const T isoValue, const U& values )
@@ -70,41 +68,23 @@ private:
 
 
 // -----------------------------------------------------------------------------
-class MarchingCubesTopology : public dax::exec::WorkletGenerateTopology
+class MarchingCubesTopology : public dax::exec::WorkletInterpolatedCell
 {
 public:
 
-  typedef void ControlSignature(Topology,
-                                Topology(Out),
-                                Field(Point,In),
-                                Field(Point,In),
-                                Field(Out));
-  typedef void ExecutionSignature(_1,
-                                  Vertices(_2),
-                                  _3,
-                                  _4,
-                                  _5,
-                                  VisitIndex,
-                                  WorkId);
+  typedef void ControlSignature(Topology, Geometry(Out), Field(Point,In));
+  typedef void ExecutionSignature(Vertices(_1), _2, _3, VisitIndex);
 
   DAX_CONT_EXPORT MarchingCubesTopology(dax::Scalar isoValue)
     : IsoValue(isoValue){ }
 
 
-  template<class InputCellTag>
+  template<class InputCellTag, class OutputCellTag >
   DAX_EXEC_EXPORT void operator()(
-      InputCellTag,
-      dax::exec::CellVertices<dax::CellTagTriangle> &outVertices,
+      const dax::exec::CellVertices<InputCellTag>& verts,
+      dax::exec::InterpolatedCellPoints<OutputCellTag>& outCell,
       const dax::exec::CellField<dax::Scalar,InputCellTag> &values,
-      const dax::exec::CellField<dax::Vector3,InputCellTag> &coordinates,
-      // The following argument needs to be fixed. It should be expressed
-      // as a CellField class, but we do not yet have the ability to output
-      // point data values from the generate topology worklet. Currently it
-      // is a hack that defines a cell field as a tuple of coordinates for
-      // each cell.
-      dax::Tuple<dax::Vector3, 3> &outCoordinates,
-      const dax::Id& inputCellVisitIndex,
-      const dax::Id& workId) const
+      dax::Id inputCellVisitIndex) const
   {
     using dax::worklet::internal::marchingcubes::TriTable;
     // These should probably be available through the voxel class
@@ -114,12 +94,11 @@ public:
         {0,4}, {1,5}, {2,6}, {3,7},
       };
 
-    const int voxelClass =
-        GetVoxelClassification(IsoValue, values.GetAsTuple());
+    const int voxelClass = GetVoxelClassification(IsoValue, values);
 
-    //we need to save the coordinates and the connectivity
+    //save the point ids and ratio to interpolate the points of the new cell
     for (dax::Id outVertIndex = 0;
-         outVertIndex < outVertices.NUM_VERTICES;
+         outVertIndex < outCell.NUM_VERTICES;
          ++outVertIndex)
       {
       const unsigned char edge = TriTable[voxelClass][(inputCellVisitIndex*3)+outVertIndex];
@@ -127,22 +106,19 @@ public:
       const int vertB = voxelVertEdges[edge][1];
 
       // Find the weight for linear interpolation
-      const dax::Scalar den = values[vertB]-values[vertA];
-      const dax::Scalar num = IsoValue - values[vertA];
-      const dax::Scalar t =  num/den ;
+      const dax::Scalar weight = (IsoValue - values[vertA]) /
+                                (values[vertB]-values[vertA]);
 
-      outCoordinates[outVertIndex] = dax::math::Lerp(coordinates[vertA],
-                                                     coordinates[vertB],
-                                                     t);
-      outVertices[outVertIndex] =
-          workId*outVertices.NUM_VERTICES + outVertIndex;
+      outCell.SetInterpolationPoint(outVertIndex,
+                                    verts[vertA],
+                                    verts[vertB],
+                                    weight);
       }
   }
 
 private:
   dax::Scalar IsoValue;
 };
-
 }
 } //dax::worklet
 

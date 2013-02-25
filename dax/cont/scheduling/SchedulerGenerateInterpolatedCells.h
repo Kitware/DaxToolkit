@@ -15,20 +15,22 @@
 //===========================================x==================================
 #if !defined(BOOST_PP_IS_ITERATING)
 
-#ifndef __dax_cont_scheduling_SchedulerGenerateTopology_h
-#define __dax_cont_scheduling_SchedulerGenerateTopology_h
+#ifndef __dax_cont_scheduling_SchedulerGenerateInterpolatedCells_h
+#define __dax_cont_scheduling_SchedulerGenerateInterpolatedCells_h
 
 #include <dax/Types.h>
-#include <dax/cont/DeviceAdapter.h>
+#include <dax/CellTraits.h>
 #include <dax/cont/arg/ConceptMap.h>
+#include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/Scheduler.h>
+#include <dax/cont/scheduling/AddVisitIndexArg.h>
+#include <dax/cont/scheduling/SchedulerDefault.h>
+#include <dax/cont/scheduling/SchedulerTags.h>
+#include <dax/cont/scheduling/VerifyUserArgLength.h>
 #include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/cont/sig/VisitIndex.h>
-#include <dax/cont/Scheduler.h>
-#include <dax/cont/scheduling/SchedulerTags.h>
-#include <dax/cont/scheduling/SchedulerDefault.h>
-#include <dax/cont/scheduling/VerifyUserArgLength.h>
-#include <dax/cont/scheduling/AddVisitIndexArg.h>
+#include <dax/math/Compare.h>
 
 #include <dax/exec/internal/kernel/GenerateWorklets.h>
 
@@ -39,8 +41,12 @@
 namespace dax { namespace cont { namespace scheduling {
 
 template <class DeviceAdapterTag>
-class Scheduler<DeviceAdapterTag,dax::cont::scheduling::GenerateTopologyTag>
+class Scheduler<DeviceAdapterTag,dax::cont::scheduling::GenerateInterpolatedCellsTag>
 {
+  typedef dax::cont::scheduling::Scheduler<DeviceAdapterTag,
+    dax::cont::scheduling::ScheduleDefaultTag> SchedulerDefaultType;
+  const SchedulerDefaultType DefaultScheduler;
+  
 public:
   //default constructor so we can insantiate const schedulers
   DAX_CONT_EXPORT Scheduler():DefaultScheduler(){}
@@ -48,7 +54,7 @@ public:
   //copy constructor so that people can pass schedulers around by value
   DAX_CONT_EXPORT Scheduler(
       const Scheduler<DeviceAdapterTag,
-          dax::cont::scheduling::GenerateTopologyTag>& other ):
+          dax::cont::scheduling::GenerateInterpolatedCellsTag>& other ):
   DefaultScheduler(other.DefaultScheduler)
   {
   }
@@ -73,11 +79,69 @@ public:
   //todo implement the GenerateNewTopology method with C11 syntax
 
 #else
-# define BOOST_PP_ITERATION_PARAMS_1 (3, (2, 10, <dax/cont/scheduling/SchedulerGenerateTopology.h>))
+# define BOOST_PP_ITERATION_PARAMS_1 (3, (2, 10, <dax/cont/scheduling/SchedulerGenerateInterpolatedCells.h>))
 # include BOOST_PP_ITERATE()
 #endif
 
 private:
+//take the input grid and the interpolated grid to produce the new points
+//that fill the output grid. In the future the user should be able to
+//to specify the coordinate array to interpolate on, instead of it
+//being based on the input grid. This would allow us to do some smarter
+//contouring on moving coordinate fields, where the classification doesn't change
+template <typename InputGrid,
+          typename OutputGrid>
+DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
+                                        OutputGrid& outputGrid,
+                                        bool removeDuplicates ) const
+{
+  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
+        Algorithm;
+  if(removeDuplicates)
+    {
+    // the sort and unique will get us the subset of new points
+    // the lower bounds on the subset and the original coords, will produce 
+    // the resulting topology array
+
+    dax::math::SortLess comparisonFunctor;
+    typename OutputGrid::PointCoordinatesType uniqueCoords;
+    Algorithm::Copy(outputGrid.GetPointCoordinates(),
+                    uniqueCoords);
+    
+    Algorithm::Sort(uniqueCoords, comparisonFunctor );
+    Algorithm::Unique(uniqueCoords);
+    Algorithm::LowerBounds(uniqueCoords,
+                           outputGrid.GetPointCoordinates(),
+                           outputGrid.GetCellConnections(),
+                           comparisonFunctor );
+
+    //reduce and resize outputGrid
+    //outputGrid.SetPointCoordinates(uniqueCoords);
+    Algorithm::Copy(uniqueCoords,outputGrid.GetPointCoordinates());
+    }  
+  
+  //all we have to do is convert the interpolated cell coords into real coords.
+  //The vector 3 that is the coords have the correct point ids we need to read
+  //we just don't have a nice way to map those to a functor.
+  
+  //1. We write worklet that has access to all the points, easy to write
+  //no clue on the speed.
+
+  //2. talk to bob to see how he did this in parallel, I expect it is far
+  //more complicated than what I am going to do
+
+  //end result is I am going to use the raw schedule and not write a proper
+  //worklet to this step
+  typedef typename InputGrid::PointCoordinatesType::PortalConstExecution InPortalType;
+  typedef typename OutputGrid::PointCoordinatesType::PortalExecution OutPortalType;
+  
+  const dax::Id numPoints = outputGrid.GetNumberOfPoints();
+  dax::exec::internal::kernel::InterpolateEdgesToPoint<InPortalType,OutPortalType> 
+    interpolate( inputGrid.GetPointCoordinates().PrepareForInput(),
+                 outputGrid.GetPointCoordinates().PrepareForOutput(numPoints));
+  
+  Algorithm::Schedule(interpolate, numPoints);
+}
 
 //want the basic implementation to be easily edited, instead of inside
 //the BOOST_PP block and unreadable. This version of GenerateNewTopology
@@ -86,7 +150,7 @@ template <class WorkletType,
           typename InputGrid,
           typename OutputGrid>
 DAX_CONT_EXPORT void GenerateNewTopology(
-    dax::cont::GenerateTopology<WorkletType,DeviceAdapterTag>& newTopo,
+    dax::cont::GenerateInterpolatedCells<WorkletType,DeviceAdapterTag>& newTopo,
     const InputGrid& inputGrid,
     OutputGrid& outputGrid) const
   {
@@ -121,94 +185,42 @@ DAX_CONT_EXPORT void GenerateNewTopology(
   // We are done with scannedNewCellCounts.
   scannedNewCellCounts.ReleaseResources();
 
-  //we get our magic here. we need to wrap some paramemters and pass
+  //make fake indicies so that the worklet can write out the interpolated
+  //cell points information as geometry
+  outputGrid.GetCellConnections().PrepareForOutput(
+     numNewCells * dax::CellTraits<typename OutputGrid::CellTag>::NUM_VERTICES);
+  this->DefaultScheduler.Invoke(dax::exec::internal::kernel::Index(),
+                               outputGrid.GetCellConnections());  
+
+  //Next step is to set the scheduler to fill the output geometry
+  //with the interpolated cell values. We use the outputGrid,
+  //since a vec3 is what the interpolated cell values and the outputGrids
+  //coordinate space are
+
+  //we get our magic here. we need to wrap some parameters and pass
   //them to the real scheduler
   this->DefaultScheduler.Invoke(newTopo.GetWorklet(),
                    dax::cont::make_Permutation(validCellRange,inputGrid,
                                              inputGrid.GetNumberOfCells()),
                    outputGrid);
-  //call this here as we have stripped out the input and output grids
-  if(newTopo.GetRemoveDuplicatePoints())
-    {
-    this->FillPointMask(inputGrid,outputGrid, newTopo.GetPointMask());
-    this->RemoveDuplicatePoints(inputGrid,outputGrid, newTopo.GetPointMask());
-    }
+
+  //now that the interpolated grid is filled we now have to properly
+  //fixup the topology and coordinates
+  this->ResolveCoordinates(inputGrid,outputGrid,
+                           newTopo.GetRemoveDuplicatePoints());
   }
-
-template<class InGridType, class OutGridType, typename MaskType>
-DAX_CONT_EXPORT void FillPointMask(const InGridType &inGrid,
-                       const OutGridType &outGrid,
-                       MaskType mask) const
-  {
-  typedef typename MaskType::PortalExecution MaskPortalType;
-
-  // Clear out the mask, have to allocate the size first
-  // so that  works properly
-  mask.PrepareForOutput(inGrid.GetNumberOfPoints());
-
-  this->DefaultScheduler.Invoke(dax::exec::internal::kernel::ClearUsedPointsFunctor(),
-           mask);
-
-  // Mark every point that is used at least once.
-  // This only works when outGrid is an UnstructuredGrid.
-  this->DefaultScheduler.Invoke(dax::exec::internal::kernel::GetUsedPointsFunctor(),
-           dax::cont::make_Permutation(outGrid.GetCellConnections(),
-           mask,
-           inGrid.GetNumberOfPoints()));
-  }
-
-template<typename InGridType,typename OutGridType, typename MaskType>
-DAX_CONT_EXPORT void RemoveDuplicatePoints(const InGridType &inGrid,
-                        OutGridType& outGrid,
-                        MaskType const mask ) const
-  {
-    // Here we are assuming OutGridType is an UnstructuredGrid so that we
-    // can set point and connectivity information.
-
-    typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
-        Algorithm;
-
-    //extract the point coordinates that we need for the new topology
-    Algorithm::StreamCompact(inGrid.GetPointCoordinates(),
-                             mask,
-                             outGrid.GetPointCoordinates());
-
-    typedef typename OutGridType::CellConnectionsType CellConnectionsType;
-    typedef typename OutGridType::PointCoordinatesType PointCoordinatesType;
-
-    //compact the topology array to reference the extracted
-    //coordinates ids
-    {
-    // Make usedPointIds become a sorted array of used point indices.
-    // If entry i in usedPointIndices is j, then point index i in the
-    // output corresponds to point index j in the input.
-    typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
-        DeviceAdapterTag> IdArrayHandleType;
-    IdArrayHandleType usedPointIndices;
-    Algorithm::Copy(outGrid.GetCellConnections(), usedPointIndices);
-    Algorithm::Sort(usedPointIndices);
-    Algorithm::Unique(usedPointIndices);
-    // Modify the connections of outGrid to point to compacted points.
-    Algorithm::LowerBounds(usedPointIndices, outGrid.GetCellConnections());
-    }
-  }
-
-  typedef dax::cont::scheduling::Scheduler<DeviceAdapterTag,
-    dax::cont::scheduling::ScheduleDefaultTag> SchedulerDefaultType;
-  const SchedulerDefaultType DefaultScheduler;
-
 };
 
 } } }
 
-#endif //__dax_cont_scheduling_GenerateTopology_h
+#endif //__dax_cont_scheduling_GenerateInterpolatedCells_h
 
 #else // defined(BOOST_PP_IS_ITERATING)
 public: //needed so that each iteration of invoke is public
 template <class WorkletType, _dax_pp_typename___T>
 DAX_CONT_EXPORT void Invoke(WorkletType w, _dax_pp_params___(a)) const
   {
-  //we are being passed dax::cont::GenerateTopology,
+  //we are being passed dax::cont::GenerateInterpolatedCells,
   //we want the actual exec worklet that is being passed to scheduleGenerateTopo
   typedef typename WorkletType::WorkletType RealWorkletType;
   typedef dax::cont::scheduling::VerifyUserArgLength<RealWorkletType,
@@ -230,7 +242,7 @@ template <class WorkletType,
           typename OutputGrid,
           _dax_pp_typename___T>
 DAX_CONT_EXPORT void GenerateNewTopology(
-    dax::cont::GenerateTopology<WorkletType,DeviceAdapterTag>& newTopo,
+    dax::cont::GenerateInterpolatedCells<WorkletType,DeviceAdapterTag>& newTopo,
     const InputGrid& inputGrid,
     OutputGrid& outputGrid,
     _dax_pp_params___(a)) const
@@ -284,22 +296,31 @@ DAX_CONT_EXPORT void GenerateNewTopology(
   AddVisitIndexFunctor createVisitIndex;
   createVisitIndex(this->DefaultScheduler,validCellRange,visitIndex);
 
-  DerivedWorkletType derivedWorklet(newTopo.GetWorklet());
+  //make fake indicies so that the worklet can write out the interpolated
+  //cell points information as geometry
+  outputGrid.GetCellConnections().PrepareForOutput(
+     numNewCells * dax::CellTraits<typename OutputGrid::CellTag>::NUM_VERTICES);
+  this->DefaultScheduler.Invoke(dax::exec::internal::kernel::Index(),
+                               outputGrid.GetCellConnections());  
 
-  //we get our magic here. we need to wrap some paramemters and pass
-  //them to the real scheduler. The visitIndex must be last, as that is the
-  //hardcoded location the ReplaceAndExtendSignatures will place it at
+  //Next step is to set the scheduler to fill the output geometry
+  //with the interpolated cell values. We use the outputGrid,
+  //since a vec3 is what the interpolated cell values and the outputGrids
+  //coordinate space are
+  
+  //we get our magic here. we need to wrap some parameters and pass
+  //them to the real scheduler
+  DerivedWorkletType derivedWorklet(newTopo.GetWorklet());
   this->DefaultScheduler.Invoke(derivedWorklet,
                    dax::cont::make_Permutation(validCellRange,inputGrid,
                                              inputGrid.GetNumberOfCells()),
                    outputGrid,
-                  _dax_pp_args___(a),
-                  visitIndex);
-  //call this here as we have stripped out the input and output grids
-  if(newTopo.GetRemoveDuplicatePoints())
-    {
-    this->FillPointMask(inputGrid,outputGrid, newTopo.GetPointMask());
-    this->RemoveDuplicatePoints(inputGrid,outputGrid, newTopo.GetPointMask());
-    }
+                   _dax_pp_args___(a),
+                   visitIndex);
+
+  //now that the interpolated grid is filled we now have to properly
+  //fixup the topology and coordinates
+  this->ResolveCoordinates(inputGrid,outputGrid,
+                           newTopo.GetRemoveDuplicatePoints());
   }
 #endif // defined(BOOST_PP_IS_ITERATING)

@@ -28,7 +28,8 @@
 //these headers are worklet types that
 //we need to specialize on to determine the correct
 //scheduler implementation to choose
-#include <dax/cont/ScheduleGenerateTopology.h>
+#include <dax/cont/GenerateTopology.h>
+#include <dax/cont/GenerateInterpolatedCells.h>
 #include <dax/exec/WorkletMapCell.h>
 
 //include the scheduler implementation tags
@@ -51,19 +52,31 @@ namespace internal
   template<typename WorkType>
   struct is_GenerateTopo
   {
-    //if worktype derives from ScheduleGenerateTopologyBase
+    //if worktype derives from GenerateTopologyBase
     //the typedef 'type' will be true
     typedef typename boost::is_base_of<
-                        dax::cont::internal::ScheduleGenerateTopologyBase,
+                        dax::cont::internal::GenerateTopologyBase,
                         WorkType >::type Valid;
 
-    typedef dax::cont::scheduling::ScheduleGenerateTopologyTag SchedulerTag;
+    typedef dax::cont::scheduling::GenerateTopologyTag SchedulerTag;
+  };
+
+  template<typename WorkType>
+  struct is_GenerateCells
+  {
+    //if worktype derives from GenerateInterpolatedCellsBase
+    //the typedef 'type' will be true
+    typedef typename boost::is_base_of<
+                        dax::cont::internal::GenerateInterpolatedCellsBase,
+                        WorkType >::type Valid;
+
+    typedef dax::cont::scheduling::GenerateInterpolatedCellsTag SchedulerTag;
   };
 
   template<typename WorkType>
   struct is_CellBased
   {
-    //if worktype derives from ScheduleGenerateTopologyBase
+    //if worktype derives from GenerateTopologyBase
     //the typedef 'type' will be true
     typedef typename boost::is_base_of<
                         dax::exec::WorkletMapCell,
@@ -84,6 +97,7 @@ namespace internal
 template<class WorkType> class DetermineScheduler
 {
   typedef internal::is_GenerateTopo<WorkType> IsTopoType;
+  typedef internal::is_GenerateCells<WorkType> IsGenCoordsType;
   typedef internal::is_CellBased<WorkType> IsCellType;
   typedef internal::is_DefaultType<WorkType> IsDefaultType;
 
@@ -97,7 +111,8 @@ template<class WorkType> class DetermineScheduler
   //When you write a new scheduler, you have to implement a new is_@Scheduler@
   //and than insert that class to the vector
 
-  typedef boost::mpl::vector<IsTopoType,IsCellType,IsDefaultType>
+  typedef boost::mpl::vector<IsTopoType,IsGenCoordsType,
+                             IsCellType,IsDefaultType>
         PossibleSchedulers;
 
   //search for the first scheduler that 'type' typedef is set to the true_type

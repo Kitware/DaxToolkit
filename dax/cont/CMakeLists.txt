@@ -40,7 +40,8 @@ set(headers
   IteratorFromArrayPortal.h
   Scheduler.h
   PermutationContainer.h
-  ScheduleGenerateTopology.h
+  GenerateInterpolatedCells.h
+  GenerateTopology.h
   Timer.h
   UniformGrid.h
   UnstructuredGrid.h

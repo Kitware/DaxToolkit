@@ -383,6 +383,23 @@ public:
                          arrayPortal.GetIteratorEnd());
   }
 
+  template<typename T, class Container, class Compare>
+  DAX_CONT_EXPORT static void Sort(
+      dax::cont::ArrayHandle<T,Container,dax::tbb::cont::DeviceAdapterTagTBB>
+          &values,
+      Compare comp)
+  {
+    typedef typename dax::cont::ArrayHandle<
+        T,Container,dax::tbb::cont::DeviceAdapterTagTBB>::PortalExecution
+        PortalType;
+
+    PortalType arrayPortal = values.PrepareForInPlace();
+    ::tbb::parallel_sort(arrayPortal.GetIteratorBegin(),
+                         arrayPortal.GetIteratorEnd(),
+                         comp);
+  }
+
+
   DAX_CONT_EXPORT static void Synchronize()
   {
     // Nothing to do. This device schedules all of its operations using a

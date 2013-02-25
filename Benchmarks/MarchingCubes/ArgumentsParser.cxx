@@ -64,6 +64,12 @@ bool dax::testing::ArgumentsParser::parseArguments(int argc, char* argv[])
     {
     this->Pipeline = MARCHING_CUBES;
     }
+  else if (variables.count("pipeline") == 1 &&
+    variables["pipeline"].as<unsigned int>() == 2)
+    {
+    this->Pipeline = MARCHING_CUBES_REMOVE_DUPLICATES;
+    }
+
 
   if (variables.count("device") == 1)
     {

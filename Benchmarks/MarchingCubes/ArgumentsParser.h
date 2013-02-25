@@ -13,6 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
+#ifndef __argumentsParser_h
+#define __argumentsParser_h
 
 namespace dax { namespace testing {
 
@@ -29,7 +31,9 @@ public:
 
   enum PipelineMode
     {
-    MARCHING_CUBES = 1
+    MARCHING_CUBES = 1,
+    MARCHING_CUBES_REMOVE_DUPLICATES = 2
+
     };
   PipelineMode pipeline() const
     { return this->Pipeline; }
@@ -50,3 +54,4 @@ private:
 };
 
 }}
+#endif

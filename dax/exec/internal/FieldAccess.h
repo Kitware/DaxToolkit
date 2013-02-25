@@ -16,11 +16,8 @@
 #ifndef __dax_exec_internal_FieldAccess_h
 #define __dax_exec_internal_FieldAccess_h
 
+#include <dax/Types.h>
 #include <dax/exec/Assert.h>
-
-#include <dax/exec/internal/GridTopologies.h>
-
-namespace dax { namespace exec { class CellVoxel; }}
 
 namespace dax { namespace exec { namespace internal {
 
@@ -63,6 +60,32 @@ void FieldSetMultiple(const PortalType &arrayPortal,
 
 template<class PortalType, class WorkType, int Size>
 DAX_EXEC_EXPORT
+void FieldSetMultiple(const PortalType &arrayPortal,
+              dax::Tuple<dax::Id,Size> indices,
+              const dax::Tuple<typename PortalType::ValueType,Size>& values,
+              const WorkType &work)
+{
+  for (int i = 0; i < Size; i++)
+    {
+    FieldSet(arrayPortal, indices[i], values[i], work);
+    }
+}
+
+template<class PortalType, class WorkType, int Size>
+DAX_EXEC_EXPORT
+void FieldGetMultiple(const PortalType &arrayPortal,
+              dax::Id index,
+              dax::Tuple<typename PortalType::ValueType,Size>& values,
+              const WorkType &work)
+{
+  for (int i = 0; i < Size; i++)
+    {
+    values[i] = FieldGet(arrayPortal, index+i, work);
+    }
+}
+
+template<class PortalType, class WorkType, int Size>
+DAX_EXEC_EXPORT
 dax::Tuple<typename PortalType::ValueType, Size>
 FieldGetMultiple(const PortalType &arrayPortal,
                  dax::Tuple<dax::Id,Size> indices,
@@ -74,19 +97,6 @@ FieldGetMultiple(const PortalType &arrayPortal,
     values[i] = FieldGet(arrayPortal, indices[i], work);
     }
   return values;
-}
-
-// This function may prove to be inefficient if called multiple times,
-// particularly for voxels as the connections array is recomputed for each
-// call.
-template<class PortalType, class CellType, class WorkType>
-DAX_EXEC_EXPORT
-dax::Tuple<typename PortalType::ValueType, CellType::NUM_POINTS>
-FieldGetPointsForCell(const PortalType &arrayPortal,
-                      const CellType &cell,
-                      const WorkType &work)
-{
-  return FieldGetMultiple(arrayPortal, cell.GetPointIndices(), work);
 }
 
 }}} // namespace dax::exec::internal

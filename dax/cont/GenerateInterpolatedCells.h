@@ -14,13 +14,16 @@
 //
 //=============================================================================
 
-#ifndef __dax_cont_internal_ScheduleGenerateTopology_h
-#define __dax_cont_internal_ScheduleGenerateTopology_h
+#ifndef __dax_cont_GenerateInterpolatedCells_h
+#define __dax_cont_GenerateInterpolatedCells_h
+
+#include <boost/type_traits/is_base_of.hpp>
 
 #include <dax/Types.h>
 
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 #include <dax/exec/internal/GridTopologies.h>
+#include <dax/exec/WorkletInterpolatedCell.h>
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
@@ -30,66 +33,56 @@ namespace cont {
 
 //we need a base class with no template parameters so that the scheduling triats
 //infastructure can properly determine when a worklet is derived from
-//ScheduleGenerateTopology
+//GenerateInterpolatedCells
 namespace internal {
-  class ScheduleGenerateTopologyBase {};
+  class GenerateInterpolatedCellsBase {};
 }
 
-/// ScheduleGenerateTopology is the control enviorment representation of a
+/// GenerateInterpolatedCells is the control environment representation of a
 /// an algorithm that takes a classification of a given input topology
-/// and will generate a new topology, but doesn't create new cells
+/// and will generate a new coordinates and topology
 template<
     class WorkletType_,
-    class DeviceAdapterTag= DAX_DEFAULT_DEVICE_ADAPTER_TAG>
+    class DeviceAdapterTag= DAX_DEFAULT_DEVICE_ADAPTER_TAG,
+    class ClassifyContainerTag = ArrayContainerControlTagBasic>
 
-class ScheduleGenerateTopology :
-    public dax::cont::internal::ScheduleGenerateTopologyBase
+class GenerateInterpolatedCells :
+    public dax::cont::internal::GenerateInterpolatedCellsBase
 {
+  //verify that the worklet base of this class matches the scheduler
+  //we are going to run on. Named after how to fix the problem with
+  //using a worklet that doesn't inherit from WorkletInterpolatedCell
+  typedef typename boost::is_base_of<
+          dax::exec::WorkletInterpolatedCell,
+          WorkletType_ > Worklet_Should_Inherit_From_WorkletGenerateCells;
 public:
   typedef WorkletType_ WorkletType;
+
+
+
+
   //classify type is the type
   typedef dax::Id ClassifyType;
 
-  //mask type is the internal
-  typedef dax::Id MaskType;
-
-  typedef dax::cont::ArrayHandle< MaskType,
-          ArrayContainerControlTagBasic, DeviceAdapterTag> PointMaskType;
-
   typedef dax::cont::ArrayHandle< ClassifyType,
-          ArrayContainerControlTagBasic, DeviceAdapterTag> ClassifyResultType;
+          ClassifyContainerTag, DeviceAdapterTag> ClassifyResultType;
 
-  ScheduleGenerateTopology(ClassifyResultType classification):
+  GenerateInterpolatedCells(ClassifyResultType classification):
     RemoveDuplicatePoints(true),
     ReleaseClassification(true),
     Classification(classification),
-    PointMask(),
     Worklet()
     {
+    BOOST_MPL_ASSERT((Worklet_Should_Inherit_From_WorkletGenerateCells));
     }
 
-  ScheduleGenerateTopology(ClassifyResultType classification, WorkletType& work):
+  GenerateInterpolatedCells(ClassifyResultType classification, WorkletType& work):
     RemoveDuplicatePoints(true),
     ReleaseClassification(true),
     Classification(classification),
-    PointMask(),
     Worklet(work)
     {
-    }
-
-  template<typename T, typename Container1, typename Container2>
-  bool CompactPointField(
-      const dax::cont::ArrayHandle<T,Container1,DeviceAdapterTag>& input,
-      dax::cont::ArrayHandle<T,Container2,DeviceAdapterTag>& output)
-    {
-    if(this->GetRemoveDuplicatePoints())
-      {
-      dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>::
-          StreamCompact(input, this->PointMask, output);
-
-      return true;
-      }
-    return false;
+    BOOST_MPL_ASSERT((Worklet_Should_Inherit_From_WorkletGenerateCells));
     }
 
   void SetReleaseClassification(bool b){ ReleaseClassification = b; }
@@ -97,10 +90,6 @@ public:
 
   ClassifyResultType GetClassification() const { return Classification; }
   void DoReleaseClassification() { Classification.ReleaseResourcesExecution(); }
-
-  PointMaskType GetPointMask() { return PointMask; }
-  const PointMaskType GetPointMask() const { return PointMask; }
-
 
   void SetRemoveDuplicatePoints(bool b){ RemoveDuplicatePoints = b; }
   bool GetRemoveDuplicatePoints() const { return RemoveDuplicatePoints; }
@@ -111,11 +100,10 @@ private:
   bool RemoveDuplicatePoints;
   bool ReleaseClassification;
   ClassifyResultType Classification;
-  PointMaskType PointMask;
   WorkletType Worklet;
 
 };
 
 } } //namespace dax::cont
 
-#endif // __dax_cont_ScheduleGenerateTopology_h
+#endif // __dax_cont_GenerateInterpolatedCells_h

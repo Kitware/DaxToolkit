@@ -18,10 +18,11 @@
 #include <iostream>
 
 #include <dax/CellTag.h>
+#include <dax/CellTraits.h>
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/Scheduler.h>
-#include <dax/cont/ScheduleGenerateTopology.h>
+#include <dax/cont/GenerateTopology.h>
 #include <dax/cont/Timer.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
@@ -130,15 +131,16 @@ void PrintContentsToStream(dax::cont::UnstructuredGrid<T>& grid, Stream &stream)
     }
 
   //print cells
-  stream << "CELLS " << num_cells << " " << num_cells  * (T::NUM_POINTS+1) << std::endl;
+  enum {NUM_VERTS = dax::CellTraits<T>::NUM_VERTICES};
+  stream << "CELLS " << num_cells << " " << num_cells  * (NUM_VERTS+1) << std::endl;
 
-  std::vector<dax::Id> contTopo(num_cells*T::NUM_POINTS);
+  std::vector<dax::Id> contTopo(num_cells*NUM_VERTS);
   grid.GetCellConnections().CopyInto(contTopo.begin());
 
   dax::Id index=0;
-  for(dax::Id i=0; i < num_cells; ++i,index+=8)
+  for(dax::Id i=0; i < num_cells; ++i,index+=NUM_VERTS)
     {
-    stream << T::NUM_POINTS << " ";
+    stream << NUM_VERTS << " ";
     stream << contTopo[index+0] << " ";
     stream << contTopo[index+1] << " ";
     stream << contTopo[index+2] << " ";
@@ -172,15 +174,15 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
 
   dax::cont::Timer<> timer;
 
-  typedef dax::cont::ScheduleGenerateTopology<dax::worklet::ThresholdTopology> ScheduleGT;
-  typedef ScheduleGT::ClassifyResultType  ClassifyResultType;
+  typedef dax::cont::GenerateTopology<dax::worklet::ThresholdTopology> GenTopo;
+  typedef GenTopo::ClassifyResultType  ClassifyResultType;
   typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
 
   ClassifyResultType classification;
   schedule.Invoke(ThresholdClassifyType(THRESHOLD_MIN,THRESHOLD_MAX),
            grid, intermediate1, classification);
 
-  ScheduleGT resolveTopology(classification);
+  GenTopo resolveTopology(classification);
   //resolveTopology.SetRemoveDuplicatePoints(false);
   schedule.Invoke(resolveTopology,grid,grid2);
   resolveTopology.CompactPointField(intermediate1,resultHandle);
@@ -194,13 +196,13 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
   std::cout << "threshold GetNumberOfPoints: " << grid2.GetNumberOfPoints() << std::endl;
   PrintResults(1, time);
 
-
-
-  //rough dump to file
-//  std::ofstream file;
-//  file.open ("daxResult.vtk");
-//  PrintContentsToStream(grid2,file);
-//  file.close();
+  if(time < 0) //rough dump to file, currently disabled
+    {
+    std::ofstream file;
+    file.open ("daxResult.vtk");
+    PrintContentsToStream(grid2,file);
+    file.close();
+    }
 
   CheckValues(resultHandle);
 }

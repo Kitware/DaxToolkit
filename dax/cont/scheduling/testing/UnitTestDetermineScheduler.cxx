@@ -20,12 +20,14 @@
 
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/internal/testing/Testing.h>
-#include <dax/cont/ScheduleGenerateTopology.h>
+#include <dax/cont/GenerateInterpolatedCells.h>
+#include <dax/cont/GenerateTopology.h>
 #include <dax/cont/scheduling/DetermineScheduler.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/exec/arg/FieldPortal.h>
 #include <dax/exec/WorkletMapField.h>
 #include <dax/exec/WorkletMapCell.h>
+#include <dax/exec/WorkletInterpolatedCell.h>
 #include <dax/exec/WorkletGenerateTopology.h>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/mpl/assert.hpp>
@@ -35,6 +37,7 @@ namespace{
 struct fieldWorklet : dax::exec::WorkletMapField {};
 struct cellWorklet : dax::exec::WorkletMapCell {};
 struct topoWorklet : dax::exec::WorkletGenerateTopology {};
+struct interpCellWorklet : dax::exec::WorkletInterpolatedCell {};
 
 void DetermineScheduler()
 {
@@ -49,11 +52,17 @@ void DetermineScheduler()
   typedef dax::cont::scheduling::DetermineScheduler<cellWorklet>
     DetermineCellScheduler;
 
-  typedef dax::cont::ScheduleGenerateTopology<topoWorklet>
+  typedef dax::cont::GenerateTopology<topoWorklet>
     ConstTopoWorklet;
 
   typedef dax::cont::scheduling::DetermineScheduler<ConstTopoWorklet>
     DetermineTopoScheduler;
+
+  typedef dax::cont::GenerateInterpolatedCells<interpCellWorklet>
+    ConstInterpCellWorklet;
+
+  typedef dax::cont::scheduling::DetermineScheduler<ConstInterpCellWorklet>
+    DetermineInterpCellScheduler;
 
 
   //verify that filed worklets map to the default scheduler
@@ -70,7 +79,13 @@ void DetermineScheduler()
   //verify that generate topolo worklets map  to the topologly scheduler
   typedef DetermineTopoScheduler::SchedulerTag TopoScheduler;
   BOOST_MPL_ASSERT((boost::is_same<TopoScheduler,
-                   dax::cont::scheduling::ScheduleGenerateTopologyTag>));
+                   dax::cont::scheduling::GenerateTopologyTag>));
+
+  //verify that generate coordinates worklets map
+  //to the gen coordinates scheduler
+  typedef DetermineInterpCellScheduler::SchedulerTag InterpCellScheduler;
+  BOOST_MPL_ASSERT((boost::is_same<InterpCellScheduler,
+                   dax::cont::scheduling::GenerateInterpolatedCellsTag>));
 }
 
 
