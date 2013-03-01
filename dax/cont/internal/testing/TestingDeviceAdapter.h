@@ -34,6 +34,8 @@
 #include <dax/cont/internal/testing/Testing.h>
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 
+#include <dax/exec/internal/IJKIndex.h>
+
 #include <utility>
 #include <vector>
 
@@ -115,6 +117,11 @@ public:
       this->Array.Set(index, OFFSET);
     }
 
+    DAX_EXEC_EXPORT void operator()(dax::exec::internal::IJKIndex index) const
+    {
+      this->Array.Set(index.GetValue(), OFFSET);
+    }
+
     DAX_CONT_EXPORT void SetErrorMessageBuffer(
         const dax::exec::internal::ErrorMessageBuffer &) {  }
 
@@ -142,6 +149,12 @@ public:
     DAX_EXEC_EXPORT void operator()(dax::Id index) const
     {
       this->Array.Set(index, this->Array.Get(index) + index);
+    }
+
+    DAX_EXEC_EXPORT void operator()(dax::exec::internal::IJKIndex index) const
+    {
+      dax::Id id = index.GetValue();
+      this->Array.Set(id, this->Array.Get(id) + id);
     }
 
     DAX_CONT_EXPORT void SetErrorMessageBuffer(
@@ -349,11 +362,12 @@ private:
                     "Timer counted too far or system really busy.");
   }
 
-  static DAX_CONT_EXPORT void TestSchedule()
+  static DAX_CONT_EXPORT void TestAlgorithmSchedule()
   {
     std::cout << "-------------------------------------------" << std::endl;
-    std::cout << "Testing Schedule" << std::endl;
+    std::cout << "Testing Schedule with dax::Id" << std::endl;
 
+    {
     std::cout << "Allocating execution array" << std::endl;
     IdContainer container;
     IdArrayManagerExecution manager;
@@ -382,12 +396,43 @@ private:
       DAX_TEST_ASSERT(value == index + OFFSET,
                       "Got bad value for scheduled kernels.");
       }
+    } //release memory
+
+    //verify that the schedule call works with id3
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing Schedule with dax::Id3" << std::endl;
+
+    {
+    std::cout << "Allocating execution array" << std::endl;
+    IdContainer container;
+    IdArrayManagerExecution manager;
+    manager.AllocateArrayForOutput(container,
+                                   ARRAY_SIZE * ARRAY_SIZE * ARRAY_SIZE);
+    dax::Id3 maxRange(ARRAY_SIZE);
+
+    std::cout << "Running clear." << std::endl;
+    Algorithm::Schedule(ClearArrayKernel(manager.GetPortal()), maxRange);
+
+    std::cout << "Running add." << std::endl;
+    Algorithm::Schedule(AddArrayKernel(manager.GetPortal()), maxRange);
+
+    std::cout << "Checking results." << std::endl;
+    manager.RetrieveOutputData(container);
+
+    const dax::Id maxId = ARRAY_SIZE * ARRAY_SIZE * ARRAY_SIZE;
+    for (dax::Id index = 0; index < maxId; index++)
+      {
+      dax::Id value = container.GetPortalConst().Get(index);
+      DAX_TEST_ASSERT(value == index + OFFSET,
+                      "Got bad value for scheduled dax::Id3 kernels.");
+      }
+    } //release memory
   }
 
-  static DAX_CONT_EXPORT void TestScheduleClass()
+  static DAX_CONT_EXPORT void TestContScheduler()
   {
     std::cout << "-------------------------------------------" << std::endl;
-    std::cout << "Testing New Schedule Function" << std::endl;
+    std::cout << "Testing dax::cont::Scheduler class" << std::endl;
 
     std::vector<dax::Scalar> field(ARRAY_SIZE);
     for (dax::Id i = 0; i < ARRAY_SIZE; i++)
@@ -442,7 +487,7 @@ private:
 
     std::cout << "Running clear on subset." << std::endl;
     scheduler.Invoke(ClearArrayMapKernel(),
-          make_MapAdapter(subSetLookupHandle,fullFieldHandle,ARRAY_SIZE));
+          make_Permutation(subSetLookupHandle,fullFieldHandle,ARRAY_SIZE));
 
     for (dax::Id index = 0; index < ARRAY_SIZE; index+=2)
       {
@@ -450,7 +495,6 @@ private:
       DAX_TEST_ASSERT(value == OFFSET,
                       "Got bad value for subset scheduled kernel.");
       }
-
   }
 
   static DAX_CONT_EXPORT void TestStreamCompact()
@@ -890,11 +934,11 @@ private:
       TestArrayManagerExecution();
       TestOutOfMemory();
       TestTimer();
-      TestSchedule();
+      TestAlgorithmSchedule();
       TestErrorExecution();
       TestScanInclusive();
       TestScanExclusive();
-      TestScheduleClass();
+      TestContScheduler();
       TestStreamCompactWithStencil();
       TestStreamCompact();
       TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique

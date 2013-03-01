@@ -53,12 +53,21 @@ class ConceptMap<Topology(Tags), dax::cont::UnstructuredGrid< Cell,
   TopologyType Topology;
 
 public:
+  //All Topology binding classes must export the cell tag and grid tag
+  //This allows us to do better scheduling based on cell / grid types
+  typedef typename GridType::CellTag CellTypeTag;
+  typedef typename GridType::GridTypeTag GridTypeTag;
+
+  typedef GridType ContArg;
   typedef ExecGridType ExecArg;
   typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Cell>::Tags DomainTags;
 
   ConceptMap(GridType g): Grid(g) {}
 
   ExecArg GetExecArg() { return ExecGridType(this->Topology); }
+
+  //All topology fields are required by scheduler to expose the cont arg
+  DAX_CONT_EXPORT const ContArg& GetContArg() const { return this->Grid; }
 
   void ToExecution(dax::Id size, boost::true_type)
     { /* Output */
@@ -110,12 +119,21 @@ class ConceptMap<Topology(Tags), const dax::cont::UnstructuredGrid< Cell,
   TopologyType Topology;
 
 public:
+  //All Topology binding classes must export the cell tag and grid tag
+  //This allows us to do better scheduling based on cell / grid types
+  typedef typename GridType::CellTag CellTypeTag;
+  typedef typename GridType::GridTypeTag GridTypeTag;
+
+  typedef GridType ContArg;
   typedef ExecGridType ExecArg;
   typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Cell>::Tags DomainTags;
 
   ConceptMap(GridType g): Grid(g) {}
 
   ExecArg GetExecArg() { return ExecGridType(this->Topology); }
+
+  //All topology fields are required by scheduler to expose the cont arg
+  DAX_CONT_EXPORT const ContArg& GetContArg() const { return this->Grid; }
 
   void ToExecution(dax::Id, boost::false_type)
     { /* Input  */

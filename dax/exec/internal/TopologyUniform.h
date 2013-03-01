@@ -17,13 +17,57 @@
 #define __dax__exec__internal__TopologyUniform_h
 
 #include <dax/CellTag.h>
+#include <dax/CellTraits.h>
 #include <dax/Extent.h>
 
 #include <dax/exec/CellVertices.h>
-
+#include <dax/exec/internal/IJKIndex.h>
 namespace dax {
 namespace exec {
 namespace internal {
+
+namespace detail {
+/// \brief Holds the implict values to compute the point indices for a cell
+///
+/// This class is a convenience wrapper to delay storing implicit cells indices
+///
+template<class CellTag>
+class ImplicitCellVertices
+{
+public:
+  const static int NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
+  DAX_EXEC_EXPORT
+  ImplicitCellVertices( dax::Id3 dims, dax::Id startingPointIdx ):
+    XDim(dims[0]),
+    FirstPointIndex(startingPointIdx),
+    SecondPointIndex(startingPointIdx + (dims[0] * dims[1]) )
+  {
+  }
+
+  DAX_EXEC_EXPORT
+  ImplicitCellVertices( dax::Id3 dims,
+                       const dax::exec::internal::IJKIndex& index ):
+    XDim(dims[0])
+  {
+    const dax::Id3 &ijk = index.GetIJK();
+    this->FirstPointIndex =  ijk[0] + ijk[1] * dims[0] + ijk[2] * dims[0] * dims[1];
+    this->SecondPointIndex = this->FirstPointIndex + (dims[0] * dims[1]);
+  }
+
+  // Although this copy constructor should be identical to the default copy
+  // constructor, we have noticed that NVCC's default copy constructor can
+  // incur a significant slowdown.
+  DAX_EXEC_EXPORT
+  ImplicitCellVertices(const ImplicitCellVertices &src) :
+    XDim(src.XDim),
+    FirstPointIndex(src.FirstPointIndex),
+    SecondPointIndex(src.SecondPointIndex)
+    {
+    }
+
+  dax::Id XDim, FirstPointIndex, SecondPointIndex;
+};
+}
 
 /// Contains all the parameters necessary to specify the topology of a uniform
 /// rectilinear grid.
@@ -75,27 +119,43 @@ struct TopologyUniform {
     return this->GetPointCoordiantes(ijk);
   }
 
-  /// Returns the point indices for all vertices.
-  ///
   DAX_EXEC_EXPORT
-  dax::exec::CellVertices<CellTag> GetCellConnections(dax::Id cellIndex) const
+  detail::ImplicitCellVertices<dax::CellTagVoxel>
+  ComputeImplictVertices(const dax::Id& cellIndex) const
   {
-    const dax::Id3 dimensions = dax::extentDimensions(this->Extent);
-    const dax::Id pointIndex = indexToConnectivityIndex(cellIndex,this->Extent);
+    typedef detail::ImplicitCellVertices<dax::CellTagVoxel> ReturnType;
+    return ReturnType( dax::extentDimensions(this->Extent),
+                       indexToConnectivityIndex(cellIndex,this->Extent));
+  }
 
-    dax::exec::CellVertices<CellTag> connections;
-    connections[0] = pointIndex;
-    connections[1] = connections[0] + 1;
-    connections[2] = connections[0] + dimensions[0] + 1;
-    connections[3] = connections[0] + dimensions[0];
+  DAX_EXEC_EXPORT
+  detail::ImplicitCellVertices<dax::CellTagVoxel>
+  ComputeImplictVertices(const dax::exec::internal::IJKIndex& cellIndex) const
+  {
+  typedef detail::ImplicitCellVertices<dax::CellTagVoxel> ReturnType;
+  return ReturnType(dax::extentDimensions(this->Extent), cellIndex);
+  }
 
-    const dax::Id layerSize = dimensions[0]*dimensions[1];
-    connections[4] = connections[0] + layerSize;
-    connections[5] = connections[1] + layerSize;
-    connections[6] = connections[2] + layerSize;
-    connections[7] = connections[3] + layerSize;
+  template< class IndexType >
+  DAX_EXEC_EXPORT
+  dax::exec::CellVertices<CellTag>
+  GetCellConnections(const IndexType& cellIndex) const
+  {
 
-    return connections;
+    typedef detail::ImplicitCellVertices<CellTag> ReturnType;
+    ReturnType indices = this->ComputeImplictVertices(cellIndex);
+
+    dax::exec::CellVertices<CellTag> values;
+
+    values[0] = indices.FirstPointIndex;
+    values[1] = indices.FirstPointIndex + 1;
+    values[2] = indices.FirstPointIndex + indices.XDim + 1;
+    values[3] = indices.FirstPointIndex + indices.XDim;
+    values[4] = indices.SecondPointIndex;
+    values[5] = indices.SecondPointIndex + 1;
+    values[6] = indices.SecondPointIndex + indices.XDim + 1;
+    values[7] = indices.SecondPointIndex + indices.XDim;
+    return values;
   }
 } __attribute__ ((aligned(4)));
 

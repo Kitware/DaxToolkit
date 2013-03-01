@@ -73,7 +73,7 @@ private:
 template<class Key, class Value>
 DAX_CONT_EXPORT
 dax::cont::PermutationContainer<Key,Value>
-make_MapAdapter(Key& k,Value& v, dax::Id valueLen)
+make_Permutation(Key& k,Value& v, dax::Id valueLen)
 {
   return dax::cont::PermutationContainer<Key,Value>(k,v,valueLen);
 }

@@ -72,6 +72,13 @@ public:
     Algorithm::Schedule(functor, numInstances);
   }
 
+  template<class Functor>
+  DAX_CONT_EXPORT static void Schedule(Functor functor,
+                                       dax::Id3 rangeMax)
+  {
+    Algorithm::Schedule(functor, rangeMax);
+  }
+
   template<typename T, class CIn, class COut>
   DAX_CONT_EXPORT static T ScanInclusive(
       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagTestAlgorithmGeneral> &input,

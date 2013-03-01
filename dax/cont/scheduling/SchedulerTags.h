@@ -19,11 +19,13 @@
 
 namespace dax { namespace cont { namespace scheduling {
 
-//tag to be used to specifiy the default scheduler algorithm
+//tag to used to specify the default algorithm
 struct ScheduleDefaultTag{};
 
+//tag to used to specify a cell based invocation
+struct ScheduleCellsTag{};
 
-//tag to be used to specifiy the default scheduler algorithm
+//tag used to specify the Topology Generation
 struct ScheduleGenerateTopologyTag{};
 
 } } } //dax::cont::scheduling

@@ -46,6 +46,7 @@ public:
 # include <dax/Types.h>
 # include <dax/cont/internal/Bindings.h>
 # include <dax/exec/arg/FindBinding.h>
+# include <dax/exec/internal/IJKIndex.h>
 # include <dax/exec/internal/WorkletBase.h>
 # include <dax/internal/GetNthType.h>
 # include <dax/internal/Members.h>
@@ -54,7 +55,27 @@ namespace dax { namespace exec { namespace internal {
 
 namespace detail {
 
+template<typename IndexType>
 struct SaveOutArgs
+{
+protected:
+  const IndexType Index;
+  const dax::exec::internal::WorkletBase& Work;
+public:
+  DAX_EXEC_EXPORT SaveOutArgs(IndexType index,
+                              const dax::exec::internal::WorkletBase& w):
+    Index(index), Work(w)
+    {}
+
+  template <typename BindType>
+  DAX_EXEC_EXPORT void operator()(BindType& execArg) const
+    {
+    execArg.SaveExecutionResult(Index.GetValue(),Work);
+    }
+};
+
+template<>
+struct SaveOutArgs<dax::Id>
 {
 protected:
   const dax::Id Index;
@@ -118,7 +139,7 @@ protected:                                                              \
       ExecutionSignature, FunctorMemberMap<Invocation>                  \
     > ArgumentsType;                                                    \
   WorkletType Worklet;                                                  \
-  ArgumentsType Arguments;                                              \
+  const ArgumentsType Arguments;                                        \
 public:                                                                 \
   DAX_CONT_EXPORT                                                       \
   FunctorImpl(WorkletType worklet, BindingsType& bindings):             \
@@ -128,7 +149,17 @@ public:                                                                 \
     ArgumentsType instance(this->Arguments);                            \
     _dax_FunctorImpl_##r                                                \
     this->Worklet(_dax_pp_enum___(_dax_FunctorImpl_Argument));          \
-    instance.ForEachExec(SaveOutArgs(id,this->Worklet));                \
+    instance.ForEachExec(                                               \
+        SaveOutArgs<dax::Id>(id,this->Worklet));                        \
+    }                                                                   \
+  DAX_EXEC_EXPORT void operator()(                                      \
+                                dax::exec::internal::IJKIndex id) const \
+    {                                                                   \
+    ArgumentsType instance(this->Arguments);                            \
+    _dax_FunctorImpl_##r                                                \
+    this->Worklet(_dax_pp_enum___(_dax_FunctorImpl_Argument));          \
+    instance.ForEachExec(                                               \
+      SaveOutArgs<dax::exec::internal::IJKIndex>(id,this->Worklet));    \
     }
 
 # if __cplusplus >= 201103L

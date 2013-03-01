@@ -20,21 +20,11 @@
 #include <dax/CellTraits.h>
 
 #include <dax/cont/ArrayHandle.h>
-
+#include <dax/cont/internal/GridTags.h>
 #include <dax/exec/internal/TopologyUnstructured.h>
 
 namespace dax {
 namespace cont {
-
-/// A tag you can use to identify when grid is an unstructured grid.
-///
-struct UnstructuredGridTag {  };
-
-/// A subtag of UnstructuredGridTag that specifies the type of cell in the grid
-/// through templating.
-///
-template<class CellTag>
-struct UnstructuredGridOfCell : UnstructuredGridTag {  };
 
 /// This class defines the topology of an unstructured grid. An unstructured
 /// grid can only contain cells of a single type.
@@ -48,7 +38,7 @@ class UnstructuredGrid
 {
 public:
   typedef CellT CellTag;
-  typedef UnstructuredGridOfCell<CellTag> GridTypeTag;
+  typedef dax::cont::internal::UnstructuredGridOfCell<CellTag> GridTypeTag;
 
   typedef dax::cont::ArrayHandle<
       dax::Id, CellConnectionsContainerControlTag, DeviceAdapterTag>

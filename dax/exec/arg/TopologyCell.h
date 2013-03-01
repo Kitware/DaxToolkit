@@ -46,11 +46,13 @@ public:
                                    CellVerticesType const&>::type ReturnType;
 
   typedef CellVerticesType SaveType;
+  typedef CellVerticesType ValueType;
 
   DAX_CONT_EXPORT TopologyCell(const TopologyType& t): Topo(t), Cell(0) {  }
 
+  template<typename IndexType>
   DAX_EXEC_EXPORT ReturnType operator()(
-      dax::Id index,
+      const IndexType& index,
       const dax::exec::internal::WorkletBase& work)
   {
     (void)work;  // Shut up compiler.
@@ -109,8 +111,8 @@ public:
     {
     }
 
-private:
   TopologyType Topo;
+private:
   CellVerticesType Cell;
 };
 

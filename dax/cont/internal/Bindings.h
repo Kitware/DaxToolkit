@@ -35,7 +35,7 @@
 
 namespace dax { namespace cont { namespace internal {
 
-template <typename Invocation> class Bindings;
+template <typename Invocation_> class Bindings;
 
 namespace detail {
 
@@ -96,6 +96,7 @@ template <typename Worklet, typename...T>
 class Bindings<Worklet(T...)>:
   public detail::BindingsMembers<Worklet(T...)>::type
 {
+  typedef Worklet Invocation(T...);
   typedef typename detail::BindingsMembers<Worklet(T...)>::type derived;
  public:
   Bindings(T...v): derived(std::forward<T>(v)...) {}
@@ -139,6 +140,7 @@ class Bindings<Worklet(_dax_pp_T___)>:
 {
   typedef typename detail::BindingsMembers<Worklet(_dax_pp_T___)>::type derived;
  public:
+  typedef Worklet Invocation(_dax_pp_T___);
   Bindings(_dax_pp_params___(v)): derived(_dax_pp_args___(v)) {}
 };
 #endif // _dax_pp_sizeof___T > 0

@@ -20,6 +20,7 @@
 #else // !defined(DAX_DOXYGEN_ONLY)
 
 #include <dax/Types.h>
+#include <dax/CellTag.h>
 #include <dax/cont/arg/ConceptMap.h>
 #include <dax/cont/arg/Topology.h>
 #include <dax/cont/internal/Bindings.h>
@@ -28,6 +29,7 @@
 
 #include <dax/exec/CellField.h>
 #include <dax/exec/CellVertices.h>
+#include <dax/exec/internal/IJKIndex.h>
 
 #include <dax/exec/internal/WorkletBase.h>
 
@@ -38,8 +40,9 @@ namespace dax { namespace exec { namespace arg {
 template <typename Invocation, int N>
 class BindCellPoints
 {
-  typedef typename dax::cont::internal::FindBinding<Invocation, dax::cont::arg::Topology>::type TopoIndex;
-  typedef typename dax::cont::internal::Bindings<Invocation>::template GetType<TopoIndex::value>::type TopoControlBinding;
+  typedef typename dax::cont::internal::Bindings<Invocation> BindingsType;
+  typedef typename dax::cont::internal::FindBinding<BindingsType, dax::cont::arg::Topology>::type TopoIndex;
+  typedef typename BindingsType::template GetType<TopoIndex::value>::type TopoControlBinding;
   typedef typename TopoControlBinding::ExecArg TopoExecArgType;
   TopoExecArgType TopoExecArg;
 
@@ -65,18 +68,17 @@ public:
     ExecArg(bindings.template Get<N>().GetExecArg()),
     Value(ComponentType()) {}
 
-
+  template<typename IndexType>
   DAX_EXEC_EXPORT ReturnType operator()(
-      dax::Id cellIndex,
+      const IndexType& cellIndex,
       const dax::exec::internal::WorkletBase& work)
     {
-    const dax::exec::CellVertices<CellTag>& pointIndices = this->TopoExecArg(
-                                                               cellIndex, work);
+    const dax::exec::CellVertices<CellTag>& pointIndices = this->TopoExecArg(cellIndex, work);
     for(int vertexIndex = 0;
         vertexIndex < pointIndices.NUM_VERTICES;
         ++vertexIndex)
       {
-      this->Value[vertexIndex] = this->ExecArg(pointIndices[vertexIndex], work);
+      this->Value[vertexIndex] = this->ExecArg(pointIndices[vertexIndex],work);
       }
     return this->Value;
     }

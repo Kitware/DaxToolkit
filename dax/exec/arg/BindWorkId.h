@@ -41,7 +41,14 @@ struct BindWorkId
   // this class, but this seems to solve the problem.
   DAX_EXEC_CONT_EXPORT BindWorkId(const BindWorkId &) {}
 
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id id,
+  template<typename IndexType>
+  DAX_EXEC_EXPORT ReturnType operator()(const IndexType& id,
+                              const dax::exec::internal::WorkletBase&)
+    {
+    return id.value();
+    }
+
+  DAX_EXEC_EXPORT ReturnType operator()(const dax::Id& id,
                               const dax::exec::internal::WorkletBase&)
     {
     return id;

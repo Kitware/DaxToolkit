@@ -108,7 +108,25 @@ public:
 
   FieldPortal(const PortalType& portal): Storage(), Portal(portal){}
 
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
+  template<typename IndexType>
+  DAX_EXEC_EXPORT ReturnType operator()(const IndexType& index,
+                      const dax::exec::internal::WorkletBase& work)
+    {
+    //if we have the In tag we have local store so use that value,
+    //otherwise call the portal directly
+    return this->Storage.Get(index.GetValue(), this->Portal,work);
+    }
+
+  template<typename IndexType>
+  DAX_EXEC_EXPORT ReturnType operator()(const IndexType& index,
+                  const dax::exec::internal::WorkletBase& work) const
+    {
+    //if we have the In tag we have local store so use that value,
+    //otherwise call the portal directly
+    return this->Storage.Get(index.GetValue(), this->Portal,work);
+    }
+
+  DAX_EXEC_EXPORT ReturnType operator()(const dax::Id& index,
                       const dax::exec::internal::WorkletBase& work)
     {
     //if we have the In tag we have local store so use that value,
@@ -116,12 +134,13 @@ public:
     return this->Storage.Get(index, this->Portal,work);
     }
 
-  DAX_EXEC_EXPORT ReturnType operator()(dax::Id index,
+  DAX_EXEC_EXPORT ReturnType operator()(const dax::Id& index,
                   const dax::exec::internal::WorkletBase& work) const
     {
     //if we have the In tag we have local store so use that value,
     //otherwise call the portal directly
-    return this->Storage.Get(index, this->Portal,work);
+    return this->Storage.Get(index
+                             , this->Portal,work);
     }
 
   //After needs to be tagged on out, since you get call .Set

@@ -25,6 +25,7 @@ set(headers
   TopologyUniform.h
   TopologyUnstructured.h
   WorkletBase.h
+  IJKIndex.h
   )
 
 dax_declare_headers(${headers})

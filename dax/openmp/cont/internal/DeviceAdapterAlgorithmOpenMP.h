@@ -90,9 +90,20 @@ public:
   DAX_CONT_EXPORT
   static void Schedule(FunctorType functor, dax::Id numInstances)
   {
+     Superclass::Schedule(
+           DeviceAdapterAlgorithm::ScheduleKernel<FunctorType>(functor),
+           numInstances);
+  }
+
+  template<class FunctorType>
+  DAX_CONT_EXPORT
+  static void Schedule(FunctorType functor, dax::Id3 rangeMax)
+  {
+    //default behavior for the general algorithm is to defer to the default
+    //schedule implementation.
     Superclass::Schedule(
-          DeviceAdapterAlgorithm::ScheduleKernel<FunctorType>(functor),
-          numInstances);
+           DeviceAdapterAlgorithm::ScheduleKernel<FunctorType>(functor),
+           rangeMax);
   }
 
   DAX_CONT_EXPORT static void Synchronize()

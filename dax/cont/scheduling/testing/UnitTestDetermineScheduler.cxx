@@ -61,10 +61,11 @@ void DetermineScheduler()
   BOOST_MPL_ASSERT((boost::is_same<FieldScheduler,
                    dax::cont::scheduling::ScheduleDefaultTag>));
 
+
   //verify that map cell worklets map to the default scheduler
   typedef DetermineCellScheduler::SchedulerTag CellScheduler;
   BOOST_MPL_ASSERT((boost::is_same<CellScheduler,
-                   dax::cont::scheduling::ScheduleDefaultTag>));
+                   dax::cont::scheduling::ScheduleCellsTag>));
 
   //verify that generate topolo worklets map  to the topologly scheduler
   typedef DetermineTopoScheduler::SchedulerTag TopoScheduler;

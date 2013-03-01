@@ -23,6 +23,7 @@
 #include <dax/cont/internal/DeviceAdapterAlgorithm.h>
 #include <dax/cont/internal/DeviceAdapterTagSerial.h>
 
+#include <dax/exec/internal/IJKIndex.h>
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 
 #include <boost/iterator/counting_iterator.hpp>
@@ -224,6 +225,37 @@ public:
       }
   }
 
+  template<class FunctorType>
+  DAX_CONT_EXPORT
+  static void Schedule(FunctorType functor, dax::Id3 rangeMax)
+  {
+    const dax::Id MESSAGE_SIZE = 1024;
+    char errorString[MESSAGE_SIZE];
+    errorString[0] = '\0';
+    dax::exec::internal::ErrorMessageBuffer
+        errorMessage(errorString, MESSAGE_SIZE);
+
+    functor.SetErrorMessageBuffer(errorMessage);
+
+    dax::exec::internal::IJKIndex index(rangeMax);
+    for( dax::Id k=0; k!=rangeMax[2]; ++k)
+      {
+      index.SetK(k);
+      for( dax::Id j=0; j!=rangeMax[1]; ++j)
+        {
+        index.SetJ(j);
+        for (dax::Id i=0; i < rangeMax[0]; ++i)
+          {
+          index.SetI(i);
+          functor(index);
+          }
+        }
+      }
+    if (errorMessage.IsErrorRaised())
+      {
+      throw dax::cont::ErrorExecution(errorString);
+      }
+  }
 
   template<typename T, class Container>
   DAX_CONT_EXPORT static void Sort(

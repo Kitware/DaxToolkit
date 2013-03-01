@@ -451,11 +451,12 @@ make_ArrayHandle(const T *array, dax::Id length)
 /// and end of the array.
 ///
 template<typename T,
+         typename Allocator,
          class ArrayContainerControlTag,
          class DeviceAdapterTag>
 DAX_CONT_EXPORT
 dax::cont::ArrayHandle<T, ArrayContainerControlTag, DeviceAdapterTag>
-make_ArrayHandle(const std::vector<T> &array,
+make_ArrayHandle(const std::vector<T,Allocator> &array,
                  ArrayContainerControlTag,
                  DeviceAdapterTag)
 {
@@ -465,20 +466,21 @@ make_ArrayHandle(const std::vector<T> &array,
   return ArrayHandleType(PortalType(&array.front(), &array.back() + 1));
 }
 template<typename T,
+         typename Allocator,
          class ArrayContainerControlTag>
 DAX_CONT_EXPORT
 dax::cont::ArrayHandle<T, ArrayContainerControlTag, DAX_DEFAULT_DEVICE_ADAPTER_TAG>
-make_ArrayHandle(const std::vector<T> &array, ArrayContainerControlTag)
+make_ArrayHandle(const std::vector<T,Allocator> &array, ArrayContainerControlTag)
 {
   return make_ArrayHandle(array,
                           ArrayContainerControlTag(),
                           DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 }
-template<typename T>
+template<typename T, typename Allocator>
 DAX_CONT_EXPORT
 dax::cont::ArrayHandle<
     T, DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG, DAX_DEFAULT_DEVICE_ADAPTER_TAG>
-make_ArrayHandle(const std::vector<T> &array)
+make_ArrayHandle(const std::vector<T,Allocator> &array)
 {
   return make_ArrayHandle(array,
                           DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG(),

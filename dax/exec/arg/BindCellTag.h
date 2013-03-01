@@ -41,8 +41,9 @@ public:
     CellTag()
     {}
 
+  template<typename IndexType>
   DAX_EXEC_EXPORT ReturnType operator()(
-      dax::Id daxNotUsed(index),
+      const IndexType& daxNotUsed(index),
       const dax::exec::internal::WorkletBase& daxNotUsed(work))
   {
     return this->CellTag;

@@ -56,6 +56,13 @@ namespace internal {
 ///     ...
 ///   }
 ///
+///   template<class Functor>
+///   DAX_CONT_EXPORT static void Schedule(Functor functor,
+///                                        dax::Id3 maxRange)
+///   {
+///     ...
+///   }
+///
 ///   template<typename T, class Container>
 ///   DAX_CONT_EXPORT static void Sort(
 ///       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values)
@@ -266,6 +273,7 @@ private:
   };
 
 public:
+
   template<typename T, typename U, class CIn, class CStencil, class COut>
   DAX_CONT_EXPORT static void StreamCompact(
       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag>& input,

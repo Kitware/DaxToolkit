@@ -19,8 +19,10 @@ set(headers
   CollectCount.h
   CreateExecutionResources.h
   DetermineScheduler.h
+  DetermineIndicesAndGridType.h
   Scheduler.h
   SchedulerDefault.h
+  SchedulerCells.h
   SchedulerGenerateTopology.h
   SchedulerTags.h
   VerifyUserArgLength.h

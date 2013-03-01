@@ -499,6 +499,17 @@ public:
       }
   }
 
+  template<class FunctorType>
+  DAX_CONT_EXPORT
+  static void Schedule(FunctorType functor, const dax::Id3& rangeMax)
+  {
+    //default behavior for the general algorithm is to defer to the default
+    //schedule implementation. if you want to customize schedule for certain
+    //grid types, you need to specialize this method
+    typedef DeviceAdapterAlgorithmThrust<DeviceAdapterTag> DAAT;
+    DAAT::Schedule(functor, rangeMax[0]*rangeMax[1]*rangeMax[2]);
+  }
+
   template<typename T, class Container>
   DAX_CONT_EXPORT static void Sort(
       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag>& values)
