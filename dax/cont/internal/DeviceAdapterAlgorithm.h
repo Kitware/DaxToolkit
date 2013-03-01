@@ -131,21 +131,23 @@ struct DeviceAdapterAlgorithm
   /// Calls the \c functor on several threads. This is the function used in the
   /// control environment to spawn activity in the execution environment. \c
   /// functor is a function-like object that can be invoked with the calling
-  /// specification <tt>functor(dax::Id index)</tt>. It also has a method called
-  /// from the control environment to establish the error reporting buffer with
-  /// the calling specification <tt>functor.SetErrorMessageBuffer(const
+  /// specification <tt>functor(dax::Id3 index)</tt> or <tt>functor(dax::Id
+  /// index)</tt>. It also has a method called from the control environment to
+  /// establish the error reporting buffer with the calling specification
+  /// <tt>functor.SetErrorMessageBuffer(const
   /// dax::exec::internal::ErrorMessageBuffer &errorMessage)</tt>. This object
   /// can be stored in the functor's state such that if RaiseError is called on
   /// it in the execution environment, an ErrorExecution will be thrown from
   /// Schedule.
   ///
   /// The argument of the invoked functor uniquely identifies the thread or
-  /// instance of the invocation. There should be one invocation for each index
-  /// in the range [0, \c numInstances].
+  /// instance of the invocation. It is at the device adapter's discretion
+  /// whether to schedule on 1D or 3D indices, so the functor should have an
+  /// operator() overload for each index type. If 3D indices are used, there is
+  /// one invocation for every i, j, k value between [0, 0, 0] and \c rangeMax.
+  /// If 1D indices are used, this Schedule behaves as if <tt>Schedule(functor,
+  /// rangeMax[0]*rangeMax[1]*rangeMax[2])</tt> were called.
   ///
-  /// This function is an optional function that device adapters can specialize
-  /// on to handle better cell based iteration. Primary used for better
-  /// uniform grid iteration.
   template<class Functor, class IndiceType>
   DAX_CONT_EXPORT static void Schedule(Functor functor,
                                        dax::Id3 rangeMax);

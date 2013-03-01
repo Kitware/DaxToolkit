@@ -49,10 +49,16 @@ namespace internal {
 ///    : DeviceAdapterAlgorithmGeneral<DeviceAdapterAlgorithm<DeviceAdapterTagFoo>,
 ///                                    DeviceAdapterTagFoo>
 /// {
-///   template<class Functor, class GridTypeTag>
+///   template<class Functor>
 ///   DAX_CONT_EXPORT static void Schedule(Functor functor,
-///                                        dax::Id numInstances,
-///                                        GridTypeTag gridTag)
+///                                        dax::Id numInstances)
+///   {
+///     ...
+///   }
+///
+///   template<class Functor>
+///   DAX_CONT_EXPORT static void Schedule(Functor functor,
+///                                        dax::Id3 maxRange)
 ///   {
 ///     ...
 ///   }
