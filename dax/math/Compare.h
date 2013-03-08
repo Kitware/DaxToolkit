@@ -23,10 +23,9 @@
 // This header file defines math functions that do comparisons.
 #include <dax/internal/MathSystemFunctions.h>
 
-//if thrust is enabled we need to allow comparisons between
-// T& and thurst::device_reference<T>
 #ifdef DAX_ENABLE_THRUST
-  #include <thrust/device_reference.h>
+  //forward declare thrust::device_reference
+  namespace thrust { template<typename T> class device_reference; }
 #endif
 
 namespace dax {
@@ -102,7 +101,7 @@ namespace detail {
 template<typename Dimensionality,int Size> struct sort_greater {
   template<typename T>
   DAX_EXEC_CONT_EXPORT bool operator()(const T& a, const T& b) const
-  { 
+  {
     for(dax::Id i=0; i < Size; ++i)
     {
     //ignore equals as that represents check next value
@@ -123,14 +122,14 @@ template<> struct sort_greater<dax::TypeTraitsVectorTag,1> {
 template<> struct sort_greater<dax::TypeTraitsVectorTag,2> {
   template<typename T>
   DAX_EXEC_CONT_EXPORT bool operator()(const T& a, const T& b) const
-  { return (a[0] > b[0]) || 
+  { return (a[0] > b[0]) ||
            (a[0] == b[0] && a[1] > b[1]);
   }
 };
 template<> struct sort_greater<dax::TypeTraitsVectorTag,3> {
   template<typename T>
   DAX_EXEC_CONT_EXPORT bool operator()(const T& a, const T& b) const
-  { return (a[0] > b[0]) || 
+  { return (a[0] > b[0]) ||
            (a[0] == b[0] && a[1] > b[1]) ||
            (a[0] == b[0] && a[1] == b[1] && a[2] > b[2]) ;
   }
@@ -138,7 +137,7 @@ template<> struct sort_greater<dax::TypeTraitsVectorTag,3> {
 template<> struct sort_greater<dax::TypeTraitsVectorTag,4> {
   template<typename T>
   DAX_EXEC_CONT_EXPORT bool operator()(const T& a, const T& b) const
-  { return (a[0] > b[0]) || 
+  { return (a[0] > b[0]) ||
            (a[0] == b[0] && a[1] > b[1]) ||
            (a[0] == b[0] && a[1] == b[1] && a[2] > b[2]) ||
            (a[0] == b[0] && a[1] == b[1] && a[2] == b[2] && a[3] > b[3]);
@@ -164,7 +163,7 @@ struct SortGreater
     enum{SIZE = dax::VectorTraits<T>::NUM_COMPONENTS};
     return detail::sort_greater<Dimensionality,SIZE>()(a,b);
   }
-  
+
 #ifdef DAX_ENABLE_THRUST
   template<typename T>
   DAX_EXEC_CONT_EXPORT bool operator()(const T& a,
@@ -174,7 +173,7 @@ struct SortGreater
     enum{SIZE = dax::VectorTraits<T>::NUM_COMPONENTS};
     return detail::sort_greater<Dimensionality,SIZE>()(a,(T)b);
   }
-#endif  
+#endif
 };
 
 //-----------------------------------------------------------------------------
@@ -182,7 +181,7 @@ namespace detail {
 template<typename Dimensionality,int Size> struct sort_less {
   template<typename T>
   DAX_EXEC_CONT_EXPORT bool operator()(const T& a, const T& b) const
-  { 
+  {
     for(dax::Id i=0; i < Size; ++i)
     {
     //ignore equals as that represents check next value
@@ -203,14 +202,14 @@ template<> struct sort_less<dax::TypeTraitsVectorTag,1> {
 template<> struct sort_less<dax::TypeTraitsVectorTag,2> {
   template<typename T>
   DAX_EXEC_CONT_EXPORT bool operator()(const T& a, const T& b) const
-  { return (a[0] < b[0]) || 
+  { return (a[0] < b[0]) ||
            (a[0] == b[0] && a[1] < b[1]);
   }
 };
 template<> struct sort_less<dax::TypeTraitsVectorTag,3> {
   template<typename T>
   DAX_EXEC_CONT_EXPORT bool operator()(const T& a, const T& b) const
-  { return (a[0] < b[0]) || 
+  { return (a[0] < b[0]) ||
            (a[0] == b[0] && a[1] < b[1]) ||
            (a[0] == b[0] && a[1] == b[1] && a[2] < b[2]) ;
   }
@@ -218,7 +217,7 @@ template<> struct sort_less<dax::TypeTraitsVectorTag,3> {
 template<> struct sort_less<dax::TypeTraitsVectorTag,4> {
   template<typename T>
   DAX_EXEC_CONT_EXPORT bool operator()(const T& a, const T& b) const
-  { return (a[0] < b[0]) || 
+  { return (a[0] < b[0]) ||
            (a[0] == b[0] && a[1] < b[1]) ||
            (a[0] == b[0] && a[1] == b[1] && a[2] < b[2]) ||
            (a[0] == b[0] && a[1] == b[1] && a[2] == b[2] && a[3] < b[3]);
@@ -254,9 +253,9 @@ struct SortLess
     enum{SIZE = dax::VectorTraits<T>::NUM_COMPONENTS};
     return detail::sort_less<Dimensionality,SIZE>()(a,(T)b);
   }
-#endif  
+#endif
 
-  
+
 
 };
 
