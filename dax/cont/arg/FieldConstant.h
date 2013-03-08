@@ -17,6 +17,7 @@
 #define __dax_cont_arg_FieldConstant_h
 
 #include <dax/Types.h>
+#include <dax/Extent.h>
 #include <dax/internal/Tags.h>
 #include <dax/cont/arg/ConceptMap.h>
 #include <dax/cont/arg/Field.h>
@@ -142,6 +143,21 @@ private:
   ExecArg ExecArg_;
 };
 
+/// \headerfile FieldConstant.h dax/cont/arg/FieldConstant.h
+/// \brief Map single dax::Extent3 values to \c Field worklet parameters.
+template <typename Tags> class ConceptMap<Field(Tags), dax::Extent3 >
+{
+  typedef dax::Extent3 Type;
+public:
+  //ignore constant values when finding size of domain
+  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Domain>::Tags DomainTags;
+  typedef dax::exec::arg::FieldConstant<Type> ExecArg;
+  explicit ConceptMap(const Type& x): ExecArg_(x) {}
+  ExecArg GetExecArg() { return this->ExecArg_; }
+  void ToExecution(dax::Id) const {}
+private:
+  ExecArg ExecArg_;
+};
 
 }}} // namespace dax::cont::arg
 
