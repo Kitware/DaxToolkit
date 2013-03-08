@@ -25,6 +25,26 @@ namespace dax {
 struct Extent3 {
   Id3 Min;
   Id3 Max;
+
+  DAX_EXEC_CONT_EXPORT Extent3() : Min(0), Max(0) {}
+
+  DAX_EXEC_CONT_EXPORT Extent3( const dax::Id3& min, const dax::Id3& max):
+    Min(min),
+    Max(max)
+    {}
+
+  DAX_EXEC_CONT_EXPORT Extent3( const Extent3& other) :
+    Min(other.Min),
+    Max(other.Max)
+    {}
+
+   DAX_EXEC_CONT_EXPORT Extent3& operator= (const Extent3& other)
+   {
+   this->Min = other.Min;
+   this->Max = other.Max;
+   return *this;
+   }
+
 } __attribute__ ((aligned(4)));
 
 /// Given an extent, returns the array dimensions in each direction.
