@@ -105,7 +105,6 @@ public:
   typedef BindDirect<Invocation,N> type;
 };
 
-
 //bind workid in the execution signature to th bindworkId class
 template <typename WorkletType, typename Invocation>
 class FindBinding<WorkletType, dax::cont::sig::WorkId, Invocation>

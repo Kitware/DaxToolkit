@@ -36,6 +36,8 @@
 
 #include <dax/exec/internal/IJKIndex.h>
 
+#include <dax/math/Compare.h>
+
 #include <utility>
 #include <vector>
 
@@ -568,10 +570,11 @@ private:
     IdArrayHandle handle;
     IdArrayHandle handle1;
     IdArrayHandle temp;
-    Algorithm::Copy(input,handle);
-    Algorithm::Copy(handle,temp);
+    Algorithm::Copy(input,temp);
     Algorithm::Sort(temp);
     Algorithm::Unique(temp);
+    
+    //verify lower and upper bounds work    
     Algorithm::LowerBounds(temp,input,handle);
     Algorithm::UpperBounds(temp,input,handle1);
 
@@ -582,8 +585,6 @@ private:
     DAX_TEST_ASSERT(
           temp.GetNumberOfValues() == 50,
           "Unique did not resize array (or size did not copy to control).");
-
-    temp.ReleaseResources();
 
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
       {
@@ -645,6 +646,82 @@ private:
     DAX_TEST_ASSERT(randomData[3] == 1, "Got bad value - UpperBound");
     DAX_TEST_ASSERT(randomData[4] == 2, "Got bad value - UpperBound");
     DAX_TEST_ASSERT(randomData[5] == 4, "Got bad value - UpperBound");
+  }
+
+  static DAX_CONT_EXPORT void TestSortWithComparisonObject()
+  {
+    std::cout << "-------------------------------------------------" << std::endl;
+    std::cout << "Sort with comparison object" << std::endl;
+    dax::Id testData[ARRAY_SIZE];
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      testData[i]= OFFSET+(i % 50);
+      }
+    IdArrayHandle input = MakeArrayHandle(testData, ARRAY_SIZE);
+
+    IdArrayHandle sorted;
+    IdArrayHandle comp_sorted;
+
+    Algorithm::Copy(input,sorted);
+    Algorithm::Copy(input,comp_sorted);
+
+    //Validate the sort, and SortGreater are inverse
+    Algorithm::Sort(sorted);
+    Algorithm::Sort(comp_sorted,dax::math::SortGreater());
+    
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      dax::Id sorted1 = sorted.GetPortalConstControl().Get(i);
+      dax::Id sorted2 = comp_sorted.GetPortalConstControl().Get(ARRAY_SIZE - (i + 1));
+      std::cout << sorted1 << "<" << sorted2 << std::endl;
+      DAX_TEST_ASSERT(sorted1 == sorted2,
+                      "Got bad sort values when using SortGreater");
+      }
+    
+    Algorithm::Sort(comp_sorted,dax::math::SortLess());   
+
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      dax::Id sorted1 = sorted.GetPortalConstControl().Get(i);
+      dax::Id sorted2 = comp_sorted.GetPortalConstControl().Get(i);
+      DAX_TEST_ASSERT(sorted1 == sorted2,
+                      "Got bad sort values when using SortLesser");
+      }   
+  }
+
+  static DAX_CONT_EXPORT void TestLowerBoundstWithComparisonObject()
+  {
+    std::cout << "-------------------------------------------------" << std::endl;
+    std::cout << "Testing LowerBounds with comparison object" << std::endl;
+    dax::Id testData[ARRAY_SIZE];
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      testData[i]= OFFSET+(i % 50);
+      }
+    IdArrayHandle input = MakeArrayHandle(testData, ARRAY_SIZE);
+
+    IdArrayHandle temp;
+    Algorithm::Copy(input,temp);
+    Algorithm::Sort(temp);
+    Algorithm::Unique(temp);
+
+    IdArrayHandle handle;
+    //verify lower and upper bounds work
+    Algorithm::LowerBounds(temp,input,handle, dax::math::SortLess());
+
+    // Check to make sure that temp was resized correctly during Unique.
+    // (This was a discovered bug at one point.)
+    temp.GetPortalConstControl();  // Forces copy back to control.
+    temp.ReleaseResourcesExecution(); // Make sure not counting on execution.
+    DAX_TEST_ASSERT(
+          temp.GetNumberOfValues() == 50,
+          "Unique did not resize array (or size did not copy to control).");
+
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      dax::Id value = handle.GetPortalConstControl().Get(i);
+      DAX_TEST_ASSERT(value == i % 50, "Got bad LowerBounds value with SortLess");
+      }
   }
 
   static DAX_CONT_EXPORT void TestScanInclusive()
@@ -934,14 +1011,18 @@ private:
       TestArrayManagerExecution();
       TestOutOfMemory();
       TestTimer();
+
       TestAlgorithmSchedule();
       TestErrorExecution();
       TestScanInclusive();
       TestScanExclusive();
+      TestSortWithComparisonObject();
+      TestLowerBoundstWithComparisonObject();
+      TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
       TestContScheduler();
       TestStreamCompactWithStencil();
       TestStreamCompact();
-      TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
+      
 
       std::cout << "Doing Worklet tests with all grid type" << std::endl;
       dax::cont::internal::GridTesting::TryAllGridTypes(TestWorklets(),

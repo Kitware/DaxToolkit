@@ -27,7 +27,7 @@ using dax::cont::arg::Field;
 
 struct Worklet1: public dax::exec::WorkletMapField
 {
-  typedef void ControlSignature(Field);
+  typedef void ControlSignature(Field(In,Out));
 };
 
 template<typename T>
@@ -38,6 +38,15 @@ void verifyBindingExists(T value)
   (void)binded;
 }
 
+template<typename T>
+void verifyConstBindingExists(const T value)
+{
+  typedef Worklet1 Invocation1(T);
+  dax::cont::internal::Bindings<Invocation1> binded(value);
+  (void)binded;
+}
+
+
 void ArrayHandle()
 {
   //confirm that we can bind to the following types:
@@ -45,14 +54,17 @@ void ArrayHandle()
   //integer
   typedef dax::cont::ArrayHandle<dax::Id> IdAType;
   verifyBindingExists<IdAType>( IdAType() );
+  verifyConstBindingExists<IdAType>( IdAType() );
 
   //scalar
   typedef dax::cont::ArrayHandle<dax::Scalar> ScalarAType;
   verifyBindingExists<ScalarAType>( ScalarAType() );
+  verifyConstBindingExists<ScalarAType>( ScalarAType() );
 
   //vector
   typedef dax::cont::ArrayHandle<dax::Vector2> VecAType;
   verifyBindingExists<VecAType>( VecAType() );
+  verifyConstBindingExists<VecAType>( VecAType() );
 
 }
 

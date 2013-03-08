@@ -28,12 +28,13 @@
 #include <sstream>
 #include <string>
 #include <dax/CellTag.h>
+#include <dax/CellTraits.h>
 #include <dax/TypeTraits.h>
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/Scheduler.h>
-#include <dax/cont/ScheduleGenerateTopology.h>
+#include <dax/cont/GenerateInterpolatedCells.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
 
@@ -49,11 +50,15 @@ const dax::Id ISOVALUE = 70;
 struct TestMarchingCubesWorklet
 {
   //----------------------------------------------------------------------------
-  template<typename GridType>
-  void operator()(const GridType&) const
+  //----------------------------------------------------------------------------
+  void operator()(const dax::cont::UniformGrid<>&) const
     {
+    typedef dax::CellTagTriangle CellType;
+
     dax::cont::internal::TestGrid<dax::cont::UniformGrid<> > inGrid(DIM);
-    dax::cont::UnstructuredGrid<dax::CellTagTriangle> outGrid;
+    dax::cont::UnstructuredGrid<CellType> outGrid;
+    
+    std::cout << "running " << std::endl;
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
     dax::Id numPoints = inGrid->GetNumberOfPoints();
@@ -67,18 +72,13 @@ struct TestMarchingCubesWorklet
     dax::cont::ArrayHandle<dax::Scalar> fieldHandle =
         dax::cont::make_ArrayHandle(field);
 
-    //schedule marching cubes worklet generate step, saving
-    //the coordinates into outGridCoordinates.
-    typedef dax::Tuple<dax::Vector3,3> TriCoordinatesType;
-    dax::cont::ArrayHandle<TriCoordinatesType> outGridCoordinates;
-
     std::cout << "Running Marching Cubes worklet" << std::endl;
     const dax::Scalar isoValue = ISOVALUE;
 
     try
       {
-      typedef dax::cont::ScheduleGenerateTopology<dax::worklet::MarchingCubesTopology> ScheduleGT;
-      typedef typename ScheduleGT::ClassifyResultType  ClassifyResultType;
+      typedef dax::cont::GenerateInterpolatedCells<dax::worklet::MarchingCubesTopology> GenerateIC;
+      typedef GenerateIC::ClassifyResultType  ClassifyResultType;
 
       //construct the scheduler that will execute all the worklets
       dax::cont::Scheduler<> scheduler;
@@ -90,29 +90,49 @@ struct TestMarchingCubesWorklet
 
       //run the first step
       ClassifyResultType classification; //array handle for the first step classification
-      scheduler.Invoke(classifyWorklet, inGrid.GetRealGrid(),
-                       fieldHandle, classification);
+      scheduler.Invoke(classifyWorklet,
+                       inGrid.GetRealGrid(),
+                       fieldHandle,
+                       classification);
 
       //construct the topology generation worklet
-      ScheduleGT generate(classification,generateWorklet);
+      GenerateIC generate(classification,generateWorklet);
       generate.SetRemoveDuplicatePoints(false);
+      //so we can use the classification again
+      generate.SetReleaseClassification(false); 
 
       //run the second step
       scheduler.Invoke(generate,
-                       inGrid.GetRealGrid(), outGrid, fieldHandle,
-                       inGrid->GetPointCoordinates(),
-                       outGridCoordinates);
+                       inGrid.GetRealGrid(),
+                       outGrid,
+                       fieldHandle);
+      
+    const dax::Id valid_num_points =
+          dax::CellTraits<CellType>::NUM_VERTICES * outGrid.GetNumberOfCells();
+    DAX_TEST_ASSERT(valid_num_points==outGrid.GetNumberOfPoints(),
+                    "Incorrect number of points in the output grid when not merging");
 
-      //we can't save the coordiantes to the grid just yet.
-      }
+    generate.SetRemoveDuplicatePoints(true);
+    //run the second step again with point merging
+
+    dax::cont::UnstructuredGrid<CellType> secondOutGrid;
+    scheduler.Invoke(generate,
+                     inGrid.GetRealGrid(),
+                     secondOutGrid,
+                     fieldHandle);
+
+    //45 is the number I got from running the algorithm by hand and seeing
+    //the number of unique points
+    const dax::Id NumberOfUniquePoints = 45;
+    DAX_TEST_ASSERT(NumberOfUniquePoints == secondOutGrid.GetNumberOfPoints() &&
+                    NumberOfUniquePoints != valid_num_points,
+        "We didn't merge to the correct number of points");
+    }
     catch (dax::cont::ErrorControl error)
       {
       std::cout << "Got error: " << error.GetMessage() << std::endl;
       DAX_TEST_ASSERT(true==false,error.GetMessage());
       }
-    DAX_TEST_ASSERT(outGrid.GetNumberOfCells()==outGridCoordinates.GetNumberOfValues(),
-                    "Incorrect number of points in the output grid");
-
     }
 };
 
@@ -120,7 +140,8 @@ struct TestMarchingCubesWorklet
 //-----------------------------------------------------------------------------
 void TestMarchingCubes()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestMarchingCubesWorklet());
+  dax::cont::internal::GridTesting::TryAllGridTypes(TestMarchingCubesWorklet(),
+      dax::cont::internal::GridTesting::TypeCheckUniformGrid());
   }
 } // Anonymous namespace
 

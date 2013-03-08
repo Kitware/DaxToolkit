@@ -22,6 +22,9 @@ set(headers
   FieldArrayHandle.h
   FieldConstant.h
   FieldMap.h
+  Geometry.h
+  GeometryUniformGrid.h
+  GeometryUnstructuredGrid.h
   Topology.h
   TopologyUniformGrid.h
   TopologyUnstructuredGrid.h

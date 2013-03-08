@@ -58,14 +58,18 @@ bool VerifyFunctor(VectorType x, VectorType y, Functor f)
   typedef dax::VectorTraits<VectorType> Traits;
   typedef typename Traits::ComponentType ComponentType;
   const dax::Id NUM_COMPONENTS = Traits::NUM_COMPONENTS;
-  bool functorResult = true;
-  for (dax::Id index = 0; index < NUM_COMPONENTS && functorResult; index++)
+  for (dax::Id index = 0; index < NUM_COMPONENTS; index++)
     {
     ComponentType x_value = Traits::GetComponent(x, index);
     ComponentType y_value = Traits::GetComponent(y, index);
-    functorResult = f(x_value,y_value);
+    if(f(x_value,y_value))
+      return true;
+    else if(x_value == y_value)
+      continue;
+    else
+      return false;
     }
-  return functorResult;
+  return false;
 }
 
 template<typename VectorType, typename DaxCompFunctor, typename STLCompFunctor>
@@ -75,7 +79,8 @@ void TestCompFunctor(VectorType x, VectorType y,
   typedef dax::VectorTraits<VectorType> Traits;
   typedef typename Traits::ComponentType ComponentType;
 
-  //Test vector comparisons
+  //Test vector comparisons, our SortLess and SortGreater are different
+  //than the std function. so we need to craft this check
   bool equal = daxFunctor(x, y);
   bool verified = VerifyFunctor(x,y,stdFunctor);
   DAX_TEST_ASSERT(equal == verified, name);
@@ -114,43 +119,19 @@ struct TestCompareFunctor
       }
     TestMinMax(x, y);
 
-    TestCompFunctor(x,y, dax::math::Equal(),
-                    std::equal_to<ComponentType>(), "Equal");
-    TestCompFunctor(y,y, dax::math::Equal(),
-                    std::equal_to<ComponentType>(),  "Equal");
+    TestCompFunctor(x,y, dax::math::SortLess(),
+                    std::less<ComponentType>(),"SortLess");
+    TestCompFunctor(y,x, dax::math::SortLess(),
+                    std::less<ComponentType>(),"SortLess");
+    TestCompFunctor(y,y, dax::math::SortLess(),
+                    std::less<ComponentType>(),"SortLess");
 
-    TestCompFunctor(x,y, dax::math::NotEqual(),
-                    std::not_equal_to<ComponentType>(),"Not Equal");
-    TestCompFunctor(x,x, dax::math::NotEqual(),
-                    std::not_equal_to<ComponentType>(),"Not Equal");
-
-    TestCompFunctor(x,y, dax::math::Less(),
-                    std::less<ComponentType>(),"Less");
-    TestCompFunctor(y,x, dax::math::Less(),
-                    std::less<ComponentType>(),"Less");
-    TestCompFunctor(y,y, dax::math::Less(),
-                    std::less<ComponentType>(),"Less");
-
-    TestCompFunctor(y,x, dax::math::LessEqual(),
-                    std::less_equal<ComponentType>(),"Less than or Equal");
-    TestCompFunctor(x,y, dax::math::LessEqual(),
-                    std::less_equal<ComponentType>(),"Less than or Equal");
-    TestCompFunctor(x,x, dax::math::LessEqual(),
-                    std::less_equal<ComponentType>(),"Less than or Equal");
-
-    TestCompFunctor(y,x,dax::math::Greater(),
-                    std::greater<ComponentType>(),"Greater");
-    TestCompFunctor(y,x,dax::math::Greater(),
-                    std::greater<ComponentType>(),"Greater");
-    TestCompFunctor(x,x,dax::math::Greater(),
-                    std::greater<ComponentType>(),"Greater");
-
-    TestCompFunctor(x,y,dax::math::GreaterEqual(),
-                     std::greater_equal<ComponentType>(),"Greater than or Equal");
-    TestCompFunctor(y,x,dax::math::GreaterEqual(),
-                     std::greater_equal<ComponentType>(),"Greater than or Equal");
-    TestCompFunctor(y,y,dax::math::GreaterEqual(),
-                     std::greater_equal<ComponentType>(),"Greater than or Equal");
+    TestCompFunctor(y,x,dax::math::SortGreater(),
+                    std::greater<ComponentType>(),"SortGreater");
+    TestCompFunctor(y,x,dax::math::SortGreater(),
+                    std::greater<ComponentType>(),"SortGreater");
+    TestCompFunctor(x,x,dax::math::SortGreater(),
+                    std::greater<ComponentType>(),"SortGreater");
   }
 };
 
@@ -165,4 +146,3 @@ int UnitTestMathCompare(int, char *[])
 {
   return dax::internal::Testing::Run(TestCompare);
 }
-

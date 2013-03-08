@@ -16,7 +16,7 @@
 
 set(headers
   VisitIndexWorklets.h
-  GenerateTopologyWorklets.h
+  GenerateWorklets.h
   )
 
 dax_declare_headers(${headers})

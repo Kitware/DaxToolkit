@@ -23,6 +23,7 @@ set(headers
   Scheduler.h
   SchedulerDefault.h
   SchedulerCells.h
+  SchedulerGenerateInterpolatedCells.h
   SchedulerGenerateTopology.h
   SchedulerTags.h
   VerifyUserArgLength.h

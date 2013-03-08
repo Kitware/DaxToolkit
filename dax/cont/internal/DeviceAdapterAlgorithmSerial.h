@@ -95,35 +95,53 @@ public:
       }
   }
 
-  template<class CIn, class COut>
+  template<typename T, class CIn, class CVal, class COut, class Compare>
   DAX_CONT_EXPORT static void LowerBounds(
-      const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTagSerial> &input,
-      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTagSerial>&values_output)
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>& input,
+      const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTagSerial>& values,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTagSerial>& output,
+      Compare comp)
   {
-    typedef typename dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTagSerial>
+    typedef typename dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>
         ::PortalConstExecution PortalIn;
+    typedef typename dax::cont::ArrayHandle<T,CVal,DeviceAdapterTagSerial>
+        ::PortalConstExecution PortalVal;
     typedef typename dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTagSerial>
         ::PortalExecution PortalOut;
 
-    PortalIn inputPortal = input.PrepareForInput();
-    PortalOut outputPortal = values_output.PrepareForInPlace();
+    dax::Id numberOfValues = values.GetNumberOfValues();
 
-    dax::Id outputSize = outputPortal.GetNumberOfValues();
-    for (dax::Id outputIndex = 0; outputIndex < outputSize; outputIndex++)
+    PortalIn inputPortal = input.PrepareForInput();
+    PortalVal valuesPortal = values.PrepareForInput();
+    PortalOut outputPortal = output.PrepareForOutput(numberOfValues);
+
+    // std::lower_bound only supports a single value to search for so iterate
+    // over all values and search for each one.
+    for (dax::Id outputIndex = 0; outputIndex < numberOfValues; outputIndex++)
       {
       // std::lower_bound returns an iterator to the position where you can
       // insert, but we want the distance from the start.
       typename PortalIn::IteratorType resultPos =
           std::lower_bound(inputPortal.GetIteratorBegin(),
                            inputPortal.GetIteratorEnd(),
-                           outputPortal.Get(outputIndex));
+                           valuesPortal.Get(outputIndex),
+                           comp);
       dax::Id resultIndex =
           static_cast<dax::Id>(std::distance(inputPortal.GetIteratorBegin(),
                                              resultPos));
       outputPortal.Set(outputIndex, resultIndex);
       }
-  }
+  }  
 
+  template<class CIn, class COut>
+  DAX_CONT_EXPORT static void LowerBounds(
+      const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTagSerial> &input,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTagSerial>&values_output)
+  {
+    DeviceAdapterAlgorithm<dax::cont::DeviceAdapterTagSerial>::LowerBounds(
+         input,values_output,values_output);
+  }
+  
   template<typename T, class CIn, class COut>
   DAX_CONT_EXPORT static T ScanInclusive(
       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial> &input,
@@ -267,6 +285,18 @@ public:
     PortalType arrayPortal = values.PrepareForInPlace();
     std::sort(arrayPortal.GetIteratorBegin(), arrayPortal.GetIteratorEnd());
   }
+
+  template<typename T, class Container, class Compare>
+  DAX_CONT_EXPORT static void Sort(
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>& values,
+      Compare comp)
+  {
+    typedef typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>
+        ::PortalExecution PortalType;
+
+    PortalType arrayPortal = values.PrepareForInPlace();
+    std::sort(arrayPortal.GetIteratorBegin(), arrayPortal.GetIteratorEnd(),comp);
+  }  
 
   template<typename T, class CStencil, class COut>
   DAX_CONT_EXPORT static void StreamCompact(

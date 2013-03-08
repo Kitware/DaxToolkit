@@ -43,4 +43,7 @@
 // external project may or may not enable TBB.
 #cmakedefine DAX_ENABLE_TBB
 
+// This macro does not definitively determine whether thrust is used. Rather,
+// it tells whether Dax was original configured with a thrust backend enabled.
+#cmakedefine DAX_ENABLE_THRUST
 #endif //__dax_internal_Configure_h

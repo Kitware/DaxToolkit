@@ -33,7 +33,7 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/Scheduler.h>
-#include <dax/cont/ScheduleGenerateTopology.h>
+#include <dax/cont/GenerateTopology.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
 
@@ -154,7 +154,7 @@ struct TestThresholdWorklet
 
     try
       {
-      typedef dax::cont::ScheduleGenerateTopology<TestThresholdTopology> ScheduleGT;
+      typedef dax::cont::GenerateTopology<TestThresholdTopology> ScheduleGT;
       typedef typename ScheduleGT::ClassifyResultType  ClassifyResultType;
       typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
 

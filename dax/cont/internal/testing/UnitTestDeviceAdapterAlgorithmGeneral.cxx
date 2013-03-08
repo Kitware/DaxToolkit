@@ -65,6 +65,7 @@ private:
       dax::cont::DeviceAdapterTagSerial> Algorithm;
 
 public:
+
   template<class Functor>
   DAX_CONT_EXPORT static void Schedule(Functor functor,
                                        dax::Id numInstances)
@@ -130,6 +131,24 @@ public:
     // Copy data back into original
     valuesCopy.CopyInto(values.GetPortalControl().GetIteratorBegin());
   }
+
+  template<typename T, class Container, class Compare>
+  DAX_CONT_EXPORT static void Sort(
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterTagTestAlgorithmGeneral>& values,
+      Compare comp)
+
+  {
+    // Need to use an array handle compatible with the serial adapter.
+    dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial> valuesCopy;
+    // Allocate memory in valuesCopy (inefficiently).
+    valuesCopy.PrepareForOutput(values.GetNumberOfValues());
+    values.CopyInto(valuesCopy.GetPortalControl().GetIteratorBegin());
+
+    Algorithm::Sort(valuesCopy,comp);
+
+    // Copy data back into original
+    valuesCopy.CopyInto(values.GetPortalControl().GetIteratorBegin());
+  }  
 
   DAX_CONT_EXPORT static void Synchronize()
   {

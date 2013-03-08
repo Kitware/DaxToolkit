@@ -67,6 +67,23 @@ struct DeviceAdapterAlgorithm
       const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag>& values,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag>& output);
 
+  /// \brief Output is the first index in input for each item in values that wouldn't alter the ordering of input
+  ///
+  /// LowerBounds is a vectorized search. From each value in \c values it finds
+  /// the first place the item can be inserted in the ordered \c input array and
+  /// stores the index in \c output. Uses the custom comparison functor to
+  /// determine the correct location for each item.
+  ///
+  /// \par Requirements:
+  /// \arg \c input must already be sorted
+  ///
+  template<typename T, class CIn, class CVal, class COut, class Compare>
+  DAX_CONT_EXPORT static void LowerBounds(
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag>& input,
+      const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag>& values,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag>& output,
+      Compare comp);
+
   /// \brief A special version of LowerBounds that does an in place operation.
   ///
   /// This version of lower bounds performs an in place operation where each
@@ -168,6 +185,16 @@ struct DeviceAdapterAlgorithm
   template<typename T, class Container>
   DAX_CONT_EXPORT static void Sort(
       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values);
+
+  /// \brief Unstable ascending sort of input array.
+  ///
+  /// Sorts the contents of \c values so that they in ascending value based
+  /// on the custom compare functor.
+  ///
+  template<typename T, class Container, class Compare>
+  DAX_CONT_EXPORT static void Sort(
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values,
+      Compare comp);
 
   /// \brief Performs stream compaction to remove unwanted elements in the input array. Output becomes the index values of input that are valid.
   ///

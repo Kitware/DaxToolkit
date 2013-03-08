@@ -14,12 +14,11 @@
 //
 //=============================================================================
 
-#include <stdio.h>
-#include <iostream>
+#include "ArgumentsParser.h"
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/Scheduler.h>
-#include <dax/cont/ScheduleGenerateTopology.h>
+#include <dax/cont/GenerateInterpolatedCells.h>
 #include <dax/cont/Timer.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
@@ -27,10 +26,9 @@
 
 #include <dax/worklet/Magnitude.worklet>
 #include <dax/worklet/MarchingCubes.worklet>
-#include <dax/worklet/MarchingCubes.worklet>
 
-#include <vector>
 #include <iostream>
+#include <vector>
 #include <fstream>
 
 #define MAKE_STRING2(x) #x
@@ -40,7 +38,7 @@
 namespace
 {
 
-dax::Scalar ISOVALUE = 100;
+dax::Scalar ISOVALUE = 5;
 
 void PrintResults(int pipeline, double time)
 {
@@ -49,7 +47,7 @@ void PrintResults(int pipeline, double time)
             << pipeline << "," << time << std::endl;
 }
 
-void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
+void RunDAXPipeline(const dax::cont::UniformGrid<> &grid, int pipeline)
 {
   std::cout << "Running pipeline 1: Magnitude -> MarchingCubes" << std::endl;
 
@@ -63,13 +61,9 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
 
   dax::cont::Timer<> timer;
 
-  //schedule marching cubes worklet generate step, saving
-  //the coordinates into outGridCoordinates.
-  typedef dax::Tuple<dax::Vector3,3> TriCoordinatesType;
-  dax::cont::ArrayHandle<TriCoordinatesType> outGridCoordinates;
-
-  typedef dax::cont::ScheduleGenerateTopology<dax::worklet::MarchingCubesTopology> ScheduleGT;
-  typedef ScheduleGT::ClassifyResultType  ClassifyResultType;
+  //schedule marching cubes worklet generate step
+  typedef dax::cont::GenerateInterpolatedCells<dax::worklet::MarchingCubesTopology> GenerateIC;
+  typedef GenerateIC::ClassifyResultType  ClassifyResultType;
 
   dax::worklet::MarchingCubesClassify classifyWorklet(ISOVALUE);
   dax::worklet::MarchingCubesTopology generateWorklet(ISOVALUE);
@@ -81,19 +75,19 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
                    intermediate1, classification);
 
   //construct the topology generation worklet
-  ScheduleGT generate(classification,generateWorklet);
-  generate.SetRemoveDuplicatePoints(false);
+  GenerateIC generate(classification,generateWorklet);
+
+  generate.SetRemoveDuplicatePoints(
+                pipeline == dax::testing::ArgumentsParser::MARCHING_CUBES_REMOVE_DUPLICATES);
 
   //run the second step
   schedule.Invoke(generate,
-                   grid, outGrid, intermediate1,
-                   grid.GetPointCoordinates(),
-                   outGridCoordinates);
+                   grid, outGrid, intermediate1);
 
   double time = timer.GetElapsedTime();
 
   std::cout << "number of coordinates in: " << grid.GetNumberOfPoints() << std::endl;
-  std::cout << "number of coordinates out: " << outGridCoordinates.GetNumberOfValues() << std::endl;
+  std::cout << "number of coordinates out: " << outGrid.GetNumberOfPoints() << std::endl;
   std::cout << "number of cells out: " << outGrid.GetNumberOfCells() << std::endl;
   PrintResults(1, time);
 
