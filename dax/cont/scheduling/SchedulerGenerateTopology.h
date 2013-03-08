@@ -83,10 +83,12 @@ private:
 //the BOOST_PP block and unreadable. This version of GenerateNewTopology
 //handles the use case no parameters
 template <class WorkletType,
+          typename ClassifyHandleType,
           typename InputGrid,
           typename OutputGrid>
 DAX_CONT_EXPORT void GenerateNewTopology(
-    dax::cont::GenerateTopology<WorkletType,DeviceAdapterTag>& newTopo,
+    dax::cont::GenerateTopology<
+    WorkletType,ClassifyHandleType,DeviceAdapterTag>& newTopo,
     const InputGrid& inputGrid,
     OutputGrid& outputGrid) const
   {
@@ -226,11 +228,13 @@ DAX_CONT_EXPORT void Invoke(WorkletType w, _dax_pp_params___(a)) const
 
 private:
 template <class WorkletType,
+          typename ClassifyHandleType,
           typename InputGrid,
           typename OutputGrid,
           _dax_pp_typename___T>
 DAX_CONT_EXPORT void GenerateNewTopology(
-    dax::cont::GenerateTopology<WorkletType,DeviceAdapterTag>& newTopo,
+    dax::cont::GenerateTopology<
+    WorkletType, ClassifyHandleType, DeviceAdapterTag>& newTopo,
     const InputGrid& inputGrid,
     OutputGrid& outputGrid,
     _dax_pp_params___(a)) const
