@@ -123,12 +123,33 @@ DAX_CONT_EXPORT void GenerateNewTopology(
   // We are done with scannedNewCellCounts.
   scannedNewCellCounts.ReleaseResources();
 
+  //we need to scan the args of the generate topology worklet
+  //and determine if we have the VisitIndex signature. If we do,
+  //we have to call a different Invoke algorithm, which properly uploads
+  //the visitIndex information. Since this information is slow to compute we don't
+  //want to always upload the information, instead only compute when explicitly
+  //requested
+
+  //The AddVisitIndexArg does all this, plus creates a derived worklet
+  //from the users worklet with the visit index added to the signature.
+  typedef dax::cont::scheduling::AddVisitIndexArg<WorkletType,
+    Algorithm,IdArrayHandleType> AddVisitIndexFunctor;
+  typedef typename AddVisitIndexFunctor::VisitIndexArgType IndexArgType;
+  typedef typename AddVisitIndexFunctor::DerivedWorkletType DerivedWorkletType;
+
+  IndexArgType visitIndex;
+  AddVisitIndexFunctor createVisitIndex;
+  createVisitIndex(this->DefaultScheduler,validCellRange,visitIndex);
+
+  DerivedWorkletType derivedWorklet(newTopo.GetWorklet());
+
   //we get our magic here. we need to wrap some paramemters and pass
   //them to the real scheduler
-  this->DefaultScheduler.Invoke(newTopo.GetWorklet(),
+  this->DefaultScheduler.Invoke(derivedWorklet,
                    dax::cont::make_Permutation(validCellRange,inputGrid,
                                              inputGrid.GetNumberOfCells()),
-                   outputGrid);
+                   outputGrid,
+                   visitIndex);
   //call this here as we have stripped out the input and output grids
   if(newTopo.GetRemoveDuplicatePoints())
     {
