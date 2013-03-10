@@ -28,8 +28,8 @@ const dax::Id ARRAY_SIZE = 10;
 void TestCountingArray()
 {
   std::cout << "Creating counting array." << std::endl;
-  dax::cont::ArrayHandleCounting arrayConst(ARRAY_SIZE);
-  dax::cont::ArrayHandleCounting arrayMake = dax::cont::make_ArrayHandleCounting(ARRAY_SIZE);
+  dax::cont::ArrayHandleCounting< > arrayConst(ARRAY_SIZE);
+  dax::cont::ArrayHandleCounting< > arrayMake = dax::cont::make_ArrayHandleCounting(ARRAY_SIZE);
   DAX_TEST_ASSERT(arrayConst.GetNumberOfValues() == ARRAY_SIZE,
                   "Counting array using constructor has wrong size.");
 

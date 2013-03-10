@@ -21,6 +21,7 @@
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/sig/Tag.h>
+#include <dax/exec/arg/FieldConstant.h>
 #include <dax/exec/arg/FieldPortal.h>
 #include <dax/internal/Tags.h>
 
@@ -131,7 +132,6 @@ private:
   HandleType Handle;
   PortalType Portal;
 };
-
 
 } } } //namespace dax::cont::arg
 
