@@ -20,11 +20,14 @@ set(headers
   ExecutionObject.h
   Field.h
   FieldArrayHandle.h
+  FieldArrayHandleConstantValue.h
+  FieldArrayHandleCounting.h
   FieldConstant.h
   FieldMap.h
   Geometry.h
   GeometryUniformGrid.h
   GeometryUnstructuredGrid.h
+  ImplementedConceptMaps.h
   Topology.h
   TopologyUniformGrid.h
   TopologyUnstructuredGrid.h

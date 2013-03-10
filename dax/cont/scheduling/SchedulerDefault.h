@@ -18,15 +18,7 @@
 #ifndef __dax_cont_scheduling_ScheduleDefault_h
 #define __dax_cont_scheduling_ScheduleDefault_h
 
-#include <dax/cont/arg/ConceptMap.h>
-#include <dax/cont/arg/FieldArrayHandle.h>
-#include <dax/cont/arg/FieldConstant.h>
-#include <dax/cont/arg/FieldMap.h>
-#include <dax/cont/arg/GeometryUniformGrid.h>
-#include <dax/cont/arg/GeometryUnstructuredGrid.h>
-#include <dax/cont/arg/TopologyUniformGrid.h>
-#include <dax/cont/arg/TopologyUnstructuredGrid.h>
-
+#include <dax/cont/arg/ImplementedConceptMaps.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/Bindings.h>
 
