@@ -32,6 +32,7 @@ set(unit_tests
   UnitTestWorkletPointDataToCellData.cxx
   UnitTestWorkletSine.cxx
   UnitTestWorkletSquare.cxx
+  UnitTestWorkletTetrahedralize.cxx
   UnitTestWorkletThreshold.cxx
   UnitTestWorkletAssert.cxx
   UnitTestWorkletMapCellError.cxx

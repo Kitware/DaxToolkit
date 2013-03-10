@@ -26,6 +26,7 @@ set(worklets
   PointDataToCellData.worklet
   Sine.worklet
   Square.worklet
+  Tetrahedralize.worklet
   Threshold.worklet
   )
 
