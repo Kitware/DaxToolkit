@@ -28,14 +28,16 @@ namespace cont {
 /// array portal with a function generating a defined constant value. Like an
 /// implicit array, this too holds no memory.  The ConstantValue array simply
 /// returns a single value for each of the index.
-template <typename ConstantValueType>
+template <typename ConstantValueType,
+          class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class ArrayHandleConstantValue: public ArrayHandle < ConstantValueType,
-    dax::cont::ArrayContainerControlTagConstantValue<ConstantValueType> >
+    dax::cont::ArrayContainerControlTagConstantValue<ConstantValueType>,
+    DeviceAdapterTag >
 {
 public:
-  typedef ArrayHandle < ConstantValueType,
-      dax::cont::ArrayContainerControlTagConstantValue<ConstantValueType> >
-  superclass;
+  typedef dax::cont::ArrayHandle < ConstantValueType,
+      dax::cont::ArrayContainerControlTagConstantValue<ConstantValueType>,
+      DeviceAdapterTag > superclass;
   typedef typename dax::cont::ArrayPortalConstantValue<ConstantValueType> PortalType;
 
   ArrayHandleConstantValue(ConstantValueType value,dax::Id length)

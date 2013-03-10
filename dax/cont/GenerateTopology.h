@@ -43,8 +43,8 @@ namespace internal {
 /// and will generate a new topology, but doesn't create new cells
 template<
     class WorkletType_,
-    class DeviceAdapterTag= DAX_DEFAULT_DEVICE_ADAPTER_TAG,
-    class ClassifyContainerTag = ArrayContainerControlTagBasic>
+    class ClassifyHandleType = dax::cont::ArrayHandle< dax::Id >,
+    class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG >
 
 class GenerateTopology :
     public dax::cont::internal::GenerateTopologyBase
@@ -57,8 +57,6 @@ class GenerateTopology :
             WorkletType_ > Worklet_Should_Inherit_From_WorkletGenerateTopology;
 public:
   typedef WorkletType_ WorkletType;
-  //classify type is the type
-  typedef dax::Id ClassifyType;
 
   //mask type is the internal
   typedef dax::Id MaskType;
@@ -66,8 +64,7 @@ public:
   typedef dax::cont::ArrayHandle< MaskType,
           ArrayContainerControlTagBasic, DeviceAdapterTag> PointMaskType;
 
-  typedef dax::cont::ArrayHandle< ClassifyType,
-          ClassifyContainerTag, DeviceAdapterTag> ClassifyResultType;
+  typedef ClassifyHandleType ClassifyResultType;
 
   GenerateTopology(ClassifyResultType classification):
     RemoveDuplicatePoints(true),

@@ -43,8 +43,8 @@ namespace internal {
 /// and will generate a new coordinates and topology
 template<
     class WorkletType_,
-    class DeviceAdapterTag= DAX_DEFAULT_DEVICE_ADAPTER_TAG,
-    class ClassifyContainerTag = ArrayContainerControlTagBasic>
+    class ClassifyHandleType = dax::cont::ArrayHandle< dax::Id >,
+    class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG >
 
 class GenerateInterpolatedCells :
     public dax::cont::internal::GenerateInterpolatedCellsBase
@@ -58,14 +58,8 @@ class GenerateInterpolatedCells :
 public:
   typedef WorkletType_ WorkletType;
 
-
-
-
-  //classify type is the type
-  typedef dax::Id ClassifyType;
-
-  typedef dax::cont::ArrayHandle< ClassifyType,
-          ClassifyContainerTag, DeviceAdapterTag> ClassifyResultType;
+  typedef typename ClassifyHandleType::ValueType ClassifyType;
+  typedef ClassifyHandleType ClassifyResultType;
 
   GenerateInterpolatedCells(ClassifyResultType classification):
     RemoveDuplicatePoints(true),

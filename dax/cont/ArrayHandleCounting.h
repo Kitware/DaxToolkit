@@ -21,18 +21,19 @@
 
 namespace dax {
 namespace cont {
-
 /// ArrayHandleCountings are a specialization of ArrayHandles. By default it
 /// contains a counting implicit array portal. An implicit array is a array
 /// portal with a function generating values and holds no memory. The counting
 /// implicit array simply returns the value of the index.
+template <class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class ArrayHandleCounting : public ArrayHandle < dax::Id,
-                                 ArrayContainerControlTagCounting>
+                                 ArrayContainerControlTagCounting,
+                                 DeviceAdapterTag >
 {
 public:
-  typedef ArrayHandle < dax::Id,
-                        ArrayContainerControlTagCounting>
-  superclass;
+  typedef dax::cont::ArrayHandle < dax::Id,
+                        ArrayContainerControlTagCounting,
+                        DeviceAdapterTag> superclass;
   typedef dax::cont::ArrayPortalCounting PortalType;
 
   ArrayHandleCounting(dax::Id length)
@@ -44,9 +45,9 @@ public:
 /// A convenience function for creating an ArrayHandleCounting. It only takes
 /// the length of the array and constructs a ArrayHandleCounting of that length.
 DAX_CONT_EXPORT
-ArrayHandleCounting make_ArrayHandleCounting(dax::Id length)
+dax::cont::ArrayHandleCounting< > make_ArrayHandleCounting(dax::Id length)
 {
-  return ArrayHandleCounting(length);
+  return dax::cont::ArrayHandleCounting< >(length);
 }
 
 }

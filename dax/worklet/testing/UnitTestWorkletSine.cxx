@@ -57,8 +57,8 @@ struct TestSineWorklet
                         dax::cont::ArrayContainerControlTagBasic,
                         dax::cont::DeviceAdapterTagSerial> fieldHandle =
       dax::cont::make_ArrayHandle(field,
-                                  dax::cont::ArrayContainerControlTagBasic(),
-                                  dax::cont::DeviceAdapterTagSerial());
+                        dax::cont::ArrayContainerControlTagBasic(),
+                        dax::cont::DeviceAdapterTagSerial());
 
   dax::cont::ArrayHandle<dax::Scalar,
                         dax::cont::ArrayContainerControlTagBasic,
@@ -80,6 +80,61 @@ struct TestSineWorklet
     DAX_TEST_ASSERT(test_equal(sineValue, sineTrue),
                     "Got bad sine");
     }
+
+  std::cout << "Running Sine worklet on constant ArrayHandle" << std::endl;
+  dax::cont::ArrayHandleConstantValue<dax::Scalar> constantHandle(5.034,
+                                                    grid->GetNumberOfPoints());
+  scheduler.Invoke(dax::worklet::Sine(), constantHandle, sineHandle);
+
+
+  std::cout << "Checking result of constant handle" << std::endl;
+  sineHandle.CopyInto(sine.begin());
+  for (dax::Id pointIndex = 0;
+       pointIndex < grid->GetNumberOfPoints();
+       pointIndex++)
+    {
+    dax::Scalar sineValue = sine[pointIndex];
+    dax::Scalar sineTrue = sinf(5.034);
+    DAX_TEST_ASSERT(test_equal(sineValue, sineTrue),
+                    "Got bad sine");
+    }
+
+  std::cout << "Running Sine worklet on constant value" << std::endl;
+  scheduler.Invoke(dax::worklet::Sine(), 5.034, sineHandle);
+
+  std::cout << "Checking result of constant value" << std::endl;
+  sineHandle.CopyInto(sine.begin());
+  for (dax::Id pointIndex = 0;
+       pointIndex < grid->GetNumberOfPoints();
+       pointIndex++)
+    {
+    dax::Scalar sineValue = sine[pointIndex];
+    dax::Scalar sineTrue = sinf(5.034);
+    DAX_TEST_ASSERT(test_equal(sineValue, sineTrue),
+                    "Got bad sine");
+    }
+
+  std::cout << "Running Sine worklet on counting ArrayHandle" << std::endl;
+  dax::cont::ArrayHandleCounting< > arrayCounting(grid->GetNumberOfPoints());
+  dax::cont::ArrayHandle<dax::Id,
+                        dax::cont::ArrayContainerControlTagBasic,
+                        dax::cont::DeviceAdapterTagSerial> countingOut;
+  scheduler.Invoke(dax::worklet::Sine(), arrayCounting, countingOut);
+
+  std::cout << "Checking result of counting handle" << std::endl;
+  std::vector<dax::Id> sineId(grid->GetNumberOfPoints());
+  countingOut.CopyInto(sineId.begin());
+  for (dax::Id pointIndex = 0;
+       pointIndex < grid->GetNumberOfPoints();
+       pointIndex++)
+    {
+    dax::Id sineValue = sineId[pointIndex];
+    dax::Id sineTrue = sinf(pointIndex);
+    DAX_TEST_ASSERT(test_equal(sineValue, sineTrue),
+                    "Got bad sine");
+    }
+
+
   }
 };
 
