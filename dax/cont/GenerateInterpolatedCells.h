@@ -43,8 +43,8 @@ namespace internal {
 /// and will generate a new coordinates and topology
 template<
     class WorkletType_,
-    class ClassifyHandleType = dax::cont::ArrayHandle< dax::Id >,
-    class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG >
+    class ClassifyHandleType = dax::cont::ArrayHandle< dax::Id >
+    >
 
 class GenerateInterpolatedCells :
     public dax::cont::internal::GenerateInterpolatedCellsBase

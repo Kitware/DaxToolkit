@@ -74,8 +74,8 @@ struct TestTetrahedralizeWorklet
     try
       {
       typedef dax::cont::GenerateTopology<dax::worklet::Tetrahedralize,
-                                          dax::cont::ArrayHandleConstantValue<dax::Id>,
-                                          DAX_DEFAULT_DEVICE_ADAPTER_TAG > GenerateT;
+                                          dax::cont::ArrayHandleConstantValue<dax::Id>
+                                          > GenerateT;
       typedef typename GenerateT::ClassifyResultType  ClassifyResultType;
 
       dax::cont::Scheduler<> scheduler;
