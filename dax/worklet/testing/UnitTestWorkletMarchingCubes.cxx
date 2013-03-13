@@ -57,7 +57,7 @@ struct TestMarchingCubesWorklet
 
     dax::cont::internal::TestGrid<dax::cont::UniformGrid<> > inGrid(DIM);
     dax::cont::UnstructuredGrid<CellType> outGrid;
-    
+
     std::cout << "running " << std::endl;
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
@@ -99,14 +99,14 @@ struct TestMarchingCubesWorklet
       GenerateIC generate(classification,generateWorklet);
       generate.SetRemoveDuplicatePoints(false);
       //so we can use the classification again
-      generate.SetReleaseClassification(false); 
+      generate.SetReleaseClassification(false);
 
       //run the second step
       scheduler.Invoke(generate,
                        inGrid.GetRealGrid(),
                        outGrid,
                        fieldHandle);
-      
+
     const dax::Id valid_num_points =
           dax::CellTraits<CellType>::NUM_VERTICES * outGrid.GetNumberOfCells();
     DAX_TEST_ASSERT(valid_num_points==outGrid.GetNumberOfPoints(),

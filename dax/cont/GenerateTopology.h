@@ -43,8 +43,8 @@ namespace internal {
 /// and will generate a new topology, but doesn't create new cells
 template<
     class WorkletType_,
-    class ClassifyHandleType = dax::cont::ArrayHandle< dax::Id >,
-    class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG >
+    class ClassifyHandleType = dax::cont::ArrayHandle< dax::Id >
+    >
 
 class GenerateTopology :
     public dax::cont::internal::GenerateTopologyBase
@@ -61,8 +61,10 @@ public:
   //mask type is the internal
   typedef dax::Id MaskType;
 
-  typedef dax::cont::ArrayHandle< MaskType,
-          ArrayContainerControlTagBasic, DeviceAdapterTag> PointMaskType;
+  typedef dax::cont::ArrayHandle<
+          MaskType,
+          ArrayContainerControlTagBasic,
+          typename ClassifyHandleType::DeviceAdapterTag> PointMaskType;
 
   typedef ClassifyHandleType ClassifyResultType;
 
@@ -86,14 +88,14 @@ public:
     BOOST_MPL_ASSERT((Worklet_Should_Inherit_From_WorkletGenerateTopology));
     }
 
-  template<typename T, typename Container1, typename Container2>
+  template<typename T, typename Container1, typename DeviceAdapter, typename Container2>
   bool CompactPointField(
-      const dax::cont::ArrayHandle<T,Container1,DeviceAdapterTag>& input,
-      dax::cont::ArrayHandle<T,Container2,DeviceAdapterTag>& output)
+      const dax::cont::ArrayHandle<T,Container1,DeviceAdapter>& input,
+      dax::cont::ArrayHandle<T,Container2,DeviceAdapter>& output)
     {
     if(this->GetRemoveDuplicatePoints())
       {
-      dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>::
+      dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapter>::
           StreamCompact(input, this->PointMask, output);
 
       return true;

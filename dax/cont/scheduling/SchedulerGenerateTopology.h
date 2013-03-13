@@ -88,7 +88,7 @@ template <class WorkletType,
           typename OutputGrid>
 DAX_CONT_EXPORT void GenerateNewTopology(
     dax::cont::GenerateTopology<
-    WorkletType,ClassifyHandleType,DeviceAdapterTag>& newTopo,
+    WorkletType,ClassifyHandleType>& newTopo,
     const InputGrid& inputGrid,
     OutputGrid& outputGrid) const
   {
@@ -255,7 +255,7 @@ template <class WorkletType,
           _dax_pp_typename___T>
 DAX_CONT_EXPORT void GenerateNewTopology(
     dax::cont::GenerateTopology<
-    WorkletType, ClassifyHandleType, DeviceAdapterTag>& newTopo,
+    WorkletType, ClassifyHandleType >& newTopo,
     const InputGrid& inputGrid,
     OutputGrid& outputGrid,
     _dax_pp_params___(a)) const
