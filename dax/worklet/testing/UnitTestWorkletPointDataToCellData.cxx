@@ -22,7 +22,7 @@
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 #include <dax/cont/internal/testing/Testing.h>
 
-#include <dax/worklet/PointDataToCellData.worklet>
+#include <dax/worklet/PointDataToCellData.h>
 
 #include <dax/Types.h>
 #include <dax/VectorTraits.h>

@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/worklet/testing/Assert.worklet>
+#include <dax/worklet/testing/AssertWorklet.h>
 
 #include <dax/Types.h>
 #include <dax/VectorTraits.h>

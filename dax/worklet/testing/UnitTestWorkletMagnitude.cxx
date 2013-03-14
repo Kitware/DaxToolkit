@@ -20,7 +20,7 @@
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 #include <dax/cont/internal/testing/Testing.h>
 
-#include <dax/worklet/Magnitude.worklet>
+#include <dax/worklet/Magnitude.h>
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>

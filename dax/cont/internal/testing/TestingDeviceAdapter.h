@@ -26,10 +26,10 @@
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 
-#include <dax/worklet/CellGradient.worklet>
-#include <dax/worklet/Square.worklet>
-#include <dax/worklet/testing/CellMapError.worklet>
-#include <dax/worklet/testing/FieldMapError.worklet>
+#include <dax/worklet/CellGradient.h>
+#include <dax/worklet/Square.h>
+#include <dax/worklet/testing/CellMapError.h>
+#include <dax/worklet/testing/FieldMapError.h>
 
 #include <dax/cont/internal/testing/Testing.h>
 #include <dax/cont/internal/testing/TestingGridGenerator.h>

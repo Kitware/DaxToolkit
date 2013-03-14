@@ -22,11 +22,11 @@
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/worklet/CellGradient.worklet>
-#include <dax/worklet/Cosine.worklet>
-#include <dax/worklet/Magnitude.worklet>
-#include <dax/worklet/Sine.worklet>
-#include <dax/worklet/Square.worklet>
+#include <dax/worklet/CellGradient.h>
+#include <dax/worklet/Cosine.h>
+#include <dax/worklet/Magnitude.h>
+#include <dax/worklet/Sine.h>
+#include <dax/worklet/Square.h>
 
 #include <vector>
 

@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/worklet/testing/FieldMapError.worklet>
+#include <dax/worklet/testing/FieldMapError.h>
 
 #include <dax/VectorTraits.h>
 

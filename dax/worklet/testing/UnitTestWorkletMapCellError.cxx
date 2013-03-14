@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/worklet/testing/CellMapError.worklet>
+#include <dax/worklet/testing/CellMapError.h>
 
 #include <dax/VectorTraits.h>
 

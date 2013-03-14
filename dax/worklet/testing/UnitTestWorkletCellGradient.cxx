@@ -22,7 +22,7 @@
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 #include <dax/cont/internal/testing/Testing.h>
 
-#include <dax/worklet/CellGradient.worklet>
+#include <dax/worklet/CellGradient.h>
 
 #include <dax/CellTraits.h>
 #include <dax/Types.h>

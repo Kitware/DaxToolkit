@@ -24,7 +24,7 @@
 #include <dax/cont/VectorOperations.h>
 #include <dax/cont/Scheduler.h>
 
-#include <dax/worklet/Magnitude.worklet>
+#include <dax/worklet/Magnitude.h>
 
 
 #include <vector>
