@@ -17,7 +17,7 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
-#include <dax/worklet/Sine.worklet>
+#include <dax/worklet/Sine.h>
 
 #include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>

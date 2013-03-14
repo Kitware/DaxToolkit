@@ -17,17 +17,17 @@
 include_directories(${Boost_INCLUDE_DIRS})
 
 set(worklets
-  CellAverage.worklet
-  CellGradient.worklet
-  Cosine.worklet
-  Elevation.worklet
-  Magnitude.worklet
-  MarchingCubes.worklet
-  PointDataToCellData.worklet
-  Sine.worklet
-  Square.worklet
-  Tetrahedralize.worklet
-  Threshold.worklet
+  CellAverage.h
+  CellGradient.h
+  Cosine.h
+  Elevation.h
+  Magnitude.h
+  MarchingCubes.h
+  PointDataToCellData.h
+  Sine.h
+  Square.h
+  Tetrahedralize.h
+  Threshold.h
   )
 
 dax_declare_worklets(${worklets})

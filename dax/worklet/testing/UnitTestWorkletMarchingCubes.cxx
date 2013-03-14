@@ -20,7 +20,7 @@
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 #include <dax/cont/internal/testing/Testing.h>
 
-#include <dax/worklet/MarchingCubes.worklet>
+#include <dax/worklet/MarchingCubes.h>
 
 #include <math.h>
 #include <fstream>

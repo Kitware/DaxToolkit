@@ -20,7 +20,7 @@
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 #include <dax/cont/internal/testing/Testing.h>
 
-#include <dax/worklet/Cosine.worklet>
+#include <dax/worklet/Cosine.h>
 
 #include <dax/Types.h>
 #include <dax/VectorTraits.h>

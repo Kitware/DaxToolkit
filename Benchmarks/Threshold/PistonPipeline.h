@@ -23,7 +23,7 @@
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/Timer.h>
 #include <dax/cont/UniformGrid.h>
-#include <dax/worklet/Magnitude.worklet>
+#include <dax/worklet/Magnitude.h>
 
 #include <vector>
 

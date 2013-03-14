@@ -24,8 +24,8 @@
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/worklet/Magnitude.worklet>
-#include <dax/worklet/MarchingCubes.worklet>
+#include <dax/worklet/Magnitude.h>
+#include <dax/worklet/MarchingCubes.h>
 
 #include <iostream>
 #include <vector>

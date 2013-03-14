@@ -20,7 +20,7 @@
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 #include <dax/cont/internal/testing/Testing.h>
 
-#include <dax/worklet/Tetrahedralize.worklet>
+#include <dax/worklet/Tetrahedralize.h>
 
 #include <math.h>
 #include <fstream>

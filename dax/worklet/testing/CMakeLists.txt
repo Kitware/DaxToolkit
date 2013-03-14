@@ -15,9 +15,9 @@
 ##=============================================================================
 
 set(worklets
-  Assert.worklet
-  CellMapError.worklet
-  FieldMapError.worklet
+  AssertWorklet.h
+  CellMapError.h
+  FieldMapError.h
   )
 
 dax_declare_worklets(${worklets})
