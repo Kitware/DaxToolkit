@@ -35,9 +35,9 @@
 #-----------------------------------------------------------------------------
 macro(add_timing_tests target)
   add_test(${target}-128
-    ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline 1 --size 128)
+    ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline=1 --size=128)
     add_test(${target}-256
-    ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline 1 --size 256)
+    ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline=1 --size=256)
 endmacro()
 
 #-----------------------------------------------------------------------------
@@ -55,7 +55,7 @@ set_source_files_properties(${headers} PROPERTIES HEADER_FILE_ONLY TRUE)
 #-----------------------------------------------------------------------------
 add_executable(ThresholdTimingSerial ${sources} ${headers} )
 set_dax_device_adapter(ThresholdTimingSerial DAX_DEVICE_ADAPTER_SERIAL)
-target_link_libraries(ThresholdTimingSerial ${Boost_LIBRARIES})
+target_link_libraries(ThresholdTimingSerial)
 add_timing_tests(ThresholdTimingSerial)
 
 
@@ -63,7 +63,7 @@ add_timing_tests(ThresholdTimingSerial)
 if (DAX_ENABLE_OPENMP)
   add_executable(ThresholdTimingOpenMP ${sources} ${headers})
   set_dax_device_adapter(ThresholdTimingOpenMP DAX_DEVICE_ADAPTER_OPENMP)
-  target_link_libraries(ThresholdTimingOpenMP ${Boost_LIBRARIES})
+  target_link_libraries(ThresholdTimingOpenMP)
   add_timing_tests(ThresholdTimingOpenMP)
 endif (DAX_ENABLE_OPENMP)
 
@@ -71,8 +71,7 @@ endif (DAX_ENABLE_OPENMP)
 if (DAX_ENABLE_TBB)
   add_executable(ThresholdTimingTBB ${sources} ${headers})
   set_dax_device_adapter(ThresholdTimingTBB DAX_DEVICE_ADAPTER_TBB)
-  target_link_libraries(ThresholdTimingTBB ${Boost_LIBRARIES}
-                                           ${DAX_TIMING_LIBS})
+  target_link_libraries(ThresholdTimingTBB ${DAX_TIMING_LIBS})
   add_timing_tests(ThresholdTimingTBB)
 endif (DAX_ENABLE_TBB)
 
@@ -86,7 +85,7 @@ if (DAX_ENABLE_CUDA)
   dax_disable_troublesome_thrust_warnings()
   cuda_add_executable(ThresholdTimingCuda ${cuda_sources} ${headers})
   set_dax_device_adapter(ThresholdTimingCuda DAX_DEVICE_ADAPTER_CUDA)
-  target_link_libraries(ThresholdTimingCuda ${Boost_LIBRARIES})
+  target_link_libraries(ThresholdTimingCuda)
   add_timing_tests(ThresholdTimingCuda)
 endif (DAX_ENABLE_CUDA)
 
@@ -107,7 +106,6 @@ if(DAX_ENABLE_VTK_BENCHMARKS)
   include(${VTK_USE_FILE})
   add_executable(ThresholdTimingVTK ${vtkHeaders} ${vtkSources})
   target_link_libraries(ThresholdTimingVTK
-    ${Boost_LIBRARIES}
     vtkCommonCore
     vtkCommonDataModel
     vtkCommonExecutionModel
@@ -137,7 +135,7 @@ if(DAX_ENABLE_PISTON_BENCHMARKS)
                     ${pistonHeaders} ${pistonSources})
     set_dax_device_adapter(ThresholdTimingOpenMPPiston
                             DAX_DEVICE_ADAPTER_OPENMP)
-    target_link_libraries(ThresholdTimingOpenMPPiston ${Boost_LIBRARIES})
+    target_link_libraries(ThresholdTimingOpenMPPiston)
     add_timing_tests(ThresholdTimingOpenMPP)
   endif()
 
@@ -151,7 +149,7 @@ if(DAX_ENABLE_PISTON_BENCHMARKS)
                           ${pistonHeaders} ${pistonSources})
     set_dax_device_adapter(ThresholdTimingCudaPiston
                             DAX_DEVICE_ADAPTER_CUDA)
-    target_link_libraries(ThresholdTimingCudaPiston ${Boost_LIBRARIES})
+    target_link_libraries(ThresholdTimingCudaPiston)
     add_timing_tests(ThresholdTimingCudaPiston)
   endif()
 endif()

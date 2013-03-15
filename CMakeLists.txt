@@ -145,11 +145,8 @@ if (NOT DAX_DISABLE_KITS)
 
   # List of Boost features used:
   # * Smart Ptr
-  # * program options
-  find_package(Boost ${Dax_REQUIRED_BOOST_VERSION} REQUIRED
-    COMPONENTS
-      program_options # only needed for the testing executables
-  )
+  # * Meta programming language
+  find_package(Boost ${Dax_REQUIRED_BOOST_VERSION} REQUIRED)
 
 #-----------------------------------------------------------------------------
 # Add subdirectories

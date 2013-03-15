@@ -55,6 +55,7 @@ int main(int argc, char* argv[])
     return 1;
     }
 
+  
   //init grid vars from parser
   const dax::Id MAX_SIZE = parser.problemSize();
 
