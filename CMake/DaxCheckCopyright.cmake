@@ -35,6 +35,7 @@ set(FILES_TO_CHECK
 
 set(EXCEPTIONS
   LICENSE.txt
+  OptionParser.h
   )
 
 if (NOT Dax_SOURCE_DIR)

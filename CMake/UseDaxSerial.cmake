@@ -20,7 +20,9 @@ endif (Dax_Serial_initialize_complete)
 
 # Find the Boost library.
 if (NOT Dax_Serial_FOUND)
-  find_package(Boost ${Dax_REQUIRED_BOOST_VERSION})
+  if(NOT Boost_FOUND)
+    find_package(Boost ${Dax_REQUIRED_BOOST_VERSION})
+  endif()
 
   if (NOT Boost_FOUND)
     message(STATUS "Boost not found")
