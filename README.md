@@ -60,7 +60,10 @@ cd dax-build
 cmake-gui ../dax
 ```
 
-A detailed walk-through of installing and building Dax can be found on our [Install page](http://daxtoolkit.github.com/install/)
+A detailed walk-through of installing and building Dax can be found on our [Install page](http://www.daxtoolkit.org/index.php/Building_the_Dax_Toolkit)
+
+A walk-through of integrating Dax into your project can be found on our
+[Integration page] (http://www.daxtoolkit.org/index.php/How_To_Use_Dax_In_Your_Project)
 
 
 ## Example ##
@@ -105,7 +108,7 @@ scheduler.Invoke(dax::worklet::Magnitude(),
 
 ```
 
-More examples can be found on our [Getting Started page](http://daxtoolkit.github.com/gettingStarted/)
+More examples can be found on our [Getting Started page](http://www.daxtoolkit.org/index.php/Getting_Started)
 
 
 ## Publications ##
