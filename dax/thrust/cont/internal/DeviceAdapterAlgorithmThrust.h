@@ -38,6 +38,7 @@
 #endif // gcc version >= 4.2
 #endif // gcc && !CUDA
 
+#include <thrust/advance.h>
 #include <thrust/binary_search.h>
 #include <thrust/copy.h>
 #include <thrust/count.h>
@@ -253,7 +254,7 @@ private:
                           IteratorEnd(values),
                           IteratorBegin(output),
                           comp);
-  }  
+  }
 
   template<class InputPortal, class OutputPortal>
   DAX_CONT_EXPORT static
@@ -447,7 +448,7 @@ public:
                       values.PrepareForInput(),
                       output.PrepareForOutput(numberOfValues),
                       comp);
-  }  
+  }
 
   template<class CIn, class COut>
   DAX_CONT_EXPORT static void LowerBounds(
@@ -562,7 +563,7 @@ public:
       Compare comp)
   {
     SortPortal(values.PrepareForInPlace(),comp);
-  }    
+  }
 
   template<typename T, class CStencil, class COut>
   DAX_CONT_EXPORT static void StreamCompact(

@@ -54,7 +54,7 @@ public:
   void SetInterpolationPoint( dax::Id index, dax::Id pos1, dax::Id pos2,
                               dax::Scalar weight )
     {
-    //cast the memory location from an id to a scalar. 
+    //cast the memory location from an id to a scalar.
     //Not a static cast, but instead convert the actual
     //memory layout from representing a IEEE float to a signed integer. This
     //works since IEEE float standard states that each float value memory

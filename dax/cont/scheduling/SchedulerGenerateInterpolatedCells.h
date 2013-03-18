@@ -105,10 +105,15 @@ DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
 
     dax::math::SortLess comparisonFunctor;
     typename OutputGrid::PointCoordinatesType uniqueCoords;
+
     Algorithm::Copy(outputGrid.GetPointCoordinates(),
                     uniqueCoords);
 
-    Algorithm::Sort(uniqueCoords, comparisonFunctor );
+    dax::cont::ArrayHandle< dax::Id3 >* coordsAsIds;
+    coordsAsIds = reinterpret_cast< dax::cont::ArrayHandle< dax::Id3 >* >(&uniqueCoords);
+
+
+    Algorithm::Sort(*coordsAsIds, comparisonFunctor );
     Algorithm::Unique(uniqueCoords);
     Algorithm::LowerBounds(uniqueCoords,
                            outputGrid.GetPointCoordinates(),
