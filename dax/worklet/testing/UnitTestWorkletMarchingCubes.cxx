@@ -14,8 +14,8 @@
 //
 //=============================================================================
 
-#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
+#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
+#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
 #include <dax/cont/internal/testing/Testing.h>
@@ -31,10 +31,12 @@
 #include <dax/CellTraits.h>
 #include <dax/TypeTraits.h>
 
+#include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/UniformGrid.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DeviceAdapterSerial.h>
 #include <dax/cont/GenerateInterpolatedCells.h>
+#include <dax/cont/Scheduler.h>
+#include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
 
@@ -49,14 +51,23 @@ const dax::Id ISOVALUE = 70;
 //-----------------------------------------------------------------------------
 struct TestMarchingCubesWorklet
 {
-  //----------------------------------------------------------------------------
-  //----------------------------------------------------------------------------
-  void operator()(const dax::cont::UniformGrid<>&) const
-    {
-    typedef dax::CellTagTriangle CellType;
+  typedef dax::cont::ArrayContainerControlTagBasic ArrayContainer;
+  typedef dax::cont::DeviceAdapterTagSerial DeviceAdapter;
 
-    dax::cont::internal::TestGrid<dax::cont::UniformGrid<> > inGrid(DIM);
-    dax::cont::UnstructuredGrid<CellType> outGrid;
+  typedef dax::CellTagTriangle CellType;
+
+  typedef dax::cont::UniformGrid<DeviceAdapter> UniformGridType;
+  typedef dax::cont::UnstructuredGrid<
+      CellType,ArrayContainer,ArrayContainer,DeviceAdapter>
+      UnstructuredGridType;
+
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  void operator()(const UniformGridType&) const
+    {
+    dax::cont::internal::TestGrid<UniformGridType,ArrayContainer,DeviceAdapter>
+        inGrid(DIM);
+    UnstructuredGridType outGrid;
 
     std::cout << "running " << std::endl;
 
@@ -69,19 +80,23 @@ struct TestMarchingCubesWorklet
       field[pointIndex] = dax::dot(coordinates, trueGradient);
       }
 
-    dax::cont::ArrayHandle<dax::Scalar> fieldHandle =
-        dax::cont::make_ArrayHandle(field);
+    dax::cont::ArrayHandle<dax::Scalar,ArrayContainer,DeviceAdapter>
+        fieldHandle = dax::cont::make_ArrayHandle(field,
+                                                  ArrayContainer(),
+                                                  DeviceAdapter());
 
     std::cout << "Running Marching Cubes worklet" << std::endl;
     const dax::Scalar isoValue = ISOVALUE;
 
     try
       {
-      typedef dax::cont::GenerateInterpolatedCells<dax::worklet::MarchingCubesTopology> GenerateIC;
-      typedef GenerateIC::ClassifyResultType  ClassifyResultType;
+      typedef dax::cont::ArrayHandle<dax::Id, ArrayContainer, DeviceAdapter>
+        ClassifyResultType;
+      typedef dax::cont::GenerateInterpolatedCells<
+        dax::worklet::MarchingCubesTopology,ClassifyResultType> GenerateIC;
 
       //construct the scheduler that will execute all the worklets
-      dax::cont::Scheduler<> scheduler;
+      dax::cont::Scheduler<DeviceAdapter> scheduler;
 
       //construct the two worklets that will be used to do the marching cubes
       dax::worklet::MarchingCubesClassify classifyWorklet(isoValue);
@@ -115,7 +130,7 @@ struct TestMarchingCubesWorklet
     generate.SetRemoveDuplicatePoints(true);
     //run the second step again with point merging
 
-    dax::cont::UnstructuredGrid<CellType> secondOutGrid;
+    UnstructuredGridType secondOutGrid;
     scheduler.Invoke(generate,
                      inGrid.GetRealGrid(),
                      secondOutGrid,
@@ -140,8 +155,11 @@ struct TestMarchingCubesWorklet
 //-----------------------------------------------------------------------------
 void TestMarchingCubes()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestMarchingCubesWorklet(),
-      dax::cont::internal::GridTesting::TypeCheckUniformGrid());
+  dax::cont::internal::GridTesting::TryAllGridTypes(
+        TestMarchingCubesWorklet(),
+        dax::cont::internal::GridTesting::TypeCheckUniformGrid(),
+        dax::cont::ArrayContainerControlTagBasic(),
+        dax::cont::DeviceAdapterTagSerial());
   }
 } // Anonymous namespace
 

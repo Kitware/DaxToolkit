@@ -95,8 +95,10 @@ DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
                                         OutputGrid& outputGrid,
                                         bool removeDuplicates ) const
 {
+  typedef typename OutputGrid::PointCoordinatesType::ArrayContainerControlTag
+      ArrayContainerControlTag;
   typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
-        Algorithm;
+      Algorithm;
   if(removeDuplicates)
     {
     // the sort and unique will get us the subset of new points
@@ -109,8 +111,10 @@ DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
     Algorithm::Copy(outputGrid.GetPointCoordinates(),
                     uniqueCoords);
 
-    dax::cont::ArrayHandle< dax::Id3 >* coordsAsIds;
-    coordsAsIds = reinterpret_cast< dax::cont::ArrayHandle< dax::Id3 >* >(&uniqueCoords);
+    typedef dax::cont::ArrayHandle<
+        dax::Id3,ArrayContainerControlTag,DeviceAdapterTag> IdArrayType;
+    IdArrayType* coordsAsIds;
+    coordsAsIds = reinterpret_cast<IdArrayType*>(&uniqueCoords);
 
 
     Algorithm::Sort(*coordsAsIds, comparisonFunctor );
