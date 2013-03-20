@@ -46,4 +46,12 @@
 // This macro does not definitively determine whether thrust is used. Rather,
 // it tells whether Dax was original configured with a thrust backend enabled.
 #cmakedefine DAX_ENABLE_THRUST
+
+
+//save out the thrust major and minor version so that we can detect
+//what backend syntax we need to use
+#ifdef DAX_ENABLE_THRUST
+#define THRUST_MAJOR_VERSION @THRUST_MAJOR_VERSION@
+#define THRUST_MINOR_VERSION @THRUST_MINOR_VERSION@
+#endif
 #endif //__dax_internal_Configure_h
