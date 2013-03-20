@@ -48,7 +48,7 @@ void initOptions(std::vector<dax::Scalar> &price,
   srand(5347);
   //Generate options set
   unsigned int size = price.size();
-  for (int i = 0; i < size; i++)
+  for (unsigned int i = 0; i < size; i++)
     {
     price[i]  = RandFloat(5.0f, 30.0f);
     strike[i] = RandFloat(1.0f, 100.0f);
@@ -57,7 +57,7 @@ void initOptions(std::vector<dax::Scalar> &price,
 }
 
 
-int main(int argc, char **argv)
+int main(int, char **)
 {
   const dax::Id OPT_N  = 4000000;
 

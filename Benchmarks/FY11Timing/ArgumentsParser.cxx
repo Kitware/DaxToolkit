@@ -17,7 +17,7 @@
 
 #include <dax/testing/OptionParser.h>
 #include <iostream>
-#include <sstream> 
+#include <sstream>
 #include <string>
 
 enum  optionIndex { UNKNOWN, HELP, SIZE, PIPELINE};
@@ -50,12 +50,12 @@ bool dax::testing::ArgumentsParser::parseArguments(int argc, char* argv[])
 {
   argc-=(argc>0);
   argv+=(argc>0); // skip program name argv[0] if present
-  
+
   dax::testing::option::Stats  stats(usage, argc, argv);
   dax::testing::option::Option* options = new dax::testing::option::Option[stats.options_max];
   dax::testing::option::Option* buffer = new dax::testing::option::Option[stats.options_max];
   dax::testing::option::Parser parse(usage, argc, argv, options, buffer);
-  
+
   if (parse.error())
     {
     delete[] options;
@@ -68,38 +68,38 @@ bool dax::testing::ArgumentsParser::parseArguments(int argc, char* argv[])
     dax::testing::option::printUsage(std::cout, usage);
     delete[] options;
     delete[] buffer;
-    
+
     return false;
     }
 
   if ( options[SIZE] )
     {
     std::string sarg(options[SIZE].last()->arg);
-    std::stringstream buffer(sarg);
-    buffer >> this->ProblemSize;
+    std::stringstream argstream(sarg);
+    argstream >> this->ProblemSize;
     }
 
   if ( options[PIPELINE] )
     {
     std::string sarg(options[PIPELINE].last()->arg);
-    std::stringstream buffer(sarg);
-    int pipeline = 0;
-    buffer >> pipeline;
-    if (pipeline == 1)
+    std::stringstream argstream(sarg);
+    int pipelineflag = 0;
+    argstream >> pipelineflag;
+    if (pipelineflag == 1)
       {
       this->Pipeline = CELL_GRADIENT;
       }
-    if (pipeline == 2)
+    if (pipelineflag == 2)
       {
       this->Pipeline = CELL_GRADIENT_SINE_SQUARE_COS;
       }
-    if (pipeline == 3)
+    if (pipelineflag == 3)
       {
       this->Pipeline = SINE_SQUARE_COS;
       }
     }
 
   delete[] options;
-  delete[] buffer;  
+  delete[] buffer;
   return true;
 }
