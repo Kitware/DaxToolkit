@@ -61,7 +61,7 @@ public:
   typedef typename ClassifyHandleType::ValueType ClassifyType;
   typedef ClassifyHandleType ClassifyResultType;
 
-  GenerateInterpolatedCells(ClassifyResultType classification):
+  GenerateInterpolatedCells(const ClassifyResultType &classification):
     RemoveDuplicatePoints(true),
     ReleaseClassification(true),
     Classification(classification),
@@ -70,7 +70,8 @@ public:
     BOOST_MPL_ASSERT((Worklet_Should_Inherit_From_WorkletGenerateCells));
     }
 
-  GenerateInterpolatedCells(ClassifyResultType classification, WorkletType& work):
+  GenerateInterpolatedCells(const ClassifyResultType &classification,
+                            const WorkletType& work):
     RemoveDuplicatePoints(true),
     ReleaseClassification(true),
     Classification(classification),
