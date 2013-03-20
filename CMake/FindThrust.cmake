@@ -56,6 +56,8 @@ string( REGEX REPLACE "^${major}00" "" version "${version}" )
 string( REGEX MATCH "^[0-9]" minor ${version} )
 string( REGEX REPLACE "^${minor}0" "" version "${version}" )
 set( THRUST_VERSION "${major}.${minor}.${version}")
+set( THRUST_MAJOR_VERSION "${major}")
+set( THRUST_MINOR_VERSION "${minor}")
 
 # Check for required components
 include( FindPackageHandleStandardArgs )
