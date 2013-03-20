@@ -43,9 +43,9 @@
  * @brief This is the only file required to use The Lean Mean C++ Option Parser.
  *        Just \#include it and you're set.
  *
- * The Lean Mean C++ Option Parser handles the program's command line arguments 
+ * The Lean Mean C++ Option Parser handles the program's command line arguments
  * (argc, argv).
- * It supports the short and long option formats of getopt(), getopt_long() 
+ * It supports the short and long option formats of getopt(), getopt_long()
  * and getopt_long_only() but has a more convenient interface.
  * The following features set it apart from other option parsers:
  *
@@ -82,7 +82,7 @@
  *     @endcode
  *     </ul>
  * </ul> @n
- * Despite these features the code size remains tiny. 
+ * Despite these features the code size remains tiny.
  * It is smaller than <a href="http://uclibc.org">uClibc</a>'s GNU getopt() and just a
  * couple 100 bytes larger than uClibc's SUSv3 getopt(). @n
  * (This does not include the usage formatter, of course. But you don't have to use that.)
@@ -214,7 +214,7 @@
 #ifndef OPTIONPARSER_H_
 #define OPTIONPARSER_H_
 
-namespace dax { namespace testing { 
+namespace dax { namespace testing {
 
 /** @brief The namespace of The Lean Mean C++ Option Parser. */
 namespace option
@@ -1924,8 +1924,8 @@ struct PrintUsageImplementation
     int target_line_in_block; //!< Line index of the parts we should return to the user on this iteration.
     bool hit_target_line; //!< Flag whether we encountered a part with line index target_line_in_block in the current cell.
 
-    /** 
-     * @brief Determines the byte and character lengths of the part at @ref ptr and 
+    /**
+     * @brief Determines the byte and character lengths of the part at @ref ptr and
      * stores them in @ref len and @ref screenlen respectively.
      */
     void update_length()
@@ -2771,44 +2771,44 @@ struct PrintUsageImplementation
  * @endcode
  */
 template<typename OStream>
-void printUsage(OStream& prn, const Descriptor usage[], int width = 80, int last_column_min_percent = 50,
+void printUsage(OStream& prn, const Descriptor descriptors[], int width = 80, int last_column_min_percent = 50,
                 int last_column_own_line_max_percent = 75)
 {
   PrintUsageImplementation::OStreamWriter<OStream> write(prn);
-  PrintUsageImplementation::printUsage(write, usage, width, last_column_min_percent, last_column_own_line_max_percent);
+  PrintUsageImplementation::printUsage(write, descriptors, width, last_column_min_percent, last_column_own_line_max_percent);
 }
 
 template<typename Function>
-void printUsage(Function* prn, const Descriptor usage[], int width = 80, int last_column_min_percent = 50,
+void printUsage(Function* prn, const Descriptor descriptors[], int width = 80, int last_column_min_percent = 50,
                 int last_column_own_line_max_percent = 75)
 {
   PrintUsageImplementation::FunctionWriter<Function> write(prn);
-  PrintUsageImplementation::printUsage(write, usage, width, last_column_min_percent, last_column_own_line_max_percent);
+  PrintUsageImplementation::printUsage(write, descriptors, width, last_column_min_percent, last_column_own_line_max_percent);
 }
 
 template<typename Temporary>
-void printUsage(const Temporary& prn, const Descriptor usage[], int width = 80, int last_column_min_percent = 50,
+void printUsage(const Temporary& prn, const Descriptor descriptors[], int width = 80, int last_column_min_percent = 50,
                 int last_column_own_line_max_percent = 75)
 {
   PrintUsageImplementation::TemporaryWriter<Temporary> write(prn);
-  PrintUsageImplementation::printUsage(write, usage, width, last_column_min_percent, last_column_own_line_max_percent);
+  PrintUsageImplementation::printUsage(write, descriptors, width, last_column_min_percent, last_column_own_line_max_percent);
 }
 
 template<typename Syscall>
-void printUsage(Syscall* prn, int fd, const Descriptor usage[], int width = 80, int last_column_min_percent = 50,
+void printUsage(Syscall* prn, int fd, const Descriptor descriptors[], int width = 80, int last_column_min_percent = 50,
                 int last_column_own_line_max_percent = 75)
 {
   PrintUsageImplementation::SyscallWriter<Syscall> write(prn, fd);
-  PrintUsageImplementation::printUsage(write, usage, width, last_column_min_percent, last_column_own_line_max_percent);
+  PrintUsageImplementation::printUsage(write, descriptors, width, last_column_min_percent, last_column_own_line_max_percent);
 }
 
 template<typename Function, typename Stream>
-void printUsage(Function* prn, Stream* stream, const Descriptor usage[], int width = 80, int last_column_min_percent =
+void printUsage(Function* prn, Stream* stream, const Descriptor descriptors[], int width = 80, int last_column_min_percent =
                     50,
                 int last_column_own_line_max_percent = 75)
 {
   PrintUsageImplementation::StreamWriter<Function, Stream> write(prn, stream);
-  PrintUsageImplementation::printUsage(write, usage, width, last_column_min_percent, last_column_own_line_max_percent);
+  PrintUsageImplementation::printUsage(write, descriptors, width, last_column_min_percent, last_column_own_line_max_percent);
 }
 
 }

@@ -57,24 +57,26 @@ namespace internal { class ArrayHandleAccess; }
 ///
 template<
     typename T,
-    class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
+    class ArrayContainerControlTag_ = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
     class DeviceAdapterTag_ = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class ArrayHandle
 {
 private:
-  typedef dax::cont::internal::ArrayContainerControl<T,ArrayContainerControlTag>
+  typedef dax::cont::internal
+      ::ArrayContainerControl<T,ArrayContainerControlTag_>
       ArrayContainerControlType;
   typedef dax::cont::internal
-      ::ArrayTransfer<T,ArrayContainerControlTag,DeviceAdapterTag_ >
+      ::ArrayTransfer<T,ArrayContainerControlTag_,DeviceAdapterTag_ >
       ArrayTransferType;
 public:
   typedef T ValueType;
+  typedef DeviceAdapterTag_ DeviceAdapterTag;
+  typedef ArrayContainerControlTag_ ArrayContainerControlTag;
   typedef typename ArrayContainerControlType::PortalType PortalControl;
   typedef typename ArrayContainerControlType::PortalConstType
       PortalConstControl;
   typedef typename ArrayTransferType::PortalExecution PortalExecution;
   typedef typename ArrayTransferType::PortalConstExecution PortalConstExecution;
-  typedef DeviceAdapterTag_ DeviceAdapterTag;
 
   /// Constructs an empty ArrayHandle. Typically used for output or
   /// intermediate arrays that will be filled by a Dax algorithm.
