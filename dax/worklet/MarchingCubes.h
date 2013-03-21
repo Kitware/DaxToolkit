@@ -54,10 +54,13 @@ public:
   DAX_CONT_EXPORT MarchingCubesClassify(dax::Scalar isoValue)
     : IsoValue(isoValue) {  }
 
-  template<class InputCellTag>
+  // TODO: This method should be overloaded such that it accepts either
+  // voxels or hexahedra.  Eventually, we want to support all other cell
+  // types as well (although, technically that ceases to be marching
+  // cubes and becomes marching tetrahedra or the like).
   DAX_EXEC_EXPORT
   dax::Id operator()(
-      const dax::exec::CellField<dax::Scalar,InputCellTag> &values) const
+      const dax::exec::CellField<dax::Scalar,dax::CellTagVoxel> &values) const
   {
     const int voxelClass = GetVoxelClassification(IsoValue,values);
     return dax::worklet::internal::marchingcubes::NumFaces[voxelClass];
@@ -79,11 +82,14 @@ public:
     : IsoValue(isoValue){ }
 
 
-  template<class InputCellTag, class OutputCellTag >
+  // TODO: This method should be overloaded such that it accepts either
+  // voxels or hexahedra.  Eventually, we want to support all other cell
+  // types as well (although, technically that ceases to be marching
+  // cubes and becomes marching tetrahedra or the like).
   DAX_EXEC_EXPORT void operator()(
-      const dax::exec::CellVertices<InputCellTag>& verts,
-      dax::exec::InterpolatedCellPoints<OutputCellTag>& outCell,
-      const dax::exec::CellField<dax::Scalar,InputCellTag> &values,
+      const dax::exec::CellVertices<dax::CellTagVoxel>& verts,
+      dax::exec::InterpolatedCellPoints<dax::CellTagTriangle>& outCell,
+      const dax::exec::CellField<dax::Scalar,dax::CellTagVoxel> &values,
       dax::Id inputCellVisitIndex) const
   {
     using dax::worklet::internal::marchingcubes::TriTable;
