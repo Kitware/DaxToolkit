@@ -45,7 +45,7 @@ struct Extent3 {
    return *this;
    }
 
-} __attribute__ ((aligned(4)));
+} __attribute__ ((aligned(DAX_SIZE_SCALAR)));
 
 /// Given an extent, returns the array dimensions in each direction.
 DAX_EXEC_CONT_EXPORT dax::Id3 extentDimensions(const Extent3 &extent)

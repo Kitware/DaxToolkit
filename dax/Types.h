@@ -125,6 +125,26 @@ struct equals<1>
   }
 };
 
+template<>
+struct equals<2>
+{
+  template<typename T>
+  DAX_EXEC_CONT_EXPORT bool operator()(const T& a, const T& b) const
+  {
+    return a[0] == b[0] && a[1] == b[1];
+  }
+};
+
+template<>
+struct equals<3>
+{
+  template<typename T>
+  DAX_EXEC_CONT_EXPORT bool operator()(const T& a, const T& b) const
+  {
+    return a[0] == b[0] && a[1] == b[1] && a[2] == b[2];
+  }
+};
+
 template<int Size>
 struct assign_scalar_to_vector
 {
@@ -148,6 +168,28 @@ struct assign_scalar_to_vector<1>
   }
 };
 
+template<>
+struct assign_scalar_to_vector<2>
+{
+  template<typename VectorType, typename ComponentType>
+  DAX_EXEC_CONT_EXPORT
+  void operator()(VectorType &dest, const ComponentType &src)
+  {
+    dest[0] = src; dest[1] = src;
+  }
+};
+
+template<>
+struct assign_scalar_to_vector<3>
+{
+  template<typename VectorType, typename ComponentType>
+  DAX_EXEC_CONT_EXPORT
+  void operator()(VectorType &dest, const ComponentType &src)
+  {
+    dest[0] = src; dest[1] = src; dest[2] = src;
+  }
+};
+
 template<int Size>
 struct copy_vector
 {
@@ -166,6 +208,26 @@ struct copy_vector<1>
   DAX_EXEC_CONT_EXPORT void operator()(T1 &dest, const T2 &src)
   {
     dest[0] = src[0];
+  }
+};
+
+template<>
+struct copy_vector<2>
+{
+  template<typename T1, typename T2>
+  DAX_EXEC_CONT_EXPORT void operator()(T1 &dest, const T2 &src)
+  {
+    dest[0] = src[0]; dest[1] = src[1];
+  }
+};
+
+template<>
+struct copy_vector<3>
+{
+  template<typename T1, typename T2>
+  DAX_EXEC_CONT_EXPORT void operator()(T1 &dest, const T2 &src)
+  {
+    dest[0] = src[0]; dest[1] = src[1]; dest[2] = src[2];
   }
 };
 
@@ -211,6 +273,7 @@ public:
   DAX_EXEC_CONT_EXPORT Tuple(){}
   DAX_EXEC_CONT_EXPORT explicit Tuple(const ComponentType& value)
     {
+    #pragma unroll
     for(int i=0; i < NUM_COMPONENTS;++i)
       {
       this->Components[i]=value;
@@ -218,6 +281,7 @@ public:
     }
   DAX_EXEC_CONT_EXPORT explicit Tuple(const ComponentType* values)
     {
+    #pragma unroll
     for(int i=0; i < NUM_COMPONENTS;++i)
       {
       this->Components[i]=values[i];
@@ -226,6 +290,7 @@ public:
   DAX_EXEC_CONT_EXPORT
   Tuple(const Tuple<ComponentType, Size> &src)
   {
+    #pragma unroll
     for (int i = 0; i < NUM_COMPONENTS; i++)
       {
       this->Components[i] = src[i];
@@ -235,6 +300,7 @@ public:
   DAX_EXEC_CONT_EXPORT
   Tuple<ComponentType, Size> &operator=(const Tuple<ComponentType, Size> &src)
   {
+    #pragma unroll
     for (int i = 0; i < NUM_COMPONENTS; i++)
       {
       this->Components[i] = src[i];
@@ -252,19 +318,24 @@ public:
   DAX_EXEC_CONT_EXPORT
   bool operator==(const Tuple<T,NUM_COMPONENTS> &other) const
   {
+    bool same = true;
+    #pragma unroll
     for (int componentIndex=0; componentIndex<NUM_COMPONENTS; componentIndex++)
       {
-      if (this->Components[componentIndex] != other[componentIndex])
-        {
-        return false;
-        }
+      same &= (this->Components[componentIndex] == other[componentIndex]);
       }
-    return true;
+    return same;
   }
   DAX_EXEC_CONT_EXPORT
   bool operator!=(const Tuple<T,NUM_COMPONENTS> &other) const
   {
-    return !(this->operator==(other));
+    bool same = true;
+    #pragma unroll
+    for (int componentIndex=0; componentIndex<NUM_COMPONENTS; componentIndex++)
+      {
+      same &= (this->Components[componentIndex] != other[componentIndex]);
+      }
+    return same;
   }
 
 protected:
@@ -331,7 +402,7 @@ protected:
 
 /// Vector2 corresponds to a 2-tuple
 typedef dax::Tuple<dax::Scalar,2>
-    Vector2 __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+    Vector2 __attribute__ ((aligned(DAX_SIZE_TWO_SCALAR)));
 
 template<typename T>
 class Tuple<T,3>{
@@ -454,7 +525,7 @@ protected:
 
 /// Vector4 corresponds to a 4-tuple
 typedef dax::Tuple<dax::Scalar,4>
-    Vector4 __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+    Vector4 __attribute__ ((aligned(DAX_SIZE_FOUR_SCALAR)));
 
 
 /// Id3 corresponds to a 3-dimensional index for 3d arrays.  Note that
@@ -496,6 +567,7 @@ DAX_EXEC_CONT_EXPORT T dot(const dax::Tuple<T,Size> &a,
                            const dax::Tuple<T,Size> &b)
 {
   T result = a[0]*b[0];
+  #pragma unroll
   for (int componentIndex = 1; componentIndex < Size; componentIndex++)
     {
     result += a[componentIndex]*b[componentIndex];
@@ -520,6 +592,7 @@ DAX_EXEC_CONT_EXPORT dax::Tuple<T,Size> operator+(const dax::Tuple<T,Size> &a,
                                                   const dax::Tuple<T,Size> &b)
 {
   dax::Tuple<T,Size> result;
+  #pragma unroll
   for (int componentIndex = 0; componentIndex < Size; componentIndex++)
     {
     result[componentIndex] = a[componentIndex] + b[componentIndex];
@@ -531,6 +604,7 @@ DAX_EXEC_CONT_EXPORT dax::Tuple<T,Size> operator-(const dax::Tuple<T,Size> &a,
                                                   const dax::Tuple<T,Size> &b)
 {
   dax::Tuple<T,Size> result;
+  #pragma unroll
   for (int componentIndex = 0; componentIndex < Size; componentIndex++)
     {
     result[componentIndex] = a[componentIndex] - b[componentIndex];
@@ -542,6 +616,7 @@ DAX_EXEC_CONT_EXPORT dax::Tuple<T,Size> operator*(const dax::Tuple<T,Size> &a,
                                                   const dax::Tuple<T,Size> &b)
 {
   dax::Tuple<T,Size> result;
+  #pragma unroll
   for (int componentIndex = 0; componentIndex < Size; componentIndex++)
     {
     result[componentIndex] = a[componentIndex] * b[componentIndex];
@@ -553,33 +628,20 @@ DAX_EXEC_CONT_EXPORT dax::Tuple<T,Size> operator/(const dax::Tuple<T,Size> &a,
                                                   const dax::Tuple<T,Size> &b)
 {
   dax::Tuple<T,Size> result;
+  #pragma unroll
   for (int componentIndex = 0; componentIndex < Size; componentIndex++)
     {
     result[componentIndex] = a[componentIndex] / b[componentIndex];
     }
   return result;
 }
-//template<typename T, int Size>
-//DAX_EXEC_CONT_EXPORT bool operator==(const dax::Tuple<T,Size> &a,
-//                                     const dax::Tuple<T,Size> &b)
-//{
-//  for (int componentIndex = 0; componentIndex < Size; componentIndex++)
-//    {
-//    if (a[componentIndex] != b[componentIndex]) return false;
-//    }
-//  return true;
-//}
-//template<typename T, int Size>
-//DAX_EXEC_CONT_EXPORT bool operator!=(const dax::Tuple<T,Size> &a,
-//                                     const dax::Tuple<T,Size> &b)
-//{
-//  return !(a == b);
-//}
+
 template<typename Ta, typename Tb, int Size>
 DAX_EXEC_CONT_EXPORT dax::Tuple<Ta,Size> operator*(const dax::Tuple<Ta,Size> &a,
                                                    const Tb &b)
 {
   dax::Tuple<Ta,Size> result;
+  #pragma unroll
   for (int componentIndex = 0; componentIndex < Size; componentIndex++)
     {
     result[componentIndex] = a[componentIndex] * b;
@@ -591,6 +653,7 @@ DAX_EXEC_CONT_EXPORT dax::Tuple<Tb,Size> operator*(const Ta &a,
                                                    const dax::Tuple<Tb,Size> &b)
 {
   dax::Tuple<Tb,Size> result;
+  #pragma unroll
   for (int componentIndex = 0; componentIndex < Size; componentIndex++)
     {
     result[componentIndex] = a * b[componentIndex];
