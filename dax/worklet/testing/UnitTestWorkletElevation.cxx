@@ -27,6 +27,8 @@
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/UniformGrid.h>
 
+#include <dax/math/VectorAnalysis.h>
+
 #include <vector>
 
 namespace {
@@ -41,14 +43,17 @@ struct TestElevationWorklet
   void operator()(const GridType&) const
   {
   dax::cont::internal::TestGrid<GridType> grid(DIM);
+  dax::Id numPoints = grid->GetNumberOfPoints();
 
   dax::cont::ArrayHandle<dax::Scalar,
                          dax::cont::ArrayContainerControlTagBasic,
                          dax::cont::DeviceAdapterTagSerial> elevationHandle;
 
+  dax::Vector3 maxCoordinate = grid.GetPointCoordinates(numPoints-1);
+  dax::Scalar scale = 0.5/dax::math::MagnitudeSquared(maxCoordinate);
+
   std::cout << "Running Elevation worklet" << std::endl;
-  dax::worklet::Elevation elev(dax::make_Vector3(DIM, DIM, DIM),
-                               dax::make_Vector3(0.0, 0.0, 0.0));
+  dax::worklet::Elevation elev(-1.0*maxCoordinate, maxCoordinate);
   dax::cont::Scheduler<> scheduler;
   scheduler.Invoke(elev,
                    grid->GetPointCoordinates(),
@@ -57,24 +62,14 @@ struct TestElevationWorklet
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> elevation(grid->GetNumberOfPoints());
   elevationHandle.CopyInto(elevation.begin());
-  dax::Id3 ijk;
-  for (ijk[2] = 0; ijk[2] < DIM; ijk[2]++)
+  for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
     {
-    for (ijk[1] = 0; ijk[1] < DIM; ijk[1]++)
-      {
-      for (ijk[0] = 0; ijk[0] < DIM; ijk[0]++)
-        {
-        dax::Id pointIndex = grid->ComputePointIndex(ijk);
-        dax::Scalar elevationValue = elevation[pointIndex];
-        dax::Vector3 pointCoordinates =grid->ComputePointCoordinates(pointIndex);
-        // Wrong, but what is currently computed.
-        dax::Scalar elevationExpected =
-            1.0 - (dax::dot(pointCoordinates, dax::make_Vector3(1.0, 1.0, 1.0))
-                   /(3*DIM));
-        DAX_TEST_ASSERT(test_equal(elevationValue, elevationExpected),
-                        "Got bad elevation.");
-        }
-      }
+    dax::Scalar elevationValue = elevation[pointIndex];
+    dax::Vector3 pointCoordinates = grid.GetPointCoordinates(pointIndex);
+    dax::Scalar elevationExpected =
+        scale * dax::dot(pointCoordinates, maxCoordinate) + 0.5;
+    DAX_TEST_ASSERT(test_equal(elevationValue, elevationExpected),
+                    "Got bad elevation.");
     }
   }
 };
@@ -82,8 +77,7 @@ struct TestElevationWorklet
 //-----------------------------------------------------------------------------
 void TestElevation()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestElevationWorklet(),
-                     dax::cont::internal::GridTesting::TypeCheckUniformGrid());
+  dax::cont::internal::GridTesting::TryAllGridTypes(TestElevationWorklet());
   }
 
 

@@ -189,8 +189,7 @@ struct TestThresholdWorklet
 //-----------------------------------------------------------------------------
 void TestThreshold()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestThresholdWorklet(),
-                     dax::cont::internal::GridTesting::TypeCheckUniformGrid());
+  dax::cont::internal::GridTesting::TryAllGridTypes(TestThresholdWorklet());
   }
 } // Anonymous namespace
 

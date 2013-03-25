@@ -109,8 +109,11 @@ struct TestTetrahedralizeWorklet
 //-----------------------------------------------------------------------------
 void TestTetrahedralize()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestTetrahedralizeWorklet(),
-                     dax::cont::internal::GridTesting::TypeCheckUniformGrid());
+  // TODO: We should support more tetrahedralization than voxels, and we should
+  // test that, too.
+  dax::cont::internal::GridTesting::TryAllGridTypes(
+        TestTetrahedralizeWorklet(),
+        dax::internal::Testing::CellCheckUniform());
   }
 } // Anonymous namespace
 

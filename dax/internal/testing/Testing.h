@@ -16,6 +16,8 @@
 #ifndef __dax_internal_Testing_h
 #define __dax_internal_Testing_h
 
+#include <dax/CellTag.h>
+#include <dax/CellTraits.h>
 #include <dax/Types.h>
 #include <dax/TypeTraits.h>
 #include <dax/VectorTraits.h>
@@ -240,27 +242,140 @@ public:
   static void TryAllTypes(FunctionType function, CheckType check)
   {
     dax::Id id = 0;
-    check(id, InternalPrintOnInvoke<FunctionType>(function, "dax::Id"));
+    check(id, InternalPrintOnInvoke<FunctionType>(
+            function, "*** dax::Id ***************"));
 
     dax::Id3 id3 = dax::make_Id3(0, 0, 0);
-    check(id3, InternalPrintOnInvoke<FunctionType>(function, "dax::Id3"));
+    check(id3, InternalPrintOnInvoke<FunctionType>(
+            function, "*** dax::Id3 **************"));
 
     dax::Scalar scalar = 0.0;
-    check(scalar, InternalPrintOnInvoke<FunctionType>(function, "dax::Scalar"));
+    check(scalar, InternalPrintOnInvoke<FunctionType>(
+            function, "*** dax::Scalar ***********"));
 
     dax::Vector2 vector2 = dax::make_Vector2(0.0, 0.0);
-    check(vector2, InternalPrintOnInvoke<FunctionType>(function, "dax::Vector2"));
+    check(vector2, InternalPrintOnInvoke<FunctionType>(
+            function, "*** dax::Vector2 **********"));
 
     dax::Vector3 vector3 = dax::make_Vector3(0.0, 0.0, 0.0);
-    check(vector3, InternalPrintOnInvoke<FunctionType>(function, "dax::Vector3"));
+    check(vector3, InternalPrintOnInvoke<FunctionType>(
+            function, "*** dax::Vector3 **********"));
 
     dax::Vector4 vector4 = dax::make_Vector4(0.0, 0.0, 0.0, 0.0);
-    check(vector4, InternalPrintOnInvoke<FunctionType>(function, "dax::Vector4"));
+    check(vector4, InternalPrintOnInvoke<FunctionType>(
+            function, "*** dax::Vector4 **********"));
   }
   template<class FunctionType>
   static void TryAllTypes(FunctionType function)
   {
     TryAllTypes(function, TypeCheckAlwaysTrue());
+  }
+
+  /// Check functors to be used with the TryAllTypes method.
+  ///
+  struct CellCheckAlwaysTrue {
+    template <class Tag, class Functor>
+    void operator()(Tag t, Functor function) const { function(t); }
+  };
+  struct CellCheckUniform {
+    template <class Tag, class Functor>
+    void operator()(Tag t, Functor function) const {
+      this->DoUniform(typename dax::CellTraits<Tag>::GridTag(), t, function);
+    }
+  private:
+    template <class Tag, typename T, class Functor>
+    void DoUniform(Tag, T, const Functor&) const {  }
+    template <class Tag, class Functor>
+    void DoUniform(dax::GridTagUniform, Tag t, Functor function) const {
+      function(t);
+    }
+  };
+  struct CellCheckUnstructured {
+    template <class Tag, class Functor>
+    void operator()(Tag t, Functor function) const {
+      this->DoUnstructured(typename dax::CellTraits<Tag>::GridTag(), t, function);
+    }
+  private:
+    template <class Tag, typename T, class Functor>
+    void DoUnstructured(Tag, T, const Functor&) const {  }
+    template <class Tag, class Functor>
+    void DoUnstructured(dax::GridTagUnstructured, Tag t, Functor function) const {
+      function(t);
+    }
+  };
+  struct CellCheckHexahedron {
+    template <class Tag, class Functor>
+    void operator()(Tag t, Functor function) const {
+      this->DoHexahedron(
+            typename dax::CellTraits<Tag>::CanonicalCellTag(),
+            t,
+            function);
+    }
+  private:
+    template <class Tag, typename T, class Functor>
+    void DoHexahedron(Tag, T, const Functor&) const {  }
+    template <class Tag, class Functor>
+    void DoHexahedron(dax::CellTagHexahedron, Tag t, Functor function) const {
+      function(t);
+    }
+  };
+  template<int Dims>
+  struct CellCheckTopologicalDimensions {
+    template <class Tag, class Functor>
+    void operator()(Tag t, Functor function) const {
+      this->DoTopologicalDimensions(
+            typename dax::CellTraits<Tag>::TopologicalDimensionsTag(),
+            t,
+            function);
+    }
+  private:
+    template <class Tag, typename T, class Functor>
+    void DoTopologicalDimensions(Tag, T, const Functor&) const {  }
+    template <class Tag, class Functor>
+    void DoTopologicalDimensions(dax::CellTopologicalDimensionsTag<Dims>,
+                                 Tag t,
+                                 Functor function) const {
+      function(t);
+    }
+  };
+
+  /// Runs templated \p function on all the cell tags defined in Dax. This is
+  /// helpful to test templated functions that should work on all cell types.
+  /// If the function is supposed to work on some subset of cell types, then \p
+  /// check can be set to restrict the types used. This Testing class contains
+  /// several helpful check functors.
+  ///
+  template<class FunctionType, class CheckType>
+  static void TryAllCells(FunctionType function, CheckType check)
+  {
+    check(dax::CellTagVoxel(), InternalPrintOnInvoke<FunctionType>(
+            function, "*** dax::CellTagVoxel ******************"));
+
+    check(dax::CellTagVertex(), InternalPrintOnInvoke<FunctionType>(
+            function, "*** dax::CellTagVertex *****************"));
+
+    check(dax::CellTagLine(), InternalPrintOnInvoke<FunctionType>(
+            function, "*** dax::CellTagLine *******************"));
+
+    check(dax::CellTagTriangle(), InternalPrintOnInvoke<FunctionType>(
+            function, "*** dax::CellTagTriangle ***************"));
+
+    check(dax::CellTagQuadrilateral(), InternalPrintOnInvoke<FunctionType>(
+            function, "*** dax::CellTagQuadrilateral **********"));
+
+    check(dax::CellTagHexahedron(), InternalPrintOnInvoke<FunctionType>(
+            function, "*** dax::CellTagHexahedron *************"));
+
+    check(dax::CellTagTetrahedron(), InternalPrintOnInvoke<FunctionType>(
+            function, "*** dax::CellTagTetrahedron ************"));
+
+    check(dax::CellTagWedge(), InternalPrintOnInvoke<FunctionType>(
+            function, "*** dax::CellTagWedge ******************"));
+  }
+  template<class FunctionType>
+  static void TryAllCells(FunctionType function)
+  {
+    TryAllCells(function, CellCheckAlwaysTrue());
   }
 };
 
