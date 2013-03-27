@@ -81,9 +81,6 @@ namespace dax
 // Typedefs for basic types.
 //*****************************************************************************
 
-/// Alignment requirements are prescribed by CUDA on device (Table B-1 in NVIDIA
-/// CUDA C Programming Guide 4.0)
-
 namespace internal {
 
 #if DAX_SIZE_INT == 4
@@ -106,13 +103,11 @@ typedef unsigned long long UInt64Type;
 //for windows support we need a macro to wrap the alignment call,
 //since for windows you need declspec(align)
 #ifdef _MSC_VER
-#  define DAX_ALIGN(size,decleration) __declspec(align(size)) decleration;
-#  define DAX_STRUCT_ALIGN_BEGIN(size) __declspec(align(size))
-#  define DAX_STRUCT_ALIGN_END(size)
+#  define DAX_ALIGN_BEGIN(size) __declspec(align(size))
+#  define DAX_ALIGN_END(size)
 #else //we presume clang or gcc
-#  define DAX_ALIGN(size,decleration) decleration __attribute__((aligned(size)));
-#  define DAX_STRUCT_ALIGN_BEGIN(size)
-#  define DAX_STRUCT_ALIGN_END(size) __attribute__((aligned(size)))
+#  define DAX_ALIGN_BEGIN(size)
+#  define DAX_ALIGN_END(size) __attribute__((aligned(size)))
 #endif
 
 //-----------------------------------------------------------------------------
@@ -250,12 +245,12 @@ struct copy_vector<3>
 #if DAX_SIZE_ID == 4
 
 /// Represents an ID.
-typedef internal::Int32Type Id __attribute__ ((aligned(DAX_SIZE_ID)));
+typedef DAX_ALIGN_BEGIN(DAX_SIZE_ID) internal::Int32Type Id DAX_ALIGN_END(DAX_SIZE_ID);
 
 #elif DAX_SIZE_ID == 8
 
 /// Represents an ID.
-typedef internal::Int64Type Id __attribute__ ((aligned(DAX_SIZE_ID)));
+typedef DAX_ALIGN_BEGIN(DAX_SIZE_ID) internal::Int64Type Id DAX_ALIGN_END(DAX_SIZE_ID);
 
 #else
 #error Unknown Id Size
@@ -264,12 +259,12 @@ typedef internal::Int64Type Id __attribute__ ((aligned(DAX_SIZE_ID)));
 #ifdef DAX_USE_DOUBLE_PRECISION
 
 /// Scalar corresponds to a floating point number.
-typedef double Scalar __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+typedef DAX_ALIGN_BEGIN(DAX_SIZE_SCALAR) double Scalar DAX_ALIGN_END(DAX_SIZE_SCALAR);
 
 #else //DAX_USE_DOUBLE_PRECISION
 
 /// Scalar corresponds to a floating point number.
-typedef float Scalar __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+typedef DAX_ALIGN_BEGIN(DAX_SIZE_SCALAR) float Scalar DAX_ALIGN_END(DAX_SIZE_SCALAR);
 
 #endif //DAX_USE_DOUBLE_PRECISION
 
@@ -413,8 +408,7 @@ protected:
 };
 
 /// Vector2 corresponds to a 2-tuple
-typedef dax::Tuple<dax::Scalar,2>
-    Vector2 __attribute__ ((aligned(DAX_SIZE_TWO_SCALAR)));
+typedef DAX_ALIGN_BEGIN(DAX_SIZE_TWO_SCALAR) dax::Tuple<dax::Scalar,2> Vector2 DAX_ALIGN_END(DAX_SIZE_TWO_SCALAR);
 
 template<typename T>
 class Tuple<T,3>{
@@ -473,9 +467,8 @@ protected:
   ComponentType Components[NUM_COMPONENTS];
 };
 
-/// Vector3 corresponds to a 3-tuple
-typedef dax::Tuple<dax::Scalar,3>
-    Vector3 __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+/// Vector3 corresponds to a 3-DAX_SIZE_SCALAR
+typedef DAX_ALIGN_BEGIN(DAX_SIZE_SCALAR) dax::Tuple<dax::Scalar,3> Vector3 DAX_ALIGN_END(DAX_SIZE_SCALAR);
 
 template<typename T>
 class Tuple<T,4>{
@@ -536,13 +529,11 @@ protected:
 };
 
 /// Vector4 corresponds to a 4-tuple
-typedef dax::Tuple<dax::Scalar,4>
-    Vector4 __attribute__ ((aligned(DAX_SIZE_FOUR_SCALAR)));
-
+typedef DAX_ALIGN_BEGIN(DAX_SIZE_FOUR_SCALAR) dax::Tuple<dax::Scalar,4> Vector4 DAX_ALIGN_END(DAX_SIZE_FOUR_SCALAR);
 
 /// Id3 corresponds to a 3-dimensional index for 3d arrays.  Note that
 /// the precision of each index may be less than dax::Id.
-typedef dax::Tuple<dax::Id,3> Id3 __attribute__ ((aligned(DAX_SIZE_ID)));
+typedef DAX_ALIGN_BEGIN(DAX_SIZE_ID) dax::Tuple<dax::Id,3> Id3 DAX_ALIGN_END(DAX_SIZE_ID);
 
 /// Initializes and returns a Vector2.
 DAX_EXEC_CONT_EXPORT dax::Vector2 make_Vector2(dax::Scalar x,

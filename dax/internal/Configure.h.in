@@ -26,6 +26,9 @@
 #define DAX_SIZE_LONG @DAX_SIZE_LONG@
 #define DAX_SIZE_LONG_LONG @DAX_SIZE_LONG_LONG@
 
+/// Alignment requirements are prescribed by CUDA on device (Table B-1 in NVIDIA
+/// CUDA C Programming Guide 4.0)
+
 #ifdef DAX_USE_DOUBLE_PRECISION
 #define DAX_SIZE_SCALAR DAX_SIZE_DOUBLE
 #define DAX_SIZE_TWO_SCALAR 16
@@ -46,6 +49,13 @@
 # define DAX_SIZE_FOUR_IDS 16
 #endif
 
+#if defined(_WIN32) && defined(_MSC_VER)
+//if we are on windows with visual studio compiler
+//we want to supress warnings that pragma unroll is unsupported
+#pragma warning( disable : 4068 )
+
+#endif
+
 // This macro does not definitively determine whether TBB is available. Rather,
 // it tells whether the original Dax repository was configured with TBB. An
 // external project may or may not enable TBB.
@@ -54,7 +64,6 @@
 // This macro does not definitively determine whether thrust is used. Rather,
 // it tells whether Dax was original configured with a thrust backend enabled.
 #cmakedefine DAX_ENABLE_THRUST
-
 
 //save out the thrust major and minor version so that we can detect
 //what backend syntax we need to use

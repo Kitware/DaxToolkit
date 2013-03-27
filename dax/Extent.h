@@ -22,7 +22,7 @@ namespace dax {
 
 /// Extent3 stores the 6 values for the extents of a structured grid array.
 /// It gives the minimum indices and the maximum indices.
-DAX_STRUCT_ALIGN_BEGIN(DAX_SIZE_ID) struct Extent3
+DAX_ALIGN_BEGIN(DAX_SIZE_ID) struct Extent3
 {
   Id3 Min;
   Id3 Max;
@@ -46,7 +46,7 @@ DAX_STRUCT_ALIGN_BEGIN(DAX_SIZE_ID) struct Extent3
    return *this;
    }
 
-} __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+} DAX_ALIGN_END(DAX_SIZE_ID);
 
 /// Given an extent, returns the array dimensions in each direction.
 DAX_EXEC_CONT_EXPORT dax::Id3 extentDimensions(const Extent3 &extent)
