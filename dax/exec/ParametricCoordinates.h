@@ -423,13 +423,13 @@ class QuadrilateralJacobianFunctor {
   // Be careful!  Don't let member go out of scope!
   const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral>
       &VertexCoordinates;
-  const dax::Id3 &DimensionSwizzle;
+  const unsigned int (&DimensionSwizzle)[3];
 public:
   DAX_EXEC_EXPORT
   QuadrilateralJacobianFunctor(
       const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral>
           &vertexCoords,
-      const dax::Id3 &dimensionSwizzle)
+      const unsigned int (&dimensionSwizzle)[3])
     : VertexCoordinates(vertexCoords), DimensionSwizzle(dimensionSwizzle) {  }
   DAX_EXEC_EXPORT
   dax::math::Matrix2x2 operator()(dax::Vector2 pcoords) const {
@@ -470,13 +470,13 @@ public:
 class QuadrilateralCoodinatesFunctor {
   const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral>
       &VertexCoordinates;
-  const dax::Id3 &DimensionSwizzle;
+  const unsigned int (&DimensionSwizzle)[3];
 public:
   DAX_EXEC_EXPORT
   QuadrilateralCoodinatesFunctor(
       const dax::exec::CellField<dax::Vector3,dax::CellTagQuadrilateral>
           &vertexCoordinates,
-      const dax::Id3 &dimensionSwizzle)
+      const unsigned int (&dimensionSwizzle)[3])
     : VertexCoordinates(vertexCoordinates),
       DimensionSwizzle(dimensionSwizzle) {  }
   DAX_EXEC_EXPORT
@@ -502,28 +502,27 @@ DAX_EXEC_EXPORT dax::Vector3 WorldCoordinatesToParametricCoordinates(
   // with (the two most different from the normal).  We will do this by
   // creating a dimension swizzle and using the first two dimensions.
 
-  dax::Id3 dimensionSwizzle;
   dax::Vector3 normal = dax::math::TriangleNormal(vertexCoords[0],
                                                   vertexCoords[1],
                                                   vertexCoords[2]);
   dax::Vector3 absNormal = dax::math::Abs(normal);
-  if (absNormal[0] < absNormal[1])
-    {
-    dimensionSwizzle = dax::make_Id3(0, 1, 2);
-    }
-  else
-    {
-    dimensionSwizzle = dax::make_Id3(1, 0, 2);
-    }
+
+  const bool swizzleXY = absNormal[0] < absNormal[1];
+  unsigned int dimensionSwizzle[3] = {
+    static_cast<unsigned int>(!swizzleXY),
+    static_cast<unsigned int>(swizzleXY),
+    2};
+  
   if (absNormal[dimensionSwizzle[1]] < absNormal[2])
     {
     // Everything is fine.
     }
   else
     {
-    dimensionSwizzle[2] = dimensionSwizzle[1];
     dimensionSwizzle[1] = 2;
+    dimensionSwizzle[2] = swizzleXY;
     }
+
 
   dax::Vector2 pcoords =
       dax::math::NewtonsMethod(
