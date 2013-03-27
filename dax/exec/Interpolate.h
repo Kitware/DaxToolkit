@@ -37,7 +37,7 @@ DAX_EXEC_EXPORT ValueType CellInterpolate(
       dax::exec::internal::InterpolationWeights(parametricCoords, CellTag());
 
   ValueType result = pointFieldValues[0] * weights[0];
-  for (dax::Id vertexId = 1; vertexId < numVerts; vertexId++)
+  for (int vertexId = 1; vertexId < numVerts; vertexId++)
     {
     result = result + pointFieldValues[vertexId] * weights[vertexId];
     }

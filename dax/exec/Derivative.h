@@ -49,7 +49,7 @@ DAX_EXEC_EXPORT dax::Vector3 CellDerivativeAxisAligned(
 
   dax::Vector3 sum = dax::make_Vector3(0.0, 0.0, 0.0);
 
-  for (dax::Id vertexId = 0; vertexId < NUM_VERTICES; vertexId++)
+  for (int vertexId = 0; vertexId < NUM_VERTICES; vertexId++)
     {
     sum = sum + fieldValues[vertexId] * derivativeWeights[vertexId];
     }
