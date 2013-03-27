@@ -17,6 +17,9 @@
 #define __dax_exec_WorkletMapCell_h
 
 #include <dax/exec/internal/WorkletBase.h>
+#include <dax/cont/arg/Field.h>
+#include <dax/cont/arg/Topology.h>
+#include <dax/cont/sig/Tag.h>
 
 namespace dax {
 namespace exec {
@@ -29,9 +32,16 @@ namespace exec {
 class WorkletMapCell : public dax::exec::internal::WorkletBase
 {
 public:
-  DAX_EXEC_EXPORT WorkletMapCell() { }
-};
+  typedef dax::cont::sig::Cell DomainType;
 
+  DAX_EXEC_EXPORT WorkletMapCell() { }
+protected:
+  typedef dax::cont::arg::Field Field;
+  typedef dax::cont::arg::Topology Topology;
+  typedef dax::cont::arg::Topology::Vertices Vertices;
+  typedef dax::cont::sig::Point Point;
+  typedef dax::cont::sig::Cell Cell;
+};
 
 }
 }

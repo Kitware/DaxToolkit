@@ -17,40 +17,34 @@
 #ifndef __dax_cont_UnstructuredGrid_h
 #define __dax_cont_UnstructuredGrid_h
 
-#include <dax/cont/ArrayHandle.h>
+#include <dax/CellTraits.h>
 
+#include <dax/cont/ArrayHandle.h>
+#include <dax/cont/internal/GridTags.h>
 #include <dax/exec/internal/TopologyUnstructured.h>
 
 namespace dax {
 namespace cont {
-
-/// A tag you can use to identify when grid is an unstructured grid.
-///
-struct UnstructuredGridTag {  };
-
-/// A subtag of UnstructuredGridTag that specifies the type of cell in the grid
-/// through templating.
-///
-template<class CellType>
-struct UnstructuredGridOfCell : UnstructuredGridTag {  };
 
 /// This class defines the topology of an unstructured grid. An unstructured
 /// grid can only contain cells of a single type.
 ///
 template <
     typename CellT,
-    class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
+    class CellConnectionsContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
+    class PointsArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
     class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class UnstructuredGrid
 {
 public:
-  typedef CellT CellType;
-  typedef UnstructuredGridOfCell<CellType> GridTypeTag;
+  typedef CellT CellTag;
+  typedef dax::cont::internal::UnstructuredGridOfCell<CellTag> GridTypeTag;
 
   typedef dax::cont::ArrayHandle<
-      dax::Id, ArrayContainerControlTag, DeviceAdapterTag> CellConnectionsType;
+      dax::Id, CellConnectionsContainerControlTag, DeviceAdapterTag>
+      CellConnectionsType;
   typedef dax::cont::ArrayHandle<
-      dax::Vector3, ArrayContainerControlTag, DeviceAdapterTag>
+      dax::Vector3, PointsArrayContainerControlTag, DeviceAdapterTag>
       PointCoordinatesType;
 
   DAX_CONT_EXPORT
@@ -61,7 +55,8 @@ public:
                    PointCoordinatesType pointCoordinates)
     : CellConnections(cellConnections), PointCoordinates(pointCoordinates)
   {
-    DAX_ASSERT_CONT(this->CellConnections.GetNumberOfValues() % CellType::NUM_POINTS == 0);
+    DAX_ASSERT_CONT((this->CellConnections.GetNumberOfValues()
+                     % dax::CellTraits<CellTag>::NUM_VERTICES) == 0);
   }
 
   /// The CellConnections array defines the connectivity of the mesh. The
@@ -119,11 +114,12 @@ public:
   ///
   DAX_CONT_EXPORT
   dax::Id GetNumberOfCells() const {
-    return this->CellConnections.GetNumberOfValues() / CellType::NUM_POINTS;
+    return (this->CellConnections.GetNumberOfValues()
+            / dax::CellTraits<CellTag>::NUM_VERTICES);
   }
 
   typedef dax::exec::internal::TopologyUnstructured<
-      CellType, typename CellConnectionsType::PortalConstExecution>
+      CellTag, typename CellConnectionsType::PortalConstExecution>
       TopologyStructConstExecution;
 
   /// Prepares this topology to be used as an input to an operation in the
@@ -138,7 +134,7 @@ public:
   }
 
   typedef dax::exec::internal::TopologyUnstructured<
-      CellType, typename CellConnectionsType::PortalExecution>
+      CellTag, typename CellConnectionsType::PortalExecution>
       TopologyStructExecution;
 
   /// Prepares this topology to be used as an output to an operation that
@@ -154,7 +150,7 @@ public:
     // redundant, too.
     return TopologyStructExecution(
           this->CellConnections.PrepareForOutput(
-            numberOfCells*CellType::NUM_POINTS),
+            numberOfCells*dax::CellTraits<CellTag>::NUM_VERTICES),
           0,
           numberOfCells);
   }

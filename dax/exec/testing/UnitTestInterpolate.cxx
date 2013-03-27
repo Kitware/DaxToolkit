@@ -41,8 +41,6 @@ void CreatePointField(const TopologyGenType &topology,
                       const LinearField &fieldValues,
                       std::vector<dax::Scalar> &fieldArray)
 {
-  typedef typename TopologyGenType::CellType CellType;
-
   dax::Id numPoints = topology.GetNumberOfPoints();
   fieldArray.resize(numPoints);
   for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
@@ -61,19 +59,19 @@ struct Add
   }
 };
 
-template<class CellType>
+template<class CellTag>
 void TestInterpolateSpecial(
-    const CellType &cell,
-    const dax::Tuple<dax::Scalar,CellType::NUM_POINTS> &pointFieldValues)
+    const dax::exec::CellField<dax::Scalar,CellTag> &pointFieldValues,
+    CellTag)
 {
-  const dax::Id NUM_POINTS = CellType::NUM_POINTS;
+  const dax::Id NUM_VERTICES = pointFieldValues.NUM_VERTICES;
 
-  for (dax::Id vertexIndex = 0; vertexIndex < NUM_POINTS; vertexIndex++)
+  for (dax::Id vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
     {
     dax::Vector3 pcoords =
-        dax::exec::ParametricCoordinates<CellType>::Vertex()[vertexIndex];
+        dax::exec::ParametricCoordinates<CellTag>::Vertex()[vertexIndex];
     dax::Scalar interpolatedValue =
-        dax::exec::CellInterpolate(cell, pointFieldValues, pcoords);
+        dax::exec::CellInterpolate(pointFieldValues, pcoords, CellTag());
     dax::Scalar expectedValue = pointFieldValues[vertexIndex];
     DAX_TEST_ASSERT(test_equal(interpolatedValue, expectedValue),
                     "Interpolation wrong on vertex.");
@@ -81,21 +79,21 @@ void TestInterpolateSpecial(
 
   dax::Scalar interpolatedValue =
       dax::exec::CellInterpolate(
-        cell,
         pointFieldValues,
-        dax::exec::ParametricCoordinates<CellType>::Center());
+        dax::exec::ParametricCoordinates<CellTag>::Center(),
+        CellTag());
   dax::Scalar expectedValue =
-      dax::exec::VectorReduce(pointFieldValues, Add())/NUM_POINTS;
+      dax::exec::VectorReduce(pointFieldValues, Add())/NUM_VERTICES;
   DAX_TEST_ASSERT(test_equal(interpolatedValue, expectedValue),
                   "Interpolation wrong at center.");
 }
 
-template<class CellType>
+template<class CellTag>
 void TestInterpolateSample(
-    const CellType &cell,
-    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &vertexCoordinates,
-    const dax::Tuple<dax::Scalar,CellType::NUM_POINTS> &pointFieldValues,
-    const LinearField &fieldValues)
+    const dax::exec::CellField<dax::Vector3,CellTag> &vertexCoordinates,
+    const dax::exec::CellField<dax::Scalar,CellTag> &pointFieldValues,
+    const LinearField &fieldValues,
+    CellTag)
 {
   dax::Vector3 pcoords;
   for (pcoords[2] = 0.0; pcoords[2] <= 1.0; pcoords[2] += 0.25)
@@ -105,10 +103,10 @@ void TestInterpolateSample(
       for (pcoords[0] = 0.0; pcoords[0] <= 1.0; pcoords[0] += 0.25)
         {
         dax::Scalar interpolatedValue
-            = dax::exec::CellInterpolate(cell, pointFieldValues, pcoords);
+            = dax::exec::CellInterpolate(pointFieldValues, pcoords, CellTag());
 
         dax::Vector3 wcoords
-            = dax::exec::CellInterpolate(cell, vertexCoordinates, pcoords);
+            = dax::exec::CellInterpolate(vertexCoordinates, pcoords, CellTag());
 
         dax::Scalar trueValue = fieldValues.GetValue(wcoords);
 
@@ -119,22 +117,23 @@ void TestInterpolateSample(
     }
 }
 
-template<class CellType>
+template<class CellTag>
 void TestInterpolateCell(
-    const CellType &cell,
-    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &vertexCoordinates,
-    const dax::Tuple<dax::Scalar,CellType::NUM_POINTS> &pointFieldValues,
-    const LinearField &fieldValues)
+    const dax::exec::CellField<dax::Vector3,CellTag> &vertexCoordinates,
+    const dax::exec::CellField<dax::Scalar,CellTag> &pointFieldValues,
+    const LinearField &fieldValues,
+    CellTag)
 {
-  TestInterpolateSpecial(cell, pointFieldValues);
-  TestInterpolateSample(cell, vertexCoordinates, pointFieldValues, fieldValues);
+  TestInterpolateSpecial(pointFieldValues, CellTag());
+  TestInterpolateSample(
+        vertexCoordinates, pointFieldValues, fieldValues, CellTag());
 }
 
 template<class TopologyGenType>
 void TestInterpolate(const TopologyGenType &topology,
                      const LinearField &fieldValues)
 {
-  typedef typename TopologyGenType::CellType CellType;
+  typedef typename TopologyGenType::CellTag CellTag;
 
   std::vector<dax::Scalar> fieldArray;
   CreatePointField(topology, fieldValues, fieldArray);
@@ -142,11 +141,11 @@ void TestInterpolate(const TopologyGenType &topology,
   dax::Id numCells = topology.GetNumberOfCells();
   for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
     {
-    TestInterpolateCell(topology.GetCell(cellIndex),
-                        topology.GetCellVertexCoordinates(cellIndex),
+    TestInterpolateCell(topology.GetCellVertexCoordinates(cellIndex),
                         topology.GetFieldValuesIterator(cellIndex,
                                                         fieldArray.begin()),
-                        fieldValues);
+                        fieldValues,
+                        CellTag());
     }
 }
 

@@ -15,16 +15,28 @@
 //=============================================================================
 #include "ArgumentsParser.h"
 
+#include <dax/testing/OptionParser.h>
 #include <iostream>
-#include <boost/program_options.hpp>
-#include <algorithm>
-namespace po = boost::program_options;
+#include <sstream>
+#include <string>
+
+enum  optionIndex { UNKNOWN, HELP, SIZE, PIPELINE};
+const dax::testing::option::Descriptor usage[] =
+{
+  {UNKNOWN,   0,"" , ""    ,      dax::testing::option::Arg::None, "USAGE: example [options]\n\n"
+                                                                    "Options:" },
+  {HELP,      0,"h" , "help",      dax::testing::option::Arg::None, "  --help, -h  \tPrint usage and exit." },
+  {SIZE,      0,"", "size",      dax::testing::option::Arg::Optional, "  --size  \t Size of the problem to test." },
+  {PIPELINE,  0,"", "pipeline",  dax::testing::option::Arg::Optional, "  --pipeline  \t What pipeline to run." },
+  {UNKNOWN,   0,"",  "",          dax::testing::option::Arg::None, "\nExamples:\n"
+                                                                   " example --size=128 --pipeline=1\n"},
+  {0,0,0,0,0,0}
+};
 
 //-----------------------------------------------------------------------------
 dax::testing::ArgumentsParser::ArgumentsParser():
   ProblemSize(128),
-  Pipeline(CELL_GRADIENT),
-  Device(DEVICE_ALL)
+  Pipeline(CELL_GRADIENT)
 {
 }
 
@@ -36,64 +48,58 @@ dax::testing::ArgumentsParser::~ArgumentsParser()
 //-----------------------------------------------------------------------------
 bool dax::testing::ArgumentsParser::parseArguments(int argc, char* argv[])
 {
-  po::options_description desc("Allowed options");
-  desc.add_options()
-    ("size", po::value<unsigned int>(), "Problem size (default: 128)")
-    ("pipeline", po::value<unsigned int>(), "Pipeline (1, 2 or 3) (default: 1)")
-    ("device", po::value<std::string>(), "Device (all, serial, openmp or cuda) (default: all)")
-    ("help", "Generate this help message");
+  argc-=(argc>0);
+  argv+=(argc>0); // skip program name argv[0] if present
 
-  po::variables_map variables;
-  po::store(po::parse_command_line(argc, argv, desc), variables);
-  po::notify(variables);
+  dax::testing::option::Stats  stats(usage, argc, argv);
+  dax::testing::option::Option* options = new dax::testing::option::Option[stats.options_max];
+  dax::testing::option::Option* buffer = new dax::testing::option::Option[stats.options_max];
+  dax::testing::option::Parser parse(usage, argc, argv, options, buffer);
 
-  if (variables.count("help") != 0)
+  if (parse.error())
     {
-    std::cout << desc << std::endl;
+    delete[] options;
+    delete[] buffer;
     return false;
-    }  
-
-  if (variables.count("size") == 1)
-    {
-    this->ProblemSize = std::max(static_cast<unsigned int>(1), variables["size"].as<unsigned int>());
     }
 
-  if (variables.count("pipeline") == 1 &&
-    variables["pipeline"].as<unsigned int>() == 1)
+  if (options[HELP] || argc == 0)
     {
-    this->Pipeline = CELL_GRADIENT;
-    }
-  if (variables.count("pipeline") == 1 &&
-    variables["pipeline"].as<unsigned int>() == 2)
-    {
-    this->Pipeline = CELL_GRADIENT_SINE_SQUARE_COS;
-    }
-  if (variables.count("pipeline") == 1 &&
-    variables["pipeline"].as<unsigned int>() == 3)
-    {
-    this->Pipeline = SINE_SQUARE_COS;
+    dax::testing::option::printUsage(std::cout, usage);
+    delete[] options;
+    delete[] buffer;
+
+    return false;
     }
 
-  if (variables.count("device") == 1)
+  if ( options[SIZE] )
     {
-    std::string deviceString = variables["device"].as<std::string>();
-    if (deviceString == "all")
+    std::string sarg(options[SIZE].last()->arg);
+    std::stringstream argstream(sarg);
+    argstream >> this->ProblemSize;
+    }
+
+  if ( options[PIPELINE] )
+    {
+    std::string sarg(options[PIPELINE].last()->arg);
+    std::stringstream argstream(sarg);
+    int pipelineflag = 0;
+    argstream >> pipelineflag;
+    if (pipelineflag == 1)
       {
-      this->Device = DEVICE_ALL;
+      this->Pipeline = CELL_GRADIENT;
       }
-    if (deviceString == "serial")
+    if (pipelineflag == 2)
       {
-      this->Device = DEVICE_SERIAL;
+      this->Pipeline = CELL_GRADIENT_SINE_SQUARE_COS;
       }
-    if (deviceString == "openmp")
+    if (pipelineflag == 3)
       {
-      this->Device = DEVICE_OPENMP;
-      }
-    if (deviceString == "cuda")
-      {
-      this->Device = DEVICE_CUDA;
+      this->Pipeline = SINE_SQUARE_COS;
       }
     }
 
+  delete[] options;
+  delete[] buffer;
   return true;
 }

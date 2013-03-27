@@ -14,10 +14,4 @@
 ##
 ##=============================================================================
 
-#-------------------------------------------------------------------------
-# Find CUDA.
-find_package(CUDA REQUIRED)
-
-mark_as_advanced(CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_VERBOSE_BUILD)
-
 add_subdirectory(cont)

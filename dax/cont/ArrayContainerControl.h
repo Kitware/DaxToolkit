@@ -88,13 +88,16 @@ public:
 
   /// Returns a portal to the array.
   ///
+  DAX_CONT_EXPORT
   PortalType GetPortal();
 
   /// Returns a portal to the array with immutable values.
   ///
+  DAX_CONT_EXPORT
   PortalConstType GetPortalConst() const;
 
   /// Retuns the number of entries allocated in the array.
+  DAX_CONT_EXPORT
   dax::Id GetNumberOfValues() const;
 
   /// \brief Allocates an array large enough to hold the given number of values.
@@ -103,6 +106,7 @@ public:
   /// any data already in the array. This method can throw
   /// ErrorControlOutOfMemory if the array cannot be allocated.
   ///
+  DAX_CONT_EXPORT
   void Allocate(dax::Id numberOfValues);
 
   /// \brief Reduces the size of the array without changing its values.
@@ -113,6 +117,7 @@ public:
   /// \c numberOfValues must be equal or less than the preexisting size
   /// (returned from GetNumberOfValues). That is, this method can only be used
   /// to shorten the array, not lengthen.
+  DAX_CONT_EXPORT
   void Shrink(dax::Id numberOfValues);
 
   /// \brief Frees any resources (i.e. memory) stored in this array.
@@ -121,6 +126,7 @@ public:
   /// GetIteratorBegin and GetIteratorEnd will return the same iterator. The
   /// resources should also be released when the ArrayContainerControl class is
   /// destroyed.
+  DAX_CONT_EXPORT
   void ReleaseResources();
 };
 #else // DAX_DOXYGEN_ONLY

@@ -14,15 +14,23 @@
 ##
 ##=============================================================================
 
+if (Dax_Serial_initialize_complete)
+  return()
+endif (Dax_Serial_initialize_complete)
+
 # Find the Boost library.
-if (Dax_Serial_FOUND)
-  find_package(Boost ${Dax_REQUIRED_BOOST_VERSION})
+if (NOT Dax_Serial_FOUND)
+  if(NOT Boost_FOUND)
+    find_package(Boost ${Dax_REQUIRED_BOOST_VERSION})
+  endif()
 
   if (NOT Boost_FOUND)
     message(STATUS "Boost not found")
-    set(Dax_Serial_FOUND)
+    set(Dax_Serial_FOUND FALSE)
+  else(NOT Boost_FOUND)
+    set(Dax_Serial_FOUND TRUE)
   endif (NOT Boost_FOUND)
-endif (Dax_Serial_FOUND)
+endif (NOT Dax_Serial_FOUND)
 
 # Set up all these dependent packages (if they were all found).
 if (Dax_Serial_FOUND)
@@ -30,4 +38,6 @@ if (Dax_Serial_FOUND)
     ${Boost_INCLUDE_DIRS}
     ${Dax_INCLUDE_DIRS}
     )
+
+  set(Dax_Serial_initialize_complete TRUE)
 endif (Dax_Serial_FOUND)

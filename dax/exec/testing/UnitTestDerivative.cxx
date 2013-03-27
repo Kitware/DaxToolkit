@@ -15,6 +15,8 @@
 //=============================================================================
 #include <dax/exec/Derivative.h>
 
+#include <dax/CellTraits.h>
+
 #include <dax/exec/internal/GridTopologies.h>
 #include <dax/exec/internal/testing/TestingTopologyGenerator.h>
 
@@ -39,8 +41,6 @@ void CreatePointField(const TopologyGenType &topology,
                       const LinearField &fieldValues,
                       std::vector<dax::Scalar> &fieldArray)
 {
-  typedef typename TopologyGenType::CellType CellType;
-
   dax::Id numPoints = topology.GetNumberOfPoints();
   fieldArray.resize(numPoints);
   for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
@@ -51,18 +51,19 @@ void CreatePointField(const TopologyGenType &topology,
     }
 }
 
-template<class CellType>
+template<class CellTag>
 void TestGradientResult(
-    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> &pointCoordinates,
+    const dax::exec::CellField<dax::Vector3,CellTag> &pointCoordinates,
     const dax::Vector3 computedDerivative,
-    const LinearField &fieldValues)
+    const LinearField &fieldValues,
+    CellTag)
 {
   dax::Vector3 expectedGradient;
-  if (CellType::TOPOLOGICAL_DIMENSIONS == 3)
+  if (dax::CellTraits<CellTag>::TOPOLOGICAL_DIMENSIONS == 3)
     {
     expectedGradient = fieldValues.Gradient;
     }
-  else if (CellType::TOPOLOGICAL_DIMENSIONS == 2)
+  else if (dax::CellTraits<CellTag>::TOPOLOGICAL_DIMENSIONS == 2)
     {
     dax::Vector3 normal = dax::math::TriangleNormal(
           pointCoordinates[0], pointCoordinates[1], pointCoordinates[2]);
@@ -70,13 +71,13 @@ void TestGradientResult(
     expectedGradient =
         fieldValues.Gradient - dax::dot(fieldValues.Gradient,normal)*normal;
     }
-  else if (CellType::TOPOLOGICAL_DIMENSIONS == 1)
+  else if (dax::CellTraits<CellTag>::TOPOLOGICAL_DIMENSIONS == 1)
     {
     dax::Vector3 direction =
         dax::math::Normal(pointCoordinates[1]-pointCoordinates[0]);
     expectedGradient = direction * dax::dot(direction, fieldValues.Gradient);
     }
-  else if (CellType::TOPOLOGICAL_DIMENSIONS == 0)
+  else if (dax::CellTraits<CellTag>::TOPOLOGICAL_DIMENSIONS == 0)
     {
     expectedGradient = dax::make_Vector3(0, 0, 0);
     }
@@ -89,12 +90,12 @@ void TestGradientResult(
                   "Bad derivative");
 }
 
-template<class CellType>
+template<class CellTag>
 void TestDerivativeCell(
-    const CellType &cell,
-    const dax::Tuple<dax::Vector3,CellType::NUM_POINTS> vertCoords,
-    const dax::Tuple<dax::Scalar,CellType::NUM_POINTS> scalarField,
-    const LinearField &fieldValues)
+    const dax::exec::CellField<dax::Vector3,CellTag> &vertCoords,
+    const dax::exec::CellField<dax::Scalar,CellTag> &scalarField,
+    const LinearField &fieldValues,
+    CellTag)
 {
   dax::Vector3 pcoords;
   for (pcoords[2] = 0.0; pcoords[2] <= 1.0; pcoords[2] += 0.25)
@@ -104,13 +105,14 @@ void TestDerivativeCell(
       for (pcoords[0] = 0.0; pcoords[0] <= 1.0; pcoords[0] += 0.25)
         {
         dax::Vector3 computedDerivative
-            = dax::exec::CellDerivative(cell,
-                                        pcoords,
+            = dax::exec::CellDerivative(pcoords,
                                         vertCoords,
-                                        scalarField);
-        TestGradientResult<CellType>(vertCoords,
-                                     computedDerivative,
-                                     fieldValues);
+                                        scalarField,
+                                        CellTag());
+        TestGradientResult(vertCoords,
+                           computedDerivative,
+                           fieldValues,
+                           CellTag());
         }
       }
     }
@@ -120,19 +122,17 @@ template<class TopologyGenType>
 void TestDerivatives(const TopologyGenType &topology,
                      const LinearField &fieldValues)
 {
-  typedef typename TopologyGenType::CellType CellType;
-
   std::vector<dax::Scalar> fieldArray;
   CreatePointField(topology, fieldValues, fieldArray);
 
   dax::Id numCells = topology.GetNumberOfCells();
   for (dax::Id cellIndex = 0; cellIndex < numCells; cellIndex++)
     {
-    TestDerivativeCell(topology.GetCell(cellIndex),
-                       topology.GetCellVertexCoordinates(cellIndex),
+    TestDerivativeCell(topology.GetCellVertexCoordinates(cellIndex),
                        topology.GetFieldValuesIterator(cellIndex,
                                                        fieldArray.begin()),
-                       fieldValues);
+                       fieldValues,
+                       typename TopologyGenType::CellTag());
     }
 }
 

@@ -90,6 +90,14 @@ public:
                        arrayPortal.GetIteratorEnd());
   }
 
+  /// Allocates the appropriate size of the array and copies the given data
+  /// into the array.
+  ///
+  DAX_CONT_EXPORT void LoadDataForInPlace(ContainerType &controlArray)
+  {
+    this->LoadDataForInput(controlArray.GetPortalConst());
+  }
+
   /// Allocates the array to the given size.
   ///
   DAX_CONT_EXPORT void AllocateArrayForOutput(
@@ -137,7 +145,7 @@ public:
                       ::thrust::raw_pointer_cast(&(*this->Array.end())));
   }
 
-  DAX_CONT_EXPORT PortalConstType GetPortalConst()
+  DAX_CONT_EXPORT PortalConstType GetPortalConst() const
   {
     return PortalConstType(::thrust::raw_pointer_cast(&(*this->Array.cbegin())),
                            ::thrust::raw_pointer_cast(&(*this->Array.cend())));

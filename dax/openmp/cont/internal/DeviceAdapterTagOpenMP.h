@@ -18,8 +18,6 @@
 
 #include <dax/openmp/cont/internal/SetThrustForOpenMP.h>
 
-#include <dax/thrust/cont/internal/DeviceAdapterTagThrust.h>
-
 namespace dax {
 namespace openmp {
 namespace cont {
@@ -28,7 +26,6 @@ namespace cont {
 /// compiler with OpenMP support turned on must be used (duh).
 ///
 struct DeviceAdapterTagOpenMP
-    : public dax::thrust::cont::internal::DeviceAdapterTagThrust
 {  };
 
 }

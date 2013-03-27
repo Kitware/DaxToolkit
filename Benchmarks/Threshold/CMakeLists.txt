@@ -14,49 +14,31 @@
 ##
 ##=============================================================================
 
-#-----------------------------------------------------------------------------
-if (DAX_ENABLE_OPENMP)
-  find_package(OpenMP REQUIRED)
-
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-endif (DAX_ENABLE_OPENMP)
-
-if (DAX_ENABLE_CUDA)
-  find_package(CUDA REQUIRED)
-endif (DAX_ENABLE_CUDA)
-
-include_directories(${Boost_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
-
-if (DAX_ENABLE_THRUST)
-  include_directories(${THRUST_INCLUDE_DIR})
-endif (DAX_ENABLE_THRUST)
 
 
-#-----------------------------------------------------------------------------
-#Include VTK so we can benchmark agianst it
-option(DAX_ENABLE_VTK_TESTING FALSE)
-if(DAX_ENABLE_VTK_TESTING)
-  find_package(VTK REQUIRED)
-endif()
+  ##=============================================================================
+##
+##  Copyright (c) Kitware, Inc.
+##  All rights reserved.
+##  See LICENSE.txt for details.
+##
+##  This software is distributed WITHOUT ANY WARRANTY; without even
+##  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+##  PURPOSE.  See the above copyright notice for more information.
+##
+##  Copyright 2012 Sandia Corporation.
+##  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+##  the U.S. Government retains certain rights in this software.
+##
+##=============================================================================
 
 #-----------------------------------------------------------------------------
-#Include PISTON so we can benchmark agianst it
-option(DAX_ENABLE_PISTON_TESTING FALSE)
-if(DAX_ENABLE_PISTON_TESTING)
-  find_package(VTK REQUIRED)
-  find_path( PISTON_INCLUDE
-    NAMES piston/piston_math.h
-    DOC "Piston headers"
-    )
-endif()
-
-#-----------------------------------------------------------------------------
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/ThresholdConfig.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/ThresholdConfig.h
-  @ONLY
-  )
+macro(add_timing_tests target)
+  add_test(${target}-128
+    ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline=1 --size=128)
+    add_test(${target}-256
+    ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline=1 --size=256)
+endmacro()
 
 #-----------------------------------------------------------------------------
 set(headers
@@ -64,90 +46,111 @@ set(headers
   )
 
 set(sources
+  main.cxx
   ArgumentsParser.cxx
-  Timer.cxx
   )
 
-#-----------------------------------------------------------------------------
-if(DAX_ENABLE_VTK_TESTING)
-  set(vtkHeaders
-    VTKPipeline.h
-    )
-
-  include(${VTK_USE_FILE})
-  add_executable(ThresholdTimingVTK ${sources} ${vtkHeaders} PipelineVTK.cxx)
-  set_source_files_properties(${vtkHeaders} PROPERTIES HEADER_FILE_ONLY TRUE)
-  target_link_libraries(ThresholdTimingVTK
-    ${Boost_LIBRARIES}
-    vtkFiltering
-    vtkGraphics
-    )
-
-  add_test(ThresholdTimingVTK1-128
-    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingVTK --pipeline 1 --size 128)
-  add_test(ThresholdTimingVTK1-256
-    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingVTK --pipeline 1 --size 256)
-endif()
-
-#-----------------------------------------------------------------------------
-if(DAX_ENABLE_PISTON_TESTING)
-  set(pistonHeaders
-    PISTONPipeline.h
-    )
-  include(${VTK_USE_FILE})
-  include_directories(${PISTON_INCLUDE})
-  cuda_add_executable(ThresholdTimingPISTON ${sources} ${pistonHeaders} PipelinePISTON.cu)
-  set_source_files_properties(${pistonHeaders} PROPERTIES HEADER_FILE_ONLY TRUE)
-  target_link_libraries(ThresholdTimingPISTON
-    ${Boost_LIBRARIES}
-    vtkGraphics
-    vtkFiltering
-    )
-
-  add_test(ThresholdTimingPiston1-128
-    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingPISTON --pipeline 1 --size 128)
-  add_test(ThresholdTimingPiston1-256
-    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingPISTON --pipeline 1 --size 256)
-endif()
-
-#-----------------------------------------------------------------------------
-add_executable(ThresholdTimingSerial ${sources} ${headers} PipelineSerial.cxx)
 set_source_files_properties(${headers} PROPERTIES HEADER_FILE_ONLY TRUE)
-target_link_libraries(ThresholdTimingSerial
-  ${Boost_LIBRARIES}
-  )
 
-add_test(ThresholdTimingSerial1-128
-  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingSerial --pipeline 1 --size 128)
-add_test(ThresholdTimingSerial1-256
-  ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingSerial --pipeline 1 --size 256)
+#-----------------------------------------------------------------------------
+add_executable(ThresholdTimingSerial ${sources} ${headers} )
+set_dax_device_adapter(ThresholdTimingSerial DAX_DEVICE_ADAPTER_SERIAL)
+target_link_libraries(ThresholdTimingSerial)
+add_timing_tests(ThresholdTimingSerial)
+
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_OPENMP)
-  add_executable(ThresholdTimingOpenMP ${sources} ${headers} PipelineOpenMP.cxx)
-  target_link_libraries(ThresholdTimingOpenMP
-    ${Boost_LIBRARIES}
-    )
-
-  add_test(ThresholdTimingOpenMP1-128
-    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingOpenMP --pipeline 1 --size 128)
-  add_test(ThresholdTimingOpenMP1-256
-    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingOpenMP --pipeline 1 --size 256)
+  add_executable(ThresholdTimingOpenMP ${sources} ${headers})
+  set_dax_device_adapter(ThresholdTimingOpenMP DAX_DEVICE_ADAPTER_OPENMP)
+  target_link_libraries(ThresholdTimingOpenMP)
+  add_timing_tests(ThresholdTimingOpenMP)
 endif (DAX_ENABLE_OPENMP)
 
 #-----------------------------------------------------------------------------
+if (DAX_ENABLE_TBB)
+  add_executable(ThresholdTimingTBB ${sources} ${headers})
+  set_dax_device_adapter(ThresholdTimingTBB DAX_DEVICE_ADAPTER_TBB)
+  target_link_libraries(ThresholdTimingTBB ${DAX_TIMING_LIBS})
+  add_timing_tests(ThresholdTimingTBB)
+endif (DAX_ENABLE_TBB)
+
+#-----------------------------------------------------------------------------
 if (DAX_ENABLE_CUDA)
-  cuda_add_executable(ThresholdTimingCuda
-    ${sources} ${headers} PipelineCuda.h PipelineCuda.cu
-    )
-  set_source_files_properties(PipelineCuda.h PROPERTIES HEADER_FILE_ONLY TRUE)
-  target_link_libraries(ThresholdTimingCuda
-    ${Boost_LIBRARIES}
+  set(cuda_sources
+    main.cu
+    ArgumentsParser.cxx
     )
 
-  add_test(ThresholdTimingCuda1-128
-    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingCuda --pipeline 1 --size 128)
-  add_test(ThresholdTimingCuda1-256
-    ${EXECUTABLE_OUTPUT_PATH}/ThresholdTimingCuda --pipeline 1 --size 256)
+  dax_disable_troublesome_thrust_warnings()
+  cuda_add_executable(ThresholdTimingCuda ${cuda_sources} ${headers})
+  set_dax_device_adapter(ThresholdTimingCuda DAX_DEVICE_ADAPTER_CUDA)
+  target_link_libraries(ThresholdTimingCuda)
+  add_timing_tests(ThresholdTimingCuda)
 endif (DAX_ENABLE_CUDA)
+
+
+
+#-----------------------------------------------------------------------------
+if(DAX_ENABLE_VTK_BENCHMARKS)
+  set(vtkHeaders
+      VTKPipeline.h
+      )
+  set_source_files_properties(${vtkHeaders} PROPERTIES HEADER_FILE_ONLY TRUE)
+
+  set(vtkSources
+    mainVTK.cxx
+    ArgumentsParser.cxx
+    )
+
+  include(${VTK_USE_FILE})
+  add_executable(ThresholdTimingVTK ${vtkHeaders} ${vtkSources})
+  target_link_libraries(ThresholdTimingVTK
+    vtkCommonCore
+    vtkCommonDataModel
+    vtkCommonExecutionModel
+    vtkFiltersCore
+    vtkFiltersGeometry
+    )
+  add_timing_tests(ThresholdTimingVTK)
+endif()
+
+#-----------------------------------------------------------------------------
+if(DAX_ENABLE_PISTON_BENCHMARKS)
+
+  include_directories(${PISTON_INCLUDE})
+
+  set(pistonHeaders
+    PistonPipeline.h
+    )
+  set_source_files_properties(${pistonHeaders} PROPERTIES HEADER_FILE_ONLY TRUE)
+
+  if (DAX_ENABLE_OPENMP)
+    set(pistonSources
+      mainPiston.cxx
+      ArgumentsParser.cxx
+      )
+
+    add_executable(ThresholdTimingOpenMPPiston
+                    ${pistonHeaders} ${pistonSources})
+    set_dax_device_adapter(ThresholdTimingOpenMPPiston
+                            DAX_DEVICE_ADAPTER_OPENMP)
+    target_link_libraries(ThresholdTimingOpenMPPiston)
+    add_timing_tests(ThresholdTimingOpenMPP)
+  endif()
+
+  if (DAX_ENABLE_CUDA)
+    set(pistonSources
+      mainPiston.cu
+      ArgumentsParser.cxx
+      )
+
+    cuda_add_executable(ThresholdTimingCudaPiston
+                          ${pistonHeaders} ${pistonSources})
+    set_dax_device_adapter(ThresholdTimingCudaPiston
+                            DAX_DEVICE_ADAPTER_CUDA)
+    target_link_libraries(ThresholdTimingCudaPiston)
+    add_timing_tests(ThresholdTimingCudaPiston)
+  endif()
+endif()
 

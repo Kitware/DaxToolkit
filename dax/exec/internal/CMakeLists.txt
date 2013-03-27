@@ -19,13 +19,17 @@ set(headers
   DerivativeWeights.h
   ErrorMessageBuffer.h
   FieldAccess.h
+  Functor.h
   GridTopologies.h
   InterpolationWeights.h
   TopologyUniform.h
   TopologyUnstructured.h
   WorkletBase.h
+  IJKIndex.h
   )
 
 dax_declare_headers(${headers})
 
+add_subdirectory(kernel)
 add_subdirectory(testing)
+

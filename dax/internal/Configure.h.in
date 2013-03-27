@@ -28,14 +28,38 @@
 
 #ifdef DAX_USE_DOUBLE_PRECISION
 #define DAX_SIZE_SCALAR DAX_SIZE_DOUBLE
+#define DAX_SIZE_TWO_SCALAR 16
+#define DAX_SIZE_FOUR_SCALAR 8
 #else
 #define DAX_SIZE_SCALAR DAX_SIZE_FLOAT
+#define DAX_SIZE_TWO_SCALAR 8
+#define DAX_SIZE_FOUR_SCALAR 16
 #endif
 
 #ifdef DAX_USE_64BIT_IDS
 #define DAX_SIZE_ID 8
+# define DAX_SIZE_TWO_IDS 16
+# define DAX_SIZE_FOUR_IDS 8
 #else
 #define DAX_SIZE_ID 4
+# define DAX_SIZE_TWO_IDS 8
+# define DAX_SIZE_FOUR_IDS 16
 #endif
 
+// This macro does not definitively determine whether TBB is available. Rather,
+// it tells whether the original Dax repository was configured with TBB. An
+// external project may or may not enable TBB.
+#cmakedefine DAX_ENABLE_TBB
+
+// This macro does not definitively determine whether thrust is used. Rather,
+// it tells whether Dax was original configured with a thrust backend enabled.
+#cmakedefine DAX_ENABLE_THRUST
+
+
+//save out the thrust major and minor version so that we can detect
+//what backend syntax we need to use
+#ifdef DAX_ENABLE_THRUST
+#define THRUST_MAJOR_VERSION @THRUST_MAJOR_VERSION@
+#define THRUST_MINOR_VERSION @THRUST_MINOR_VERSION@
+#endif
 #endif //__dax_internal_Configure_h

@@ -59,7 +59,7 @@ private:
 
 public:
 
-  ArrayContainerControl() : Array(NULL), NumberOfValues(0) { }
+  ArrayContainerControl() : Array(NULL), NumberOfValues(0), AllocatedSize(0) { }
 
   ~ArrayContainerControl()
   {
@@ -72,9 +72,10 @@ public:
       {
       DAX_ASSERT_CONT(this->Array != NULL);
       AllocatorType allocator;
-      allocator.deallocate(this->Array, this->NumberOfValues);
+      allocator.deallocate(this->Array, this->AllocatedSize);
       this->Array = NULL;
       this->NumberOfValues = 0;
+      this->AllocatedSize = 0;
       }
     else
       {
@@ -84,7 +85,11 @@ public:
 
   void Allocate(dax::Id numberOfValues)
   {
-    if (this->NumberOfValues == numberOfValues) return;
+    if (numberOfValues <= this->AllocatedSize)
+      {
+      this->NumberOfValues = numberOfValues;
+      return;
+      }
 
     this->ReleaseResources();
     try
@@ -93,12 +98,13 @@ public:
         {
         AllocatorType allocator;
         this->Array = allocator.allocate(numberOfValues);
+        this->AllocatedSize  = numberOfValues;
         this->NumberOfValues = numberOfValues;
         }
       else
         {
-        // ReleaseResources should have already set NumberOfValues to 0.
-        DAX_ASSERT_CONT(this->NumberOfValues == 0);
+        // ReleaseResources should have already set AllocatedSize to 0.
+        DAX_ASSERT_CONT(this->AllocatedSize == 0);
         }
       }
     catch (std::bad_alloc err)
@@ -106,6 +112,7 @@ public:
       // Make sureour state is OK.
       this->Array = NULL;
       this->NumberOfValues = 0;
+      this->AllocatedSize = 0;
       throw dax::cont::ErrorControlOutOfMemory(
             "Could not allocate basic control array.");
       }
@@ -151,6 +158,7 @@ public:
     ValueType *saveArray =  this->Array;
     this->Array = NULL;
     this->NumberOfValues = 0;
+    this->AllocatedSize = 0;
     return saveArray;
   }
 
@@ -161,6 +169,7 @@ private:
 
   ValueType *Array;
   dax::Id NumberOfValues;
+  dax::Id AllocatedSize;
 };
 
 } // namespace internal

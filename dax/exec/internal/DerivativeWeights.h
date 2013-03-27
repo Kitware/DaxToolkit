@@ -16,9 +16,8 @@
 #ifndef __dax__exec__internal__DerviativeWeights_h
 #define __dax__exec__internal__DerviativeWeights_h
 
+#include <dax/CellTag.h>
 #include <dax/Types.h>
-
-#include <dax/exec/Cell.h>
 
 namespace dax {
 namespace exec {
@@ -28,14 +27,8 @@ namespace internal {
 /// interpolation weights (see InterpolationWeights.h) at the parametric
 /// coordinates.
 ///
-template<class CellType>
-DAX_EXEC_EXPORT
-dax::Tuple<dax::Vector3, CellType::NUM_POINTS>
-DerivativeWeights(const dax::Vector3 &pcoords);
-
-template<>
 DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,8>
-DerivativeWeights<dax::exec::CellVoxel>(const dax::Vector3 &pcoords)
+DerivativeWeights(const dax::Vector3 &pcoords, dax::CellTagVoxel)
 {
   dax::Tuple<dax::Vector3,8> weights;
   const dax::Vector3 rcoords = dax::make_Vector3(1, 1, 1) - pcoords;
@@ -75,17 +68,23 @@ DerivativeWeights<dax::exec::CellVoxel>(const dax::Vector3 &pcoords)
   return weights;
 }
 
-template<>
+/// Returns the partial derivatives in the r, s, and t directions of the
+/// interpolation weights (see InterpolationWeights.h) at the parametric
+/// coordinates.
+///
 DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,8>
-DerivativeWeights<dax::exec::CellHexahedron>(const dax::Vector3 &pcoords)
+DerivativeWeights(const dax::Vector3 &pcoords, dax::CellTagHexahedron)
 {
   // Same as voxel
-  return DerivativeWeights<dax::exec::CellVoxel>(pcoords);
+  return DerivativeWeights(pcoords, dax::CellTagVoxel());
 }
 
-template<>
+/// Returns the partial derivatives in the r, s, and t directions of the
+/// interpolation weights (see InterpolationWeights.h) at the parametric
+/// coordinates.
+///
 DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,6>
-DerivativeWeights<dax::exec::CellWedge>(const dax::Vector3 &pcoords)
+DerivativeWeights(const dax::Vector3 &pcoords, dax::CellTagWedge)
 {
   dax::Tuple<dax::Vector3,6> weights;
 
@@ -116,6 +115,10 @@ DerivativeWeights<dax::exec::CellWedge>(const dax::Vector3 &pcoords)
   return weights;
 }
 
+/// Returns the partial derivatives in the r and s directions of the
+/// interpolation weights (see InterpolationWeights.h) at the parametric
+/// coordinates.
+///
 DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,4>
 DerivativeWeightsQuadrilateral(const dax::Vector2 &pcoords)
 {
@@ -141,9 +144,12 @@ DerivativeWeightsQuadrilateral(const dax::Vector2 &pcoords)
   return weights;
 }
 
-template<>
+/// Returns the partial derivatives in the r, s, and t directions of the
+/// interpolation weights (see InterpolationWeights.h) at the parametric
+/// coordinates.
+///
 DAX_EXEC_EXPORT dax::Tuple<dax::Vector3,4>
-DerivativeWeights<dax::exec::CellQuadrilateral>(const dax::Vector3 &pcoords)
+DerivativeWeights(const dax::Vector3 &pcoords, dax::CellTagQuadrilateral)
 {
   return DerivativeWeightsQuadrilateral(dax::make_Vector2(pcoords[0],
                                                           pcoords[1]));

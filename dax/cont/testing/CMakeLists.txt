@@ -16,10 +16,19 @@
 
 set(unit_tests
   UnitTestArrayContainerControlBasic.cxx
+  UnitTestArrayContainerControlCounting.cxx
+  UnitTestArrayContainerControlConstantValue.cxx
+  UnitTestArrayContainerControlImplicit.cxx
+  UnitTestArrayContainerControlPermutation.cxx
   UnitTestArrayHandle.cxx
+  UnitTestArrayHandleConstantValue.cxx
+  UnitTestArrayHandleCounting.cxx
   UnitTestArrayPortalFromIterators.cxx
+  UnitTestDeviceAdapterAlgorithmDependency.cxx
   UnitTestDeviceAdapterSerial.cxx
   UnitTestIteratorFromArrayPortal.cxx
+  UnitTestSchedule.cxx
+  UnitTestTimer.cxx
   UnitTestUniformGrid.cxx
   UnitTestUnstructuredGrid.cxx
   UnitTestVectorOperations.cxx

@@ -14,6 +14,13 @@
 ##
 ##=============================================================================
 
+set(headers
+  OptionParser.h
+  VectorTraitsTests.h
+  )
+
+dax_declare_headers(${headers})
+
 set(unit_tests
   UnitTestExtent.cxx
   UnitTestTypes.cxx

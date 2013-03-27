@@ -58,8 +58,9 @@ struct TemplatedTests
     return true;
   }
 
-  static const typename dax::VectorTraits<ValueType>::ComponentType
-      STOLEN_ARRAY_VALUE = 4529;
+  typename dax::VectorTraits<ValueType>::ComponentType STOLEN_ARRAY_VALUE() {
+    return 4529;
+  }
 
   /// Returned value should later be passed to StealArray2.  It is best to
   /// put as much between the two test parts to maximize the chance of a
@@ -69,7 +70,7 @@ struct TemplatedTests
     ValueType *stolenArray;
 
     ValueType stolenArrayValue
-        = dax::cont::VectorFill<ValueType>(STOLEN_ARRAY_VALUE);
+        = dax::cont::VectorFill<ValueType>(STOLEN_ARRAY_VALUE());
 
     ArrayContainerType stealMyArray;
     stealMyArray.Allocate(ARRAY_SIZE);
@@ -87,7 +88,7 @@ struct TemplatedTests
   void StealArray2(ValueType *stolenArray)
   {
     ValueType stolenArrayValue
-        = dax::cont::VectorFill<ValueType>(STOLEN_ARRAY_VALUE);
+        = dax::cont::VectorFill<ValueType>(STOLEN_ARRAY_VALUE());
 
     for (dax::Id index = 0; index < ARRAY_SIZE; index++)
       {
@@ -116,9 +117,21 @@ struct TemplatedTests
     DAX_TEST_ASSERT(arrayContainer.GetNumberOfValues() == ARRAY_SIZE * 2,
                     "Array not reallocated correctly.");
 
+    arrayContainer.Shrink(ARRAY_SIZE);
+    DAX_TEST_ASSERT(arrayContainer.GetNumberOfValues() == ARRAY_SIZE,
+                    "Array Shrnk failed to resize.");
+
     arrayContainer.ReleaseResources();
     DAX_TEST_ASSERT(arrayContainer.GetNumberOfValues() == 0,
                     "Array not released correctly.");
+
+    try
+      {
+      arrayContainer.Shrink(ARRAY_SIZE);
+      DAX_TEST_ASSERT(true==false,
+                      "Array shrink do a larger size was possible. This can't be allowed.");
+      }
+    catch(dax::cont::ErrorControlBadValue){}
   }
 
   void operator()()

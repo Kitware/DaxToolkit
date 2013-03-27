@@ -23,8 +23,10 @@ set(unit_tests
   UnitTestArrayPortalFromIteratorsExec.cxx
   UnitTestDerivativeWeights.cxx
   UnitTestErrorMessageBuffer.cxx
-  UnitTestInterpolationWeights.cxx
+  UnitTestFunctor.cxx
   UnitTestGridTopologies.cxx
+  UnitTestIJKIndex.cxx
+  UnitTestInterpolationWeights.cxx
   UnitTestTopologyGenerator.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

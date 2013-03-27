@@ -125,7 +125,7 @@ function(dax_unit_tests)
           PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS_WARN_EXTRA})
       endif(DAX_EXTRA_COMPILER_WARNINGS)
     endif (DAX_UT_CUDA)
-    target_link_libraries(${test_prog} ${DAX_UT_LIBRARIES})
+    target_link_libraries(${test_prog} ${DAX_UT_LIBRARIES} ${DAX_TIMING_LIBS})
     foreach (test ${DAX_UT_SOURCES})
       get_filename_component(tname ${test} NAME_WE)
       add_test(NAME ${tname}
@@ -134,3 +134,34 @@ function(dax_unit_tests)
     endforeach (test)
   endif (DAX_ENABLE_TESTING)
 endfunction(dax_unit_tests)
+
+# The Thrust project is not as careful as the Dax project in avoiding warnings
+# on shadow variables and unused arguments.  With a real GCC compiler, you
+# can disable these warnings inline, but with something like nvcc, those
+# pragmas cause errors.  Thus, this macro will disable the compiler warnings.
+macro(dax_disable_troublesome_thrust_warnings)
+  dax_disable_troublesome_thrust_warnings_var(CMAKE_CXX_FLAGS_DEBUG)
+  dax_disable_troublesome_thrust_warnings_var(CMAKE_CXX_FLAGS_MINSIZEREL)
+  dax_disable_troublesome_thrust_warnings_var(CMAKE_CXX_FLAGS_RELEASE)
+  dax_disable_troublesome_thrust_warnings_var(CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+endmacro(dax_disable_troublesome_thrust_warnings)
+
+macro(dax_disable_troublesome_thrust_warnings_var flags_var)
+  set(old_flags "${${flags_var}}")
+  string(REPLACE "-Wshadow" "" new_flags "${old_flags}")
+  string(REPLACE "-Wunused-parameter" "" new_flags "${new_flags}")
+  string(REPLACE "-Wunused" "" new_flags "${new_flags}")
+  string(REPLACE "-Wextra" "" new_flags "${new_flags}")
+  string(REPLACE "-Wall" "" new_flags "${new_flags}")
+  set(${flags_var} "${new_flags}")
+endmacro(dax_disable_troublesome_thrust_warnings_var)
+
+# Set up configuration for a given device.
+macro(dax_configure_device device)
+  string(TOUPPER "${device}" device_uppercase)
+  set(Dax_ENABLE_${device_uppercase} ON)
+  include("${Dax_SOURCE_DIR}/CMake/UseDax${device}.cmake")
+  if(NOT Dax_${device}_FOUND)
+    message(SEND_ERROR "Could not configure for using Dax with ${device}")
+  endif(NOT Dax_${device}_FOUND)
+endmacro(dax_configure_device)

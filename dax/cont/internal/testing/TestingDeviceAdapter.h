@@ -20,20 +20,30 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
+#include <dax/cont/Scheduler.h>
+#include <dax/cont/Timer.h>
+#include <dax/cont/PermutationContainer.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 
-#include <dax/cont/worklet/CellGradient.h>
-#include <dax/cont/worklet/Square.h>
-#include <dax/cont/worklet/testing/CellMapError.h>
-#include <dax/cont/worklet/testing/FieldMapError.h>
+#include <dax/worklet/CellGradient.h>
+#include <dax/worklet/Square.h>
+#include <dax/worklet/testing/CellMapError.h>
+#include <dax/worklet/testing/FieldMapError.h>
 
 #include <dax/cont/internal/testing/Testing.h>
 #include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/ScheduleMapAdapter.h>
+
+#include <dax/exec/internal/IJKIndex.h>
+
+#include <dax/math/Compare.h>
 
 #include <utility>
 #include <vector>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 namespace dax {
 namespace cont {
@@ -72,6 +82,9 @@ private:
       ::ArrayHandle<dax::Vector3,ArrayContainerControlTag,DeviceAdapterTag>
       Vector3ArrayHandle;
 
+  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
+      Algorithm;
+
 public:
   // Cuda kernels have to be public (in Cuda 4.0).
 
@@ -106,26 +119,28 @@ public:
       this->Array.Set(index, OFFSET);
     }
 
-    DAX_CONT_EXPORT void SetErrorMessageBuffer(
-        const dax::exec::internal::ErrorMessageBuffer &) {  }
-
-    IdPortalType Array;
-  };
-
-  struct ClearArrayMapKernel
-  {
-    DAX_CONT_EXPORT
-    ClearArrayMapKernel(const IdPortalType &array) : Array(array) {  }
-
-    DAX_EXEC_EXPORT void operator()(dax::Id, dax::Id value) const
+    DAX_EXEC_EXPORT void operator()(dax::exec::internal::IJKIndex index) const
     {
-      this->Array.Set(value, OFFSET);
+      this->Array.Set(index.GetValue(), OFFSET);
     }
 
     DAX_CONT_EXPORT void SetErrorMessageBuffer(
         const dax::exec::internal::ErrorMessageBuffer &) {  }
 
     IdPortalType Array;
+  };
+
+  struct ClearArrayMapKernel: public dax::exec::WorkletMapField
+  {
+
+    typedef void ControlSignature(Field(Out));
+    typedef void ExecutionSignature(_1);
+
+    template<typename T>
+    DAX_EXEC_EXPORT void operator()(T& value) const
+    {
+      value = OFFSET;
+    }
   };
 
   struct AddArrayKernel
@@ -136,6 +151,12 @@ public:
     DAX_EXEC_EXPORT void operator()(dax::Id index) const
     {
       this->Array.Set(index, this->Array.Get(index) + index);
+    }
+
+    DAX_EXEC_EXPORT void operator()(dax::exec::internal::IJKIndex index) const
+    {
+      dax::Id id = index.GetValue();
+      this->Array.Set(id, this->Array.Get(id) + id);
     }
 
     DAX_CONT_EXPORT void SetErrorMessageBuffer(
@@ -211,6 +232,19 @@ public:
     IdPortalType Array;
   };
 
+  struct NGMult: public dax::exec::WorkletMapField
+  {
+    typedef void ControlSignature(Field(In), Field(In), Field(Out));
+    typedef _3 ExecutionSignature(_1, _2);
+
+    template<typename T>
+    DAX_EXEC_EXPORT T operator()(T a, T b) const
+      {
+      return a * b;
+      }
+  };
+
+
 private:
 
   template<typename T>
@@ -256,7 +290,8 @@ private:
     dax::cont::ArrayPortalFromIterators<dax::Scalar *>
         inputPortal(inputArray, inputArray+ARRAY_SIZE*2);
     ArrayManagerExecution inputManager;
-    inputManager.LoadDataForInput(inputPortal);
+    inputManager.LoadDataForInput(
+          dax::cont::ArrayPortalFromIterators<const dax::Scalar*>(inputPortal));
 
     // Change size.
     inputManager.Shrink(ARRAY_SIZE);
@@ -306,25 +341,53 @@ private:
 #endif
   }
 
-  static DAX_CONT_EXPORT void TestSchedule()
+  DAX_CONT_EXPORT static void TestTimer()
   {
     std::cout << "-------------------------------------------" << std::endl;
-    std::cout << "Testing Schedule" << std::endl;
+    std::cout << "Testing Timer" << std::endl;
 
+    dax::cont::Timer<DeviceAdapterTag> timer;
+
+#ifndef _WIN32
+    sleep(1);
+#else
+    Sleep(1000);
+#endif
+
+    dax::Scalar elapsedTime = timer.GetElapsedTime();
+
+    std::cout << "Elapsed time: " << elapsedTime << std::endl;
+
+    DAX_TEST_ASSERT(elapsedTime > 0.999,
+                    "Timer did not capture full second wait.");
+    DAX_TEST_ASSERT(elapsedTime < 2.0,
+                    "Timer counted too far or system really busy.");
+  }
+
+  static DAX_CONT_EXPORT void TestAlgorithmSchedule()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing Schedule with dax::Id" << std::endl;
+
+    {
     std::cout << "Allocating execution array" << std::endl;
     IdContainer container;
     IdArrayManagerExecution manager;
     manager.AllocateArrayForOutput(container, ARRAY_SIZE);
 
+    std::cout << "Starting timer." << std::endl;
+    dax::cont::Timer<DeviceAdapterTag> timer;
+
     std::cout << "Running clear." << std::endl;
-    dax::cont::internal::Schedule(ClearArrayKernel(manager.GetPortal()),
-                                  ARRAY_SIZE,
-                                  DeviceAdapterTag());
+    Algorithm::Schedule(ClearArrayKernel(manager.GetPortal()), ARRAY_SIZE);
 
     std::cout << "Running add." << std::endl;
-    dax::cont::internal::Schedule(AddArrayKernel(manager.GetPortal()),
-                                  ARRAY_SIZE,
-                                  DeviceAdapterTag());
+    Algorithm::Schedule(AddArrayKernel(manager.GetPortal()), ARRAY_SIZE);
+
+    std::cout << "Checking time." << std::endl;
+    dax::Scalar elapsedTime = timer.GetElapsedTime();
+    DAX_TEST_ASSERT((elapsedTime > 0) && (elapsedTime < 10),
+                    "Timer reported unexpected time for scheduling.");
 
     std::cout << "Checking results." << std::endl;
     manager.RetrieveOutputData(container);
@@ -335,25 +398,105 @@ private:
       DAX_TEST_ASSERT(value == index + OFFSET,
                       "Got bad value for scheduled kernels.");
       }
+    } //release memory
 
-    std::cout << "Testing Schedule on Subset" << std::endl;
-    const dax::Id RAWSUBSET_SIZE = 4;
-    dax::Id rawsubset[RAWSUBSET_SIZE];
-    rawsubset[0]=0;rawsubset[1]=10;rawsubset[2]=30;rawsubset[3]=20;
-    IdArrayHandle subset = MakeArrayHandle(rawsubset, RAWSUBSET_SIZE);
+    //verify that the schedule call works with id3
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing Schedule with dax::Id3" << std::endl;
 
-    std::cout << "Running clear on subset." << std::endl;
-    dax::cont::internal::ScheduleMap(ClearArrayMapKernel(manager.GetPortal()),
-                                     subset);
+    {
+    std::cout << "Allocating execution array" << std::endl;
+    IdContainer container;
+    IdArrayManagerExecution manager;
+    manager.AllocateArrayForOutput(container,
+                                   ARRAY_SIZE * ARRAY_SIZE * ARRAY_SIZE);
+    dax::Id3 maxRange(ARRAY_SIZE);
+
+    std::cout << "Running clear." << std::endl;
+    Algorithm::Schedule(ClearArrayKernel(manager.GetPortal()), maxRange);
+
+    std::cout << "Running add." << std::endl;
+    Algorithm::Schedule(AddArrayKernel(manager.GetPortal()), maxRange);
+
+    std::cout << "Checking results." << std::endl;
     manager.RetrieveOutputData(container);
 
-    for (dax::Id index = 0; index < 4; index++)
+    const dax::Id maxId = ARRAY_SIZE * ARRAY_SIZE * ARRAY_SIZE;
+    for (dax::Id index = 0; index < maxId; index++)
       {
-      dax::Id value = container.GetPortalConst().Get(rawsubset[index]);
+      dax::Id value = container.GetPortalConst().Get(index);
+      DAX_TEST_ASSERT(value == index + OFFSET,
+                      "Got bad value for scheduled dax::Id3 kernels.");
+      }
+    } //release memory
+  }
+
+  static DAX_CONT_EXPORT void TestContScheduler()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing dax::cont::Scheduler class" << std::endl;
+
+    std::vector<dax::Scalar> field(ARRAY_SIZE);
+    for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+      {
+      field[i]=i;
+      }
+    ScalarArrayHandle fieldHandle = MakeArrayHandle(field);
+    ScalarArrayHandle multHandle;
+
+    std::cout << "Running NG Multiply worklet with two handles" << std::endl;
+    dax::cont::Scheduler<DeviceAdapterTag> scheduler;
+    scheduler.Invoke(NGMult(),fieldHandle, fieldHandle, multHandle);
+
+    std::vector<dax::Scalar> mult(ARRAY_SIZE);
+    multHandle.CopyInto(mult.begin());
+
+    for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+      {
+      dax::Scalar squareValue = mult[i];
+      dax::Scalar squareTrue = field[i]*field[i];
+      DAX_TEST_ASSERT(test_equal(squareValue, squareTrue),
+                      "Got bad multiply result");
+      }
+
+    std::cout << "Running NG Multiply worklet with handle and constant" << std::endl;
+    scheduler.Invoke(NGMult(),4.0f,fieldHandle, multHandle);
+    multHandle.CopyInto(mult.begin());
+
+    for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+      {
+      dax::Scalar squareValue = mult[i];
+      dax::Scalar squareTrue = field[i]*4.0f;
+      DAX_TEST_ASSERT(test_equal(squareValue, squareTrue),
+                      "Got bad multiply result");
+      }
+
+
+    std::cout << "Testing Schedule on Subset" << std::endl;
+    std::vector<dax::Scalar> fullField(ARRAY_SIZE);
+    std::vector<dax::Id> subSetLookup(ARRAY_SIZE/2);
+    for (dax::Id i = 0; i < ARRAY_SIZE; i++)
+      {
+      field[i]=i;
+      if(i%2==0)
+        {
+        subSetLookup[i/2]=i;
+        }
+      }
+
+    IdArrayHandle subSetLookupHandle = MakeArrayHandle(subSetLookup);
+    ScalarArrayHandle fullFieldHandle = MakeArrayHandle(fullField);
+
+    std::cout << "Running clear on subset." << std::endl;
+    scheduler.Invoke(ClearArrayMapKernel(),
+          make_Permutation(subSetLookupHandle,fullFieldHandle,ARRAY_SIZE));
+
+    for (dax::Id index = 0; index < ARRAY_SIZE; index+=2)
+      {
+      dax::Id value = fullFieldHandle.GetPortalConstControl().Get(index);
       DAX_TEST_ASSERT(value == OFFSET,
                       "Got bad value for subset scheduled kernel.");
       }
-
   }
 
   static DAX_CONT_EXPORT void TestStreamCompact()
@@ -368,12 +511,11 @@ private:
 
     //construct the index array
 
-    dax::cont::internal::Schedule(
+    Algorithm::Schedule(
           MarkOddNumbersKernel(array.PrepareForOutput(ARRAY_SIZE)),
-          ARRAY_SIZE,
-          DeviceAdapterTag());
+          ARRAY_SIZE);
 
-    dax::cont::internal::StreamCompact(array, result, DeviceAdapterTag());
+    Algorithm::StreamCompact(array, result);
     DAX_TEST_ASSERT(result.GetNumberOfValues() == array.GetNumberOfValues()/2,
                     "result of compacation has an incorrect size");
 
@@ -395,16 +537,14 @@ private:
     IdArrayHandle result;
 
     //construct the index array
-    dax::cont::internal::Schedule(
+    Algorithm::Schedule(
           OffsetPlusIndexKernel(array.PrepareForOutput(ARRAY_SIZE)),
-          ARRAY_SIZE,
-          DeviceAdapterTag());
-    dax::cont::internal::Schedule(
+          ARRAY_SIZE);
+    Algorithm::Schedule(
           MarkOddNumbersKernel(stencil.PrepareForOutput(ARRAY_SIZE)),
-          ARRAY_SIZE,
-          DeviceAdapterTag());
+          ARRAY_SIZE);
 
-    dax::cont::internal::StreamCompact(array,stencil,result,DeviceAdapterTag());
+    Algorithm::StreamCompact(array,stencil,result);
     DAX_TEST_ASSERT(result.GetNumberOfValues() == array.GetNumberOfValues()/2,
                     "result of compacation has an incorrect size");
 
@@ -418,8 +558,8 @@ private:
 
   static DAX_CONT_EXPORT void TestOrderedUniqueValues()
   {
-    std::cout << "-------------------------------------------" << std::endl;
-    std::cout << "Testing Sort, Unique, and LowerBounds" << std::endl;
+    std::cout << "-------------------------------------------------" << std::endl;
+    std::cout << "Testing Sort, Unique, LowerBounds and UpperBounds" << std::endl;
     dax::Id testData[ARRAY_SIZE];
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
       {
@@ -428,73 +568,176 @@ private:
     IdArrayHandle input = MakeArrayHandle(testData, ARRAY_SIZE);
 
     IdArrayHandle handle;
+    IdArrayHandle handle1;
     IdArrayHandle temp;
-    dax::cont::internal::Copy(input,handle,DeviceAdapterTag());
-    dax::cont::internal::Copy(handle,temp,DeviceAdapterTag());
-    dax::cont::internal::Sort(temp,DeviceAdapterTag());
-    dax::cont::internal::Unique(temp,DeviceAdapterTag());
-    dax::cont::internal::LowerBounds(temp,input,handle,DeviceAdapterTag());
-    temp.ReleaseResources();
+    Algorithm::Copy(input,temp);
+    Algorithm::Sort(temp);
+    Algorithm::Unique(temp);
+    
+    //verify lower and upper bounds work    
+    Algorithm::LowerBounds(temp,input,handle);
+    Algorithm::UpperBounds(temp,input,handle1);
+
+    // Check to make sure that temp was resized correctly during Unique.
+    // (This was a discovered bug at one point.)
+    temp.GetPortalConstControl();  // Forces copy back to control.
+    temp.ReleaseResourcesExecution(); // Make sure not counting on execution.
+    DAX_TEST_ASSERT(
+          temp.GetNumberOfValues() == 50,
+          "Unique did not resize array (or size did not copy to control).");
 
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
       {
       dax::Id value = handle.GetPortalConstControl().Get(i);
-      DAX_TEST_ASSERT(value == i % 50, "Got bad value");
+      dax::Id value1 = handle1.GetPortalConstControl().Get(i);
+      DAX_TEST_ASSERT(value == i % 50, "Got bad value (LowerBounds)");
+      DAX_TEST_ASSERT(value1 >= i % 50, "Got bad value (UpperBounds)");
       }
 
-    std::cout << "Testing Sort, Unique, and LowerBounds with random values" << std::endl;
+    std::cout << "Testing Sort, Unique, LowerBounds and UpperBounds with random values"
+              << std::endl;
     //now test it works when the id are not incrementing
     const dax::Id RANDOMDATA_SIZE = 6;
     dax::Id randomData[RANDOMDATA_SIZE];
-    randomData[0]=500;  //2
-    randomData[1]=955;  //3
-    randomData[2]=955;  //3
-    randomData[3]=120;  //0
-    randomData[4]=320;  //1
-    randomData[5]=955;  //3
+    randomData[0]=500;  // 2 (lower), 3 (upper)
+    randomData[1]=955;  // 3 (lower), 4 (upper)
+    randomData[2]=955;  // 3 (lower), 4 (upper)
+    randomData[3]=120;  // 0 (lower), 1 (upper)
+    randomData[4]=320;  // 1 (lower), 2 (upper)
+    randomData[5]=955;  // 3 (lower), 4 (upper)
 
     //change the control structure under the handle
     input = MakeArrayHandle(randomData, RANDOMDATA_SIZE);
-    dax::cont::internal::Copy(input,handle,DeviceAdapterTag());
+    Algorithm::Copy(input,handle);
     DAX_TEST_ASSERT(handle.GetNumberOfValues() == RANDOMDATA_SIZE,
                     "Handle incorrect size after setting new control data");
 
-    dax::cont::internal::Copy(handle,temp,DeviceAdapterTag());
+    Algorithm::Copy(input,handle1);
+    DAX_TEST_ASSERT(handle.GetNumberOfValues() == RANDOMDATA_SIZE,
+                    "Handle incorrect size after setting new control data");
+
+    Algorithm::Copy(handle,temp);
     DAX_TEST_ASSERT(temp.GetNumberOfValues() == RANDOMDATA_SIZE,
                     "Copy failed");
-    dax::cont::internal::Sort(temp,DeviceAdapterTag());
-    dax::cont::internal::Unique(temp,DeviceAdapterTag());
-    dax::cont::internal::LowerBounds(temp,handle,DeviceAdapterTag());
+    Algorithm::Sort(temp);
+    Algorithm::Unique(temp);
+    Algorithm::LowerBounds(temp,handle);
+    Algorithm::UpperBounds(temp,handle1);
 
     DAX_TEST_ASSERT(handle.GetNumberOfValues() == RANDOMDATA_SIZE,
                     "LowerBounds returned incorrect size");
 
     handle.CopyInto(randomData);
-    DAX_TEST_ASSERT(randomData[0] == 2, "Got bad value");
-    DAX_TEST_ASSERT(randomData[1] == 3, "Got bad value");
-    DAX_TEST_ASSERT(randomData[2] == 3, "Got bad value");
-    DAX_TEST_ASSERT(randomData[3] == 0, "Got bad value");
-    DAX_TEST_ASSERT(randomData[4] == 1, "Got bad value");
-    DAX_TEST_ASSERT(randomData[5] == 3, "Got bad value");
+    DAX_TEST_ASSERT(randomData[0] == 2, "Got bad value - LowerBounds");
+    DAX_TEST_ASSERT(randomData[1] == 3, "Got bad value - LowerBounds");
+    DAX_TEST_ASSERT(randomData[2] == 3, "Got bad value - LowerBounds");
+    DAX_TEST_ASSERT(randomData[3] == 0, "Got bad value - LowerBounds");
+    DAX_TEST_ASSERT(randomData[4] == 1, "Got bad value - LowerBounds");
+    DAX_TEST_ASSERT(randomData[5] == 3, "Got bad value - LowerBounds");
+
+    DAX_TEST_ASSERT(handle1.GetNumberOfValues() == RANDOMDATA_SIZE,
+                    "UppererBounds returned incorrect size");
+
+    handle1.CopyInto(randomData);
+
+    DAX_TEST_ASSERT(randomData[0] == 3, "Got bad value - UpperBound");
+    DAX_TEST_ASSERT(randomData[1] == 4, "Got bad value - UpperBound");
+    DAX_TEST_ASSERT(randomData[2] == 4, "Got bad value - UpperBound");
+    DAX_TEST_ASSERT(randomData[3] == 1, "Got bad value - UpperBound");
+    DAX_TEST_ASSERT(randomData[4] == 2, "Got bad value - UpperBound");
+    DAX_TEST_ASSERT(randomData[5] == 4, "Got bad value - UpperBound");
   }
 
-  static DAX_CONT_EXPORT void TestInclusiveScan()
+  static DAX_CONT_EXPORT void TestSortWithComparisonObject()
+  {
+    std::cout << "-------------------------------------------------" << std::endl;
+    std::cout << "Sort with comparison object" << std::endl;
+    dax::Id testData[ARRAY_SIZE];
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      testData[i]= OFFSET+(i % 50);
+      }
+    IdArrayHandle input = MakeArrayHandle(testData, ARRAY_SIZE);
+
+    IdArrayHandle sorted;
+    IdArrayHandle comp_sorted;
+
+    Algorithm::Copy(input,sorted);
+    Algorithm::Copy(input,comp_sorted);
+
+    //Validate the sort, and SortGreater are inverse
+    Algorithm::Sort(sorted);
+    Algorithm::Sort(comp_sorted,dax::math::SortGreater());
+    
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      dax::Id sorted1 = sorted.GetPortalConstControl().Get(i);
+      dax::Id sorted2 = comp_sorted.GetPortalConstControl().Get(ARRAY_SIZE - (i + 1));
+      std::cout << sorted1 << "<" << sorted2 << std::endl;
+      DAX_TEST_ASSERT(sorted1 == sorted2,
+                      "Got bad sort values when using SortGreater");
+      }
+    
+    Algorithm::Sort(comp_sorted,dax::math::SortLess());   
+
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      dax::Id sorted1 = sorted.GetPortalConstControl().Get(i);
+      dax::Id sorted2 = comp_sorted.GetPortalConstControl().Get(i);
+      DAX_TEST_ASSERT(sorted1 == sorted2,
+                      "Got bad sort values when using SortLesser");
+      }   
+  }
+
+  static DAX_CONT_EXPORT void TestLowerBoundstWithComparisonObject()
+  {
+    std::cout << "-------------------------------------------------" << std::endl;
+    std::cout << "Testing LowerBounds with comparison object" << std::endl;
+    dax::Id testData[ARRAY_SIZE];
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      testData[i]= OFFSET+(i % 50);
+      }
+    IdArrayHandle input = MakeArrayHandle(testData, ARRAY_SIZE);
+
+    IdArrayHandle temp;
+    Algorithm::Copy(input,temp);
+    Algorithm::Sort(temp);
+    Algorithm::Unique(temp);
+
+    IdArrayHandle handle;
+    //verify lower and upper bounds work
+    Algorithm::LowerBounds(temp,input,handle, dax::math::SortLess());
+
+    // Check to make sure that temp was resized correctly during Unique.
+    // (This was a discovered bug at one point.)
+    temp.GetPortalConstControl();  // Forces copy back to control.
+    temp.ReleaseResourcesExecution(); // Make sure not counting on execution.
+    DAX_TEST_ASSERT(
+          temp.GetNumberOfValues() == 50,
+          "Unique did not resize array (or size did not copy to control).");
+
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      dax::Id value = handle.GetPortalConstControl().Get(i);
+      DAX_TEST_ASSERT(value == i % 50, "Got bad LowerBounds value with SortLess");
+      }
+  }
+
+  static DAX_CONT_EXPORT void TestScanInclusive()
   {
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing Inclusive Scan" << std::endl;
 
     //construct the index array
     IdArrayHandle array;
-    dax::cont::internal::Schedule(
+    Algorithm::Schedule(
           ClearArrayKernel(array.PrepareForOutput(ARRAY_SIZE)),
-          ARRAY_SIZE,
-          DeviceAdapterTag());
+          ARRAY_SIZE);
 
     //we know have an array whose sum is equal to OFFSET * ARRAY_SIZE,
     //let's validate that
-    dax::Id sum = dax::cont::internal::InclusiveScan(array,
-                                                     array,
-                                                     DeviceAdapterTag());
+    dax::Id sum = Algorithm::ScanInclusive(array, array);
     DAX_TEST_ASSERT(sum == OFFSET * ARRAY_SIZE,
                     "Got bad sum from Inclusive Scan");
 
@@ -503,6 +746,38 @@ private:
     dax::Id partialSum = 0;
     dax::Id triangleNumber = 0;
     for(unsigned int i=0, pos=1; i < ARRAY_SIZE; ++i, ++pos)
+      {
+      const dax::Id value = array.GetPortalConstControl().Get(i);
+      partialSum += value;
+      triangleNumber = ((pos*(pos+1))/2);
+      DAX_TEST_ASSERT(partialSum == triangleNumber * OFFSET,
+                      "Incorrect partial sum");
+      }
+  }
+
+  static DAX_CONT_EXPORT void TestScanExclusive()
+  {
+    std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing Exclusive Scan" << std::endl;
+
+    //construct the index array
+    IdArrayHandle array;
+    Algorithm::Schedule(
+          ClearArrayKernel(array.PrepareForOutput(ARRAY_SIZE)),
+          ARRAY_SIZE);
+
+    // we know have an array whose sum = (OFFSET * ARRAY_SIZE),
+    // let's validate that
+    dax::Id sum = Algorithm::ScanExclusive(array, array);
+
+    DAX_TEST_ASSERT(sum == (OFFSET * ARRAY_SIZE),
+                    "Got bad sum from Exclusive Scan");
+
+    //each value should be equal to the Triangle Number of that index
+    //ie 0, 1, 3, 6, 10, 15, 21 ...
+    dax::Id partialSum = 0;
+    dax::Id triangleNumber = 0;
+    for(unsigned int i=0, pos=0; i < ARRAY_SIZE; ++i, ++pos)
       {
       const dax::Id value = array.GetPortalConstControl().Get(i);
       partialSum += value;
@@ -521,9 +796,7 @@ private:
     std::string message;
     try
       {
-      dax::cont::internal::Schedule(OneErrorKernel(),
-                                    ARRAY_SIZE,
-                                    DeviceAdapterTag());
+      Algorithm::Schedule(OneErrorKernel(), ARRAY_SIZE);
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -537,9 +810,7 @@ private:
     message = "";
     try
       {
-      dax::cont::internal::Schedule(AllErrorKernel(),
-                                    ARRAY_SIZE,
-                                    DeviceAdapterTag());
+      Algorithm::Schedule(AllErrorKernel(), ARRAY_SIZE);
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -580,7 +851,10 @@ private:
     ScalarArrayHandle squareHandle;
 
     std::cout << "Running Square worklet" << std::endl;
-    dax::cont::worklet::Square(fieldHandle, squareHandle);
+    dax::cont::Scheduler<DeviceAdapterTag> scheduler;
+    scheduler.Invoke(dax::worklet::Square(),
+                          fieldHandle,
+                          squareHandle);
 
     std::vector<dax::Scalar> square(grid->GetNumberOfPoints());
     squareHandle.CopyInto(square.begin());
@@ -611,8 +885,10 @@ private:
     bool gotError = false;
     try
       {
-      dax::cont::worklet::testing::FieldMapError(
-            grid.GetRealGrid().GetPointCoordinates());
+      dax::cont::Scheduler<DeviceAdapterTag> scheduler;
+      scheduler.Invoke(
+                dax::worklet::testing::FieldMapError(),
+                grid.GetRealGrid().GetPointCoordinates());
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -630,7 +906,7 @@ private:
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing basic map cell worklet" << std::endl;
 
-    if (GridType::CellType::TOPOLOGICAL_DIMENSIONS < 3)
+    if (dax::CellTraits<typename GridType::CellTag>::TOPOLOGICAL_DIMENSIONS < 3)
       {
       std::cout << "Skipping.  Too hard to check gradient "
                 << "on cells with topological dimension < 3" << std::endl;
@@ -666,10 +942,12 @@ private:
     Vector3ArrayHandle gradientHandle;
 
     std::cout << "Running CellGradient worklet" << std::endl;
-    dax::cont::worklet::CellGradient(grid.GetRealGrid(),
-                                     grid->GetPointCoordinates(),
-                                     fieldHandle,
-                                     gradientHandle);
+    dax::cont::Scheduler<DeviceAdapterTag> scheduler;
+    scheduler.Invoke(dax::worklet::CellGradient(),
+                    grid.GetRealGrid(),
+                    grid->GetPointCoordinates(),
+                    fieldHandle,
+                    gradientHandle);
 
     std::vector<dax::Vector3> gradient(grid->GetNumberOfCells());
     gradientHandle.CopyInto(gradient.begin());
@@ -699,8 +977,9 @@ private:
     bool gotError = false;
     try
       {
-      dax::cont::worklet::testing::CellMapError(grid.GetRealGrid(),
-                                                DeviceAdapterTag());
+      dax::cont::Scheduler<DeviceAdapterTag> scheduler;
+      scheduler.Invoke(dax::worklet::testing::CellMapError(),
+                      grid.GetRealGrid());
       }
     catch (dax::cont::ErrorExecution error)
       {
@@ -712,68 +991,43 @@ private:
     DAX_TEST_ASSERT(gotError, "Never got the error thrown.");
   }
 
-  struct TestAll
+  struct TestWorklets
   {
     template<typename GridType>
-    DAX_CONT_EXPORT void WorkletTests()
+    DAX_CONT_EXPORT void operator()(const GridType&) const
       {
       TestWorkletMapField<GridType>();
       TestWorkletFieldMapError<GridType>();
       TestWorkletMapCell<GridType>();
       TestWorkletCellMapError<GridType>();
       }
+  };
 
-    DAX_CONT_EXPORT void operator()()
+  struct TestAll
+  {
+    DAX_CONT_EXPORT void operator()() const
     {
       std::cout << "Doing DeviceAdapter tests" << std::endl;
       TestArrayManagerExecution();
       TestOutOfMemory();
-      TestSchedule();
-      TestStreamCompact();
-      TestStreamCompactWithStencil();
-      TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
-      TestInclusiveScan();
+      TestTimer();
+
+      TestAlgorithmSchedule();
       TestErrorExecution();
+      TestScanInclusive();
+      TestScanExclusive();
+      TestSortWithComparisonObject();
+      TestLowerBoundstWithComparisonObject();
+      TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
+      TestContScheduler();
+      TestStreamCompactWithStencil();
+      TestStreamCompact();
+      
 
-      std::cout << "Doing Worklet tests with UniformGrid" << std::endl;
-      WorkletTests<dax::cont::UniformGrid<DeviceAdapterTag> >();
-
-      std::cout << "Doing Worklet tests with UnstructuredGrid types" << std::endl;
-      WorkletTests<dax::cont::UnstructuredGrid
-          <
-          dax::exec::CellHexahedron,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> >();
-      WorkletTests<dax::cont::UnstructuredGrid
-          <
-          dax::exec::CellTetrahedron,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> >();
-      WorkletTests<dax::cont::UnstructuredGrid
-          <
-          dax::exec::CellWedge,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> >();
-      WorkletTests<dax::cont::UnstructuredGrid
-          <
-          dax::exec::CellTriangle,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> >();
-      WorkletTests<dax::cont::UnstructuredGrid
-          <
-          dax::exec::CellQuadrilateral,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> >();
-      WorkletTests<dax::cont::UnstructuredGrid
-          <
-          dax::exec::CellLine,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> >();
-      WorkletTests<dax::cont::UnstructuredGrid
-          <
-          dax::exec::CellVertex,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> >();
+      std::cout << "Doing Worklet tests with all grid type" << std::endl;
+      dax::cont::internal::GridTesting::TryAllGridTypes(TestWorklets(),
+                                          ArrayContainerControlTagBasic(),
+                                                        DeviceAdapterTag());
     }
   };
 

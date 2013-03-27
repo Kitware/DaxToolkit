@@ -19,8 +19,13 @@ include_directories(${Boost_INCLUDE_DIRS})
 set(headers
   ArrayContainerControl.h
   ArrayContainerControlBasic.h
+  ArrayContainerControlCounting.h
+  ArrayContainerControlConstantValue.h
   ArrayContainerControlImplicit.h
+  ArrayContainerControlPermutation.h
   ArrayHandle.h
+  ArrayHandleConstantValue.h
+  ArrayHandleCounting.h
   ArrayPortal.h
   ArrayPortalFromIterators.h
   Assert.h
@@ -33,6 +38,11 @@ set(headers
   ErrorControlOutOfMemory.h
   ErrorExecution.h
   IteratorFromArrayPortal.h
+  Scheduler.h
+  PermutationContainer.h
+  GenerateInterpolatedCells.h
+  GenerateTopology.h
+  Timer.h
   UniformGrid.h
   UnstructuredGrid.h
   ${Dax_BINARY_DIR}/dax/cont/VectorOperations.h
@@ -41,6 +51,7 @@ set(headers
 add_subdirectory(internal)
 
 dax_declare_headers(${impl_headers} ${headers})
+
 
 #-----------------------------------------------------------------------------
 set(DAX_VECTOR_OPERATIONS_NAMESPACE "dax::cont")
@@ -54,5 +65,7 @@ configure_file(
   @ONLY
   )
 
+add_subdirectory(arg)
+add_subdirectory(scheduling)
+add_subdirectory(sig)
 add_subdirectory(testing)
-add_subdirectory(worklet)

@@ -21,7 +21,7 @@
 #include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/Assert.h>
 #include <dax/cont/ErrorControlBadValue.h>
-#include <dax/cont/internal/ArrayManagerExecution.h>
+#include <dax/cont/internal/ArrayTransfer.h>
 #include <dax/cont/internal/DeviceAdapterTag.h>
 
 #include <boost/concept_check.hpp>
@@ -57,24 +57,26 @@ namespace internal { class ArrayHandleAccess; }
 ///
 template<
     typename T,
-    class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
-    class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
+    class ArrayContainerControlTag_ = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
+    class DeviceAdapterTag_ = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class ArrayHandle
 {
 private:
-  typedef dax::cont::internal::ArrayContainerControl<T,ArrayContainerControlTag>
+  typedef dax::cont::internal
+      ::ArrayContainerControl<T,ArrayContainerControlTag_>
       ArrayContainerControlType;
   typedef dax::cont::internal
-      ::ArrayManagerExecution<T,ArrayContainerControlTag,DeviceAdapterTag>
-      ArrayManagerExecutionType;
+      ::ArrayTransfer<T,ArrayContainerControlTag_,DeviceAdapterTag_ >
+      ArrayTransferType;
 public:
   typedef T ValueType;
+  typedef DeviceAdapterTag_ DeviceAdapterTag;
+  typedef ArrayContainerControlTag_ ArrayContainerControlTag;
   typedef typename ArrayContainerControlType::PortalType PortalControl;
   typedef typename ArrayContainerControlType::PortalConstType
       PortalConstControl;
-  typedef typename ArrayManagerExecutionType::PortalType PortalExecution;
-  typedef typename ArrayManagerExecutionType::PortalConstType
-      PortalConstExecution;
+  typedef typename ArrayTransferType::PortalExecution PortalExecution;
+  typedef typename ArrayTransferType::PortalConstExecution PortalConstExecution;
 
   /// Constructs an empty ArrayHandle. Typically used for output or
   /// intermediate arrays that will be filled by a Dax algorithm.
@@ -110,6 +112,10 @@ public:
       }
     else if (this->Internals->ControlArrayValid)
       {
+      // If the user writes into the iterator we return, then the execution
+      // array will become invalid. Play it safe and release the execution
+      // resources. (Use the const version to preserve the execution array.)
+      this->ReleaseResourcesExecution();
       return this->Internals->ControlArray.GetPortal();
       }
     else
@@ -279,7 +285,7 @@ public:
       throw dax::cont::ErrorControlBadValue(
             "ArrayHandle has no data when PrepareForInput called.");
       }
-    return this->Internals->ExecutionArray.GetPortalConst();
+    return this->Internals->ExecutionArray.GetPortalConstExecution();
   }
 
   /// Prepares (allocates) this array to be used as an output from an operation
@@ -312,7 +318,7 @@ public:
     // assumption anyway.)
     this->Internals->ExecutionArrayValid = true;
 
-    return this->Internals->ExecutionArray.GetPortal();
+    return this->Internals->ExecutionArray.GetPortalExecution();
   }
 
   /// Prepares this array to be used in an in-place operation (both as input
@@ -332,15 +338,31 @@ public:
             "unexpectedly.  Copy the data to a new array first.");
       }
 
-    this->PrepareForInput();
+    // This code is similar to PrepareForInput except that we have to give a
+    // writable portal instead of the const portal to the execution array
+    // manager so that the data can (potentially) be written to.
+    if (this->Internals->ExecutionArrayValid)
+      {
+      // Nothing to do, data already loaded.
+      }
+    else if (this->Internals->ControlArrayValid)
+      {
+      this->Internals->ExecutionArray.LoadDataForInPlace(
+            this->Internals->ControlArray);
+      this->Internals->ExecutionArrayValid = true;
+      }
+    else
+      {
+      throw dax::cont::ErrorControlBadValue(
+            "ArrayHandle has no data when PrepareForInput called.");
+      }
 
     // Invalidate any control arrays since their data will become invalid when
     // the execution data is overwritten. Don't actually release the control
     // array. It may be shared as the execution array.
-    this->Internals->UserPortalValid = false;
     this->Internals->ControlArrayValid = false;
 
-    return this->Internals->ExecutionArray.GetPortal();
+    return this->Internals->ExecutionArray.GetPortalExecution();
   }
 
 private:
@@ -351,7 +373,7 @@ private:
     ArrayContainerControlType ControlArray;
     bool ControlArrayValid;
 
-    ArrayManagerExecutionType ExecutionArray;
+    ArrayTransferType ExecutionArray;
     bool ExecutionArrayValid;
   };
 
@@ -432,11 +454,12 @@ make_ArrayHandle(const T *array, dax::Id length)
 /// and end of the array.
 ///
 template<typename T,
+         typename Allocator,
          class ArrayContainerControlTag,
          class DeviceAdapterTag>
 DAX_CONT_EXPORT
 dax::cont::ArrayHandle<T, ArrayContainerControlTag, DeviceAdapterTag>
-make_ArrayHandle(const std::vector<T> &array,
+make_ArrayHandle(const std::vector<T,Allocator> &array,
                  ArrayContainerControlTag,
                  DeviceAdapterTag)
 {
@@ -446,20 +469,21 @@ make_ArrayHandle(const std::vector<T> &array,
   return ArrayHandleType(PortalType(&array.front(), &array.back() + 1));
 }
 template<typename T,
+         typename Allocator,
          class ArrayContainerControlTag>
 DAX_CONT_EXPORT
 dax::cont::ArrayHandle<T, ArrayContainerControlTag, DAX_DEFAULT_DEVICE_ADAPTER_TAG>
-make_ArrayHandle(const std::vector<T> &array, ArrayContainerControlTag)
+make_ArrayHandle(const std::vector<T,Allocator> &array, ArrayContainerControlTag)
 {
   return make_ArrayHandle(array,
                           ArrayContainerControlTag(),
                           DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 }
-template<typename T>
+template<typename T, typename Allocator>
 DAX_CONT_EXPORT
 dax::cont::ArrayHandle<
     T, DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG, DAX_DEFAULT_DEVICE_ADAPTER_TAG>
-make_ArrayHandle(const std::vector<T> &array)
+make_ArrayHandle(const std::vector<T,Allocator> &array)
 {
   return make_ArrayHandle(array,
                           DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG(),
@@ -469,4 +493,8 @@ make_ArrayHandle(const std::vector<T> &array)
 }
 }
 
+//to simplify the user experience we bring in all different types of array
+//handles when you include array handle
+#include <dax/cont/ArrayHandleCounting.h>
+#include <dax/cont/ArrayHandleConstantValue.h>
 #endif //__dax_cont_ArrayHandle_h

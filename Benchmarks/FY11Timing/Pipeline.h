@@ -15,17 +15,18 @@
 //=============================================================================
 #include <stdio.h>
 #include <iostream>
-#include "Timer.h"
 
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/Scheduler.h>
+#include <dax/cont/Timer.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/worklet/CellGradient.h>
-#include <dax/cont/worklet/Cosine.h>
-#include <dax/cont/worklet/Magnitude.h>
-#include <dax/cont/worklet/Sine.h>
-#include <dax/cont/worklet/Square.h>
+#include <dax/worklet/CellGradient.h>
+#include <dax/worklet/Cosine.h>
+#include <dax/worklet/Magnitude.h>
+#include <dax/worklet/Sine.h>
+#include <dax/worklet/Square.h>
 
 #include <vector>
 
@@ -107,15 +108,16 @@ void RunPipeline1(const dax::cont::UniformGrid<> &grid)
 
   dax::cont::ArrayHandle<dax::Vector3> results;
 
-  Timer timer;
-  dax::cont::worklet::Magnitude(
+  dax::cont::Timer<> timer;
+  dax::cont::Scheduler<> schedule;
+  schedule.Invoke(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
-  dax::cont::worklet::CellGradient(grid,
+  schedule.Invoke(dax::worklet::CellGradient(),grid,
                                    grid.GetPointCoordinates(),
                                    intermediate1,
                                    results);
-  double time = timer.elapsed();
+  double time = timer.GetElapsedTime();
 
   PrintCheckValues(results);
   PrintResults(1, time);
@@ -132,20 +134,23 @@ void RunPipeline2(const dax::cont::UniformGrid<> &grid)
 
   dax::cont::ArrayHandle<dax::Vector3> results;
 
-  Timer timer;
-  dax::cont::worklet::Magnitude(
+  dax::cont::Timer<> timer;
+  dax::cont::Scheduler<> schedule;
+  schedule.Invoke(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
-  dax::cont::worklet::CellGradient(grid,
-                                   grid.GetPointCoordinates(),
-                                   intermediate1,
-                                   intermediate2);
+
+  schedule.Invoke(dax::worklet::CellGradient(),grid,
+           grid.GetPointCoordinates(),
+           intermediate1,
+           intermediate2);
+
   intermediate1.ReleaseResources();
-  dax::cont::worklet::Sine(intermediate2, intermediate3);
-  dax::cont::worklet::Square(intermediate3, intermediate2);
+  schedule.Invoke(dax::worklet::Sine(),intermediate2, intermediate3);
+  schedule.Invoke(dax::worklet::Square(),intermediate3, intermediate2);
   intermediate3.ReleaseResources();
-  dax::cont::worklet::Cosine(intermediate2, results);
-  double time = timer.elapsed();
+  schedule.Invoke(dax::worklet::Cosine(),intermediate2, results);
+  double time = timer.GetElapsedTime();
 
   PrintCheckValues(results);
 
@@ -162,15 +167,16 @@ void RunPipeline3(const dax::cont::UniformGrid<> &grid)
 
   dax::cont::ArrayHandle<dax::Scalar> results;
 
-  Timer timer;
-  dax::cont::worklet::Magnitude(
+  dax::cont::Timer<> timer;
+  dax::cont::Scheduler<> schedule;
+  schedule.Invoke(dax::worklet::Magnitude(),
         grid.GetPointCoordinates(),
         intermediate1);
-  dax::cont::worklet::Sine(intermediate1, intermediate2);
-  dax::cont::worklet::Square(intermediate2, intermediate1);
+  schedule.Invoke(dax::worklet::Sine(),intermediate1, intermediate2);
+  schedule.Invoke(dax::worklet::Square(),intermediate2, intermediate1);
   intermediate2.ReleaseResources();
-  dax::cont::worklet::Cosine(intermediate1, results);
-  double time = timer.elapsed();
+  schedule.Invoke(dax::worklet::Cosine(),intermediate1, results);
+  double time = timer.GetElapsedTime();
 
   PrintCheckValues(results);
 

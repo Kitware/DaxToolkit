@@ -14,8 +14,8 @@
 //
 //=============================================================================
 
+#include <functional>
 #include <dax/math/Compare.h>
-
 #include <dax/internal/testing/Testing.h>
 
 namespace {
@@ -52,6 +52,53 @@ void TestMinMax(VectorType x, VectorType y)
     }
 }
 
+template<typename VectorType, typename Functor>
+bool VerifyFunctor(VectorType x, VectorType y, Functor f)
+{
+  typedef dax::VectorTraits<VectorType> Traits;
+  typedef typename Traits::ComponentType ComponentType;
+  const dax::Id NUM_COMPONENTS = Traits::NUM_COMPONENTS;
+  for (dax::Id index = 0; index < NUM_COMPONENTS; index++)
+    {
+    ComponentType x_value = Traits::GetComponent(x, index);
+    ComponentType y_value = Traits::GetComponent(y, index);
+    if(f(x_value,y_value))
+      return true;
+    else if(x_value == y_value)
+      continue;
+    else
+      return false;
+    }
+  return false;
+}
+
+template<typename VectorType, typename DaxCompFunctor, typename STLCompFunctor>
+void TestCompFunctor(VectorType x, VectorType y,
+                     DaxCompFunctor daxFunctor, STLCompFunctor stdFunctor, const char* name)
+{
+  typedef dax::VectorTraits<VectorType> Traits;
+  typedef typename Traits::ComponentType ComponentType;
+
+  //Test vector comparisons, our SortLess and SortGreater are different
+  //than the std function. so we need to craft this check
+  bool equal = daxFunctor(x, y);
+  bool verified = VerifyFunctor(x,y,stdFunctor);
+  DAX_TEST_ASSERT(equal == verified, name);
+
+  //Test scalar comparisons for each component
+  //this will test the specialization of the scalar dimension tag for comparison
+  const dax::Id NUM_COMPONENTS = Traits::NUM_COMPONENTS;
+  for (dax::Id index = 0; index < NUM_COMPONENTS; index++)
+    {
+    ComponentType x_value = Traits::GetComponent(x, index);
+    ComponentType y_value = Traits::GetComponent(y, index);
+    equal = daxFunctor(x_value, y_value);
+    verified = stdFunctor(x_value,y_value);
+    DAX_TEST_ASSERT(equal == verified, name);
+    }
+}
+
+
 static const dax::Id MAX_VECTOR_SIZE = 4;
 static const dax::Scalar VectorInitX[MAX_VECTOR_SIZE] = { -4, -1, 2, 0.0 };
 static const dax::Scalar VectorInitY[MAX_VECTOR_SIZE] = { 7, -6, 5, -0.001 };
@@ -60,6 +107,8 @@ struct TestCompareFunctor
 {
   template <typename T> void operator()(const T&) const {
     typedef dax::VectorTraits<T> Traits;
+    typedef typename Traits::ComponentType ComponentType;
+
     DAX_TEST_ASSERT(Traits::NUM_COMPONENTS <= MAX_VECTOR_SIZE,
                     "Need to update test for larger vectors.");
     T x, y;
@@ -69,6 +118,20 @@ struct TestCompareFunctor
       Traits::SetComponent(y, index, VectorInitY[index]);
       }
     TestMinMax(x, y);
+
+    TestCompFunctor(x,y, dax::math::SortLess(),
+                    std::less<ComponentType>(),"SortLess");
+    TestCompFunctor(y,x, dax::math::SortLess(),
+                    std::less<ComponentType>(),"SortLess");
+    TestCompFunctor(y,y, dax::math::SortLess(),
+                    std::less<ComponentType>(),"SortLess");
+
+    TestCompFunctor(y,x,dax::math::SortGreater(),
+                    std::greater<ComponentType>(),"SortGreater");
+    TestCompFunctor(y,x,dax::math::SortGreater(),
+                    std::greater<ComponentType>(),"SortGreater");
+    TestCompFunctor(x,x,dax::math::SortGreater(),
+                    std::greater<ComponentType>(),"SortGreater");
   }
 };
 

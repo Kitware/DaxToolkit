@@ -15,10 +15,10 @@
 //=============================================================================
 
 #include <dax/exec/internal/GridTopologies.h>
-#include <dax/exec/Cell.h>
 
 #include <dax/exec/internal/ArrayPortalFromIterators.h>
 
+#include <dax/exec/internal/testing/TestingTopologyGenerator.h>
 #include <dax/internal/testing/Testing.h>
 #include <vector>
 
@@ -29,11 +29,11 @@ static void TestGridSize(const Grid &gridstruct,
                          dax::Id numPoints,
                          dax::Id numCells)
 {
-  dax::Id computedNumPoints = dax::exec::internal::numberOfPoints(gridstruct);
+  dax::Id computedNumPoints = gridstruct.GetNumberOfPoints();
   DAX_TEST_ASSERT(computedNumPoints == numPoints,
                   "Structured grid returned wrong number of points");
 
-  dax::Id computedNumCells = dax::exec::internal::numberOfCells(gridstruct);
+  dax::Id computedNumCells = gridstruct.GetNumberOfCells();
   DAX_TEST_ASSERT(computedNumCells == numCells,
                   "Structured grid return wrong number of cells");
 }
@@ -61,59 +61,43 @@ static void TestUnstructuredGrid()
 
   typedef dax::exec::internal::ArrayPortalFromIterators<
       std::vector<dax::Id>::iterator> ConnectionsPortal;
+  typedef dax::exec::internal::TopologyUnstructured<
+      dax::CellTagHexahedron,ConnectionsPortal> GridType;
 
   {
-    dax::exec::internal::TopologyUnstructured<
-        dax::exec::CellHexahedron,ConnectionsPortal> ugrid;
+    GridType ugrid;
     TestGridSize(ugrid,0,0);
   }
 
+  // Use the TestTopology generator to create a non-trival unstructured grid.
+  dax::exec::internal::TestTopology<GridType> generator;
+  TestGridSize(generator.GetTopology(),
+               generator.GetNumberOfPoints(),
+               generator.GetNumberOfCells());
+}
 
-  //to simplify the process of creating a hexahedron unstrucutured
-  //grid I am going to copy the ids and points from a uniform grid.
-  dax::exec::internal::TopologyUniform uniform;
-  uniform.Origin = dax::make_Vector3(0.0, 0.0, 0.0);
-  uniform.Spacing = dax::make_Vector3(1.0, 1.0, 0.0);
+struct TestTopologyFunctor {
+  template<class TopologyType>
+  void operator()(
+      const dax::exec::internal::TestTopology<TopologyType> &generator)
+  {
+    TestGridSize(generator.GetTopology(),
+                 generator.GetNumberOfPoints(),
+                 generator.GetNumberOfCells());
+  }
+};
 
-  //make the grid only contain 8 cells
-  uniform.Extent.Min = dax::make_Id3(0, 0, 0);
-  uniform.Extent.Max = dax::make_Id3(2, 2, 1);
-  TestGridSize(uniform,18,4);
-
-  //copy the point info over to the unstructured grid
-  std::vector<dax::Vector3> points;
-  dax::Id numPoints = dax::exec::internal::numberOfPoints(uniform);
-  for(dax::Id i=0; i < numPoints; ++i)
-    {
-    points.push_back(dax::exec::internal::pointCoordiantes(uniform,i));
-    }
-
-  //copy the cell connection information over
-  std::vector<dax::Id> connections;
-  dax::Id numCells = dax::exec::internal::numberOfCells(uniform);
-  for(dax::Id i=0; i < numCells; ++i)
-    {
-    dax::exec::CellVoxel vox(uniform,i);
-    for(dax::Id j=0; j < vox.GetNumberOfPoints(); ++j)
-      {
-      connections.push_back(vox.GetPointIndex(j));
-      }
-    }
-
-  ConnectionsPortal connectPortal(connections.begin(), connections.end());
-
-  dax::exec::internal::TopologyUnstructured<
-      dax::exec::CellHexahedron,ConnectionsPortal> ugrid(connectPortal,
-                                                         numPoints,
-                                                         numCells);
-
-  TestGridSize(ugrid,18,4);
+static void TestAllGrids()
+{
+  std::cout << "Pedantic test of all grid types." << std::endl;
+  dax::exec::internal::TryAllTopologyTypes(TestTopologyFunctor());
 }
 
 static void TestGridSizes()
 {
   TestUniformGrid();
   TestUnstructuredGrid();
+  TestAllGrids();
 }
 
 }

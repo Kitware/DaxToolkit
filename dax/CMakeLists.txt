@@ -17,6 +17,8 @@
 include_directories(${Boost_INCLUDE_DIRS})
 
 set(headers
+  CellTag.h
+  CellTraits.h
   Extent.h
   Functional.h
   Types.h
@@ -61,7 +63,11 @@ if (DAX_ENABLE_OPENMP)
   add_subdirectory(openmp)
 endif (DAX_ENABLE_OPENMP)
 
-add_subdirectory(worklets)
+if (DAX_ENABLE_TBB)
+  add_subdirectory(tbb)
+endif (DAX_ENABLE_TBB)
+
+add_subdirectory(worklet)
 
 add_subdirectory(testing)
 

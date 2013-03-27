@@ -20,18 +20,15 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ArrayPortal.h>
 #include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/internal/GridTags.h>
 #include <dax/cont/IteratorFromArrayPortal.h>
 
-#include <dax/exec/CellVoxel.h>
+#include <dax/CellTag.h>
 
 #include <dax/exec/internal/TopologyUniform.h>
 
 namespace dax {
 namespace cont {
-
-/// A tag you can use to identify when a grid is a uniform grid.
-///
-struct UniformGridTag {  };
 
 namespace detail {
 
@@ -49,21 +46,24 @@ public:
   ArrayPortalFromUniformGridPointCoordinates(dax::Vector3 origin,
                                              dax::Vector3 spacing,
                                              dax::Extent3 extent)
-    : Origin(origin), Spacing(spacing), Extent(extent) {  }
+  {
+    this->Offset = origin + spacing;
+    this->Extent = extent;
+
+    const dax::Id3 dims = dax::extentDimensions(extent);
+    this->NumberOfValues = dims[0]*dims[1]*dims[2];
+  }
 
   DAX_EXEC_CONT_EXPORT
-  dax::Id GetNumberOfValues() const {
-    dax::Id3 dims = dax::extentDimensions(this->Extent);
-    return dims[0]*dims[1]*dims[2];
-  }
+  dax::Id GetNumberOfValues() const { return this->NumberOfValues; }
 
   DAX_EXEC_CONT_EXPORT
   ValueType Get(dax::Id index) const {
     dax::Id3 location = dax::flatIndexToIndex3(index, this->Extent);
-    return dax::make_Vector3(
-          this->Origin[0] + this->Spacing[0]*location[0],
-          this->Origin[1] + this->Spacing[1]*location[1],
-          this->Origin[2] + this->Spacing[2]*location[2]);
+    return dax::Vector3(
+          this->Offset[0] * location[0],
+          this->Offset[1] * location[1],
+          this->Offset[2] * location[2]);
   }
 
   DAX_CONT_EXPORT
@@ -77,9 +77,9 @@ public:
   }
 
 private:
-  dax::Vector3 Origin;
-  dax::Vector3 Spacing;
+  dax::Vector3 Offset;
   dax::Extent3 Extent;
+  dax::Id NumberOfValues;
 };
 
 } // namespace detail
@@ -92,8 +92,8 @@ template <class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class UniformGrid
 {
 public:
-  typedef dax::exec::CellVoxel CellType;
-  typedef UniformGridTag GridTypeTag;
+  typedef dax::CellTagVoxel CellTag;
+  typedef dax::cont::internal::UniformGridTag GridTypeTag;
 
   DAX_CONT_EXPORT
   UniformGrid()
@@ -142,8 +142,7 @@ public:
   ///
   DAX_CONT_EXPORT
   dax::Id GetNumberOfCells() const {
-    dax::Id3 dims = dax::extentDimensions(this->GetExtent())
-                    - dax::make_Id3(1, 1, 1);
+    dax::Id3 dims = dax::extentCellDimensions(this->GetExtent());
     return dims[0]*dims[1]*dims[2];
   }
 
@@ -195,7 +194,7 @@ public:
 
   typedef dax::cont::ArrayHandle<
       dax::Vector3,
-      dax::cont::ArrayContainerControlImplicit<
+      dax::cont::ArrayContainerControlTagImplicit<
           detail::ArrayPortalFromUniformGridPointCoordinates>,
       DeviceAdapterTag> PointCoordinatesType;
 

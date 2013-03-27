@@ -42,6 +42,7 @@ include(CMake/DaxCompilerExtras.cmake)
 # Configurable Options
 option(DAX_ENABLE_CUDA "Enable Cuda support" ON)
 option(DAX_ENABLE_OPENMP "Enable OpenMP support" ON)
+option(DAX_ENABLE_TBB "Enable TBB support" OFF)
 option(DAX_ENABLE_TESTING "Enable DAX Testing" ON)
 option(DAX_ENABLE_DOXYGEN
   "Enable DAX Documentation Generation (Needs Doxygen)" OFF)
@@ -68,6 +69,26 @@ endif()
 if (DAX_ENABLE_DOXYGEN)
   add_subdirectory(Doxygen)
 endif()
+
+#-----------------------------------------------------------------------------
+# setup timing libs we need to link too
+set(DAX_TIMING_LIBS)
+if(UNIX AND NOT APPLE)
+  set(DAX_TIMING_LIBS rt)
+endif()
+
+#-----------------------------------------------------------------------------
+# Set up devices selected.
+dax_configure_device(Serial)
+if (DAX_ENABLE_CUDA)
+  dax_configure_device(Cuda)
+endif (DAX_ENABLE_CUDA)
+if (DAX_ENABLE_OPENMP)
+  dax_configure_device(OpenMP)
+endif (DAX_ENABLE_OPENMP)
+if (DAX_ENABLE_TBB)
+  dax_configure_device(TBB)
+endif (DAX_ENABLE_TBB)
 
 #-----------------------------------------------------------------------------
 
@@ -124,14 +145,8 @@ if (NOT DAX_DISABLE_KITS)
 
   # List of Boost features used:
   # * Smart Ptr
-  # * program options
-  # * timer
-  find_package(Boost ${Dax_REQUIRED_BOOST_VERSION} REQUIRED
-    COMPONENTS
-      program_options # only needed for the testing executables
-      timer # only needed for the testing executables
-      system # only need for timer for testing executables
-  )
+  # * Meta programming language
+  find_package(Boost ${Dax_REQUIRED_BOOST_VERSION} REQUIRED)
 
 #-----------------------------------------------------------------------------
 # Add subdirectories
@@ -186,7 +201,10 @@ install(FILES ${Dax_SOURCE_DIR}/LICENSE.txt
   )
 
 # Install helper configure files.
-install(FILES ${Dax_SOURCE_DIR}/CMake/FindThrust.cmake
+install(
+  FILES
+    ${Dax_SOURCE_DIR}/CMake/FindTBB.cmake
+    ${Dax_SOURCE_DIR}/CMake/FindThrust.cmake
   DESTINATION ${Dax_INSTALL_CMAKE_MODULE_DIR}
   )
 install(
@@ -194,6 +212,7 @@ install(
     ${Dax_SOURCE_DIR}/CMake/UseDaxSerial.cmake
     ${Dax_SOURCE_DIR}/CMake/UseDaxOpenMP.cmake
     ${Dax_SOURCE_DIR}/CMake/UseDaxCuda.cmake
+    ${Dax_SOURCE_DIR}/CMake/UseDaxTBB.cmake
   DESTINATION ${Dax_INSTALL_CMAKE_MODULE_DIR}
   )
 

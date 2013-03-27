@@ -15,6 +15,7 @@
 ##=============================================================================
 
 set(unit_tests
+  OpenMPCustomContainer.cxx
   UnitTestDeviceAdapterOpenMP.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

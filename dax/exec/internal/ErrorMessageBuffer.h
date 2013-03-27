@@ -65,7 +65,7 @@ public:
     this->MessageBuffer[this->MessageBufferSize-1] = '\0';
   }
 
-  DAX_EXEC_EXPORT bool IsErrorRaised() const
+  DAX_EXEC_CONT_EXPORT bool IsErrorRaised() const
   {
     if (this->MessageBufferSize > 0)
       {

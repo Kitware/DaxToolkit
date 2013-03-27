@@ -20,6 +20,27 @@
 // with a specific device, which should always set the thrust backend first.
 // The only exception is the header test compiles.  Issue a warning if someone
 // inappropriately includes this file.
+
+#include <dax/internal/Configure.h>
+
+
+#ifdef DAX_ENABLE_THRUST
+
+
+#if THRUST_MAJOR_VERSION == 1 && THRUST_MINOR_VERSION >= 6
+
+#ifndef THRUST_DEVICE_SYSTEM
+#ifdef DAX_TEST_HEADER_BUILD
+// I wonder if this will cause problems with non-OpenMP compliant compilers.
+#define THRUST_DEVICE_SYSTEM THRUST_DEVICE_SYSTEM_OMP
+#else // DAX_TEST_HEADER_BUILD
+#error Inappropriate use of thrust headers.
+#endif // DAX_TEST_HEADER_BUILD
+#endif // defined(THRUST_DEVICE_SYSTEM)
+
+
+#else //THRUST_MAJOR_VERSION == 1 && THRUST_MINOR_VERSION >= 6
+
 #ifndef THRUST_DEVICE_BACKEND
 #ifdef DAX_TEST_HEADER_BUILD
 // I wonder if this will cause problems with non-OpenMP compliant compilers.
@@ -28,5 +49,13 @@
 #error Inappropriate use of thrust headers.
 #endif // DAX_TEST_HEADER_BUILD
 #endif // defined(THRUST_DEVICE_BACKEND)
+
+
+#endif //THRUST_MAJOR_VERSION == 1 && THRUST_MINOR_VERSION >= 6
+
+
+
+#endif //DAX_ENABLE_THRUST
+
 
 #endif // __dax_thrust_cont_internal_CheckThrustBackend_h

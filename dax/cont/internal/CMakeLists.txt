@@ -20,13 +20,15 @@ set(headers
   ArrayManagerExecutionSerial.h
   ArrayManagerExecutionShareWithControl.h
   ArrayPortalShrink.h
+  ArrayTransfer.h
+  Bindings.h
   DeviceAdapterAlgorithm.h
+  DeviceAdapterAlgorithmGeneral.h
   DeviceAdapterAlgorithmSerial.h
   DeviceAdapterError.h
   DeviceAdapterTag.h
   DeviceAdapterTagSerial.h
-  ScheduleGenerateTopology.h
-  ScheduleMapAdapter.h
+  FindBinding.h
   )
 
 dax_declare_headers(${headers})
