@@ -53,25 +53,17 @@ struct TestMagnitudeWorklet
                    magnitudeHandle);
 
   std::cout << "Checking result" << std::endl;
-  std::vector<dax::Scalar> magnitude(grid->GetNumberOfPoints());
+  dax::Id numPoints = grid->GetNumberOfPoints();
+  std::vector<dax::Scalar> magnitude(numPoints);
   magnitudeHandle.CopyInto(magnitude.begin());
-  dax::Id3 ijk;
-  for (ijk[2] = 0; ijk[2] < DIM; ijk[2]++)
+  for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
     {
-    for (ijk[1] = 0; ijk[1] < DIM; ijk[1]++)
-      {
-      for (ijk[0] = 0; ijk[0] < DIM; ijk[0]++)
-        {
-        dax::Id pointIndex = grid->ComputePointIndex(ijk);
-        dax::Scalar magnitudeValue = magnitude[pointIndex];
-        dax::Vector3 pointCoordinates =grid->ComputePointCoordinates(pointIndex);
-        // Wrong, but what is currently computed.
-        dax::Scalar magnitudeExpected =
-            sqrt(dax::dot(pointCoordinates, pointCoordinates));
-        DAX_TEST_ASSERT(test_equal(magnitudeValue, magnitudeExpected),
-                        "Got bad magnitude.");
-        }
-      }
+    dax::Scalar magnitudeValue = magnitude[pointIndex];
+    dax::Vector3 pointCoordinates = grid.GetPointCoordinates(pointIndex);
+    dax::Scalar magnitudeExpected =
+        sqrt(dax::dot(pointCoordinates, pointCoordinates));
+    DAX_TEST_ASSERT(test_equal(magnitudeValue, magnitudeExpected),
+                    "Got bad magnitude.");
     }
   }
 };
@@ -79,8 +71,7 @@ struct TestMagnitudeWorklet
 //-----------------------------------------------------------------------------
 void TestMagnitude()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestMagnitudeWorklet(),
-                     dax::cont::internal::GridTesting::TypeCheckUniformGrid());
+  dax::cont::internal::GridTesting::TryAllGridTypes(TestMagnitudeWorklet());
   }
 
 
