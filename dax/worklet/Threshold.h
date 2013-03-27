@@ -27,8 +27,7 @@
 namespace dax {
 namespace worklet {
 
-template<typename T>
-
+template<typename T, typename Dimensionality>
 struct ThresholdFunction {
   const T Min;
   const T Max;
@@ -38,10 +37,31 @@ struct ThresholdFunction {
     Min(min),Max(max),valid(1)
     {
     }
-
   DAX_EXEC_EXPORT void operator()(T value)
   {
-    valid &= value >= this->Min && value <= this->Max;
+    valid &= value >= Min && value <= Max;
+  }
+};
+
+
+template<typename T>
+struct ThresholdFunction<T,dax::TypeTraitsVectorTag> {
+  const T Min;
+  const T Max;
+  int valid;
+  enum{TSIZE=dax::VectorTraits<T>::NUM_COMPONENTS};
+
+  DAX_EXEC_EXPORT ThresholdFunction(const T& min, const T&max):
+    Min(min),Max(max),valid(1)
+    {
+    }
+  DAX_EXEC_EXPORT void operator()(T value)
+  {
+    //make sure each component matches, since T is a vector
+    for(dax::Id i=0; i < TSIZE; ++i)
+      {
+      valid &= value[i] >= Min[i] && value[i] <= Max[i];
+      }
   }
 };
 
@@ -64,8 +84,9 @@ public:
   dax::Id operator()(
       const dax::exec::CellField<ValueType,CellTag> &values) const
   {
-    ThresholdFunction<ValueType> threshold(this->ThresholdMin,
-                                           this->ThresholdMax);
+    typedef typename dax::TypeTraits<ValueType>::DimensionalityTag Dimensionality;
+    ThresholdFunction<ValueType,Dimensionality> threshold(this->ThresholdMin,
+                                                          this->ThresholdMax);
     dax::exec::VectorForEach(values, threshold);
     return threshold.valid;
   }
