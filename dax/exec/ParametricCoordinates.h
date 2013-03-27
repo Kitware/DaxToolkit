@@ -97,7 +97,7 @@ template<>
 struct ParametricCoordinates<dax::CellTagWedge>
 {
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
-    return dax::make_Vector3(1.0/3.0, 1.0/3.0, 0.5);
+    return dax::make_Vector3(1.0f/3.0f, 1.0f/3.0f, 0.5f);
   }
   DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 6> Vertex() {
     const dax::Vector3 cellToParametricCoords[6] = {
@@ -116,7 +116,7 @@ template<>
 struct ParametricCoordinates<dax::CellTagTriangle>
 {
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
-    return dax::make_Vector3(1.0/3.0, 1.0/3.0, 0.0);
+    return dax::make_Vector3(1.0f/3.0f, 1.0f/3.0f, 0.0f);
   }
   DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 3> Vertex() {
     const dax::Vector3 cellVertexToParametricCoords[3] = {

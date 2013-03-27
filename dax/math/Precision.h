@@ -233,8 +233,10 @@ DAX_EXEC_CONT_EXPORT T remainder_template(T numerator, T denominator)
   for (int component = 0; component < Traits::NUM_COMPONENTS; component++)
     {
 #ifdef DAX_USE_WIN_MATH
-    int quotient = boost::math::round(Traits::GetComponent(numerator, component)/
-                                      Traits::GetComponent(denominator, component));
+    const int quotient = static_cast<int>(boost::math::round(
+        Traits::GetComponent(numerator, component) /
+        Traits::GetComponent(denominator, component)));
+
     const dax::Scalar rem = Traits::GetComponent(numerator, component) - 
                             (quotient * Traits::GetComponent(denominator, component));
 
@@ -287,7 +289,9 @@ DAX_EXEC_CONT_EXPORT T remquo_template(T numerator, T denominator, T &quotient)
     {
     int iQuotient;
 #ifdef DAX_USE_WIN_MATH
-    iQuotient = boost::math::round(Traits::GetComponent(numerator, component) / Traits::GetComponent(denominator, component));
+    iQuotient = static_cast<int>(boost::math::round(
+      Traits::GetComponent(numerator, component) /
+      Traits::GetComponent(denominator, component)) );
     
     Traits::SetComponent(result,
                          component,
@@ -318,7 +322,7 @@ DAX_EXEC_CONT_EXPORT dax::Scalar RemainderQuotient(dax::Scalar numerator,
                                               int &quotient)
 {
 #ifdef DAX_USE_WIN_MATH
-  quotient = boost::math::round(numerator/denominator);
+  quotient = static_cast<int>(boost::math::round(numerator/denominator));
   return dax::math::Remainder(numerator,denominator);
 #else
   return DAX_SYS_MATH_FUNCTION(remquo)(numerator, denominator, &quotient);

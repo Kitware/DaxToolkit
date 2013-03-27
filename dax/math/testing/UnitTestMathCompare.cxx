@@ -100,8 +100,8 @@ void TestCompFunctor(VectorType x, VectorType y,
 
 
 static const dax::Id MAX_VECTOR_SIZE = 4;
-static const dax::Scalar VectorInitX[MAX_VECTOR_SIZE] = { -4, -1, 2, 0.0 };
-static const dax::Scalar VectorInitY[MAX_VECTOR_SIZE] = { 7, -6, 5, -0.001 };
+static const dax::Scalar VectorInitX[MAX_VECTOR_SIZE] = { -4, -1, 2, 0.0f };
+static const dax::Scalar VectorInitY[MAX_VECTOR_SIZE] = { 7, -6, 5, -0.001f };
 
 struct TestCompareFunctor
 {

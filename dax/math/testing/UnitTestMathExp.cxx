@@ -102,7 +102,7 @@ void CbrtTest()
   std::cout << "  Testing Cbrt "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
-  RaiseToTest<VectorType>(CbrtFunctor<VectorType>(), 1.0/3.0);
+  RaiseToTest<VectorType>(CbrtFunctor<VectorType>(), 1.0f/3.0f);
 }
 
 template<class VectorType> struct RCbrtFunctor {
@@ -114,7 +114,7 @@ void RCbrtTest()
   std::cout << "  Testing RCbrt "
             << dax::VectorTraits<VectorType>::NUM_COMPONENTS << " components"
             << std::endl;
-  RaiseToTest<VectorType>(RCbrtFunctor<VectorType>(), -1.0/3.0);
+  RaiseToTest<VectorType>(RCbrtFunctor<VectorType>(), -1.0f/3.0f);
 }
 
 //-----------------------------------------------------------------------------
