@@ -280,7 +280,6 @@ public:
   DAX_EXEC_CONT_EXPORT Tuple(){}
   DAX_EXEC_CONT_EXPORT explicit Tuple(const ComponentType& value)
     {
-    #pragma unroll
     for(int i=0; i < NUM_COMPONENTS;++i)
       {
       this->Components[i]=value;
@@ -288,7 +287,6 @@ public:
     }
   DAX_EXEC_CONT_EXPORT explicit Tuple(const ComponentType* values)
     {
-    #pragma unroll
     for(int i=0; i < NUM_COMPONENTS;++i)
       {
       this->Components[i]=values[i];
@@ -297,7 +295,6 @@ public:
   DAX_EXEC_CONT_EXPORT
   Tuple(const Tuple<ComponentType, Size> &src)
   {
-    #pragma unroll
     for (int i = 0; i < NUM_COMPONENTS; i++)
       {
       this->Components[i] = src[i];
@@ -307,7 +304,6 @@ public:
   DAX_EXEC_CONT_EXPORT
   Tuple<ComponentType, Size> &operator=(const Tuple<ComponentType, Size> &src)
   {
-    #pragma unroll
     for (int i = 0; i < NUM_COMPONENTS; i++)
       {
       this->Components[i] = src[i];
@@ -326,7 +322,6 @@ public:
   bool operator==(const Tuple<T,NUM_COMPONENTS> &other) const
   {
     bool same = true;
-    #pragma unroll
     for (int componentIndex=0; componentIndex<NUM_COMPONENTS; componentIndex++)
       {
       same &= (this->Components[componentIndex] == other[componentIndex]);
@@ -337,7 +332,6 @@ public:
   bool operator!=(const Tuple<T,NUM_COMPONENTS> &other) const
   {
     bool same = true;
-    #pragma unroll
     for (int componentIndex=0; componentIndex<NUM_COMPONENTS; componentIndex++)
       {
       same &= (this->Components[componentIndex] != other[componentIndex]);
@@ -570,7 +564,6 @@ DAX_EXEC_CONT_EXPORT T dot(const dax::Tuple<T,Size> &a,
                            const dax::Tuple<T,Size> &b)
 {
   T result = a[0]*b[0];
-  #pragma unroll
   for (int componentIndex = 1; componentIndex < Size; componentIndex++)
     {
     result += a[componentIndex]*b[componentIndex];
@@ -595,7 +588,6 @@ DAX_EXEC_CONT_EXPORT dax::Tuple<T,Size> operator+(const dax::Tuple<T,Size> &a,
                                                   const dax::Tuple<T,Size> &b)
 {
   dax::Tuple<T,Size> result;
-  #pragma unroll
   for (int componentIndex = 0; componentIndex < Size; componentIndex++)
     {
     result[componentIndex] = a[componentIndex] + b[componentIndex];
@@ -607,7 +599,6 @@ DAX_EXEC_CONT_EXPORT dax::Tuple<T,Size> operator-(const dax::Tuple<T,Size> &a,
                                                   const dax::Tuple<T,Size> &b)
 {
   dax::Tuple<T,Size> result;
-  #pragma unroll
   for (int componentIndex = 0; componentIndex < Size; componentIndex++)
     {
     result[componentIndex] = a[componentIndex] - b[componentIndex];
@@ -619,7 +610,6 @@ DAX_EXEC_CONT_EXPORT dax::Tuple<T,Size> operator*(const dax::Tuple<T,Size> &a,
                                                   const dax::Tuple<T,Size> &b)
 {
   dax::Tuple<T,Size> result;
-  #pragma unroll
   for (int componentIndex = 0; componentIndex < Size; componentIndex++)
     {
     result[componentIndex] = a[componentIndex] * b[componentIndex];
@@ -631,7 +621,6 @@ DAX_EXEC_CONT_EXPORT dax::Tuple<T,Size> operator/(const dax::Tuple<T,Size> &a,
                                                   const dax::Tuple<T,Size> &b)
 {
   dax::Tuple<T,Size> result;
-  #pragma unroll
   for (int componentIndex = 0; componentIndex < Size; componentIndex++)
     {
     result[componentIndex] = a[componentIndex] / b[componentIndex];
@@ -644,7 +633,6 @@ DAX_EXEC_CONT_EXPORT dax::Tuple<Ta,Size> operator*(const dax::Tuple<Ta,Size> &a,
                                                    const Tb &b)
 {
   dax::Tuple<Ta,Size> result;
-  #pragma unroll
   for (int componentIndex = 0; componentIndex < Size; componentIndex++)
     {
     result[componentIndex] = a[componentIndex] * b;
@@ -656,7 +644,6 @@ DAX_EXEC_CONT_EXPORT dax::Tuple<Tb,Size> operator*(const Ta &a,
                                                    const dax::Tuple<Tb,Size> &b)
 {
   dax::Tuple<Tb,Size> result;
-  #pragma unroll
   for (int componentIndex = 0; componentIndex < Size; componentIndex++)
     {
     result[componentIndex] = a * b[componentIndex];

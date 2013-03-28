@@ -693,51 +693,49 @@ private:
   }
 };
 
-template<class FunctionType>
-void TryAllTopologyTypes(FunctionType function)
+namespace detail {
+
+template<class DerivedFunctorType>
+struct TryAllTopologyTypesFunctor
 {
   typedef dax::exec::internal::ArrayPortalFromIterators<
       std::vector<dax::Id>::iterator> ConnectionPortal;
 
-  std::cout << "--- dax::CellTagVertex" << std::endl;
-  TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::CellTagVertex,ConnectionPortal> > vertexTopology;
-  function(vertexTopology);
+  TryAllTopologyTypesFunctor(const DerivedFunctorType &functor)
+    : Functor(functor) {  }
 
-  std::cout << "--- dax::CellTagLine" << std::endl;
-  TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::CellTagLine,ConnectionPortal> > lineTopology;
-  function(lineTopology);
+  template<class CellTag>
+  void operator()(CellTag)
+  {
+    this->CallFunctor(CellTag(), typename dax::CellTraits<CellTag>::GridTag());
+  }
 
-  std::cout << "--- dax::CellTagTriangle" << std::endl;
-  TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::CellTagTriangle,ConnectionPortal> > triangleTopology;
-  function(triangleTopology);
+private:
+  DerivedFunctorType Functor;
+  template<class CellTag>
+  void CallFunctor(CellTag, GridTagUniform)
+  {
+    // This will probably have to change if we support 2D uniform grids.
+    TestTopology<dax::exec::internal::TopologyUniform> topology;
+    this->Functor(topology);
+  }
+  template<class CellTag>
+  void CallFunctor(CellTag, GridTagUnstructured)
+  {
+    TestTopology<
+        dax::exec::internal::TopologyUnstructured<CellTag,ConnectionPortal> >
+        topology;
+    this->Functor(topology);
+  }
+};
 
-  std::cout << "--- dax::CellTagQuadrilateral" << std::endl;
-  TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::CellTagQuadrilateral,ConnectionPortal> >
-      quadrilateralTopology;
-  function(quadrilateralTopology);
+} // namespace detail
 
-  std::cout << "--- dax::CellTagVoxel" << std::endl;
-  TestTopology<dax::exec::internal::TopologyUniform> voxelTopology;
-  function(voxelTopology);
-
-  std::cout << "--- dax::CellTagHexahedron" << std::endl;
-  TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::CellTagHexahedron,ConnectionPortal> > hexahedronTopology;
-  function(hexahedronTopology);
-
-  std::cout << "--- dax::CellTagTetrahedron" << std::endl;
-  TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::CellTagTetrahedron,ConnectionPortal> > tetrahedronTopology;
-  function(tetrahedronTopology);
-
-  std::cout << "--- dax::CellTagWedge" << std::endl;
-  TestTopology<dax::exec::internal::TopologyUnstructured
-      <dax::CellTagWedge,ConnectionPortal> > wedgeTopology;
-  function(wedgeTopology);
+template<class FunctionType>
+void TryAllTopologyTypes(FunctionType function)
+{
+  dax::internal::Testing::TryAllCells(
+        detail::TryAllTopologyTypesFunctor<FunctionType>(function));
 }
 
 }

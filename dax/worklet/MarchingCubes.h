@@ -18,6 +18,7 @@
 #define __MarchingCubes_worklet_
 
 #include <dax/CellTag.h>
+#include <dax/CellTraits.h>
 #include <dax/exec/CellField.h>
 #include <dax/exec/CellVertices.h>
 #include <dax/exec/InterpolatedCellPoints.h>
@@ -32,7 +33,7 @@ namespace worklet {
 // -----------------------------------------------------------------------------
 template<typename T, typename U>
 DAX_EXEC_EXPORT
-int GetVoxelClassification(const T isoValue, const U& values )
+int GetHexahedronClassification(const T isoValue, const U& values )
 {
   return ((values[0] > isoValue) << 0 |
           (values[1] > isoValue) << 1 |
@@ -54,16 +55,29 @@ public:
   DAX_CONT_EXPORT MarchingCubesClassify(dax::Scalar isoValue)
     : IsoValue(isoValue) {  }
 
-  template<class InputCellTag>
+  template<class CellTag>
   DAX_EXEC_EXPORT
   dax::Id operator()(
-      const dax::exec::CellField<dax::Scalar,InputCellTag> &values) const
+      const dax::exec::CellField<dax::Scalar,CellTag> &values) const
   {
-    const int voxelClass = GetVoxelClassification(IsoValue,values);
-    return dax::worklet::internal::marchingcubes::NumFaces[voxelClass];
+    // If you get a compile error on the following line, it means that this
+    // worklet was used with an improper cell type.  Check the cell type for the
+    // input grid given in the control environment.
+    return this->GetNumFaces(
+          values,
+          typename dax::CellTraits<CellTag>::CanonicalCellTag());
   }
 private:
   dax::Scalar IsoValue;
+
+  template<class CellTag>
+  DAX_EXEC_EXPORT
+  dax::Id GetNumFaces(const dax::exec::CellField<dax::Scalar,CellTag> &values,
+                      dax::CellTagHexahedron) const
+  {
+    const int voxelClass = GetHexahedronClassification(IsoValue,values);
+    return dax::worklet::internal::marchingcubes::NumFaces[voxelClass];
+  }
 };
 
 
@@ -78,13 +92,34 @@ public:
   DAX_CONT_EXPORT MarchingCubesTopology(dax::Scalar isoValue)
     : IsoValue(isoValue){ }
 
-
-  template<class InputCellTag, class OutputCellTag >
+  template<class CellTag>
   DAX_EXEC_EXPORT void operator()(
-      const dax::exec::CellVertices<InputCellTag>& verts,
-      dax::exec::InterpolatedCellPoints<OutputCellTag>& outCell,
-      const dax::exec::CellField<dax::Scalar,InputCellTag> &values,
+      const dax::exec::CellVertices<CellTag>& verts,
+      dax::exec::InterpolatedCellPoints<dax::CellTagTriangle>& outCell,
+      const dax::exec::CellField<dax::Scalar,CellTag> &values,
       dax::Id inputCellVisitIndex) const
+  {
+    // If you get a compile error on the following line, it means that this
+    // worklet was used with an improper cell type.  Check the cell type for the
+    // input grid given in the control environment.
+    this->BuildTriangle(
+          verts,
+          outCell,
+          values,
+          inputCellVisitIndex,
+          typename dax::CellTraits<CellTag>::CanonicalCellTag());
+  }
+
+private:
+  dax::Scalar IsoValue;
+
+  template<class CellTag>
+  DAX_EXEC_EXPORT void BuildTriangle(
+      const dax::exec::CellVertices<CellTag>& verts,
+      dax::exec::InterpolatedCellPoints<dax::CellTagTriangle>& outCell,
+      const dax::exec::CellField<dax::Scalar,CellTag> &values,
+      dax::Id inputCellVisitIndex,
+      dax::CellTagHexahedron) const
   {
     using dax::worklet::internal::marchingcubes::TriTable;
     // These should probably be available through the voxel class
@@ -94,7 +129,7 @@ public:
         {0,4}, {1,5}, {2,6}, {3,7},
       };
 
-    const int voxelClass = GetVoxelClassification(IsoValue, values);
+    const int voxelClass = GetHexahedronClassification(IsoValue, values);
 
     //save the point ids and ratio to interpolate the points of the new cell
     for (dax::Id outVertIndex = 0;
@@ -115,9 +150,6 @@ public:
                                     weight);
       }
   }
-
-private:
-  dax::Scalar IsoValue;
 };
 }
 } //dax::worklet

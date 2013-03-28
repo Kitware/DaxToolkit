@@ -114,7 +114,6 @@ template<typename Dimensionality,int Size> struct sort_greater {
   template<typename T>
   DAX_EXEC_CONT_EXPORT bool operator()(const T& a, const T& b) const
   {
-    #pragma unroll
     for(dax::Id i=0; i < Size; ++i)
     {
     //ignore equals as that represents check next value
@@ -195,7 +194,6 @@ template<typename Dimensionality,int Size> struct sort_less {
   template<typename T>
   DAX_EXEC_CONT_EXPORT bool operator()(const T& a, const T& b) const
   {
-    #pragma unroll
     for(dax::Id i=0; i < Size; ++i)
     {
     //ignore equals as that represents check next value

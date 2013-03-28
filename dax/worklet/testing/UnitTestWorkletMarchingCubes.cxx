@@ -56,16 +56,16 @@ struct TestMarchingCubesWorklet
 
   typedef dax::CellTagTriangle CellType;
 
-  typedef dax::cont::UniformGrid<DeviceAdapter> UniformGridType;
   typedef dax::cont::UnstructuredGrid<
       CellType,ArrayContainer,ArrayContainer,DeviceAdapter>
       UnstructuredGridType;
 
   //----------------------------------------------------------------------------
   //----------------------------------------------------------------------------
-  void operator()(const UniformGridType&) const
+  template<class InputGridType>
+  void operator()(const InputGridType&) const
     {
-    dax::cont::internal::TestGrid<UniformGridType,ArrayContainer,DeviceAdapter>
+    dax::cont::internal::TestGrid<InputGridType,ArrayContainer,DeviceAdapter>
         inGrid(DIM);
     UnstructuredGridType outGrid;
 
@@ -157,7 +157,7 @@ void TestMarchingCubes()
   {
   dax::cont::internal::GridTesting::TryAllGridTypes(
         TestMarchingCubesWorklet(),
-        dax::cont::internal::GridTesting::TypeCheckUniformGrid(),
+        dax::internal::Testing::CellCheckHexahedron(),
         dax::cont::ArrayContainerControlTagBasic(),
         dax::cont::DeviceAdapterTagSerial());
   }
