@@ -106,7 +106,7 @@ void ExecResources()
              dax::cont::scheduling::CreateExecutionResources(count));
 
 
-  for (int i=0; i < VECTOR_LENGTH; ++i)
+  for (dax::Id i=0; i < VECTOR_LENGTH; ++i)
     {
     DAX_TEST_ASSERT(  (bindings.Get<1>().GetExecArg()(i,Worklet1()) ==
                       static_cast<dax::Scalar>(i)),

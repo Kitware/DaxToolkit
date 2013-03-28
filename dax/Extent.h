@@ -26,7 +26,10 @@ struct Extent3 {
   Id3 Min;
   Id3 Max;
 
-  DAX_EXEC_CONT_EXPORT Extent3() : Min(0), Max(0) {}
+  DAX_EXEC_CONT_EXPORT Extent3() :
+    Min( dax::make_Id3(0,0,0)),
+    Max( dax::make_Id3(0,0,0))
+    {}
 
   DAX_EXEC_CONT_EXPORT Extent3( const dax::Id3& min, const dax::Id3& max):
     Min(min),
