@@ -77,7 +77,7 @@ void FieldConstant()
 
 }
 
-dax::Id UnitTestExecutionObject(dax::Id, char *[])
+int UnitTestExecutionObject(int, char *[])
 {
   return dax::cont::internal::Testing::Run(FieldConstant);
 }
