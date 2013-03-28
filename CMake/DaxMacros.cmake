@@ -119,7 +119,7 @@ function(dax_unit_tests)
     if (DAX_UT_CUDA)
       cuda_add_executable(${test_prog} ${TestSources})
     else (DAX_UT_CUDA)
-      add_executable(${test_prog} WIN32 ${TestSources})
+      add_executable(${test_prog} ${TestSources})
       if(DAX_EXTRA_COMPILER_WARNINGS)
         set_target_properties(${test_prog}
           PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS_WARN_EXTRA})
