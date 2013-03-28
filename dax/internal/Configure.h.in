@@ -50,9 +50,13 @@
 #endif
 
 #if defined(_WIN32) && defined(_MSC_VER)
-//if we are on windows with visual studio compiler
-//we want to supress warnings that pragma unroll is unsupported
-#pragma warning( disable : 4068 )
+//if we are on windows with visual studio compiler we have some warnings we
+//need to suppress
+
+# pragma warning( disable : 4068 ) //disable warning that pragma are unsupported
+# pragma warning( disable : 4097 ) //typedef is synonym for class
+# pragma warning( disable : 4127 ) //conditional expression is constant
+# pragma warning( disable : 4521 ) //multiple copy constructors of a single type
 
 #endif
 
