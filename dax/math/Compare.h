@@ -18,7 +18,7 @@
 
 //needed to for proper specialization for dax tuple comparisons
 #include <dax/TypeTraits.h>
-#include <dax/VectorTraits.h>
+
 
 // This header file defines math functions that do comparisons.
 #include <dax/internal/MathSystemFunctions.h>
@@ -31,70 +31,142 @@
 namespace dax {
 namespace math {
 
+//forward declare max function
+template<class T> DAX_EXEC_CONT_EXPORT T Max(const T& x, const T& y);
+
+namespace detail{
+template<class NumericTag, class DimTag> struct max {
+
+  DAX_EXEC_CONT_EXPORT
+  dax::Vector2 operator()(const dax::Vector2& x, const dax::Vector2& y) const
+  { return dax::make_Vector2(dax::math::Max(x[0], y[0]),
+                             dax::math::Max(x[1], y[1])); }
+
+  DAX_EXEC_CONT_EXPORT
+  dax::Vector3 operator()(const dax::Vector3& x, const dax::Vector3& y) const
+  { return dax::make_Vector3(dax::math::Max(x[0], y[0]),
+                             dax::math::Max(x[1], y[1]),
+                             dax::math::Max(x[2], y[2])); }
+
+  DAX_EXEC_CONT_EXPORT
+  dax::Vector4 operator()(const dax::Vector4& x, const dax::Vector4& y) const
+  { return dax::make_Vector4(dax::math::Max(x[0], y[0]),
+                             dax::math::Max(x[1], y[1]),
+                             dax::math::Max(x[2], y[2]),
+                             dax::math::Max(x[3], y[3])); }
+
+  DAX_EXEC_CONT_EXPORT
+  dax::Id3 operator()(const dax::Id3& x, const dax::Id3& y) const
+  { return dax::make_Id3(dax::math::Max(x[0], y[0]),
+                         dax::math::Max(x[1], y[1]),
+                         dax::math::Max(x[2], y[2])); }
+
+  template<class T>
+  DAX_EXEC_CONT_EXPORT T operator()(const T& x, const T& y) const
+  { typedef dax::VectorTraits<T> VTraits;
+    enum{SIZE=VTraits::NUM_COMPONENTS};
+    T result;
+    for(int i=0;i<SIZE;++i)
+      {
+      result[i]=dax::math::Max(x[i],y[i]);
+      }
+    return result;
+    }
+};
+
+template<> struct max<dax::TypeTraitsIntegerTag,dax::TypeTraitsScalarTag> {
+  template<class T>
+  DAX_EXEC_CONT_EXPORT T operator()(const T& x, const T& y) const
+  { return (x < y) ? y : x; }
+};
+
+template<> struct max<dax::TypeTraitsRealTag,dax::TypeTraitsScalarTag> {
+  template<class T>
+  DAX_EXEC_CONT_EXPORT T operator()(const T& x, const T& y) const
+  { return DAX_SYS_MATH_FUNCTION(fmax)(x, y); }
+};
+
+}
+
 
 //-----------------------------------------------------------------------------
 /// Returns \p x or \p y, whichever is larger.
 ///
-DAX_EXEC_CONT_EXPORT dax::Scalar Max(dax::Scalar x, dax::Scalar y)
+template<class T>
+DAX_EXEC_CONT_EXPORT T Max(const T& x, const T& y)
 {
-  return DAX_SYS_MATH_FUNCTION(fmax)(x, y);
+  typedef typename dax::TypeTraits<T> TTraits;
+  return detail::max<typename TTraits::NumericTag,
+                     typename TTraits::DimensionalityTag>()(x,y);
 }
-DAX_EXEC_CONT_EXPORT dax::Vector2 Max(dax::Vector2 x, dax::Vector2 y)
-{
-  return dax::make_Vector2(Max(x[0], y[0]), Max(x[1], y[1]));
-}
-DAX_EXEC_CONT_EXPORT dax::Vector3 Max(dax::Vector3 x, dax::Vector3 y)
-{
-  return dax::make_Vector3(Max(x[0], y[0]), Max(x[1], y[1]), Max(x[2], y[2]));
-}
-DAX_EXEC_CONT_EXPORT dax::Vector4 Max(dax::Vector4 x, dax::Vector4 y)
-{
-  return dax::make_Vector4(Max(x[0], y[0]),
-                           Max(x[1], y[1]),
-                           Max(x[2], y[2]),
-                           Max(x[3], y[3]));
-}
-DAX_EXEC_CONT_EXPORT dax::Id Max(dax::Id x, dax::Id y)
-{
-  return (x < y) ? y : x;
-}
-DAX_EXEC_CONT_EXPORT dax::Id3 Max(dax::Id3 x, dax::Id3 y)
-{
-  return dax::make_Id3(Max(x[0], y[0]), Max(x[1], y[1]), Max(x[2], y[2]));
+
+//forward declare max function
+template<class T> DAX_EXEC_CONT_EXPORT T Min(const T& x, const T& y);
+
+namespace detail{
+template<class NumericTag, class DimTag> struct min {
+
+  DAX_EXEC_CONT_EXPORT
+  dax::Vector2 operator()(const dax::Vector2& x, const dax::Vector2& y) const
+  { return dax::make_Vector2(dax::math::Min(x[0], y[0]),
+                             dax::math::Min(x[1], y[1])); }
+
+  DAX_EXEC_CONT_EXPORT
+  dax::Vector3 operator()(const dax::Vector3& x, const dax::Vector3& y) const
+  { return dax::make_Vector3(dax::math::Min(x[0], y[0]),
+                             dax::math::Min(x[1], y[1]),
+                             dax::math::Min(x[2], y[2])); }
+
+  DAX_EXEC_CONT_EXPORT
+  dax::Vector4 operator()(const dax::Vector4& x, const dax::Vector4& y) const
+  { return dax::make_Vector4(dax::math::Min(x[0], y[0]),
+                             dax::math::Min(x[1], y[1]),
+                             dax::math::Min(x[2], y[2]),
+                             dax::math::Min(x[3], y[3])); }
+
+  DAX_EXEC_CONT_EXPORT
+  dax::Id3 operator()(const dax::Id3& x, const dax::Id3& y) const
+  { return dax::make_Id3(dax::math::Min(x[0], y[0]),
+                         dax::math::Min(x[1], y[1]),
+                         dax::math::Min(x[2], y[2])); }
+
+  template<class T>
+  DAX_EXEC_CONT_EXPORT T operator()(const T& x, const T& y) const
+  { typedef dax::VectorTraits<T> VTraits;
+    enum{SIZE=VTraits::NUM_COMPONENTS};
+    T result;
+    for(int i=0;i<SIZE;++i)
+      {
+      result[i]=dax::math::Min(x[i],y[i]);
+      }
+    return result;
+    }
+};
+
+template<> struct min<dax::TypeTraitsIntegerTag,dax::TypeTraitsScalarTag> {
+  template<class T>
+  DAX_EXEC_CONT_EXPORT T operator()(const T& x, const T& y) const
+  { return (x < y) ? x : y; }
+};
+
+template<> struct min<dax::TypeTraitsRealTag,dax::TypeTraitsScalarTag> {
+  template<class T>
+ DAX_EXEC_CONT_EXPORT T operator()(const T& x, const T& y) const
+  { return DAX_SYS_MATH_FUNCTION(fmin)(x, y); }
+};
+
 }
 
 //-----------------------------------------------------------------------------
 /// Returns \p x or \p y, whichever is smaller.
 ///
-DAX_EXEC_CONT_EXPORT dax::Scalar Min(dax::Scalar x, dax::Scalar y)
+template<class T>
+DAX_EXEC_CONT_EXPORT T Min(const T& x, const T& y)
 {
-  return DAX_SYS_MATH_FUNCTION(fmin)(x, y);
+  typedef typename dax::TypeTraits<T> TTraits;
+  return detail::min<typename TTraits::NumericTag,
+                     typename TTraits::DimensionalityTag>()(x,y);
 }
-DAX_EXEC_CONT_EXPORT dax::Vector2 Min(dax::Vector2 x, dax::Vector2 y)
-{
-  return dax::make_Vector2(Min(x[0], y[0]), Min(x[1], y[1]));
-}
-DAX_EXEC_CONT_EXPORT dax::Vector3 Min(dax::Vector3 x, dax::Vector3 y)
-{
-  return dax::make_Vector3(Min(x[0], y[0]), Min(x[1], y[1]), Min(x[2], y[2]));
-}
-DAX_EXEC_CONT_EXPORT dax::Vector4 Min(dax::Vector4 x, dax::Vector4 y)
-{
-  return dax::make_Vector4(Min(x[0], y[0]),
-                           Min(x[1], y[1]),
-                           Min(x[2], y[2]),
-                           Min(x[3], y[3]));
-}
-DAX_EXEC_CONT_EXPORT dax::Id Min(dax::Id x, dax::Id y)
-{
-  return (x < y) ? x : y;
-}
-DAX_EXEC_CONT_EXPORT dax::Id3 Min(dax::Id3 x, dax::Id3 y)
-{
-  return dax::make_Id3(Min(x[0], y[0]), Min(x[1], y[1]), Min(x[2], y[2]));
-}
-
-
 
 //-----------------------------------------------------------------------------
 namespace detail {
