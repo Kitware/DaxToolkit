@@ -18,7 +18,7 @@
 
 // This header file defines math functions that deal with the sign (positive or
 // negative) of numbers.
-
+#include <dax/TypeTraits.h>
 #include <dax/internal/MathSystemFunctions.h>
 
 #ifndef DAX_CUDA
@@ -37,24 +37,25 @@
 namespace dax {
 namespace math {
 
-//-----------------------------------------------------------------------------
-/// Return the absolute value of \x. That is, return \p x if it is positive or
-/// \p -x if it is negative.
-///
-DAX_EXEC_CONT_EXPORT dax::Scalar Abs(dax::Scalar x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(fabs)>(x);
-}
-DAX_EXEC_CONT_EXPORT dax::Vector2 Abs(dax::Vector2 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(fabs)>(x);
-}
-DAX_EXEC_CONT_EXPORT dax::Vector3 Abs(dax::Vector3 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(fabs)>(x);
-}
-DAX_EXEC_CONT_EXPORT dax::Vector4 Abs(dax::Vector4 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(fabs)>(x);
-}
-DAX_EXEC_CONT_EXPORT dax::Id Abs(dax::Id x)
+//forward declare abs signature so detail can call it
+template<class T> DAX_EXEC_CONT_EXPORT T Abs(const T& x);
+
+namespace detail{
+template<class NumericTag> struct abs {
+  template<class T>
+  DAX_EXEC_CONT_EXPORT
+  T operator()(const T& x) const
+  {
+    return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(fabs)>(x);
+  }
+};
+
+template<> struct abs<dax::TypeTraitsIntegerTag>
 {
+  template<class T>
+  DAX_EXEC_CONT_EXPORT
+  T operator()(const T& x) const
+  {
 #if DAX_SIZE_ID == DAX_SIZE_INT
   return abs(x);
 #elif DAX_SIZE_ID == DAX_SIZE_LONG
@@ -64,10 +65,25 @@ DAX_EXEC_CONT_EXPORT dax::Id Abs(dax::Id x)
 #else
 #error Cannot find correct size for dax::Id.
 #endif
+  }
+
+  DAX_EXEC_CONT_EXPORT
+  dax::Id3 operator()(const dax::Id3& x) const
+  { return dax::make_Id3(Abs(x[0]), Abs(x[1]), Abs(x[2])); }
+};
+
+
 }
-DAX_EXEC_CONT_EXPORT dax::Id3 Abs(dax::Id3 x)
-{
-  return dax::make_Id3(Abs(x[0]), Abs(x[1]), Abs(x[2]));
+
+
+//-----------------------------------------------------------------------------
+/// Return the absolute value of \x. That is, return \p x if it is positive or
+/// \p -x if it is negative.
+///
+template<class T>
+DAX_EXEC_CONT_EXPORT T Abs(const T& x) {
+  typedef typename dax::TypeTraits<T> TTraits;
+  return detail::abs<typename TTraits::NumericTag>()(x);
 }
 
 //-----------------------------------------------------------------------------
