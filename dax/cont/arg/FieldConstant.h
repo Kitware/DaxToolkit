@@ -37,7 +37,7 @@ class ConceptMap<Field(Tags), T, typename boost::enable_if< boost::is_float<T> >
 {
 public:
   //ignore constant values when finding size of domain
-  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Domain>::Tags DomainTags;
+  typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<dax::Scalar> ExecArg;
   explicit ConceptMap(T x): ExecArg_(static_cast<dax::Scalar>(x)) {}
   ExecArg GetExecArg() { return this->ExecArg_; }
@@ -53,7 +53,7 @@ class ConceptMap<Field(Tags), T, typename boost::enable_if< boost::is_integral<T
 {
 public:
   //ignore constant values when finding size of domain
-  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Domain>::Tags DomainTags;
+  typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<T> ExecArg;
   explicit ConceptMap(T x): ExecArg_(x) {}
   ExecArg GetExecArg() { return this->ExecArg_; }
@@ -70,7 +70,7 @@ class ConceptMap<Field(Tags), dax::Tuple<T,SIZE> >
   typedef dax::Tuple<T,SIZE> Type;
 public:
   //ignore constant values when finding size of domain
-  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Domain>::Tags DomainTags;
+  typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<Type> ExecArg;
   explicit ConceptMap(const Type& x): ExecArg_(x) {}
   ExecArg GetExecArg() { return this->ExecArg_; }
@@ -86,7 +86,7 @@ template <typename Tags> class ConceptMap<Field(Tags), dax::Vector2 >
   typedef dax::Vector2 Type;
 public:
   //ignore constant values when finding size of domain
-  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Domain>::Tags DomainTags;
+  typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<Type> ExecArg;
   explicit ConceptMap(const Type& x): ExecArg_(x) {}
   ExecArg GetExecArg() { return this->ExecArg_; }
@@ -102,7 +102,7 @@ template <typename Tags> class ConceptMap<Field(Tags), dax::Vector3 >
   typedef dax::Vector3 Type;
 public:
   //ignore constant values when finding size of domain
-  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Domain>::Tags DomainTags;
+  typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<Type> ExecArg;
   explicit ConceptMap(const Type& x): ExecArg_(x) {}
   ExecArg GetExecArg() { return this->ExecArg_; }
@@ -118,7 +118,7 @@ template <typename Tags> class ConceptMap<Field(Tags), dax::Vector4 >
   typedef dax::Vector4 Type;
 public:
   //ignore constant values when finding size of domain
-  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Domain>::Tags DomainTags;
+  typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<Type> ExecArg;
   explicit ConceptMap(const Type& x): ExecArg_(x) {}
   ExecArg GetExecArg() { return this->ExecArg_; }
@@ -134,7 +134,7 @@ template <typename Tags> class ConceptMap<Field(Tags), dax::Id3 >
   typedef dax::Id3 Type;
 public:
   //ignore constant values when finding size of domain
-  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Domain>::Tags DomainTags;
+  typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<Type> ExecArg;
   explicit ConceptMap(const Type& x): ExecArg_(x) {}
   ExecArg GetExecArg() { return this->ExecArg_; }
@@ -150,7 +150,7 @@ template <typename Tags> class ConceptMap<Field(Tags), dax::Extent3 >
   typedef dax::Extent3 Type;
 public:
   //ignore constant values when finding size of domain
-  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Domain>::Tags DomainTags;
+  typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<Type> ExecArg;
   explicit ConceptMap(const Type& x): ExecArg_(x) {}
   ExecArg GetExecArg() { return this->ExecArg_; }

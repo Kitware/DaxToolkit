@@ -37,7 +37,7 @@ class ConceptMap<ExecObject(Tags), UserClass, typename boost::enable_if< boost::
 {
 public:
   //ignore constant values when finding size of domain
-  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Domain>::Tags DomainTags;
+  typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::ExecutionObject<UserClass> ExecArg;
 
   explicit ConceptMap(UserClass f): UserClassInstance(f) {}

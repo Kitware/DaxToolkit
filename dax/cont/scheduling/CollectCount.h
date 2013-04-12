@@ -20,6 +20,7 @@
 #include <dax/Types.h>
 #include <dax/cont/arg/ConceptMap.h>
 
+#include <boost/type_traits/is_same.hpp>
 #include <boost/utility/enable_if.hpp>
 
 namespace dax { namespace cont { namespace scheduling {
@@ -40,9 +41,8 @@ public:
     //can ask it for the size/len
     typedef dax::cont::arg::ConceptMap<C,A> ConceptType;
     typedef dax::cont::arg::ConceptMapTraits<ConceptType> Traits;
-    typedef typename Traits::DomainTags DomainTags;
-    typedef typename DomainTags::
-            template Has<DomainType>::type HasDomain;
+    typedef typename Traits::DomainTag DomainTag;
+    typedef typename boost::is_same<DomainTag,DomainType>::type HasDomain;
 
     this->getCount<ConceptType,HasDomain>(c);
     }

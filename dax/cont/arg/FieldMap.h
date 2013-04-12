@@ -50,7 +50,7 @@ class ConceptMap< Concept(Tags), dax::cont::PermutationContainer<Key,Value> >
 
 public:
   //Since we are a wrapper around T
-  typedef typename ValueFieldType::DomainTags DomainTags;
+  typedef typename ValueFieldType::DomainTag DomainTag;
 
   typedef dax::exec::arg::FieldMap<Tags,
           typename KeyFieldType::ExecArg,

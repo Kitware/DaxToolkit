@@ -36,8 +36,16 @@ class In: public Tag {};
 /// \brief Mark output parameters in a worklet \c ControlSignature.
 class Out: public Tag {};
 
-class Domain: public Tag { public: class AnyDomain; class Cell;  class Point; };
+class Domain: public Tag
+{
+public:
+  class NullDomain;
+  class AnyDomain;
+  class Cell;
+  class Point;
+};
 template <typename T> class DomainTag: public Domain {};
+typedef DomainTag<Domain::NullDomain> NullDomain;
 typedef DomainTag<Domain::AnyDomain> AnyDomain;
 typedef DomainTag<Domain::Cell> Cell;
 typedef DomainTag<Domain::Point> Point;
