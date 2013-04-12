@@ -408,9 +408,10 @@ private:
     std::cout << "Allocating execution array" << std::endl;
     IdContainer container;
     IdArrayManagerExecution manager;
+    dax::Id DIM_SIZE = dax::math::Ceil(dax::math::Cbrt(ARRAY_SIZE));
     manager.AllocateArrayForOutput(container,
-                                   ARRAY_SIZE * ARRAY_SIZE * ARRAY_SIZE);
-    dax::Id3 maxRange(ARRAY_SIZE);
+                                   DIM_SIZE * DIM_SIZE * DIM_SIZE);
+    dax::Id3 maxRange(DIM_SIZE);
 
     std::cout << "Running clear." << std::endl;
     Algorithm::Schedule(ClearArrayKernel(manager.GetPortal()), maxRange);
@@ -421,7 +422,7 @@ private:
     std::cout << "Checking results." << std::endl;
     manager.RetrieveOutputData(container);
 
-    const dax::Id maxId = ARRAY_SIZE * ARRAY_SIZE * ARRAY_SIZE;
+    const dax::Id maxId = DIM_SIZE * DIM_SIZE * DIM_SIZE;
     for (dax::Id index = 0; index < maxId; index++)
       {
       dax::Id value = container.GetPortalConst().Get(index);
@@ -673,7 +674,7 @@ private:
       {
       dax::Id sorted1 = sorted.GetPortalConstControl().Get(i);
       dax::Id sorted2 = comp_sorted.GetPortalConstControl().Get(ARRAY_SIZE - (i + 1));
-      std::cout << sorted1 << "<" << sorted2 << std::endl;
+//      std::cout << sorted1 << "<" << sorted2 << std::endl;
       DAX_TEST_ASSERT(sorted1 == sorted2,
                       "Got bad sort values when using SortGreater");
       }
