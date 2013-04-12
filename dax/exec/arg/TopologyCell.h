@@ -21,100 +21,87 @@
 #include <dax/exec/Assert.h>
 #include <dax/exec/CellVertices.h>
 
+#include <dax/exec/arg/ArgBase.h>
 #include <dax/exec/internal/FieldAccess.h>
 #include <dax/exec/internal/WorkletBase.h>
 
+#include <boost/mpl/bool.hpp>
 #include <boost/mpl/if.hpp>
-#include <boost/utility/enable_if.hpp>
-
 
 namespace dax { namespace exec { namespace arg {
 
-
-//TopologyCell is a base class type that is never actually used. Instead
-//It is always wrapped by a BindCell* class. Be it BindCellTag or BindCellVertices
 template <typename Tags, typename TopologyType>
-class TopologyCell
+class TopologyCell : public dax::exec::arg::ArgBase< TopologyCell<Tags, TopologyType> >
 {
 public:
+  //needed for cell type binding to be public
   typedef typename TopologyType::CellTag CellTag;
-  typedef dax::exec::CellVertices<CellTag> CellVerticesType;
 
-  //if we are going with Out tag
-  typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
-                                   CellVerticesType&,
-                                   CellVerticesType const&>::type ReturnType;
+  typedef dax::exec::arg::ArgBaseTraits< TopologyCell< Tags, TopologyType > > Traits;
 
-  typedef CellVerticesType SaveType;
-  typedef CellVerticesType ValueType;
+  typedef typename Traits::ValueType ValueType;
+  typedef typename Traits::ReturnType ReturnType;
+  typedef typename Traits::SaveType SaveType;
 
-  DAX_CONT_EXPORT TopologyCell(const TopologyType& t): Topo(t), Cell(0) {  }
+  typedef typename Traits::HasOutTag HasOutTag;
+
+  DAX_CONT_EXPORT TopologyCell(const TopologyType& t):
+    Topo(t),
+    Cell(0)
+    {
+    }
+
+  DAX_EXEC_EXPORT ReturnType GetValueForWriting()
+    { return this->Cell; }
 
   template<typename IndexType>
-  DAX_EXEC_EXPORT ReturnType operator()(
-      const IndexType& index,
-      const dax::exec::internal::WorkletBase& work)
-  {
+  DAX_EXEC_EXPORT ReturnType GetValueForReading(
+                                const IndexType& index,
+                                const dax::exec::internal::WorkletBase& work)
+    {
     (void)work;  // Shut up compiler.
     DAX_ASSERT_EXEC(index >= 0, work);
     DAX_ASSERT_EXEC(index < Topo.GetNumberOfCells(), work);
     this->Cell = this->Topo.GetCellConnections(index);
     return this->Cell;
-  }
-
-  DAX_EXEC_EXPORT void SaveExecutionResult(int index,
-                       const dax::exec::internal::WorkletBase& work) const
-    {
-    //Look at the concept map traits. If we have the Out tag
-    //we know that we must call our TopoExecArgs SaveExecutionResult.
-    //Otherwise we are an input argument and that behavior is undefined
-    //and very bad things could happen
-    typedef typename Tags::
-        template Has<typename dax::cont::sig::Out>::type HasOutTag;
-    this->saveResult(index,this->Cell,work,HasOutTag());
     }
 
-  DAX_EXEC_EXPORT void SaveExecutionResult(int index, const SaveType& v,
+  DAX_EXEC_EXPORT void SaveValue(int index,
                        const dax::exec::internal::WorkletBase& work) const
-    {
-    //Look at the concept map traits. If we have the Out tag
-    //we know that we must call our TopoExecArgs SaveExecutionResult.
-    //Otherwise we are an input argument and that behavior is undefined
-    //and very bad things could happen
-    typedef typename Tags::
-        template Has<typename dax::cont::sig::Out>::type HasOutTag;
-    this->saveResult(index,v,work,HasOutTag());
-    }
+    { this->SaveValue(index,this->Cell,work); }
 
-  //method enabled when we do have the out tag ( or InOut)
-  template <typename HasOutTag>
-  DAX_EXEC_EXPORT
-  void saveResult(dax::Id index,
-                  const SaveType &values,
-                  dax::exec::internal::WorkletBase work,
-                  HasOutTag,
-                  typename boost::enable_if<HasOutTag>::type* = 0) const
+  DAX_EXEC_EXPORT void SaveValue(int index, const SaveType& values,
+                       const dax::exec::internal::WorkletBase& work) const
     {
     dax::exec::internal::FieldSetMultiple(this->Topo.CellConnections,
-                                        dax::CellTraits<CellTag>::NUM_VERTICES * index,
-                                        values.GetAsTuple(),
-                                        work);
+                                dax::CellTraits<CellTag>::NUM_VERTICES * index,
+                                values.GetAsTuple(),
+                                work);
     }
 
-  template <typename HasOutTag>
-  DAX_EXEC_EXPORT
-  void saveResult(dax::Id,
-                  const SaveType &,
-                  dax::exec::internal::WorkletBase,
-                  HasOutTag,
-                  typename boost::disable_if<HasOutTag>::type* = 0) const
-    {
-    }
 private:
   TopologyType Topo;
-  CellVerticesType Cell;
+  ValueType Cell;
 };
 
+//the traits for TopologyCell
+template <typename Tags, typename TopologyType>
+struct ArgBaseTraits< dax::exec::arg::TopologyCell< Tags, TopologyType > >
+{
+  typedef typename ::boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
+                                   ::boost::true_type,
+                                   ::boost::false_type>::type HasOutTag;
+
+  typedef typename ::boost::mpl::if_<typename Tags::template Has<dax::cont::sig::In>,
+                                   ::boost::true_type,
+                                   ::boost::false_type>::type HasInTag;
+
+  typedef dax::exec::CellVertices<typename TopologyType::CellTag> ValueType;
+  typedef typename boost::mpl::if_<typename HasOutTag::type,
+                                   ValueType&,
+                                   ValueType const&>::type ReturnType;
+  typedef ValueType SaveType;
+};
 
 } } } //namespace dax::exec::arg
 

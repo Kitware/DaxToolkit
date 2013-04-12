@@ -41,7 +41,7 @@ public:
   InterpolatedCellPoints(const TupleType &pointIndices) : Superclass(pointIndices) {  }
 
   DAX_CONT_EXPORT
-  InterpolatedCellPoints(dax::Id index) : Superclass(index) {  }
+  InterpolatedCellPoints(dax::Vector3 value) : Superclass(value) {  }
 
   // Although this copy constructor should be identical to the default copy
   // constructor, we have noticed that NVCC's default copy constructor can

@@ -21,9 +21,12 @@
 
 #include <dax/Types.h>
 #include <dax/CellTag.h>
-#include <dax/exec/InterpolatedCellPoints.h>
+
+#include <dax/exec/arg/ArgBase.h>
+#include <dax/exec/CellVertices.h>
 #include <dax/exec/internal/FieldAccess.h>
 #include <dax/exec/internal/WorkletBase.h>
+#include <dax/exec/InterpolatedCellPoints.h>
 
 #include <boost/mpl/if.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -31,86 +34,88 @@
 namespace dax { namespace exec { namespace arg {
 
 template <typename Tags, typename TopologyType, typename PortalType>
-class GeometryCell
+class GeometryCell : public dax::exec::arg::ArgBase< GeometryCell<Tags,TopologyType,PortalType> >
 {
 public:
+  //needed for cell type binding to be public
   typedef typename TopologyType::CellTag CellTag;
-  typedef dax::exec::InterpolatedCellPoints<CellTag> GeometryCellType;
 
-  //if we are going with Out tag
-  typedef typename boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
-                                   GeometryCellType&,
-                                   GeometryCellType const&>::type ReturnType;
+  typedef dax::exec::arg::ArgBaseTraits< GeometryCell< Tags, TopologyType, PortalType > > Traits;
 
-  typedef GeometryCellType SaveType;
-  typedef GeometryCellType ValueType;
+  typedef typename Traits::ValueType ValueType;
+  typedef typename Traits::ReturnType ReturnType;
+  typedef typename Traits::SaveType SaveType;
+
+  typedef typename Traits::HasOutTag HasOutTag;
 
   DAX_CONT_EXPORT GeometryCell(const TopologyType& t,
-                             const PortalType& p): Topo(t), Portal(p),Cell() {}
+                               const PortalType& p):
+    Topo(t),
+    Portal(p),
+    Cell(dax::make_Vector3(0.0f,0.0f,0.0f))
+    {
+    }
+
+  DAX_EXEC_EXPORT ReturnType GetValueForWriting()
+    { return this->Cell; }
 
   template<typename IndexType>
-  DAX_EXEC_EXPORT ReturnType operator()(
-      const IndexType& index,
-      const dax::exec::internal::WorkletBase& work)
-  {
-    dax::Tuple<dax::Id, GeometryCellType::NUM_VERTICES> verts;
-    dax::exec::internal::FieldGetMultiple(this->Topo.CellConnections,
-                                dax::CellTraits<CellTag>::NUM_VERTICES * index,
-                                verts,
-                                work);
-
-    //we have the coordinates now stored in the cell, so we have to copy
-    //them into the portal
-    this->Cell =  dax::exec::internal::FieldGetMultiple(this->Portal,
-                                                        verts, work);
+  DAX_EXEC_EXPORT ReturnType GetValueForReading(
+                                const IndexType& index,
+                                const dax::exec::internal::WorkletBase& work)
+    {
+    dax::exec::CellVertices<CellTag> verts =
+                                        this->Topo.GetCellConnections(index);
+    //now that we the vertices, lets get the coordinates
+    this->Cell = dax::exec::internal::FieldGetMultiple(this->Portal,
+                                                      verts.GetAsTuple(), work);
     return this->Cell;
-  }
-
-  DAX_EXEC_EXPORT void SaveExecutionResult(int index,
-                       const dax::exec::internal::WorkletBase& work) const
-    {
-    //Look at the concept map traits. If we have the Out tag
-    //we know that we must call our TopoExecArgs SaveExecutionResult.
-    //Otherwise we are an input argument and that behavior is undefined
-    //and very bad things could happen
-    typedef typename Tags::
-        template Has<typename dax::cont::sig::Out>::type HasOutTag;
-    this->saveResult(index,work,HasOutTag());
     }
 
-  //method enabled when we do have the out tag ( or InOut)
-  template <typename HasOutTag>
-  DAX_EXEC_EXPORT
-  void saveResult(dax::Id index,
-                  dax::exec::internal::WorkletBase work,
-                  HasOutTag,
-                  typename boost::enable_if<HasOutTag>::type* = 0) const
+  DAX_EXEC_EXPORT void SaveValue(dax::Id index,
+                            const dax::exec::internal::WorkletBase& work) const
     {
-    dax::Tuple<dax::Id, GeometryCellType::NUM_VERTICES > verts;
-    dax::exec::internal::FieldGetMultiple(this->Topo.CellConnections,
-                                dax::CellTraits<CellTag>::NUM_VERTICES * index,
-                                verts,
-                                work);
+    this->SaveValue(index,this->Cell,work);
+    }
 
+  DAX_EXEC_EXPORT void SaveValue(dax::Id index,
+                            const SaveType& values,
+                            const dax::exec::internal::WorkletBase& work) const
+    {
+    dax::exec::CellVertices<CellTag> verts =
+                                      this->Topo.GetCellConnections(index);
     //we have the coordinates now stored in the cell, so we have to copy
     //them into the portal
-    dax::exec::internal::FieldSetMultiple(this->Portal, verts,
-                                          this->Cell.GetAsTuple(), work);
-    }
-
-  template <typename HasOutTag>
-  DAX_EXEC_EXPORT
-  void saveResult(dax::Id,
-                  dax::exec::internal::WorkletBase,
-                  HasOutTag,
-                  typename boost::disable_if<HasOutTag>::type* = 0) const
-    {
+    dax::exec::internal::FieldSetMultiple(this->Portal,
+                                          verts.GetAsTuple(),
+                                          values.GetAsTuple(), work);
     }
 private:
   TopologyType Topo;
   PortalType Portal;
-  GeometryCellType Cell;
+  ValueType Cell;
 };
+
+//the traits for GeometryCell
+template <typename Tags, typename TopologyType, typename PortalType>
+struct ArgBaseTraits< dax::exec::arg::GeometryCell< Tags, TopologyType, PortalType > >
+{
+  typedef typename ::boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
+                                   ::boost::true_type,
+                                   ::boost::false_type>::type HasOutTag;
+
+  typedef typename ::boost::mpl::if_<typename Tags::template Has<dax::cont::sig::In>,
+                                   ::boost::true_type,
+                                   ::boost::false_type>::type HasInTag;
+
+  typedef dax::exec::InterpolatedCellPoints<typename TopologyType::CellTag> ValueType;
+
+  typedef typename boost::mpl::if_<typename HasOutTag::type,
+                                   ValueType&,
+                                   ValueType const&>::type ReturnType;
+  typedef ValueType SaveType;
+};
+
 
 }}} // namespace dax::exec::arg
 
