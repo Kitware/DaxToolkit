@@ -24,10 +24,12 @@
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/Tag.h>
+#include <dax/cont/sig/VisitIndex.h>
 #include <dax/cont/sig/WorkId.h>
 #include <dax/exec/arg/BindCellPoints.h>
 #include <dax/exec/arg/BindCellTag.h>
 #include <dax/exec/arg/BindDirect.h>
+#include <dax/exec/arg/BindPermutedCellField.h>
 #include <dax/exec/arg/BindWorkId.h>
 #include <dax/Types.h>
 
@@ -73,6 +75,20 @@ public:
     >::type type;
 };
 
+//specialize on arg to field mapping when the cells are being permuted
+template<typename Tags, typename Invocation, int N>
+class BindArg<dax::cont::sig::PermutedCell,
+              dax::cont::arg::Field(Tags),
+              Invocation,
+              N>
+{
+public:
+  typedef typename boost::mpl::if_<
+      typename Tags::template Has<dax::cont::sig::Point>,
+      BindCellPoints<Invocation, N>,
+      BindPermutedCellField<Invocation, N> >::type type;
+};
+
 
 //find binding finds the correct binding for a parameter
 //the main job is to extract out the control signature position and tag
@@ -105,7 +121,7 @@ public:
   typedef BindDirect<Invocation,N> type;
 };
 
-//bind workid in the execution signature to th bindworkId class
+//bind workid in the execution signature to the bindworkId class
 template <typename WorkletType, typename Invocation>
 class FindBinding<WorkletType, dax::cont::sig::WorkId, Invocation>
 {
@@ -113,6 +129,14 @@ public:
   typedef BindWorkId<Invocation> type;
 };
 
+//bind VertexId directly to the input array (which should be specially
+//constructed by the scheduler)
+template<typename WorkletType, int N, typename Invocation>
+class FindBinding<WorkletType, dax::cont::sig::VisitIndexArg<N>, Invocation>
+{
+public:
+  typedef BindDirect<Invocation,N> type;
+};
 
 }}} // namespace dax::exec::arg
 

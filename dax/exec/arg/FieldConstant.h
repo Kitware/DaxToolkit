@@ -32,6 +32,7 @@ template <typename T> class FieldConstant
 public:
   typedef T const& ReturnType;
   typedef T SaveType;
+  typedef T ValueType;
   FieldConstant(T x): Value(x) {}
 
   template<typename IndexType>
