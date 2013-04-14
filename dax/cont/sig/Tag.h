@@ -50,6 +50,37 @@ typedef DomainTag<Domain::AnyDomain> AnyDomain;
 typedef DomainTag<Domain::Cell> Cell;
 typedef DomainTag<Domain::Point> Point;
 
+namespace detail {
+template <typename T> class PermutedDomain: public Domain {};
+} // namespace detail
+
+// The default implementation to permute a cell.
+template<typename T> struct MakePermuted
+{
+  typedef detail::PermutedDomain<T> Type;
+};
+
+// Special cases of permuted cells.  I'm not super happy we have to have them.
+// Don't have permutations of permutations.
+template<typename T> struct MakePermuted<detail::PermutedDomain<T> >
+{
+  typedef detail::PermutedDomain<T> Type;
+};
+// Don't permute AnyDomain. Since it can be anything, it doesn't matter of it's
+// permuted.
+template<> struct MakePermuted<AnyDomain>
+{
+  typedef AnyDomain Type;
+};
+// Don't permute NullDomain. Doesn't really matter since it should not match
+// anything, but it still makes no sense to permute it.
+template<> struct MakePermuted<NullDomain>
+{
+  typedef NullDomain Type;
+};
+
+typedef MakePermuted<Cell>::Type PermutedCell;
+
 
 }}} // namespace dax::cont::sig
 
