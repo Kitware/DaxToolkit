@@ -32,7 +32,7 @@ namespace exec {
 class WorkletGenerateTopology : public dax::exec::internal::WorkletBase
 {
 public:
-  typedef dax::cont::sig::Cell DomainType;
+  typedef dax::cont::sig::PermutedCell DomainType;
 
   DAX_EXEC_EXPORT WorkletGenerateTopology() { }
 protected:

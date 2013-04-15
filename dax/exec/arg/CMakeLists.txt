@@ -19,6 +19,7 @@ set(headers
   BindCellTag.h
   BindCellPoints.h
   BindDirect.h
+  BindPermutedCellField.h
   BindWorkId.h
   FieldConstant.h
   FieldMap.h

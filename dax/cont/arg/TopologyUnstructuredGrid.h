@@ -60,7 +60,7 @@ public:
 
   typedef GridType ContArg;
   typedef ExecGridType ExecArg;
-  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Cell>::Tags DomainTags;
+  typedef dax::cont::sig::Cell DomainTag;
 
   ConceptMap(GridType g): Grid(g) {}
 
@@ -126,7 +126,7 @@ public:
 
   typedef GridType ContArg;
   typedef ExecGridType ExecArg;
-  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::Cell>::Tags DomainTags;
+  typedef dax::cont::sig::Cell DomainTag;
 
   ConceptMap(GridType g): Grid(g) {}
 
