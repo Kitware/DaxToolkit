@@ -21,10 +21,13 @@
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/arg/FieldArrayHandle.h>
 #include <dax/cont/arg/FieldConstant.h>
+#include <dax/cont/arg/TopologyUniformGrid.h>
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/internal/testing/Testing.h>
 #include <dax/cont/scheduling/CollectCount.h>
 #include <dax/cont/sig/Tag.h>
+#include <dax/cont/UniformGrid.h>
+#include <dax/exec/WorkletMapCell.h>
 #include <dax/exec/WorkletMapField.h>
 #include <dax/Types.h>
 #include <vector>
@@ -42,6 +45,17 @@ struct Worklet2 : public dax::exec::WorkletMapField
 {
   typedef void ControlSignature(Field,Field);
 };
+
+struct Worklet3 : public dax::exec::WorkletMapCell
+{
+  typedef void ControlSignature(Field,Field);
+};
+
+struct Worklet4 : public dax::exec::WorkletMapCell
+{
+  typedef void ControlSignature(Topology,Field);
+};
+
 
 void CollectCount()
 {
@@ -116,6 +130,89 @@ void CollectCount()
                   "CollectCount was not the length of the array.");
   }
 
+
+  //verify that when running as WorkletMapCell and we are given
+  //no concepts that match the CellDomain we default to a length of one.
+  //While this is not the smartest behavior, I want to document and test
+  //that this behavior doesn't regress to a count of undefined length.
+  //ToDo: If we don't match the given required domain, we fall back to
+  //asking for items that match the AnyDomain.
+  {
+  int validCollectCount = 1;
+  int constantFieldArg=4;
+  const dax::Id vectorSize(7);
+
+  std::vector<dax::Scalar> f(vectorSize);
+  for(int i=0; i <vectorSize; ++i)
+    { f[i] = i;}
+  dax::cont::ArrayHandle<dax::Scalar> scalarHandle =
+                                              dax::cont::make_ArrayHandle(f);
+
+
+  typedef Worklet3 TwoArgSig(dax::cont::ArrayHandle<dax::Scalar>, int);
+  typedef Worklet3::DomainType DomainType;
+
+  dax::cont::internal::Bindings<TwoArgSig> bindings(scalarHandle,
+                                                    constantFieldArg);
+
+  // Visit each bound argument to determine the count to be scheduled.
+  dax::Id count;
+  bindings.ForEachCont(dax::cont::scheduling::CollectCount<DomainType>(count));
+
+  //verify that count is equal to one, not the length of the vector, see
+  //above comment for why
+  DAX_TEST_ASSERT((count == validCollectCount),
+                  "CollectCount wasn't 1 which is expected.");
+
+
+  typedef Worklet3 InvertedTwoSigArg(int,dax::cont::ArrayHandle<dax::Scalar>);
+  dax::cont::internal::Bindings<InvertedTwoSigArg> secondBindings(
+                                                          constantFieldArg,
+                                                          scalarHandle);
+
+  secondBindings.ForEachCont(
+                         dax::cont::scheduling::CollectCount<DomainType>(count));
+
+  //verify that count is equal to one, not the length of the vector, see
+  //above comment for why
+  DAX_TEST_ASSERT((count == validCollectCount),
+                  "CollectCount wasn't 1 which is expected.");
+  }
+
+  //verify that when running as WorkletMapCell and we are given
+  //concepts that match the CellDomain we default to a length that is
+  //equal to the number of cells.
+  {
+  const dax::Id dimSize = 3;
+  dax::cont::UniformGrid<> grid;
+  grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(dimSize-1,
+                                                       dimSize-1,
+                                                       dimSize-1));
+
+  const dax::Id validCollectCount = grid.GetNumberOfCells();
+  //make it larger than validCollectCount to verify we only use the info
+  //from the CellDomain
+  const dax::Id vectorSize(validCollectCount*2);
+
+  std::vector<dax::Scalar> f(vectorSize);
+  for(int i=0; i <vectorSize; ++i)
+    { f[i] = i;}
+  dax::cont::ArrayHandle<dax::Scalar> scalarHandle =
+                                              dax::cont::make_ArrayHandle(f);
+
+
+  typedef Worklet4 TwoArgSig(dax::cont::UniformGrid<>,
+                             dax::cont::ArrayHandle<dax::Scalar>);
+  typedef Worklet4::DomainType DomainType;
+
+  dax::cont::internal::Bindings<TwoArgSig> bindings(grid,scalarHandle);
+
+  // Visit each bound argument to determine the count to be scheduled.
+  dax::Id count;
+  bindings.ForEachCont(dax::cont::scheduling::CollectCount<DomainType>(count));
+  DAX_TEST_ASSERT((count == validCollectCount),
+                  "CollectCount wasn't the number of cells in grid.");
+  }
 
 
 }
