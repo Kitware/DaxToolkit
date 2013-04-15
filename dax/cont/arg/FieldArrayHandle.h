@@ -43,8 +43,8 @@ class ConceptMap< Field(Tags), dax::cont::ArrayHandle<T, ContainerTag, Device> >
       typename HandleType::PortalConstExecution>::type  PortalType;
 
 public:
-  //ignore constant values when finding size of domain
-  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::AnyDomain>::Tags DomainTags;
+  // Arrays are generally used for all types of fields.
+  typedef dax::cont::sig::AnyDomain DomainTag;
   typedef dax::exec::arg::FieldPortal<T,Tags,PortalType> ExecArg;
 
   ConceptMap(HandleType handle):
@@ -95,8 +95,8 @@ class ConceptMap< Field(Tags), const dax::cont::ArrayHandle<T, ContainerTag, Dev
   typedef  typename HandleType::PortalConstExecution  PortalType;
 
 public:
-  //ignore constant values when finding size of domain
-  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::AnyDomain>::Tags DomainTags;
+  // Arrays are generally used for all types of fields.
+  typedef dax::cont::sig::AnyDomain DomainTag;
   typedef dax::exec::arg::FieldPortal<T,Tags,PortalType> ExecArg;
 
   ConceptMap(HandleType handle):

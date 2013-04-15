@@ -39,6 +39,10 @@ public:
 
   /// Get representation of argument value for the execution environment.
   ExecArg GetExecArg();
+
+  /// Tag representing the domain of the data.  Should be the same as one
+  /// of the domain tags in dax/cont/sig/Tag.h.
+  typedef dax::cont::sig::AnyDomain DomainTag;
 };
 #else // !defined(DAX_DOXYGEN_ONLY)
 template <typename Concept, typename Argument, typename Enable=void>
@@ -67,27 +71,7 @@ public:
   /// Concrete value type bound to the \c Concept.
   typedef A Argument;
 
-  typedef typename Map::DomainTags DomainTags;
-};
-
-template<typename DomainTag>
-class SupportedDomains
-{
-private:
-  //create a base domain tag of type sig::Tag. We can't use sig::Domain
-  //as the base, as Tags::Has never returns true when checking the base type
-  typedef typename dax::internal::Tags<dax::cont::sig::Domain()> TagBase;
-public:
-  //we append all of the concept maps tags to to the base tag type
-  typedef typename TagBase::template Add<DomainTag>::type Tags;
-};
-
-template<>
-class SupportedDomains<dax::cont::sig::Domain>
-{
-public:
-  //You can't add the base to the base already
-  typedef dax::internal::Tags<dax::cont::sig::Domain()>  Tags;
+  typedef typename Map::DomainTag DomainTag;
 };
 
 

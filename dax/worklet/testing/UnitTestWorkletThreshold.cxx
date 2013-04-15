@@ -28,6 +28,7 @@
 #include <sstream>
 #include <string>
 #include <dax/CellTag.h>
+#include <dax/CellTraits.h>
 #include <dax/TypeTraits.h>
 
 #include <dax/cont/ArrayHandle.h>
@@ -86,6 +87,59 @@ void CheckValues(dax::cont::ArrayHandle<T,Container,Device> arrayHandle)
               arrayHandle.GetPortalConstControl().GetIteratorEnd());
 }
 
+template<class InGridGeneratorType,
+         class ConnectionsPortalType,
+         class CoordinatesPortalType,
+         class CellTag>
+void CheckConnections(const InGridGeneratorType &inGridGenerator,
+                      const std::vector<float> &inField,
+                      ConnectionsPortalType connectionsPortal,
+                      CoordinatesPortalType coordinatesPortal,
+                      CellTag)
+{
+  dax::Id outConnectionIndex = 0;
+  for (dax::Id inCellIndex = 0;
+       inCellIndex < inGridGenerator->GetNumberOfCells();
+       inCellIndex++)
+    {
+    dax::exec::CellVertices<CellTag> inPointIndices =
+        inGridGenerator.GetCellConnections(inCellIndex);
+    dax::exec::CellField<dax::Scalar, CellTag> cellFieldValues;
+    for (int vertexIndex = 0;
+         vertexIndex < cellFieldValues.NUM_VERTICES;
+         vertexIndex++)
+      {
+      cellFieldValues[vertexIndex] = inField[inPointIndices[vertexIndex]];
+      }
+
+    CheckValid isValid;
+    dax::cont::VectorForEach(cellFieldValues, isValid);
+    if (!isValid) { continue; } // Cell should not be passed.
+
+    // If we are here, this cell should have been passed and the next
+    // connections should match coordinates.
+    DAX_TEST_ASSERT(outConnectionIndex < connectionsPortal.GetNumberOfValues(),
+                    "Output does not have enough cells.");
+
+    dax::exec::CellField<dax::Vector3,CellTag> inCoordinates =
+        inGridGenerator.GetCellVertexCoordinates(inCellIndex);
+    for (int vertexIndex = 0;
+         vertexIndex < cellFieldValues.NUM_VERTICES;
+         vertexIndex++)
+      {
+      dax::Vector3 outCoordinates =
+          coordinatesPortal.Get(connectionsPortal.Get(outConnectionIndex));
+      outConnectionIndex++;
+
+      DAX_TEST_ASSERT(test_equal(inCoordinates[vertexIndex], outCoordinates),
+                      "Got bad coordinates in output.");
+      }
+    }
+
+  DAX_TEST_ASSERT(outConnectionIndex == connectionsPortal.GetNumberOfValues(),
+                  "Output has too many cells.");
+}
+
 
 class TestThresholdTopology : public dax::exec::WorkletGenerateTopology
 {
@@ -115,7 +169,7 @@ struct TestThresholdWorklet
     dax::cont::internal::TestGrid<GridType> in(DIM);
     GridType out;
 
-    this->GridThreshold(in.GetRealGrid(),out);
+    this->GridThreshold(in,out);
     }
 
   //----------------------------------------------------------------------------
@@ -124,14 +178,21 @@ struct TestThresholdWorklet
     dax::cont::internal::TestGrid<dax::cont::UniformGrid<> > in(DIM);
     dax::cont::UnstructuredGrid<dax::CellTagHexahedron> out;
 
-    this->GridThreshold(in.GetRealGrid(),out);
+    this->GridThreshold(in,out);
     }
 
   //----------------------------------------------------------------------------
   template <typename InGridType,
             typename OutGridType>
-  void GridThreshold(const InGridType& inGrid, OutGridType& outGrid) const
+  void GridThreshold(
+      const dax::cont::internal::TestGrid<InGridType> &inGridGenerator,
+      OutGridType& outGrid) const
     {
+    const InGridType inGrid = inGridGenerator.GetRealGrid();
+
+    typedef typename InGridType::CellTag InCellTag;
+    typedef typename OutGridType::CellTag OutCellTag;
+
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
     std::vector<dax::Scalar> field(inGrid.GetNumberOfPoints());
     for (dax::Id pointIndex = 0;
@@ -179,9 +240,20 @@ struct TestThresholdWorklet
       DAX_TEST_ASSERT(true==false,error.GetMessage());
       }
 
-    CheckValues(resultHandle);
-    DAX_TEST_ASSERT(resultHandle.GetNumberOfValues()==outGrid.GetNumberOfPoints(),
+    DAX_TEST_ASSERT(resultHandle.GetNumberOfValues() ==
+                    outGrid.GetNumberOfPoints(),
                     "Incorrect number of points in the result array");
+    CheckValues(resultHandle);
+
+    DAX_TEST_ASSERT(outGrid.GetCellConnections().GetNumberOfValues() ==
+                    ( outGrid.GetNumberOfCells()
+                      * dax::CellTraits<OutCellTag>::NUM_VERTICES ),
+                    "Size of cell connections array incorrect.");
+    CheckConnections(inGridGenerator,
+                     field,
+                     outGrid.GetCellConnections().GetPortalConstControl(),
+                     outGrid.GetPointCoordinates().GetPortalConstControl(),
+                     InCellTag());
     }
 };
 

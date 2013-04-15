@@ -114,7 +114,8 @@ void AddVisitIndex()
   typedef boost::mpl::at_c<NewExecSig,3>::type VisitExecType;
   BOOST_MPL_ASSERT(( boost::is_same<VisitContType, dax::cont::arg::Field > ));
   //3 for assert as sig::Arg is 1 based
-  BOOST_MPL_ASSERT(( boost::is_same<VisitExecType, dax::cont::sig::Arg<3> > ));
+  BOOST_MPL_ASSERT(( boost::is_same<VisitExecType,
+                     dax::cont::sig::VisitIndexArg<3> > ));
 
   //verify that we generate the correct visit indices, now that we have verified
   //all the compile time logic
