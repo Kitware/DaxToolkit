@@ -54,7 +54,7 @@ struct TestInterpolatedCellCellPermutationWorklet
   DAX_EXEC_EXPORT
   void operator()(dax::exec::InterpolatedCellPoints<dax::CellTagVertex> &outCell,
                   dax::Id index,
-                  dax::Id visitIndex) const
+                  dax::Id) const
   {
     outCell.SetInterpolationPoint(0, index,
                                      index,
