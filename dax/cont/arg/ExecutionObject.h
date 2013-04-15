@@ -23,7 +23,7 @@
 #include <dax/cont/sig/Tag.h>
 
 #include <dax/exec/ExecutionObjectBase.h>
-#include <dax/exec/arg/ExecutionObject.h>
+#include <dax/exec/arg/FieldConstant.h>
 
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_base_of.hpp>
@@ -38,7 +38,7 @@ class ConceptMap<ExecObject(Tags), UserClass, typename boost::enable_if< boost::
 public:
   //ignore constant values when finding size of domain
   typedef dax::cont::sig::NullDomain DomainTag;
-  typedef dax::exec::arg::ExecutionObject<UserClass> ExecArg;
+  typedef dax::exec::arg::FieldConstant<UserClass> ExecArg;
 
   explicit ConceptMap(UserClass f): UserClassInstance(f) {}
 
