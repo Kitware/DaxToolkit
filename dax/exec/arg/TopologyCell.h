@@ -52,8 +52,8 @@ public:
 
   template<typename IndexType>
   DAX_EXEC_EXPORT ReturnType GetValueForReading(
-                                const IndexType& index,
-                                const dax::exec::internal::WorkletBase& work)
+                            const IndexType& index,
+                            const dax::exec::internal::WorkletBase& work) const
     {
     (void)work;  // Shut up compiler.
     DAX_ASSERT_EXEC(index >= 0, work);

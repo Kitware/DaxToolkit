@@ -54,15 +54,15 @@ public:
     { return this->Value; }
 
   DAX_EXEC_EXPORT ReturnType GetValueForReading(
-                                const dax::exec::internal::IJKIndex& index,
-                                const dax::exec::internal::WorkletBase& work)
+                            const dax::exec::internal::IJKIndex& index,
+                            const dax::exec::internal::WorkletBase& work) const
     {
     return dax::exec::internal::FieldGet(this->Portal,index.GetValue(),work);
     }
 
   DAX_EXEC_EXPORT ReturnType GetValueForReading(
-                                dax::Id index,
-                                const dax::exec::internal::WorkletBase& work)
+                            dax::Id index,
+                            const dax::exec::internal::WorkletBase& work) const
     {
     return dax::exec::internal::FieldGet(this->Portal,index,work);
     }

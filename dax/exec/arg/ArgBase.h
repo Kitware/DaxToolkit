@@ -51,6 +51,13 @@ public:
     return this->readValue(index,work,HasInTag(),HasOutTag());
     }
 
+  template<typename IndexType>
+  DAX_EXEC_EXPORT ReturnType operator()(const IndexType& index,
+                      const dax::exec::internal::WorkletBase& work) const
+    {
+    return this->readValue(index,work,HasInTag(),HasOutTag());
+    }
+
 
   DAX_EXEC_EXPORT void SaveExecutionResult(int index,
                         const dax::exec::internal::WorkletBase& work)
@@ -71,9 +78,9 @@ private:
   DAX_EXEC_EXPORT ReturnType readValue(const IndexType& index,
                        const dax::exec::internal::WorkletBase& work,
                        ::boost::mpl::bool_<true>,
-                       ::boost::mpl::bool_<false>) //hasInTag, no out tag
+                       ::boost::mpl::bool_<false>) const //hasInTag, no out tag
     {
-    return static_cast<DerivedArgClass*>(this)->GetValueForReading(index,work);
+    return static_cast<const DerivedArgClass*>(this)->GetValueForReading(index,work);
     }
 
   template<typename IndexType>

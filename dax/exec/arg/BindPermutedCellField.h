@@ -63,12 +63,11 @@ public:
 
   template<typename IndexType>
   DAX_EXEC_EXPORT ReturnType GetValueForReading(
-                                const IndexType& index,
-                                const dax::exec::internal::WorkletBase& work)
+                            const IndexType& index,
+                            const dax::exec::internal::WorkletBase& work) const
     {
     const dax::Id cellIndex = this->TopoExecArg.GetMapIndex(index, work);
-    this->Value = this->ExecArg(cellIndex, work);
-    return this->Value;
+    return this->ExecArg(cellIndex, work);
     }
 
   DAX_EXEC_EXPORT void SaveValue(int index,
@@ -121,7 +120,7 @@ public:
   typedef typename ExecArgType::ValueType ValueType;
   typedef typename boost::mpl::if_<typename HasOutTag::type,
                                    ValueType&,
-                                   ValueType const&>::type ReturnType;
+                                   ValueType const>::type ReturnType;
   typedef ValueType SaveType;
 };
 

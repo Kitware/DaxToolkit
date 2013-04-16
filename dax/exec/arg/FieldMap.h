@@ -44,7 +44,7 @@ public:
   DAX_EXEC_EXPORT
   typename ExecKeyType::ReturnType GetMapIndex(
       const IndexType &index,
-      const dax::exec::internal::WorkletBase &work)
+      const dax::exec::internal::WorkletBase &work) const
   {
     return this->KeyArg(index, work);
   }
@@ -52,6 +52,13 @@ public:
   template<typename IndexType>
   DAX_EXEC_EXPORT ReturnType operator()(const IndexType& index,
                             const dax::exec::internal::WorkletBase& work)
+    {
+    return ExecValueType::operator()(this->GetMapIndex(index, work), work);
+    }
+
+  template<typename IndexType>
+  DAX_EXEC_EXPORT ReturnType operator()(const IndexType& index,
+                            const dax::exec::internal::WorkletBase& work) const
     {
     return ExecValueType::operator()(this->GetMapIndex(index, work), work);
     }
