@@ -15,6 +15,7 @@
 ##=============================================================================
 
 set(headers
+  ArgBase.h
   BindCellTag.h
   BindCellPoints.h
   BindDirect.h

@@ -64,13 +64,13 @@ public:
     }
 
   DAX_EXEC_EXPORT void SaveExecutionResult(dax::Id index,
-                            const dax::exec::internal::WorkletBase& work) const
+                            const dax::exec::internal::WorkletBase& work)
     {
     ExecValueType::SaveExecutionResult(this->GetMapIndex(index,work),work);
     }
 
   DAX_EXEC_EXPORT void SaveExecutionResult(dax::Id index, const SaveType& v,
-                             const dax::exec::internal::WorkletBase& work) const
+                             const dax::exec::internal::WorkletBase& work)
     {
     ExecValueType::SaveExecutionResult(this->GetMapIndex(index,work),v,work);
     }

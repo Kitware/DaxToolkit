@@ -52,7 +52,7 @@ struct MakeVisitIndexControlType
     visitIndices.PrepareForOutput(inputCellIds.GetNumberOfValues());
     Algorithm::LowerBounds(inputCellIds, inputCellIds, visitIndices);
     scheduler.Invoke(dax::exec::internal::kernel::ComputeVisitIndex(),
-                     visitIndices);
+                     visitIndices, visitIndices); //as input and output
   }
 };
 
