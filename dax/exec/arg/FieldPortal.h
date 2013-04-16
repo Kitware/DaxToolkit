@@ -16,12 +16,12 @@
 #ifndef __dax_exec_arg_FieldPortal_h
 #define __dax_exec_arg_FieldPortal_h
 
-#include <dax/cont/sig/Tag.h>
+#include <dax/Types.h>
+#include <dax/VectorTraits.h>
+
 #include <dax/exec/arg/ArgBase.h>
-#include <dax/exec/Assert.h>
 #include <dax/exec/internal/FieldAccess.h>
 #include <dax/exec/internal/IJKIndex.h>
-#include <dax/VectorTraits.h>
 
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/if.hpp>
@@ -40,16 +40,12 @@ public:
   typedef typename Traits::ReturnType ReturnType;
   typedef typename Traits::SaveType SaveType;
 
-  typedef typename Traits::HasInTag HasInTag;
-  typedef typename Traits::HasOutTag HasOutTag;
-
-
   // If you do not explicitly initialize Value, then gcc sometimes complains
   // about an uninitialized value. I don't think it is ever actually used
   // uninitialized (at this time), but the optimizer's execution flow analysis
   // seems to think so.
   FieldPortal(const PortalType& portal):
-    Value(typename dax::VectorTraits<T>::ComponentType()),
+    Value(typename dax::VectorTraits<ValueType>::ComponentType()),
     Portal(portal)
     {
     }
@@ -61,14 +57,16 @@ public:
                                 const dax::exec::internal::IJKIndex& index,
                                 const dax::exec::internal::WorkletBase& work)
     {
-    return dax::exec::internal::FieldGet(this->Portal,index.GetValue(),work);
+    this->Value = dax::exec::internal::FieldGet(this->Portal,index.GetValue(),work);
+    return this->Value;
     }
 
   DAX_EXEC_EXPORT ReturnType GetValueForReading(
                                 dax::Id index,
                                 const dax::exec::internal::WorkletBase& work)
     {
-    return dax::exec::internal::FieldGet(this->Portal,index,work);
+    this->Value = dax::exec::internal::FieldGet(this->Portal,index,work);
+    return this->Value;
     }
 
   DAX_EXEC_EXPORT void SaveValue(int index,
@@ -103,7 +101,7 @@ struct ArgBaseTraits< dax::exec::arg::FieldPortal< T, Tags, PortalType > >
 
   typedef typename ::boost::mpl::if_<typename HasOutTag::type,
                                    T&,
-                                   T const >::type ReturnType;
+                                   T const& >::type ReturnType;
   typedef ValueType SaveType;
 };
 
