@@ -46,8 +46,6 @@ public:
   typedef typename Traits::ReturnType ReturnType;
   typedef typename Traits::SaveType SaveType;
 
-  typedef typename Traits::HasOutTag HasOutTag;
-
   DAX_CONT_EXPORT GeometryCell(const TopologyType& t,
                                const PortalType& p):
     Topo(t),

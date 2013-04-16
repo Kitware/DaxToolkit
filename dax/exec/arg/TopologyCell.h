@@ -17,11 +17,9 @@
 #define __dax_exec_arg_TopologyCell_h
 
 #include <dax/Types.h>
-#include <dax/cont/sig/Tag.h>
-#include <dax/exec/Assert.h>
-#include <dax/exec/CellVertices.h>
 
 #include <dax/exec/arg/ArgBase.h>
+#include <dax/exec/CellVertices.h>
 #include <dax/exec/internal/FieldAccess.h>
 #include <dax/exec/internal/WorkletBase.h>
 
@@ -42,8 +40,6 @@ public:
   typedef typename Traits::ValueType ValueType;
   typedef typename Traits::ReturnType ReturnType;
   typedef typename Traits::SaveType SaveType;
-
-  typedef typename Traits::HasOutTag HasOutTag;
 
   DAX_CONT_EXPORT TopologyCell(const TopologyType& t):
     Topo(t),

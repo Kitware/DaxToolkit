@@ -19,6 +19,7 @@
 #define __dax_exec_arg_ArgBase_h
 
 #include <dax/Types.h>
+#include <dax/cont/sig/Tag.h>
 #include <dax/exec/internal/WorkletBase.h>
 
 #include <boost/mpl/assert.hpp>
