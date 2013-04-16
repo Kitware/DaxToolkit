@@ -58,8 +58,7 @@ public:
     (void)work;  // Shut up compiler.
     DAX_ASSERT_EXEC(index >= 0, work);
     DAX_ASSERT_EXEC(index < Topo.GetNumberOfCells(), work);
-    this->Cell = this->Topo.GetCellConnections(index);
-    return this->Cell;
+    return this->Topo.GetCellConnections(index);
     }
 
   DAX_EXEC_EXPORT void SaveValue(int index,
@@ -95,7 +94,7 @@ struct ArgBaseTraits< dax::exec::arg::TopologyCell< Tags, TopologyType > >
   typedef dax::exec::CellVertices<typename TopologyType::CellTag> ValueType;
   typedef typename boost::mpl::if_<typename HasOutTag::type,
                                    ValueType&,
-                                   ValueType const&>::type ReturnType;
+                                   ValueType const>::type ReturnType;
   typedef ValueType SaveType;
 };
 

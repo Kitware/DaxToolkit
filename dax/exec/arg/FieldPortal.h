@@ -57,16 +57,14 @@ public:
                                 const dax::exec::internal::IJKIndex& index,
                                 const dax::exec::internal::WorkletBase& work)
     {
-    this->Value = dax::exec::internal::FieldGet(this->Portal,index.GetValue(),work);
-    return this->Value;
+    return dax::exec::internal::FieldGet(this->Portal,index.GetValue(),work);
     }
 
   DAX_EXEC_EXPORT ReturnType GetValueForReading(
                                 dax::Id index,
                                 const dax::exec::internal::WorkletBase& work)
     {
-    this->Value = dax::exec::internal::FieldGet(this->Portal,index,work);
-    return this->Value;
+    return dax::exec::internal::FieldGet(this->Portal,index,work);
     }
 
   DAX_EXEC_EXPORT void SaveValue(int index,
@@ -101,7 +99,7 @@ struct ArgBaseTraits< dax::exec::arg::FieldPortal< T, Tags, PortalType > >
 
   typedef typename ::boost::mpl::if_<typename HasOutTag::type,
                                    T&,
-                                   T const& >::type ReturnType;
+                                   T const >::type ReturnType;
   typedef ValueType SaveType;
 };
 

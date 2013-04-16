@@ -68,15 +68,16 @@ public:
                                 const IndexType& index,
                                 const dax::exec::internal::WorkletBase& work)
     {
+    ValueType v;
     const dax::exec::CellVertices<CellTag>& pointIndices =
                                             this->TopoExecArg(index, work);
     for(int vertexIndex = 0;
         vertexIndex < pointIndices.NUM_VERTICES;
         ++vertexIndex)
       {
-      this->Value[vertexIndex] = this->ExecArg(pointIndices[vertexIndex],work);
+      v[vertexIndex] = this->ExecArg(pointIndices[vertexIndex],work);
       }
-    return this->Value;
+    return v;
     }
 
   DAX_EXEC_EXPORT void SaveValue(int index,
@@ -136,7 +137,7 @@ public:
                                typename TopoExecArgType::CellTag> ValueType;
   typedef typename boost::mpl::if_<typename HasOutTag::type,
                                    ValueType&,
-                                   ValueType const&>::type ReturnType;
+                                   ValueType const>::type ReturnType;
   typedef ValueType SaveType;
 };
 

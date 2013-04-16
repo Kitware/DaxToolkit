@@ -65,9 +65,8 @@ public:
     dax::exec::CellVertices<CellTag> verts =
                                         this->Topo.GetCellConnections(index);
     //now that we the vertices, lets get the coordinates
-    this->Cell = dax::exec::internal::FieldGetMultiple(this->Portal,
+    return dax::exec::internal::FieldGetMultiple(this->Portal,
                                                       verts.GetAsTuple(), work);
-    return this->Cell;
     }
 
   DAX_EXEC_EXPORT void SaveValue(dax::Id index,
@@ -110,7 +109,7 @@ struct ArgBaseTraits< dax::exec::arg::GeometryCell< Tags, TopologyType, PortalTy
 
   typedef typename boost::mpl::if_<typename HasOutTag::type,
                                    ValueType&,
-                                   ValueType const&>::type ReturnType;
+                                   ValueType const>::type ReturnType;
   typedef ValueType SaveType;
 };
 
