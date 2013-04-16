@@ -92,7 +92,7 @@ template<class InGridGeneratorType,
          class CoordinatesPortalType,
          class CellTag>
 void CheckConnections(const InGridGeneratorType &inGridGenerator,
-                      const std::vector<float> &inField,
+                      const std::vector<dax::Scalar> &inField,
                       ConnectionsPortalType connectionsPortal,
                       CoordinatesPortalType coordinatesPortal,
                       CellTag)
