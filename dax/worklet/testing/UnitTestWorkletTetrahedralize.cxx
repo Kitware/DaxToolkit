@@ -44,6 +44,33 @@
 namespace {
 const dax::Id DIM = 26;
 
+void verify_cell_values_written(std::vector<dax::Id>& data)
+{
+  typedef std::vector<dax::Id>::iterator it;
+  for( it i = data.begin(); i != data.end(); ++i)
+    {
+    DAX_TEST_ASSERT(*i!=-1,"didn't write into cell connections");
+    }
+}
+
+void verify_cell_values_correct(std::vector<dax::Id>& data, dax::Id numPoints)
+{
+  typedef std::vector<dax::Id>::iterator it;
+
+  std::vector<dax::Id> counts(numPoints,0);
+  for( it i = data.begin(); i != data.end(); ++i)
+    {
+    ++counts[*i];
+    }
+
+  for( it i = counts.begin(); i != counts.end(); ++i)
+    {
+    bool valid(*i == 1 || *i==2 || *i == 4 || *i == 8 || *i == 16 || *i == 32);
+    DAX_TEST_ASSERT(valid==true,"didn't write valid topology");
+    }
+
+}
+
 //-----------------------------------------------------------------------------
 struct TestTetrahedralizeWorklet
 {
@@ -71,6 +98,10 @@ struct TestTetrahedralizeWorklet
             typename OutGridType>
   void GridTetrahedralize(const InGridType& inGrid, OutGridType& outGrid) const
     {
+    const dax::Id cellConnLength = inGrid.GetNumberOfCells() * 5 * 4 ;
+    std::vector<dax::Id> cellConnections(cellConnLength,-1);
+    dax::cont::ArrayHandle<dax::Id> cellHandle =
+            dax::cont::make_ArrayHandle(cellConnections);
     try
       {
       typedef dax::cont::GenerateTopology<dax::worklet::Tetrahedralize,
@@ -87,6 +118,7 @@ struct TestTetrahedralizeWorklet
       //don't remove duplicate points.
       generateTets.SetRemoveDuplicatePoints(false);
 
+      outGrid.SetCellConnections(cellHandle);
       scheduler.Invoke(generateTets,inGrid,outGrid);
 
       }
@@ -102,6 +134,10 @@ struct TestTetrahedralizeWorklet
     //to the unstructured grid
     DAX_TEST_ASSERT(outGrid.GetNumberOfPoints()==0,
                     "Incorrect number of points in the output grid");
+
+    cellHandle.CopyInto(cellConnections.begin());
+    verify_cell_values_written(cellConnections);
+    verify_cell_values_correct(cellConnections,inGrid.GetNumberOfPoints());
     }
 };
 
