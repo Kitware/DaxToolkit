@@ -67,7 +67,6 @@ public:
   outVertices[1] = inVertices[ detail::PossibleTetraSplitCases[lookupTablePos][1] ];
   outVertices[2] = inVertices[ detail::PossibleTetraSplitCases[lookupTablePos][2] ];
   outVertices[3] = inVertices[ detail::PossibleTetraSplitCases[lookupTablePos][3] ];
-  outVertices[4] = inVertices[ detail::PossibleTetraSplitCases[lookupTablePos][4] ];
   }
 };
 
