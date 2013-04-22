@@ -71,28 +71,45 @@ private:
       : Sum(ValueType(0)), InputPortal(inputPortal), OutputPortal(outputPortal)
     {  }
 
-    template<typename Tag>
-    DAX_EXEC_EXPORT
-    void operator()(const ::tbb::blocked_range<dax::Id> &range, Tag)
-    {
-      //use temp variable instead of member variable to reduce false sharing
-      ValueType temp = this->Sum;
-      for (dax::Id index = range.begin(); index < range.end(); index++)
-        {
-        temp = temp + this->InputPortal.Get(index);
-        if (Tag::is_final_scan())
-          {
-          this->OutputPortal.Set(index, temp);
-          }
-        }
-      this->Sum = temp;
-    }
-
     DAX_EXEC_CONT_EXPORT
     ScanInclusiveBody(const ScanInclusiveBody &body, ::tbb::split)
       : Sum(0),
         InputPortal(body.InputPortal),
         OutputPortal(body.OutputPortal) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(const ::tbb::blocked_range<dax::Id> &range, ::tbb::pre_scan_tag)
+    {
+      typedef typename InputPortalType::IteratorType InIterator;
+
+      //use temp, and iterators instead of member variable to reduce false sharing
+      ValueType temp = this->Sum;
+      InIterator inIter = this->InputPortal.GetIteratorBegin() + range.begin();
+      for (dax::Id index = range.begin(); index != range.end();
+           ++index, ++inIter)
+        {
+        temp = temp + *inIter;
+        }
+      this->Sum = temp;
+    }
+
+    DAX_EXEC_EXPORT
+    void operator()(const ::tbb::blocked_range<dax::Id> &range, ::tbb::final_scan_tag)
+    {
+      typedef typename InputPortalType::IteratorType InIterator;
+      typedef typename OutputPortalType::IteratorType OutIterator;
+
+      //use temp, and iterators instead of member variable to reduce false sharing
+      ValueType temp = this->Sum;
+      InIterator inIter = this->InputPortal.GetIteratorBegin() + range.begin();
+      OutIterator outIter = this->OutputPortal.GetIteratorBegin() + range.begin();
+      for (dax::Id index = range.begin(); index != range.end();
+           ++index, ++inIter, ++outIter)
+        {
+        *outIter = temp = (temp + *inIter);
+        }
+      this->Sum = temp;
+    }
 
     DAX_EXEC_CONT_EXPORT
     void reverse_join(const ScanInclusiveBody &left)
@@ -116,9 +133,7 @@ private:
     ScanInclusiveBody<InputPortalType, OutputPortalType>
         body(inputPortal, outputPortal);
     dax::Id arrayLength = inputPortal.GetNumberOfValues();
-    ::tbb::parallel_scan(
-          ::tbb::blocked_range<dax::Id>(0, arrayLength, TBB_GRAIN_SIZE),
-          body);
+    ::tbb::parallel_scan( ::tbb::blocked_range<dax::Id>(0, arrayLength), body);
     return body.Sum;
   }
 
@@ -137,28 +152,50 @@ private:
       : Sum(ValueType(0)), InputPortal(inputPortal), OutputPortal(outputPortal)
     {  }
 
-    template<typename Tag>
-    DAX_EXEC_EXPORT
-    void operator()(const ::tbb::blocked_range<dax::Id> &range, Tag)
-    {
-      ValueType temp = this->Sum;
-      for (dax::Id index = range.begin(); index < range.end(); index++)
-        {
-        ValueType inputValue = this->InputPortal.Get(index);
-        if (Tag::is_final_scan())
-          {
-          this->OutputPortal.Set(index, temp);
-          }
-        temp = temp + inputValue;
-        }
-      this->Sum = temp;
-    }
-
     DAX_EXEC_CONT_EXPORT
     ScanExclusiveBody(const ScanExclusiveBody &body, ::tbb::split)
       : Sum(0),
         InputPortal(body.InputPortal),
         OutputPortal(body.OutputPortal) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(const ::tbb::blocked_range<dax::Id> &range, ::tbb::pre_scan_tag)
+    {
+      typedef typename InputPortalType::IteratorType InIterator;
+
+      ValueType temp = this->Sum;
+
+      //move the iterator to the first item
+      InIterator iter = this->InputPortal.GetIteratorBegin() + range.begin();
+      for (dax::Id index = range.begin(); index != range.end(); ++index, ++iter)
+        {
+        temp = temp + *iter;
+        }
+      this->Sum = temp;
+    }
+
+    DAX_EXEC_EXPORT
+    void operator()(const ::tbb::blocked_range<dax::Id> &range, ::tbb::final_scan_tag)
+    {
+      typedef typename InputPortalType::IteratorType InIterator;
+      typedef typename OutputPortalType::IteratorType OutIterator;
+
+      ValueType temp = this->Sum;
+
+      //move the iterators to the first item
+      InIterator inIter = this->InputPortal.GetIteratorBegin() + range.begin();
+      OutIterator outIter = this->OutputPortal.GetIteratorBegin() + range.begin();
+      for (dax::Id index = range.begin(); index != range.end();
+           ++index, ++inIter, ++outIter)
+        {
+        //copy into a local reference since Input and Output portal
+        //could point to the same memory location
+        ValueType v = *inIter;
+        *outIter = temp;
+        temp = temp + v;
+        }
+      this->Sum = temp;
+    }
 
     DAX_EXEC_CONT_EXPORT
     void reverse_join(const ScanExclusiveBody &left)
@@ -183,9 +220,7 @@ private:
         body(inputPortal, outputPortal);
     dax::Id arrayLength = inputPortal.GetNumberOfValues();
 
-    ::tbb::parallel_scan(
-          ::tbb::blocked_range<dax::Id>(0, arrayLength, TBB_GRAIN_SIZE),
-          body);
+    ::tbb::parallel_scan( ::tbb::blocked_range<dax::Id>(0, arrayLength), body);
 
     // Seems a little weird to me that we would return the last value in the
     // array rather than the sum, but that is how the function is specified.
