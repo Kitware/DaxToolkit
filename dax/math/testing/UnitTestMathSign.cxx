@@ -62,6 +62,18 @@ void TestIsNegative(dax::Scalar negative, dax::Scalar positive)
                   "Did not detect non-negative.");
 }
 
+void TestSignBit(dax::Scalar negative, dax::Scalar positive)
+{
+  std::cout << "Testing SignBit" << std::endl;
+
+  DAX_TEST_ASSERT(dax::math::SignBit(negative) != 0,
+                  "Did not detect negative SignBit.");
+  DAX_TEST_ASSERT(dax::math::SignBit(positive) == 0,
+                  "Did not detect positive SignBit.");
+  DAX_TEST_ASSERT(dax::math::SignBit(dax::Scalar(0.0)) == 0,
+                  "Did not detect zero SignBit.");
+}
+
 void TestCopySign(dax::Scalar negative, dax::Scalar positive)
 {
   std::cout << "Testing CopySign" << std::endl;
@@ -120,6 +132,7 @@ void TestSign()
 {
   dax::internal::Testing::TryAllTypes(TestSignFunctor());
   TestIsNegative(-2.3, 4.5);
+  TestSignBit(-2.3, 4.5);
   TestCopySign(-2.3, 4.5);
 }
 

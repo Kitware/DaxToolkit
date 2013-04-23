@@ -222,6 +222,9 @@ struct TestSignKernel : public MathTestFunctor<TestSignKernel>
     MY_ASSERT(dax::math::IsNegative(-3.1), "Bad negative.");
     MY_ASSERT(!dax::math::IsNegative(3.2), "Bad positive.");
     MY_ASSERT(!dax::math::IsNegative(0.0), "Bad non-negative.");
+    MY_ASSERT(dax::math::SignBit(-3.1), "Bad negative SignBit.");
+    MY_ASSERT(!dax::math::SignBit(3.2), "Bad positive SignBit.");
+    MY_ASSERT(!dax::math::SignBit(0.0), "Bad non-negative SignBit.");
     MY_ASSERT(dax::math::CopySign(-0.25, 100.0) == 0.25, "Copy sign.");
 
     return NULL;

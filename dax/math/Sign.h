@@ -100,6 +100,17 @@ DAX_EXEC_CONT_EXPORT bool IsNegative(dax::Scalar x)
 }
 
 //-----------------------------------------------------------------------------
+/// Returns a nonzero value if \x is negative.
+///
+DAX_EXEC_CONT_EXPORT int SignBit(dax::Scalar x)
+{
+#ifdef DAX_USE_BOOST_SIGN
+  using boost::math::signbit;
+#endif
+  return signbit(x);
+}
+
+//-----------------------------------------------------------------------------
 /// Copies the sign of \p y onto \p x.  If \p y is positive, returns Abs(\p x).
 /// If \p x is negative, returns -Abs(\p x).
 ///
