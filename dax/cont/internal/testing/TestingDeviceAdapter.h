@@ -244,6 +244,16 @@ public:
       }
   };
 
+  struct FuseAll
+  {
+    template<typename T>
+    DAX_EXEC_EXPORT bool operator()(const T&, const T&) const
+    {
+      //binary predicates for unique return true if they are the same
+      return true;
+    }
+  };
+
 
 private:
 
@@ -574,8 +584,8 @@ private:
     Algorithm::Copy(input,temp);
     Algorithm::Sort(temp);
     Algorithm::Unique(temp);
-    
-    //verify lower and upper bounds work    
+
+    //verify lower and upper bounds work
     Algorithm::LowerBounds(temp,input,handle);
     Algorithm::UpperBounds(temp,input,handle1);
 
@@ -669,7 +679,7 @@ private:
     //Validate the sort, and SortGreater are inverse
     Algorithm::Sort(sorted);
     Algorithm::Sort(comp_sorted,dax::math::SortGreater());
-    
+
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
       {
       dax::Id sorted1 = sorted.GetPortalConstControl().Get(i);
@@ -678,8 +688,8 @@ private:
       DAX_TEST_ASSERT(sorted1 == sorted2,
                       "Got bad sort values when using SortGreater");
       }
-    
-    Algorithm::Sort(comp_sorted,dax::math::SortLess());   
+
+    Algorithm::Sort(comp_sorted,dax::math::SortLess());
 
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
       {
@@ -687,7 +697,7 @@ private:
       dax::Id sorted2 = comp_sorted.GetPortalConstControl().Get(i);
       DAX_TEST_ASSERT(sorted1 == sorted2,
                       "Got bad sort values when using SortLesser");
-      }   
+      }
   }
 
   static DAX_CONT_EXPORT void TestLowerBoundstWithComparisonObject()
@@ -723,6 +733,35 @@ private:
       dax::Id value = handle.GetPortalConstControl().Get(i);
       DAX_TEST_ASSERT(value == i % 50, "Got bad LowerBounds value with SortLess");
       }
+  }
+
+  static DAX_CONT_EXPORT void TestUniqueWithComparisonObject()
+  {
+    std::cout << "-------------------------------------------------" << std::endl;
+    std::cout << "Testing Unique with comparison object" << std::endl;
+    dax::Id testData[ARRAY_SIZE];
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      testData[i]= OFFSET+(i % 50);
+      }
+    IdArrayHandle input = MakeArrayHandle(testData, ARRAY_SIZE);
+
+    IdArrayHandle temp;
+    Algorithm::Copy(input,temp);
+    Algorithm::Sort(temp);
+    Algorithm::Unique(temp, FuseAll());
+
+    // Check to make sure that temp was resized correctly during Unique.
+    // (This was a discovered bug at one point.)
+    temp.GetPortalConstControl();  // Forces copy back to control.
+    temp.ReleaseResourcesExecution(); // Make sure not counting on execution.
+    std::cout << "temp size: " << temp.GetNumberOfValues() << std::endl;
+    DAX_TEST_ASSERT(
+          temp.GetNumberOfValues() == 1,
+          "Unique did not resize array (or size did not copy to control).");
+
+    dax::Id value = temp.GetPortalConstControl().Get(0);
+    DAX_TEST_ASSERT(value == OFFSET, "Got bad unique value");
   }
 
   static DAX_CONT_EXPORT void TestScanInclusive()
@@ -1019,11 +1058,12 @@ private:
       TestScanExclusive();
       TestSortWithComparisonObject();
       TestLowerBoundstWithComparisonObject();
+      TestUniqueWithComparisonObject();
       TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
       TestContScheduler();
       TestStreamCompactWithStencil();
       TestStreamCompact();
-      
+
 
       std::cout << "Doing Worklet tests with all grid type" << std::endl;
       dax::cont::internal::GridTesting::TryAllGridTypes(TestWorklets(),

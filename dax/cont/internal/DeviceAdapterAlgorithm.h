@@ -244,6 +244,21 @@ struct DeviceAdapterAlgorithm
   DAX_CONT_EXPORT static void Unique(
       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag>& values);
 
+  /// \brief Reduce an array to only the unique values it contains
+  ///
+  /// Removes all duplicate values in \c values that are adjacent to each
+  /// other. Which means you should sort the input array unless you want
+  /// duplicate values that aren't adjacent. Note the values array size might
+  /// be modified by this operation.
+  ///
+  /// Uses the custom binary predicate Comparison to determine if something
+  /// is unique. The predicate must return true if the two items are the same.
+  ///
+  template<typename T, class Container, class Compare>
+  DAX_CONT_EXPORT static void Unique(
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterTag>& values,
+      Compare comp);
+
   /// \brief Output is the first index in input for each item in values that wouldn't alter the ordering of input
   ///
   /// UpperBounds is a vectorized search. From each value in \c values it finds
