@@ -131,7 +131,7 @@ public:
                                              resultPos));
       outputPortal.Set(outputIndex, resultIndex);
       }
-  }  
+  }
 
   template<class CIn, class COut>
   DAX_CONT_EXPORT static void LowerBounds(
@@ -141,7 +141,7 @@ public:
     DeviceAdapterAlgorithm<dax::cont::DeviceAdapterTagSerial>::LowerBounds(
          input,values_output,values_output);
   }
-  
+
   template<typename T, class CIn, class COut>
   DAX_CONT_EXPORT static T ScanInclusive(
       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial> &input,
@@ -296,7 +296,7 @@ public:
 
     PortalType arrayPortal = values.PrepareForInPlace();
     std::sort(arrayPortal.GetIteratorBegin(), arrayPortal.GetIteratorEnd(),comp);
-  }  
+  }
 
   template<typename T, class CStencil, class COut>
   DAX_CONT_EXPORT static void StreamCompact(
@@ -385,6 +385,23 @@ public:
 
     typename PortalT::IteratorType newEnd =
         std::unique(arrayPortal.GetIteratorBegin(), arrayPortal.GetIteratorEnd());
+    values.Shrink(std::distance(arrayPortal.GetIteratorBegin(), newEnd));
+  }
+
+  template<typename T, class Container, class Compare>
+  DAX_CONT_EXPORT static void Unique(
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>& values,
+      Compare comp)
+  {
+    typedef typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial>
+        ::PortalExecution PortalT;
+
+    PortalT arrayPortal = values.PrepareForInPlace();
+
+    typename PortalT::IteratorType newEnd =
+        std::unique(arrayPortal.GetIteratorBegin(),
+                    arrayPortal.GetIteratorEnd(),
+                    comp);
     values.Shrink(std::distance(arrayPortal.GetIteratorBegin(), newEnd));
   }
 

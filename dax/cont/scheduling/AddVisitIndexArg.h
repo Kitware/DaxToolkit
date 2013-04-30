@@ -52,7 +52,7 @@ struct MakeVisitIndexControlType
     visitIndices.PrepareForOutput(inputCellIds.GetNumberOfValues());
     Algorithm::LowerBounds(inputCellIds, inputCellIds, visitIndices);
     scheduler.Invoke(dax::exec::internal::kernel::ComputeVisitIndex(),
-                     visitIndices);
+                     visitIndices, visitIndices); //as input and output
   }
 };
 
@@ -79,7 +79,7 @@ class AddVisitIndexArg
   typedef dax::internal::ReplaceAndExtendSignatures<
               WorkletType,
               dax::cont::sig::VisitIndex,
-              dax::cont::sig::to_placeholder,
+              dax::cont::sig::internal::VisitIndexMetaFunc,
               dax::cont::arg::Field>  ModifiedWorkletSignatures;
 
   typedef typename ModifiedWorkletSignatures::found VisitIndexFound;

@@ -41,7 +41,7 @@ namespace math {
 template<class T> DAX_EXEC_CONT_EXPORT T Abs(const T& x);
 
 namespace detail{
-template<class NumericTag> struct abs {
+template<class NumericTag> struct Abs {
   template<class T>
   DAX_EXEC_CONT_EXPORT
   T operator()(const T& x) const
@@ -50,11 +50,11 @@ template<class NumericTag> struct abs {
   }
 };
 
-template<> struct abs<dax::TypeTraitsIntegerTag>
+template<> struct Abs<dax::TypeTraitsIntegerTag>
 {
-  template<class T>
+  template<class ValueType>
   DAX_EXEC_CONT_EXPORT
-  T operator()(const T& x) const
+  ValueType operator()( ValueType x ) const
   {
 #if DAX_SIZE_ID == DAX_SIZE_INT
   return abs(x);
@@ -69,7 +69,9 @@ template<> struct abs<dax::TypeTraitsIntegerTag>
 
   DAX_EXEC_CONT_EXPORT
   dax::Id3 operator()(const dax::Id3& x) const
-  { return dax::make_Id3(Abs(x[0]), Abs(x[1]), Abs(x[2])); }
+  { return dax::make_Id3(dax::math::Abs(x[0]),
+                         dax::math::Abs(x[1]),
+                         dax::math::Abs(x[2])); }
 };
 
 
@@ -83,7 +85,7 @@ template<> struct abs<dax::TypeTraitsIntegerTag>
 template<class T>
 DAX_EXEC_CONT_EXPORT T Abs(const T& x) {
   typedef typename dax::TypeTraits<T> TTraits;
-  return detail::abs<typename TTraits::NumericTag>()(x);
+  return detail::Abs<typename TTraits::NumericTag>()(x);
 }
 
 //-----------------------------------------------------------------------------
@@ -95,6 +97,17 @@ DAX_EXEC_CONT_EXPORT bool IsNegative(dax::Scalar x)
   using boost::math::signbit;
 #endif
   return (signbit(x) != 0);
+}
+
+//-----------------------------------------------------------------------------
+/// Returns a nonzero value if \x is negative.
+///
+DAX_EXEC_CONT_EXPORT int SignBit(dax::Scalar x)
+{
+#ifdef DAX_USE_BOOST_SIGN
+  using boost::math::signbit;
+#endif
+  return signbit(x);
 }
 
 //-----------------------------------------------------------------------------

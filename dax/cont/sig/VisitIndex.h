@@ -25,6 +25,24 @@ namespace dax { namespace cont { namespace sig {
 /// \brief Reference worklet Id in the \c ExecutionSignature declarations.
 class VisitIndex {};
 
+/// \brief Used internally to map an array of visit indices to a VisitIndex
+/// signature.
+template<int> class VisitIndexArg {};
+
+namespace internal {
+
+/// \brief Converts type T to a Arg placeholder, presumes T::value returns an
+/// integer. Is designed as a boost mpl metafunction. Used in, for example, the
+/// ExecArgToUseMetaFunc in dax::internal::ReplaceAndExtendSignatures.
+///
+struct VisitIndexMetaFunc
+{
+  template<typename T>
+  struct apply { typedef dax::cont::sig::VisitIndexArg<T::value> type; };
+};
+
+} // namespace internal
+
 }}} // namespace dax::cont::sig
 
 #endif //__dax_cont_sig_VisitIndex_h

@@ -33,7 +33,7 @@ namespace exec {
 class WorkletInterpolatedCell : public dax::exec::internal::WorkletBase
 {
 public:
-  typedef dax::cont::sig::Cell DomainType;
+  typedef dax::cont::sig::PermutedCell DomainType;
 
   DAX_EXEC_EXPORT WorkletInterpolatedCell() { }
 protected:

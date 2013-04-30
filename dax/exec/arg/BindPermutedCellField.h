@@ -8,20 +8,18 @@
 //  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 //  PURPOSE.  See the above copyright notice for more information.
 //
-//  Copyright 2012 Sandia Corporation.
+//  Copyright 2013 Sandia Corporation.
 //  Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_exec_arg_BindCellPoints_h
-#define __dax_exec_arg_BindCellPoints_h
+#ifndef __dax_exec_arg_BindPermutedCellField_h
+#define __dax_exec_arg_BindPermutedCellField_h
 #if defined(DAX_DOXYGEN_ONLY)
 
 #else // !defined(DAX_DOXYGEN_ONLY)
 
 #include <dax/Types.h>
-#include <dax/CellTag.h>
-#include <dax/VectorTraits.h>
 
 #include <dax/cont/arg/ConceptMap.h>
 #include <dax/cont/arg/Topology.h>
@@ -30,7 +28,6 @@
 #include <dax/cont/sig/Tag.h>
 
 #include <dax/exec/arg/ArgBase.h>
-#include <dax/exec/CellField.h>
 #include <dax/exec/CellVertices.h>
 #include <dax/exec/internal/IJKIndex.h>
 #include <dax/exec/internal/WorkletBase.h>
@@ -40,44 +37,37 @@
 namespace dax { namespace exec { namespace arg {
 
 template <typename Invocation, int N>
-class BindCellPoints : public dax::exec::arg::ArgBase< BindCellPoints<Invocation,N> >
+class BindPermutedCellField : public dax::exec::arg::ArgBase< BindPermutedCellField<Invocation, N> >
 {
-  typedef dax::exec::arg::ArgBaseTraits< BindCellPoints< Invocation, N > > Traits;
+  typedef dax::exec::arg::ArgBaseTraits< BindPermutedCellField< Invocation, N > > Traits;
 
   typedef typename Traits::TopoExecIndex TopoExecIndex;
   typedef typename Traits::TopoExecArgType TopoExecArgType;
   typedef typename Traits::ExecArgType ExecArgType;
-  typedef typename TopoExecArgType::CellTag CellTag;
-
 public:
 
   typedef typename Traits::ValueType ValueType;
   typedef typename Traits::ReturnType ReturnType;
   typedef typename Traits::SaveType SaveType;
 
-  DAX_CONT_EXPORT BindCellPoints(dax::cont::internal::Bindings<Invocation>& bindings):
+  DAX_CONT_EXPORT BindPermutedCellField(
+      dax::cont::internal::Bindings<Invocation>& bindings):
     TopoExecArg(bindings.template Get<TopoExecIndex::value>().GetExecArg()),
     ExecArg(bindings.template Get<N>().GetExecArg()),
-    Value(typename dax::VectorTraits<ValueType>::ComponentType()) {}
+    Value() {}
+
 
   DAX_EXEC_EXPORT ReturnType GetValueForWriting()
     { return this->Value; }
+
 
   template<typename IndexType>
   DAX_EXEC_EXPORT ReturnType GetValueForReading(
                             const IndexType& index,
                             const dax::exec::internal::WorkletBase& work) const
     {
-    ValueType v;
-    const dax::exec::CellVertices<CellTag>& pointIndices =
-                                            this->TopoExecArg(index, work);
-    for(int vertexIndex = 0;
-        vertexIndex < pointIndices.NUM_VERTICES;
-        ++vertexIndex)
-      {
-      v[vertexIndex] = this->ExecArg(pointIndices[vertexIndex],work);
-      }
-    return v;
+    const dax::Id cellIndex = this->TopoExecArg.GetMapIndex(index, work);
+    return this->ExecArg(cellIndex, work);
     }
 
   DAX_EXEC_EXPORT void SaveValue(int index,
@@ -89,16 +79,8 @@ public:
   DAX_EXEC_EXPORT void SaveValue(int index, const SaveType& v,
                         const dax::exec::internal::WorkletBase& work) const
     {
-    const dax::exec::CellVertices<CellTag>& pointIndices =
-                                            this->TopoExecArg(index, work);
-    for(int vertexIndex = 0;
-        vertexIndex < pointIndices.NUM_VERTICES;
-        ++vertexIndex)
-      {
-      this->ExecArg.SaveExecutionResult(pointIndices[vertexIndex],
-                                        v[vertexIndex],
-                                        work);
-      }
+    const dax::Id cellIndex = this->TopoExecArg.GetMapIndex(index, work);
+    this->ExecArg.SaveExecutionResult(cellIndex, v, work);
     }
 private:
   TopoExecArgType TopoExecArg;
@@ -106,18 +88,20 @@ private:
   ValueType Value;
 };
 
-
-
 //the traits for BindPermutedCellField
 template <typename Invocation,  int N >
-struct ArgBaseTraits< BindCellPoints<Invocation, N> >
+struct ArgBaseTraits< BindPermutedCellField<Invocation, N> >
 {
 private:
   typedef typename dax::cont::internal::Bindings<Invocation> BindingsType;
-  typedef typename dax::cont::internal::FindBinding<BindingsType, dax::cont::arg::Topology>::type TopoIndex;
-  typedef typename BindingsType::template GetType<TopoIndex::value>::type TopoControlBinding;
+  typedef typename dax::cont::internal::FindBinding<
+      BindingsType, dax::cont::arg::Topology>::type TopoIndex;
+  typedef typename BindingsType::template GetType<TopoIndex::value>::type
+      TopoControlBinding;
 
-  typedef typename dax::cont::internal::Bindings<Invocation>::template GetType<N>::type ControlBinding;
+  typedef typename dax::cont::internal::Bindings<Invocation>
+      ::template GetType<N>::type ControlBinding;
+
   typedef typename dax::cont::arg::ConceptMapTraits<ControlBinding>::Tags Tags;
 
 public:
@@ -125,7 +109,7 @@ public:
   typedef typename TopoControlBinding::ExecArg TopoExecArgType;
   typedef typename ControlBinding::ExecArg ExecArgType;
 
-  typedef typename ::boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
+    typedef typename ::boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
                                    ::boost::true_type,
                                    ::boost::false_type>::type HasOutTag;
 
@@ -133,8 +117,7 @@ public:
                                    ::boost::true_type,
                                    ::boost::false_type>::type HasInTag;
 
-  typedef dax::exec::CellField<typename ExecArgType::ValueType,
-                               typename TopoExecArgType::CellTag> ValueType;
+  typedef typename ExecArgType::ValueType ValueType;
   typedef typename boost::mpl::if_<typename HasOutTag::type,
                                    ValueType&,
                                    ValueType const>::type ReturnType;
@@ -144,4 +127,4 @@ public:
 }}} // namespace dax::exec::arg
 
 #endif // !defined(DAX_DOXYGEN_ONLY)
-#endif //__dax_exec_arg_BindCellPoints_h
+#endif //__dax_exec_arg_BindPermutedCellField_h

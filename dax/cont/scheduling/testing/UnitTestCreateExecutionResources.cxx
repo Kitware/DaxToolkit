@@ -42,7 +42,7 @@ class ConceptMap< Field(Tags), std::vector<T> >
 
 public:
   //ignore constant values when finding size of domain
-  typedef typename dax::cont::arg::SupportedDomains<dax::cont::sig::AnyDomain>::Tags DomainTags;
+  typedef dax::cont::sig::AnyDomain DomainType;
   typedef dax::cont::ArrayPortalFromIterators<const T*> PortalType;
   typedef dax::exec::arg::FieldPortal<T,Tags,PortalType> ExecArg;
 
