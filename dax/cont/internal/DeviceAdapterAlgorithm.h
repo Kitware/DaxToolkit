@@ -25,6 +25,10 @@
 #include <limits.h>
 #include <sys/time.h>
 #include <unistd.h>
+#else
+#include <stdio.h>
+#include <sys/timeb.h>
+#include <time.h>
 #endif
 
 namespace dax {
@@ -348,8 +352,8 @@ public:
 
     TimeStamp retval;
 #ifdef _WIN32
-    timeb currentTime;
-    ::ftime(&currentTime);
+    _timeb currentTime;
+    _ftime(&currentTime);
     retval.Seconds = currentTime.time;
     retval.Microseconds = 1000*currentTime.millitm;
 #else
