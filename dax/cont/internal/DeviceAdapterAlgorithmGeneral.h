@@ -69,14 +69,14 @@ namespace internal {
 ///   {
 ///     ...
 ///   }
-///  
+///
 ///   template<typename T, class Container, class Compare>
 ///   DAX_CONT_EXPORT static void Sort(
 ///       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values,
 ///       Compare comp)
 ///   {
 ///     ...
-///   }  
+///   }
 ///
 ///   template<typename T, class CIn, class COut>
 ///   DAX_CONT_EXPORT static T ScanExclusive(
@@ -439,6 +439,43 @@ private:
     {  }
   };
 
+  template<class InputPortalType, class StencilPortalType, class Compare>
+  struct ClassifyUniqueComparisonKernel {
+    InputPortalType InputPortal;
+    StencilPortalType StencilPortal;
+    Compare CompareFunctor;
+
+    DAX_CONT_EXPORT
+    ClassifyUniqueComparisonKernel(InputPortalType inputPortal,
+                         StencilPortalType stencilPortal,
+                         Compare comp):
+      InputPortal(inputPortal),
+      StencilPortal(stencilPortal),
+      CompareFunctor(comp) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(dax::Id index) const {
+      typedef typename StencilPortalType::ValueType ValueType;
+      if (index == 0)
+        {
+        // Always copy first value.
+        this->StencilPortal.Set(index, ValueType(1));
+        }
+      else
+        {
+        //comparison predicate returns true when they match
+        const bool same = !(this->CompareFunctor(this->InputPortal.Get(index-1),
+                                                 this->InputPortal.Get(index)));
+        ValueType flag = ValueType(same);
+        this->StencilPortal.Set(index, flag);
+        }
+    }
+
+    DAX_CONT_EXPORT
+    void SetErrorMessageBuffer(const dax::exec::internal::ErrorMessageBuffer &)
+    {  }
+  };
+
 public:
   template<typename T, class Container>
   DAX_CONT_EXPORT static void Unique(
@@ -454,6 +491,34 @@ public:
         typename dax::cont::ArrayHandle<dax::Id,dax::cont::ArrayContainerControlTagBasic,DeviceAdapterTag>::PortalExecution>
         classifyKernel(values.PrepareForInput(),
                        stencilArray.PrepareForOutput(inputSize));
+    DerivedAlgorithm::Schedule(classifyKernel, inputSize);
+
+    dax::cont::ArrayHandle<
+        T, dax::cont::ArrayContainerControlTagBasic, DeviceAdapterTag>
+        outputArray;
+
+    DerivedAlgorithm::StreamCompact(values, stencilArray, outputArray);
+
+    DerivedAlgorithm::Copy(outputArray, values);
+  }
+
+  template<typename T, class Container, class Compare>
+  DAX_CONT_EXPORT static void Unique(
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values,
+      Compare comp)
+  {
+    dax::cont::ArrayHandle<
+        dax::Id, dax::cont::ArrayContainerControlTagBasic, DeviceAdapterTag>
+        stencilArray;
+    dax::Id inputSize = values.GetNumberOfValues();
+
+    ClassifyUniqueComparisonKernel<
+        typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTag>::PortalConstExecution,
+        typename dax::cont::ArrayHandle<dax::Id,dax::cont::ArrayContainerControlTagBasic,DeviceAdapterTag>::PortalExecution,
+        Compare>
+        classifyKernel(values.PrepareForInput(),
+                       stencilArray.PrepareForOutput(inputSize),
+                       comp);
     DerivedAlgorithm::Schedule(classifyKernel, inputSize);
 
     dax::cont::ArrayHandle<

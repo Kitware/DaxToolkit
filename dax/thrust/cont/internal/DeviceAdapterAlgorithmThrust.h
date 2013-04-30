@@ -210,6 +210,7 @@ private:
     typedef typename IteratorTraits<PortalType>::Tag IteratorTag;
     return MakeIteratorBegin(portal, IteratorTag());
   }
+
   template<class PortalType>
   DAX_CONT_EXPORT static
   typename IteratorTraits<PortalType>::IteratorType
@@ -217,7 +218,6 @@ private:
   {
     return IteratorBegin(portal) + portal.GetNumberOfValues();
   }
-
 //-----------------------------------------------------------------------------
 
   template<class InputPortal, class OutputPortal>
@@ -369,21 +369,24 @@ private:
              output);
   }
 
-  // A simple wrapper around unique that returns the size of the array.
-  // This would not be necessary if we had an auto keyword.
-  template<class IteratorType>
-  DAX_CONT_EXPORT static
-  dax::Id UniqueIterator(IteratorType first, IteratorType last)
-  {
-    IteratorType newLast = ::thrust::unique(first, last);
-    return ::thrust::distance(first, newLast);
-  }
-
   template<class ValuesPortal>
   DAX_CONT_EXPORT static
   dax::Id UniquePortal(const ValuesPortal values)
   {
-    return UniqueIterator(IteratorBegin(values), IteratorEnd(values));
+    typedef typename IteratorTraits<ValuesPortal>::IteratorType IteratorType;
+    IteratorType begin = IteratorBegin(values);
+    IteratorType newLast = ::thrust::unique(begin, IteratorEnd(values));
+    return ::thrust::distance(begin, newLast);
+  }
+
+  template<class ValuesPortal, class Compare>
+  DAX_CONT_EXPORT static
+  dax::Id UniquePortal(const ValuesPortal values, Compare comp)
+  {
+    typedef typename IteratorTraits<ValuesPortal>::IteratorType IteratorType;
+    IteratorType begin = IteratorBegin(values);
+    IteratorType newLast = ::thrust::unique(begin, IteratorEnd(values), comp);
+    return ::thrust::distance(begin, newLast);
   }
 
   template<class InputPortal, class ValuesPortal, class OutputPortal>
@@ -596,6 +599,16 @@ public:
       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values)
   {
     dax::Id newSize = UniquePortal(values.PrepareForInPlace());
+
+    values.Shrink(newSize);
+  }
+
+  template<typename T, class Container, class Compare>
+  DAX_CONT_EXPORT static void Unique(
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values,
+      Compare comp)
+  {
+    dax::Id newSize = UniquePortal(values.PrepareForInPlace(),comp);
 
     values.Shrink(newSize);
   }

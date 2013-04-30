@@ -148,7 +148,7 @@ public:
 
     // Copy data back into original
     valuesCopy.CopyInto(values.GetPortalControl().GetIteratorBegin());
-  }  
+  }
 
   DAX_CONT_EXPORT static void Synchronize()
   {
