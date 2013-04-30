@@ -96,6 +96,8 @@ template<> struct max<dax::TypeTraitsRealTag,dax::TypeTraitsScalarTag> {
 //-----------------------------------------------------------------------------
 /// Returns \p x or \p y, whichever is larger.
 ///
+template<class T>
+DAX_EXEC_CONT_EXPORT T Max(const T& x, const T& y)
 {
   typedef typename dax::TypeTraits<T> TTraits;
   return detail::max<typename TTraits::NumericTag,
