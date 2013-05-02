@@ -385,19 +385,11 @@ private:
     IdArrayManagerExecution manager;
     manager.AllocateArrayForOutput(container, ARRAY_SIZE);
 
-    std::cout << "Starting timer." << std::endl;
-    dax::cont::Timer<DeviceAdapterTag> timer;
-
     std::cout << "Running clear." << std::endl;
     Algorithm::Schedule(ClearArrayKernel(manager.GetPortal()), ARRAY_SIZE);
 
     std::cout << "Running add." << std::endl;
     Algorithm::Schedule(AddArrayKernel(manager.GetPortal()), ARRAY_SIZE);
-
-    std::cout << "Checking time." << std::endl;
-    dax::Scalar elapsedTime = timer.GetElapsedTime();
-    DAX_TEST_ASSERT((elapsedTime > 0) && (elapsedTime < 10),
-                    "Timer reported unexpected time for scheduling.");
 
     std::cout << "Checking results." << std::endl;
     manager.RetrieveOutputData(container);
