@@ -16,10 +16,10 @@
 
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
-#include <dax/cont/ArrayContainerControlCounting.h>
+#include <dax/cont/internal/ArrayContainerControlCounting.h>
 #include <dax/cont/ArrayHandleCounting.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace {
 
@@ -50,5 +50,5 @@ void TestCountingArray()
 
 int UnitTestArrayHandleCounting(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestCountingArray);
+  return dax::cont::testing::Testing::Run(TestCountingArray);
 }

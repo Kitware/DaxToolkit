@@ -17,8 +17,8 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <math.h>
 #include <fstream>
@@ -36,7 +36,7 @@
 
 #include <dax/exec/WorkletInterpolatedCell.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 #include <vector>
 
 
@@ -88,7 +88,7 @@ struct TestInterpolatedCellPermutation
     typedef dax::CellTagVertex OutGridTag;
     typedef dax::cont::UnstructuredGrid<OutGridTag> OutGridType;
 
-    dax::cont::internal::TestGrid<InGridType> inGenerator(DIM);
+    dax::cont::testing::TestGrid<InGridType> inGenerator(DIM);
     InGridType inGrid = inGenerator.GetRealGrid();
     OutGridType outGrid;
 
@@ -186,5 +186,5 @@ void RunTestInterpolatedCellPermutation()
 //-----------------------------------------------------------------------------
 int UnitTestInterpolatedCellPermutation(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(RunTestInterpolatedCellPermutation);
+  return dax::cont::testing::Testing::Run(RunTestInterpolatedCellPermutation);
 }

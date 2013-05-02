@@ -13,17 +13,18 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_ArrayContainerControlConstantValue_h
-#define __dax_cont_ArrayContainerControlConstantValue_h
+#ifndef __dax_cont_internal_ArrayContainerControlConstantValue_h
+#define __dax_cont_internal_ArrayContainerControlConstantValue_h
 
-#include <dax/cont/ArrayPortal.h>
-#include <dax/cont/IteratorFromArrayPortal.h>
 #include <dax/cont/ArrayContainerControl.h>
+#include <dax/cont/ArrayPortal.h>
 #include <dax/cont/ErrorControlBadValue.h>
 #include <dax/cont/internal/ArrayTransfer.h>
+#include <dax/cont/internal/IteratorFromArrayPortal.h>
 
 namespace dax {
 namespace cont {
+namespace internal {
 
 /// \brief An array portal that returns an constant value
 ///
@@ -55,7 +56,7 @@ public:
   DAX_EXEC_CONT_EXPORT
   ValueType Get(dax::Id daxNotUsed(index)) const { return this->ConstantValue; }
 
-  typedef dax::cont::IteratorFromArrayPortal < ArrayPortalConstantValue
+  typedef dax::cont::internal::IteratorFromArrayPortal < ArrayPortalConstantValue
                                                < ConstantValueType > >
   IteratorType;
 
@@ -94,16 +95,16 @@ struct ArrayContainerControlTagConstantValue
   typedef ValueType ConstantValueType;
 };
 
-namespace internal {
 
 template< typename ConstantValueType>
 class ArrayContainerControl<
     ConstantValueType,
-    dax::cont::ArrayContainerControlTagConstantValue <ConstantValueType> >
+    dax::cont::internal::ArrayContainerControlTagConstantValue <
+                                                          ConstantValueType > >
 {
 public:
   typedef ConstantValueType ValueType;
-  typedef dax::cont::ArrayPortalConstantValue<ConstantValueType> PortalConstType;
+  typedef dax::cont::internal::ArrayPortalConstantValue<ConstantValueType> PortalConstType;
 
   // This is meant to be invalid. Because ConstantValue arrays are read only, you
   // should only be able to use the const version.
@@ -229,4 +230,4 @@ private:
 } // cont
 } // dax
 
-#endif //__dax_cont_ArrayContainerControlConstantValue_h
+#endif //__dax_cont_internal_ArrayContainerControlConstantValue_h

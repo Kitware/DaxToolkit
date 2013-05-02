@@ -27,19 +27,27 @@
 #include <dax/cont/DeviceAdapterSerial.h>
 #include <dax/cont/internal/DeviceAdapterAlgorithmGeneral.h>
 
-#include <dax/cont/internal/testing/TestingDeviceAdapter.h>
+#include <dax/cont/testing/TestingDeviceAdapter.h>
+
+namespace dax {
+namespace cont {
+namespace testing {
+
+struct DeviceAdapterTagTestAlgorithmGeneral { };
+
+}
+}
+}
 
 namespace dax {
 namespace cont {
 namespace internal {
 
-struct DeviceAdapterTagTestAlgorithmGeneral { };
-
 template <typename T, class ArrayContainerControlTag>
 class ArrayManagerExecution
     <T,
     ArrayContainerControlTag,
-    dax::cont::internal::DeviceAdapterTagTestAlgorithmGeneral>
+    dax::cont::testing::DeviceAdapterTagTestAlgorithmGeneral>
     : public dax::cont::internal::ArrayManagerExecution
           <T, ArrayContainerControlTag, dax::cont::DeviceAdapterTagSerial>
 {
@@ -52,18 +60,21 @@ public:
   typedef typename Superclass::PortalConstType PortalConstType;
 };
 
+
 template<>
 struct DeviceAdapterAlgorithm<
-           dax::cont::internal::DeviceAdapterTagTestAlgorithmGeneral> :
+           dax::cont::testing::DeviceAdapterTagTestAlgorithmGeneral> :
     dax::cont::internal::DeviceAdapterAlgorithmGeneral<
         DeviceAdapterAlgorithm<
-                   dax::cont::internal::DeviceAdapterTagTestAlgorithmGeneral>,
-        dax::cont::internal::DeviceAdapterTagTestAlgorithmGeneral>
+                   dax::cont::testing::DeviceAdapterTagTestAlgorithmGeneral>,
+        dax::cont::testing::DeviceAdapterTagTestAlgorithmGeneral>
 {
 private:
   typedef dax::cont::internal::DeviceAdapterAlgorithm<
       dax::cont::DeviceAdapterTagSerial> Algorithm;
 
+  typedef dax::cont::testing::DeviceAdapterTagTestAlgorithmGeneral
+            DeviceAdapterTagTestAlgorithmGeneral;
 public:
 
   template<class Functor>
@@ -158,10 +169,10 @@ public:
 
 }
 }
-} // namespace dax::cont::internal
+} // namespace dax::cont::testing
 
 int UnitTestDeviceAdapterAlgorithmGeneral(int, char *[])
 {
-  return dax::cont::internal::TestingDeviceAdapter
-      <dax::cont::internal::DeviceAdapterTagTestAlgorithmGeneral>::Run();
+  return dax::cont::testing::TestingDeviceAdapter
+      <dax::cont::testing::DeviceAdapterTagTestAlgorithmGeneral>::Run();
 }

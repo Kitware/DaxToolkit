@@ -18,7 +18,7 @@
 
 #include<dax/Types.h>
 #include <dax/exec/VectorOperations.h>
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 #include <math.h>
 
@@ -214,8 +214,8 @@ struct TestLinearFunctor
 
 void TestVectorAnalysis()
 {
-  dax::internal::Testing::TryAllTypes(TestLinearFunctor(),
-                                      dax::internal::Testing::TypeCheckReal());
+  dax::testing::Testing::TryAllTypes(TestLinearFunctor(),
+                                      dax::testing::Testing::TypeCheckReal());
   TestCross(dax::make_Vector3(1.0,0.0,0.0), dax::make_Vector3(0.0,1.0,0.0));
   TestCross(dax::make_Vector3(1.0,2.0,3.0), dax::make_Vector3(-3.0,-1.0,1.0));
   TestCross(dax::make_Vector3(0.0,0.0,1.0), dax::make_Vector3(0.001,0.01,2.0));
@@ -225,5 +225,5 @@ void TestVectorAnalysis()
 
 int UnitTestMathVectorAnalysis(int, char *[])
 {
-  return dax::internal::Testing::Run(TestVectorAnalysis);
+  return dax::testing::Testing::Run(TestVectorAnalysis);
 }

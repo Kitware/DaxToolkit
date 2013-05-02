@@ -13,16 +13,17 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_ArrayContainerControlPermutation_h
-#define __dax_cont_ArrayContainerControlPermutation_h
+#ifndef __dax_cont_internal_ArrayContainerControlPermutation_h
+#define __dax_cont_internal_ArrayContainerControlPermutation_h
 
-#include <dax/cont/ArrayPortal.h>
-#include <dax/cont/IteratorFromArrayPortal.h>
 #include <dax/cont/ArrayContainerControl.h>
+#include <dax/cont/ArrayPortal.h>
 #include <dax/cont/ErrorControlBadValue.h>
+#include <dax/cont/internal/IteratorFromArrayPortal.h>
 
 namespace dax {
 namespace cont {
+namespace internal {
 
 /// \brief An permutation array portal wraps and permutes two key-value portals.
 ///
@@ -73,7 +74,7 @@ public:
     this->Value_.Set(this->Key_.Get(index),value);
   }
 
-  typedef dax::cont::IteratorFromArrayPortal <ArrayPortalPermutation < KeyPortalType,
+  typedef dax::cont::internal::IteratorFromArrayPortal <ArrayPortalPermutation < KeyPortalType,
                                                                        ValuePortalType> >
   IteratorType;
 
@@ -99,8 +100,6 @@ struct ArrayContainerControlTagPermutation {
   typedef ArrayPortalPermutation <KeyPortalType,
                                   ValuePortalType> PortalType;
 };
-
-namespace internal {
 
 template<class KeyPortalType,class ValuePortalType>
 class ArrayContainerControl<
@@ -154,4 +153,4 @@ public:
 }
 }
 
-#endif //__dax_cont_ArrayContainerControlPermutation_h
+#endif //__dax_cont_internal_ArrayContainerControlPermutation_h

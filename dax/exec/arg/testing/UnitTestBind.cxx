@@ -20,7 +20,7 @@
 #include <dax/exec/arg/FindBinding.h>
 #include <dax/exec/internal/WorkletBase.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace {
 
@@ -51,5 +51,5 @@ void Bind()
 
 int UnitTestBind(int, char *[])
 {
-  return dax::internal::Testing::Run(Bind);
+  return dax::testing::Testing::Run(Bind);
 }

@@ -21,7 +21,7 @@
 
 #include <dax/cont/ArrayHandle.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <algorithm>
 
@@ -152,5 +152,5 @@ void TestArrayHandle()
 
 int UnitTestArrayHandle(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestArrayHandle);
+  return dax::cont::testing::Testing::Run(TestArrayHandle);
 }

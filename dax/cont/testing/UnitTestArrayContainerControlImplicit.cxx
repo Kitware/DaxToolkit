@@ -19,12 +19,12 @@
 #include <dax/Types.h>
 #include <dax/cont/ArrayContainerControlImplicit.h>
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/IteratorFromArrayPortal.h>
+#include <dax/cont/internal/IteratorFromArrayPortal.h>
 
 #include <dax/VectorTraits.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace
 {
@@ -34,7 +34,7 @@ struct TestImplicitContainer
 {
   typedef T ValueType;
   ValueType Temp;
-  typedef dax::cont::IteratorFromArrayPortal<
+  typedef dax::cont::internal::IteratorFromArrayPortal<
       TestImplicitContainer<T> > IteratorType;
 
 
@@ -144,12 +144,12 @@ struct TestFunctor
 
 void TestArrayContainerControlBasic()
 {
-  dax::internal::Testing::TryAllTypes(TestFunctor());
+  dax::testing::Testing::TryAllTypes(TestFunctor());
 }
 
 } // Anonymous namespace
 
 int UnitTestArrayContainerControlImplicit(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestArrayContainerControlBasic);
+  return dax::cont::testing::Testing::Run(TestArrayContainerControlBasic);
 }

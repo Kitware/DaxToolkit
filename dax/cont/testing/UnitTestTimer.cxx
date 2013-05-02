@@ -16,7 +16,7 @@
 
 #include <dax/cont/Timer.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -48,5 +48,5 @@ void Time()
 
 int UnitTestTimer(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(Time);
+  return dax::cont::testing::Testing::Run(Time);
 }

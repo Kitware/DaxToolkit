@@ -25,7 +25,7 @@
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace {
 
@@ -59,5 +59,5 @@ static void TestCellMapError()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletMapCellError(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestCellMapError);
+  return dax::cont::testing::Testing::Run(TestCellMapError);
 }

@@ -17,7 +17,7 @@
 #define __dax_cont_ArrayHandleConstantValue_h
 
 
-#include <dax/cont/ArrayContainerControlConstantValue.h>
+#include <dax/cont/internal/ArrayContainerControlConstantValue.h>
 #include <dax/cont/ArrayHandle.h>
 
 namespace dax {
@@ -31,14 +31,14 @@ namespace cont {
 template <typename ConstantValueType,
           class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class ArrayHandleConstantValue: public ArrayHandle < ConstantValueType,
-    dax::cont::ArrayContainerControlTagConstantValue<ConstantValueType>,
-    DeviceAdapterTag >
+  dax::cont::internal::ArrayContainerControlTagConstantValue<ConstantValueType>,
+  DeviceAdapterTag >
 {
 public:
   typedef dax::cont::ArrayHandle < ConstantValueType,
-      dax::cont::ArrayContainerControlTagConstantValue<ConstantValueType>,
-      DeviceAdapterTag > superclass;
-  typedef typename dax::cont::ArrayPortalConstantValue<ConstantValueType> PortalType;
+    dax::cont::internal::ArrayContainerControlTagConstantValue<ConstantValueType>,
+    DeviceAdapterTag > superclass;
+  typedef typename dax::cont::internal::ArrayPortalConstantValue<ConstantValueType> PortalType;
 
   ArrayHandleConstantValue(ConstantValueType value,dax::Id length)
     :superclass(PortalType(value,length))

@@ -14,12 +14,12 @@
 //
 //=============================================================================
 
-#include <dax/cont/ArrayPortalFromIterators.h>
+#include <dax/cont/internal/ArrayPortalFromIterators.h>
 
 #include <dax/VectorTraits.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace {
 
@@ -65,9 +65,9 @@ struct TemplatedTests
     static const ComponentType ORIGINAL_VALUE = 239;
     FillIterator(array, array+ARRAY_SIZE, ORIGINAL_VALUE);
 
-    dax::cont::ArrayPortalFromIterators<ValueType *>
+    ::dax::cont::internal::ArrayPortalFromIterators<ValueType *>
         portal(array, array+ARRAY_SIZE);
-    dax::cont::ArrayPortalFromIterators<const ValueType *>
+    ::dax::cont::internal::ArrayPortalFromIterators<const ValueType *>
         const_portal(array, array+ARRAY_SIZE);
 
     DAX_TEST_ASSERT(portal.GetNumberOfValues() == ARRAY_SIZE,
@@ -122,12 +122,12 @@ struct TestFunctor
 
 void TestArrayPortalFromIterators()
 {
-  dax::internal::Testing::TryAllTypes(TestFunctor());
+  dax::testing::Testing::TryAllTypes(TestFunctor());
 }
 
 } // Anonymous namespace
 
 int UnitTestArrayPortalFromIterators(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestArrayPortalFromIterators);
+  return dax::cont::testing::Testing::Run(TestArrayPortalFromIterators);
 }

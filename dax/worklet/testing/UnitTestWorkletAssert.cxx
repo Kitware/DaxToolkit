@@ -25,7 +25,7 @@
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <vector>
 
@@ -71,5 +71,5 @@ static void TestAssert()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletAssert(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestAssert);
+  return dax::cont::testing::Testing::Run(TestAssert);
 }

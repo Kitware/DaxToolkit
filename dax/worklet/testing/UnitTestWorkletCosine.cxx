@@ -17,8 +17,8 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/worklet/Cosine.h>
 
@@ -42,7 +42,7 @@ struct TestCosineWorklet
   template<typename GridType>
   void operator()(const GridType&) const
     {
-    dax::cont::internal::TestGrid<GridType> grid(DIM);
+    dax::cont::testing::TestGrid<GridType> grid(DIM);
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
     std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
@@ -87,7 +87,7 @@ struct TestCosineWorklet
 //-----------------------------------------------------------------------------
 void TestCosine()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestCosineWorklet());
+  dax::cont::testing::GridTesting::TryAllGridTypes(TestCosineWorklet());
   }
 
 } // Anonymous namespace
@@ -95,5 +95,5 @@ void TestCosine()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletCosine(int, char *[])
   {
-  return dax::cont::internal::Testing::Run(TestCosine);
+  return dax::cont::testing::Testing::Run(TestCosine);
   }

@@ -21,7 +21,7 @@
 #include <dax/cont/ArrayPortal.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/internal/GridTags.h>
-#include <dax/cont/IteratorFromArrayPortal.h>
+#include <dax/cont/internal/IteratorFromArrayPortal.h>
 
 #include <dax/CellTag.h>
 
@@ -36,7 +36,7 @@ class ArrayPortalFromUniformGridPointCoordinates
 {
 public:
   typedef dax::Vector3 ValueType;
-  typedef dax::cont::IteratorFromArrayPortal<
+  typedef dax::cont::internal::IteratorFromArrayPortal<
       ArrayPortalFromUniformGridPointCoordinates> IteratorType;
 
   DAX_EXEC_CONT_EXPORT

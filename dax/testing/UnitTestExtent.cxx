@@ -16,7 +16,7 @@
 
 #include <dax/Extent.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace {
 
@@ -142,5 +142,5 @@ static void ExtentTests()
 //-----------------------------------------------------------------------------
 int UnitTestExtent(int, char *[])
 {
-  return dax::internal::Testing::Run(ExtentTests);
+  return dax::testing::Testing::Run(ExtentTests);
 }

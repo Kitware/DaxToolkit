@@ -23,7 +23,7 @@
 #include <dax/exec/internal/ArrayPortalFromIterators.h>
 #include <dax/exec/internal/GridTopologies.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace {
 
@@ -150,5 +150,5 @@ void TestTopologyGenerator()
 
 int UnitTestTopologyGenerator(int, char *[])
 {
-  return dax::internal::Testing::Run(TestTopologyGenerator);
+  return dax::testing::Testing::Run(TestTopologyGenerator);
 }

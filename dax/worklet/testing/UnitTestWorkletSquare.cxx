@@ -25,8 +25,8 @@
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <vector>
 
@@ -41,7 +41,7 @@ struct TestElevationWorklet
   template<typename GridType>
   void operator()(const GridType&) const
   {
-  dax::cont::internal::TestGrid<GridType> grid(DIM);
+  dax::cont::testing::TestGrid<GridType> grid(DIM);
   dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
   std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
@@ -86,12 +86,12 @@ struct TestElevationWorklet
 //-----------------------------------------------------------------------------
 static void TestSquare()
 {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestElevationWorklet());
+  dax::cont::testing::GridTesting::TryAllGridTypes(TestElevationWorklet());
 }
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
 int UnitTestWorkletSquare(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestSquare);
+  return dax::cont::testing::Testing::Run(TestSquare);
 }

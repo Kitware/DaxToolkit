@@ -14,19 +14,24 @@
 ##
 ##=============================================================================
 
+set(headers
+  Testing.h
+  TestingDeviceAdapter.h
+  TestingGridGenerator.h
+  )
+
+dax_declare_headers(${headers})
+
 set(unit_tests
   UnitTestArrayContainerControlBasic.cxx
-  UnitTestArrayContainerControlCounting.cxx
-  UnitTestArrayContainerControlConstantValue.cxx
   UnitTestArrayContainerControlImplicit.cxx
-  UnitTestArrayContainerControlPermutation.cxx
   UnitTestArrayHandle.cxx
   UnitTestArrayHandleConstantValue.cxx
   UnitTestArrayHandleCounting.cxx
-  UnitTestArrayPortalFromIterators.cxx
+  UnitTestContTesting.cxx
   UnitTestDeviceAdapterAlgorithmDependency.cxx
+  UnitTestDeviceAdapterAlgorithmGeneral.cxx
   UnitTestDeviceAdapterSerial.cxx
-  UnitTestIteratorFromArrayPortal.cxx
   UnitTestSchedule.cxx
   UnitTestTimer.cxx
   UnitTestUniformGrid.cxx

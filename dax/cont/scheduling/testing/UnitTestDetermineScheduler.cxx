@@ -19,7 +19,7 @@
 #include <dax/cont/DeviceAdapter.h>
 
 #include <dax/cont/arg/Field.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 #include <dax/cont/GenerateInterpolatedCells.h>
 #include <dax/cont/GenerateTopology.h>
 #include <dax/cont/scheduling/DetermineScheduler.h>
@@ -93,5 +93,5 @@ void DetermineScheduler()
 
 int UnitTestDetermineScheduler(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(DetermineScheduler);
+  return dax::cont::testing::Testing::Run(DetermineScheduler);
 }

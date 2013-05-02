@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_ArrayPortalFromIterators_h
-#define __dax_cont_ArrayPortalFromIterators_h
+#ifndef __dax_cont_internal_ArrayPortalFromIterators_h
+#define __dax_cont_internal_ArrayPortalFromIterators_h
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayPortal.h>
@@ -24,6 +24,7 @@
 
 namespace dax {
 namespace cont {
+namespace internal {
 
 /// This templated implementation of an ArrayPortal allows you to adapt a pair
 /// of begin/end iterators to an ArrayPortal interface.
@@ -90,6 +91,7 @@ private:
 };
 
 }
-} // namespace dax::cont
+}
+} // namespace dax::cont::internal
 
-#endif //__dax_cont_ArrayPortalFromIterators_h
+#endif //__dax_cont_internal_ArrayPortalFromIterators_h

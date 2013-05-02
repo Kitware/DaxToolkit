@@ -16,7 +16,7 @@
 #ifndef __dax_cont_ArrayHandleCounting_h
 #define __dax_cont_ArrayHandleCounting_h
 
-#include <dax/cont/ArrayContainerControlCounting.h>
+#include <dax/cont/internal/ArrayContainerControlCounting.h>
 #include <dax/cont/ArrayHandle.h>
 
 namespace dax {
@@ -27,14 +27,14 @@ namespace cont {
 /// implicit array simply returns the value of the index.
 template <class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class ArrayHandleCounting : public ArrayHandle < dax::Id,
-                                 ArrayContainerControlTagCounting,
-                                 DeviceAdapterTag >
+                         dax::cont::internal::ArrayContainerControlTagCounting,
+                         DeviceAdapterTag >
 {
 public:
   typedef dax::cont::ArrayHandle < dax::Id,
-                        ArrayContainerControlTagCounting,
+                        dax::cont::internal::ArrayContainerControlTagCounting,
                         DeviceAdapterTag> superclass;
-  typedef dax::cont::ArrayPortalCounting PortalType;
+  typedef dax::cont::internal::ArrayPortalCounting PortalType;
 
   ArrayHandleCounting(dax::Id length)
     :superclass(PortalType(length))

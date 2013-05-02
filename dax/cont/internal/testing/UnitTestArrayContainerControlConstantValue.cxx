@@ -16,10 +16,10 @@
 
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
 
-#include <dax/cont/ArrayContainerControlConstantValue.h>
+#include <dax/cont/internal/ArrayContainerControlConstantValue.h>
 #include <dax/cont/ArrayHandle.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace {
 
@@ -28,10 +28,10 @@ const dax::Id CONSTANT_VALUE = 100;
 void TestConstantValueArray()
 {
   std::cout << "Creating array." << std::endl;
-  dax::cont::ArrayPortalConstantValue<dax::Id>
+  dax::cont::internal::ArrayPortalConstantValue<dax::Id>
       portal(CONSTANT_VALUE,ARRAY_SIZE);
   dax::cont::ArrayHandle<dax::Id,
-                         dax::cont::ArrayContainerControlTagConstantValue
+                         dax::cont::internal::ArrayContainerControlTagConstantValue
                          <dax::Id> >
       array(portal);
   DAX_TEST_ASSERT(array.GetNumberOfValues() == ARRAY_SIZE,
@@ -49,5 +49,5 @@ void TestConstantValueArray()
 
 int UnitTestArrayContainerControlConstantValue(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestConstantValueArray);
+  return dax::cont::testing::Testing::Run(TestConstantValueArray);
 }

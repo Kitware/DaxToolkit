@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_IteratorFromArrayPortal_h
-#define __dax_cont_IteratorFromArrayPortal_h
+#ifndef __dax_cont_internal_IteratorFromArrayPortal_h
+#define __dax_cont_internal_IteratorFromArrayPortal_h
 
 #include <dax/cont/ArrayPortal.h>
 
@@ -24,7 +24,7 @@
 
 namespace dax {
 namespace cont {
-
+namespace internal {
 namespace detail {
 
 template<class ArrayPortalType>
@@ -135,6 +135,7 @@ IteratorFromArrayPortal<ArrayPortalType> make_IteratorEnd(
 }
 
 }
-} // namespace dax::cont
+}
+} // namespace dax::cont::internal
 
-#endif //__dax_cont_IteratorFromArrayPortal_h
+#endif //__dax_cont_internal_IteratorFromArrayPortal_h

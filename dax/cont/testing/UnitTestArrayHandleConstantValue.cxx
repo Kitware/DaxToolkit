@@ -17,10 +17,10 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 
-#include <dax/cont/ArrayContainerControlConstantValue.h>
+#include <dax/cont/internal/ArrayContainerControlConstantValue.h>
 #include <dax/cont/ArrayHandleConstantValue.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace {
 
@@ -55,5 +55,5 @@ void TestConstantValueArray()
 
 int UnitTestArrayHandleConstantValue(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestConstantValueArray);
+  return dax::cont::testing::Testing::Run(TestConstantValueArray);
 }

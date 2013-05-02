@@ -17,8 +17,8 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/worklet/Tetrahedralize.h>
 
@@ -37,7 +37,7 @@
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 
 
@@ -78,7 +78,7 @@ struct TestTetrahedralizeWorklet
   template<typename GridType>
   void operator()(const GridType&) const
     {
-    dax::cont::internal::TestGrid<GridType> in(DIM);
+    dax::cont::testing::TestGrid<GridType> in(DIM);
     GridType out;
 
     this->GridTetrahedralize(in.GetRealGrid(),out);
@@ -87,7 +87,7 @@ struct TestTetrahedralizeWorklet
   //----------------------------------------------------------------------------
   void operator()(const dax::cont::UniformGrid<>&) const
     {
-    dax::cont::internal::TestGrid<dax::cont::UniformGrid<> > in(DIM);
+    dax::cont::testing::TestGrid<dax::cont::UniformGrid<> > in(DIM);
     dax::cont::UnstructuredGrid<dax::CellTagTetrahedron> out;
 
     this->GridTetrahedralize(in.GetRealGrid(),out);
@@ -147,14 +147,14 @@ void TestTetrahedralize()
   {
   // TODO: We should support more tetrahedralization than voxels, and we should
   // test that, too.
-  dax::cont::internal::GridTesting::TryAllGridTypes(
+  dax::cont::testing::GridTesting::TryAllGridTypes(
         TestTetrahedralizeWorklet(),
-        dax::internal::Testing::CellCheckUniform());
+        dax::testing::Testing::CellCheckUniform());
   }
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
 int UnitTestWorkletTetrahedralize(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestTetrahedralize);
+  return dax::cont::testing::Testing::Run(TestTetrahedralize);
 }

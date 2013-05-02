@@ -16,13 +16,13 @@
 
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
 
-#include <dax/cont/ArrayContainerControlCounting.h>
-#include <dax/cont/ArrayContainerControlPermutation.h>
+#include <dax/cont/internal/ArrayContainerControlCounting.h>
+#include <dax/cont/internal/ArrayContainerControlPermutation.h>
 #include <dax/cont/ArrayContainerControlImplicit.h>
-#include <dax/cont/ArrayPortalFromIterators.h>
+#include <dax/cont/internal/ArrayPortalFromIterators.h>
 #include <dax/cont/ArrayHandle.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace {
 
@@ -30,7 +30,7 @@ const dax::Id ARRAY_SIZE = 10;
 const dax::Id VALUE_ARRAY_SIZE = 3;
 void TestPermutationArray()
 {
-  typedef ::dax::cont::ArrayPortalFromIterators < dax::Id* > IdArrayPortal;
+  typedef ::dax::cont::internal::ArrayPortalFromIterators < dax::Id* > IdArrayPortal;
   dax::Id arrayKey[ARRAY_SIZE];
   for (dax::Id i=0; i<ARRAY_SIZE;++i)
     {
@@ -40,27 +40,27 @@ void TestPermutationArray()
 
   typedef IdArrayPortal KeyPortalType;
   typedef IdArrayPortal ReadWriteValuePortalType;
-  typedef dax::cont::ArrayPortalCounting ReadOnlyValuePortalType;
+  typedef dax::cont::internal::ArrayPortalCounting ReadOnlyValuePortalType;
 
 
   // Make  readWrite array from portals
   KeyPortalType keyPortal(arrayKey,arrayKey + ARRAY_SIZE);
   ReadWriteValuePortalType readWriteValuePortal(arrayValue,arrayValue + VALUE_ARRAY_SIZE);
-  dax::cont::ArrayPortalPermutation <KeyPortalType,ReadWriteValuePortalType>
+  dax::cont::internal::ArrayPortalPermutation <KeyPortalType,ReadWriteValuePortalType>
       readWritePortal(keyPortal, readWriteValuePortal);
 
   dax::cont::ArrayHandle<dax::Id,
-                         dax::cont::ArrayContainerControlTagPermutation
+                         dax::cont::internal::ArrayContainerControlTagPermutation
         <KeyPortalType,ReadWriteValuePortalType> >
       readWriteArray(readWritePortal);
 
   // Make readOnly array from portals
   ReadOnlyValuePortalType readOnlyValuePortaly(VALUE_ARRAY_SIZE);
-  dax::cont::ArrayPortalPermutation <KeyPortalType,ReadOnlyValuePortalType>
+  dax::cont::internal::ArrayPortalPermutation <KeyPortalType,ReadOnlyValuePortalType>
       readOnlyPortal(keyPortal, readOnlyValuePortaly);
 
   dax::cont::ArrayHandle<dax::Id,
-                         dax::cont::ArrayContainerControlTagPermutation
+                         dax::cont::internal::ArrayContainerControlTagPermutation
         <KeyPortalType,ReadOnlyValuePortalType> >
       readOnlyArray(readOnlyPortal);
 
@@ -90,5 +90,5 @@ void TestPermutationArray()
 
 int UnitTestArrayContainerControlPermutation(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestPermutationArray);
+  return dax::cont::testing::Testing::Run(TestPermutationArray);
 }

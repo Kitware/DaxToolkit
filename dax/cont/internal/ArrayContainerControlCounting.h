@@ -13,15 +13,16 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_ArrayContainerControlCounting_h
-#define __dax_cont_ArrayContainerControlCounting_h
+#ifndef __dax_cont_internal_ArrayContainerControlCounting_h
+#define __dax_cont_internal_ArrayContainerControlCounting_h
 
 #include <dax/cont/ArrayContainerControlImplicit.h>
 #include <dax/cont/ArrayPortal.h>
-#include <dax/cont/IteratorFromArrayPortal.h>
+#include <dax/cont/internal/IteratorFromArrayPortal.h>
 
 namespace dax {
 namespace cont {
+namespace internal{
 
 /// \brief An implicit array portal that returns an index.
 ///
@@ -49,7 +50,7 @@ public:
   DAX_EXEC_CONT_EXPORT
   ValueType Get(dax::Id index) const { return index; }
 
-  typedef dax::cont::IteratorFromArrayPortal<ArrayPortalCounting> IteratorType;
+  typedef dax::cont::internal::IteratorFromArrayPortal<ArrayPortalCounting> IteratorType;
 
   DAX_CONT_EXPORT
   IteratorType GetIteratorBegin() const
@@ -85,10 +86,11 @@ private:
 /// When creating an ArrayHandle with an ArrayContainerControlTagImplicit
 /// container, use an ArrayPortalCounting to establish the array.
 ///
-typedef ArrayContainerControlTagImplicit<dax::cont::ArrayPortalCounting>
+typedef ArrayContainerControlTagImplicit<dax::cont::internal::ArrayPortalCounting>
     ArrayContainerControlTagCounting;
 
 }
 }
+}
 
-#endif //__dax_cont_ArrayContainerControlCounting_h
+#endif //__dax_cont_internal_ArrayContainerControlCounting_h

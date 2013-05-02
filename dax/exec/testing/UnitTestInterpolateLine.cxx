@@ -16,7 +16,7 @@
 #include <dax/exec/Interpolate.h>
 #include <dax/Types.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace {
 
@@ -139,12 +139,12 @@ struct TestInterpolateLineFunctor
 
 void TestAllInterpolateLine()
 {
-  dax::internal::Testing::TryAllTypes(TestInterpolateLineFunctor());
+  dax::testing::Testing::TryAllTypes(TestInterpolateLineFunctor());
 }
 
 } // Anonymous namespace
 
 int UnitTestInterpolateLine(int, char *[])
 {
-  return dax::internal::Testing::Run(TestAllInterpolateLine);
+  return dax::testing::Testing::Run(TestAllInterpolateLine);
 }

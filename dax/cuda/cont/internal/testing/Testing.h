@@ -16,7 +16,7 @@
 #ifndef __dax_cuda_cont_internal_Testing_h
 #define __dax_cuda_cont_internal_Testing_h
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <cuda.h>
 
@@ -47,7 +47,7 @@ public:
   template<class Func>
   static DAX_CONT_EXPORT int Run(Func function)
   {
-    int result = dax::cont::internal::Testing::Run(function);
+    int result = dax::cont::testing::Testing::Run(function);
     return CheckCudaBeforeExit(result);
   }
 };

@@ -16,7 +16,7 @@
 
 #include <dax/Types.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace {
 
@@ -287,12 +287,12 @@ struct TypeTestFunctor
 
 void TestTypes()
 {
-  dax::internal::Testing::TryAllTypes(TypeTestFunctor());
+  dax::testing::Testing::TryAllTypes(TypeTestFunctor());
 }
 
 } // anonymous namespace
 
 int UnitTestTypes(int, char *[])
 {
-  return dax::internal::Testing::Run(TestTypes);
+  return dax::testing::Testing::Run(TestTypes);
 }

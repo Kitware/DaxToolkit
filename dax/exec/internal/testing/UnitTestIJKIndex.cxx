@@ -19,7 +19,7 @@
 #include <dax/Extent.h>
 #include <dax/CellTag.h>
 #include <dax/exec/internal/IJKIndex.h>
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 #include <vector>
 
 namespace {
@@ -71,5 +71,5 @@ static void TestUniformGrid()
 
 int UnitTestIJKIndex(int, char *[])
 {
-  return dax::internal::Testing::Run(TestUniformGrid);
+  return dax::testing::Testing::Run(TestUniformGrid);
 }

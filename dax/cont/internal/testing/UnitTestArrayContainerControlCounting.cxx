@@ -16,10 +16,10 @@
 
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
 
-#include <dax/cont/ArrayContainerControlCounting.h>
+#include <dax/cont/internal/ArrayContainerControlCounting.h>
 #include <dax/cont/ArrayHandle.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace {
 
@@ -28,9 +28,9 @@ const dax::Id ARRAY_SIZE = 10;
 void TestCountingArray()
 {
   std::cout << "Creating array." << std::endl;
-  dax::cont::ArrayPortalCounting portal(ARRAY_SIZE);
-  dax::cont::ArrayHandle<dax::Id, dax::cont::ArrayContainerControlTagCounting>
-      array(portal);
+  dax::cont::internal::ArrayPortalCounting portal(ARRAY_SIZE);
+  dax::cont::ArrayHandle<dax::Id,
+      dax::cont::internal::ArrayContainerControlTagCounting> array(portal);
   DAX_TEST_ASSERT(array.GetNumberOfValues() == ARRAY_SIZE,
                   "Array has wrong size.");
 
@@ -46,5 +46,5 @@ void TestCountingArray()
 
 int UnitTestArrayContainerControlCounting(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestCountingArray);
+  return dax::cont::testing::Testing::Run(TestCountingArray);
 }

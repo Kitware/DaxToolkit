@@ -14,18 +14,14 @@
 ##
 ##=============================================================================
 
-set(headers
-  Testing.h
-  TestingDeviceAdapter.h
-  TestingGridGenerator.h
-  )
-
-dax_declare_headers(${headers})
 
 set(unit_tests
+  UnitTestArrayContainerControlConstantValue.cxx
+  UnitTestArrayContainerControlCounting.cxx
+  UnitTestArrayContainerControlPermutation.cxx
   UnitTestArrayManagerExecutionShareWithControl.cxx
+  UnitTestArrayPortalFromIterators.cxx
   UnitTestBindings.cxx
-  UnitTestContTesting.cxx
-  UnitTestDeviceAdapterAlgorithmGeneral.cxx
+  UnitTestIteratorFromArrayPortal.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

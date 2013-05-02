@@ -19,8 +19,8 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/worklet/CellGradient.h>
 
@@ -86,7 +86,7 @@ struct TestCellGradientWorklet
   template<typename GridType>
   void operator()(const GridType&) const
     {
-    dax::cont::internal::TestGrid<
+    dax::cont::testing::TestGrid<
         GridType,
         dax::cont::ArrayContainerControlTagBasic,
         dax::cont::DeviceAdapterTagSerial> grid(DIM);
@@ -138,7 +138,7 @@ struct TestCellGradientWorklet
 //-----------------------------------------------------------------------------
 void TestCellGradient()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(
+  dax::cont::testing::GridTesting::TryAllGridTypes(
         TestCellGradientWorklet(),
         dax::cont::ArrayContainerControlTagBasic(),
         dax::cont::DeviceAdapterTagSerial());
@@ -150,5 +150,5 @@ void TestCellGradient()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletCellGradient(int, char *[])
   {
-  return dax::cont::internal::Testing::Run(TestCellGradient);
+  return dax::cont::testing::Testing::Run(TestCellGradient);
   }

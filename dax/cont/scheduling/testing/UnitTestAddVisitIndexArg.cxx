@@ -25,7 +25,7 @@
 #include <boost/type_traits/is_same.hpp>
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 #include <dax/cont/scheduling/AddVisitIndexArg.h>
 #include <dax/cont/scheduling/SchedulerDefault.h>
 #include <dax/cont/sig/Arg.h>
@@ -157,5 +157,5 @@ void AddVisitIndex()
 
 int UnitTestAddVisitIndexArg(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(AddVisitIndex);
+  return dax::cont::testing::Testing::Run(AddVisitIndex);
 }

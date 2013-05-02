@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_internal_TestingDeviceAdapter_h
-#define __dax_cont_internal_TestingDeviceAdapter_h
+#ifndef __dax_cont_testing_TestingDeviceAdapter_h
+#define __dax_cont_testing_TestingDeviceAdapter_h
 
 #include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/ArrayHandle.h>
@@ -31,8 +31,8 @@
 #include <dax/worklet/testing/CellMapError.h>
 #include <dax/worklet/testing/FieldMapError.h>
 
-#include <dax/cont/internal/testing/Testing.h>
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
 
 #include <dax/exec/internal/IJKIndex.h>
 
@@ -47,7 +47,7 @@
 
 namespace dax {
 namespace cont {
-namespace internal {
+namespace testing {
 
 #define ERROR_MESSAGE "Got an error."
 #define ARRAY_SIZE 500
@@ -69,8 +69,8 @@ private:
   typedef dax::cont::internal::ArrayManagerExecution<
       dax::Id, ArrayContainerControlTag, DeviceAdapterTag>
       IdArrayManagerExecution;
-  typedef ArrayContainerControl<dax::Id, ArrayContainerControlTag>
-      IdContainer;
+  typedef dax::cont::internal::ArrayContainerControl<dax::Id,
+                    ArrayContainerControlTag> IdContainer;
 
   typedef typename IdArrayHandle::PortalExecution IdPortalType;
   typedef typename IdArrayHandle::PortalConstExecution IdPortalConstType;
@@ -297,11 +297,11 @@ private:
       {
       inputArray[index] = index;
       }
-    dax::cont::ArrayPortalFromIterators<dax::Scalar *>
+    ::dax::cont::internal::ArrayPortalFromIterators<dax::Scalar *>
         inputPortal(inputArray, inputArray+ARRAY_SIZE*2);
     ArrayManagerExecution inputManager;
     inputManager.LoadDataForInput(
-          dax::cont::ArrayPortalFromIterators<const dax::Scalar*>(inputPortal));
+          ::dax::cont::internal::ArrayPortalFromIterators<const dax::Scalar*>(inputPortal));
 
     // Change size.
     inputManager.Shrink(ARRAY_SIZE);
@@ -869,9 +869,8 @@ private:
 
     //use a scoped pointer that constructs and fills a grid of the
     //right type
-    dax::cont::internal
-        ::TestGrid<GridType,ArrayContainerControlTagBasic,DeviceAdapterTag>
-        grid(DIM);
+    dax::cont::testing::TestGrid<GridType,
+        ArrayContainerControlTagBasic,DeviceAdapterTag> grid(DIM);
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
@@ -917,9 +916,8 @@ private:
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing map field worklet error" << std::endl;
 
-    dax::cont::internal
-        ::TestGrid<GridType,ArrayContainerControlTagBasic,DeviceAdapterTag>
-        grid(DIM);
+    dax::cont::testing::TestGrid<GridType,
+          ArrayContainerControlTagBasic,DeviceAdapterTag> grid(DIM);
 
     std::cout << "Running field map worklet that errors" << std::endl;
     bool gotError = false;
@@ -963,9 +961,8 @@ private:
   template<typename GridType>
   static DAX_CONT_EXPORT void TestWorkletMapCellImpl()
   {
-    dax::cont::internal
-        ::TestGrid<GridType,ArrayContainerControlTagBasic,DeviceAdapterTag>
-        grid(DIM);
+    dax::cont::testing::TestGrid<GridType,
+        ArrayContainerControlTagBasic,DeviceAdapterTag> grid(DIM);
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
@@ -1009,9 +1006,8 @@ private:
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing map cell worklet error" << std::endl;
 
-    dax::cont::internal
-        ::TestGrid<GridType,ArrayContainerControlTagBasic,DeviceAdapterTag>
-        grid(DIM);
+    dax::cont::testing::TestGrid<GridType,
+          ArrayContainerControlTagBasic,DeviceAdapterTag> grid(DIM);
 
     std::cout << "Running cell map worklet that errors" << std::endl;
     bool gotError = false;
@@ -1066,7 +1062,7 @@ private:
 
 
       std::cout << "Doing Worklet tests with all grid type" << std::endl;
-      dax::cont::internal::GridTesting::TryAllGridTypes(TestWorklets(),
+      dax::cont::testing::GridTesting::TryAllGridTypes(TestWorklets(),
                                           ArrayContainerControlTagBasic(),
                                                         DeviceAdapterTag());
     }
@@ -1080,7 +1076,7 @@ public:
   ///
   static DAX_CONT_EXPORT int Run()
   {
-    return dax::cont::internal::Testing::Run(TestAll());
+    return dax::cont::testing::Testing::Run(TestAll());
   }
 };
 
@@ -1091,6 +1087,6 @@ public:
 
 }
 }
-} // namespace dax::cont::internal
+} // namespace dax::cont::testing
 
-#endif //__dax_cont_internal_TestingDeviceAdapter_h
+#endif //__dax_cont_testing_TestingDeviceAdapter_h
