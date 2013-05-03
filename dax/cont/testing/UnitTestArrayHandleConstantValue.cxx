@@ -25,35 +25,70 @@
 namespace {
 
 const dax::Id ARRAY_SIZE = 10;
-const dax::Id CONSTANT_VALUE = 100;
-void TestConstantValueArray()
+
+template< typename ValueType>
+struct TemplatedTests
 {
-  typedef dax::cont::ArrayHandleConstantValue<dax::Id> ArrayHandleType;
+  typedef dax::cont::internal::ArrayContainerControlTagConstantValue ContainerTagType;
+  typedef dax::cont::internal::ArrayContainerControl<ValueType,ContainerTagType>
+                  ArrayContainerType;
 
-  std::cout << "Creating array." << std::endl;
-  ArrayHandleType arrayConst(CONSTANT_VALUE,ARRAY_SIZE);
-  ArrayHandleType arrayMake =
-      dax::cont::make_ArrayHandleConstantValue(CONSTANT_VALUE,
-                                               ARRAY_SIZE);
-  DAX_TEST_ASSERT(arrayConst.GetNumberOfValues() == ARRAY_SIZE,
-                  "ConstantValue Array using constructor has wrong size.");
 
-  DAX_TEST_ASSERT(arrayMake.GetNumberOfValues() == ARRAY_SIZE,
-                  "ConstantValue Array using make has wrong size.");
+  void TestAccess( ValueType constantValue ) const
+  {
+  typedef dax::cont::ArrayHandleConstantValue<ValueType> ArrayHandleType;
 
-  std::cout << "Testing values" << std::endl;
+  typedef dax::cont::ArrayHandle<ValueType,
+    dax::cont::internal::ArrayContainerControlTagConstantValue> ArrayHandleType2;
+
+  typedef typename ArrayHandleType2::PortalConstControl PortalType;
+
+  ArrayHandleType handle = ArrayHandleType(constantValue,ARRAY_SIZE);
+
+
+  ArrayHandleType make_handle =
+        dax::cont::make_ArrayHandleConstantValue(constantValue, ARRAY_SIZE);
+
+
+  ArrayHandleType2 superclass_handle =
+      ArrayHandleType2(PortalType(constantValue, ARRAY_SIZE));
+
   for (dax::Id index = 0; index < ARRAY_SIZE; index++)
     {
-    DAX_TEST_ASSERT(arrayConst.GetPortalConstControl().Get(index) == CONSTANT_VALUE,
-                    "ConstantValue Array using constructor has unexpected value.");
-    DAX_TEST_ASSERT(arrayMake.GetPortalConstControl().Get(index) == CONSTANT_VALUE,
-                    "ConstantValue Array using make has unexpected value.");
+    DAX_TEST_ASSERT(make_handle.GetPortalConstControl().Get(index) == constantValue,
+                    "Constant array using make helper has unexpected value.");
+    DAX_TEST_ASSERT(handle.GetPortalConstControl().Get(index) == constantValue,
+                    "Constant array using constructor  has unexpected value.");
+  DAX_TEST_ASSERT(superclass_handle.GetPortalConstControl().Get(index) == constantValue,
+                    "Constant array using raw array handle + tag has unexpected value.");
     }
+  }
+
+  void operator()(const ValueType t)
+  {
+  TestAccess(t);
+  }
+};
+
+struct TestFunctor
+{
+  template <typename T>
+  void operator()(const T t)
+  {
+    TemplatedTests<T> tests;
+    tests(t);
+  }
+};
+
+void TestArrayHandleConstantValue()
+{
+  dax::testing::Testing::TryAllTypes(TestFunctor());
 }
+
 
 } // annonymous namespace
 
 int UnitTestArrayHandleConstantValue(int, char *[])
 {
-  return dax::cont::testing::Testing::Run(TestConstantValueArray);
+  return dax::cont::testing::Testing::Run(TestArrayHandleConstantValue);
 }

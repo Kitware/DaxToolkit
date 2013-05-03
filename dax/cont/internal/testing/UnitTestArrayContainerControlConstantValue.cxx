@@ -16,38 +16,126 @@
 
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
 
-#include <dax/cont/internal/ArrayContainerControlConstantValue.h>
 #include <dax/cont/ArrayHandle.h>
-
+#include <dax/cont/ArrayPortal.h>
+#include <dax/cont/ErrorControlBadValue.h>
+#include <dax/cont/internal/ArrayContainerControlConstantValue.h>
 #include <dax/cont/testing/Testing.h>
 
 namespace {
 
 const dax::Id ARRAY_SIZE = 10;
-const dax::Id CONSTANT_VALUE = 100;
-void TestConstantValueArray()
-{
-  std::cout << "Creating array." << std::endl;
-  dax::cont::internal::ArrayPortalConstantValue<dax::Id>
-      portal(CONSTANT_VALUE,ARRAY_SIZE);
-  dax::cont::ArrayHandle<dax::Id,
-                         dax::cont::internal::ArrayContainerControlTagConstantValue
-                         <dax::Id> >
-      array(portal);
-  DAX_TEST_ASSERT(array.GetNumberOfValues() == ARRAY_SIZE,
-                  "Array has wrong size.");
 
-  std::cout << "Testing values" << std::endl;
-  for (dax::Id index = 0; index < ARRAY_SIZE; index++)
+class ValueClass
+ {
+public:
+  int v;
+  ValueClass():v(0){};
+
+  ValueClass(int i):v(i){};
+
+  bool operator==( ValueClass other)
+  {
+    return (this->v == other.v);
+  }
+};
+
+template< typename ValueType>
+struct TemplatedTests
+{
+  typedef dax::cont::internal::ArrayContainerControlTagConstantValue ContainerTagType;
+  typedef dax::cont::internal::ArrayContainerControl<ValueType,ContainerTagType>
+                  ArrayContainerType;
+  typedef dax::cont::internal::ArrayPortalConstantValue<ValueType> PortalType;
+
+
+  void TestAccess( ValueType constantValue ) const
+  {
+  PortalType portal(constantValue,ARRAY_SIZE);
+
+  DAX_TEST_ASSERT(portal.GetNumberOfValues() == ARRAY_SIZE,
+                  "portal has wrong size.");
+
+  typedef typename PortalType::IteratorType Iterator;
+  dax::Id count = 0;
+  for (Iterator i = portal.GetIteratorBegin();
+       i != portal.GetIteratorEnd();
+       ++i)
     {
-    DAX_TEST_ASSERT(array.GetPortalConstControl().Get(index) == CONSTANT_VALUE,
-                    "Array has unexpected value.");
+    DAX_TEST_ASSERT( ValueType(*i) == constantValue,
+                    "portal iteration has unexpected value.");
+    count++;
     }
+
+  DAX_TEST_ASSERT(count == ARRAY_SIZE, "portal iteration did go long enough.");
+  }
+
+  void TestAllocation() const
+  {
+    ArrayContainerType arrayContainer;
+
+    try{ arrayContainer.GetNumberOfValues();
+      DAX_TEST_ASSERT(false == true,
+                      "Constant Value Container GetNumberOfValues method didn't throw error.");
+      }
+    catch(dax::cont::ErrorControlBadValue e){}
+
+    try{ arrayContainer.Allocate(ARRAY_SIZE);
+      DAX_TEST_ASSERT(false == true,
+                    "Constant Value Container Allocate method didn't throw error.");
+      }
+    catch(dax::cont::ErrorControlBadValue e){}
+
+    try
+      {
+      arrayContainer.Shrink(ARRAY_SIZE);
+      DAX_TEST_ASSERT(true==false,
+                      "Constant Value shrink do a larger size was possible. This can't be allowed.");
+      }
+    catch(dax::cont::ErrorControlBadValue){}
+
+    try
+      {
+      arrayContainer.ReleaseResources();
+      DAX_TEST_ASSERT(true==false,
+                      "Can't Release an Constant Value array");
+      }
+    catch(dax::cont::ErrorControlBadValue){}
+  }
+
+  void operator()(const ValueType t)
+  {
+    TestAccess(t);
+    TestAllocation();
+  }
+};
+
+struct TestFunctor
+{
+  template <typename T>
+  void operator()(const T t)
+  {
+    TemplatedTests<T> tests;
+    tests(t);
+  }
+};
+
+void TestArrayContainerConstantValue()
+{
+  dax::testing::Testing::TryAllTypes(TestFunctor());
+
+  const unsigned char uc = 'a';
+  const char c = 'b';
+  ValueClass vc(9);
+
+  TestFunctor()( uc );
+  TestFunctor()( c );
+  TestFunctor()( vc );
 }
 
 } // annonymous namespace
 
 int UnitTestArrayContainerControlConstantValue(int, char *[])
 {
-  return dax::cont::testing::Testing::Run(TestConstantValueArray);
+  return dax::cont::testing::Testing::Run(TestArrayContainerConstantValue);
 }
