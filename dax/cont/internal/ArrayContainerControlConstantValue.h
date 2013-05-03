@@ -43,11 +43,14 @@ public:
   typedef ConstantValueType ValueType;
 
   DAX_EXEC_CONT_EXPORT
-  ArrayPortalConstantValue() : ConstantValue(0),LastIndex(0) {  }
+  ArrayPortalConstantValue() :
+    ConstantValue( ),
+    LastIndex(0) {  }
 
   DAX_EXEC_CONT_EXPORT
   ArrayPortalConstantValue(ValueType constantValue,dax::Id numValues) :
-    ConstantValue(constantValue),LastIndex(numValues)
+    ConstantValue(constantValue),
+    LastIndex(numValues)
   {  }
 
   DAX_EXEC_CONT_EXPORT
@@ -79,28 +82,15 @@ private:
   dax::Id LastIndex;
 };
 
-/// \brief An array portal that returns an constant value
-///
-/// This array portal is similar to an implicit array i.e an array that is
-/// defined functionally rather than actually stored in memory. The array
-/// comprises of a single constant value for each index. If the array is asked
-/// to hold constant value 10 then the values are [10, 10, 10, 10,...].
-///
-/// When creating an ArrayHandle with an ArrayContainerControlTagConstantValue
-/// container, use an ArrayPortalConstantValue to establish the array.
-///
-template < typename ValueType >
+
 struct ArrayContainerControlTagConstantValue
 {
-  typedef ValueType ConstantValueType;
 };
-
 
 template< typename ConstantValueType>
 class ArrayContainerControl<
     ConstantValueType,
-    dax::cont::internal::ArrayContainerControlTagConstantValue <
-                                                          ConstantValueType > >
+    dax::cont::internal::ArrayContainerControlTagConstantValue >
 {
 public:
   typedef ConstantValueType ValueType;
@@ -146,10 +136,10 @@ public:
 
 template<typename T, class DeviceAdapterTag>
 class ArrayTransfer<
-    T, ArrayContainerControlTagConstantValue<T>, DeviceAdapterTag>
+    T, ArrayContainerControlTagConstantValue, DeviceAdapterTag>
 {
 private:
-  typedef ArrayContainerControlTagConstantValue<T>  ArrayContainerControlTag;
+  typedef ArrayContainerControlTagConstantValue  ArrayContainerControlTag;
   typedef dax::cont::internal::ArrayContainerControl<T,ArrayContainerControlTag>
                                                     ContainerType;
 

@@ -26,11 +26,11 @@ namespace dax { namespace cont { namespace arg {
 template <typename Tags, typename T, typename Device>
 class ConceptMap< Field(Tags), dax::cont::ArrayHandleConstantValue<T, Device> > :
   public ConceptMap< Field(Tags), dax::cont::ArrayHandle < T,
-                  dax::cont::internal::ArrayContainerControlTagConstantValue<T>,
+                  dax::cont::internal::ArrayContainerControlTagConstantValue,
                   Device > >
 {
   typedef ConceptMap< Field(Tags), dax::cont::ArrayHandle < T,
-                  dax::cont::internal::ArrayContainerControlTagConstantValue<T>,
+                  dax::cont::internal::ArrayContainerControlTagConstantValue,
                   Device > > superclass;
   typedef dax::cont::ArrayHandleConstantValue<T, Device> HandleType;
 public:
@@ -44,11 +44,11 @@ public:
 template <typename Tags, typename T, typename Device>
 class ConceptMap< Field(Tags), const dax::cont::ArrayHandleConstantValue<T, Device> > :
   public ConceptMap< Field(Tags), const dax::cont::ArrayHandle < T,
-                  dax::cont::internal::ArrayContainerControlTagConstantValue<T>,
+                  dax::cont::internal::ArrayContainerControlTagConstantValue,
                   Device > >
 {
   typedef ConceptMap< Field(Tags), const dax::cont::ArrayHandle < T,
-                  dax::cont::internal::ArrayContainerControlTagConstantValue<T>,
+                  dax::cont::internal::ArrayContainerControlTagConstantValue,
                   Device > > superclass;
 
   typedef dax::cont::ArrayHandleConstantValue<T, Device> HandleType;

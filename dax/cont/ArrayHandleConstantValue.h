@@ -31,16 +31,16 @@ namespace cont {
 template <typename ConstantValueType,
           class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class ArrayHandleConstantValue: public ArrayHandle < ConstantValueType,
-  dax::cont::internal::ArrayContainerControlTagConstantValue<ConstantValueType>,
+  dax::cont::internal::ArrayContainerControlTagConstantValue,
   DeviceAdapterTag >
 {
 public:
   typedef dax::cont::ArrayHandle < ConstantValueType,
-    dax::cont::internal::ArrayContainerControlTagConstantValue<ConstantValueType>,
+    dax::cont::internal::ArrayContainerControlTagConstantValue,
     DeviceAdapterTag > superclass;
   typedef typename dax::cont::internal::ArrayPortalConstantValue<ConstantValueType> PortalType;
 
-  ArrayHandleConstantValue(ConstantValueType value,dax::Id length)
+  ArrayHandleConstantValue(ConstantValueType value, dax::Id length)
     :superclass(PortalType(value,length))
   {
   }
