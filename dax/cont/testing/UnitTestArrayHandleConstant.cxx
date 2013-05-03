@@ -17,8 +17,8 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 
-#include <dax/cont/internal/ArrayContainerControlConstantValue.h>
-#include <dax/cont/ArrayHandleConstantValue.h>
+#include <dax/cont/internal/ArrayContainerControlConstant.h>
+#include <dax/cont/ArrayHandleConstant.h>
 
 #include <dax/cont/testing/Testing.h>
 
@@ -29,29 +29,33 @@ const dax::Id ARRAY_SIZE = 10;
 template< typename ValueType>
 struct TemplatedTests
 {
-  typedef dax::cont::internal::ArrayContainerControlTagConstantValue ContainerTagType;
-  typedef dax::cont::internal::ArrayContainerControl<ValueType,ContainerTagType>
-                  ArrayContainerType;
-
-
-  void TestAccess( ValueType constantValue ) const
-  {
-  typedef dax::cont::ArrayHandleConstantValue<ValueType> ArrayHandleType;
+  typedef dax::cont::ArrayHandleConstant<ValueType> ArrayHandleType;
 
   typedef dax::cont::ArrayHandle<ValueType,
-    dax::cont::internal::ArrayContainerControlTagConstantValue> ArrayHandleType2;
+    dax::cont::internal::ArrayContainerControlTagConstant> ArrayHandleType2;
 
   typedef typename ArrayHandleType2::PortalConstControl PortalType;
 
-  ArrayHandleType handle = ArrayHandleType(constantValue,ARRAY_SIZE);
-
+  void operator()(const ValueType constantValue) const
+  {
+  ArrayHandleType handle(constantValue,ARRAY_SIZE);
 
   ArrayHandleType make_handle =
-        dax::cont::make_ArrayHandleConstantValue(constantValue, ARRAY_SIZE);
-
+        dax::cont::make_ArrayHandleConstant(constantValue, ARRAY_SIZE);
 
   ArrayHandleType2 superclass_handle =
       ArrayHandleType2(PortalType(constantValue, ARRAY_SIZE));
+
+
+  DAX_TEST_ASSERT(handle.GetNumberOfValues() == ARRAY_SIZE,
+                  "Constant array using constructor has wrong size.");
+
+  DAX_TEST_ASSERT(make_handle.GetNumberOfValues() == ARRAY_SIZE,
+                  "Constant array using make has wrong size.");
+
+  DAX_TEST_ASSERT(superclass_handle.GetNumberOfValues() == ARRAY_SIZE,
+                  "Constant array using array handle + portal has wrong size.");
+
 
   for (dax::Id index = 0; index < ARRAY_SIZE; index++)
     {
@@ -59,15 +63,11 @@ struct TemplatedTests
                     "Constant array using make helper has unexpected value.");
     DAX_TEST_ASSERT(handle.GetPortalConstControl().Get(index) == constantValue,
                     "Constant array using constructor  has unexpected value.");
-  DAX_TEST_ASSERT(superclass_handle.GetPortalConstControl().Get(index) == constantValue,
+    DAX_TEST_ASSERT(superclass_handle.GetPortalConstControl().Get(index) == constantValue,
                     "Constant array using raw array handle + tag has unexpected value.");
     }
   }
 
-  void operator()(const ValueType t)
-  {
-  TestAccess(t);
-  }
 };
 
 struct TestFunctor
@@ -80,7 +80,7 @@ struct TestFunctor
   }
 };
 
-void TestArrayHandleConstantValue()
+void TestArrayHandleConstant()
 {
   dax::testing::Testing::TryAllTypes(TestFunctor());
 }
@@ -88,7 +88,7 @@ void TestArrayHandleConstantValue()
 
 } // annonymous namespace
 
-int UnitTestArrayHandleConstantValue(int, char *[])
+int UnitTestArrayHandleConstant(int, char *[])
 {
-  return dax::cont::testing::Testing::Run(TestArrayHandleConstantValue);
+  return dax::cont::testing::Testing::Run(TestArrayHandleConstant);
 }

@@ -21,7 +21,7 @@ set(headers
   ArrayContainerControlBasic.h
   ArrayContainerControlImplicit.h
   ArrayHandle.h
-  ArrayHandleConstantValue.h
+  ArrayHandleConstant.h
   ArrayHandleCounting.h
   ArrayPortal.h
   Assert.h

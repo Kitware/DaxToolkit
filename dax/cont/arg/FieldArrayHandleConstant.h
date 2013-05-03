@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_arg_FieldArrayHandleConstantValue_h
-#define __dax_cont_arg_FieldArrayHandleConstantValue_h
+#ifndef __dax_cont_arg_FieldArrayHandleConstant_h
+#define __dax_cont_arg_FieldArrayHandleConstant_h
 
 #include <dax/cont/arg/FieldArrayHandle.h>
 
@@ -24,15 +24,15 @@ namespace dax { namespace cont { namespace arg {
 /// \headerfile FieldArrayHandle.h dax/cont/arg/FieldArrayHandle.h
 /// \brief Map array of a single constant value to \c Field worklet parameters.
 template <typename Tags, typename T, typename Device>
-class ConceptMap< Field(Tags), dax::cont::ArrayHandleConstantValue<T, Device> > :
+class ConceptMap< Field(Tags), dax::cont::ArrayHandleConstant<T, Device> > :
   public ConceptMap< Field(Tags), dax::cont::ArrayHandle < T,
-                  dax::cont::internal::ArrayContainerControlTagConstantValue,
+                  dax::cont::internal::ArrayContainerControlTagConstant,
                   Device > >
 {
   typedef ConceptMap< Field(Tags), dax::cont::ArrayHandle < T,
-                  dax::cont::internal::ArrayContainerControlTagConstantValue,
+                  dax::cont::internal::ArrayContainerControlTagConstant,
                   Device > > superclass;
-  typedef dax::cont::ArrayHandleConstantValue<T, Device> HandleType;
+  typedef dax::cont::ArrayHandleConstant<T, Device> HandleType;
 public:
   ConceptMap(HandleType handle):
     superclass(handle)
@@ -42,16 +42,16 @@ public:
 /// \headerfile FieldArrayHandle.h dax/cont/arg/FieldArrayHandle.h
 /// \brief Map array of a single constant value to \c Field worklet parameters.
 template <typename Tags, typename T, typename Device>
-class ConceptMap< Field(Tags), const dax::cont::ArrayHandleConstantValue<T, Device> > :
+class ConceptMap< Field(Tags), const dax::cont::ArrayHandleConstant<T, Device> > :
   public ConceptMap< Field(Tags), const dax::cont::ArrayHandle < T,
-                  dax::cont::internal::ArrayContainerControlTagConstantValue,
+                  dax::cont::internal::ArrayContainerControlTagConstant,
                   Device > >
 {
   typedef ConceptMap< Field(Tags), const dax::cont::ArrayHandle < T,
-                  dax::cont::internal::ArrayContainerControlTagConstantValue,
+                  dax::cont::internal::ArrayContainerControlTagConstant,
                   Device > > superclass;
 
-  typedef dax::cont::ArrayHandleConstantValue<T, Device> HandleType;
+  typedef dax::cont::ArrayHandleConstant<T, Device> HandleType;
 public:
   ConceptMap(HandleType handle):
     superclass(handle)
@@ -60,4 +60,4 @@ public:
 
 } } } //namespace dax::cont::arg
 
-#endif //__dax_cont_arg_FieldArrayHandleConstantValue_h
+#endif //__dax_cont_arg_FieldArrayHandleConstant_h

@@ -16,7 +16,7 @@
 
 
 set(unit_tests
-  UnitTestArrayContainerControlConstantValue.cxx
+  UnitTestArrayContainerControlConstant.cxx
   UnitTestArrayContainerControlCounting.cxx
   UnitTestArrayContainerControlPermutation.cxx
   UnitTestArrayManagerExecutionShareWithControl.cxx

@@ -105,7 +105,7 @@ struct TestTetrahedralizeWorklet
     try
       {
       typedef dax::cont::GenerateTopology<dax::worklet::Tetrahedralize,
-                                          dax::cont::ArrayHandleConstantValue<dax::Id>
+                                          dax::cont::ArrayHandleConstant<dax::Id>
                                           > GenerateT;
       typedef typename GenerateT::ClassifyResultType  ClassifyResultType;
 

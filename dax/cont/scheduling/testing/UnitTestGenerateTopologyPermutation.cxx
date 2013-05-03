@@ -29,7 +29,7 @@
 #include <dax/TypeTraits.h>
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/ArrayHandleConstantValue.h>
+#include <dax/cont/ArrayHandleConstant.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/GenerateTopology.h>
@@ -93,9 +93,9 @@ struct TestGenerateTopologyPermutation
 
     // Perhaps there should be a better way to specify a constant value for
     // the number of cells generated per location.
-    typedef dax::cont::ArrayHandleConstantValue<dax::Id> CellCountArrayType;
+    typedef dax::cont::ArrayHandleConstant<dax::Id> CellCountArrayType;
     CellCountArrayType cellCounts =
-        dax::cont::make_ArrayHandleConstantValue(dax::Id(COUNTS),
+        dax::cont::make_ArrayHandleConstant(dax::Id(COUNTS),
                                                  inGrid.GetNumberOfCells());
 
     std::vector<dax::Id> cellFieldData(inGrid.GetNumberOfCells());

@@ -33,22 +33,22 @@ namespace internal {
 /// comprises of a single constant value for each index. If the array is asked
 /// to hold constant value 10 then the values are [10, 10, 10, 10,...].
 ///
-/// The ArrayPortalConstantValue is used in an ArrayHandle with an
-/// ArrayContainerControlTagConstantValue container.
+/// The ArrayPortalConstant is used in an ArrayHandle with an
+/// ArrayContainerControlTagConstant container.
 ///
 template <class ConstantValueType>
-class ArrayPortalConstantValue
+class ArrayPortalConstant
 {
 public:
   typedef ConstantValueType ValueType;
 
   DAX_EXEC_CONT_EXPORT
-  ArrayPortalConstantValue() :
+  ArrayPortalConstant() :
     ConstantValue( ),
     LastIndex(0) {  }
 
   DAX_EXEC_CONT_EXPORT
-  ArrayPortalConstantValue(ValueType constantValue,dax::Id numValues) :
+  ArrayPortalConstant(ValueType constantValue,dax::Id numValues) :
     ConstantValue(constantValue),
     LastIndex(numValues)
   {  }
@@ -59,7 +59,7 @@ public:
   DAX_EXEC_CONT_EXPORT
   ValueType Get(dax::Id daxNotUsed(index)) const { return this->ConstantValue; }
 
-  typedef dax::cont::internal::IteratorFromArrayPortal < ArrayPortalConstantValue
+  typedef dax::cont::internal::IteratorFromArrayPortal < ArrayPortalConstant
                                                < ConstantValueType > >
   IteratorType;
 
@@ -83,18 +83,18 @@ private:
 };
 
 
-struct ArrayContainerControlTagConstantValue
+struct ArrayContainerControlTagConstant
 {
 };
 
 template< typename ConstantValueType>
 class ArrayContainerControl<
     ConstantValueType,
-    dax::cont::internal::ArrayContainerControlTagConstantValue >
+    dax::cont::internal::ArrayContainerControlTagConstant >
 {
 public:
   typedef ConstantValueType ValueType;
-  typedef dax::cont::internal::ArrayPortalConstantValue<ConstantValueType> PortalConstType;
+  typedef dax::cont::internal::ArrayPortalConstant<ConstantValueType> PortalConstType;
 
   // This is meant to be invalid. Because ConstantValue arrays are read only, you
   // should only be able to use the const version.
@@ -136,10 +136,10 @@ public:
 
 template<typename T, class DeviceAdapterTag>
 class ArrayTransfer<
-    T, ArrayContainerControlTagConstantValue, DeviceAdapterTag>
+    T, ArrayContainerControlTagConstant, DeviceAdapterTag>
 {
 private:
-  typedef ArrayContainerControlTagConstantValue  ArrayContainerControlTag;
+  typedef ArrayContainerControlTagConstant  ArrayContainerControlTag;
   typedef dax::cont::internal::ArrayContainerControl<T,ArrayContainerControlTag>
                                                     ContainerType;
 

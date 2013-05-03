@@ -19,7 +19,7 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ArrayPortal.h>
 #include <dax/cont/ErrorControlBadValue.h>
-#include <dax/cont/internal/ArrayContainerControlConstantValue.h>
+#include <dax/cont/internal/ArrayContainerControlConstant.h>
 #include <dax/cont/testing/Testing.h>
 
 namespace {
@@ -43,10 +43,10 @@ public:
 template< typename ValueType>
 struct TemplatedTests
 {
-  typedef dax::cont::internal::ArrayContainerControlTagConstantValue ContainerTagType;
+  typedef dax::cont::internal::ArrayContainerControlTagConstant ContainerTagType;
   typedef dax::cont::internal::ArrayContainerControl<ValueType,ContainerTagType>
                   ArrayContainerType;
-  typedef dax::cont::internal::ArrayPortalConstantValue<ValueType> PortalType;
+  typedef dax::cont::internal::ArrayPortalConstant<ValueType> PortalType;
 
 
   void TestAccess( ValueType constantValue ) const
@@ -135,7 +135,7 @@ void TestArrayContainerConstantValue()
 
 } // annonymous namespace
 
-int UnitTestArrayContainerControlConstantValue(int, char *[])
+int UnitTestArrayContainerControlConstant(int, char *[])
 {
   return dax::cont::testing::Testing::Run(TestArrayContainerConstantValue);
 }

@@ -82,7 +82,7 @@ struct TestSineWorklet
     }
 
   std::cout << "Running Sine worklet on constant ArrayHandle" << std::endl;
-  dax::cont::ArrayHandleConstantValue<dax::Scalar> constantHandle(5.034,
+  dax::cont::ArrayHandleConstant<dax::Scalar> constantHandle(5.034,
                                                     grid->GetNumberOfPoints());
   scheduler.Invoke(dax::worklet::Sine(), constantHandle, sineHandle);
 

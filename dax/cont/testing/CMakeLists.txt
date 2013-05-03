@@ -26,7 +26,7 @@ set(unit_tests
   UnitTestArrayContainerControlBasic.cxx
   UnitTestArrayContainerControlImplicit.cxx
   UnitTestArrayHandle.cxx
-  UnitTestArrayHandleConstantValue.cxx
+  UnitTestArrayHandleConstant.cxx
   UnitTestArrayHandleCounting.cxx
   UnitTestContTesting.cxx
   UnitTestDeviceAdapterAlgorithmDependency.cxx
