@@ -40,7 +40,7 @@ void TestPermutationArray()
 
   typedef IdArrayPortal KeyPortalType;
   typedef IdArrayPortal ReadWriteValuePortalType;
-  typedef dax::cont::internal::ArrayPortalCounting ReadOnlyValuePortalType;
+  typedef dax::cont::internal::ArrayPortalCounting<dax::Id> ReadOnlyValuePortalType;
 
 
   // Make  readWrite array from portals
@@ -55,7 +55,7 @@ void TestPermutationArray()
       readWriteArray(readWritePortal);
 
   // Make readOnly array from portals
-  ReadOnlyValuePortalType readOnlyValuePortaly(VALUE_ARRAY_SIZE);
+  ReadOnlyValuePortalType readOnlyValuePortaly(0,VALUE_ARRAY_SIZE);
   dax::cont::internal::ArrayPortalPermutation <KeyPortalType,ReadOnlyValuePortalType>
       readOnlyPortal(keyPortal, readOnlyValuePortaly);
 

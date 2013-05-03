@@ -115,7 +115,7 @@ struct TestSineWorklet
     }
 
   std::cout << "Running Sine worklet on counting ArrayHandle" << std::endl;
-  dax::cont::ArrayHandleCounting< > arrayCounting(grid->GetNumberOfPoints());
+  dax::cont::ArrayHandleCounting<dax::Id> arrayCounting(0,grid->GetNumberOfPoints());
   dax::cont::ArrayHandle<dax::Id,
                         dax::cont::ArrayContainerControlTagBasic,
                         dax::cont::DeviceAdapterTagSerial> countingOut;

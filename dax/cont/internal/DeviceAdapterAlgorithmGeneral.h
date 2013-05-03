@@ -400,13 +400,12 @@ public:
       const dax::cont::ArrayHandle<T,CStencil,DeviceAdapterTag> &stencil,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &output)
   {
-    dax::cont::ArrayHandle<
-        dax::Id,dax::cont::internal::ArrayContainerControlTagCounting,
-        DeviceAdapterTag> input(
-          dax::cont::internal::ArrayPortalCounting(
-                                                stencil.GetNumberOfValues())
-                               );
+    typedef dax::cont::ArrayHandle< dax::Id,
+                    dax::cont::internal::ArrayContainerControlTagCounting,
+                    DeviceAdapterTag> CountingHandleType;
+    typedef dax::cont::internal::ArrayPortalCounting<dax::Id> CountingPortal;
 
+    CountingHandleType input( CountingPortal(0,stencil.GetNumberOfValues()) );
     DerivedAlgorithm::StreamCompact(input, stencil, output);
   }
 

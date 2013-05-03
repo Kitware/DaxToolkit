@@ -28,7 +28,7 @@ const dax::Id ARRAY_SIZE = 10;
 void TestCountingArray()
 {
   std::cout << "Creating array." << std::endl;
-  dax::cont::internal::ArrayPortalCounting portal(ARRAY_SIZE);
+  dax::cont::internal::ArrayPortalCounting<dax::Id> portal(0,ARRAY_SIZE);
   dax::cont::ArrayHandle<dax::Id,
       dax::cont::internal::ArrayContainerControlTagCounting> array(portal);
   DAX_TEST_ASSERT(array.GetNumberOfValues() == ARRAY_SIZE,
