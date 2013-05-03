@@ -25,26 +25,127 @@ namespace {
 
 const dax::Id ARRAY_SIZE = 10;
 
-void TestCountingArray()
+//increments by two instead of one wrapper
+template<typename T>
+struct CountByTwo
 {
-  std::cout << "Creating array." << std::endl;
-  dax::cont::internal::ArrayPortalCounting<dax::Id> portal(0,ARRAY_SIZE);
-  dax::cont::ArrayHandle<dax::Id,
-      dax::cont::internal::ArrayContainerControlTagCounting> array(portal);
-  DAX_TEST_ASSERT(array.GetNumberOfValues() == ARRAY_SIZE,
-                  "Array has wrong size.");
+  CountByTwo(): Value() {}
+  explicit CountByTwo(T t): Value(t) {}
 
-  std::cout << "Testing values" << std::endl;
-  for (dax::Id index = 0; index < ARRAY_SIZE; index++)
+  bool operator==(const T& other) const
+    { return Value == other; }
+
+  bool operator==(const CountByTwo<T>& other) const
+    { return Value == other.Value; }
+
+  CountByTwo<T> operator+(dax::Id count) const
+  { return CountByTwo<T>(Value+(count*2)); }
+
+  CountByTwo<T>& operator++()
+    { ++Value; ++Value; return *this; }
+
+  friend std::ostream& operator<< (std::ostream& os, const CountByTwo<T>& obj)
+    { os << obj.Value; return os; }
+  T Value;
+};
+
+
+
+template< typename ValueType>
+struct TemplatedTests
+{
+  typedef dax::cont::internal::ArrayContainerControlTagCounting ContainerTagType;
+  typedef dax::cont::internal::ArrayContainerControl<ValueType,ContainerTagType>
+                  ArrayContainerType;
+  typedef dax::cont::internal::ArrayPortalCounting<ValueType> PortalType;
+
+
+  void TestAccess( ValueType startingValue ) const
+  {
+  PortalType portal(startingValue,ARRAY_SIZE);
+
+  DAX_TEST_ASSERT(portal.GetNumberOfValues() == ARRAY_SIZE,
+                  "portal has wrong size.");
+
+  typedef typename PortalType::IteratorType Iterator;
+  dax::Id count = 0;
+  ValueType properValue = startingValue;
+  for (Iterator i = portal.GetIteratorBegin();
+       i != portal.GetIteratorEnd();
+       ++i)
     {
-    DAX_TEST_ASSERT(array.GetPortalConstControl().Get(index) == index,
-                    "Array has unexpected value.");
+    DAX_TEST_ASSERT( ValueType(*i) == properValue,
+                    "portal iteration has unexpected value.");
+    ++count;
+    ++properValue;
     }
+
+  DAX_TEST_ASSERT(count == ARRAY_SIZE, "portal iteration did go long enough.");
+  }
+
+  void TestAllocation() const
+  {
+    ArrayContainerType arrayContainer;
+
+    try{ arrayContainer.GetNumberOfValues();
+      DAX_TEST_ASSERT(false == true,
+                      "Counting Value Container GetNumberOfValues method didn't throw error.");
+      }
+    catch(dax::cont::ErrorControlBadValue e){}
+
+    try{ arrayContainer.Allocate(ARRAY_SIZE);
+      DAX_TEST_ASSERT(false == true,
+                    "Counting Value Container Allocate method didn't throw error.");
+      }
+    catch(dax::cont::ErrorControlBadValue e){}
+
+    try
+      {
+      arrayContainer.Shrink(ARRAY_SIZE);
+      DAX_TEST_ASSERT(true==false,
+                      "Counting Value shrink do a larger size was possible. This can't be allowed.");
+      }
+    catch(dax::cont::ErrorControlBadValue){}
+
+    try
+      {
+      arrayContainer.ReleaseResources();
+      DAX_TEST_ASSERT(true==false,
+                      "Can't Release a Counting Value array");
+      }
+    catch(dax::cont::ErrorControlBadValue){}
+  }
+
+  void operator()(const ValueType t)
+  {
+    TestAccess(t);
+    TestAllocation();
+  }
+};
+
+struct TestFunctor
+{
+  template <typename T>
+  void operator()(const T t)
+  {
+    TemplatedTests<T> tests;
+    tests(t);
+  }
+};
+
+void TestArrayContainerCounting()
+{
+  TestFunctor()( dax::Id(0) );
+  TestFunctor()( dax::Id(50) );
+  TestFunctor()( dax::Scalar(2.5) );
+  TestFunctor()( CountByTwo<dax::Id>(12) );
+  TestFunctor()( CountByTwo<dax::Scalar>(-40.2f) );
 }
+
 
 } // annonymous namespace
 
 int UnitTestArrayContainerControlCounting(int, char *[])
 {
-  return dax::cont::testing::Testing::Run(TestCountingArray);
+  return dax::cont::testing::Testing::Run(TestArrayContainerCounting);
 }
