@@ -17,7 +17,6 @@
 #define __dax_cont_internal_DeviceAdapterAlgorithmGeneral_h
 
 #include <dax/cont/ArrayContainerControlBasic.h>
-#include <dax/cont/ArrayContainerControlCounting.h>
 #include <dax/cont/ArrayHandle.h>
 
 #include <dax/Functional.h>
@@ -401,9 +400,12 @@ public:
       const dax::cont::ArrayHandle<T,CStencil,DeviceAdapterTag> &stencil,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &output)
   {
-    dax::cont::ArrayHandle<
-        dax::Id,dax::cont::ArrayContainerControlTagCounting,DeviceAdapterTag>
-        input(dax::cont::ArrayPortalCounting(stencil.GetNumberOfValues()));
+    typedef dax::cont::ArrayHandle< dax::Id,
+                    dax::cont::internal::ArrayContainerControlTagCounting,
+                    DeviceAdapterTag> CountingHandleType;
+    typedef dax::cont::internal::ArrayPortalCounting<dax::Id> CountingPortal;
+
+    CountingHandleType input( CountingPortal(0,stencil.GetNumberOfValues()) );
     DerivedAlgorithm::StreamCompact(input, stencil, output);
   }
 

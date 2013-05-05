@@ -20,14 +20,14 @@
 
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/internal/Bindings.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 #include <dax/cont/scheduling/CreateExecutionResources.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/exec/WorkletMapField.h>
 #include <dax/Types.h>
 #include <vector>
 
-#include <dax/cont/ArrayPortalFromIterators.h>
+#include <dax/cont/internal/ArrayPortalFromIterators.h>
 #include <dax/exec/arg/FieldPortal.h>
 
 
@@ -43,7 +43,7 @@ class ConceptMap< Field(Tags), std::vector<T> >
 public:
   //ignore constant values when finding size of domain
   typedef dax::cont::sig::AnyDomain DomainType;
-  typedef dax::cont::ArrayPortalFromIterators<const T*> PortalType;
+  typedef ::dax::cont::internal::ArrayPortalFromIterators<const T*> PortalType;
   typedef dax::exec::arg::FieldPortal<T,Tags,PortalType> ExecArg;
 
   ConceptMap(ArrayType array):
@@ -121,5 +121,5 @@ void ExecResources()
 
 int UnitTestCreateExecutionResources(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(ExecResources);
+  return dax::cont::testing::Testing::Run(ExecResources);
 }

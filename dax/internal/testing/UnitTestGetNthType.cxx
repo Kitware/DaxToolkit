@@ -15,7 +15,7 @@
 //=============================================================================
 
 #include <dax/internal/GetNthType.h>
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 #include <boost/type_traits/is_same.hpp>
 
@@ -60,5 +60,5 @@ void GetNthType()
 
 int UnitTestGetNthType(int, char *[])
 {
-  return dax::internal::Testing::Run(GetNthType);
+  return dax::testing::Testing::Run(GetNthType);
 }

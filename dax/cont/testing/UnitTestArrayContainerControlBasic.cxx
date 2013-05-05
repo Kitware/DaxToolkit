@@ -21,7 +21,7 @@
 #include <dax/VectorTraits.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace
 {
@@ -157,12 +157,12 @@ struct TestFunctor
 
 void TestArrayContainerControlBasic()
 {
-  dax::internal::Testing::TryAllTypes(TestFunctor());
+  dax::testing::Testing::TryAllTypes(TestFunctor());
 }
 
 } // Anonymous namespace
 
 int UnitTestArrayContainerControlBasic(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestArrayContainerControlBasic);
+  return dax::cont::testing::Testing::Run(TestArrayContainerControlBasic);
 }

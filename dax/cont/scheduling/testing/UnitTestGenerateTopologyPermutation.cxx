@@ -17,8 +17,8 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <math.h>
 #include <fstream>
@@ -29,14 +29,14 @@
 #include <dax/TypeTraits.h>
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/ArrayHandleConstantValue.h>
+#include <dax/cont/ArrayHandleConstant.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/GenerateTopology.h>
 
 #include <dax/exec/WorkletGenerateTopology.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 #include <vector>
 
 
@@ -87,15 +87,15 @@ struct TestGenerateTopologyPermutation
     typedef dax::CellTagVertex OutGridTag;
     typedef dax::cont::UnstructuredGrid<OutGridTag> OutGridType;
 
-    dax::cont::internal::TestGrid<InGridType> inGenerator(DIM);
+    dax::cont::testing::TestGrid<InGridType> inGenerator(DIM);
     InGridType inGrid = inGenerator.GetRealGrid();
     OutGridType outGrid;
 
     // Perhaps there should be a better way to specify a constant value for
     // the number of cells generated per location.
-    typedef dax::cont::ArrayHandleConstantValue<dax::Id> CellCountArrayType;
+    typedef dax::cont::ArrayHandleConstant<dax::Id> CellCountArrayType;
     CellCountArrayType cellCounts =
-        dax::cont::make_ArrayHandleConstantValue(dax::Id(COUNTS),
+        dax::cont::make_ArrayHandleConstant(dax::Id(COUNTS),
                                                  inGrid.GetNumberOfCells());
 
     std::vector<dax::Id> cellFieldData(inGrid.GetNumberOfCells());
@@ -162,7 +162,7 @@ private:
   //----------------------------------------------------------------------------
   template<class InGridType, class OutConnectionsPortal>
   void CheckPointPermutation(
-      const dax::cont::internal::TestGrid<InGridType> &inGenerator,
+      const dax::cont::testing::TestGrid<InGridType> &inGenerator,
       const OutConnectionsPortal &outConnections) const
   {
     std::cout << "Checking point field permutation" << std::endl;
@@ -186,7 +186,7 @@ private:
 //-----------------------------------------------------------------------------
 void RunTestGenerateTopologyPermutation()
   {
-//  dax::cont::internal::GridTesting::TryAllGridTypes(
+//  dax::cont::testing::GridTesting::TryAllGridTypes(
 //        TestGenerateTopologyPermutation());
   TestGenerateTopologyPermutation()(dax::cont::UniformGrid<>());
   }
@@ -195,5 +195,5 @@ void RunTestGenerateTopologyPermutation()
 //-----------------------------------------------------------------------------
 int UnitTestGenerateTopologyPermutation(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(RunTestGenerateTopologyPermutation);
+  return dax::cont::testing::Testing::Run(RunTestGenerateTopologyPermutation);
 }

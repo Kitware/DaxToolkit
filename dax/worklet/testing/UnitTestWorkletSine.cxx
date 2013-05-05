@@ -25,8 +25,8 @@
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <vector>
 
@@ -41,7 +41,7 @@ struct TestSineWorklet
   template<typename GridType>
   void operator()(const GridType&) const
   {
-  dax::cont::internal::TestGrid<GridType> grid(DIM);
+  dax::cont::testing::TestGrid<GridType> grid(DIM);
 
   dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
@@ -82,7 +82,7 @@ struct TestSineWorklet
     }
 
   std::cout << "Running Sine worklet on constant ArrayHandle" << std::endl;
-  dax::cont::ArrayHandleConstantValue<dax::Scalar> constantHandle(5.034,
+  dax::cont::ArrayHandleConstant<dax::Scalar> constantHandle(5.034,
                                                     grid->GetNumberOfPoints());
   scheduler.Invoke(dax::worklet::Sine(), constantHandle, sineHandle);
 
@@ -113,14 +113,13 @@ struct TestSineWorklet
     DAX_TEST_ASSERT(test_equal(sineValue, sineTrue),
                     "Got bad sine");
     }
-
   }
 };
 
 //-----------------------------------------------------------------------------
 void TestSine()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestSineWorklet());
+  dax::cont::testing::GridTesting::TryAllGridTypes(TestSineWorklet());
   }
 
 } // Anonymous namespace
@@ -128,5 +127,5 @@ void TestSine()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletSine(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestSine);
+  return dax::cont::testing::Testing::Run(TestSine);
 }

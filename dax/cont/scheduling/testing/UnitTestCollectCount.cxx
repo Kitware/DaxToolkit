@@ -23,7 +23,7 @@
 #include <dax/cont/arg/FieldConstant.h>
 #include <dax/cont/arg/TopologyUniformGrid.h>
 #include <dax/cont/internal/Bindings.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 #include <dax/cont/scheduling/CollectCount.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/cont/UniformGrid.h>
@@ -221,5 +221,5 @@ void CollectCount()
 
 int UnitTestCollectCount(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(CollectCount);
+  return dax::cont::testing::Testing::Run(CollectCount);
 }

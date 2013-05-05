@@ -19,8 +19,8 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/worklet/CellAverage.h>
 
@@ -60,7 +60,7 @@ struct TestCellAverageWorklet
   void operator()(const GridType&) const
     {
     typedef typename GridType::CellTag CellTag;
-    dax::cont::internal::TestGrid<
+    dax::cont::testing::TestGrid<
         GridType,
         dax::cont::ArrayContainerControlTagBasic,
         dax::cont::DeviceAdapterTagSerial> grid(DIM);
@@ -108,7 +108,7 @@ struct TestCellAverageWorklet
 //-----------------------------------------------------------------------------
 void TestCellAverage()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(
+  dax::cont::testing::GridTesting::TryAllGridTypes(
         TestCellAverageWorklet(),
         dax::cont::ArrayContainerControlTagBasic(),
         dax::cont::DeviceAdapterTagSerial());
@@ -120,5 +120,5 @@ void TestCellAverage()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletCellAverage(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestCellAverage);
+  return dax::cont::testing::Testing::Run(TestCellAverage);
 }

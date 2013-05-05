@@ -17,8 +17,8 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/worklet/Threshold.h>
 
@@ -38,7 +38,7 @@
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 #include <vector>
 
 
@@ -166,7 +166,7 @@ struct TestThresholdWorklet
   template<typename GridType>
   void operator()(const GridType&) const
     {
-    dax::cont::internal::TestGrid<GridType> in(DIM);
+    dax::cont::testing::TestGrid<GridType> in(DIM);
     GridType out;
 
     this->GridThreshold(in,out);
@@ -175,7 +175,7 @@ struct TestThresholdWorklet
   //----------------------------------------------------------------------------
   void operator()(const dax::cont::UniformGrid<>&) const
     {
-    dax::cont::internal::TestGrid<dax::cont::UniformGrid<> > in(DIM);
+    dax::cont::testing::TestGrid<dax::cont::UniformGrid<> > in(DIM);
     dax::cont::UnstructuredGrid<dax::CellTagHexahedron> out;
 
     this->GridThreshold(in,out);
@@ -185,7 +185,7 @@ struct TestThresholdWorklet
   template <typename InGridType,
             typename OutGridType>
   void GridThreshold(
-      const dax::cont::internal::TestGrid<InGridType> &inGridGenerator,
+      const dax::cont::testing::TestGrid<InGridType> &inGridGenerator,
       OutGridType& outGrid) const
     {
     const InGridType inGrid = inGridGenerator.GetRealGrid();
@@ -261,12 +261,12 @@ struct TestThresholdWorklet
 //-----------------------------------------------------------------------------
 void TestThreshold()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestThresholdWorklet());
+  dax::cont::testing::GridTesting::TryAllGridTypes(TestThresholdWorklet());
   }
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
 int UnitTestWorkletThreshold(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestThreshold);
+  return dax::cont::testing::Testing::Run(TestThreshold);
 }

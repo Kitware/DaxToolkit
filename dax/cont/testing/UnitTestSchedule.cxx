@@ -28,7 +28,7 @@
 #include <dax/exec/WorkletMapField.h>
 #include <dax/cont/sig/Tag.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace{
 
@@ -170,5 +170,5 @@ void Schedule()
 
 int UnitTestSchedule(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(Schedule);
+  return dax::cont::testing::Testing::Run(Schedule);
 }

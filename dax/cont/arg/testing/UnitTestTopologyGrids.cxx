@@ -17,8 +17,8 @@
 #include <dax/cont/arg/TopologyUniformGrid.h>
 #include <dax/cont/arg/TopologyUnstructuredGrid.h>
 
-#include <dax/cont/internal/testing/Testing.h>
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
 
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Tag.h>
@@ -56,7 +56,7 @@ struct BindTopoGrids
   template<typename GridType>
   void operator()(const GridType&) const
     {
-    dax::cont::internal::TestGrid<GridType> grid(4);
+    dax::cont::testing::TestGrid<GridType> grid(4);
     verifyBindingExists<GridType,GridType>( grid.GetRealGrid(), grid.GetRealGrid() );
     verifyBindingExists<GridType,GridType>( grid.GetRealGrid(), grid.GetRealGrid() );
     }
@@ -64,11 +64,11 @@ struct BindTopoGrids
 
 void TopoGrids()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(BindTopoGrids());
+  dax::cont::testing::GridTesting::TryAllGridTypes(BindTopoGrids());
   }
 }
 
 int UnitTestTopologyGrids(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TopoGrids);
+  return dax::cont::testing::Testing::Run(TopoGrids);
 }

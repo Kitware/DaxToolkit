@@ -16,7 +16,7 @@
 
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 #include <cstring>
 namespace {
 
@@ -49,5 +49,5 @@ void TestErrorMessageBuffer()
 
 int UnitTestErrorMessageBuffer(int, char *[])
 {
-  return (dax::internal::Testing::Run(TestErrorMessageBuffer));
+  return (dax::testing::Testing::Run(TestErrorMessageBuffer));
 }

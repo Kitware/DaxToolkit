@@ -17,8 +17,8 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/worklet/MarchingCubes.h>
 
@@ -40,7 +40,7 @@
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 #include <vector>
 
 
@@ -65,7 +65,7 @@ struct TestMarchingCubesWorklet
   template<class InputGridType>
   void operator()(const InputGridType&) const
     {
-    dax::cont::internal::TestGrid<InputGridType,ArrayContainer,DeviceAdapter>
+    dax::cont::testing::TestGrid<InputGridType,ArrayContainer,DeviceAdapter>
         inGrid(DIM);
     UnstructuredGridType outGrid;
 
@@ -155,9 +155,9 @@ struct TestMarchingCubesWorklet
 //-----------------------------------------------------------------------------
 void TestMarchingCubes()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(
+  dax::cont::testing::GridTesting::TryAllGridTypes(
         TestMarchingCubesWorklet(),
-        dax::internal::Testing::CellCheckHexahedron(),
+        dax::testing::Testing::CellCheckHexahedron(),
         dax::cont::ArrayContainerControlTagBasic(),
         dax::cont::DeviceAdapterTagSerial());
   }
@@ -166,5 +166,5 @@ void TestMarchingCubes()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletMarchingCubes(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestMarchingCubes);
+  return dax::cont::testing::Testing::Run(TestMarchingCubes);
 }

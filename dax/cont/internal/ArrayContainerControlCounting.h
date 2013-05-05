@@ -13,51 +13,44 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_ArrayContainerControlConstantValue_h
-#define __dax_cont_ArrayContainerControlConstantValue_h
+#ifndef __dax_cont_internal_ArrayContainerControlCounting_h
+#define __dax_cont_internal_ArrayContainerControlCounting_h
 
+#include <dax/cont/ArrayContainerControlImplicit.h>
 #include <dax/cont/ArrayPortal.h>
-#include <dax/cont/IteratorFromArrayPortal.h>
-#include <dax/cont/ArrayContainerControl.h>
-#include <dax/cont/ErrorControlBadValue.h>
-#include <dax/cont/internal/ArrayTransfer.h>
+#include <dax/cont/internal/IteratorFromArrayPortal.h>
 
 namespace dax {
 namespace cont {
+namespace internal{
 
-/// \brief An array portal that returns an constant value
-///
-/// This array portal is similar to an implicit array i.e an array that is
-/// defined functionally rather than actually stored in memory. The array
-/// comprises of a single constant value for each index. If the array is asked
-/// to hold constant value 10 then the values are [10, 10, 10, 10,...].
-///
-/// The ArrayPortalConstantValue is used in an ArrayHandle with an
-/// ArrayContainerControlTagConstantValue container.
-///
-template <class ConstantValueType>
-class ArrayPortalConstantValue
+/// \brief An implicit array portal that returns an counting value.
+template <class CountingValueType>
+class ArrayPortalCounting
 {
 public:
-  typedef ConstantValueType ValueType;
+  typedef CountingValueType ValueType;
 
   DAX_EXEC_CONT_EXPORT
-  ArrayPortalConstantValue() : ConstantValue(0),LastIndex(0) {  }
+  ArrayPortalCounting() :
+  StartingValue(),
+  LastIndex(0)
+  {  }
 
   DAX_EXEC_CONT_EXPORT
-  ArrayPortalConstantValue(ValueType constantValue,dax::Id numValues) :
-    ConstantValue(constantValue),LastIndex(numValues)
+  ArrayPortalCounting(ValueType startingValue, dax::Id numValues) :
+  StartingValue(startingValue),
+  LastIndex(numValues)
   {  }
 
   DAX_EXEC_CONT_EXPORT
   dax::Id GetNumberOfValues() const { return this->LastIndex; }
 
   DAX_EXEC_CONT_EXPORT
-  ValueType Get(dax::Id daxNotUsed(index)) const { return this->ConstantValue; }
+  ValueType Get(dax::Id index) const { return StartingValue+index; }
 
-  typedef dax::cont::IteratorFromArrayPortal < ArrayPortalConstantValue
-                                               < ConstantValueType > >
-  IteratorType;
+  typedef dax::cont::internal::IteratorFromArrayPortal<
+          ArrayPortalCounting < CountingValueType> > IteratorType;
 
   DAX_CONT_EXPORT
   IteratorType GetIteratorBegin() const
@@ -72,38 +65,22 @@ public:
   }
 
 private:
-  ValueType ConstantValue;
-
-  // The last index given by this portal (exclusive).
+  CountingValueType StartingValue;
   dax::Id LastIndex;
 };
 
-/// \brief An array portal that returns an constant value
-///
-/// This array portal is similar to an implicit array i.e an array that is
-/// defined functionally rather than actually stored in memory. The array
-/// comprises of a single constant value for each index. If the array is asked
-/// to hold constant value 10 then the values are [10, 10, 10, 10,...].
-///
-/// When creating an ArrayHandle with an ArrayContainerControlTagConstantValue
-/// container, use an ArrayPortalConstantValue to establish the array.
-///
-template < typename ValueType >
-struct ArrayContainerControlTagConstantValue
+struct ArrayContainerControlTagCounting
 {
-  typedef ValueType ConstantValueType;
 };
-
-namespace internal {
 
 template< typename ConstantValueType>
 class ArrayContainerControl<
     ConstantValueType,
-    dax::cont::ArrayContainerControlTagConstantValue <ConstantValueType> >
+    dax::cont::internal::ArrayContainerControlTagCounting >
 {
 public:
   typedef ConstantValueType ValueType;
-  typedef dax::cont::ArrayPortalConstantValue<ConstantValueType> PortalConstType;
+  typedef dax::cont::internal::ArrayPortalCounting<ConstantValueType> PortalConstType;
 
   // This is meant to be invalid. Because ConstantValue arrays are read only, you
   // should only be able to use the const version.
@@ -145,10 +122,10 @@ public:
 
 template<typename T, class DeviceAdapterTag>
 class ArrayTransfer<
-    T, ArrayContainerControlTagConstantValue<T>, DeviceAdapterTag>
+    T, ArrayContainerControlTagCounting, DeviceAdapterTag>
 {
 private:
-  typedef ArrayContainerControlTagConstantValue<T>  ArrayContainerControlTag;
+  typedef ArrayContainerControlTagCounting  ArrayContainerControlTag;
   typedef dax::cont::internal::ArrayContainerControl<T,ArrayContainerControlTag>
                                                     ContainerType;
 
@@ -225,8 +202,9 @@ private:
   bool PortalValid;
 };
 
-} // internal
-} // cont
-} // dax
 
-#endif //__dax_cont_ArrayContainerControlConstantValue_h
+}
+}
+}
+
+#endif //__dax_cont_internal_ArrayContainerControlCounting_h

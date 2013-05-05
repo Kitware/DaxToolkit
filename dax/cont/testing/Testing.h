@@ -13,16 +13,16 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_internal_Testing_h
-#define __dax_cont_internal_Testing_h
+#ifndef __dax_cont_testing_Testing_h
+#define __dax_cont_testing_Testing_h
 
 #include <dax/cont/Error.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace dax {
 namespace cont {
-namespace internal {
+namespace testing {
 
 struct Testing
 {
@@ -34,7 +34,7 @@ public:
       {
       function();
       }
-    catch (dax::internal::Testing::TestFailure error)
+    catch (dax::testing::Testing::TestFailure error)
       {
       std::cout << "***** Test failed @ "
                 << error.GetFile() << ":" << error.GetLine() << std::endl
@@ -58,6 +58,6 @@ public:
 
 }
 }
-} // namespace dax::cont::internal
+} // namespace dax::cont::testing
 
 #endif //__dax_cont_internal_Testing_h

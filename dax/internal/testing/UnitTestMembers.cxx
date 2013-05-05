@@ -15,7 +15,7 @@
 //=============================================================================
 
 #include <dax/internal/Members.h>
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 #include <boost/type_traits/is_same.hpp>
 
@@ -157,5 +157,5 @@ void Members()
 
 int UnitTestMembers(int, char *[])
 {
-  return dax::internal::Testing::Run(Members);
+  return dax::testing::Testing::Run(Members);
 }

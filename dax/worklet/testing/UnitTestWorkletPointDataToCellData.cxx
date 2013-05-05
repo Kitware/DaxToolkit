@@ -19,8 +19,8 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/worklet/PointDataToCellData.h>
 
@@ -59,7 +59,7 @@ struct TestPointDataToCellDataWorklet
   template<typename GridType>
   void operator()(const GridType&) const
     {
-    dax::cont::internal::TestGrid<
+    dax::cont::testing::TestGrid<
         GridType,
         dax::cont::ArrayContainerControlTagBasic,
         dax::cont::DeviceAdapterTagSerial> grid(DIM);
@@ -107,7 +107,7 @@ struct TestPointDataToCellDataWorklet
 //-----------------------------------------------------------------------------
 void TestPointDataToCellData()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(
+  dax::cont::testing::GridTesting::TryAllGridTypes(
         TestPointDataToCellDataWorklet(),
         dax::cont::ArrayContainerControlTagBasic(),
         dax::cont::DeviceAdapterTagSerial());
@@ -119,5 +119,5 @@ void TestPointDataToCellData()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletPointDataToCellData(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestPointDataToCellData);
+  return dax::cont::testing::Testing::Run(TestPointDataToCellData);
 }

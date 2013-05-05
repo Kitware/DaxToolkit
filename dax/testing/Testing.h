@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_internal_Testing_h
-#define __dax_internal_Testing_h
+#ifndef __dax_testing_Testing_h
+#define __dax_testing_Testing_h
 
 #include <dax/CellTag.h>
 #include <dax/CellTraits.h>
@@ -32,8 +32,8 @@
 // control environment have more possible exceptions.) This is not guaranteed
 // to work. To make it more likely, place the Testing.h include last.
 #ifdef __dax_cont_Error_h
-#ifndef __dax_cont_internal_Testing_h
-#error Use dax::cont::internal::Testing instead of dax::internal::Testing.
+#ifndef __dax_cont_testing_Testing_h
+#error Use dax::cont::testing::Testing instead of dax::testing::Testing.
 #else
 #define DAX_TESTING_IN_CONT
 #endif
@@ -46,7 +46,7 @@
 /// aborted and failure is returned.
 
 #define DAX_TEST_ASSERT(condition, message) \
-  ::dax::internal::Testing::Assert( \
+  ::dax::testing::Testing::Assert( \
       condition, __FILE__, __LINE__, message, #condition)
 
 /// \def DAX_TEST_FAIL(message)
@@ -54,10 +54,10 @@
 /// Causes a test to fail with the given \a message.
 
 #define DAX_TEST_FAIL(message) \
-  throw ::dax::internal::Testing::TestFailure(__FILE__, __LINE__, message)
+  throw ::dax::testing::Testing::TestFailure(__FILE__, __LINE__, message)
 
 namespace dax {
-namespace internal {
+namespace testing {
 
 struct Testing
 {
@@ -120,7 +120,7 @@ public:
   /// this.
   ///
   /// \code
-  /// #include <dax/internal/testing/Testing.h>
+  /// #include <dax/testing/Testing.h>
   ///
   /// namespace {
   ///
@@ -133,7 +133,7 @@ public:
   ///
   /// int UnitTestFoo(int, char *[])
   /// {
-  ///   return dax::internal::Testing::Run(TestFoo);
+  ///   return dax::testing::Testing::Run(TestFoo);
   /// }
   /// \endcode
   ///
@@ -430,4 +430,4 @@ std::ostream &operator<<(std::ostream &stream, const dax::Tuple<T,Size> &tuple)
   return stream << tuple[Size-1] << "]";
 }
 
-#endif //__dax_internal_Testing_h
+#endif //__dax_testing_Testing_h

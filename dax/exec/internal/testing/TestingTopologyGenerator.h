@@ -24,7 +24,7 @@
 #include <dax/exec/CellVertices.h>
 #include <dax/exec/internal/GridTopologies.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 // This use of the STL vector only works in non-CUDA unit tests.
 #include <iterator>
@@ -734,7 +734,7 @@ private:
 template<class FunctionType>
 void TryAllTopologyTypes(FunctionType function)
 {
-  dax::internal::Testing::TryAllCells(
+  dax::testing::Testing::TryAllCells(
         detail::TryAllTopologyTypesFunctor<FunctionType>(function));
 }
 

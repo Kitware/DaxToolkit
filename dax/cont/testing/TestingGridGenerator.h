@@ -14,8 +14,8 @@
 //
 //=============================================================================
 
-#ifndef __dax_cont_internal_TestingGridGenerator_h
-#define __dax_cont_internal_TestingGridGenerator_h
+#ifndef __dax_cont_testing_TestingGridGenerator_h
+#define __dax_cont_testing_TestingGridGenerator_h
 
 #include <dax/CellTag.h>
 #include <dax/CellTraits.h>
@@ -27,7 +27,7 @@
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <vector>
 
@@ -35,7 +35,7 @@
 
 namespace dax {
 namespace cont {
-namespace internal {
+namespace testing {
 
 template<
     class GridType,
@@ -495,7 +495,7 @@ public:
   /// Runs templated \p function on all the grid types defined in Dax. This is
   /// helpful to test templated functions that should work on all grid types. If the
   /// function is supposed to work on some subset of grids or cells, then \p check can
-  /// be set to restrict the types of cell tags used. The dax::internal::Testing
+  /// be set to restrict the types of cell tags used. The dax::testing::Testing
   /// structure has some CellCheck* classes the cover the most common types of
   /// cells.
   ///
@@ -510,7 +510,7 @@ public:
   {
     TryAllGridTypesFunctor<FunctionType,ArrayContainerControlTag,DeviceAdapterTag>
         cellToGridFunctor(function);
-    dax::internal::Testing::TryAllCells(cellToGridFunctor, check);
+    dax::testing::Testing::TryAllCells(cellToGridFunctor, check);
   }
   template<class FunctionType,
            class ArrayContainerControlTag,
@@ -520,7 +520,7 @@ public:
                               DeviceAdapterTag)
   {
     TryAllGridTypes(function,
-                    dax::internal::Testing::CellCheckAlwaysTrue(),
+                    dax::testing::Testing::CellCheckAlwaysTrue(),
                     ArrayContainerControlTag(),
                     DeviceAdapterTag());
   }
@@ -535,7 +535,7 @@ public:
   template<class FunctionType>
   static void TryAllGridTypes(FunctionType function)
   {
-    TryAllGridTypes(function, dax::internal::Testing::CellCheckAlwaysTrue());
+    TryAllGridTypes(function, dax::testing::Testing::CellCheckAlwaysTrue());
   }
 
 };
@@ -543,6 +543,6 @@ public:
 
 }
 }
-} //namespace dax::cont::internal
+} //namespace dax::cont::testing
 
-#endif //  __dax_cont_internal_TestingGridGenerator_h
+#endif //  __dax_cont_testing_TestingGridGenerator_h

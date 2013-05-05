@@ -17,8 +17,8 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/worklet/Elevation.h>
 
@@ -42,7 +42,7 @@ struct TestElevationWorklet
   template<typename GridType>
   void operator()(const GridType&) const
   {
-  dax::cont::internal::TestGrid<GridType> grid(DIM);
+  dax::cont::testing::TestGrid<GridType> grid(DIM);
   dax::Id numPoints = grid->GetNumberOfPoints();
 
   dax::cont::ArrayHandle<dax::Scalar,
@@ -77,7 +77,7 @@ struct TestElevationWorklet
 //-----------------------------------------------------------------------------
 void TestElevation()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestElevationWorklet());
+  dax::cont::testing::GridTesting::TryAllGridTypes(TestElevationWorklet());
   }
 
 
@@ -87,5 +87,5 @@ void TestElevation()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletElevation(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestElevation);
+  return dax::cont::testing::Testing::Run(TestElevation);
 }

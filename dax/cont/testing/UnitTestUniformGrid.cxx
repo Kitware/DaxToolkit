@@ -16,8 +16,8 @@
 
 #include <dax/cont/UniformGrid.h>
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace {
 
@@ -25,7 +25,7 @@ void TestUniformGrid()
 {
   const dax::Id DIM = 5;
 
-  dax::cont::internal::TestGrid<dax::cont::UniformGrid<> > gridGen(DIM);
+  dax::cont::testing::TestGrid<dax::cont::UniformGrid<> > gridGen(DIM);
   dax::cont::UniformGrid<> grid = gridGen.GetRealGrid();
 
   std::cout << "Test basic information." << std::endl;
@@ -99,5 +99,5 @@ void TestUniformGrid()
 
 int UnitTestUniformGrid(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestUniformGrid);
+  return dax::cont::testing::Testing::Run(TestUniformGrid);
 }

@@ -17,8 +17,8 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/worklet/Magnitude.h>
 
@@ -40,7 +40,7 @@ struct TestMagnitudeWorklet
   template<typename GridType>
   void operator()(const GridType&) const
   {
-  dax::cont::internal::TestGrid<GridType> grid(DIM);
+  dax::cont::testing::TestGrid<GridType> grid(DIM);
 
   dax::cont::ArrayHandle<dax::Scalar,
                          dax::cont::ArrayContainerControlTagBasic,
@@ -71,7 +71,7 @@ struct TestMagnitudeWorklet
 //-----------------------------------------------------------------------------
 void TestMagnitude()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestMagnitudeWorklet());
+  dax::cont::testing::GridTesting::TryAllGridTypes(TestMagnitudeWorklet());
   }
 
 
@@ -81,5 +81,5 @@ void TestMagnitude()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletMagnitude(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestMagnitude);
+  return dax::cont::testing::Testing::Run(TestMagnitude);
 }

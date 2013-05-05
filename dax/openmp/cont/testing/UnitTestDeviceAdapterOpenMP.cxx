@@ -18,10 +18,10 @@
 
 #include <dax/openmp/cont/DeviceAdapterOpenMP.h>
 
-#include <dax/cont/internal/testing/TestingDeviceAdapter.h>
+#include <dax/cont/testing/TestingDeviceAdapter.h>
 
 int UnitTestDeviceAdapterOpenMP(int, char *[])
 {
-  return dax::cont::internal::TestingDeviceAdapter
+  return dax::cont::testing::TestingDeviceAdapter
       <dax::openmp::cont::DeviceAdapterTagOpenMP>::Run();
 }

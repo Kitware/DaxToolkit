@@ -17,8 +17,8 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <math.h>
 #include <fstream>
@@ -29,14 +29,14 @@
 #include <dax/TypeTraits.h>
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/ArrayHandleConstantValue.h>
+#include <dax/cont/ArrayHandleConstant.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/GenerateInterpolatedCells.h>
 
 #include <dax/exec/WorkletInterpolatedCell.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 #include <vector>
 
 
@@ -88,15 +88,15 @@ struct TestInterpolatedCellPermutation
     typedef dax::CellTagVertex OutGridTag;
     typedef dax::cont::UnstructuredGrid<OutGridTag> OutGridType;
 
-    dax::cont::internal::TestGrid<InGridType> inGenerator(DIM);
+    dax::cont::testing::TestGrid<InGridType> inGenerator(DIM);
     InGridType inGrid = inGenerator.GetRealGrid();
     OutGridType outGrid;
 
     // Perhaps there should be a better way to specify a constant value for
     // the number of cells generated per location.
-    typedef dax::cont::ArrayHandleConstantValue<dax::Id> CellCountArrayType;
+    typedef dax::cont::ArrayHandleConstant<dax::Id> CellCountArrayType;
     CellCountArrayType cellCounts =
-        dax::cont::make_ArrayHandleConstantValue(dax::Id(COUNTS),
+        dax::cont::make_ArrayHandleConstant(dax::Id(COUNTS),
                                                  inGrid.GetNumberOfCells());
 
     std::vector<dax::Id> cellFieldData(inGrid.GetNumberOfCells());
@@ -186,5 +186,5 @@ void RunTestInterpolatedCellPermutation()
 //-----------------------------------------------------------------------------
 int UnitTestInterpolatedCellPermutation(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(RunTestInterpolatedCellPermutation);
+  return dax::cont::testing::Testing::Run(RunTestInterpolatedCellPermutation);
 }

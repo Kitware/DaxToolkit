@@ -18,7 +18,7 @@
 // the validity is a compile time check.
 
 #include <dax/internal/WorkletSignatureFunctions.h>
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 #include <boost/mpl/assert.hpp>
 #include <boost/mpl/for_each.hpp>
@@ -195,5 +195,5 @@ void WorkletSignatureFunctions()
 
 int UnitTestWorkletSignatureFunctions(int, char *[])
 {
-  return dax::internal::Testing::Run(WorkletSignatureFunctions);
+  return dax::testing::Testing::Run(WorkletSignatureFunctions);
 }

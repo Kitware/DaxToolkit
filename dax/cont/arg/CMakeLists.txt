@@ -20,7 +20,7 @@ set(headers
   ExecutionObject.h
   Field.h
   FieldArrayHandle.h
-  FieldArrayHandleConstantValue.h
+  FieldArrayHandleConstant.h
   FieldArrayHandleCounting.h
   FieldConstant.h
   FieldMap.h

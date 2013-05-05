@@ -20,7 +20,7 @@
 #include <dax/exec/internal/GridTopologies.h>
 #include <dax/exec/internal/testing/TestingTopologyGenerator.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace
 {
@@ -181,5 +181,5 @@ void TestAllInterpolate()
 
 int UnitTestInterpolate(int, char *[])
 {
-  return dax::internal::Testing::Run(TestAllInterpolate);
+  return dax::testing::Testing::Run(TestAllInterpolate);
 }

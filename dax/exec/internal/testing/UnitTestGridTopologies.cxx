@@ -19,7 +19,7 @@
 #include <dax/exec/internal/ArrayPortalFromIterators.h>
 
 #include <dax/exec/internal/testing/TestingTopologyGenerator.h>
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 #include <vector>
 
 namespace {
@@ -104,5 +104,5 @@ static void TestGridSizes()
 
 int UnitTestGridTopologies(int, char *[])
 {
-  return dax::internal::Testing::Run(TestGridSizes);
+  return dax::testing::Testing::Run(TestGridSizes);
 }

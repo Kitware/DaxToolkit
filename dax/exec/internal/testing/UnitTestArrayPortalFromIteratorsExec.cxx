@@ -19,7 +19,7 @@
 #include <dax/VectorTraits.h>
 #include <dax/exec/VectorOperations.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace {
 
@@ -122,12 +122,12 @@ struct TestFunctor
 
 void TestArrayPortalFromIterators()
 {
-  dax::internal::Testing::TryAllTypes(TestFunctor());
+  dax::testing::Testing::TryAllTypes(TestFunctor());
 }
 
 } // Anonymous namespace
 
 int UnitTestArrayPortalFromIteratorsExec(int, char *[])
 {
-  return dax::internal::Testing::Run(TestArrayPortalFromIterators);
+  return dax::testing::Testing::Run(TestArrayPortalFromIterators);
 }

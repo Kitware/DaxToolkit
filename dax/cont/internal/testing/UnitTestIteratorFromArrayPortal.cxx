@@ -14,13 +14,13 @@
 //
 //=============================================================================
 
-#include <dax/cont/IteratorFromArrayPortal.h>
+#include <dax/cont/internal/IteratorFromArrayPortal.h>
 
 #include <dax/VectorTraits.h>
-#include <dax/cont/ArrayPortalFromIterators.h>
+#include <dax/cont/internal/ArrayPortalFromIterators.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace {
 
@@ -64,10 +64,10 @@ struct TemplatedTests
   template<class ArrayPortalType>
   void TestIteratorRead(ArrayPortalType portal)
   {
-    typedef dax::cont::IteratorFromArrayPortal<ArrayPortalType> IteratorType;
+    typedef dax::cont::internal::IteratorFromArrayPortal<ArrayPortalType> IteratorType;
 
-    IteratorType begin = dax::cont::make_IteratorBegin(portal);
-    IteratorType end = dax::cont::make_IteratorEnd(portal);
+    IteratorType begin = dax::cont::internal::make_IteratorBegin(portal);
+    IteratorType end = dax::cont::internal::make_IteratorEnd(portal);
     DAX_TEST_ASSERT(std::distance(begin, end) == ARRAY_SIZE,
                     "Distance between begin and end incorrect.");
 
@@ -97,10 +97,10 @@ struct TemplatedTests
   template<class ArrayPortalType>
   void TestIteratorWrite(ArrayPortalType portal)
   {
-    typedef dax::cont::IteratorFromArrayPortal<ArrayPortalType> IteratorType;
+    typedef dax::cont::internal::IteratorFromArrayPortal<ArrayPortalType> IteratorType;
 
-    IteratorType begin = dax::cont::make_IteratorBegin(portal);
-    IteratorType end = dax::cont::make_IteratorEnd(portal);
+    IteratorType begin = dax::cont::internal::make_IteratorBegin(portal);
+    IteratorType end = dax::cont::internal::make_IteratorEnd(portal);
 
     static const ComponentType WRITE_VALUE = 873;
 
@@ -120,9 +120,9 @@ struct TemplatedTests
 
     FillIterator(array, array+ARRAY_SIZE, ORIGINAL_VALUE());
 
-    dax::cont::ArrayPortalFromIterators<ValueType *>
+    ::dax::cont::internal::ArrayPortalFromIterators<ValueType *>
         portal(array, array+ARRAY_SIZE);
-    dax::cont::ArrayPortalFromIterators<const ValueType *>
+    ::dax::cont::internal::ArrayPortalFromIterators<const ValueType *>
         const_portal(array, array+ARRAY_SIZE);
 
     std::cout << "  Test read from iterator." << std::endl;
@@ -148,12 +148,12 @@ struct TestFunctor
 
 void TestArrayIteratorFromArrayPortal()
 {
-  dax::internal::Testing::TryAllTypes(TestFunctor());
+  dax::testing::Testing::TryAllTypes(TestFunctor());
 }
 
 } // Anonymous namespace
 
 int UnitTestIteratorFromArrayPortal(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestArrayIteratorFromArrayPortal);
+  return dax::cont::testing::Testing::Run(TestArrayIteratorFromArrayPortal);
 }
