@@ -114,27 +114,6 @@ struct TestSineWorklet
                     "Got bad sine");
     }
 
-  std::cout << "Running Sine worklet on counting ArrayHandle" << std::endl;
-  dax::cont::ArrayHandleCounting< > arrayCounting(grid->GetNumberOfPoints());
-  dax::cont::ArrayHandle<dax::Id,
-                        dax::cont::ArrayContainerControlTagBasic,
-                        dax::cont::DeviceAdapterTagSerial> countingOut;
-  scheduler.Invoke(dax::worklet::Sine(), arrayCounting, countingOut);
-
-  std::cout << "Checking result of counting handle" << std::endl;
-  std::vector<dax::Id> sineId(grid->GetNumberOfPoints());
-  countingOut.CopyInto(sineId.begin());
-  for (dax::Id pointIndex = 0;
-       pointIndex < grid->GetNumberOfPoints();
-       pointIndex++)
-    {
-    dax::Id sineValue = sineId[pointIndex];
-    dax::Id sineTrue = sinf(pointIndex);
-    DAX_TEST_ASSERT(test_equal(sineValue, sineTrue),
-                    "Got bad sine");
-    }
-
-
   }
 };
 
