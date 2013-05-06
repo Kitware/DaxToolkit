@@ -27,6 +27,7 @@
 
 #include <dax/cont/testing/TestingGridGenerator.h>
 #include <dax/cont/testing/Testing.h>
+#include <dax/internal/MathSystemFunctions.h>
 
 #include <vector>
 
@@ -109,7 +110,9 @@ struct TestSineWorklet
        pointIndex++)
     {
     dax::Scalar sineValue = sine[pointIndex];
-    dax::Scalar sineTrue = sinf(5.034);
+    //use DAX_SYS_MATH_FUNCTION(sin) to use to use the correct flaot / double
+    //sin function. If we don't do this we get false positives
+    dax::Scalar sineTrue = DAX_SYS_MATH_FUNCTION(sin)(5.034);
     DAX_TEST_ASSERT(test_equal(sineValue, sineTrue),
                     "Got bad sine");
     }
@@ -122,14 +125,16 @@ struct TestSineWorklet
   scheduler.Invoke(dax::worklet::Sine(), arrayCounting, countingOut);
 
   std::cout << "Checking result of counting handle" << std::endl;
-  std::vector<dax::Id> sineId(grid->GetNumberOfPoints());
+  std::vector<dax::Scalar> sineId(grid->GetNumberOfPoints());
   countingOut.CopyInto(sineId.begin());
   for (dax::Id pointIndex = 0;
        pointIndex < grid->GetNumberOfPoints();
        pointIndex++)
     {
-    dax::Id sineValue = sineId[pointIndex];
-    dax::Id sineTrue = sinf(5.034 + pointIndex);
+    dax::Scalar sineValue = sineId[pointIndex];
+    dax::Scalar sineTrue = DAX_SYS_MATH_FUNCTION(sin)(pointIndex + 5.034);
+    //use DAX_SYS_MATH_FUNCTION(sin) to use to use the correct flaot / double
+    //sin function. If we don't do this we get false positives
     DAX_TEST_ASSERT(test_equal(sineValue, sineTrue),
                     "Got bad sine");
     }
