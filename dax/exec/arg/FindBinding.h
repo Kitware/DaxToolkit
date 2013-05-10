@@ -23,6 +23,7 @@
 #include <dax/cont/arg/Topology.h>
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Arg.h>
+#include <dax/cont/sig/ReductionCount.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/cont/sig/VisitIndex.h>
 #include <dax/cont/sig/WorkId.h>
@@ -86,7 +87,10 @@ public:
   typedef typename boost::mpl::if_<
       typename Tags::template Has<dax::cont::sig::Point>,
       BindCellPoints<Invocation, N>,
-      BindPermutedCellField<Invocation, N> >::type type;
+      typename boost::mpl::if_<
+          typename Tags::template Has<dax::cont::sig::Out>,
+          BindDirect<Invocation, N>,
+          BindPermutedCellField<Invocation, N> >::type>::type type;
 };
 
 
@@ -133,6 +137,15 @@ public:
 //constructed by the scheduler)
 template<typename WorkletType, int N, typename Invocation>
 class FindBinding<WorkletType, dax::cont::sig::VisitIndexArg<N>, Invocation>
+{
+public:
+  typedef BindDirect<Invocation,N> type;
+};
+
+//bind ReductionCount directly to the input array (which should be specially
+//constructed by the scheduler)
+template<typename WorkletType, int N, typename Invocation>
+class FindBinding<WorkletType, dax::cont::sig::ReductionCountArg<N>, Invocation>
 {
 public:
   typedef BindDirect<Invocation,N> type;

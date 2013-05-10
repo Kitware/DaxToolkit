@@ -23,10 +23,13 @@ set(headers
   Interpolate.h
   InterpolatedCellPoints.h
   ParametricCoordinates.h
+  WorkletInterpolatedCell.h
+  WorkletGenerateKeysValues.h
   WorkletGenerateTopology.h
   WorkletInterpolatedCell.h
   WorkletMapCell.h
   WorkletMapField.h
+  WorkletReduceKeysValues.h
 
   ${Dax_BINARY_DIR}/dax/exec/VectorOperations.h
 )

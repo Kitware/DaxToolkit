@@ -35,8 +35,10 @@ set(headers
   ErrorControlOutOfMemory.h
   ErrorExecution.h
   GenerateInterpolatedCells.h
+  GenerateKeysValues.h
   GenerateTopology.h
   PermutationContainer.h
+  ReduceKeysValues.h
   Scheduler.h
   Timer.h
   UniformGrid.h

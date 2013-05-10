@@ -16,6 +16,7 @@
 
 set(headers
   Arg.h
+  ReductionCount.h
   Tag.h
   VisitIndex.h
   WorkId.h

@@ -51,12 +51,23 @@ public:
 /// takes constant value and the lenght of the array and constructs a
 /// ArrayHandleConstant of the specified length. The array returns a
 /// specified constant value for each index.
+template<typename ConstantValueType, typename DeviceAdapter>
+DAX_CONT_EXPORT
+ArrayHandleConstant<ConstantValueType,DeviceAdapter>
+make_ArrayHandleConstant(ConstantValueType value,
+                         dax::Id length,
+                         DeviceAdapter)
+{
+  return ArrayHandleConstant<ConstantValueType, DeviceAdapter>(value,length);
+}
+
 template<typename ConstantValueType>
 DAX_CONT_EXPORT
-ArrayHandleConstant<ConstantValueType>
-make_ArrayHandleConstant(ConstantValueType value,dax::Id length)
+ArrayHandleConstant<ConstantValueType,DAX_DEFAULT_DEVICE_ADAPTER_TAG>
+make_ArrayHandleConstant(ConstantValueType value,
+                         dax::Id length)
 {
-  return ArrayHandleConstant<ConstantValueType>(value,length);
+  return make_ArrayHandleConstant(value,length,DAX_DEFAULT_DEVICE_ADAPTER_TAG());
 }
 
 }
