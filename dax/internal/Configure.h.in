@@ -55,6 +55,9 @@
 // it tells whether Dax was original configured with a thrust backend enabled.
 #cmakedefine DAX_ENABLE_THRUST
 
+//Mark if we are building with interop enabled
+#cmakedefine DAX_ENABLE_OPENGL_INTEROP
+
 
 //save out the thrust major and minor version so that we can detect
 //what backend syntax we need to use

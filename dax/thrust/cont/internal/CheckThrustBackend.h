@@ -26,33 +26,34 @@
 
 #ifdef DAX_ENABLE_THRUST
 
-
 #if THRUST_MAJOR_VERSION == 1 && THRUST_MINOR_VERSION >= 6
 
+// Set the backend to be serial so it will work everywhere,
+// this was only added in thrust 1.7 and later
 #ifndef THRUST_DEVICE_SYSTEM
-#ifdef DAX_TEST_HEADER_BUILD
-// I wonder if this will cause problems with non-OpenMP compliant compilers.
-#define THRUST_DEVICE_SYSTEM THRUST_DEVICE_SYSTEM_OMP
-#else // DAX_TEST_HEADER_BUILD
-#error Inappropriate use of thrust headers.
-#endif // DAX_TEST_HEADER_BUILD
-#endif // defined(THRUST_DEVICE_SYSTEM)
+# ifdef DAX_TEST_HEADER_BUILD
+#   define THRUST_DEVICE_SYSTEM THRUST_DEVICE_SYSTEM_OMP
+# else // DAX_TEST_HEADER_BUILD
+#   error Inappropriate use of thrust headers.
+# endif // DAX_TEST_HEADER_BUILD
+#endif //THRUST_DEVICE_SYSTEM
 
+#elif THRUST_MAJOR_VERSION == 1 && THRUST_MINOR_VERSION <= 5
 
-#else //THRUST_MAJOR_VERSION == 1 && THRUST_MINOR_VERSION >= 6
-
+//we are going to try and pick open mp if it is enabled
 #ifndef THRUST_DEVICE_BACKEND
-#ifdef DAX_TEST_HEADER_BUILD
-// I wonder if this will cause problems with non-OpenMP compliant compilers.
-#define THRUST_DEVICE_BACKEND THRUST_DEVICE_BACKEND_OMP
-#else // DAX_TEST_HEADER_BUILD
-#error Inappropriate use of thrust headers.
-#endif // DAX_TEST_HEADER_BUILD
-#endif // defined(THRUST_DEVICE_BACKEND)
+# ifdef DAX_TEST_HEADER_BUILD
+#   ifdef DAX_OPENMP
+#     define THRUST_DEVICE_BACKEND THRUST_DEVICE_BACKEND_OMP
+#   else
+#     error Unable to find a valid thrust backend to test with.
+#   endif
+# else // DAX_TEST_HEADER_BUILD
+#   error Inappropriate use of thrust headers.
+# endif // DAX_TEST_HEADER_BUILD
+#endif //THRUST_DEVICE_BACKEND
 
-
-#endif //THRUST_MAJOR_VERSION == 1 && THRUST_MINOR_VERSION >= 6
-
+#endif //THRUST_MAJOR_VERSION == 1 && THRUST_MINOR_VERSION <= 5
 
 
 #endif //DAX_ENABLE_THRUST

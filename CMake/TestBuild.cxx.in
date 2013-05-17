@@ -1,4 +1,8 @@
+//mark that we are including headers as test for completeness. 
+//This is used by headers that include thrust to properly define a proper
+//device backend / system
 #define DAX_TEST_HEADER_BUILD
+
 #define BOOST_SP_DISABLE_THREADS
 
 #include <@dir_prefix@/@header@>
