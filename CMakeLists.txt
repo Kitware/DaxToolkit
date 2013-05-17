@@ -142,11 +142,15 @@ dax_install_headers(
 
 
 if (NOT DAX_DISABLE_KITS)
-
   # List of Boost features used:
   # * Smart Ptr
   # * Meta programming language
   find_package(Boost ${Dax_REQUIRED_BOOST_VERSION} REQUIRED)
+
+  # Find OpenGL, if it is found we can enable
+  # the OpenGL Interop support
+  find_package(OpenGL)
+  set(DAX_ENABLE_OPENGL_INTEROP ${OPENGL_FOUND})
 
 #-----------------------------------------------------------------------------
 # Add subdirectories

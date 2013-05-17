@@ -14,8 +14,12 @@
 ##
 ##=============================================================================
 
-add_subdirectory(cont)
+set(headers
+  TransferToOpenGL.h
+  )
 
-if (DAX_ENABLE_OPENGL_INTEROP)
-  add_subdirectory(opengl)
-endif (DAX_ENABLE_OPENGL_INTEROP)
+dax_disable_troublesome_thrust_warnings()
+
+#-----------------------------------------------------------------------------
+dax_declare_headers(CUDA ${headers})
+

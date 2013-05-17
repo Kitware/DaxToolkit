@@ -14,8 +14,4 @@
 ##
 ##=============================================================================
 
-add_subdirectory(cont)
-
-if (DAX_ENABLE_OPENGL_INTEROP)
-  add_subdirectory(opengl)
-endif (DAX_ENABLE_OPENGL_INTEROP)
+add_subdirectory(internal)

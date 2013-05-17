@@ -14,8 +14,14 @@
 ##
 ##=============================================================================
 
-add_subdirectory(cont)
+set(headers
+  TransferToOpenGL.h
+  )
 
-if (DAX_ENABLE_OPENGL_INTEROP)
-  add_subdirectory(opengl)
-endif (DAX_ENABLE_OPENGL_INTEROP)
+#-----------------------------------------------------------------------------
+add_subdirectory(internal)
+
+#-----------------------------------------------------------------------------
+dax_declare_headers(${headers})
+
+
