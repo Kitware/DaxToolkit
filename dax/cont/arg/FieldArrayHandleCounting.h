@@ -16,15 +16,8 @@
 #ifndef __dax_cont_arg_FieldArrayHandleCounting_h
 #define __dax_cont_arg_FieldArrayHandleCounting_h
 
-#include <dax/Types.h>
-#include <dax/cont/arg/ConceptMap.h>
-#include <dax/cont/arg/Field.h>
-#include <dax/cont/ArrayHandle.h>
-#include <dax/cont/sig/Tag.h>
-#include <dax/exec/arg/FieldPortal.h>
-#include <dax/internal/Tags.h>
-
-#include <boost/mpl/if.hpp>
+#include <dax/cont/arg/FieldArrayHandle.h>
+#include <dax/cont/ArrayHandleCounting.h>
 
 namespace dax { namespace cont { namespace arg {
 
