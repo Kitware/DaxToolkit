@@ -33,6 +33,10 @@ class TestingWindow : public dax::opengl::testing::WindowBase<TestingWindow>
 public:
   DAX_CONT_EXPORT TestingWindow(){};
 
+  //called after opengl is inited
+  DAX_CONT_EXPORT void PostInit()
+  {}
+
   DAX_CONT_EXPORT void Display()
   {}
 

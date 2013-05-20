@@ -22,10 +22,9 @@ option(DAX_ENABLE_VTK_BENCHMARKS FALSE)
 mark_as_advanced(DAX_ENABLE_PISTON_BENCHMARKS)
 option(DAX_ENABLE_PISTON_BENCHMARKS FALSE)
 
-
 #-----------------------------------------------------------------------------
 if(DAX_ENABLE_VTK_BENCHMARKS)
-  find_package(VTK 6.0
+  find_package(VTK
     COMPONENTS
     vtkCommonCore
     vtkCommonDataModel
@@ -72,3 +71,12 @@ add_subdirectory(BlackScholes)
 add_subdirectory(FY11Timing)
 add_subdirectory(MarchingCubes)
 add_subdirectory(Threshold)
+
+
+
+#enable the benchmarks if we have glut and interop
+if(DAX_ENABLE_OPENGL_TESTS)
+  add_subdirectory(Mandlebulb)
+endif()
+
+
