@@ -17,6 +17,7 @@
 #define __dax_thrust_cont_internal_DeviceAdapterThrust_h
 
 #include <dax/thrust/cont/internal/CheckThrustBackend.h>
+#include <dax/thrust/cont/internal/MakeThrustIterator.h>
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ErrorExecution.h>
@@ -43,13 +44,11 @@
 #include <thrust/copy.h>
 #include <thrust/count.h>
 #include <thrust/device_vector.h>
-#include <thrust/iterator/counting_iterator.h>
 #include <thrust/scan.h>
 #include <thrust/sort.h>
 #include <thrust/unique.h>
 
 #include <thrust/iterator/counting_iterator.h>
-#include <thrust/iterator/transform_iterator.h>
 
 #if defined(__GNUC__) && !defined(DAX_CUDA)
 #if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
@@ -61,36 +60,6 @@ namespace dax {
 namespace thrust {
 namespace cont {
 namespace internal {
-
-namespace detail {
-
-// Tags to specify what type of thrust iterator to use.
-struct ThrustIteratorTransformTag {  };
-struct ThrustIteratorDevicePtrTag {  };
-
-// Traits to help classify what thrust iterators will be used.
-template<class IteratorType>
-struct ThrustIteratorTag {
-  typedef ThrustIteratorTransformTag Type;
-};
-template<typename T>
-struct ThrustIteratorTag<T *> {
-  typedef ThrustIteratorDevicePtrTag Type;
-};
-template<typename T>
-struct ThrustIteratorTag<const T*> {
-  typedef ThrustIteratorDevicePtrTag Type;
-};
-
-template<typename T> struct ThrustStripPointer;
-template<typename T> struct ThrustStripPointer<T *> {
-  typedef T Type;
-};
-template<typename T> struct ThrustStripPointer<const T *> {
-  typedef const T Type;
-};
-
-} // namespace detail
 
 /// This class can be subclassed to implement the DeviceAdapterAlgorithm for a
 /// device that uses thrust as its implementation. The subclass should pass in
@@ -104,122 +73,6 @@ struct DeviceAdapterAlgorithmThrust
   #ifndef DAX_CUDA
 private:
   #endif
-  template<class PortalType>
-  struct PortalValue {
-    typedef typename PortalType::ValueType ValueType;
-
-    DAX_EXEC_EXPORT
-    PortalValue(const PortalType &portal, dax::Id index)
-      : Portal(portal), Index(index) {  }
-
-    DAX_EXEC_EXPORT
-    ValueType operator=(ValueType value) {
-      this->Portal.Set(this->Index, value);
-      return value;
-    }
-
-    DAX_EXEC_EXPORT
-    operator ValueType(void) const {
-      return this->Portal.Get(this->Index);
-    }
-
-    const PortalType Portal;
-    const dax::Id Index;
-  };
-
-  template<class PortalType>
-  class LookupFunctor
-      : public ::thrust::unary_function<dax::Id, PortalValue<PortalType> >
-  {
-  public:
-    DAX_CONT_EXPORT LookupFunctor(PortalType portal)
-      : Portal(portal) {  }
-
-    DAX_EXEC_EXPORT
-    PortalValue<PortalType>
-    operator()(dax::Id index)
-    {
-      return PortalValue<PortalType>(this->Portal, index);
-    }
-
-  private:
-    PortalType Portal;
-  };
-
-private:
-  template<class PortalType, class Tag> struct IteratorChooser;
-  template<class PortalType>
-  struct IteratorChooser<PortalType, detail::ThrustIteratorTransformTag> {
-    typedef ::thrust::transform_iterator<
-        LookupFunctor<PortalType>,
-        ::thrust::counting_iterator<dax::Id> > Type;
-  };
-  template<class PortalType>
-  struct IteratorChooser<PortalType, detail::ThrustIteratorDevicePtrTag> {
-    typedef ::thrust::device_ptr<
-        typename detail::ThrustStripPointer<
-            typename PortalType::IteratorType>::Type> Type;
-  };
-
-  template<class PortalType>
-  struct IteratorTraits
-  {
-    typedef typename PortalType::IteratorType BaseIteratorType;
-    typedef typename detail::ThrustIteratorTag<BaseIteratorType>::Type Tag;
-    typedef typename IteratorChooser<PortalType, Tag>::Type IteratorType;
-  };
-
-  template<typename T>
-  DAX_CONT_EXPORT static
-  ::thrust::device_ptr<T>
-  MakeDevicePtr(T *iter)
-  {
-    return ::thrust::device_ptr<T>(iter);
-  }
-  template<typename T>
-  DAX_CONT_EXPORT static
-  ::thrust::device_ptr<const T>
-  MakeDevicePtr(const T *iter)
-  {
-    return ::thrust::device_ptr<const T>(iter);
-  }
-
-  template<class PortalType>
-  DAX_CONT_EXPORT static
-  typename IteratorTraits<PortalType>::IteratorType
-  MakeIteratorBegin(PortalType portal, detail::ThrustIteratorTransformTag)
-  {
-    return ::thrust::make_transform_iterator(
-          ::thrust::make_counting_iterator(dax::Id(0)),
-          LookupFunctor<PortalType>(portal));
-  }
-
-  template<class PortalType>
-  DAX_CONT_EXPORT static
-  typename IteratorTraits<PortalType>::IteratorType
-  MakeIteratorBegin(PortalType portal, detail::ThrustIteratorDevicePtrTag)
-  {
-    return MakeDevicePtr(portal.GetIteratorBegin());
-  }
-
-  template<class PortalType>
-  DAX_CONT_EXPORT static
-  typename IteratorTraits<PortalType>::IteratorType
-  IteratorBegin(PortalType portal)
-  {
-    typedef typename IteratorTraits<PortalType>::Tag IteratorTag;
-    return MakeIteratorBegin(portal, IteratorTag());
-  }
-
-  template<class PortalType>
-  DAX_CONT_EXPORT static
-  typename IteratorTraits<PortalType>::IteratorType
-  IteratorEnd(PortalType portal)
-  {
-    return IteratorBegin(portal) + portal.GetNumberOfValues();
-  }
-//-----------------------------------------------------------------------------
-
   template<class InputPortal, class OutputPortal>
   DAX_CONT_EXPORT static void CopyPortal(const InputPortal &input,
                                          const OutputPortal &output)
@@ -373,7 +226,8 @@ private:
   DAX_CONT_EXPORT static
   dax::Id UniquePortal(const ValuesPortal values)
   {
-    typedef typename IteratorTraits<ValuesPortal>::IteratorType IteratorType;
+    typedef typename detail::IteratorTraits<ValuesPortal>::IteratorType
+                                                            IteratorType;
     IteratorType begin = IteratorBegin(values);
     IteratorType newLast = ::thrust::unique(begin, IteratorEnd(values));
     return ::thrust::distance(begin, newLast);
@@ -383,7 +237,8 @@ private:
   DAX_CONT_EXPORT static
   dax::Id UniquePortal(const ValuesPortal values, Compare comp)
   {
-    typedef typename IteratorTraits<ValuesPortal>::IteratorType IteratorType;
+    typedef typename detail::IteratorTraits<ValuesPortal>::IteratorType
+                                                            IteratorType;
     IteratorType begin = IteratorBegin(values);
     IteratorType newLast = ::thrust::unique(begin, IteratorEnd(values), comp);
     return ::thrust::distance(begin, newLast);
