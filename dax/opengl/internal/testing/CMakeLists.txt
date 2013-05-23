@@ -14,16 +14,9 @@
 ##
 ##=============================================================================
 
-set(headers
-  TransferToOpenGL.h
+set(unit_tests
+  UnitTestBufferTypePicker.cxx
+  UnitTestOpenGLHeaders.cxx
   )
 
-#-----------------------------------------------------------------------------
-add_subdirectory(internal)
-
-#-----------------------------------------------------------------------------
-dax_declare_headers(${headers})
-
-if(DAX_ENABLE_OPENGL_GLUT_TESTS)
-  add_subdirectory(testing)
-endif()
+dax_unit_tests(SOURCES ${unit_tests})

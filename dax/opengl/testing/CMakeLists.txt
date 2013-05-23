@@ -15,15 +15,14 @@
 ##=============================================================================
 
 set(headers
-  TransferToOpenGL.h
+  Context.h
+  TestingOpenGLInterop.h
   )
 
-#-----------------------------------------------------------------------------
-add_subdirectory(internal)
-
-#-----------------------------------------------------------------------------
 dax_declare_headers(${headers})
 
-if(DAX_ENABLE_OPENGL_GLUT_TESTS)
-  add_subdirectory(testing)
-endif()
+set(unit_tests
+  UnitTestTransferToOpenGL.cxx
+  )
+
+dax_unit_tests(SOURCES ${unit_tests})

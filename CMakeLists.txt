@@ -151,6 +151,17 @@ if (NOT DAX_DISABLE_KITS)
   # the OpenGL Interop support
   find_package(OpenGL)
   set(DAX_ENABLE_OPENGL_INTEROP ${OPENGL_FOUND})
+  set(DAX_ENABLE_OPENGL_GLUT_TESTS  FALSE)
+
+  #if we have opengl found lets look for GLUT. If we have GLUT
+  #we can do opengl unit tests
+  if(DAX_ENABLE_OPENGL_INTEROP)
+    find_package(GLUT)
+    find_package(GLEW)
+    set(DAX_ENABLE_OPENGL_GLUT_TESTS  ${GLUT_FOUND})
+  endif()
+
+
 
 #-----------------------------------------------------------------------------
 # Add subdirectories

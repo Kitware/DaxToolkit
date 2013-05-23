@@ -23,3 +23,5 @@ set(headers
 #-----------------------------------------------------------------------------
 dax_declare_headers(${headers})
 
+#we currently don't have to check if we have glut for these tests
+add_subdirectory(testing)
