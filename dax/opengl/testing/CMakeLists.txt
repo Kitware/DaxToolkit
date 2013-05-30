@@ -15,8 +15,9 @@
 ##=============================================================================
 
 set(headers
-  Context.h
   TestingOpenGLInterop.h
+  TestingWindow.h
+  WindowBase.h
   )
 
 dax_declare_headers(${headers})

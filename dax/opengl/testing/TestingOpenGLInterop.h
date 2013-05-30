@@ -20,7 +20,7 @@
 #include <dax/cont/Scheduler.h>
 #include <dax/worklet/Magnitude.h>
 
-#include <dax/opengl/testing/Context.h>
+#include <dax/opengl/testing/TestingWindow.h>
 #include <dax/opengl/TransferToOpenGL.h>
 
 #include <dax/cont/testing/Testing.h>
@@ -288,7 +288,8 @@ public:
   DAX_CONT_EXPORT static int Run()
     {
     //create a valid openGL context that we can test transfer of data
-    dax::opengl::testing::Context context;
+    dax::opengl::testing::TestingWindow window;
+    window.Init("Testing Window", 300, 300);
 
     //verify that we can transfer basic arrays and constant value arrays to opengl
     dax::testing::Testing::TryAllTypes(TransferFunctor());
@@ -300,6 +301,7 @@ public:
                                  dax::testing::Testing::CellCheckAlwaysTrue(),
                                  ArrayContainerTag(),
                                  DeviceAdapterTag() );
+
     return 0;
     }
 };
