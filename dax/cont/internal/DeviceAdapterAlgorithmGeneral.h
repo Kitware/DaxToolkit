@@ -16,8 +16,10 @@
 #ifndef __dax_cont_internal_DeviceAdapterAlgorithmGeneral_h
 #define __dax_cont_internal_DeviceAdapterAlgorithmGeneral_h
 
-#include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/ArrayContainerControlBasic.h>
+#include <dax/cont/internal/ArrayContainerControlCounting.h>
+
 
 #include <dax/Functional.h>
 

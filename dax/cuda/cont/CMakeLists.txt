@@ -15,6 +15,7 @@
 ##=============================================================================
 
 set(headers
+  ChooseCudaDevice.h
   DeviceAdapterCuda.h
   )
 

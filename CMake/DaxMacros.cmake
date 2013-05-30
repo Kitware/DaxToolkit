@@ -40,11 +40,16 @@ function(dax_add_header_build_test name dir_prefix use_cuda)
   endif (use_cuda)
   set(cxxfiles)
   foreach (header ${ARGN})
-    string(REPLACE "${CMAKE_CURRENT_BINARY_DIR}" "" header "${header}")
-    get_filename_component(headername ${header} NAME_WE)
-    set(src ${CMAKE_CURRENT_BINARY_DIR}/testing/TestBuild_${name}_${headername}${suffix})
-    configure_file(${Dax_SOURCE_DIR}/CMake/TestBuild.cxx.in ${src} @ONLY)
-    set(cxxfiles ${cxxfiles} ${src})
+    get_source_file_property(cant_be_tested ${header} DAX_CANT_BE_HEADER_TESTED)
+
+    if( NOT cant_be_tested )
+      string(REPLACE "${CMAKE_CURRENT_BINARY_DIR}" "" header "${header}")
+      get_filename_component(headername ${header} NAME_WE)
+      set(src ${CMAKE_CURRENT_BINARY_DIR}/testing/TestBuild_${name}_${headername}${suffix})
+      configure_file(${Dax_SOURCE_DIR}/CMake/TestBuild.cxx.in ${src} @ONLY)
+      list(APPEND cxxfiles ${src})
+    endif()
+
   endforeach (header)
 
   if (use_cuda)
@@ -67,6 +72,29 @@ function(dax_install_headers dir_prefix)
     DESTINATION ${Dax_INSTALL_INCLUDE_DIR}/${dir_prefix}
     )
 endfunction(dax_install_headers)
+
+# Declare a list of headers that require thrust to be enabled
+# for them to header tested. In cases of thrust version 1.5 or less
+# we have to make sure openMP is enabled, otherwise we are okay
+function(dax_requires_thrust_to_test)
+  #determine the state of thrust and testing
+  set(cant_be_tested FALSE)
+    if(NOT DAX_ENABLE_THRUST)
+      #mark as not valid
+      set(cant_be_tested TRUE)
+    elseif(NOT DAX_ENABLE_OPENMP)
+      #mark also as not valid
+      set(cant_be_tested TRUE)
+    endif()
+
+  foreach(header ${ARGN})
+    #set a property on the file that marks if we can header test it
+    set_source_files_properties( ${header}
+        PROPERTIES DAX_CANT_BE_HEADER_TESTED ${cant_be_tested} )
+
+  endforeach(header)
+
+endfunction(dax_requires_thrust_to_test)
 
 # Declare a list of header files.  Will make sure the header files get
 # compiled and show up in an IDE.
@@ -111,6 +139,19 @@ function(dax_unit_tests)
     "${options}" "${oneValueArgs}" "${multiValueArgs}"
     ${ARGN}
     )
+
+  #set up what we possibly need to link too.
+  set(DAX_UT_LIBRARIES ${DAX_TIMING_LIBS})
+
+  if(DAX_ENABLE_OPENGL_INTEROP)
+    list(APPEND DAX_UT_LIBRARIES ${OPENGL_LIBRARIES} )
+  endif()
+
+  if(DAX_ENABLE_OPENGL_GLUT_TESTS)
+    list(APPEND DAX_UT_LIBRARIES ${GLUT_LIBRARIES} ${GLEW_LIBRARIES} )
+  endif()
+
+
   if (DAX_ENABLE_TESTING)
     dax_get_kit_name(kit)
     #we use UnitTests_kit_ so that it is an unique key to exclude from coverage
@@ -125,7 +166,7 @@ function(dax_unit_tests)
           PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS_WARN_EXTRA})
       endif(DAX_EXTRA_COMPILER_WARNINGS)
     endif (DAX_UT_CUDA)
-    target_link_libraries(${test_prog} ${DAX_UT_LIBRARIES} ${DAX_TIMING_LIBS})
+    target_link_libraries(${test_prog} ${DAX_UT_LIBRARIES})
     foreach (test ${DAX_UT_SOURCES})
       get_filename_component(tname ${test} NAME_WE)
       add_test(NAME ${tname}

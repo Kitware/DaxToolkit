@@ -63,6 +63,10 @@ if (DAX_ENABLE_OPENMP)
   add_subdirectory(openmp)
 endif (DAX_ENABLE_OPENMP)
 
+if (DAX_ENABLE_OPENGL_INTEROP)
+  add_subdirectory(opengl)
+endif (DAX_ENABLE_OPENGL_INTEROP)
+
 if (DAX_ENABLE_TBB)
   add_subdirectory(tbb)
 endif (DAX_ENABLE_TBB)

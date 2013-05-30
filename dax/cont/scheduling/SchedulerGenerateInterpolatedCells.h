@@ -111,13 +111,7 @@ DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
     Algorithm::Copy(outputGrid.GetPointCoordinates(),
                     uniqueCoords);
 
-    typedef dax::cont::ArrayHandle<
-        dax::Id3,ArrayContainerControlTag,DeviceAdapterTag> IdArrayType;
-    IdArrayType* coordsAsIds;
-    coordsAsIds = reinterpret_cast<IdArrayType*>(&uniqueCoords);
-
-
-    Algorithm::Sort(*coordsAsIds, comparisonFunctor );
+    Algorithm::Sort(uniqueCoords, comparisonFunctor );
     Algorithm::Unique(uniqueCoords);
     Algorithm::LowerBounds(uniqueCoords,
                            outputGrid.GetPointCoordinates(),

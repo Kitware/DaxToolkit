@@ -493,8 +493,4 @@ make_ArrayHandle(const std::vector<T,Allocator> &array)
 }
 }
 
-//to simplify the user experience we bring in all different types of array
-//handles when you include array handle
-#include <dax/cont/ArrayHandleCounting.h>
-#include <dax/cont/ArrayHandleConstant.h>
 #endif //__dax_cont_ArrayHandle_h

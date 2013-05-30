@@ -17,6 +17,7 @@
 #define __dax_cont_arg_FieldArrayHandleConstant_h
 
 #include <dax/cont/arg/FieldArrayHandle.h>
+#include <dax/cont/ArrayHandleConstant.h>
 
 
 namespace dax { namespace cont { namespace arg {

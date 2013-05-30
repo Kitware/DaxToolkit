@@ -73,26 +73,8 @@ struct InterpolateEdgesToPoint
     DAX_EXEC_EXPORT void operator()(dax::Id index) const
     {
       const dax::Vector3 pointInterpInfo = InterpCoords.Get(index);
-      //cast the memory location of the pointInterpInfo zero and one
-      //from a scalar to an id. Not a static cast, but instead convert the actual
-      //memory layout from representing a IEEE float to a signed integer. This
-      //works since IEEE float standard states that each float value memory
-      //representation is a valid signed integer.
-      //We do this so that we don't have to worry about the conversion to float
-      //losing any data
-      const dax::Id id1 = *(reinterpret_cast<const dax::Id*>(&(pointInterpInfo[0]) ));
-      const dax::Id id2 = *(reinterpret_cast<const dax::Id*>(&(pointInterpInfo[1]) ));
-      const dax::Vector3 point1 =Coords.Get(id1);
-      const dax::Vector3 point2 =Coords.Get(id2);
-
-      // if(index < 10)
-      //   {
-      //   std::cout << "id1: " << id1 <<  std::endl;
-      //   std::cout << "id2: " << id2 << std::endl;
-      //   std::cout << "w: " << pointInterpInfo[2] << std::endl;
-      //   std::cout << std::endl;
-      //   }
-
+      const dax::Vector3 point1 = Coords.Get(pointInterpInfo[0]);
+      const dax::Vector3 point2 =Coords.Get(pointInterpInfo[1]);
       InterpCoords.Set(index, dax::math::Lerp(point1,point2,pointInterpInfo[2]));
     }
 

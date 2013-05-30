@@ -14,21 +14,18 @@
 ##
 ##=============================================================================
 
+
 set(headers
-  ArrayManagerExecutionThrustDevice.h
-  ArrayManagerExecutionThrustShare.h
-  CheckThrustBackend.h
-  Copy.h
-  DeviceAdapterAlgorithmThrust.h
-  MakeThrustIterator.h
+  SetOpenGLDevice.h
   )
 
-dax_requires_thrust_to_test(
-    ArrayManagerExecutionThrustDevice.h
-    CheckThrustBackend.h
-    Copy.h
-    DeviceAdapterAlgorithmThrust.h
-    MakeThrustIterator.h
-    )
+dax_disable_troublesome_thrust_warnings()
 
-dax_declare_headers(${headers})
+#-----------------------------------------------------------------------------
+dax_declare_headers(CUDA ${headers})
+
+add_subdirectory(internal)
+
+if(DAX_ENABLE_OPENGL_GLUT_TESTS)
+  add_subdirectory(testing)
+endif()

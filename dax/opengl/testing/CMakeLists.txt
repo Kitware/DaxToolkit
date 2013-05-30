@@ -15,20 +15,14 @@
 ##=============================================================================
 
 set(headers
-  ArrayManagerExecutionThrustDevice.h
-  ArrayManagerExecutionThrustShare.h
-  CheckThrustBackend.h
-  Copy.h
-  DeviceAdapterAlgorithmThrust.h
-  MakeThrustIterator.h
+  Context.h
+  TestingOpenGLInterop.h
   )
 
-dax_requires_thrust_to_test(
-    ArrayManagerExecutionThrustDevice.h
-    CheckThrustBackend.h
-    Copy.h
-    DeviceAdapterAlgorithmThrust.h
-    MakeThrustIterator.h
-    )
-
 dax_declare_headers(${headers})
+
+set(unit_tests
+  UnitTestTransferToOpenGL.cxx
+  )
+
+dax_unit_tests(SOURCES ${unit_tests})

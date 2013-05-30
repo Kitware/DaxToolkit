@@ -15,20 +15,13 @@
 ##=============================================================================
 
 set(headers
-  ArrayManagerExecutionThrustDevice.h
-  ArrayManagerExecutionThrustShare.h
-  CheckThrustBackend.h
-  Copy.h
-  DeviceAdapterAlgorithmThrust.h
-  MakeThrustIterator.h
+  BufferTypePicker.h
+  OpenGLHeaders.h
+  TransferToOpenGL.h
   )
 
-dax_requires_thrust_to_test(
-    ArrayManagerExecutionThrustDevice.h
-    CheckThrustBackend.h
-    Copy.h
-    DeviceAdapterAlgorithmThrust.h
-    MakeThrustIterator.h
-    )
-
+#-----------------------------------------------------------------------------
 dax_declare_headers(${headers})
+
+#we currently don't have to check if we have glut for these tests
+add_subdirectory(testing)

@@ -14,21 +14,9 @@
 ##
 ##=============================================================================
 
-set(headers
-  ArrayManagerExecutionThrustDevice.h
-  ArrayManagerExecutionThrustShare.h
-  CheckThrustBackend.h
-  Copy.h
-  DeviceAdapterAlgorithmThrust.h
-  MakeThrustIterator.h
+set(unit_tests
+  UnitTestBufferTypePicker.cxx
+  UnitTestOpenGLHeaders.cxx
   )
 
-dax_requires_thrust_to_test(
-    ArrayManagerExecutionThrustDevice.h
-    CheckThrustBackend.h
-    Copy.h
-    DeviceAdapterAlgorithmThrust.h
-    MakeThrustIterator.h
-    )
-
-dax_declare_headers(${headers})
+dax_unit_tests(SOURCES ${unit_tests})
