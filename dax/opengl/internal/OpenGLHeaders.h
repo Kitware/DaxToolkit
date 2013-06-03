@@ -19,18 +19,19 @@
 
 #include <dax/internal/ExportMacros.h>
 
+#if defined(__APPLE__)
+# include <GL/glew.h>
+# include <OpenGL/gl.h>
+#else
+# include <GL/glew.h>
+# include <GL/gl.h>
+#endif
+
 #ifdef DAX_CUDA
 # include <cuda_runtime.h>
 # include <cuda_gl_interop.h>
 #endif
 
-#if defined(__APPLE__)
-# include <OpenGL/gl.h>
-# include <OpenGL/glu.h>
-#else
-# include <GL/gl.h>
-# include <GL/glu.h>
-#endif
 
 
 
