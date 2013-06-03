@@ -147,31 +147,36 @@ if (NOT DAX_DISABLE_KITS)
   # * Meta programming language
   find_package(Boost ${Dax_REQUIRED_BOOST_VERSION} REQUIRED)
 
-  # Find OpenGL, if it is found we can enable
-  # the OpenGL Interop support
+  # Find OpenGL and GLEW, if both are found we can enable
+  # the OpenGL Interop support. We use
+  include(CMakeDependentOption)
+
+  #enable Interop only if we have OpenGL and GLEW
   find_package(OpenGL)
-  set(DAX_ENABLE_OPENGL_INTEROP ${OPENGL_FOUND})
-  set(DAX_ENABLE_OPENGL_TESTS  FALSE)
+  find_package(GLEW)
+  find_package(GLUT)
 
-  #if we have opengl found lets look for GLUT. If we have GLUT
-  #we can do opengl unit tests
-  if(DAX_ENABLE_OPENGL_INTEROP)
-    find_package(GLUT)
-    find_package(GLEW)
-    if(GLUT_FOUND AND GLEW_FOUND)
-      set(DAX_ENABLE_OPENGL_TESTS TRUE)
-    endif()
-  endif()
+  #dependent option reads, value to set, if condition is true, otherwise
+  #use last value
+  cmake_dependent_option(DAX_ENABLE_OPENGL_INTEROP
+                         "Enable OpenGL Interop will require GLEW"
+                         ON "OPENGL_FOUND;GLEW_FOUND" OFF)
 
+  #Only enable OpenGL Interop tests if we have Interop enabled
+  #and we have GLUT
+  #dependent option reads, value to set, if condition is true, otherwise
+  #use last value
+  CMAKE_DEPENDENT_OPTION(DAX_ENABLE_OPENGL_TESTS
+                         "Enable OpenGL Interop Render Window Tests"
+                         ON "DAX_ENABLE_OPENGL_INTEROP;GLUT_FOUND" OFF)
 
+  #-----------------------------------------------------------------------------
+  # Add subdirectories
+  add_subdirectory(dax)
 
-#-----------------------------------------------------------------------------
-# Add subdirectories
-add_subdirectory(dax)
-
-if (DAX_ENABLE_TESTING)
-  add_subdirectory(Benchmarks)
-endif (DAX_ENABLE_TESTING)
+  if (DAX_ENABLE_TESTING)
+    add_subdirectory(Benchmarks)
+  endif (DAX_ENABLE_TESTING)
 
 endif(NOT DAX_DISABLE_KITS)
 

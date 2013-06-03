@@ -144,15 +144,13 @@ function(dax_unit_tests)
   set(DAX_UT_LIBRARIES ${DAX_TIMING_LIBS})
 
   if(DAX_ENABLE_OPENGL_INTEROP)
-    include_directories( ${OPENGL_INCLUDE_DIR} )
-    message(FATAL_ERROR "${OPENGL_INCLUDE_DIR}")
-
-    list(APPEND DAX_UT_LIBRARIES ${OPENGL_LIBRARIES}  )
+    include_directories( ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} )
+    list(APPEND DAX_UT_LIBRARIES ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} )
   endif()
 
   if(DAX_ENABLE_OPENGL_TESTS)
-    include_directories( ${GLUT_INCLUDE_DIR} ${GLEW_INCLUDE_DIR})
-    list(APPEND DAX_UT_LIBRARIES  ${GLUT_LIBRARIES} ${GLEW_LIBRARIES} )
+    include_directories( ${GLUT_INCLUDE_DIR} )
+    list(APPEND DAX_UT_LIBRARIES ${GLUT_LIBRARIES}  )
   endif()
 
   if (DAX_ENABLE_TESTING)

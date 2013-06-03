@@ -24,6 +24,6 @@ add_subdirectory(internal)
 #-----------------------------------------------------------------------------
 dax_declare_headers(${headers})
 
-if(DAX_ENABLE_OPENGL_GLUT_TESTS)
+if(DAX_ENABLE_OPENGL_TESTS)
   add_subdirectory(testing)
 endif()
