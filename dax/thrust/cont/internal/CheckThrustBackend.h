@@ -43,11 +43,7 @@
 //we are going to try and pick open mp if it is enabled
 #ifndef THRUST_DEVICE_BACKEND
 # ifdef DAX_TEST_HEADER_BUILD
-#   ifdef DAX_OPENMP
-#     define THRUST_DEVICE_BACKEND THRUST_DEVICE_BACKEND_OMP
-#   else
-#     error Unable to find a valid thrust backend to test with.
-#   endif
+#   define THRUST_DEVICE_BACKEND THRUST_DEVICE_BACKEND_OMP
 # else // DAX_TEST_HEADER_BUILD
 #   error Inappropriate use of thrust headers.
 # endif // DAX_TEST_HEADER_BUILD
