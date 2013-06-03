@@ -21,15 +21,14 @@
 #include <string>
 
 // OpenGL Graphics includes
-#include <GL/glew.h>
+//glew needs to go before glut
+#include <dax/opengl/internal/OpenGLHeaders.h>
 #if defined (__APPLE__)
 # include <GLUT/glut.h>
 #else
-# include <GL/freeglut.h>
+# include <GL/glut.h>
 #endif
 
-//#include glew before we include any other opengl headers
-#include <dax/opengl/internal/OpenGLHeaders.h>
 #include <dax/cont/ErrorControlBadValue.h>
 
 #ifdef DAX_CUDA
