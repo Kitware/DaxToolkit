@@ -141,7 +141,7 @@ function(dax_unit_tests)
     )
 
   #set up what we possibly need to link too.
-  set(DAX_UT_LIBRARIES ${DAX_TIMING_LIBS})
+  list(APPEND DAX_UT_LIBRARIES ${DAX_TIMING_LIBS})
 
   if(DAX_ENABLE_OPENGL_INTEROP)
     include_directories( ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} )
