@@ -196,9 +196,6 @@ DAX_CONT_EXPORT void RemoveDuplicatePoints(const InGridType &inGrid,
                              mask,
                              outGrid.GetPointCoordinates());
 
-    typedef typename OutGridType::CellConnectionsType CellConnectionsType;
-    typedef typename OutGridType::PointCoordinatesType PointCoordinatesType;
-
     //compact the topology array to reference the extracted
     //coordinates ids
     {

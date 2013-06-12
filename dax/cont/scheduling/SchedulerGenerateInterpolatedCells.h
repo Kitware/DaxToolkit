@@ -48,7 +48,7 @@ class Scheduler<DeviceAdapterTag,dax::cont::scheduling::GenerateInterpolatedCell
   const SchedulerDefaultType DefaultScheduler;
 
 public:
-  //default constructor so we can insantiate const schedulers
+  //default constructor so we can instantiate const schedulers
   DAX_CONT_EXPORT Scheduler():DefaultScheduler(){}
 
   //copy constructor so that people can pass schedulers around by value
@@ -95,8 +95,6 @@ DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
                                         OutputGrid& outputGrid,
                                         bool removeDuplicates ) const
 {
-  typedef typename OutputGrid::PointCoordinatesType::ArrayContainerControlTag
-      ArrayContainerControlTag;
   typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
       Algorithm;
   if(removeDuplicates)
@@ -106,7 +104,12 @@ DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
     // the resulting topology array
 
     dax::math::SortLess comparisonFunctor;
-    typename OutputGrid::PointCoordinatesType uniqueCoords;
+
+    typedef typename OutputGrid::PointCoordinatesType::ValueType
+                                                            PointCoordValueType;
+    typename dax::cont::ArrayHandle<PointCoordValueType,
+               dax::cont::ArrayContainerControlTagBasic,
+                                       DeviceAdapterTag> uniqueCoords;
 
     Algorithm::Copy(outputGrid.GetPointCoordinates(),
                     uniqueCoords);
@@ -118,8 +121,7 @@ DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
                            outputGrid.GetCellConnections(),
                            comparisonFunctor );
 
-    //reduce and resize outputGrid
-    //outputGrid.SetPointCoordinates(uniqueCoords);
+    // //reduce and resize outputGrid
     Algorithm::Copy(uniqueCoords,outputGrid.GetPointCoordinates());
     }
 
