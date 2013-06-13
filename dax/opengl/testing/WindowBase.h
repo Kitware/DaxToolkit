@@ -98,6 +98,8 @@ public:
   glutMouseFunc( WindowBase<Derived>::GLUTMouseCallback );
   glutMotionFunc( WindowBase<Derived>::GLUTMouseMoveCallback );
 
+  //call any custom init code you want to have
+  WindowBase<Derived>::StaticGLUTResource->PostInit();
   }
 
   void Init(std::string title, int width, int height)
