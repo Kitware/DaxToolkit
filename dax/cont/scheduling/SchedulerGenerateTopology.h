@@ -109,6 +109,12 @@ DAX_CONT_EXPORT void GenerateNewTopology(
     newTopo.DoReleaseClassification();
     }
 
+  if(numNewCells == 0)
+    {
+    //nothing to do
+    return;
+    }
+
   //fill the validCellRange with the values from 1 to size+1, this is used
   //for the lower bounds to compute the right indices
   IdArrayHandleType validCellRange;
@@ -272,6 +278,12 @@ DAX_CONT_EXPORT void GenerateNewTopology(
   if(newTopo.GetReleaseClassification())
     {
     newTopo.DoReleaseClassification();
+    }
+
+  if(numNewCells == 0)
+    {
+    //nothing to do
+    return;
     }
 
   //fill the validCellRange with the values from 0 to size, this is used
