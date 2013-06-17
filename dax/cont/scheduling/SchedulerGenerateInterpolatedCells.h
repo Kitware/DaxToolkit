@@ -18,6 +18,7 @@
 #ifndef __dax_cont_scheduling_SchedulerGenerateInterpolatedCells_h
 #define __dax_cont_scheduling_SchedulerGenerateInterpolatedCells_h
 
+#include <iostream>
 #include <dax/Types.h>
 #include <dax/CellTraits.h>
 #include <dax/cont/arg/ConceptMap.h>
@@ -141,6 +142,7 @@ DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
   typedef typename OutputGrid::PointCoordinatesType::PortalExecution OutPortalType;
 
   const dax::Id numPoints = outputGrid.GetNumberOfPoints();
+  std::cout << "number of points in out grid " << numPoints << std::endl;
   dax::exec::internal::kernel::InterpolateEdgesToPoint<InPortalType,OutPortalType>
     interpolate( inputGrid.GetPointCoordinates().PrepareForInput(),
                  outputGrid.GetPointCoordinates().PrepareForOutput(numPoints));
@@ -172,6 +174,17 @@ DAX_CONT_EXPORT void GenerateNewTopology(
   const dax::Id numNewCells =
       Algorithm::ScanInclusive(newTopo.GetClassification(),
                                scannedNewCellCounts);
+
+  if(newTopo.GetReleaseClassification())
+    {
+    newTopo.DoReleaseClassification();
+    }
+
+  if(numNewCells == 0)
+    {
+    //nothing to do
+    return;
+    }
 
   if(newTopo.GetReleaseClassification())
     {
@@ -291,6 +304,12 @@ DAX_CONT_EXPORT void GenerateNewTopology(
   if(newTopo.GetReleaseClassification())
     {
     newTopo.DoReleaseClassification();
+    }
+
+  if(numNewCells == 0)
+    {
+    //nothing to do
+    return;
     }
 
   //fill the validCellRange with the values from 0 to size, this is used
