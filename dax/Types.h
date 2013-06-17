@@ -321,15 +321,11 @@ public:
       }
     return same;
   }
+
   DAX_EXEC_CONT_EXPORT
   bool operator!=(const Tuple<T,NUM_COMPONENTS> &other) const
   {
-    bool same = true;
-    for (int componentIndex=0; componentIndex<NUM_COMPONENTS; componentIndex++)
-      {
-      same &= (this->Components[componentIndex] != other[componentIndex]);
-      }
-    return same;
+    return !(this->operator==(other));
   }
 
 protected:
