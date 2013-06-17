@@ -27,7 +27,7 @@ template <typename T> void TypeTest()
   T a, b, c;
   typename T::ComponentType s(5);
 
-  for(unsigned int i=0; i < T::NUM_COMPONENTS; ++i)
+  for(int i=0; i < T::NUM_COMPONENTS; ++i)
     {
     a[i]=typename T::ComponentType((i+1)*2);
     b[i]=typename T::ComponentType(i+1);
@@ -45,31 +45,31 @@ template <typename T> void TypeTest()
 
   T plus = a + b;
   T correct_plus;
-  for(unsigned int i=0; i < T::NUM_COMPONENTS; ++i)
+  for(int i=0; i < T::NUM_COMPONENTS; ++i)
     { correct_plus[i] = a[i] + b[i]; }
   DAX_TEST_ASSERT(test_equal(plus, correct_plus),"Tuples not added correctly.");
 
   T minus = a - b;
   T correct_minus;
-  for(unsigned int i=0; i < T::NUM_COMPONENTS; ++i)
+  for(int i=0; i < T::NUM_COMPONENTS; ++i)
     { correct_minus[i] = a[i] - b[i]; }
   DAX_TEST_ASSERT(test_equal(minus, correct_minus),"Tuples not subtracted correctly.");
 
 
   T mult = a * b;
   T correct_mult;
-  for(unsigned int i=0; i < T::NUM_COMPONENTS; ++i)
+  for(int i=0; i < T::NUM_COMPONENTS; ++i)
     { correct_mult[i] = a[i] * b[i]; }
   DAX_TEST_ASSERT(test_equal(mult, correct_mult),"Tuples not multiplied correctly.");
 
   T div = a / b;
   T correct_div;
-  for(unsigned int i=0; i < T::NUM_COMPONENTS; ++i)
+  for(int i=0; i < T::NUM_COMPONENTS; ++i)
     { correct_div[i] = a[i] / b[i]; }
   DAX_TEST_ASSERT(test_equal(div,correct_div),"Tuples not divided correctly.");
 
   mult = s * a;
-  for(unsigned int i=0; i < T::NUM_COMPONENTS; ++i)
+  for(int i=0; i < T::NUM_COMPONENTS; ++i)
     { correct_mult[i] = s * a[i]; }
   DAX_TEST_ASSERT(test_equal(mult, correct_mult),
                   "Scalar and Tuple did not multiply correctly.");
@@ -80,7 +80,7 @@ template <typename T> void TypeTest()
 
   typename T::ComponentType d = dax::dot(a, b);
   typename T::ComponentType correct_d = 0;
-  for(unsigned int i=0; i < T::NUM_COMPONENTS; ++i)
+  for(int i=0; i < T::NUM_COMPONENTS; ++i)
     {correct_d += a[i] * b[i]; }
   DAX_TEST_ASSERT(test_equal(d, correct_d), "dot(Tuple) wrong");
 
