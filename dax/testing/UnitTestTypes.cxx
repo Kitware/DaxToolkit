@@ -20,7 +20,83 @@
 
 namespace {
 
-template <typename T> void TypeTest();
+//general type test
+template <typename T> void TypeTest()
+{
+  //grab the number of elements of T
+  T a, b, c;
+  typename T::ComponentType s(5);
+
+  for(unsigned int i=0; i < T::NUM_COMPONENTS; ++i)
+    {
+    a[i]=typename T::ComponentType((i+1)*2);
+    b[i]=typename T::ComponentType(i+1);
+    c[i]=typename T::ComponentType((i+1)*2);
+    }
+
+  //verify prefix and postfix increment and decrement
+  ++c[T::NUM_COMPONENTS-1];
+  c[T::NUM_COMPONENTS-1]++;
+  --c[T::NUM_COMPONENTS-1];
+  c[T::NUM_COMPONENTS-1]--;
+
+  //make c nearly like a to verify == and != are correct.
+  c[T::NUM_COMPONENTS-1]=(c[T::NUM_COMPONENTS-1]-1);
+
+  T plus = a + b;
+  T correct_plus;
+  for(unsigned int i=0; i < T::NUM_COMPONENTS; ++i)
+    { correct_plus[i] = a[i] + b[i]; }
+  DAX_TEST_ASSERT(test_equal(plus, correct_plus),"Tuples not added correctly.");
+
+  T minus = a - b;
+  T correct_minus;
+  for(unsigned int i=0; i < T::NUM_COMPONENTS; ++i)
+    { correct_minus[i] = a[i] - b[i]; }
+  DAX_TEST_ASSERT(test_equal(minus, correct_minus),"Tuples not subtracted correctly.");
+
+
+  T mult = a * b;
+  T correct_mult;
+  for(unsigned int i=0; i < T::NUM_COMPONENTS; ++i)
+    { correct_mult[i] = a[i] * b[i]; }
+  DAX_TEST_ASSERT(test_equal(mult, correct_mult),"Tuples not multiplied correctly.");
+
+  T div = a / b;
+  T correct_div;
+  for(unsigned int i=0; i < T::NUM_COMPONENTS; ++i)
+    { correct_div[i] = a[i] / b[i]; }
+  DAX_TEST_ASSERT(test_equal(div,correct_div),"Tuples not divided correctly.");
+
+  mult = s * a;
+  for(unsigned int i=0; i < T::NUM_COMPONENTS; ++i)
+    { correct_mult[i] = s * a[i]; }
+  DAX_TEST_ASSERT(test_equal(mult, correct_mult),
+                  "Scalar and Tuple did not multiply correctly.");
+
+  mult = a * s;
+  DAX_TEST_ASSERT(test_equal(mult, correct_mult),
+                  "Tuple and Scalar to not multiply correctly.");
+
+  typename T::ComponentType d = dax::dot(a, b);
+  typename T::ComponentType correct_d = 0;
+  for(unsigned int i=0; i < T::NUM_COMPONENTS; ++i)
+    {correct_d += a[i] * b[i]; }
+  DAX_TEST_ASSERT(test_equal(d, correct_d), "dot(Tuple) wrong");
+
+  DAX_TEST_ASSERT(!(a == b), "operator== wrong");
+  DAX_TEST_ASSERT((a == a),  "operator== wrong");
+
+  DAX_TEST_ASSERT((a != b),  "operator!= wrong");
+  DAX_TEST_ASSERT(!(a != a), "operator!= wrong");
+
+  //test against a tuple that shares some values
+  DAX_TEST_ASSERT( !(c == a), "operator == wrong");
+  DAX_TEST_ASSERT( !(a == c), "operator == wrong");
+
+  DAX_TEST_ASSERT( (c != a), "operator != wrong");
+  DAX_TEST_ASSERT( (a != c), "operator != wrong");
+}
 
 template<> void TypeTest<dax::Vector2>()
 {
@@ -52,11 +128,22 @@ template<> void TypeTest<dax::Vector2>()
   DAX_TEST_ASSERT(test_equal(mult, dax::make_Vector2(10, 20)),
                   "Vector and scalar to not multiply correctly.");
 
-  DAX_TEST_ASSERT(!(a == b), "operator== wrong");
-  DAX_TEST_ASSERT((a != b),"operator!= wrong");
-
   dax::Scalar d = dax::dot(a, b);
   DAX_TEST_ASSERT(test_equal(d, dax::Scalar(10)), "dot(Vector2) wrong");
+
+  DAX_TEST_ASSERT(!(a == b), "operator== wrong");
+  DAX_TEST_ASSERT((a == a),  "operator== wrong");
+
+  DAX_TEST_ASSERT((a != b),  "operator!= wrong");
+  DAX_TEST_ASSERT(!(a != a), "operator!= wrong");
+
+  //test against a tuple that shares some values
+  const dax::Vector2 c = dax::make_Vector2(2,3);
+  DAX_TEST_ASSERT( !(c == a), "operator == wrong");
+  DAX_TEST_ASSERT( !(a == c), "operator == wrong");
+
+  DAX_TEST_ASSERT( (c != a), "operator != wrong");
+  DAX_TEST_ASSERT( (a != c), "operator != wrong");
 }
 
 template<> void TypeTest<dax::Vector3>()
@@ -89,11 +176,22 @@ template<> void TypeTest<dax::Vector3>()
   DAX_TEST_ASSERT(test_equal(mult, dax::make_Vector3(10, 20, 30)),
                   "Vector and scalar to not multiply correctly.");
 
-  DAX_TEST_ASSERT(!(a == b), "operator== wrong");
-  DAX_TEST_ASSERT((a != b),"operator!= wrong");
-
   dax::Scalar d = dax::dot(a, b);
   DAX_TEST_ASSERT(test_equal(d, dax::Scalar(28)), "dot(Vector3) wrong");
+
+  DAX_TEST_ASSERT(!(a == b), "operator== wrong");
+  DAX_TEST_ASSERT((a == a),  "operator== wrong");
+
+  DAX_TEST_ASSERT((a != b),  "operator!= wrong");
+  DAX_TEST_ASSERT(!(a != a), "operator!= wrong");
+
+  //test against a tuple that shares some values
+  const dax::Vector3 c = dax::make_Vector3(2,4,5);
+  DAX_TEST_ASSERT( !(c == a), "operator == wrong");
+  DAX_TEST_ASSERT( !(a == c), "operator == wrong");
+
+  DAX_TEST_ASSERT( (c != a), "operator != wrong");
+  DAX_TEST_ASSERT( (a != c), "operator != wrong");
 }
 
 template<> void TypeTest<dax::Vector4>()
@@ -126,11 +224,22 @@ template<> void TypeTest<dax::Vector4>()
   DAX_TEST_ASSERT(test_equal(mult, dax::make_Vector4(10, 20, 30, 40)),
                   "Vector and scalar to not multiply correctly.");
 
-  DAX_TEST_ASSERT(!(a == b), "operator== wrong");
-  DAX_TEST_ASSERT((a != b),"operator!= wrong");
-
   dax::Scalar d = dax::dot(a, b);
   DAX_TEST_ASSERT(test_equal(d, dax::Scalar(60)), "dot(Vector4) wrong");
+
+  DAX_TEST_ASSERT(!(a == b), "operator== wrong");
+  DAX_TEST_ASSERT((a == a),  "operator== wrong");
+
+  DAX_TEST_ASSERT((a != b),  "operator!= wrong");
+  DAX_TEST_ASSERT(!(a != a), "operator!= wrong");
+
+  //test against a tuple that shares some values
+  const dax::Vector4 c = dax::make_Vector4(2,4,6,9);
+  DAX_TEST_ASSERT( !(c == a), "operator == wrong");
+  DAX_TEST_ASSERT( !(a == c), "operator == wrong");
+
+  DAX_TEST_ASSERT( (c != a), "operator != wrong");
+  DAX_TEST_ASSERT( (a != c), "operator != wrong");
 }
 
 template<> void TypeTest<dax::Id3>()
@@ -175,19 +284,36 @@ template<> void TypeTest<dax::Id3>()
     DAX_TEST_FAIL("Vector and scalar to not multiply correctly.");
     }
 
-  if (a == b)
-    {
-    DAX_TEST_FAIL("operator== wrong");
-    }
-  if (!(a != b))
-    {
-    DAX_TEST_FAIL("operator!= wrong");
-    }
-
   if (dax::dot(a, b) != 28)
     {
     DAX_TEST_FAIL("dot(Id3) wrong");
     }
+
+  if (a == b)
+    {
+    DAX_TEST_FAIL("operator== wrong");
+    }
+  if (!(a == a))
+    {
+    DAX_TEST_FAIL("operator== wrong");
+    }
+
+  if (!(a != b))
+    {
+    DAX_TEST_FAIL("operator!= wrong");
+    }
+  if (a != a)
+    {
+    DAX_TEST_FAIL("operator!= wrong");
+    }
+
+  //test against a tuple that shares some values
+  const dax::Id3 c = dax::make_Id3(2,4,5);
+  if (c == a) { DAX_TEST_FAIL("operator== wrong"); }
+  if (a == c) { DAX_TEST_FAIL("operator== wrong"); }
+
+  if (!(c != a)) { DAX_TEST_FAIL("operator!= wrong"); }
+  if (!(a != c)) { DAX_TEST_FAIL("operator!= wrong"); }
 }
 
 template<> void TypeTest<dax::Scalar>()
@@ -288,6 +414,13 @@ struct TypeTestFunctor
 void TestTypes()
 {
   dax::testing::Testing::TryAllTypes(TypeTestFunctor());
+
+  //try with some custom tuple types
+  TypeTestFunctor()( dax::Tuple<dax::Scalar,6>() );
+  TypeTestFunctor()( dax::Tuple<dax::Id,4>() );
+  TypeTestFunctor()( dax::Tuple<unsigned char,4>() );
+  TypeTestFunctor()( dax::Tuple<dax::Id,1>() );
+  TypeTestFunctor()( dax::Tuple<dax::Scalar,1>() );
 }
 
 } // anonymous namespace
