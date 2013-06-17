@@ -74,7 +74,7 @@ struct InterpolateEdgesToPoint
     {
       const dax::Vector3 pointInterpInfo = InterpCoords.Get(index);
       const dax::Vector3 point1 = Coords.Get(pointInterpInfo[0]);
-      const dax::Vector3 point2 =Coords.Get(pointInterpInfo[1]);
+      const dax::Vector3 point2 = Coords.Get(pointInterpInfo[1]);
       InterpCoords.Set(index, dax::math::Lerp(point1,point2,pointInterpInfo[2]));
     }
 
