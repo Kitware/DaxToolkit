@@ -25,6 +25,7 @@ set(worklets
   MarchingCubes.h
   PointDataToCellData.h
   Sine.h
+  Slice.h
   Square.h
   Tetrahedralize.h
   Threshold.h

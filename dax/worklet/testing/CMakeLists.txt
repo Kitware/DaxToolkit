@@ -31,6 +31,7 @@ set(unit_tests
   UnitTestWorkletMarchingCubes.cxx
   UnitTestWorkletPointDataToCellData.cxx
   UnitTestWorkletSine.cxx
+  UnitTestWorkletSlice.cxx
   UnitTestWorkletSquare.cxx
   UnitTestWorkletTetrahedralize.cxx
   UnitTestWorkletThreshold.cxx
