@@ -184,9 +184,9 @@ MandlebulbSurface extractSurface(  MandlebulbInfo info, dax::Scalar iteration )
                     classification );
 
   //setup the info for the second step
-  dax::worklet::MarchingCubesTopology generateSurface(iteration);
+  dax::worklet::MarchingCubesGenerate generateSurface(iteration);
   dax::cont::GenerateInterpolatedCells<
-      dax::worklet::MarchingCubesTopology > genWrapper(classification,
+      dax::worklet::MarchingCubesGenerate > genWrapper(classification,
                                                        generateSurface);
 
   //remove duplicates on purpose

@@ -69,8 +69,6 @@ struct TestMarchingCubesWorklet
         inGrid(DIM);
     UnstructuredGridType outGrid;
 
-    std::cout << "running " << std::endl;
-
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
     dax::Id numPoints = inGrid->GetNumberOfPoints();
     std::vector<dax::Scalar> field(numPoints);
@@ -85,7 +83,6 @@ struct TestMarchingCubesWorklet
                                                   ArrayContainer(),
                                                   DeviceAdapter());
 
-    std::cout << "Running Marching Cubes worklet" << std::endl;
     const dax::Scalar isoValue = ISOVALUE;
 
     try
@@ -93,14 +90,14 @@ struct TestMarchingCubesWorklet
       typedef dax::cont::ArrayHandle<dax::Id, ArrayContainer, DeviceAdapter>
         ClassifyResultType;
       typedef dax::cont::GenerateInterpolatedCells<
-        dax::worklet::MarchingCubesTopology,ClassifyResultType> GenerateIC;
+        dax::worklet::MarchingCubesGenerate,ClassifyResultType> GenerateIC;
 
       //construct the scheduler that will execute all the worklets
       dax::cont::Scheduler<DeviceAdapter> scheduler;
 
       //construct the two worklets that will be used to do the marching cubes
       dax::worklet::MarchingCubesClassify classifyWorklet(isoValue);
-      dax::worklet::MarchingCubesTopology generateWorklet(isoValue);
+      dax::worklet::MarchingCubesGenerate generateWorklet(isoValue);
 
 
       //run the first step
