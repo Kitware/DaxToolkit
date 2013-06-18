@@ -62,11 +62,11 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid, int pipeline)
   dax::cont::Timer<> timer;
 
   //schedule marching cubes worklet generate step
-  typedef dax::cont::GenerateInterpolatedCells<dax::worklet::MarchingCubesTopology> GenerateIC;
+  typedef dax::cont::GenerateInterpolatedCells<dax::worklet::MarchingCubesGenerate> GenerateIC;
   typedef GenerateIC::ClassifyResultType  ClassifyResultType;
 
   dax::worklet::MarchingCubesClassify classifyWorklet(ISOVALUE);
-  dax::worklet::MarchingCubesTopology generateWorklet(ISOVALUE);
+  dax::worklet::MarchingCubesGenerate generateWorklet(ISOVALUE);
 
 
   //run the first step

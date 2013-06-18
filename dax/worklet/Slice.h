@@ -137,7 +137,8 @@ private:
       iso_values[index] = dax::dot(this->Normal,coords[index]-this->Origin);
       }
 
-    const int voxelClass = dax::worklet::GetHexahedronClassification(isoValue,iso_values);
+    const int voxelClass =
+      internal::marchingcubes::GetHexahedronClassification(isoValue,iso_values);
 
     // These should probably be available through the voxel class
     const unsigned char voxelVertEdges[12][2] ={
