@@ -142,7 +142,6 @@ DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
   typedef typename OutputGrid::PointCoordinatesType::PortalExecution OutPortalType;
 
   const dax::Id numPoints = outputGrid.GetNumberOfPoints();
-  std::cout << "number of points in out grid " << numPoints << std::endl;
   dax::exec::internal::kernel::InterpolateEdgesToPoint<InPortalType,OutPortalType>
     interpolate( inputGrid.GetPointCoordinates().PrepareForInput(),
                  outputGrid.GetPointCoordinates().PrepareForOutput(numPoints));
