@@ -84,6 +84,13 @@ template <typename T> void TypeTest()
     {correct_d += a[i] * b[i]; }
   DAX_TEST_ASSERT(test_equal(d, correct_d), "dot(Tuple) wrong");
 
+  DAX_TEST_ASSERT(!(a < b), "operator< wrong");
+  DAX_TEST_ASSERT((b < a),  "operator< wrong");
+  DAX_TEST_ASSERT(!(a < a),  "operator< wrong");
+  DAX_TEST_ASSERT((a < plus),  "operator< wrong");
+  DAX_TEST_ASSERT((minus < plus),  "operator< wrong");
+  DAX_TEST_ASSERT((c < a),  "operator< wrong");
+
   DAX_TEST_ASSERT(!(a == b), "operator== wrong");
   DAX_TEST_ASSERT((a == a),  "operator== wrong");
 
@@ -131,6 +138,12 @@ template<> void TypeTest<dax::Vector2>()
   dax::Scalar d = dax::dot(a, b);
   DAX_TEST_ASSERT(test_equal(d, dax::Scalar(10)), "dot(Vector2) wrong");
 
+  DAX_TEST_ASSERT(!(a < b), "operator< wrong");
+  DAX_TEST_ASSERT((b < a),  "operator< wrong");
+  DAX_TEST_ASSERT(!(a < a),  "operator< wrong");
+  DAX_TEST_ASSERT((a < plus),  "operator< wrong");
+  DAX_TEST_ASSERT((minus < plus),  "operator< wrong");
+
   DAX_TEST_ASSERT(!(a == b), "operator== wrong");
   DAX_TEST_ASSERT((a == a),  "operator== wrong");
 
@@ -139,6 +152,8 @@ template<> void TypeTest<dax::Vector2>()
 
   //test against a tuple that shares some values
   const dax::Vector2 c = dax::make_Vector2(2,3);
+  DAX_TEST_ASSERT((c < a),  "operator< wrong");
+
   DAX_TEST_ASSERT( !(c == a), "operator == wrong");
   DAX_TEST_ASSERT( !(a == c), "operator == wrong");
 
@@ -179,6 +194,12 @@ template<> void TypeTest<dax::Vector3>()
   dax::Scalar d = dax::dot(a, b);
   DAX_TEST_ASSERT(test_equal(d, dax::Scalar(28)), "dot(Vector3) wrong");
 
+  DAX_TEST_ASSERT(!(a < b), "operator< wrong");
+  DAX_TEST_ASSERT((b < a),  "operator< wrong");
+  DAX_TEST_ASSERT(!(a < a),  "operator< wrong");
+  DAX_TEST_ASSERT((a < plus),  "operator< wrong");
+  DAX_TEST_ASSERT((minus < plus),  "operator< wrong");
+
   DAX_TEST_ASSERT(!(a == b), "operator== wrong");
   DAX_TEST_ASSERT((a == a),  "operator== wrong");
 
@@ -187,6 +208,8 @@ template<> void TypeTest<dax::Vector3>()
 
   //test against a tuple that shares some values
   const dax::Vector3 c = dax::make_Vector3(2,4,5);
+  DAX_TEST_ASSERT((c < a),  "operator< wrong");
+
   DAX_TEST_ASSERT( !(c == a), "operator == wrong");
   DAX_TEST_ASSERT( !(a == c), "operator == wrong");
 
@@ -227,6 +250,13 @@ template<> void TypeTest<dax::Vector4>()
   dax::Scalar d = dax::dot(a, b);
   DAX_TEST_ASSERT(test_equal(d, dax::Scalar(60)), "dot(Vector4) wrong");
 
+
+  DAX_TEST_ASSERT(!(a < b), "operator< wrong");
+  DAX_TEST_ASSERT((b < a),  "operator< wrong");
+  DAX_TEST_ASSERT(!(a < a),  "operator< wrong");
+  DAX_TEST_ASSERT((a < plus),  "operator< wrong");
+  DAX_TEST_ASSERT((minus < plus),  "operator< wrong");
+
   DAX_TEST_ASSERT(!(a == b), "operator== wrong");
   DAX_TEST_ASSERT((a == a),  "operator== wrong");
 
@@ -234,7 +264,9 @@ template<> void TypeTest<dax::Vector4>()
   DAX_TEST_ASSERT(!(a != a), "operator!= wrong");
 
   //test against a tuple that shares some values
-  const dax::Vector4 c = dax::make_Vector4(2,4,6,9);
+  const dax::Vector4 c = dax::make_Vector4(2,4,6,7);
+  DAX_TEST_ASSERT((c < a),  "operator< wrong");
+
   DAX_TEST_ASSERT( !(c == a), "operator == wrong");
   DAX_TEST_ASSERT( !(a == c), "operator == wrong");
 
@@ -289,6 +321,12 @@ template<> void TypeTest<dax::Id3>()
     DAX_TEST_FAIL("dot(Id3) wrong");
     }
 
+  DAX_TEST_ASSERT(!(a < b), "operator< wrong");
+  DAX_TEST_ASSERT((b < a),  "operator< wrong");
+  DAX_TEST_ASSERT(!(a < a),  "operator< wrong");
+  DAX_TEST_ASSERT((a < plus),  "operator< wrong");
+  DAX_TEST_ASSERT((minus < plus),  "operator< wrong");
+
   if (a == b)
     {
     DAX_TEST_FAIL("operator== wrong");
@@ -309,6 +347,8 @@ template<> void TypeTest<dax::Id3>()
 
   //test against a tuple that shares some values
   const dax::Id3 c = dax::make_Id3(2,4,5);
+  DAX_TEST_ASSERT((c < a),  "operator< wrong");
+
   if (c == a) { DAX_TEST_FAIL("operator== wrong"); }
   if (a == c) { DAX_TEST_FAIL("operator== wrong"); }
 
