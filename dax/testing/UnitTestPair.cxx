@@ -85,6 +85,18 @@ template <typename T, typename U> void PairTest( )
   dax::Pair<T,U> pair_ab2(a,b2);
   dax::Pair<T,U> pair_ab(a,b);
 
+  DAX_TEST_ASSERT( (pair_ab2 >= pair_ab), "operator >= failed" );
+  DAX_TEST_ASSERT( (pair_ab2 >= pair_ab2), "operator >= failed" );
+
+  DAX_TEST_ASSERT( (pair_ab2 > pair_ab), "operator > failed" );
+  DAX_TEST_ASSERT( !(pair_ab2 > pair_ab2), "operator > failed" );
+
+  DAX_TEST_ASSERT( !(pair_ab2 < pair_ab), "operator < failed" );
+  DAX_TEST_ASSERT( !(pair_ab2 < pair_ab2), "operator < failed" );
+
+  DAX_TEST_ASSERT( !(pair_ab2 <= pair_ab), "operator <= failed" );
+  DAX_TEST_ASSERT( (pair_ab2 <= pair_ab2), "operator <= failed" );
+
   DAX_TEST_ASSERT( !(pair_ab2 == pair_ab), "operator == failed" );
   DAX_TEST_ASSERT( (pair_ab2 != pair_ab), "operator != failed" );
 
@@ -92,9 +104,19 @@ template <typename T, typename U> void PairTest( )
   dax::VectorTraits<T>::SetComponent(a2,0,
        dax::VectorTraits<T>::GetComponent(a2,0)+1);
   dax::Pair<T,U> pair_a2b(a2,b);
-
   //this way can verify that if the first argument of the pair is different
   //we respond properly
+  DAX_TEST_ASSERT( (pair_a2b >= pair_ab), "operator >= failed" );
+  DAX_TEST_ASSERT( (pair_a2b >= pair_a2b), "operator >= failed" );
+
+  DAX_TEST_ASSERT( (pair_a2b > pair_ab), "operator > failed" );
+  DAX_TEST_ASSERT( !(pair_a2b > pair_a2b), "operator > failed" );
+
+  DAX_TEST_ASSERT( !(pair_a2b < pair_ab), "operator < failed" );
+  DAX_TEST_ASSERT( !(pair_a2b < pair_a2b), "operator < failed" );
+
+  DAX_TEST_ASSERT( !(pair_a2b <= pair_ab), "operator <= failed" );
+  DAX_TEST_ASSERT( (pair_a2b <= pair_a2b), "operator <= failed" );
 
   DAX_TEST_ASSERT( !(pair_a2b == pair_ab), "operator == failed" );
   DAX_TEST_ASSERT( (pair_a2b != pair_ab), "operator != failed" );
