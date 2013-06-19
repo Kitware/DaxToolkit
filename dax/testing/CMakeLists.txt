@@ -24,6 +24,7 @@ dax_declare_headers(${headers})
 
 set(unit_tests
   UnitTestExtent.cxx
+  UnitTestPair.cxx
   UnitTestTesting.cxx
   UnitTestTypes.cxx
   UnitTestTypeTraits.cxx
