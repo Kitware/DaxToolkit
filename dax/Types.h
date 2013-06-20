@@ -331,7 +331,7 @@ public:
       //ignore equals as that represents check next value
       if(this->Components[i] < other[i])
         return true;
-      else if(this->Components[i] > other[i])
+      else if(other[i] < this->Components[i])
         return false;
       } //if all same we are not less
       return false;
@@ -405,7 +405,7 @@ public:
   bool operator<(const Tuple<T,NUM_COMPONENTS> &other) const
   {
   return( (this->Components[0] < other[0])  ||
-         ((this->Components[0] == other[0]) && (this->Components[1] < other[1]))
+         (!(other[0] < this->Components[0]) && (this->Components[1] < other[1]))
         );
   }
 
@@ -473,10 +473,12 @@ public:
   DAX_EXEC_CONT_EXPORT
   bool operator<(const Tuple<T,NUM_COMPONENTS> &other) const
   {
-  return((this->Components[0] < other[0]) ||
-         (this->Components[0] == other[0] && this->Components[1] < other[1]) ||
-         (this->Components[0] == other[0] && this->Components[1] == other[1] &&
-                                             this->Components[2] < other[2]));
+  return((this->Components[0] < other[0])    ||
+         ( !(other[0] < this->Components[0]) &&
+          (this->Components[1] < other[1]))  ||
+         ( !(other[0] < this->Components[0]) &&
+           !(other[1] < this->Components[1]) &&
+            (this->Components[2] < other[2]) ) );
   }
 
 protected:
@@ -544,13 +546,16 @@ public:
   DAX_EXEC_CONT_EXPORT
   bool operator<(const Tuple<T,NUM_COMPONENTS> &other) const
   {
-  return((this->Components[0] < other[0]) ||
-         (this->Components[0] == other[0] && this->Components[1] < other[1]) ||
-         (this->Components[0] == other[0] &&
-          this->Components[1] == other[1] && this->Components[2] < other[2]) ||
-         (this->Components[0] == other[0] &&
-          this->Components[1] == other[1] && this->Components[2] == other[2] &&
-          this->Components[3] < other[3]) );
+  return((this->Components[0] < other[0])       ||
+         ( !(other[0] < this->Components[0])    &&
+               this->Components[1] < other[1])  ||
+         ( !(other[0] < this->Components[0])    &&
+           !(other[1] < this->Components[1])    &&
+           (this->Components[2] < other[2]) )   ||
+         ( !(other[0] < this->Components[0])    &&
+           !(other[1] < this->Components[1])    &&
+           !(other[2] < this->Components[2])    &&
+           (this->Components[3] < other[3])) );
   }
 
 protected:
