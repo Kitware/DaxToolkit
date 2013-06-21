@@ -26,6 +26,7 @@
 #include <dax/math/Trig.h>
 #include <dax/opengl/TransferToOpenGL.h>
 #include <dax/worklet/MarchingCubes.h>
+#include <dax/worklet/Slice.h>
 
 //helper structs to make it easier to pass data around between functions
 namespace mandle {
@@ -169,9 +170,6 @@ MandlebulbSurface extractSurface(  MandlebulbInfo info, dax::Scalar iteration )
   //lets extract the surface where the iteration value is greater than
   //the passed in iteration value
   MandlebulbSurface surface; //construct surface struct
-
-  //temporary storage of the classification which will never change
-  //between steps
   dax::cont::ArrayHandle<dax::Id> classification;
 
   dax::cont::Scheduler< > scheduler;
@@ -197,6 +195,62 @@ MandlebulbSurface extractSurface(  MandlebulbInfo info, dax::Scalar iteration )
                    info.Grid,
                    surface.Data,
                    info.EscapeIteration);
+
+  // //generate a color for each point based on the escape iteration
+  scheduler.Invoke(worklet::ColorsAndNorms(),
+                    surface.Data,
+                    surface.Data.GetPointCoordinates(),
+                    surface.Colors,
+                    surface.Norms);
+  return surface;
+}
+
+//compute the slice of the volume for a given iteration
+//sneaky we are going to modify iteration in this method on purpose
+MandlebulbSurface extractSlice(  MandlebulbInfo info, dax::Scalar& iteration )
+{
+  dax::Vector3 origin = info.Grid.GetOrigin();
+  dax::Vector3 spacing = info.Grid.GetSpacing();
+  dax::Id3 dims = dax::extentCellDimensions(info.Grid.GetExtent());
+
+  //slicing at the edges where nothing is causes problems
+  dax::Id index = dax::math::Max((int)iteration,5);
+  index = dax::math::Min(index,20);
+  iteration = index;
+
+  dax::Vector3 location(origin[0] + spacing[0] * (index * (dims[0]/30) ),
+                        origin[1] + spacing[1] * (dims[1]/2),
+                        origin[2] + spacing[2] * (dims[2]/2) );
+
+  dax::Vector3 normal(1,0,0);
+
+  //lets extract the slice
+  MandlebulbSurface surface;
+
+  dax::cont::ArrayHandle<dax::Id> classification;
+
+  dax::cont::Scheduler< > scheduler;
+
+  //run the classify step
+  dax::worklet::SliceClassify classify(location, normal);
+  scheduler.Invoke( classify,
+                    info.Grid,
+                    info.Grid.GetPointCoordinates(),
+                    classification );
+
+  //setup the info for the second step
+  dax::worklet::SliceGenerate generateSurface(location, normal);
+  dax::cont::GenerateInterpolatedCells<
+      dax::worklet::SliceGenerate > genWrapper(classification,generateSurface);
+
+  //remove duplicates on purpose
+  genWrapper.SetRemoveDuplicatePoints(false);
+
+  //run the second step
+  scheduler.Invoke(genWrapper,
+                   info.Grid,
+                   surface.Data,
+                   info.Grid.GetPointCoordinates());
 
   // //generate a color for each point based on the escape iteration
   scheduler.Invoke(worklet::ColorsAndNorms(),
