@@ -18,9 +18,13 @@
 
 #include <dax/internal/ExportMacros.h>
 #include <dax/opengl/testing/WindowBase.h>
-#include <iostream>
+#include <dax/Extent.h>
+#include <dax/math/Compare.h>
 
 #include "Mandlebulb.h"
+
+#include <iostream>
+
 
 namespace
 {
@@ -61,6 +65,7 @@ public:
     BufferHandles =  FirstBuffer;
     Iteration = 1;
     Remesh = true;
+    Mode = 0;
 
     //compute the mandlebulb
     this->Info = computeMandlebulb( );
@@ -81,7 +86,12 @@ public:
     else
       { this->BufferHandles = this->SecondBuffer; }
 
-    this->MandleSurface = extractSurface(this->Info,this->Iteration);
+    if(this->Mode==0)
+      this->MandleSurface = extractSurface(this->Info,this->Iteration);
+    else
+      {
+      this->MandleSurface = extractSlice(this->Info,this->Iteration);
+      }
     bindSurface(this->MandleSurface, this->BufferHandles );
 
     this->Remesh = false;
@@ -191,6 +201,14 @@ public:
         this->Remesh = true;
         }
       break;
+    case GLUT_KEY_LEFT:
+      this->Mode = 0;
+      this->Remesh = true;
+      break;
+    case GLUT_KEY_RIGHT:
+      this->Mode = 1;
+      this->Remesh = true;
+      break;
     default:
       break;
     }
@@ -235,6 +253,7 @@ private:
   MandlebulbSurface MandleSurface;
   float Iteration;
   bool Remesh;
+  int Mode; //0 marching cubes, 1 slice
 
   GLuint FirstBuffer[4];
   GLuint SecondBuffer[4];
