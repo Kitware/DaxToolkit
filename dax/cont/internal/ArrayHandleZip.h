@@ -37,19 +37,19 @@ class ArrayHandleZip
           FirstArrayHandleType,SecondArrayHandleType>::ArrayContainerControlTag,
         typename FirstArrayHandleType::DeviceAdapterTag>
 {
-public:
-  typedef typename FirstArrayHandleType::DeviceAdapterTag DeviceAdapterTag;
 
 private:
   typedef dax::cont::internal::ArrayContainerControlZipTypes<
       FirstArrayHandleType,SecondArrayHandleType> ZipTypes;
+
+public:
+  typedef typename FirstArrayHandleType::DeviceAdapterTag DeviceAdapterTag;
 
   typedef dax::cont::ArrayHandle<
       typename ZipTypes::ValueType,
       typename ZipTypes::ArrayContainerControlTag,
       DeviceAdapterTag> Superclass;
 
-public:
   typedef typename ZipTypes::ValueType ValueType;
   typedef dax::cont::internal::ArrayContainerControlTagZip<
       FirstArrayHandleType,SecondArrayHandleType> ArrayContainerControlTag;

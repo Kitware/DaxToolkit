@@ -19,7 +19,7 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/internal/ArrayContainerControlCounting.h>
-
+#include <dax/cont/internal/ArrayHandleZip.h>
 
 #include <dax/Functional.h>
 
@@ -91,6 +91,10 @@ namespace internal {
 ///   DAX_CONT_EXPORT static T ScanInclusive(
 ///       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
 ///       dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>& output);
+///   {
+///     ...
+///   }
+///   DAX_CONT_EXPORT static void Synchronize()
 ///   {
 ///     ...
 ///   }
@@ -346,6 +350,75 @@ private:
     void SetErrorMessageBuffer(const dax::exec::internal::ErrorMessageBuffer &)
     {  }
   };
+
+private:
+  struct DefaultCompareFunctor
+  {
+
+    template<typename T>
+    DAX_EXEC_EXPORT
+    bool operator()(const T& first, const T& second) const
+    {
+      return first < second;
+    }
+  };
+
+  template<typename T, typename U, class Compare=DefaultCompareFunctor>
+  struct KeyCompare
+  {
+    KeyCompare(): CompareFunctor() {}
+    explicit KeyCompare(Compare c): CompareFunctor(c) {}
+
+    DAX_EXEC_EXPORT
+    bool operator()(const dax::Pair<T,U>& a, const dax::Pair<T,U>& b) const
+    {
+      return CompareFunctor(a.first,b.first);
+    }
+  private:
+    Compare CompareFunctor;
+  };
+
+public:
+
+  template<typename T, typename U, class ContainerT,  class ContainerU>
+  DAX_CONT_EXPORT static void SortByKey(
+      dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag> &keys,
+      dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag> &values)
+  {
+    //combine the keys and values into a ZipArrayHandle
+    //we than need to specify a custom compare function wrapper
+    //that only checks for key side of the pair, using a custom compare functor.
+    typedef dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag> KeyType;
+    typedef dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag> ValueType;
+    typedef dax::cont::internal::ArrayHandleZip<KeyType,ValueType> ZipHandleType;
+    typedef typename ZipHandleType::Superclass HandleType;
+
+    //slice the zip handle so we can pass it to the sort algorithm
+    HandleType zipHandle =
+                    dax::cont::internal::make_ArrayHandleZip(keys,values);
+    DerivedAlgorithm::Sort(zipHandle,KeyCompare<T,U>());
+  }
+
+  template<typename T, typename U, class ContainerT,  class ContainerU, class Compare>
+  DAX_CONT_EXPORT static void SortByKey(
+      dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag> &keys,
+      dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag> &values,
+      Compare comp)
+  {
+    //combine the keys and values into a ZipArrayHandle
+    //we than need to specify a custom compare function wrapper
+    //that only checks for key side of the pair, using the custom compare
+    //functor that the user passed in
+    typedef dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag> KeyType;
+    typedef dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag> ValueType;
+    typedef dax::cont::internal::ArrayHandleZip<KeyType,ValueType> ZipHandleType;
+    typedef typename ZipHandleType::Superclass HandleType;
+
+    //slice the zip handle so we can pass it to the sort algorithm
+    HandleType zipHandle =
+                    dax::cont::internal::make_ArrayHandleZip(keys,values);
+    DerivedAlgorithm::Sort(zipHandle,KeyCompare<T,U,Compare>(comp));
+  }
 
 public:
 
