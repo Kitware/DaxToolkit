@@ -37,12 +37,12 @@ class ArrayHandleConstant: public ArrayHandle < ConstantValueType,
 public:
   typedef dax::cont::ArrayHandle < ConstantValueType,
       dax::cont::internal::ArrayContainerControlTagConstant,
-      DeviceAdapterTag > superclass;
+      DeviceAdapterTag > Superclass;
   typedef typename dax::cont::internal::ArrayPortalConstant<
                                           ConstantValueType> PortalType;
 
   ArrayHandleConstant(ConstantValueType value, dax::Id length)
-    :superclass(PortalType(value,length))
+    :Superclass(PortalType(value,length))
   {
   }
 };
