@@ -47,6 +47,17 @@ public:
                  const SecondPortalType &secondPortal)
     : FirstPortal(firstPortal), SecondPortal(secondPortal) {  }
 
+  /// Copy constructor for any other ArrayPortalZip with an iterator
+  /// type that can be copied to this iterator type. This allows us to do any
+  /// type casting that the iterators do (like the non-const to const cast).
+  ///
+  template<class OtherP1, class OtherP2>
+  DAX_CONT_EXPORT
+  ArrayPortalZip(const ArrayPortalZip<OtherP1,OtherP2> &src)
+    : FirstPortal(src.GetFirstPortal()),
+      SecondPortal(src.GetSecondPortal())
+  {  }
+
   DAX_EXEC_CONT_EXPORT
   dax::Id GetNumberOfValues() const {
     return this->FirstPortal.GetNumberOfValues();
@@ -300,6 +311,9 @@ public:
     this->ExecutionPortal = PortalExecution(
                               this->FirstArray.PrepareForInPlace(),
                               this->SecondArray.PrepareForInPlace());
+
+    // PortalConstExecution &a='a';
+    // PortalConstExecution &b='a';
     this->ExecutionPortalConst = this->ExecutionPortal;
     this->ExecutionPortalConstValid = true;
     this->ExecutionPortalValid = true;
