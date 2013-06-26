@@ -16,6 +16,10 @@
 #ifndef __dax_tbb_cont_internal_DeviceAdapterAlgorithmTBB_h
 #define __dax_tbb_cont_internal_DeviceAdapterAlgorithmTBB_h
 
+
+#include <dax/cont/internal/IteratorFromArrayPortal.h>
+
+
 #include <dax/tbb/cont/internal/DeviceAdapterTagTBB.h>
 #include <dax/tbb/cont/internal/ArrayManagerExecutionTBB.h>
 
@@ -33,6 +37,30 @@
 #include <dax/exec/internal/IJKIndex.h>
 #include <boost/type_traits/remove_reference.hpp>
 
+
+//we need to implement a specialization of the swap before we include tbb.
+//Since the Iterator is a proxy object we need a custom swap function that
+//takes objects instead of references.
+//Thanks to TBB explicitly calling std::swap we can't do the proper
+//implementation of defining the swap function in the same namespace as
+//IteratorFromArrayPortalValue
+namespace std
+{
+  template<typename T>
+  void swap( dax::cont::internal::detail::IteratorFromArrayPortalValue<T> a,
+             dax::cont::internal::detail::IteratorFromArrayPortalValue<T> b)
+  {
+    typedef typename dax::cont::internal::detail::IteratorFromArrayPortalValue<
+                                                      T>::ValueType ValueType;
+    const ValueType aValue = a;
+    const ValueType bValue = b;
+    a = bValue;
+    b = aValue;
+  }
+
+}
+
+
 #include <tbb/blocked_range.h>
 #include <tbb/blocked_range3d.h>
 #include <tbb/parallel_for.h>
@@ -40,6 +68,8 @@
 #include <tbb/parallel_sort.h>
 #include <tbb/partitioner.h>
 #include <tbb/tick_count.h>
+
+
 
 namespace dax {
 namespace cont {
