@@ -36,6 +36,14 @@ struct IteratorFromArrayPortalValue {
     : Portal(portal), Index(index) {  }
 
   DAX_CONT_EXPORT
+  IteratorFromArrayPortalValue<ArrayPortalType> &operator=(
+      const IteratorFromArrayPortalValue<ArrayPortalType> &rhs)
+  {
+    this->Portal.Set(this->Index, rhs.Portal.Get(rhs.Index));
+    return *this;
+  }
+
+  DAX_CONT_EXPORT
   ValueType operator=(ValueType value) {
     this->Portal.Set(this->Index, value);
     return value;
@@ -46,8 +54,8 @@ struct IteratorFromArrayPortalValue {
     return this->Portal.Get(this->Index);
   }
 
-  const ArrayPortalType &Portal;
-  const dax::Id Index;
+  const ArrayPortalType& Portal;
+  dax::Id Index;
 };
 
 } // namespace detail
@@ -62,6 +70,16 @@ class IteratorFromArrayPortal : public
       dax::Id>
 {
 public:
+  IteratorFromArrayPortal()
+    : Portal(), Index(0) { }
+
+  DAX_CONT_EXPORT
+  detail::IteratorFromArrayPortalValue<ArrayPortalType> operator[](int idx) const
+  {
+  return detail::IteratorFromArrayPortalValue<ArrayPortalType>(this->Portal,
+                                                               idx);
+  }
+
   explicit IteratorFromArrayPortal(const ArrayPortalType &portal,
                                    dax::Id index = 0)
     : Portal(portal), Index(index) {  }
