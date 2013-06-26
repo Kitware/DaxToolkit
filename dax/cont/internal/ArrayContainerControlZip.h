@@ -312,8 +312,6 @@ public:
                               this->FirstArray.PrepareForInPlace(),
                               this->SecondArray.PrepareForInPlace());
 
-    // PortalConstExecution &a='a';
-    // PortalConstExecution &b='a';
     this->ExecutionPortalConst = this->ExecutionPortal;
     this->ExecutionPortalConstValid = true;
     this->ExecutionPortalValid = true;
@@ -343,7 +341,11 @@ public:
   /// part of the pair.
   ///
   template <class IteratorTypeControl>
-  DAX_CONT_EXPORT void CopyInto(IteratorTypeControl dest) const;
+  DAX_CONT_EXPORT void CopyInto( IteratorTypeControl daxNotUsed(dest) ) const
+  {
+    throw dax::cont::ErrorControlInternal(
+          "We currently don't support copying into a zip container");
+  }
 
   DAX_CONT_EXPORT
   void Shrink(dax::Id numberOfValues) {
