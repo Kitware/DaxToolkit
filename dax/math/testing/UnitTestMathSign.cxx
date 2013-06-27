@@ -16,6 +16,7 @@
 
 // This teases out a bug where math functions in the std namespace conflict
 // with math functions in other namespaces.
+namespace std { } // make sure std defined
 using namespace std;
 
 #include <dax/math/Sign.h>
