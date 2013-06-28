@@ -19,6 +19,8 @@ set(headers
   ArrayContainerControlCounting.h
   ArrayContainerControlError.h
   ArrayContainerControlPermutation.h
+  ArrayContainerControlZip.h
+  ArrayHandleZip.h
   ArrayManagerExecution.h
   ArrayManagerExecutionSerial.h
   ArrayManagerExecutionShareWithControl.h

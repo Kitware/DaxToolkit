@@ -19,6 +19,7 @@ set(unit_tests
   UnitTestArrayContainerControlConstant.cxx
   UnitTestArrayContainerControlCounting.cxx
   UnitTestArrayContainerControlPermutation.cxx
+  UnitTestArrayHandleZip.cxx
   UnitTestArrayManagerExecutionShareWithControl.cxx
   UnitTestArrayPortalFromIterators.cxx
   UnitTestBindings.cxx

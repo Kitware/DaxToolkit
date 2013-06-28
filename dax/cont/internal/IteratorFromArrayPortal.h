@@ -36,6 +36,25 @@ struct IteratorFromArrayPortalValue {
     : Portal(portal), Index(index) {  }
 
   DAX_CONT_EXPORT
+  void Swap( IteratorFromArrayPortalValue<ArrayPortalType> &rhs ) throw()
+  {
+    //we need use the explicit type not a proxy temp object
+    //A proxy temp object would point to the same underlying data structure
+    //and would not hold the old value of *this once *this was set to rhs.
+    const ValueType aValue = *this;
+    *this = rhs;
+    rhs = aValue;
+  }
+
+  DAX_CONT_EXPORT
+  IteratorFromArrayPortalValue<ArrayPortalType> &operator=(
+      const IteratorFromArrayPortalValue<ArrayPortalType> &rhs)
+  {
+    this->Portal.Set(this->Index, rhs.Portal.Get(rhs.Index));
+    return *this;
+  }
+
+  DAX_CONT_EXPORT
   ValueType operator=(ValueType value) {
     this->Portal.Set(this->Index, value);
     return value;
@@ -46,8 +65,8 @@ struct IteratorFromArrayPortalValue {
     return this->Portal.Get(this->Index);
   }
 
-  const ArrayPortalType &Portal;
-  const dax::Id Index;
+  const ArrayPortalType& Portal;
+  dax::Id Index;
 };
 
 } // namespace detail
@@ -62,9 +81,21 @@ class IteratorFromArrayPortal : public
       dax::Id>
 {
 public:
+  IteratorFromArrayPortal()
+    : Portal(), Index(0) { }
+
   explicit IteratorFromArrayPortal(const ArrayPortalType &portal,
                                    dax::Id index = 0)
     : Portal(portal), Index(index) {  }
+
+  DAX_CONT_EXPORT
+  detail::IteratorFromArrayPortalValue<ArrayPortalType>
+  operator[](int idx) const
+  {
+  return detail::IteratorFromArrayPortalValue<ArrayPortalType>(this->Portal,
+                                                               idx);
+  }
+
 private:
   ArrayPortalType Portal;
   dax::Id Index;
@@ -133,6 +164,17 @@ IteratorFromArrayPortal<ArrayPortalType> make_IteratorEnd(
   return IteratorFromArrayPortal<ArrayPortalType>(portal,
                                                   portal.GetNumberOfValues());
 }
+
+
+//implementat a custom swap function, since the std::swap won't work
+//since we return RValues instead of Lvalues
+template<typename T>
+  void swap( dax::cont::internal::detail::IteratorFromArrayPortalValue<T> a,
+             dax::cont::internal::detail::IteratorFromArrayPortalValue<T> b)
+  {
+    a.Swap(b);
+  }
+
 
 }
 }

@@ -33,12 +33,12 @@ class ArrayHandleCounting : public ArrayHandle < CountingValueType,
 public:
   typedef dax::cont::ArrayHandle < CountingValueType,
                         dax::cont::internal::ArrayContainerControlTagCounting,
-                        DeviceAdapterTag> superclass;
+                        DeviceAdapterTag> Superclass;
   typedef dax::cont::internal::ArrayPortalCounting<
                                               CountingValueType> PortalType;
 
   ArrayHandleCounting(CountingValueType startingValue, dax::Id length)
-    :superclass(PortalType(startingValue, length))
+    :Superclass(PortalType(startingValue, length))
   {
   }
 };

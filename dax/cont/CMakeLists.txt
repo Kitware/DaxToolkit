@@ -31,6 +31,7 @@ set(headers
   ErrorControl.h
   ErrorControlAssert.h
   ErrorControlBadValue.h
+  ErrorControlInternal.h
   ErrorControlOutOfMemory.h
   ErrorExecution.h
   GenerateInterpolatedCells.h

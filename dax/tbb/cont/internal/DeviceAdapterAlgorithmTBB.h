@@ -16,6 +16,10 @@
 #ifndef __dax_tbb_cont_internal_DeviceAdapterAlgorithmTBB_h
 #define __dax_tbb_cont_internal_DeviceAdapterAlgorithmTBB_h
 
+
+#include <dax/cont/internal/IteratorFromArrayPortal.h>
+
+
 #include <dax/tbb/cont/internal/DeviceAdapterTagTBB.h>
 #include <dax/tbb/cont/internal/ArrayManagerExecutionTBB.h>
 
@@ -33,13 +37,18 @@
 #include <dax/exec/internal/IJKIndex.h>
 #include <boost/type_traits/remove_reference.hpp>
 
+
+//we provide an patched implementation of tbb parallel_sort
+//that fixes ADL for std::swap. This patch has been submitted to Intel
+//and should be included in future version of TBB.
+#include <dax/tbb/cont/internal/parallel_sort.h>
 #include <tbb/blocked_range.h>
 #include <tbb/blocked_range3d.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_scan.h>
-#include <tbb/parallel_sort.h>
 #include <tbb/partitioner.h>
 #include <tbb/tick_count.h>
+
 
 namespace dax {
 namespace cont {

@@ -167,6 +167,27 @@ private:
                    comp);
   }
 
+
+  template<class KeysPortal, class ValuesPortal>
+  DAX_CONT_EXPORT static void SortByKeyPortal(const KeysPortal &keys,
+                                              const ValuesPortal &values)
+  {
+    ::thrust::sort_by_key(IteratorBegin(keys),
+                          IteratorEnd(keys),
+                          IteratorBegin(values));
+  }
+
+  template<class KeysPortal, class ValuesPortal, class Compare>
+  DAX_CONT_EXPORT static void SortByKeyPortal(const KeysPortal &keys,
+                                              const ValuesPortal &values,
+                                              Compare comp)
+  {
+    ::thrust::sort_by_key(IteratorBegin(keys),
+                          IteratorEnd(keys),
+                          IteratorBegin(values),
+                          comp);
+  }
+
   template<class StencilPortal>
   DAX_CONT_EXPORT static dax::Id CountIfPortal(const StencilPortal &stencil)
   {
@@ -414,7 +435,6 @@ public:
     SortPortal(values.PrepareForInPlace());
   }
 
-
   template<typename T, class Container, class Compare>
   DAX_CONT_EXPORT static void Sort(
       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag>& values,
@@ -422,6 +442,30 @@ public:
   {
     SortPortal(values.PrepareForInPlace(),comp);
   }
+
+  template<typename T, typename U,
+           class ContainerT, class ContainerU>
+  DAX_CONT_EXPORT static void SortByKey(
+      dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag>& keys,
+      dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag>& values)
+  {
+    SortByKeyPortal(keys.PrepareForInPlace(),
+                    values.PrepareForInPlace());
+  }
+
+  template<typename T, typename U,
+           class ContainerT, class ContainerU,
+           class Compare>
+  DAX_CONT_EXPORT static void SortByKey(
+      dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag>& keys,
+      dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag>& values,
+      Compare comp)
+  {
+    SortByKeyPortal(keys.PrepareForInPlace(),
+                    values.PrepareForInPlace(),
+                    comp);
+  }
+
 
   template<typename T, class CStencil, class COut>
   DAX_CONT_EXPORT static void StreamCompact(

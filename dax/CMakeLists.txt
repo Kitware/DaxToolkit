@@ -21,6 +21,7 @@ set(headers
   CellTraits.h
   Extent.h
   Functional.h
+  Pair.h
   Types.h
   TypeTraits.h
   VectorTraits.h

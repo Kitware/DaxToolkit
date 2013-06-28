@@ -39,6 +39,95 @@ struct DeviceAdapterTagTestAlgorithmGeneral { };
 }
 }
 
+namespace
+{
+template<class T>
+struct testing_device_handle
+{
+  typedef dax::cont::ArrayHandle<T,
+         dax::cont::ArrayContainerControlTagBasic,
+         dax::cont::testing::DeviceAdapterTagTestAlgorithmGeneral> type;
+};
+
+template<class T>
+struct serial_device_handle
+{
+  typedef dax::cont::ArrayHandle<T,
+         dax::cont::ArrayContainerControlTagBasic,
+         dax::cont::DeviceAdapterTagSerial> type;
+};
+
+template<class ValueType, class ContainerTag>
+struct SpecialCopy
+{
+  dax::cont::ArrayHandle<ValueType,
+        ContainerTag,dax::cont::DeviceAdapterTagSerial> Copy;
+
+  template<typename T>
+  DAX_CONT_EXPORT
+  void Fill(T& t)
+  {
+  this->Copy.PrepareForOutput(t.GetNumberOfValues());
+  t.CopyInto(this->Copy.GetPortalControl().GetIteratorBegin());
+  }
+
+  template<typename T>
+  DAX_CONT_EXPORT
+  void WriteBack(T& t)
+  {
+  this->Copy.CopyInto(t.GetPortalControl().GetIteratorBegin());
+  }
+};
+
+template<class U, class V>
+struct SpecialCopy< dax::Pair<U,V>,
+  typename dax::cont::internal::ArrayContainerControlZipTypes<
+        typename testing_device_handle<U>::type,
+        typename testing_device_handle<V>::type >::ArrayContainerControlTag >
+{
+  typedef dax::Pair<U,V> ValueType;
+  typedef typename serial_device_handle<U>::type KeyHandle;
+  typedef typename serial_device_handle<V>::type ValueHandle;
+  typedef typename dax::cont::internal::ArrayContainerControlZipTypes<
+        KeyHandle, ValueHandle >::ArrayContainerControlTag ContainerTag;
+
+
+  KeyHandle Keys;
+  ValueHandle Values;
+  dax::cont::ArrayHandle<ValueType,
+        ContainerTag,dax::cont::DeviceAdapterTagSerial> Copy;
+
+  template<typename T>
+  DAX_CONT_EXPORT
+  void Fill(T& t)
+  {
+  //we now need to copy the values of t into zip
+  const dax::Id size = t.GetNumberOfValues();
+  this->Keys.PrepareForOutput(size);
+  this->Values.PrepareForOutput(size);
+  for(dax::Id i=0; i < size; ++i)
+    {
+    this->Keys.GetPortalControl().Set(i, t.GetPortalControl().Get(i).first);
+    this->Values.GetPortalControl().Set(i, t.GetPortalControl().Get(i).second);
+    }
+  this->Copy=dax::cont::internal::make_ArrayHandleZip(this->Keys,this->Values);
+  }
+
+  template<typename T>
+  DAX_CONT_EXPORT
+  void WriteBack(T& t)
+  {
+  const dax::Id size = this->Copy.GetNumberOfValues();
+  for(dax::Id i=0; i < size; ++i)
+    {
+    t.GetPortalControl().Set(i, this->Copy.GetPortalControl().Get(i) );
+    }
+  }
+
+};
+
+}
+
 namespace dax {
 namespace cont {
 namespace internal {
@@ -75,6 +164,7 @@ private:
 
   typedef dax::cont::testing::DeviceAdapterTagTestAlgorithmGeneral
             DeviceAdapterTagTestAlgorithmGeneral;
+
 public:
 
   template<class Functor>
@@ -149,17 +239,15 @@ public:
       Compare comp)
 
   {
-    // Need to use an array handle compatible with the serial adapter.
-    dax::cont::ArrayHandle<T,Container,DeviceAdapterTagSerial> valuesCopy;
-    // Allocate memory in valuesCopy (inefficiently).
-    valuesCopy.PrepareForOutput(values.GetNumberOfValues());
-    values.CopyInto(valuesCopy.GetPortalControl().GetIteratorBegin());
-
-    Algorithm::Sort(valuesCopy,comp);
-
-    // Copy data back into original
-    valuesCopy.CopyInto(values.GetPortalControl().GetIteratorBegin());
+    //ArrayHandleZip doesn't implement CopyInto, and the default
+    //constructor of it when it is sliced is invalid so we can't use
+    //any of the standard ways to copy the data
+    SpecialCopy<T,Container> copy_helper;
+    copy_helper.Fill(values);
+    Algorithm::Sort(copy_helper.Copy,comp);
+    copy_helper.WriteBack(values);
   }
+
 
   DAX_CONT_EXPORT static void Synchronize()
   {

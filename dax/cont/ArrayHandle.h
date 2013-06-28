@@ -365,6 +365,23 @@ public:
     return this->Internals->ExecutionArray.GetPortalExecution();
   }
 
+protected:
+  /// Special constructor for subclass specializations that need to set the
+  /// initial state of the control and execution arrays.
+  ///
+  ArrayHandle(const ArrayContainerControlType &container,
+              bool controlArrayValid,
+              const ArrayTransferType &transfer,
+              bool executionArrayValid)
+    : Internals(new InternalStruct)
+  {
+    this->Internals->UserPortalValid = false;
+    this->Internals->ControlArray = container;
+    this->Internals->ControlArrayValid = controlArrayValid;
+    this->Internals->ExecutionArray = transfer;
+    this->Internals->ExecutionArrayValid = executionArrayValid;
+  }
+
 private:
   struct InternalStruct {
     PortalConstControl UserPortal;

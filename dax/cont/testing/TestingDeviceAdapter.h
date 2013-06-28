@@ -692,6 +692,77 @@ private:
       }
   }
 
+  static DAX_CONT_EXPORT void TestSortByKey()
+  {
+    std::cout << "-------------------------------------------------" << std::endl;
+    std::cout << "Sort by keys" << std::endl;
+
+    dax::Id testKeys[ARRAY_SIZE];
+    dax::Vector3 testValues[ARRAY_SIZE];
+
+    dax::Vector3 grad(1.0,1.0,1.0);
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      testKeys[i] = ARRAY_SIZE - i;
+      testValues[i] = dax::Vector3(i);
+      }
+
+    IdArrayHandle keys = MakeArrayHandle(testKeys, ARRAY_SIZE);
+    Vector3ArrayHandle values = MakeArrayHandle(testValues, ARRAY_SIZE);
+
+    IdArrayHandle sorted_keys;
+    Vector3ArrayHandle sorted_values;
+
+    Algorithm::Copy(keys,sorted_keys);
+    Algorithm::Copy(values,sorted_values);
+
+    Algorithm::SortByKey(sorted_keys,sorted_values);
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      //keys should be sorted from 1 to ARRAY_SIZE
+      //values should be sorted from (ARRAY_SIZE-1) to 0
+      dax::Scalar sorted_value =
+                        sorted_values.GetPortalConstControl().Get(i)[0];
+      dax::Id sorted_key = sorted_keys.GetPortalConstControl().Get(i);
+
+      DAX_TEST_ASSERT( (sorted_key == (i+1)) , "Got bad SortByKeys key");
+      DAX_TEST_ASSERT( (sorted_value == (ARRAY_SIZE-1-i)),
+                                      "Got bad SortByKeys value");
+      }
+
+    // this will return everything back to what it was before sorting
+    Algorithm::SortByKey(sorted_keys,sorted_values,dax::math::SortGreater());
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      //keys should be sorted from ARRAY_SIZE to 1
+      //values should be sorted from 0 to (ARRAY_SIZE-1)
+      dax::Scalar sorted_value =
+                        sorted_values.GetPortalConstControl().Get(i)[0];
+      dax::Id sorted_key = sorted_keys.GetPortalConstControl().Get(i);
+
+      DAX_TEST_ASSERT( (sorted_key == (ARRAY_SIZE-i)),
+                                      "Got bad SortByKeys key");
+      DAX_TEST_ASSERT( (sorted_value == i),
+                                      "Got bad SortByKeys value");
+      }
+
+    //this is here to verify we can sort by dax::Tuples
+    Algorithm::SortByKey(sorted_values,sorted_keys);
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      //keys should be sorted from ARRAY_SIZE to 1
+      //values should be sorted from 0 to (ARRAY_SIZE-1)
+      dax::Scalar sorted_value =
+                        sorted_values.GetPortalConstControl().Get(i)[0];
+      dax::Id sorted_key = sorted_keys.GetPortalConstControl().Get(i);
+
+      DAX_TEST_ASSERT( (sorted_key == (ARRAY_SIZE-i)),
+                                      "Got bad SortByKeys key");
+      DAX_TEST_ASSERT( (sorted_value == i),
+                                      "Got bad SortByKeys value");
+      }
+  }
+
   static DAX_CONT_EXPORT void TestLowerBoundstWithComparisonObject()
   {
     std::cout << "-------------------------------------------------" << std::endl;
@@ -1045,6 +1116,7 @@ private:
       TestScanInclusive();
       TestScanExclusive();
       TestSortWithComparisonObject();
+      TestSortByKey();
       TestLowerBoundstWithComparisonObject();
       TestUniqueWithComparisonObject();
       TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
