@@ -16,53 +16,107 @@
 #ifndef __dax_internal_Configure_h
 #define __dax_internal_Configure_h
 
+
+#ifndef DAX_USE_DOUBLE_PRECISION
 #cmakedefine DAX_USE_DOUBLE_PRECISION
+#endif
 
+#ifndef DAX_USE_64BIT_IDS
 #cmakedefine DAX_USE_64BIT_IDS
+#endif
 
-#define DAX_SIZE_FLOAT @DAX_SIZE_FLOAT@
-#define DAX_SIZE_DOUBLE @DAX_SIZE_DOUBLE@
-#define DAX_SIZE_INT @DAX_SIZE_INT@
-#define DAX_SIZE_LONG @DAX_SIZE_LONG@
-#define DAX_SIZE_LONG_LONG @DAX_SIZE_LONG_LONG@
+#ifndef DAX_SIZE_FLOAT
+# define DAX_SIZE_FLOAT @DAX_SIZE_FLOAT@
+#endif
+
+#ifndef DAX_SIZE_DOUBLE
+# define DAX_SIZE_DOUBLE @DAX_SIZE_DOUBLE@
+#endif
+
+#ifndef DAX_SIZE_INT
+# define DAX_SIZE_INT @DAX_SIZE_INT@
+#endif
+
+#ifndef DAX_SIZE_LONG
+# define DAX_SIZE_LONG @DAX_SIZE_LONG@
+#endif
+
+#ifndef DAX_SIZE_LONG_LONG
+# define DAX_SIZE_LONG_LONG @DAX_SIZE_LONG_LONG@
+#endif
 
 #ifdef DAX_USE_DOUBLE_PRECISION
-#define DAX_SIZE_SCALAR DAX_SIZE_DOUBLE
-#define DAX_SIZE_TWO_SCALAR 16
-#define DAX_SIZE_FOUR_SCALAR 8
+# ifndef DAX_SIZE_SCALAR
+#  define DAX_SIZE_SCALAR DAX_SIZE_DOUBLE
+# endif
+# ifndef DAX_SIZE_TWO_SCALAR
+#  define DAX_SIZE_TWO_SCALAR 16
+# endif
+# ifndef DAX_SIZE_FOUR_SCALAR
+#  define DAX_SIZE_FOUR_SCALAR 8
+# endif
 #else
-#define DAX_SIZE_SCALAR DAX_SIZE_FLOAT
-#define DAX_SIZE_TWO_SCALAR 8
-#define DAX_SIZE_FOUR_SCALAR 16
+# ifndef DAX_SIZE_SCALAR
+#  define DAX_SIZE_SCALAR DAX_SIZE_FLOAT
+# endif
+# ifndef DAX_SIZE_TWO_SCALAR
+#  define DAX_SIZE_TWO_SCALAR 8
+# endif
+# ifndef DAX_SIZE_FOUR_SCALAR
+#  define DAX_SIZE_FOUR_SCALAR 16
+# endif
 #endif
 
 #ifdef DAX_USE_64BIT_IDS
-#define DAX_SIZE_ID 8
-# define DAX_SIZE_TWO_IDS 16
-# define DAX_SIZE_FOUR_IDS 8
+# ifndef DAX_SIZE_ID
+#  define DAX_SIZE_ID 8
+# endif
+# ifndef DAX_SIZE_TWO_IDS
+#  define DAX_SIZE_TWO_IDS 16
+# endif
+# ifndef DAX_SIZE_FOUR_IDS
+#  define DAX_SIZE_FOUR_IDS 8
+# endif
 #else
-#define DAX_SIZE_ID 4
-# define DAX_SIZE_TWO_IDS 8
-# define DAX_SIZE_FOUR_IDS 16
+# ifndef DAX_SIZE_ID
+#  define DAX_SIZE_ID 4
+# endif
+# ifndef DAX_SIZE_TWO_IDS
+#  define DAX_SIZE_TWO_IDS 8
+# endif
+# ifndef DAX_SIZE_FOUR_IDS
+#  define DAX_SIZE_FOUR_IDS 16
+# endif
 #endif
 
 // This macro does not definitively determine whether TBB is available. Rather,
 // it tells whether the original Dax repository was configured with TBB. An
 // external project may or may not enable TBB.
+#ifndef DAX_ENABLE_TBB
 #cmakedefine DAX_ENABLE_TBB
+#endif
 
 // This macro does not definitively determine whether thrust is used. Rather,
 // it tells whether Dax was original configured with a thrust backend enabled.
+#ifndef DAX_ENABLE_THRUST
 #cmakedefine DAX_ENABLE_THRUST
+#endif
 
 //Mark if we are building with interop enabled
+#ifndef DAX_ENABLE_OPENGL_INTEROP
 #cmakedefine DAX_ENABLE_OPENGL_INTEROP
-
+#endif
 
 //save out the thrust major and minor version so that we can detect
 //what backend syntax we need to use
 #ifdef DAX_ENABLE_THRUST
-#define THRUST_MAJOR_VERSION @THRUST_MAJOR_VERSION@
-#define THRUST_MINOR_VERSION @THRUST_MINOR_VERSION@
+# ifndef THRUST_MAJOR_VERSION
+#  define THRUST_MAJOR_VERSION @THRUST_MAJOR_VERSION@
+# endif
+
+# ifndef THRUST_MINOR_VERSION
+#  define THRUST_MINOR_VERSION @THRUST_MINOR_VERSION@
+# endif
 #endif
+
 #endif //__dax_internal_Configure_h
