@@ -251,7 +251,7 @@ public:
 private:
   MandlebulbInfo Info;
   MandlebulbSurface MandleSurface;
-  float Iteration;
+  dax::Scalar Iteration;
   bool Remesh;
   int Mode; //0 marching cubes, 1 slice
 

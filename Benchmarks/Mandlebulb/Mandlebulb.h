@@ -126,15 +126,18 @@ public:
 
   //compute color field, wrap around in both directions
   //with an expanding color field from zero to 1.0
+  const dax::Scalar zero(0.0);
   for (int i=0; i < 3; ++i)
     {
     if(coordinates[i][2] > 0)
     {
-    colors[i*4] = 255 * ( dax::math::Max(0.0, coordinates[i][2] / 3.0 ) );
+    const dax::Scalar c = (coordinates[i][2] / dax::Scalar(3.0));
+    colors[i*4] = 255 * dax::math::Max(zero,c);
     }
     else
     {
-    colors[i*4] = 255 * ( dax::math::Max(0.0, coordinates[i][2] * -1 / 3.0 ) );
+    const dax::Scalar c = (coordinates[i][2] * -1 / dax::Scalar(3.0));
+    colors[i*4] = 255 * dax::math::Max(zero,c);
     }
 
     colors[i*4+1]= 0;
@@ -215,7 +218,7 @@ MandlebulbSurface extractSlice(  MandlebulbInfo info, dax::Scalar& iteration )
 
   //slicing at the edges where nothing is causes problems
   dax::Id index = dax::math::Max((int)iteration,5);
-  index = dax::math::Min(index,20);
+  index = dax::math::Min(index,dax::Id(20));
   iteration = index;
 
   dax::Vector3 location(origin[0] + spacing[0] * (index * (dims[0]/30) ),
