@@ -25,10 +25,9 @@
 #ifndef __dax_internal_Configure32_h
 #define __dax_internal_Configure32_h
 
+
 #define DAX_USE_DOUBLE_PRECISION
 #define DAX_USE_64BIT_IDS
-
-#define DAX_SIZE_DOUBLE 8
 
 #ifdef _WIN32
 # define DAX_SIZE_LONG_LONG 8
