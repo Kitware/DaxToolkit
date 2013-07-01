@@ -18,6 +18,9 @@
 //customize more of the dax type system, or what Device Adapters
 //need to be included look at dax/internal/Configure.h for all defines that
 //you can over-ride.
+#ifdef __dax_internal_Configure_h
+# error Incorrect header include order. Include this header first
+#endif
 
 #ifndef __dax_internal_Configure32_h
 #define __dax_internal_Configure32_h
