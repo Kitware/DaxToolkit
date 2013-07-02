@@ -19,7 +19,7 @@
 //need to be included look at dax/internal/Configure.h for all defines that
 //you can over-ride.
 #ifdef __dax_internal_Configure_h
-# error Incorrect header include order. Include this header first
+# error Incorrect header order. Include this header before any other Dax headers.
 #endif
 
 #ifndef __dax_internal_Configure32_h
