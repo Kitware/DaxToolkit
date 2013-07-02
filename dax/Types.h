@@ -415,7 +415,7 @@ protected:
 
 /// Vector2 corresponds to a 2-tuple
 typedef dax::Tuple<dax::Scalar,2>
-    Vector2 __attribute__ ((aligned(DAX_SIZE_TWO_SCALAR)));
+    Vector2 __attribute__ ((aligned(DAX_ALIGNMENT_TWO_SCALAR)));
 
 template<typename T>
 class Tuple<T,3>{

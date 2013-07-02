@@ -25,45 +25,32 @@
 #cmakedefine DAX_USE_64BIT_IDS
 #endif
 
-#ifndef DAX_SIZE_FLOAT
-# define DAX_SIZE_FLOAT @DAX_SIZE_FLOAT@
-#endif
-
-#ifndef DAX_SIZE_DOUBLE
-# define DAX_SIZE_DOUBLE @DAX_SIZE_DOUBLE@
-#endif
-
-#ifndef DAX_SIZE_INT
-# define DAX_SIZE_INT @DAX_SIZE_INT@
-#endif
-
-#ifndef DAX_SIZE_LONG
-# define DAX_SIZE_LONG @DAX_SIZE_LONG@
-#endif
-
-#ifndef DAX_SIZE_LONG_LONG
-# define DAX_SIZE_LONG_LONG @DAX_SIZE_LONG_LONG@
-#endif
+#define DAX_SIZE_FLOAT @DAX_SIZE_FLOAT@
+#define DAX_SIZE_DOUBLE @DAX_SIZE_DOUBLE@
+#define DAX_SIZE_INT @DAX_SIZE_INT@
+#define DAX_SIZE_LONG @DAX_SIZE_LONG@
+#define DAX_SIZE_LONG_LONG @DAX_SIZE_LONG_LONG@
 
 #ifdef DAX_USE_DOUBLE_PRECISION
 # ifndef DAX_SIZE_SCALAR
 #  define DAX_SIZE_SCALAR DAX_SIZE_DOUBLE
 # endif
-# ifndef DAX_SIZE_TWO_SCALAR
-#  define DAX_SIZE_TWO_SCALAR 16
+# ifndef DAX_ALIGNMENT_TWO_SCALAR
+#  define DAX_ALIGNMENT_TWO_SCALAR 16
 # endif
-# ifndef DAX_SIZE_FOUR_SCALAR
-#  define DAX_SIZE_FOUR_SCALAR 8
+# ifndef DAX_ALIGNMENT_FOUR_SCALAR
+#  define DAX_ALIGNMENT_FOUR_SCALAR 8
 # endif
 #else
 # ifndef DAX_SIZE_SCALAR
 #  define DAX_SIZE_SCALAR DAX_SIZE_FLOAT
+#  define DAX_ALIGNMENT_SCALAR DAX_SIZE_SCALAR
 # endif
-# ifndef DAX_SIZE_TWO_SCALAR
-#  define DAX_SIZE_TWO_SCALAR 8
+# ifndef DAX_ALIGNMENT_TWO_SCALAR
+#  define DAX_ALIGNMENT_TWO_SCALAR 8
 # endif
-# ifndef DAX_SIZE_FOUR_SCALAR
-#  define DAX_SIZE_FOUR_SCALAR 16
+# ifndef DAX_ALIGNMENT_FOUR_SCALAR
+#  define DAX_ALIGNMENT_FOUR_SCALAR 16
 # endif
 #endif
 
@@ -71,21 +58,9 @@
 # ifndef DAX_SIZE_ID
 #  define DAX_SIZE_ID 8
 # endif
-# ifndef DAX_SIZE_TWO_IDS
-#  define DAX_SIZE_TWO_IDS 16
-# endif
-# ifndef DAX_SIZE_FOUR_IDS
-#  define DAX_SIZE_FOUR_IDS 8
-# endif
 #else
 # ifndef DAX_SIZE_ID
 #  define DAX_SIZE_ID 4
-# endif
-# ifndef DAX_SIZE_TWO_IDS
-#  define DAX_SIZE_TWO_IDS 8
-# endif
-# ifndef DAX_SIZE_FOUR_IDS
-#  define DAX_SIZE_FOUR_IDS 16
 # endif
 #endif
 
