@@ -28,8 +28,6 @@
 #undef DAX_USE_DOUBLE_PRECISION
 #undef DAX_USE_64BIT_IDS
 
-#define DAX_SIZE_INT 4
-
 #include <dax/internal/Configure.h>
 
 #endif
