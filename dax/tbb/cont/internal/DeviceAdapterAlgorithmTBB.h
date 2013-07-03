@@ -262,7 +262,7 @@ public:
   }
 
 private:
-template<class FunctorType>
+  template<class FunctorType>
   class ScheduleKernel
   {
   public:
@@ -332,6 +332,7 @@ public:
       }
   }
 
+private:
   template<class FunctorType>
   class ScheduleKernelId3
   {
@@ -384,6 +385,7 @@ public:
     dax::exec::internal::ErrorMessageBuffer ErrorMessage;
   };
 
+public:
   template<class FunctorType>
   DAX_CONT_EXPORT
   static void Schedule(FunctorType functor,

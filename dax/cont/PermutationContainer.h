@@ -43,8 +43,8 @@ template<class KeyType,
 class PermutationContainer
 {
 public:
-  DAX_CONT_EXPORT PermutationContainer(KeyType& k,
-                                       ValueType& v,
+  DAX_CONT_EXPORT PermutationContainer(const KeyType& k,
+                                       const ValueType& v,
                                        dax::Id valueLen):
     Key_(k),
     Value_(v),
@@ -59,13 +59,13 @@ public:
   }
 
   //should really only be used by the FieldMap Concept
-  DAX_CONT_EXPORT KeyType Key() const { return Key_; }
-  DAX_CONT_EXPORT ValueType Value() const { return Value_; }
+  DAX_CONT_EXPORT const KeyType &Key() const { return Key_; }
+  DAX_CONT_EXPORT const ValueType &Value() const { return Value_; }
 
 private:
 
-  KeyType& Key_;
-  ValueType& Value_;
+  const KeyType& Key_;
+  const ValueType& Value_;
   dax::Id ValueSizeToAllocate;
 };
 
