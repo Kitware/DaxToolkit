@@ -15,6 +15,8 @@
 ##=============================================================================
 
 set(headers
+  ConfigureFor32.h
+  ConfigureFor64.h
   ExportMacros.h
   GetNthType.h
   MathSystemFunctions.h
@@ -27,3 +29,4 @@ set(headers
 dax_declare_headers(${headers})
 
 add_subdirectory(testing)
+
