@@ -564,7 +564,7 @@ protected:
 
 /// Vector4 corresponds to a 4-tuple
 typedef dax::Tuple<dax::Scalar,4>
-    Vector4 __attribute__ ((aligned(DAX_SIZE_FOUR_SCALAR)));
+    Vector4 __attribute__ ((aligned(DAX_ALIGNMENT_FOUR_SCALAR)));
 
 
 /// Id3 corresponds to a 3-dimensional index for 3d arrays.  Note that
