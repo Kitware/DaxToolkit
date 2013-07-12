@@ -40,7 +40,7 @@
 
 namespace {
 
-const dax::Id DIM = 64;
+const dax::Id DIM = 3;
 
 typedef dax::cont::ArrayContainerControlTagBasic ArrayContainer;
 typedef dax::cont::DeviceAdapterTagSerial DeviceAdapter;
@@ -53,7 +53,7 @@ void verifyPointData(const TestGrid &grid,
 {
   typedef typename TestGrid::CellTag CellTag;
 
-  std::vector<int> numConnections(grid->GetNumberOfCells());
+  std::vector<int> numConnections(grid->GetNumberOfPoints());
   std::fill(numConnections.begin(), numConnections.end(), 0);
 
   std::vector<dax::Scalar> pointDataSums(grid->GetNumberOfPoints());
@@ -63,6 +63,8 @@ void verifyPointData(const TestGrid &grid,
     {
     dax::exec::CellVertices<CellTag> cellConnections =
       grid.GetCellConnections(cellIndex);
+
+    std::cout << "Cell " << cellIndex << "(" << cellData[cellIndex] << ") : ";
     for (int vertexIndex = 0;
          vertexIndex < cellConnections.NUM_VERTICES;
          vertexIndex++)
@@ -70,21 +72,35 @@ void verifyPointData(const TestGrid &grid,
       dax::Id pointIndex = cellConnections[vertexIndex];
       numConnections[pointIndex]++;
       pointDataSums[pointIndex] += cellData[cellIndex];
+      std::cout << "{" << cellConnections[vertexIndex] << ", " << computedPointData[pointIndex] << "}, ";
       }
+    std::cout << std::endl;
     }
 
   for (dax::Id pointIndex = 0;
-       pointIndex < grid->GetNumberOfPoints();
+       pointIndex < dax::Id(computedPointData.size());
        pointIndex++)
     {
     dax::Scalar expectedValue =
       pointDataSums[pointIndex] / numConnections[pointIndex];
     dax::Scalar computedValue = computedPointData[pointIndex];
+    std::cout << "pointDataSums: " << pointDataSums[pointIndex] << std::endl;
+    std::cout << "numConnections: " << numConnections[pointIndex] << std::endl;
+    std::cout << "Expected value: " << expectedValue << std::endl;
+    std::cout << "Computed value: " << computedValue << std::endl;
     DAX_TEST_ASSERT(test_equal(computedValue, expectedValue),
                     "Got bad average at point");
     }
 }
-
+template<class IteratorType>
+void PrintArray(IteratorType beginIter, IteratorType endIter)
+{
+  for (IteratorType iter = beginIter; iter != endIter; iter++)
+    {
+    std::cout << " " << *iter;
+    }
+  std::cout << std::endl;
+}
 //-----------------------------------------------------------------------------
 struct TestCellDataToPointDataWorklet
 {
@@ -136,18 +152,64 @@ struct TestCellDataToPointDataWorklet
 
     std::cout << "Running CellDataToPointDataReduceKeys worklet" << std::endl;
 
+    dax::worklet::CellDataToPointDataReduceKeys CD2PD;
+
     dax::cont::ReduceKeysValues<
       dax::worklet::CellDataToPointDataReduceKeys,
       dax::cont::ArrayHandle<dax::Id,ArrayContainer,DeviceAdapter> >
-        reduceKeys(keyHandle);
+        reduceKeys(keyHandle, CD2PD);
 
+/*    std::vector<dax::Scalar> keyData(keyHandle.GetNumberOfValues());
+    keyHandle.CopyInto(keyData.begin());
+
+    std::cout << "keyData: ";
+    for(int iCtr = 0; iCtr < keyData.size(); iCtr++)
+        std::cout << keyData[iCtr] << ", ";
+    std::cout << std::endl;
+    std::cout << std::endl;
+
+    std::vector<dax::Scalar> valueData(valueHandle.GetNumberOfValues());
+    valueHandle.CopyInto(valueData.begin());
+
+    std::cout << "valueData: ";
+    for(int iCtr = 0; iCtr < valueData.size(); iCtr++)
+        std::cout << valueData[iCtr] << ", ";
+    std::cout << std::endl;
+    std::cout << std::endl;
+*/
     scheduler.Invoke(reduceKeys,
                      valueHandle,
                      resultHandle);
 
+/*
+    std::cout << "CountSize: " << resultHandle.GetReductionCounts().GetNumberOfValues() << std::endl;
+    std::cout << "OffsetSize: " << resultHandle.GetReductionOffsets().GetNumberOfValues() << std::endl;
+    std::cout << "IndexSize: " << resultHandle.GetReductionIndices().GetNumberOfValues() << std::endl;
+    std::cout << "Counts: ";
+    PrintArray(
+          reduceKeys.GetReductionCounts().GetPortalConstControl().GetIteratorBegin(),
+          reduceKeys.GetReductionCounts().GetPortalConstControl().GetIteratorEnd());
+
+    std::vector<dax::Scalar> valueData(valueHandle.GetNumberOfValues());
+    valueHandle.CopyInto(valueData.begin());
+
+    std::cout << "valueData: ";
+    for(int iCtr = 0; iCtr < valueData.size(); iCtr++)
+        std::cout << valueData[iCtr] << ", ";
+    std::cout << std::endl;
+    std::cout << std::endl;
+  */
+
     std::cout << "Checking result" << std::endl;
-    std::vector<dax::Scalar> pointData(grid->GetNumberOfPoints());
+    std::vector<dax::Scalar> pointData(resultHandle.GetNumberOfValues());
     resultHandle.CopyInto(pointData.begin());
+
+    std::cout << "pointData: ";
+    for(unsigned int iCtr = 0; iCtr < pointData.size(); iCtr++)
+        std::cout << pointData[iCtr] << ", ";
+    std::cout << std::endl;
+    std::cout << std::endl;
+
     verifyPointData(grid, field, pointData);
   }
 };

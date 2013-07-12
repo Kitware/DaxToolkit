@@ -20,6 +20,12 @@
 #include <dax/exec/WorkletGenerateKeysValues.h>
 #include <dax/exec/WorkletReduceKeysValues.h>
 
+#include <dax/cont/Scheduler.h>
+#include <dax/cont/arg/FieldArrayHandle.h>
+#include <dax/exec/ExecutionObjectBase.h>
+#include <dax/exec/arg/BindInfo.h>
+
+
 namespace dax {
 namespace worklet {
 
@@ -57,18 +63,23 @@ class CellDataToPointDataReduceKeys
 {
 public:
   typedef void ControlSignature(Values(In), Values(Out));
-  typedef void ExecutionSignature(_1, _2, ReductionCount);
+  typedef void ExecutionSignature(
+            KeyGroup(_1),
+            _2);
 
-  template<typename FieldType>
+  template<typename FieldType, typename KeyGroupType>
   DAX_EXEC_EXPORT
-  void operator()(const FieldType &inValue,
-                  FieldType &reducedValue,
-                  dax::Id reductionCount) const
+  void operator()(
+                  KeyGroupType inPortal,
+                  FieldType &reducedValue
+          ) const
   {
-    dax::Scalar scale = 1/dax::Scalar(reductionCount);
-    reducedValue += scale * inValue;
+      for(dax::Id iCtr = 0; iCtr < inPortal.GetNumberOfValues(); iCtr++)
+          reducedValue += inPortal.Get(iCtr);
+      reducedValue /= inPortal.GetNumberOfValues();
   }
 };
+
 
 } } // namespace dax::worklet
 

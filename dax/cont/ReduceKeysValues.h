@@ -42,6 +42,15 @@ namespace internal {
   class ReduceKeysValuesBase {};
 }
 
+template<class IteratorType>
+void PrintArray(IteratorType beginIter, IteratorType endIter)
+{
+  for (IteratorType iter = beginIter; iter != endIter; iter++)
+    {
+    std::cout << " " << *iter;
+    }
+  std::cout << std::endl;
+}
 /// ReduceKeysValues is the control environment representation of a
 /// an algorithm that takes a classification of a given input topology
 /// and will generate a new coordinates and topology
@@ -77,6 +86,7 @@ public:
     ReductionCounts(),
     ReductionOffsets(),
     ReductionIndices(),
+    ReductionKeys(),
     ReductionMapValid(false),
     Worklet()
     {
@@ -92,6 +102,7 @@ public:
     ReductionCounts(),
     ReductionOffsets(),
     ReductionIndices(),
+    ReductionKeys(),
     ReductionMapValid(false),
     Worklet(work)
     {
@@ -178,19 +189,19 @@ public:
     Algorithms::SortByKey(sortedKeys, this->ReductionIndices);
 
     // Unique keys represents the output entries.
-    dax::cont::ArrayHandle<
-        typename KeysType::ValueType,
-        dax::cont::ArrayContainerControlTagBasic,
-        DeviceAdapterTag> uniqueKeys;
-    Algorithms::Copy(sortedKeys, uniqueKeys);
-    Algorithms::Unique(uniqueKeys);
+    Algorithms::Copy(sortedKeys, this->ReductionKeys);
+    Algorithms::Unique(this->ReductionKeys);
 
     // Find the index of each unique key in the sorted list to get the offsets
     // into the ReductionIndices array.
-    Algorithms::LowerBounds(sortedKeys, uniqueKeys, this->ReductionOffsets);
+    Algorithms::LowerBounds(sortedKeys, this->ReductionKeys, this->ReductionOffsets);
 
     //Find the number of values corresponding to each unique key.
-    dax::Id numUniqueKeys = uniqueKeys.GetNumberOfValues();
+    dax::Id numUniqueKeys = this->ReductionKeys.GetNumberOfValues();
+
+//    std::cout << "numUniqueKeys: " << numUniqueKeys << std::endl;
+//    std::cout << "ReductionCountSize: " << this->ReductionCounts.GetNumberOfValues() << std::endl;
+
     Offset2CountFunctor offset2Count(
           this->ReductionOffsets.PrepareForInput(),
           this->ReductionCounts.PrepareForOutput(numUniqueKeys),
@@ -198,6 +209,16 @@ public:
           this->ReductionIndices.GetNumberOfValues());
     Algorithms::Schedule(offset2Count, numUniqueKeys);
 
+/*    std::cout << "ReductionCountSizeAfter: " << this->ReductionCounts.GetNumberOfValues() << std::endl;
+    std::cout << "ReductionCounts: ";
+    PrintArray(this->ReductionCounts.GetPortalConstControl().GetIteratorBegin(),
+               this->ReductionCounts.GetPortalConstControl().GetIteratorEnd());
+    std::cout << "ReductionOffsets: ";
+    PrintArray(this->ReductionOffsets.GetPortalConstControl().GetIteratorBegin(),
+               this->ReductionOffsets.GetPortalConstControl().GetIteratorEnd());
+    std::cout << "ReductionValues: ";
+    PrintArray(this->ReductionIndices.GetPortalConstControl().GetIteratorBegin(),
+               this->ReductionIndices.GetPortalConstControl().GetIteratorEnd());*/
     this->ReductionMapValid = true;
   }
 
@@ -239,6 +260,16 @@ public:
     return this->ReductionIndices;
   }
 
+  /// \brief Stores the unique key for each group
+  ///
+  /// The ReductionKeys array contains the key for each input group to be reduced
+  ///
+  DAX_CONT_EXPORT
+  KeysType GetReductionKeys() {
+    this->BuildReductionMap();
+    return this->ReductionKeys;
+  }
+
   DAX_CONT_EXPORT
   void DoReleaseReductionMap() {
     this->ReductionCounts.ReleaseResourcesExecution();
@@ -257,6 +288,7 @@ private:
   ReductionMapType ReductionCounts;
   ReductionMapType ReductionOffsets;
   ReductionMapType ReductionIndices;
+  KeysType ReductionKeys;
   bool ReductionMapValid;
   WorkletType Worklet;
 

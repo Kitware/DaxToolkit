@@ -124,7 +124,8 @@ private:
     typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
       Algorithm;
 
-    typedef typename WorkletWrapperType::ReductionMapType ReductionMapType;
+      typedef typename WorkletWrapperType::ReductionMapType ReductionMapType;
+      typedef typename WorkletWrapperType::KeysType KeysType;
 
     //Get a map from output indices to input groups.
     workletWrapper.BuildReductionMap();
@@ -136,21 +137,35 @@ private:
     ReductionMapType reductionCounts = workletWrapper.GetReductionCounts();
     ReductionMapType reductionOffsets = workletWrapper.GetReductionOffsets();
     ReductionMapType reductionIndices = workletWrapper.GetReductionIndices();
+    KeysType reductionKeys = workletWrapper.GetReductionKeys();
 
     // We need to scan the args of the reduce keys/values worklet and determine
-    // if we have the ReductionCount signature.  The control signature needs to
+    // if we have the ReductionCount/Offset/Index signature.  The control signature needs to
     // be modified to add this array to the arguments and the execution
     // signature has to be modified to ensure that the ReductionCount signature
     // points to the appropriate array.  The AddReductionCountArg does all this.
     typedef dax::cont::scheduling::AddReductionCountArg<WorkletType>
-      AddVisitIndex;
-    typedef typename AddVisitIndex::DerivedWorkletType DerivedWorkletType;
+      AddCounts;
+    typedef typename AddCounts::DerivedWorkletType AddCountsWorkletType;
+    AddCountsWorkletType workletWithCounts(workletWrapper.GetWorklet());
+
+    typedef dax::cont::scheduling::AddReductionOffsetArg<AddCountsWorkletType>
+      AddOffsets;
+    typedef typename AddOffsets::DerivedWorkletType AddOffsetsWorkletType;
+    AddOffsetsWorkletType workletWithOffsets(workletWithCounts);
+
+    typedef dax::cont::scheduling::AddReductionIndexPortalArg<AddOffsetsWorkletType>
+      AddIndices;
+    typedef typename AddIndices::DerivedWorkletType AddIndicesWorkletType;
+    typedef AddIndicesWorkletType DerivedWorkletType;
 
     //we get our magic here. we need to wrap some parameters and pass
     //them to the real scheduler
-    DerivedWorkletType derivedWorklet(workletWrapper.GetWorklet());
+    DerivedWorkletType derivedWorklet(workletWithOffsets);
     this->DefaultScheduler.Invoke(derivedWorklet,
                                   _dax_pp_args___(a),
-                                  reductionCounts);
+                                  reductionCounts,
+                                  reductionOffsets,
+                                  reductionIndices);
   }
 #endif // defined(BOOST_PP_IS_ITERATING)

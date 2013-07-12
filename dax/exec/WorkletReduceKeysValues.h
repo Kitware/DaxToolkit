@@ -20,6 +20,7 @@
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/cont/sig/ReductionCount.h>
+#include <dax/cont/sig/KeyGroup.h>
 
 namespace dax {
 namespace exec {
@@ -38,6 +39,8 @@ protected:
   typedef dax::cont::arg::Field Values;
 
   typedef dax::cont::sig::ReductionCount ReductionCount;
+  typedef dax::cont::sig::ReductionOffset ReductionOffset;
+  typedef dax::cont::sig::KeyGroup KeyGroup;
 };
 
 }

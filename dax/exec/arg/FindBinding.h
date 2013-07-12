@@ -32,6 +32,7 @@
 #include <dax/exec/arg/BindDirect.h>
 #include <dax/exec/arg/BindPermutedCellField.h>
 #include <dax/exec/arg/BindWorkId.h>
+#include <dax/exec/arg/BindKeyGroup.h>
 #include <dax/Types.h>
 
 #include <boost/mpl/if.hpp>
@@ -149,6 +150,25 @@ class FindBinding<WorkletType, dax::cont::sig::ReductionCountArg<N>, Invocation>
 {
 public:
   typedef BindDirect<Invocation,N> type;
+};
+
+//bind ReductionOffset directly to the input array (which should be specially
+//constructed by the scheduler)
+template<typename WorkletType, int N, typename Invocation>
+class FindBinding<WorkletType, dax::cont::sig::ReductionOffsetArg<N>, Invocation>
+{
+public:
+  typedef BindDirect<Invocation,N> type;
+};
+
+//specialize on KeyGroup(_N) binding
+template<typename WorkletType, int N, typename Invocation>
+class FindBinding<WorkletType,
+                  dax::cont::sig::KeyGroup(*)(dax::cont::sig::Arg<N>),
+                  Invocation>
+{
+public:
+  typedef BindKeyGroup<Invocation,N> type;
 };
 
 }}} // namespace dax::exec::arg

@@ -29,6 +29,22 @@ class ReductionCount {};
 /// ReductionCount signature.
 template<int> class ReductionCountArg {};
 
+/// \headerfile ReductionOffset.h dax/cont/sig/ReductionOffset.h
+/// \brief Reference worklet Id in the \c ExecutionSignature declarations.
+class ReductionOffset {};
+
+/// \brief Used internally to map an array of reduction counts to a
+/// ReductionOffset signature.
+template<int> class ReductionOffsetArg {};
+
+/// \headerfile ReductionOffset.h dax/cont/sig/ReductionOffset.h
+/// \brief Reference worklet Id in the \c ExecutionSignature declarations.
+class ReductionIndexPortal {};
+
+/// \brief Used internally to map an array of reduction counts to a
+/// ReductionOffset signature.
+template<int> class ReductionIndexPortalArg {};
+
 namespace internal {
 
 /// \brief Converts type T to a Arg placeholder, presumes T::value returns an
@@ -39,6 +55,26 @@ struct ReductionCountMetaFunc
 {
   template<typename T>
   struct apply { typedef dax::cont::sig::ReductionCountArg<T::value> type; };
+};
+
+/// \brief Converts type T to a Arg placeholder, presumes T::value returns an
+/// integer. Is designed as a boost mpl metafunction. Used in, for example, the
+/// ExecArgToUseMetaFunc in dax::internal::ReplaceAndExtendSignatures.
+///
+struct ReductionOffsetMetaFunc
+{
+  template<typename T>
+  struct apply { typedef dax::cont::sig::ReductionOffsetArg<T::value> type; };
+};
+
+/// \brief Converts type T to a Arg placeholder, presumes T::value returns an
+/// integer. Is designed as a boost mpl metafunction. Used in, for example, the
+/// ExecArgToUseMetaFunc in dax::internal::ReplaceAndExtendSignatures.
+///
+struct ReductionIndexPortalMetaFunc
+{
+  template<typename T>
+  struct apply { typedef dax::cont::sig::ReductionIndexPortalArg<T::value> type; };
 };
 
 } // namespace internal

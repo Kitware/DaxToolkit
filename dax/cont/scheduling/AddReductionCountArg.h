@@ -60,5 +60,60 @@ public:
 
 };
 
+template<class WorkletType>
+class AddReductionOffsetArg
+{
+  typedef dax::internal::ReplaceAndExtendSignatures<
+              WorkletType,
+              dax::cont::sig::ReductionOffset,
+              dax::cont::sig::internal::ReductionOffsetMetaFunc,
+              dax::cont::arg::Field>  ModifiedWorkletSignatures;
+
+  typedef typename ModifiedWorkletSignatures::found ReductionOffsetFound;
+
+
+  //now that we have index generated, we have to build the new worklet
+  //that has the updated signature
+  typedef typename dax::internal::BuildSignature<
+       typename ModifiedWorkletSignatures::ControlSignature>::type NewContSig;
+  typedef typename dax::internal::BuildSignature<
+       typename ModifiedWorkletSignatures::ExecutionSignature>::type NewExecSig;
+
+public:
+
+  //make sure to pass the user worklet down to the new derived worklet, so
+  //that we get any member variable values that they have set
+  typedef dax::exec::internal::kernel::DerivedWorklet<WorkletType,
+            NewContSig,NewExecSig> DerivedWorkletType;
+
+};
+
+template<class WorkletType>
+class AddReductionIndexPortalArg
+{
+  typedef dax::internal::ReplaceAndExtendSignatures<
+              WorkletType,
+              dax::cont::sig::ReductionIndexPortal,
+              dax::cont::sig::internal::ReductionIndexPortalMetaFunc,
+              dax::cont::arg::Field>  ModifiedWorkletSignatures;
+
+  typedef typename ModifiedWorkletSignatures::found ReductionIndexPortalFound;
+
+
+  //now that we have index generated, we have to build the new worklet
+  //that has the updated signature
+  typedef typename dax::internal::BuildSignature<
+       typename ModifiedWorkletSignatures::ControlSignature>::type NewContSig;
+  typedef typename dax::internal::BuildSignature<
+       typename ModifiedWorkletSignatures::ExecutionSignature>::type NewExecSig;
+
+public:
+
+  //make sure to pass the user worklet down to the new derived worklet, so
+  //that we get any member variable values that they have set
+  typedef dax::exec::internal::kernel::DerivedWorklet<WorkletType,
+            NewContSig,NewExecSig> DerivedWorkletType;
+
+};
 } } } //dax::cont::scheduling
 #endif //__dax_cont_scheduling_AddReductionCountArg_h
