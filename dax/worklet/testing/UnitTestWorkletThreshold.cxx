@@ -60,11 +60,6 @@ private:
   bool Valid;
 };
 
-void PrintScalarValue(dax::Scalar value)
-  {
-  std::cout << " " << value;
-  }
-
 
 template<class IteratorType>
 void CheckValues(IteratorType begin, IteratorType end)
