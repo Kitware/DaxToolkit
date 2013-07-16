@@ -31,8 +31,12 @@ struct IJKIndex
                         (this->IJK[1] + this->Dims[1]* this->IJK[2]);
     }
 
-  DAX_EXEC_EXPORT dax::Id GetValue() const
-    { return this->CachedValue + this->IJK[0]; }
+  DAX_EXEC_EXPORT
+  operator dax::Id(void) const
+  { return this->CachedValue + this->IJK[0]; }
+
+  // DAX_EXEC_EXPORT dax::Id GetValue() const
+  //   { return this->CachedValue + this->IJK[0]; }
 
   DAX_EXEC_EXPORT const dax::Id3 GetIJK() const { return this->IJK; }
 

@@ -41,7 +41,7 @@ static void TestGridIJK(const Grid &gridstruct)
         ijkIndex.SetI(i);
 
         //compare this i to the extent functions
-        DAX_TEST_ASSERT(ijkIndex.GetValue() == correctFlatCellIndex,
+        DAX_TEST_ASSERT(ijkIndex == correctFlatCellIndex,
                   "ijk value method returned wrong cell index");
 
         ++correctFlatCellIndex;
