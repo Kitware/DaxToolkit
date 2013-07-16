@@ -21,8 +21,6 @@
 
 #include <dax/testing/Testing.h>
 
-#include <boost/lambda/lambda.hpp>
-
 //-----------------------------------------------------------------------------
 namespace {
 
