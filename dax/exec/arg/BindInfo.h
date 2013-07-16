@@ -61,7 +61,7 @@ template< int Index_, class BindingsType >
 typename BindingsType::template GetType<Index_>::type::ExecArg //return type
 GetNthExecArg(BindingsType& bindings)
 {
-   return bindings.template Get<Index_>().GetNthExecArg();
+   return bindings.template Get<Index_>().GetExecArg();
 };
 
 } } } //dax::exec::arg
