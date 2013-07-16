@@ -16,6 +16,7 @@
 
 #include <dax/Pair.h>
 #include <dax/Types.h>
+#include <dax/VectorOperations.h>
 #include <dax/VectorTraits.h>
 
 #include <dax/testing/Testing.h>
@@ -28,6 +29,8 @@ template <typename T, typename U> void PairTest( )
   //test that all the constructors work properly
   {
   dax::Pair<T,U> no_params_pair;
+  dax::VectorFill(no_params_pair.first, 1234);
+  dax::VectorFill(no_params_pair.second, 5678);
   dax::Pair<T,U> copy_constructor_pair(no_params_pair);
   dax::Pair<T,U> assignment_pair = no_params_pair;
 
