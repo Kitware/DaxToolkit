@@ -26,7 +26,7 @@ endif (NOT Dax_OpenMP_FOUND)
 # Find the Boost library.
 if (Dax_OpenMP_FOUND)
   if(NOT Boost_FOUND)
-    find_package(Boost ${Dax_REQUIRED_BOOST_VERSION})
+    find_package(BoostHeaders ${Dax_REQUIRED_BOOST_VERSION})
   endif()
 
   if (NOT Boost_FOUND)
