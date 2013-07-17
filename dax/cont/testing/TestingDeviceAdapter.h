@@ -119,11 +119,6 @@ public:
       this->Array.Set(index, OFFSET);
     }
 
-    DAX_EXEC_EXPORT void operator()(dax::exec::internal::IJKIndex index) const
-    {
-      this->Array.Set(index.GetValue(), OFFSET);
-    }
-
     DAX_CONT_EXPORT void SetErrorMessageBuffer(
         const dax::exec::internal::ErrorMessageBuffer &) {  }
 
@@ -151,12 +146,6 @@ public:
     DAX_EXEC_EXPORT void operator()(dax::Id index) const
     {
       this->Array.Set(index, this->Array.Get(index) + index);
-    }
-
-    DAX_EXEC_EXPORT void operator()(dax::exec::internal::IJKIndex index) const
-    {
-      dax::Id id = index.GetValue();
-      this->Array.Set(id, this->Array.Get(id) + id);
     }
 
     DAX_CONT_EXPORT void SetErrorMessageBuffer(
