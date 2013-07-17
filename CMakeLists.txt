@@ -229,6 +229,13 @@ install(
     ${Dax_SOURCE_DIR}/CMake/FindThrust.cmake
   DESTINATION ${Dax_INSTALL_CMAKE_MODULE_DIR}
   )
+# Install tool chain files.
+install(
+  FILES
+    ${Dax_SOURCE_DIR}/CMake/XeonPhiToolchain.cmake
+  DESTINATION ${Dax_INSTALL_CMAKE_MODULE_DIR}
+
+# Install Use files.
 install(
   FILES
     ${Dax_SOURCE_DIR}/CMake/UseDaxSerial.cmake
