@@ -21,7 +21,6 @@
 
 #include <dax/Types.h>
 #include <dax/cont/internal/Bindings.h>
-
 #include <dax/exec/internal/WorkletBase.h>
 
 namespace dax { namespace exec { namespace arg {
@@ -29,11 +28,12 @@ namespace dax { namespace exec { namespace arg {
 template <typename Invocation>
 struct BindWorkId
 {
+  //can't used BindInfo, since the WorkId has no control side mapping
+  //it is only an exec argument
   typedef dax::cont::internal::Bindings<Invocation> AllControlBindings;
-
   typedef dax::Id ReturnType;
 
-  DAX_CONT_EXPORT BindWorkId(AllControlBindings&){}
+  DAX_CONT_EXPORT BindWorkId(AllControlBindings& daxNotUsed(bindings)) {}
 
   // Explicitly making this copy constructor avoids a warning.  For some
   // reason the default implementation with the gcc compiler somehow uses

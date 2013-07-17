@@ -28,6 +28,7 @@
 #include <dax/cont/sig/Tag.h>
 
 #include <dax/exec/arg/ArgBase.h>
+#include <dax/exec/arg/BindInfo.h>
 #include <dax/exec/CellVertices.h>
 #include <dax/exec/internal/IJKIndex.h>
 #include <dax/exec/internal/WorkletBase.h>
@@ -41,7 +42,7 @@ class BindPermutedCellField : public dax::exec::arg::ArgBase< BindPermutedCellFi
 {
   typedef dax::exec::arg::ArgBaseTraits< BindPermutedCellField< Invocation, N > > Traits;
 
-  typedef typename Traits::TopoExecIndex TopoExecIndex;
+  enum{TopoIndex=Traits::TopoIndex};
   typedef typename Traits::TopoExecArgType TopoExecArgType;
   typedef typename Traits::ExecArgType ExecArgType;
 public:
@@ -52,8 +53,8 @@ public:
 
   DAX_CONT_EXPORT BindPermutedCellField(
       dax::cont::internal::Bindings<Invocation>& bindings):
-    TopoExecArg(bindings.template Get<TopoExecIndex::value>().GetExecArg()),
-    ExecArg(bindings.template Get<N>().GetExecArg()),
+    TopoExecArg(dax::exec::arg::GetNthExecArg<TopoIndex>(bindings)),
+    ExecArg(dax::exec::arg::GetNthExecArg<N>(bindings)),
     Value() {}
 
 
@@ -93,23 +94,18 @@ template <typename Invocation,  int N >
 struct ArgBaseTraits< BindPermutedCellField<Invocation, N> >
 {
 private:
-  typedef typename dax::cont::internal::Bindings<Invocation> BindingsType;
-  typedef typename dax::cont::internal::FindBinding<
-      BindingsType, dax::cont::arg::Topology>::type TopoIndex;
-  typedef typename BindingsType::template GetType<TopoIndex::value>::type
-      TopoControlBinding;
-
-  typedef typename dax::cont::internal::Bindings<Invocation>
-      ::template GetType<N>::type ControlBinding;
-
-  typedef typename dax::cont::arg::ConceptMapTraits<ControlBinding>::Tags Tags;
+  typedef typename dax::exec::arg::FindBindInfo<dax::cont::arg::Topology,
+                                               Invocation> TopoInfo;
+  typedef typename dax::exec::arg::BindInfo<N,Invocation> MyInfo;
+  typedef typename MyInfo::Tags Tags;
 
 public:
-  typedef TopoIndex TopoExecIndex;
-  typedef typename TopoControlBinding::ExecArg TopoExecArgType;
-  typedef typename ControlBinding::ExecArg ExecArgType;
+  enum{TopoIndex=TopoInfo::Index};
 
-    typedef typename ::boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
+  typedef typename TopoInfo::ExecArgType TopoExecArgType;
+  typedef typename MyInfo::ExecArgType ExecArgType;
+
+  typedef typename ::boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
                                    ::boost::true_type,
                                    ::boost::false_type>::type HasOutTag;
 

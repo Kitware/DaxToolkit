@@ -17,8 +17,7 @@
 #define __dax_exec_arg_BindCellTag_h
 
 #include <dax/Types.h>
-#include <dax/cont/internal/Bindings.h>
-
+#include <dax/exec/arg/BindInfo.h>
 #include <dax/exec/internal/WorkletBase.h>
 
 namespace dax { namespace exec { namespace arg {
@@ -27,9 +26,9 @@ template <typename Invocation, int N>
 class BindCellTag
 {
 public:
-  typedef dax::cont::internal::Bindings<Invocation> AllControlBindings;
-  typedef typename AllControlBindings::template GetType<N>::type MyControlBinding;
-  typedef typename MyControlBinding::ExecArg ExecArgType;
+  typedef dax::exec::arg::BindInfo<N,Invocation> MyInfo;
+  typedef typename MyInfo::AllControlBindings AllControlBindings;
+  typedef typename MyInfo::ExecArgType ExecArgType;
 
   // BindCellTag is an empty class so we don't need to worry about the return type
   // based on in or out (although for other derived units like the point ids,
