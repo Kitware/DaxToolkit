@@ -225,6 +225,8 @@ install(FILES ${Dax_SOURCE_DIR}/LICENSE.txt
 # Install helper configure files.
 install(
   FILES
+    ${Dax_SOURCE_DIR}/CMake/FindBoostHeaders.cmake
+    ${Dax_SOURCE_DIR}/CMake/FindGLEW.cmake
     ${Dax_SOURCE_DIR}/CMake/FindTBB.cmake
     ${Dax_SOURCE_DIR}/CMake/FindThrust.cmake
   DESTINATION ${Dax_INSTALL_CMAKE_MODULE_DIR}
