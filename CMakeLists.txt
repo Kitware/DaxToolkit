@@ -145,7 +145,7 @@ if (NOT DAX_DISABLE_KITS)
   # List of Boost features used:
   # * Smart Ptr
   # * Meta programming language
-  find_package(Boost ${Dax_REQUIRED_BOOST_VERSION} REQUIRED)
+  find_package(BoostHeaders ${Dax_REQUIRED_BOOST_VERSION} REQUIRED)
 
   # Find OpenGL and GLEW, if both are found we can enable
   # the OpenGL Interop support. We use
@@ -225,6 +225,8 @@ install(FILES ${Dax_SOURCE_DIR}/LICENSE.txt
 # Install helper configure files.
 install(
   FILES
+    ${Dax_SOURCE_DIR}/CMake/FindBoostHeaders.cmake
+    ${Dax_SOURCE_DIR}/CMake/FindGLEW.cmake
     ${Dax_SOURCE_DIR}/CMake/FindTBB.cmake
     ${Dax_SOURCE_DIR}/CMake/FindThrust.cmake
   DESTINATION ${Dax_INSTALL_CMAKE_MODULE_DIR}
