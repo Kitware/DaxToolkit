@@ -157,7 +157,7 @@ struct TopologyUniform {
     values[7] = indices.SecondPointIndex + indices.XDim;
     return values;
   }
-} __attribute__ ((aligned(DAX_SIZE_SCALAR)));
+};
 
 }  }  } //namespace dax::exec::internal
 
