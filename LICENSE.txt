@@ -22,7 +22,7 @@ USA
 
 Under the terms of Contract DE-AC04-94AL85000, there is a
 non-exclusive license for use of this work by or on behalf of the
-U.S. Government.  
+U.S. Government.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -57,6 +57,7 @@ The following files and directories come from third parties. Check the
 contents of these for details on the specifics of their respective
 licenses.
 - - - - - - - - - - - - - - - - - - - - - - - - do not remove this line
+CMake/FindBoostHeaders.cmake
 CMake/FindGLEW.cmake
 CMake/FindTBB.cmake
 dax/testing/OptionParser.h
