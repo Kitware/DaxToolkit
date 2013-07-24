@@ -54,7 +54,9 @@ public:
     {
     }
 
-  DAX_EXEC_EXPORT ReturnType GetValueForWriting()
+  template<typename IndexType>
+  DAX_EXEC_EXPORT ReturnType GetValueForWriting(const IndexType&,
+                            const dax::exec::internal::WorkletBase&)
     { return this->Cell; }
 
   template<typename IndexType>
