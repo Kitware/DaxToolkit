@@ -58,7 +58,9 @@ public:
     ExecArg(dax::exec::arg::GetNthExecArg<N>(bindings)),
     Value(typename dax::VectorTraits<ValueType>::ComponentType()) {}
 
-  DAX_EXEC_EXPORT ReturnType GetValueForWriting()
+  template<typename IndexType>
+  DAX_EXEC_EXPORT ReturnType GetValueForWriting(const IndexType&,
+                            const dax::exec::internal::WorkletBase&)
     { return this->Value; }
 
   template<typename IndexType>

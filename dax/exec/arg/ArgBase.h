@@ -84,12 +84,12 @@ private:
     }
 
   template<typename IndexType>
-  DAX_EXEC_EXPORT ReturnType readValue(const IndexType&,
-                       const dax::exec::internal::WorkletBase&,
+  DAX_EXEC_EXPORT ReturnType readValue(const IndexType& index,
+                       const dax::exec::internal::WorkletBase& work,
                        ::boost::mpl::bool_<false>,
                        ::boost::mpl::bool_<true>) //hasOutTag, no in tag
     {
-    return static_cast<DerivedArgClass*>(this)->GetValueForWriting();
+    return static_cast<DerivedArgClass*>(this)->GetValueForWriting(index,work);
     }
 
   template<typename OutTagIsOn>
