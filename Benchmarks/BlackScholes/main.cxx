@@ -78,7 +78,8 @@ int main(int, char **)
   //Both call and put is calculated
   printf("Options count             : %i     \n", 2 * OPT_N);
   printf("\tBlackScholes() time    : %f time\n", time);
-  printf("\t%f GB/s, %f GOptions/s\n",
-  ((double)(5 * OPT_N * sizeof(dax::Scalar)) * 1E-9) / time,
-  ((double)(2 * OPT_N) * 1E-9) / time);
+  printf("Effective memory bandwidth: %f GB/s\n",
+        ((double)(5 * OPT_N * sizeof(dax::Scalar)) * 1E-9) / time);
+  printf("Gigaoptions per second    : %f     \n\n",
+        ((double)(2 * OPT_N) * 1E-9) / time);
 }
