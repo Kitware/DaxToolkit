@@ -22,4 +22,5 @@ int main(int, char**)
   mandle::Window window;
   window.Init("MandleBulb Benchmark", 800, 600);
   window.Start();
+  return 0;
 }

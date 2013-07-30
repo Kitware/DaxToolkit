@@ -82,4 +82,5 @@ int main(int, char **)
         ((double)(5 * OPT_N * sizeof(dax::Scalar)) * 1E-9) / time);
   printf("Gigaoptions per second    : %f     \n\n",
         ((double)(2 * OPT_N) * 1E-9) / time);
+  return 0;
 }
