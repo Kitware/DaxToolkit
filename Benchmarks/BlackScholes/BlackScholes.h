@@ -112,7 +112,7 @@ double launchBlackScholes(const std::vector<dax::Scalar>& stockPrice,
 
   //invoke the black scholes worklet 512 averaging the elapsed time
   worklet::BlackScholes scholes;
-  for (int i = 0; i < 512; i++)
+  for (int i = 0; i < 12; i++)
     {
     scheduler.Invoke(scholes,
                      sPriceHandle, oStrikeHandle,
@@ -120,10 +120,10 @@ double launchBlackScholes(const std::vector<dax::Scalar>& stockPrice,
                      callResultHandle, putResultHandle);
     }
 
-  const double time = (timer.GetElapsedTime()/512.0);
-
   callResultHandle.CopyInto(callResult.begin());
   putResultHandle.CopyInto(putResult.begin());
+
+  const double time = (timer.GetElapsedTime()/12.0);
 
   return time;
 }
