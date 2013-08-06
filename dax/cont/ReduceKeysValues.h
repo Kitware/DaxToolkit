@@ -35,21 +35,23 @@
 namespace dax {
 namespace cont {
 
+
+// template<class IteratorType>
+// void PrintArray(IteratorType beginIter, IteratorType endIter)
+// {
+//   for (IteratorType iter = beginIter; iter != endIter; iter++)
+//     {
+//     std::cout << " " << *iter;
+//     }
+//   std::cout << std::endl;
+// }
+
+
 //we need a base class with no template parameters so that the scheduling triats
 //infastructure can properly determine when a worklet is derived from
 //ReduceKeysValues
 namespace internal {
   class ReduceKeysValuesBase {};
-}
-
-template<class IteratorType>
-void PrintArray(IteratorType beginIter, IteratorType endIter)
-{
-  for (IteratorType iter = beginIter; iter != endIter; iter++)
-    {
-    std::cout << " " << *iter;
-    }
-  std::cout << std::endl;
 }
 /// ReduceKeysValues is the control environment representation of a
 /// an algorithm that takes a classification of a given input topology
