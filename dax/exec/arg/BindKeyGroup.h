@@ -20,6 +20,7 @@
 #else // !defined(DAX_DOXYGEN_ONLY)
 
 #include <dax/cont/sig/KeyGroup.h>
+#include <dax/exec/Assert.h>
 
 namespace dax{ namespace exec { namespace arg {
 
