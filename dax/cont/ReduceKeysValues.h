@@ -32,6 +32,50 @@
 
 #include <dax/cont/internal/DeviceAdapterAlgorithm.h>
 
+
+namespace dax {
+namespace exec {
+namespace internal {
+namespace kernel {
+
+template< typename ReductionMapType >
+struct Offset2CountFunctor : dax::exec::internal::WorkletBase
+{
+  typename ReductionMapType::PortalConstExecution OffsetsPortal;
+  typename ReductionMapType::PortalExecution CountsPortal;
+  dax::Id MaxId;
+  dax::Id OffsetEnd;
+
+  Offset2CountFunctor(
+      typename ReductionMapType::PortalConstExecution offsetsPortal,
+      typename ReductionMapType::PortalExecution countsPortal,
+      dax::Id maxId,
+      dax::Id offsetEnd)
+    : OffsetsPortal(offsetsPortal),
+      CountsPortal(countsPortal),
+      MaxId(maxId),
+      OffsetEnd(offsetEnd) {  }
+
+  DAX_EXEC_EXPORT
+  void operator()(dax::Id index) const {
+    dax::Id thisOffset = this->OffsetsPortal.Get(index);
+    dax::Id nextOffset;
+    if (index == this->MaxId)
+      {
+      nextOffset = this->OffsetEnd;
+      }
+    else
+      {
+      nextOffset = this->OffsetsPortal.Get(index+1);
+      }
+    this->CountsPortal.Set(index, nextOffset - thisOffset);
+  }
+};
+}
+}
+}
+}
+
 namespace dax {
 namespace cont {
 
@@ -126,39 +170,6 @@ public:
   DAX_CONT_EXPORT
   bool GetReleaseReductionMap() const { return ReleaseKeys; }
 
-private:
-  struct Offset2CountFunctor : dax::exec::internal::WorkletBase
-  {
-    typename ReductionMapType::PortalConstExecution OffsetsPortal;
-    typename ReductionMapType::PortalExecution CountsPortal;
-    dax::Id MaxId;
-    dax::Id OffsetEnd;
-
-    Offset2CountFunctor(
-        typename ReductionMapType::PortalConstExecution offsetsPortal,
-        typename ReductionMapType::PortalExecution countsPortal,
-        dax::Id maxId,
-        dax::Id offsetEnd)
-      : OffsetsPortal(offsetsPortal),
-        CountsPortal(countsPortal),
-        MaxId(maxId),
-        OffsetEnd(offsetEnd) {  }
-
-    void operator()(dax::Id index) const {
-      dax::Id thisOffset = this->OffsetsPortal.Get(index);
-      dax::Id nextOffset;
-      if (index == this->MaxId)
-        {
-        nextOffset = this->OffsetEnd;
-        }
-      else
-        {
-        nextOffset = this->OffsetsPortal.Get(index+1);
-        }
-      this->CountsPortal.Set(index, nextOffset - thisOffset);
-    }
-  };
-
 public:
   /// Builds a map from output indices to input indices that describes how
   /// many values are to be reduced for an entry and at what indices those
@@ -204,11 +215,12 @@ public:
 //    std::cout << "numUniqueKeys: " << numUniqueKeys << std::endl;
 //    std::cout << "ReductionCountSize: " << this->ReductionCounts.GetNumberOfValues() << std::endl;
 
-    Offset2CountFunctor offset2Count(
-          this->ReductionOffsets.PrepareForInput(),
-          this->ReductionCounts.PrepareForOutput(numUniqueKeys),
-          numUniqueKeys-1,
-          this->ReductionIndices.GetNumberOfValues());
+    typedef dax::exec::internal::kernel::Offset2CountFunctor<
+                        ReductionMapType> OffsetFunctorType;
+    OffsetFunctorType offset2Count( this->ReductionOffsets.PrepareForInput(),
+                        this->ReductionCounts.PrepareForOutput(numUniqueKeys),
+                        numUniqueKeys-1,
+                        this->ReductionIndices.GetNumberOfValues());
     Algorithms::Schedule(offset2Count, numUniqueKeys);
 
 /*    std::cout << "ReductionCountSizeAfter: " << this->ReductionCounts.GetNumberOfValues() << std::endl;
