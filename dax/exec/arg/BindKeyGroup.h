@@ -25,8 +25,7 @@
 namespace dax{ namespace exec { namespace arg {
 
 template<typename IndexExecArgType,
-         typename ValueExecArgType,
-         typename WorkletType>
+         typename ValueExecArgType>
 struct KeyGroup
 {
 private:
@@ -34,14 +33,14 @@ private:
     dax::Id m_Size;
     IndexExecArgType m_Indices;
     ValueExecArgType m_Values;
-    WorkletType m_Worklet;
+    dax::exec::internal::WorkletBase m_Worklet;
 public:
     DAX_EXEC_EXPORT KeyGroup(
             dax::Id StartIndex,
             dax::Id Size,
             const IndexExecArgType &Indices,
             const ValueExecArgType &Values,
-            const WorkletType &Worklet)
+            const dax::exec::internal::WorkletBase& Worklet)
         : m_StartIndex(StartIndex),
           m_Size(Size),
           m_Indices(Indices),
@@ -60,12 +59,54 @@ public:
 template <typename Invocation, int N>
 class BindKeyGroup : public dax::exec::arg::ArgBase<BindKeyGroup<Invocation, N> >
 {
-  typedef dax::exec::arg::BindInfo<N,Invocation> MyInfo;
-  typedef typename MyInfo::AllControlBindings AllControlBindings;
-  typedef typename MyInfo::ExecArgType ExecArgType;
-  typedef typename MyInfo::Tags Tags;
-  ExecArgType ExecArg;
+  typedef dax::exec::arg::ArgBaseTraits< BindKeyGroup< Invocation, N > > Traits;
 
+  typedef dax::cont::internal::Bindings<Invocation> AllControlBindings;
+
+  typedef typename Traits::ExecArgType ExecArgType;
+  typedef typename Traits::KeyCountExecArgType KeyCountExecArgType;
+  typedef typename Traits::KeyOffsetExecArgType KeyOffsetExecArgType;
+  typedef typename Traits::KeyIndexExecArgType KeyIndexExecArgType;
+
+  ExecArgType ExecArg;
+  KeyCountExecArgType KeyCountExecArg;
+  KeyOffsetExecArgType KeyOffsetExecArg;
+  KeyIndexExecArgType KeyIndexExecArg;
+
+public:
+  typedef typename Traits::ValueType ValueType;
+  typedef typename Traits::ReturnType ReturnType;
+  typedef typename Traits::SaveType SaveType;
+
+  DAX_CONT_EXPORT BindKeyGroup(AllControlBindings& bindings):
+    ExecArg(dax::exec::arg::GetNthExecArg<N>(bindings)),
+    KeyCountExecArg(dax::exec::arg::GetNthExecArg<Traits::KeyCountIndex>(bindings)),
+    KeyOffsetExecArg(dax::exec::arg::GetNthExecArg<Traits::KeyOffsetIndex>(bindings)),
+    KeyIndexExecArg(dax::exec::arg::GetNthExecArg<Traits::KeyIndexIndex>(bindings))
+  {}
+
+  template<typename IndexType>
+  DAX_EXEC_EXPORT
+  ReturnType GetValueForReading(const IndexType& index,
+                            const dax::exec::internal::WorkletBase& work) const
+    {
+    //Create this id's KeyGroup object and pass it back.
+    return ReturnType( KeyOffsetExecArg(index, work),
+                       KeyCountExecArg(index, work),
+                       KeyIndexExecArg,
+                       ExecArg,
+                       work);
+    }
+};
+
+
+//the traits for BindKeyGroup
+template <typename Invocation,  int N >
+struct ArgBaseTraits< BindKeyGroup<Invocation, N> >
+{
+private:
+  typedef typename dax::exec::arg::BindInfo<N,Invocation> MyInfo;
+  typedef typename MyInfo::Tags Tags;
 
   //We need the argument count to grab the last few bindings,
   //which have been special-purposed to be the parts necessary
@@ -76,96 +117,34 @@ class BindKeyGroup : public dax::exec::arg::ArgBase<BindKeyGroup<Invocation, N> 
   typedef dax::exec::arg::BindInfo<ArgumentCount - 1, Invocation> KeyOffsetInfo;
   typedef dax::exec::arg::BindInfo<ArgumentCount - 0, Invocation> KeyIndexInfo;
 
+public:
+
+  enum{KeyCountIndex=ArgumentCount - 2};
+  enum{KeyOffsetIndex=ArgumentCount - 1};
+  enum{KeyIndexIndex=ArgumentCount};
+
+
   typedef typename KeyCountInfo::ExecArgType KeyCountExecArgType;
   typedef typename KeyOffsetInfo::ExecArgType KeyOffsetExecArgType;
   typedef typename KeyIndexInfo::ExecArgType KeyIndexExecArgType;
 
-  KeyCountExecArgType KeyCountExecArg;
-  KeyOffsetExecArgType KeyOffsetExecArg;
-  KeyIndexExecArgType KeyIndexExecArg;
-
-public:
-  typedef KeyGroup<KeyIndexExecArgType, ExecArgType, dax::exec::internal::WorkletBase> ReturnType;
-
-  DAX_CONT_EXPORT BindKeyGroup(AllControlBindings& bindings):
-    ExecArg(dax::exec::arg::GetNthExecArg<N>(bindings)),
-    KeyCountExecArg(dax::exec::arg::GetNthExecArg<ArgumentCount - 2>(bindings)),
-    KeyOffsetExecArg(dax::exec::arg::GetNthExecArg<ArgumentCount - 1>(bindings)),
-    KeyIndexExecArg(dax::exec::arg::GetNthExecArg<ArgumentCount - 0>(bindings))
-  {}
-
-  template<typename IndexType>
-  DAX_EXEC_EXPORT ReturnType operator()(const IndexType& id,
-                      const dax::exec::internal::WorkletBase& worklet)
-    {
-      //Create this id's KeyGroup object and pass it back.
-      return KeyGroup<KeyIndexExecArgType, ExecArgType, dax::exec::internal::WorkletBase>(
-                  KeyOffsetExecArg(id, worklet),
-                  KeyCountExecArg(id, worklet),
-                  KeyIndexExecArg,
-                  ExecArg,
-                  worklet);
-    }
-
-    DAX_EXEC_EXPORT void SaveExecutionResult(dax::Id id,
-                       const dax::exec::internal::WorkletBase& worklet)
-    {
-    //Look at the concept map traits. If we have the Out tag
-    //we know that we must call our ExecArgs SaveExecutionResult.
-    //Otherwise we are an input argument and that behavior is undefined
-    //and very bad things could happen
-    typedef typename Tags::
-          template Has<typename dax::cont::sig::Out>::type HasOutTag;
-    this->saveResult(id,worklet,HasOutTag());
-    }
-
-  //method enabled when we do have the out tag ( or InOut)
-  template <typename HasOutTag>
-  DAX_EXEC_EXPORT
-  void saveResult(int id,
-                  const dax::exec::internal::WorkletBase& worklet,
-                  HasOutTag,
-                  typename boost::enable_if<HasOutTag>::type* = 0)
-  {
-  this->ExecArg.SaveExecutionResult(id,worklet);
-  }
-
-  template <typename HasOutTag>
-  DAX_EXEC_EXPORT
-  void saveResult(int,
-                  const dax::exec::internal::WorkletBase&,
-                  HasOutTag,
-                  typename boost::disable_if<HasOutTag>::type* = 0)
-  {
-  }
-
-};
-
-
-
-//the traits for BindKeyGroup
-template <typename Invocation,  int N >
-struct ArgBaseTraits< BindKeyGroup<Invocation, N> >
-{
-private:
-  typedef typename dax::exec::arg::BindInfo<N,Invocation> MyInfo;
-  typedef typename MyInfo::Tags Tags;
-public:
 
   typedef typename MyInfo::ExecArgType ExecArgType;
-
   typedef typename ::boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
                                    ::boost::true_type,
                                    ::boost::false_type>::type HasOutTag;
-
   typedef typename ::boost::mpl::if_<typename Tags::template Has<dax::cont::sig::In>,
                                    ::boost::true_type,
                                    ::boost::false_type>::type HasInTag;
 
-  typedef typename ExecArgType::ValueType ValueType;
+  typedef dax::exec::arg::KeyGroup<KeyIndexExecArgType,
+                                    ExecArgType> KeyGroupType;
+
+
+  typedef KeyGroupType ValueType;
   typedef typename boost::mpl::if_<typename HasOutTag::type,
-                                   ValueType&,
-                                   ValueType const>::type ReturnType;
+                                   ValueType,
+                                   ValueType >::type ReturnType;
   typedef ValueType SaveType;
 };
 
