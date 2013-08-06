@@ -20,12 +20,6 @@
 #include <dax/exec/WorkletGenerateKeysValues.h>
 #include <dax/exec/WorkletReduceKeysValues.h>
 
-#include <dax/cont/Scheduler.h>
-#include <dax/cont/arg/FieldArrayHandle.h>
-#include <dax/exec/ExecutionObjectBase.h>
-#include <dax/exec/arg/BindInfo.h>
-
-
 namespace dax {
 namespace worklet {
 
