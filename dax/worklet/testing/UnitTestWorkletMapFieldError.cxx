@@ -44,7 +44,8 @@ static void TestFieldMapError()
   bool gotError = false;
   try
     {
-    dax::cont::Scheduler<>().Invoke(dax::worklet::testing::FieldMapError(),arrayHandle);
+    dax::cont::Scheduler< >().Invoke(dax::worklet::testing::FieldMapError(),
+                                     arrayHandle);
     }
   catch (dax::cont::ErrorExecution error)
     {

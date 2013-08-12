@@ -14,11 +14,6 @@
 //
 //=============================================================================
 
-// These macros help tease out when the default template arguments to
-// ArrayHandle are inappropriately used.
-#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
-
 #include <dax/cont/testing/TestingGridGenerator.h>
 #include <dax/cont/testing/Testing.h>
 
@@ -36,7 +31,7 @@ namespace {
 
 const dax::Id DIM = 64;
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 template<typename CellTag>
 void verifyAverage(const dax::exec::CellVertices<CellTag> &cellVertices,
                    const dax::Scalar& computedAverage)
@@ -62,8 +57,7 @@ struct TestCellAverageWorklet
     typedef typename GridType::CellTag CellTag;
     dax::cont::testing::TestGrid<
         GridType,
-        dax::cont::ArrayContainerControlTagBasic,
-        dax::cont::DeviceAdapterTagSerial> grid(DIM);
+        dax::cont::ArrayContainerControlTagBasic> grid(DIM);
 
 
     std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
@@ -74,19 +68,13 @@ struct TestCellAverageWorklet
       field[pointIndex] = pointIndex;
       }
 
-    dax::cont::ArrayHandle<dax::Scalar,
-      dax::cont::ArrayContainerControlTagBasic,
-      dax::cont::DeviceAdapterTagSerial> fieldHandle =
-        dax::cont::make_ArrayHandle(field,
-                                    dax::cont::ArrayContainerControlTagBasic(),
-                                    dax::cont::DeviceAdapterTagSerial());
+    dax::cont::ArrayHandle<dax::Scalar> fieldHandle =
+        dax::cont::make_ArrayHandle(field);
 
-    dax::cont::ArrayHandle<dax::Scalar,
-        dax::cont::ArrayContainerControlTagBasic,
-        dax::cont::DeviceAdapterTagSerial> resultHandle;
+    dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
     std::cout << "Running CellAverage worklet" << std::endl;
-    dax::cont::Scheduler<dax::cont::DeviceAdapterTagSerial> scheduler;
+    dax::cont::Scheduler< > scheduler;
     scheduler.Invoke(dax::worklet::CellAverage(),
                      grid.GetRealGrid(),
                      fieldHandle,
@@ -108,10 +96,7 @@ struct TestCellAverageWorklet
 //-----------------------------------------------------------------------------
 void TestCellAverage()
   {
-  dax::cont::testing::GridTesting::TryAllGridTypes(
-        TestCellAverageWorklet(),
-        dax::cont::ArrayContainerControlTagBasic(),
-        dax::cont::DeviceAdapterTagSerial());
+  dax::cont::testing::GridTesting::TryAllGridTypes( TestCellAverageWorklet() );
   }
 
 

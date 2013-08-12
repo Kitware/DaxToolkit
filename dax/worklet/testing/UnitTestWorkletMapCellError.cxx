@@ -14,6 +14,9 @@
 //
 //=============================================================================
 
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
+
 #include <dax/worklet/testing/CellMapError.h>
 
 #include <dax/VectorTraits.h>
@@ -25,24 +28,24 @@
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <dax/cont/testing/Testing.h>
-
 namespace {
 
 const dax::Id DIM = 64;
-
 //-----------------------------------------------------------------------------
-static void TestCellMapError()
+struct TestCellMapErrorWorklet
 {
-  dax::cont::UniformGrid<> grid;
-  grid.SetExtent(dax::make_Id3(0, 0, 0), dax::make_Id3(DIM-1, DIM-1, DIM-1));
+  //----------------------------------------------------------------------------
+  template<typename GridType>
+  void operator()(const GridType&) const
+  {
+  dax::cont::testing::TestGrid<GridType> grid(DIM);
 
   std::cout << "Running field map worklet that errors" << std::endl;
   bool gotError = false;
   try
     {
-    dax::cont::Scheduler<> scheduler;
-    scheduler.Invoke(dax::worklet::testing::CellMapError(),grid);
+    dax::cont::Scheduler< > scheduler;
+    scheduler.Invoke(dax::worklet::testing::CellMapError(),grid.GetRealGrid());
     }
   catch (dax::cont::ErrorExecution error)
     {
@@ -52,7 +55,14 @@ static void TestCellMapError()
     }
 
   DAX_TEST_ASSERT(gotError, "Never got the error thrown.");
-}
+  }
+};
+
+//-----------------------------------------------------------------------------
+static void TestCellMapError()
+  {
+  dax::cont::testing::GridTesting::TryAllGridTypes(TestCellMapErrorWorklet());
+  }
 
 } // Anonymous namespace
 

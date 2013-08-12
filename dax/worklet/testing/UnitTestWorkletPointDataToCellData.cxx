@@ -14,11 +14,6 @@
 //
 //=============================================================================
 
-// These macros help tease out when the default template arguments to
-// ArrayHandle are inappropriately used.
-#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
-
 #include <dax/cont/testing/TestingGridGenerator.h>
 #include <dax/cont/testing/Testing.h>
 
@@ -59,11 +54,7 @@ struct TestPointDataToCellDataWorklet
   template<typename GridType>
   void operator()(const GridType&) const
     {
-    dax::cont::testing::TestGrid<
-        GridType,
-        dax::cont::ArrayContainerControlTagBasic,
-        dax::cont::DeviceAdapterTagSerial> grid(DIM);
-
+    dax::cont::testing::TestGrid< GridType > grid(DIM);
 
     std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
     for (dax::Id pointIndex = 0;
@@ -73,16 +64,10 @@ struct TestPointDataToCellDataWorklet
       field[pointIndex] = pointIndex;
       }
 
-    dax::cont::ArrayHandle<dax::Scalar,
-      dax::cont::ArrayContainerControlTagBasic,
-      dax::cont::DeviceAdapterTagSerial> fieldHandle =
-        dax::cont::make_ArrayHandle(field,
-                                    dax::cont::ArrayContainerControlTagBasic(),
-                                    dax::cont::DeviceAdapterTagSerial());
+    dax::cont::ArrayHandle<dax::Scalar> fieldHandle =
+        dax::cont::make_ArrayHandle(field);
 
-    dax::cont::ArrayHandle<dax::Scalar,
-        dax::cont::ArrayContainerControlTagBasic,
-        dax::cont::DeviceAdapterTagSerial> resultHandle;
+    dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
     std::cout << "Running PointDataToCellData worklet" << std::endl;
     dax::cont::Scheduler<> scheduler;
@@ -108,9 +93,7 @@ struct TestPointDataToCellDataWorklet
 void TestPointDataToCellData()
   {
   dax::cont::testing::GridTesting::TryAllGridTypes(
-        TestPointDataToCellDataWorklet(),
-        dax::cont::ArrayContainerControlTagBasic(),
-        dax::cont::DeviceAdapterTagSerial());
+                                           TestPointDataToCellDataWorklet() );
   }
 
 
