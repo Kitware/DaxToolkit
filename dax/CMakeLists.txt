@@ -45,13 +45,29 @@ configure_file(
   )
 
 #-----------------------------------------------------------------------------
+#first add all the components of dax that are shared between control and exec
+add_subdirectory(testing)
 add_subdirectory(internal)
-
 add_subdirectory(math)
 
-add_subdirectory(exec)
-add_subdirectory(cont)
+if (DAX_ENABLE_OPENGL_INTEROP)
+  add_subdirectory(opengl)
+endif (DAX_ENABLE_OPENGL_INTEROP)
 
+
+#we add worklets before the exec or cont or any device adapter
+#folders so that they can find the worklets for testing
+add_subdirectory(worklet)
+
+
+#-----------------------------------------------------------------------------
+#add the control and exec folders
+add_subdirectory(cont)
+add_subdirectory(exec)
+
+
+#-----------------------------------------------------------------------------
+#now add all our specific device adapters
 if (DAX_ENABLE_THRUST)
   add_subdirectory(thrust)
 endif (DAX_ENABLE_THRUST)
@@ -64,15 +80,8 @@ if (DAX_ENABLE_OPENMP)
   add_subdirectory(openmp)
 endif (DAX_ENABLE_OPENMP)
 
-if (DAX_ENABLE_OPENGL_INTEROP)
-  add_subdirectory(opengl)
-endif (DAX_ENABLE_OPENGL_INTEROP)
-
 if (DAX_ENABLE_TBB)
   add_subdirectory(tbb)
 endif (DAX_ENABLE_TBB)
 
-add_subdirectory(worklet)
-
-add_subdirectory(testing)
 

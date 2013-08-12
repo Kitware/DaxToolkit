@@ -14,9 +14,6 @@
 //
 //=============================================================================
 
-#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
-
 #include <dax/cont/testing/TestingGridGenerator.h>
 #include <dax/cont/testing/Testing.h>
 
@@ -54,19 +51,13 @@ struct TestCosineWorklet
           = dax::dot(grid->ComputePointCoordinates(pointIndex), trueGradient);
       }
 
-    dax::cont::ArrayHandle<dax::Scalar,
-                     dax::cont::ArrayContainerControlTagBasic,
-                     dax::cont::DeviceAdapterTagSerial> fieldHandle =
-   dax::cont::make_ArrayHandle(field,
-                               dax::cont::ArrayContainerControlTagBasic(),
-                               dax::cont::DeviceAdapterTagSerial());
+    dax::cont::ArrayHandle< dax::Scalar > fieldHandle =
+   dax::cont::make_ArrayHandle(field);
 
-    dax::cont::ArrayHandle<dax::Scalar,
-        dax::cont::ArrayContainerControlTagBasic,
-        dax::cont::DeviceAdapterTagSerial> cosineHandle;
+    dax::cont::ArrayHandle<dax::Scalar> cosineHandle;
 
     std::cout << "Running Cosine worklet" << std::endl;
-    dax::cont::Scheduler<> scheduler;
+    dax::cont::Scheduler< > scheduler;
     scheduler.Invoke(dax::worklet::Cosine(),fieldHandle, cosineHandle);
 
     std::cout << "Checking result" << std::endl;

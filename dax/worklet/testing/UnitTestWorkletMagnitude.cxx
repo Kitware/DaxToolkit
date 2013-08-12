@@ -14,9 +14,6 @@
 //
 //=============================================================================
 
-#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
-
 #include <dax/cont/testing/TestingGridGenerator.h>
 #include <dax/cont/testing/Testing.h>
 
@@ -42,12 +39,10 @@ struct TestMagnitudeWorklet
   {
   dax::cont::testing::TestGrid<GridType> grid(DIM);
 
-  dax::cont::ArrayHandle<dax::Scalar,
-                         dax::cont::ArrayContainerControlTagBasic,
-                         dax::cont::DeviceAdapterTagSerial> magnitudeHandle;
+  dax::cont::ArrayHandle<dax::Scalar> magnitudeHandle;
 
   std::cout << "Running Magnitude worklet" << std::endl;
-  dax::cont::Scheduler<> scheduler;
+  dax::cont::Scheduler< > scheduler;
   scheduler.Invoke(dax::worklet::Magnitude(),
                    grid->GetPointCoordinates(),
                    magnitudeHandle);
