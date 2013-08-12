@@ -18,3 +18,6 @@ set(unit_tests
   UnitTestDeviceAdapterTBB.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
+
+#test all worklets with the TBB device adapter
+dax_worklet_unit_tests( DAX_DEVICE_ADAPTER_TBB )

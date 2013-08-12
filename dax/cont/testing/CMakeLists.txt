@@ -39,3 +39,6 @@ set(unit_tests
   UnitTestVectorOperations.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
+
+#test all worklets with the serial device adapter
+dax_worklet_unit_tests( DAX_DEVICE_ADAPTER_SERIAL )
