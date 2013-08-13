@@ -24,6 +24,7 @@ set(headers
   InterpolatedCellPoints.h
   ParametricCoordinates.h
   WorkletGenerateTopology.h
+  WorkletInterpolatedCell.h
   WorkletMapCell.h
   WorkletMapField.h
 
