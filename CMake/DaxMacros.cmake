@@ -222,7 +222,6 @@ function(dax_save_worklet_unit_tests )
     configure_file("${absPath}"
                    "${cuda_file_name}"
                    COPYONLY)
-
     list(APPEND cxx_sources ${absPath})
     list(APPEND cu_sources ${cuda_file_name})
   endforeach()
@@ -257,12 +256,9 @@ function(dax_worklet_unit_tests device_adapter)
   get_property(unit_test_drivers GLOBAL
                PROPERTY dax_worklet_unit_tests_drivers )
 
-  set(unit_test_include_dirs)
-  get_property(unit_test_include_dirs GLOBAL
-               PROPERTY dax_worklet_unit_tests_include_dirs )
-
   #detect if we are generating a .cu files
   set(is_cuda FALSE)
+  set(old_nvcc_flags ${CUDA_NVCC_FLAGS})
   if("${device_adapter}" STREQUAL "DAX_DEVICE_ADAPTER_CUDA")
     set(is_cuda TRUE)
 
@@ -271,6 +267,11 @@ function(dax_worklet_unit_tests device_adapter)
     get_property(unit_test_srcs GLOBAL
                  PROPERTY dax_worklet_unit_tests_cu_sources )
 
+    #we append the boost defined to the nvcc flags to suppress nvcc warnings
+    #NVCC cuda_add_executable ignores target and source level COMPILE_FLAGS
+    #and COMPILE_DEFINITIONS properties, so we have to modify the flags instead
+    #
+    list(APPEND CUDA_NVCC_FLAGS -DBOOST_SP_DISABLE_THREADS)
   endif()
 
   if(DAX_ENABLE_TESTING)
@@ -278,7 +279,6 @@ function(dax_worklet_unit_tests device_adapter)
     set(test_prog WorkletTests_${kit})
 
     if(is_cuda)
-      return()
       cuda_add_executable(${test_prog} ${unit_test_drivers} ${unit_test_srcs})
     else()
       add_executable(${test_prog} ${unit_test_drivers} ${unit_test_srcs})
@@ -297,16 +297,21 @@ function(dax_worklet_unit_tests device_adapter)
         )
     endforeach (test)
 
-    #increase warning level if needed
-    if(DAX_EXTRA_COMPILER_WARNINGS)
-        set_target_properties(${test_prog}
-          PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS_WARN_EXTRA})
+    #increase warning level if needed, we are going to skip cuda here
+    #to remove all the false positive unused function warnings that cuda
+    #generates
+    if(DAX_EXTRA_COMPILER_WARNINGS AND NOT is_cuda)
+      set_property(TARGET ${test_prog}
+            APPEND PROPERTY COMPILE_FLAGS ${CMAKE_CXX_FLAGS_WARN_EXTRA} )
     endif()
 
     #set the device adapter on the executable
-    set_target_properties(${test_prog} PROPERTIES COMPILE_FLAGS
-                          -DDAX_DEVICE_ADAPTER=${device_adapter})
+    set_property(TARGET ${test_prog}
+             APPEND
+             PROPERTY COMPILE_DEFINITIONS DAX_DEVICE_ADAPTER=${device_adapter})
   endif()
+
+  set(CUDA_NVCC_FLAGS ${old_nvcc_flags})
 
 endfunction(dax_worklet_unit_tests)
 
