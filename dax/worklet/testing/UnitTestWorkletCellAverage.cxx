@@ -52,6 +52,7 @@ struct TestCellAverageWorklet
 {
   //----------------------------------------------------------------------------
   template<typename GridType>
+  DAX_CONT_EXPORT
   void operator()(const GridType&) const
     {
     typedef typename GridType::CellTag CellTag;

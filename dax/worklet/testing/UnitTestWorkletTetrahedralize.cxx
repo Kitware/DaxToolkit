@@ -73,6 +73,7 @@ struct TestTetrahedralizeWorklet
 {
   //----------------------------------------------------------------------------
   template<typename GridType>
+  DAX_CONT_EXPORT
   void operator()(const GridType&) const
     {
     dax::cont::testing::TestGrid<GridType> in(DIM);
@@ -82,6 +83,7 @@ struct TestTetrahedralizeWorklet
     }
 
   //----------------------------------------------------------------------------
+  DAX_CONT_EXPORT
   void operator()(const dax::cont::UniformGrid<>&) const
     {
     dax::cont::testing::TestGrid<dax::cont::UniformGrid<> > in(DIM);
@@ -93,6 +95,7 @@ struct TestTetrahedralizeWorklet
   //----------------------------------------------------------------------------
   template <typename InGridType,
             typename OutGridType>
+  DAX_CONT_EXPORT
   void GridTetrahedralize(const InGridType& inGrid, OutGridType& outGrid) const
     {
     const dax::Id cellConnLength = inGrid.GetNumberOfCells() * 5 * 4 ;

@@ -32,10 +32,11 @@ namespace {
 const dax::Id DIM = 64;
 
 //-----------------------------------------------------------------------------
-struct TestElevationWorklet
+struct TestSquareWorklet
 {
   //----------------------------------------------------------------------------
   template<typename GridType>
+  DAX_CONT_EXPORT
   void operator()(const GridType&) const
   {
   dax::cont::testing::TestGrid<GridType> grid(DIM);
@@ -77,7 +78,7 @@ struct TestElevationWorklet
 //-----------------------------------------------------------------------------
 static void TestSquare()
 {
-  dax::cont::testing::GridTesting::TryAllGridTypes(TestElevationWorklet());
+  dax::cont::testing::GridTesting::TryAllGridTypes(TestSquareWorklet());
 }
 } // Anonymous namespace
 

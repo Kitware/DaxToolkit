@@ -52,6 +52,7 @@ struct TestPointDataToCellDataWorklet
 {
   //----------------------------------------------------------------------------
   template<typename GridType>
+  DAX_CONT_EXPORT
   void operator()(const GridType&) const
     {
     dax::cont::testing::TestGrid< GridType > grid(DIM);
