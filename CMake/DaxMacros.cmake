@@ -261,17 +261,17 @@ function(dax_worklet_unit_tests device_adapter)
   set(old_nvcc_flags ${CUDA_NVCC_FLAGS})
   if("${device_adapter}" STREQUAL "DAX_DEVICE_ADAPTER_CUDA")
     set(is_cuda TRUE)
-
-    #if we are generating cu files we overwrite unit_test_srcs with
-    #the configure versions that we have the build directory
-    get_property(unit_test_srcs GLOBAL
-                 PROPERTY dax_worklet_unit_tests_cu_sources )
-
-    #we append the boost defined to the nvcc flags to suppress nvcc warnings
-    #NVCC cuda_add_executable ignores target and source level COMPILE_FLAGS
-    #and COMPILE_DEFINITIONS properties, so we have to modify the flags instead
+    #if we are generating cu files need to setup three things.
+    #1. us the configured .cu files
+    #2. Set BOOST_SP_DISABLE_THREADS to disable threading warnings
+    #3. Disable unused function warnings
+    #the FindCUDA module and helper methods don't read target level
+    #properties so we have to modify CUDA_NVCC_FLAGS  instead of using
+    # target and source level COMPILE_FLAGS and COMPILE_DEFINITIONS
     #
+    get_property(unit_test_srcs GLOBAL PROPERTY dax_worklet_unit_tests_cu_sources )
     list(APPEND CUDA_NVCC_FLAGS -DBOOST_SP_DISABLE_THREADS)
+    list(APPEND CUDA_NVCC_FLAGS "-w")
   endif()
 
   if(DAX_ENABLE_TESTING)
@@ -300,7 +300,7 @@ function(dax_worklet_unit_tests device_adapter)
     #increase warning level if needed, we are going to skip cuda here
     #to remove all the false positive unused function warnings that cuda
     #generates
-    if(DAX_EXTRA_COMPILER_WARNINGS AND NOT is_cuda)
+    if(DAX_EXTRA_COMPILER_WARNINGS)
       set_property(TARGET ${test_prog}
             APPEND PROPERTY COMPILE_FLAGS ${CMAKE_CXX_FLAGS_WARN_EXTRA} )
     endif()
@@ -312,7 +312,6 @@ function(dax_worklet_unit_tests device_adapter)
   endif()
 
   set(CUDA_NVCC_FLAGS ${old_nvcc_flags})
-
 endfunction(dax_worklet_unit_tests)
 
 # The Thrust project is not as careful as the Dax project in avoiding warnings
