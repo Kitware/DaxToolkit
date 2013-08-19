@@ -48,8 +48,8 @@ const dax::Id MAX_THRESHOLD = 82;
 class CheckValid {
 public:
   CheckValid() : Valid(true) { }
-  operator bool() { return this->Valid; }
-  void operator()(dax::Scalar value) {
+  DAX_CONT_EXPORT operator bool() { return this->Valid; }
+  DAX_CONT_EXPORT void operator()(dax::Scalar value) {
     if ((value < MIN_THRESHOLD) || (value > MAX_THRESHOLD)) {
       this->Valid = false; }
     }
@@ -59,6 +59,7 @@ private:
 
 
 template<class IteratorType>
+DAX_CONT_EXPORT
 void CheckValues(IteratorType begin, IteratorType end)
   {
   typedef typename std::iterator_traits<IteratorType>::value_type VectorType;
@@ -73,6 +74,7 @@ void CheckValues(IteratorType begin, IteratorType end)
   }
 
 template<typename T, class Container, class Device>
+DAX_CONT_EXPORT
 void CheckValues(dax::cont::ArrayHandle<T,Container,Device> arrayHandle)
 {
   CheckValues(arrayHandle.GetPortalConstControl().GetIteratorBegin(),
