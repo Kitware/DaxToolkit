@@ -99,8 +99,8 @@ void CheckConnections(const InGridGeneratorType &inGridGenerator,
        inCellIndex < inGridGenerator->GetNumberOfCells();
        inCellIndex++)
     {
-    dax::exec::CellVertices<CellTag> inPointIndices =
-        inGridGenerator.GetCellConnections(inCellIndex);
+    dax::cont::testing::CellConnections<CellTag> inPointIndices =
+                              inGridGenerator.GetCellConnections(inCellIndex);
 
     CheckValid isValid;
     for (int vertexIndex = 0;
@@ -121,7 +121,7 @@ void CheckConnections(const InGridGeneratorType &inGridGenerator,
     DAX_TEST_ASSERT(outConnectionIndex < connectionsPortal.GetNumberOfValues(),
                     "Output does not have enough cells.");
 
-    dax::exec::CellField<dax::Vector3,CellTag> inCoordinates =
+    dax::cont::testing::CellCoordinates<CellTag> inCoordinates =
         inGridGenerator.GetCellVertexCoordinates(inCellIndex);
     for (int vertexIndex = 0;
          vertexIndex < inPointIndices.NUM_VERTICES;

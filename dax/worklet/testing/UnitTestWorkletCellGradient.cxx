@@ -35,7 +35,7 @@ const dax::Id DIM = 64;
 //-----------------------------------------------------------------------------
 template<typename CellTag>
 void verifyGradient(
-    const dax::exec::CellField<dax::Vector3,CellTag> &pointCoordinates,
+    const dax::cont::testing::CellCoordinates<CellTag> &pointCoordinates,
     const dax::Vector3& computedGradient,
     const dax::Vector3& trueGradient)
 {

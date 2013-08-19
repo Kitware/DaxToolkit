@@ -37,6 +37,17 @@ namespace dax {
 namespace cont {
 namespace testing {
 
+
+template< typename CellTag >
+struct CellConnections : public dax::Tuple<dax::Id,
+                                      dax::CellTraits<CellTag>::NUM_VERTICES>
+{ enum{NUM_VERTICES=dax::CellTraits<CellTag>::NUM_VERTICES}; };
+
+template< typename CellTag >
+struct CellCoordinates : public dax::Tuple<dax::Vector3,
+                                      dax::CellTraits<CellTag>::NUM_VERTICES>
+{ enum{NUM_VERTICES=dax::CellTraits<CellTag>::NUM_VERTICES}; };
+
 template<
     class GridType,
     class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
@@ -107,7 +118,8 @@ private:
 public:
   //get the cell connections (aka topology) at a given cell id
   DAX_CONT_EXPORT
-  dax::exec::CellVertices<CellTag> GetCellConnections(dax::Id cellId) const
+  dax::cont::testing::CellConnections<CellTag>
+  GetCellConnections(dax::Id cellId) const
   {
     return this->ComputeCellConnections(this->Grid,cellId);
   }
@@ -115,19 +127,19 @@ public:
   /// This convienience function allows you to generate the Cell
   /// point coordinates for any given data set
   DAX_CONT_EXPORT
-  dax::exec::CellField<dax::Vector3,CellTag>
+  dax::cont::testing::CellCoordinates<CellTag>
   GetCellVertexCoordinates(dax::Id cellIndex) const
   {
     typedef typename GridType::PointCoordinatesType CoordType;
 
     //get the point ids for this cell
-    dax::exec::CellVertices<CellTag> cellConnections =
-        this->GetCellConnections(cellIndex);
+    dax::cont::testing::CellConnections<CellTag> cellConnections =
+                                        this->GetCellConnections(cellIndex);
 
     //get all the points for data set
     CoordType allCoords = this->Grid.GetPointCoordinates();
 
-    dax::exec::CellField<dax::Vector3,CellTag> coordinates;
+    dax::cont::testing::CellCoordinates<CellTag> coordinates;
     for (dax::Id index = 0; index < coordinates.NUM_VERTICES; index++)
       {
       coordinates[index] = allCoords.GetPortalConstControl().Get(cellConnections[index]);
@@ -167,7 +179,7 @@ private:
 
   // ................................................... ComputeCellConnections
   DAX_CONT_EXPORT
-  dax::exec::CellVertices<CellTag>
+  dax::cont::testing::CellConnections<CellTag>
   ComputeCellConnections(const dax::cont::UniformGrid<DeviceAdapterTag> &uniform,
                          dax::Id cell_index) const
   {
@@ -178,7 +190,7 @@ private:
     dax::Id secondPointIndex = firstPointIndex + (dims[0] * dims[1]);
 
 
-    dax::exec::CellVertices<CellTag> values;
+    dax::cont::testing::CellConnections<CellTag> values;
     values[0] = firstPointIndex;
     values[1] = firstPointIndex + 1;
     values[2] = firstPointIndex + dims[0] + 1;
@@ -192,7 +204,7 @@ private:
 
   // ................................................... ComputeCellConnections
   DAX_CONT_EXPORT
-  dax::exec::CellVertices<CellTag>
+  dax::cont::testing::CellConnections<CellTag>
   ComputeCellConnections(const dax::cont::UnstructuredGrid<CellTag> &unstructured,
                          dax::Id cell_index) const
     {
@@ -204,7 +216,7 @@ private:
     dax::Id startConnectionIndex = cell_index * NUM_VERTICES;
 
 
-    dax::exec::CellVertices<CellTag> vertices;
+    dax::cont::testing::CellConnections<CellTag> vertices;
     for (dax::Id vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
       {
       vertices[vertexIndex] = cell_connections.GetPortalConstControl().Get(
