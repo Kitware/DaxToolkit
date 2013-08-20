@@ -48,8 +48,8 @@ const dax::Id MAX_THRESHOLD = 82;
 class CheckValid {
 public:
   CheckValid() : Valid(true) { }
-  operator bool() { return this->Valid; }
-  void operator()(dax::Scalar value) {
+  DAX_CONT_EXPORT operator bool() { return this->Valid; }
+  DAX_CONT_EXPORT void operator()(dax::Scalar value) {
     if ((value < MIN_THRESHOLD) || (value > MAX_THRESHOLD)) {
       this->Valid = false; }
     }
@@ -59,6 +59,7 @@ private:
 
 
 template<class IteratorType>
+DAX_CONT_EXPORT
 void CheckValues(IteratorType begin, IteratorType end)
   {
   typedef typename std::iterator_traits<IteratorType>::value_type VectorType;
@@ -73,16 +74,19 @@ void CheckValues(IteratorType begin, IteratorType end)
   }
 
 template<typename T, class Container, class Device>
+DAX_CONT_EXPORT
 void CheckValues(dax::cont::ArrayHandle<T,Container,Device> arrayHandle)
 {
   CheckValues(arrayHandle.GetPortalConstControl().GetIteratorBegin(),
               arrayHandle.GetPortalConstControl().GetIteratorEnd());
 }
 
+
 template<class InGridGeneratorType,
          class ConnectionsPortalType,
          class CoordinatesPortalType,
          class CellTag>
+DAX_CONT_EXPORT
 void CheckConnections(const InGridGeneratorType &inGridGenerator,
                       const std::vector<dax::Scalar> &inField,
                       ConnectionsPortalType connectionsPortal,
@@ -90,33 +94,37 @@ void CheckConnections(const InGridGeneratorType &inGridGenerator,
                       CellTag)
 {
   dax::Id outConnectionIndex = 0;
+
   for (dax::Id inCellIndex = 0;
        inCellIndex < inGridGenerator->GetNumberOfCells();
        inCellIndex++)
     {
-    dax::exec::CellVertices<CellTag> inPointIndices =
-        inGridGenerator.GetCellConnections(inCellIndex);
-    dax::exec::CellField<dax::Scalar, CellTag> cellFieldValues;
-    for (int vertexIndex = 0;
-         vertexIndex < cellFieldValues.NUM_VERTICES;
-         vertexIndex++)
-      {
-      cellFieldValues[vertexIndex] = inField[inPointIndices[vertexIndex]];
-      }
+    dax::cont::testing::CellConnections<CellTag> inPointIndices =
+                              inGridGenerator.GetCellConnections(inCellIndex);
 
     CheckValid isValid;
-    dax::cont::VectorForEach(cellFieldValues, isValid);
-    if (!isValid) { continue; } // Cell should not be passed.
+    for (int vertexIndex = 0;
+         vertexIndex < inPointIndices.NUM_VERTICES;
+         vertexIndex++)
+      {
+      isValid( inField[inPointIndices[vertexIndex]] );
+      }
+
+    if (!isValid)
+      {
+      // Cell isn't one that passed the threshold so don't verify it
+      continue;
+      }
 
     // If we are here, this cell should have been passed and the next
     // connections should match coordinates.
     DAX_TEST_ASSERT(outConnectionIndex < connectionsPortal.GetNumberOfValues(),
                     "Output does not have enough cells.");
 
-    dax::exec::CellField<dax::Vector3,CellTag> inCoordinates =
+    dax::cont::testing::CellCoordinates<CellTag> inCoordinates =
         inGridGenerator.GetCellVertexCoordinates(inCellIndex);
     for (int vertexIndex = 0;
-         vertexIndex < cellFieldValues.NUM_VERTICES;
+         vertexIndex < inPointIndices.NUM_VERTICES;
          vertexIndex++)
       {
       dax::Vector3 outCoordinates =
@@ -146,7 +154,7 @@ public:
                   const T&,
                   const dax::Id& visit_index) const
   {
-    DAX_TEST_ASSERT(visit_index==0, "Encountered bad visit index value.");
+    DAX_ASSERT_EXEC(visit_index==0, *this);
     outVertices.SetFromTuple(inVertices.GetAsTuple());
   }
 };
@@ -156,6 +164,7 @@ struct TestThresholdWorklet
 {
   //----------------------------------------------------------------------------
   template<typename GridType>
+  DAX_CONT_EXPORT
   void operator()(const GridType&) const
     {
     dax::cont::testing::TestGrid<GridType> in(DIM);
@@ -165,6 +174,7 @@ struct TestThresholdWorklet
     }
 
   //----------------------------------------------------------------------------
+  DAX_CONT_EXPORT
   void operator()(const dax::cont::UniformGrid<>&) const
     {
     dax::cont::testing::TestGrid<dax::cont::UniformGrid<> > in(DIM);
@@ -176,6 +186,7 @@ struct TestThresholdWorklet
   //----------------------------------------------------------------------------
   template <typename InGridType,
             typename OutGridType>
+  DAX_CONT_EXPORT
   void GridThreshold(
       const dax::cont::testing::TestGrid<InGridType> &inGridGenerator,
       OutGridType& outGrid) const

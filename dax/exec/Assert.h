@@ -38,7 +38,11 @@
         "Assert Failed (" #condition ")", \
         work)
 #else
-#define DAX_ASSERT_EXEC(condition, work)
+//in release mode we just act like we use the result of the condition
+//and the worklet so that we don't introduce new issues.
+#define DAX_ASSERT_EXEC(condition, work) \
+  (void)(condition); \
+  (void)(work);
 #endif
 
 namespace dax {

@@ -33,8 +33,9 @@ const dax::Id DIM = 64;
 
 //-----------------------------------------------------------------------------
 template<typename CellTag>
-void verifyCellData(const dax::exec::CellVertices<CellTag> &cellVertices,
-                    const dax::Scalar& computedCellData)
+void verifyCellData(
+              const dax::cont::testing::CellConnections<CellTag> &cellVertices,
+              const dax::Scalar& computedCellData)
 {
   dax::Scalar expectedCellData = 0.0;
   for (int vertexIndex = 0;
@@ -52,6 +53,7 @@ struct TestPointDataToCellDataWorklet
 {
   //----------------------------------------------------------------------------
   template<typename GridType>
+  DAX_CONT_EXPORT
   void operator()(const GridType&) const
     {
     dax::cont::testing::TestGrid< GridType > grid(DIM);

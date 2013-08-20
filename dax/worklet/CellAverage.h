@@ -27,6 +27,7 @@ namespace worklet {
 namespace{
 struct Add
 {
+  DAX_EXEC_EXPORT
   dax::Scalar operator()(dax::Scalar a, dax::Scalar b)
   {
     return a+b;

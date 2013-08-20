@@ -46,8 +46,9 @@ endif()
 #-----------------------------------------------------------------------------
 # create a macro to easily set the device adapter on a target
 macro(set_dax_device_adapter target adapter)
-  set_target_properties(${target} PROPERTIES COMPILE_FLAGS
-                        -DDAX_DEVICE_ADAPTER=${adapter})
+  set_property(TARGET ${target}
+         APPEND
+         PROPERTY COMPILE_FLAGS -DDAX_DEVICE_ADAPTER=${adapter})
 endmacro()
 
 

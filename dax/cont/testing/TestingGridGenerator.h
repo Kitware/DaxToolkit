@@ -37,6 +37,17 @@ namespace dax {
 namespace cont {
 namespace testing {
 
+
+template< typename CellTag >
+struct CellConnections : public dax::Tuple<dax::Id,
+                                      dax::CellTraits<CellTag>::NUM_VERTICES>
+{ enum{NUM_VERTICES=dax::CellTraits<CellTag>::NUM_VERTICES}; };
+
+template< typename CellTag >
+struct CellCoordinates : public dax::Tuple<dax::Vector3,
+                                      dax::CellTraits<CellTag>::NUM_VERTICES>
+{ enum{NUM_VERTICES=dax::CellTraits<CellTag>::NUM_VERTICES}; };
+
 template<
     class GridType,
     class ArrayContainerControlTag = DAX_DEFAULT_ARRAY_CONTAINER_CONTROL_TAG,
@@ -61,6 +72,8 @@ private:
 
 public:
   typedef typename GridType::CellTag CellTag;
+
+  DAX_CONT_EXPORT
   TestGrid(const dax::Id& size)
     :Size(size),
      Grid(),
@@ -72,6 +85,7 @@ public:
   /// Enable pointer-like dereference syntax. Returns a pointer to the
   /// contained object.
   ///
+  DAX_CONT_EXPORT
   const GridType* operator->() const
     {
     return &this->Grid;
@@ -79,6 +93,7 @@ public:
 
   /// Get a raw pointer to the contained object.
   ///
+  DAX_CONT_EXPORT
   const GridType& GetRealGrid() const
     {
     return this->Grid;
@@ -87,12 +102,14 @@ public:
   /// This convienience function allows you to generate the point coordinate
   /// field (since there is no consistent way to get it from the grid itself.
   ///
+  DAX_CONT_EXPORT
   dax::Vector3 GetPointCoordinates(dax::Id index)
   {
     return this->Grid.ComputePointCoordinates(index);
   }
 
 private:
+  DAX_CONT_EXPORT
   TopoType GetTopology() const
   {
     return this->Grid.PrepareForInput();
@@ -100,26 +117,29 @@ private:
 
 public:
   //get the cell connections (aka topology) at a given cell id
-  dax::exec::CellVertices<CellTag> GetCellConnections(dax::Id cellId) const
+  DAX_CONT_EXPORT
+  dax::cont::testing::CellConnections<CellTag>
+  GetCellConnections(dax::Id cellId) const
   {
-    return this->GetTopology().GetCellConnections(cellId);
+    return this->ComputeCellConnections(this->Grid,cellId);
   }
 
   /// This convienience function allows you to generate the Cell
   /// point coordinates for any given data set
-  dax::exec::CellField<dax::Vector3,CellTag>
+  DAX_CONT_EXPORT
+  dax::cont::testing::CellCoordinates<CellTag>
   GetCellVertexCoordinates(dax::Id cellIndex) const
   {
     typedef typename GridType::PointCoordinatesType CoordType;
 
     //get the point ids for this cell
-    dax::exec::CellVertices<CellTag> cellConnections =
-        this->GetCellConnections(cellIndex);
+    dax::cont::testing::CellConnections<CellTag> cellConnections =
+                                        this->GetCellConnections(cellIndex);
 
     //get all the points for data set
     CoordType allCoords = this->Grid.GetPointCoordinates();
 
-    dax::exec::CellField<dax::Vector3,CellTag> coordinates;
+    dax::cont::testing::CellCoordinates<CellTag> coordinates;
     for (dax::Id index = 0; index < coordinates.NUM_VERTICES; index++)
       {
       coordinates[index] = allCoords.GetPortalConstControl().Get(cellConnections[index]);
@@ -155,6 +175,54 @@ private:
         {
         this->Info.points.push_back(uniform.ComputePointCoordinates(i));
         }
+    }
+
+  // ................................................... ComputeCellConnections
+  DAX_CONT_EXPORT
+  dax::cont::testing::CellConnections<CellTag>
+  ComputeCellConnections(const dax::cont::UniformGrid<DeviceAdapterTag> &uniform,
+                         dax::Id cell_index) const
+  {
+    dax::Id3 ijk = uniform.ComputeCellLocation(cell_index);
+    dax::Id3 dims = dax::extentDimensions(uniform.GetExtent());
+    dax::Id firstPointIndex =
+                      ijk[0] + ijk[1] * dims[0] + ijk[2] * dims[0] * dims[1];
+    dax::Id secondPointIndex = firstPointIndex + (dims[0] * dims[1]);
+
+
+    dax::cont::testing::CellConnections<CellTag> values;
+    values[0] = firstPointIndex;
+    values[1] = firstPointIndex + 1;
+    values[2] = firstPointIndex + dims[0] + 1;
+    values[3] = firstPointIndex + dims[0];
+    values[4] = secondPointIndex;
+    values[5] = secondPointIndex + 1;
+    values[6] = secondPointIndex + dims[0] + 1;
+    values[7] = secondPointIndex + dims[0];
+    return values;
+  }
+
+  // ................................................... ComputeCellConnections
+  DAX_CONT_EXPORT
+  dax::cont::testing::CellConnections<CellTag>
+  ComputeCellConnections(const dax::cont::UnstructuredGrid<CellTag> &unstructured,
+                         dax::Id cell_index) const
+    {
+    typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTag,
+                                        DeviceAdapterTag>  HandleType;
+    HandleType cell_connections = unstructured.GetCellConnections();
+
+    const int NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
+    dax::Id startConnectionIndex = cell_index * NUM_VERTICES;
+
+
+    dax::cont::testing::CellConnections<CellTag> vertices;
+    for (dax::Id vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)
+      {
+      vertices[vertexIndex] = cell_connections.GetPortalConstControl().Get(
+                                          startConnectionIndex + vertexIndex);
+      }
+    return vertices;
     }
 
   // ......................................................... MakeInfoTopology

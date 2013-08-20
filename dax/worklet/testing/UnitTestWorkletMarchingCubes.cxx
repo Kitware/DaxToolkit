@@ -59,6 +59,7 @@ struct TestMarchingCubesWorklet
   //----------------------------------------------------------------------------
   //----------------------------------------------------------------------------
   template<class InputGridType>
+  DAX_CONT_EXPORT
   void operator()(const InputGridType&) const
     {
     dax::cont::testing::TestGrid<InputGridType,ArrayContainer,DeviceAdapter>

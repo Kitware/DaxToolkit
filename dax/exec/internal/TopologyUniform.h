@@ -125,7 +125,7 @@ struct TopologyUniform {
   {
     typedef detail::ImplicitCellVertices<dax::CellTagVoxel> ReturnType;
     return ReturnType( dax::extentDimensions(this->Extent),
-                       indexToConnectivityIndex(cellIndex,this->Extent));
+                       dax::indexToConnectivityIndex(cellIndex,this->Extent));
   }
 
   DAX_EXEC_EXPORT

@@ -33,8 +33,9 @@ const dax::Id DIM = 64;
 
 //----------------------------------------------------------------------------
 template<typename CellTag>
-void verifyAverage(const dax::exec::CellVertices<CellTag> &cellVertices,
-                   const dax::Scalar& computedAverage)
+void verifyAverage(
+               const dax::cont::testing::CellConnections<CellTag> &cellVertices,
+               const dax::Scalar& computedAverage)
 {
   dax::Scalar expectedAverage = 0.0;
   for(int vertexIndex=0; vertexIndex<cellVertices.NUM_VERTICES; ++vertexIndex)
@@ -52,6 +53,7 @@ struct TestCellAverageWorklet
 {
   //----------------------------------------------------------------------------
   template<typename GridType>
+  DAX_CONT_EXPORT
   void operator()(const GridType&) const
     {
     typedef typename GridType::CellTag CellTag;
