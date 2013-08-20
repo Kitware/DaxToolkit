@@ -41,8 +41,8 @@
 
 
 namespace {
-const dax::Id DIM = 32;
-const dax::Vector3 ORIGIN(8,8,8);
+const dax::Id DIM = 8;
+const dax::Vector3 ORIGIN(3,2,1);
 const dax::Vector3 NORMAL(1.0,0.0,0.0);
 
 //-----------------------------------------------------------------------------

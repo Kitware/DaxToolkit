@@ -39,7 +39,7 @@
 
 
 namespace {
-const dax::Id DIM = 26;
+const dax::Id DIM = 8;
 
 void verify_cell_values_written(std::vector<dax::Id>& data)
 {
