@@ -31,14 +31,14 @@
 #include <dax/exec/arg/FieldPortal.h>
 
 
-#define VECTOR_LENGTH 64
+int EXPECTED_LENGTH;
 
 namespace dax { namespace cont { namespace arg{
 
 template <typename Tags, typename T>
-class ConceptMap< Field(Tags), std::vector<T> >
+class ConceptMap< Field(Tags), std::vector<T>& >
 {
-  typedef std::vector<T> ArrayType;
+  typedef std::vector<T>& ArrayType;
 
 public:
   //ignore constant values when finding size of domain
@@ -59,9 +59,12 @@ public:
   //we need to pass the number of elements to allocate
   DAX_CONT_EXPORT void ToExecution(dax::Id size)
     {
-    DAX_TEST_ASSERT( (VECTOR_LENGTH==size),
+    DAX_TEST_ASSERT( (EXPECTED_LENGTH==size),
                     "Incorrect allocation length passed to std::vector concept map");
-
+    if(size > static_cast<dax::Id>(this->Array.size()))
+      {
+      this->Array.resize(size);
+      }
     this->Portal = PortalType(&Array[0],&Array[size+1]);
     }
 
@@ -69,7 +72,7 @@ public:
     {
     //determine the proper work count be seing if we are being used
     //as input or output
-    return this->Handle.GetNumberOfValues();
+    return static_cast<dax::Id>(this->Array.size());
     }
 
 private:
@@ -87,37 +90,47 @@ using dax::cont::arg::Field;
 
 struct Worklet1 : public dax::exec::WorkletMapField
 {
-  typedef void ControlSignature(Field);
+  typedef void ControlSignature(Field, Field(Out));
 };
 
 
-void ExecResources()
+void TestCreateExecutionResources(std::size_t size)
 {
-  std::vector<dax::Scalar> v(VECTOR_LENGTH);
-    for(int i=0; i <VECTOR_LENGTH; ++i) { v[i] = static_cast<dax::Scalar>(i);}
 
-  typedef Worklet1 Sig(std::vector<dax::Scalar>);
+  EXPECTED_LENGTH = size;
 
-  dax::cont::internal::Bindings<Sig> bindings(v);
+  std::vector<dax::Scalar> in(size);
+  std::vector<dax::Scalar> out;
+  for(std::size_t i=0; i <size; ++i) { in[i] = static_cast<dax::Scalar>(i);}
+
+  typedef Worklet1 Sig(std::vector<dax::Scalar>&, std::vector<dax::Scalar>&);
+
+  dax::cont::internal::Bindings<Sig> bindings(in,out);
 
   // Visit each bound argument to determine the count to be scheduled.
-  const dax::Id count(VECTOR_LENGTH);
+  const dax::Id count(size);
   bindings.ForEachCont(
              dax::cont::scheduling::CreateExecutionResources(count));
 
+  DAX_TEST_ASSERT( out.size() == in.size(),
+                  "out vector not allocated to correct size");
 
-  for (dax::Id i=0; i < VECTOR_LENGTH; ++i)
+  for (std::size_t i=0; i < size; ++i)
     {
     DAX_TEST_ASSERT(  (bindings.Get<1>().GetExecArg()(i,Worklet1()) ==
                       static_cast<dax::Scalar>(i)),
                     "ExecArg value incorrect after creating exec resources");
     }
+}
 
+void ExecResources()
+{
+  //test that we can create output array of size 1
+  TestCreateExecutionResources(1);
+  TestCreateExecutionResources(64);
 }
 
 }
-
-#undef VECTOR_LENGTH
 
 int UnitTestCreateExecutionResources(int, char *[])
 {
