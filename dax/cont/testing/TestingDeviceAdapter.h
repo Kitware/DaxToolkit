@@ -66,18 +66,21 @@ private:
   typedef dax::cont
       ::ArrayHandle<dax::Id, ArrayContainerControlTag, DeviceAdapterTag>
         IdArrayHandle;
+
+  typedef dax::cont
+      ::ArrayHandle<dax::Scalar,ArrayContainerControlTag,DeviceAdapterTag>
+      ScalarArrayHandle;
+
   typedef dax::cont::internal::ArrayManagerExecution<
       dax::Id, ArrayContainerControlTag, DeviceAdapterTag>
       IdArrayManagerExecution;
+
   typedef dax::cont::internal::ArrayContainerControl<dax::Id,
                     ArrayContainerControlTag> IdContainer;
 
   typedef typename IdArrayHandle::PortalExecution IdPortalType;
   typedef typename IdArrayHandle::PortalConstExecution IdPortalConstType;
 
-  typedef dax::cont
-      ::ArrayHandle<dax::Scalar,ArrayContainerControlTag,DeviceAdapterTag>
-      ScalarArrayHandle;
   typedef dax::cont
       ::ArrayHandle<dax::Vector3,ArrayContainerControlTag,DeviceAdapterTag>
       Vector3ArrayHandle;
@@ -233,6 +236,18 @@ public:
       }
   };
 
+    struct NGNoOp: public dax::exec::WorkletMapField
+  {
+    typedef void ControlSignature(Field(In), Field(Out));
+    typedef _2 ExecutionSignature(_1);
+
+    template<typename T>
+    DAX_EXEC_EXPORT T operator()(T a) const
+      {
+      return a;
+      }
+  };
+
   struct FuseAll
   {
     template<typename T>
@@ -366,6 +381,32 @@ private:
   static DAX_CONT_EXPORT void TestAlgorithmSchedule()
   {
     std::cout << "-------------------------------------------" << std::endl;
+    std::cout << "Testing single value Scheduling with dax::Id" << std::endl;
+
+    {
+    std::cout << "Allocating execution array" << std::endl;
+    IdContainer container;
+    IdArrayManagerExecution manager;
+    manager.AllocateArrayForOutput(container, 1);
+
+    std::cout << "Running clear." << std::endl;
+    Algorithm::Schedule(ClearArrayKernel(manager.GetPortal()), 1);
+
+    std::cout << "Running add." << std::endl;
+    Algorithm::Schedule(AddArrayKernel(manager.GetPortal()), 1);
+
+    std::cout << "Checking results." << std::endl;
+    manager.RetrieveOutputData(container);
+
+    for (dax::Id index = 0; index < 1; index++)
+      {
+      dax::Scalar value = container.GetPortalConst().Get(index);
+      DAX_TEST_ASSERT(value == index + OFFSET,
+                      "Got bad value for single value scheduled kernel.");
+      }
+    } //release memory
+
+    std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing Schedule with dax::Id" << std::endl;
 
     {
@@ -428,6 +469,32 @@ private:
     std::cout << "-------------------------------------------" << std::endl;
     std::cout << "Testing dax::cont::Scheduler class" << std::endl;
 
+    dax::cont::Scheduler<DeviceAdapterTag> scheduler;
+
+    std::cout << "Testing dax::cont::Scheduler with array of size 1" << std::endl;
+
+    std::vector<dax::Id> singleElement; singleElement.push_back(1234);
+    IdArrayHandle hSingleElement = MakeArrayHandle(singleElement);
+    IdArrayHandle hResult;
+
+    scheduler.Invoke(NGNoOp(), hSingleElement, hResult);
+
+    // output
+    std::vector<dax::Id> result(hResult.GetNumberOfValues());
+    hResult.CopyInto(result.begin());
+    std::cout << "hResult.GetNumberOfValues(): " << hResult.GetNumberOfValues() << std::endl;
+    std::cout << "result.size(): " << result.size() << std::endl;
+    for (unsigned int i = 0; i < result.size(); ++i)
+        std::cout << result[i] << ",";
+    std::cout << std::endl;
+
+    // assert
+    DAX_TEST_ASSERT(
+            hSingleElement.GetNumberOfValues() == hResult.GetNumberOfValues(),
+            "out handle of single scheduling is wrong size");
+    DAX_TEST_ASSERT(singleElement[0] == 1234,
+                    "output of single scheduling is incorrect");
+
     std::vector<dax::Scalar> field(ARRAY_SIZE);
     for (dax::Id i = 0; i < ARRAY_SIZE; i++)
       {
@@ -437,7 +504,7 @@ private:
     ScalarArrayHandle multHandle;
 
     std::cout << "Running NG Multiply worklet with two handles" << std::endl;
-    dax::cont::Scheduler<DeviceAdapterTag> scheduler;
+
     scheduler.Invoke(NGMult(),fieldHandle, fieldHandle, multHandle);
 
     std::vector<dax::Scalar> mult(ARRAY_SIZE);
