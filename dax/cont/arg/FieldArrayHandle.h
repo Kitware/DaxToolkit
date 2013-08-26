@@ -52,7 +52,7 @@ public:
     Portal()
     {}
 
-  DAX_CONT_EXPORT ExecArg GetExecArg()
+  DAX_CONT_EXPORT ExecArg GetExecArg() const
     {
     return ExecArg(this->Portal);
     }

@@ -26,10 +26,10 @@
 
 namespace dax { namespace exec { namespace arg {
 
-template <typename Invocation, int N>
+template <typename Worklet, typename ControlInvocationParams, int N>
 class BindDirect
 {
-  typedef dax::exec::arg::BindInfo<N,Invocation> MyInfo;
+  typedef dax::exec::arg::BindInfo<N,Worklet,ControlInvocationParams> MyInfo;
   typedef typename MyInfo::AllControlBindings AllControlBindings;
   typedef typename MyInfo::ExecArgType ExecArgType;
   typedef typename MyInfo::Tags Tags;

@@ -21,6 +21,8 @@
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/arg/ConceptMap.h>
 
+#include <dax/internal/Members.h>
+
 #include <boost/mpl/if.hpp>
 #include <boost/type_traits/function_traits.hpp>
 #include <boost/type_traits/integral_constant.hpp>
@@ -57,11 +59,15 @@ public:
 
 } // namespace detail
 
-template <typename Bindings, typename Concept>
+template <typename WorkletType,
+          typename ControlInvocationParams,
+          typename Concept>
 struct FindBinding
 {
-  enum{ len = boost::function_traits<typename Bindings::Invocation>::arity};
-  typedef typename detail::FindBindingImpl<Bindings, Concept,1,len>::type type;
+  enum{ len = ControlInvocationParams::NUM_PARAMETERS };
+  typedef typename dax::cont::internal::Bindings<
+      WorkletType, ControlInvocationParams>::type BindingsType;
+  typedef typename detail::FindBindingImpl<BindingsType, Concept,1,len>::type type;
 };
 
 

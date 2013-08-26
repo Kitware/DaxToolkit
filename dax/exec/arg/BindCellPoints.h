@@ -37,10 +37,13 @@
 
 namespace dax { namespace exec { namespace arg {
 
-template <typename Invocation, int N>
-class BindCellPoints : public dax::exec::arg::ArgBase< BindCellPoints<Invocation,N> >
+template <typename WorkletType, typename ControlInvocationParams, int N>
+class BindCellPoints
+    : public dax::exec::arg::ArgBase<
+          BindCellPoints< WorkletType,ControlInvocationParams,N> >
 {
-  typedef dax::exec::arg::ArgBaseTraits< BindCellPoints< Invocation, N > > Traits;
+  typedef dax::exec::arg::ArgBaseTraits<
+      BindCellPoints< WorkletType, ControlInvocationParams, N > > Traits;
 
   enum{TopoIndex=Traits::TopoIndex};
   typedef typename Traits::TopoExecArgType TopoExecArgType;
@@ -53,7 +56,9 @@ public:
   typedef typename Traits::ReturnType ReturnType;
   typedef typename Traits::SaveType SaveType;
 
-  DAX_CONT_EXPORT BindCellPoints(dax::cont::internal::Bindings<Invocation>& bindings):
+  DAX_CONT_EXPORT BindCellPoints(
+      typename dax::cont::internal::Bindings<
+        WorkletType,ControlInvocationParams>::type &bindings):
     TopoExecArg(dax::exec::arg::GetNthExecArg<TopoIndex>(bindings)),
     ExecArg(dax::exec::arg::GetNthExecArg<N>(bindings)),
     Value(typename dax::VectorTraits<ValueType>::ComponentType()) {}
@@ -109,13 +114,14 @@ private:
 
 
 //the traits for BindPermutedCellField
-template <typename Invocation,  int N >
-struct ArgBaseTraits< BindCellPoints<Invocation, N> >
+template <typename WorkletType, typename ControlInvocationParams, int N >
+struct ArgBaseTraits< BindCellPoints<WorkletType, ControlInvocationParams, N> >
 {
 private:
-  typedef typename dax::exec::arg::FindBindInfo<dax::cont::arg::Topology,
-                                               Invocation> TopoInfo;
-  typedef typename dax::exec::arg::BindInfo<N,Invocation> MyInfo;
+  typedef dax::exec::arg::FindBindInfo<
+      dax::cont::arg::Topology,WorkletType,ControlInvocationParams> TopoInfo;
+  typedef dax::exec::arg::BindInfo<
+      N,WorkletType,ControlInvocationParams> MyInfo;
   typedef typename MyInfo::Tags Tags;
 public:
   enum{TopoIndex=TopoInfo::Index};

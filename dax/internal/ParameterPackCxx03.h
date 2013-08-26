@@ -18,8 +18,8 @@
 #if defined(DAX_DOXYGEN_ONLY)
 #else // !defined(DAX_DOXYGEN_ONLY)
 
-# if __cplusplus >= 201103L
-#  error "Do not include this header with C++11."
+#ifdef DAX_USE_VARIADIC_TEMPLATE
+#  error "Do not include this header with variadic templates."
 # else // !(__cplusplus >= 201103L)
 // In C++03 use Boost.Preprocessor file iteration to approximate
 // template parameter packs.

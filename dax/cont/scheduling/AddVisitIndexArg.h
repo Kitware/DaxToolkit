@@ -22,6 +22,7 @@
 #include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/VisitIndex.h>
 #include <dax/exec/internal/kernel/VisitIndexWorklets.h>
+#include <dax/internal/ParameterPack.h>
 
 //needed to parse signature arguments to determine what implicit
 //args we need to upload to execution
@@ -52,7 +53,8 @@ struct MakeVisitIndexControlType
     visitIndices.PrepareForOutput(inputCellIds.GetNumberOfValues());
     Algorithm::LowerBounds(inputCellIds, inputCellIds, visitIndices);
     scheduler.Invoke(dax::exec::internal::kernel::ComputeVisitIndex(),
-                     visitIndices, visitIndices); //as input and output
+                     dax::internal::make_ParameterPack(
+                       visitIndices, visitIndices)); //as input and output
   }
 };
 

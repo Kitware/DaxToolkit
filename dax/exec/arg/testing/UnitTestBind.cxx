@@ -41,9 +41,12 @@ struct Worklet1: public WorkType1
 
 void Bind()
 {
-  typedef Worklet1 Invocation1(float);
-  dax::cont::internal::Bindings<Invocation1> cb1(1.0f);
-  dax::exec::arg::FindBinding<WorkType1, _1, Invocation1>::type eb1_1(cb1);
+  typedef dax::internal::ParameterPack<float> Invocation1;
+  typedef dax::cont::internal::Bindings<Worklet1,Invocation1>::type Bindings1;
+  Bindings1 cb1(1.0f,
+                dax::internal::MembersInitialArgumentTag(),
+                dax::internal::MembersExecContTag());
+  dax::exec::arg::FindBinding<Worklet1, _1, Invocation1>::type eb1_1(cb1);
   DAX_TEST_ASSERT(eb1_1(0,Worklet1()) == 1.0f, "Execution environment binding is not 1.0f");
 }
 

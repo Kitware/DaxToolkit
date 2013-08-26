@@ -21,6 +21,7 @@ set(headers
   GetNthType.h
   MathSystemFunctions.h
   Members.h
+  ParameterPack.h
   ParameterPackCxx03.h
   Tags.h
   WorkletSignatureFunctions.h

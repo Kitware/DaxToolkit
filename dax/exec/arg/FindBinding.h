@@ -45,132 +45,155 @@ namespace dax { namespace exec { namespace arg {
 
 //bind returns a specific execution and control signature binding
 //only specialized for bindings that refer to a control side argument
-template <typename DomainType, typename Tags, typename Invocation,int N>
+template <typename DomainType,
+          typename Tags,
+          typename WorkletType,
+          typename ControlInvocationParams,
+          int N>
 class BindArg
 {
 public:
-  typedef BindDirect<Invocation, N> type;
+  typedef BindDirect<WorkletType, ControlInvocationParams, N> type;
 };
 
 //specialize on Topology to pure arg binding, which is a BindCellTag mapping
-template<typename Tags, typename Invocation, int N>
+template<typename Tags,
+         typename WorkletType,
+         typename ControlInvocationParams,
+         int N>
 class BindArg<dax::cont::sig::Cell,
               dax::cont::arg::Topology(Tags),
-              Invocation,
+              WorkletType,
+              ControlInvocationParams,
               N>
 {
 public:
-  typedef BindCellTag<Invocation,N> type;
+  typedef BindCellTag<WorkletType, ControlInvocationParams, N> type;
 };
 
 //specialize on arg to field mapping, with Field(Point) being understood
 //as a specialization of the default bind direct behavior
-template<typename Tags, typename Invocation, int N>
+template<typename Tags,
+         typename WorkletType,
+         typename ControlInvocationParams,
+         int N>
 class BindArg<dax::cont::sig::Cell,
               dax::cont::arg::Field(Tags),
-              Invocation,
+              WorkletType,
+              ControlInvocationParams,
               N>
 {
 public:
   typedef typename boost::mpl::if_<
     typename Tags::template Has<dax::cont::sig::Point>,
-    BindCellPoints<Invocation, N>,
-    BindDirect<Invocation, N>
+    BindCellPoints<WorkletType, ControlInvocationParams, N>,
+    BindDirect<WorkletType, ControlInvocationParams, N>
     >::type type;
 };
 
 //specialize on arg to field mapping when the cells are being permuted
-template<typename Tags, typename Invocation, int N>
+template<typename Tags,
+         typename WorkletType,
+         typename ControlInvocationParams,
+         int N>
 class BindArg<dax::cont::sig::PermutedCell,
               dax::cont::arg::Field(Tags),
-              Invocation,
+              WorkletType,
+              ControlInvocationParams,
               N>
 {
 public:
   typedef typename boost::mpl::if_<
       typename Tags::template Has<dax::cont::sig::Point>,
-      BindCellPoints<Invocation, N>,
-      typename boost::mpl::if_<
-          typename Tags::template Has<dax::cont::sig::Out>,
-          BindDirect<Invocation, N>,
-          BindPermutedCellField<Invocation, N> >::type>::type type;
+      BindCellPoints<WorkletType, ControlInvocationParams, N>,
+      BindPermutedCellField<WorkletType, ControlInvocationParams, N> >::type type;
 };
 
 
 //find binding finds the correct binding for a parameter
 //the main job is to extract out the control signature position and tag
 //from Invocation if it exists
-template <typename WorkletType, typename Parameter, typename Invocation>
+template <typename WorkletType,
+          typename Parameter,
+          typename ControlInvocationParams>
 class FindBinding;
 
 //bind find the specialization for arg binding based on control side tags
-template <typename WorkletType, int N, typename Invocation>
-class FindBinding<WorkletType, dax::cont::sig::Arg<N>, Invocation>
+template <typename WorkletType,
+          int N,
+          typename ControlInvocationParams>
+class FindBinding<WorkletType, dax::cont::sig::Arg<N>, ControlInvocationParams>
 {
   typedef typename WorkletType::DomainType DomainType;
-  typedef typename dax::cont::internal::Bindings<Invocation>::template GetType<N>::type ControlBinding;
+  typedef typename dax::cont::internal::Bindings<WorkletType,ControlInvocationParams>::type::template GetType<N>::type ControlBinding;
   typedef typename dax::cont::arg::ConceptMapTraits<ControlBinding>::Concept Concept;
   typedef typename dax::cont::arg::ConceptMapTraits<ControlBinding>::Tags Tags;
 public:
   //second argument is the control concept type ( Field, Topo ), and the tags
-  typedef typename BindArg<DomainType,Concept(Tags),Invocation,N>::type type;
+  typedef typename BindArg<DomainType,Concept(Tags),WorkletType,ControlInvocationParams,N>::type type;
 };
 
 
 //specialize on Topology to Vertices(_N) binding, which is a BindCellVerts mapping
 //since the user wants the cell vertices not cell tag
-template<typename WorkletType, int N, typename Invocation>
+template<typename WorkletType, int N, typename ControlInvocationParams>
 class FindBinding<WorkletType,
                   dax::cont::arg::Topology::Vertices(*)(dax::cont::sig::Arg<N>),
-                  Invocation>
+                  ControlInvocationParams>
 {
 public:
-  typedef BindDirect<Invocation,N> type;
+  typedef BindDirect<WorkletType,ControlInvocationParams, N> type;
 };
 
 //bind workid in the execution signature to the bindworkId class
-template <typename WorkletType, typename Invocation>
-class FindBinding<WorkletType, dax::cont::sig::WorkId, Invocation>
+template <typename WorkletType, typename ControlInvocationParams>
+class FindBinding<WorkletType, dax::cont::sig::WorkId, ControlInvocationParams>
 {
 public:
-  typedef BindWorkId<Invocation> type;
+  typedef BindWorkId<WorkletType,ControlInvocationParams> type;
 };
 
 //bind VertexId directly to the input array (which should be specially
 //constructed by the scheduler)
-template<typename WorkletType, int N, typename Invocation>
-class FindBinding<WorkletType, dax::cont::sig::VisitIndexArg<N>, Invocation>
+template<typename WorkletType, int N, typename ControlInvocationParams>
+class FindBinding<WorkletType,
+                  dax::cont::sig::VisitIndexArg<N>,
+                  ControlInvocationParams>
 {
 public:
-  typedef BindDirect<Invocation,N> type;
+  typedef BindDirect<WorkletType, ControlInvocationParams, N> type;
 };
 
 //bind ReductionCount directly to the input array (which should be specially
 //constructed by the scheduler)
-template<typename WorkletType, int N, typename Invocation>
-class FindBinding<WorkletType, dax::cont::sig::ReductionCountArg<N>, Invocation>
+template<typename WorkletType, int N, typename ControlInvocationParams>
+class FindBinding<WorkletType,
+                  dax::cont::sig::ReductionCountArg<N>,
+                  ControlInvocationParams>
 {
 public:
-  typedef BindDirect<Invocation,N> type;
+  typedef BindDirect<WorkletType, ControlInvocationParams, N> type;
 };
 
 //bind ReductionOffset directly to the input array (which should be specially
 //constructed by the scheduler)
-template<typename WorkletType, int N, typename Invocation>
-class FindBinding<WorkletType, dax::cont::sig::ReductionOffsetArg<N>, Invocation>
+template<typename WorkletType, int N, typename ControlInvocationParams>
+class FindBinding<WorkletType,
+                  dax::cont::sig::ReductionOffsetArg<N>,
+                  ControlInvocationParams>
 {
 public:
-  typedef BindDirect<Invocation,N> type;
+  typedef BindDirect<WorkletType, ControlInvocationParams, N> type;
 };
 
 //specialize on KeyGroup(_N) binding
-template<typename WorkletType, int N, typename Invocation>
+template<typename WorkletType, int N, typename ControlInvocationParams>
 class FindBinding<WorkletType,
                   dax::cont::sig::KeyGroup(*)(dax::cont::sig::Arg<N>),
-                  Invocation>
+                  ControlInvocationParams>
 {
 public:
-  typedef BindKeyGroup<Invocation,N> type;
+  typedef BindDirect<WorkletType, ControlInvocationParams, N> type;
 };
 
 }}} // namespace dax::exec::arg

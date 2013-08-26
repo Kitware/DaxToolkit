@@ -20,7 +20,7 @@
 # if defined(DAX_DOXYGEN_ONLY)
 # else // !defined(DAX_DOXYGEN_ONLY)
 
-# if !(__cplusplus >= 201103L)
+# ifndef DAX_USE_VARIADIC_TEMPLATE
 #  include <dax/internal/ParameterPackCxx03.h>
 # endif // !(__cplusplus >= 201103L)
 
@@ -28,14 +28,13 @@
 # include <dax/cont/sig/Tag.h>
 # include <dax/internal/GetNthType.h>
 # include <dax/internal/Members.h>
+# include <dax/internal/ParameterPack.h>
 # include <dax/internal/Tags.h>
 
 
 # include <boost/mpl/if.hpp>
 
 namespace dax { namespace cont { namespace internal {
-
-template <typename Invocation_> class Bindings;
 
 namespace detail {
 
@@ -68,11 +67,31 @@ struct BindingsMemberMap
   };
 };
 
-template <typename Invocation> class BindingsMembers;
-
 } // namespace detail
 
-# if __cplusplus >= 201103L
+template<typename WorkletType, typename ControlInvocationParameters>
+struct Bindings {
+  typedef typename dax::internal::ParameterPackToSignature<
+      ControlInvocationParameters>::type ControlInvocationSignature;
+  typedef dax::internal::Members<
+      ControlInvocationSignature,detail::BindingsMemberMap<WorkletType> > type;
+};
+
+template<typename WorkletType, typename ControlInvocationParameters>
+DAX_CONT_EXPORT
+typename dax::cont::internal::Bindings<
+    WorkletType, ControlInvocationParameters>::type
+BindingsCreate(const WorkletType &daxNotUsed(worklet),
+               const ControlInvocationParameters &arguments)
+{
+  typedef typename dax::cont::internal::Bindings<
+      WorkletType, ControlInvocationParameters>::type BindingsType;
+  return BindingsType(arguments,
+                      dax::internal::MembersCopyTag(),
+                      dax::internal::MembersContTag());
+}
+
+# ifdef DAX_USE_VARIADIC_TEMPLATE
 
 namespace detail {
 
@@ -83,28 +102,12 @@ struct GetConceptAndTagsImpl< R (*)(T...) >
   typedef dax::internal::Tags<sig::Tag(T...)> Tags;
 };
 
-template <typename Worklet, typename...T>
-class BindingsMembers<Worklet(T...)>
-{
- public:
-  typedef dax::internal::Members<void(T...), BindingsMemberMap<Worklet> > type;
-};
-
 } // namespace detail
 
-template <typename Worklet, typename...T>
-class Bindings<Worklet(T...)>:
-  public detail::BindingsMembers<Worklet(T...)>::type
-{
-  typedef Worklet Invocation(T...);
-  typedef typename detail::BindingsMembers<Worklet(T...)>::type derived;
- public:
-  Bindings(T...v): derived(std::forward<T>(v)...) {}
-};
-# else // !(__cplusplus >= 201103L)
+# else // !DAX_USE_VARIADIC_TEMPLATE
 #  define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/cont/internal/Bindings.h>))
 #  include BOOST_PP_ITERATE()
-# endif // !(__cplusplus >= 201103L)
+# endif // !DAX_USE_VARIADIC_TEMPLATE
 
 }}} // namespace dax::cont::internal
 
@@ -114,6 +117,7 @@ class Bindings<Worklet(T...)>:
 #else // defined(BOOST_PP_IS_ITERATING)
 
 namespace detail {
+using namespace dax::cont::internal::detail;
 
 template <typename R _dax_pp_comma _dax_pp_typename___T>
 struct GetConceptAndTagsImpl< R (*)(_dax_pp_T___) >
@@ -122,27 +126,6 @@ struct GetConceptAndTagsImpl< R (*)(_dax_pp_T___) >
   typedef dax::internal::Tags<sig::Tag(_dax_pp_T___)> Tags;
 };
 
-#if _dax_pp_sizeof___T > 0
-template <typename Worklet, _dax_pp_typename___T>
-class BindingsMembers<Worklet(_dax_pp_T___)>
-{
- public:
-  typedef dax::internal::Members<void(_dax_pp_T___), BindingsMemberMap<Worklet> > type;
-};
-#endif // _dax_pp_sizeof___T > 0
-
 } // namespace detail
-
-#if _dax_pp_sizeof___T > 0
-template <typename Worklet, _dax_pp_typename___T>
-class Bindings<Worklet(_dax_pp_T___)>:
-  public detail::BindingsMembers<Worklet(_dax_pp_T___)>::type
-{
-  typedef typename detail::BindingsMembers<Worklet(_dax_pp_T___)>::type derived;
- public:
-  typedef Worklet Invocation(_dax_pp_T___);
-  Bindings(_dax_pp_params___(v)): derived(_dax_pp_args___(v)) {}
-};
-#endif // _dax_pp_sizeof___T > 0
 
 #endif // defined(BOOST_PP_IS_ITERATING)

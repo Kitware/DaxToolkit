@@ -33,16 +33,20 @@ struct Worklet1: public dax::exec::WorkletMapField
 template<typename T>
 void verifyBindingExists(T value)
 {
-  typedef Worklet1 Invocation1(T);
-  dax::cont::internal::Bindings<Invocation1> binded(value);
+  typedef dax::internal::ParameterPack<T> Invocation1;
+  typedef typename dax::cont::internal::Bindings<Worklet1,Invocation1>::type Bindings1;
+  Bindings1 binded = dax::cont::internal::BindingsCreate(
+        Worklet1(), dax::internal::make_ParameterPack(value));
   (void)binded;
 }
 
 template<typename T>
 void verifyConstBindingExists(const T value)
 {
-  typedef Worklet1 Invocation1(T);
-  dax::cont::internal::Bindings<Invocation1> binded(value);
+  typedef dax::internal::ParameterPack<T> Invocation1;
+  typedef typename dax::cont::internal::Bindings<Worklet1,Invocation1>::type Bindings1;
+  Bindings1 binded = dax::cont::internal::BindingsCreate(
+        Worklet1(), dax::internal::make_ParameterPack(value));
   (void)binded;
 }
 

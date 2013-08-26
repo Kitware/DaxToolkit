@@ -96,16 +96,15 @@ struct Worklet1 : public dax::exec::WorkletMapField
 
 void TestCreateExecutionResources(std::size_t size)
 {
+  std::vector<dax::Scalar> v(VECTOR_LENGTH);
+  for(int i=0; i <VECTOR_LENGTH; ++i) { v[i] = static_cast<dax::Scalar>(i);}
 
-  EXPECTED_LENGTH = size;
+  typedef dax::internal::ParameterPack<std::vector<dax::Scalar> >
+      Invocation1;
+  typedef dax::cont::internal::Bindings<Worklet1, Invocation1>::type Bindings1;
 
-  std::vector<dax::Scalar> in(size);
-  std::vector<dax::Scalar> out;
-  for(std::size_t i=0; i <size; ++i) { in[i] = static_cast<dax::Scalar>(i);}
-
-  typedef Worklet1 Sig(std::vector<dax::Scalar>&, std::vector<dax::Scalar>&);
-
-  dax::cont::internal::Bindings<Sig> bindings(in,out);
+  Bindings1 bindings = dax::cont::internal::BindingsCreate(
+        Worklet1(), dax::internal::make_ParameterPack(v));
 
   // Visit each bound argument to determine the count to be scheduled.
   const dax::Id count(size);

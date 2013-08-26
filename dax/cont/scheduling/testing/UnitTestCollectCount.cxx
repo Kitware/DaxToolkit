@@ -62,11 +62,13 @@ void CollectCount()
 
   //verify that a single constant value returns a collect count of 1
   {
-  typedef Worklet1 Sig(int);
+  typedef dax::internal::ParameterPack<int> Invocation1;
+  typedef dax::cont::internal::Bindings<Worklet1,Invocation1>::type Bindings1;
   typedef Worklet1::DomainType DomainType;
 
   int constantFieldArg=4;
-  dax::cont::internal::Bindings<Sig> bindings(constantFieldArg);
+  Bindings1 bindings = dax::cont::internal::BindingsCreate(
+        Worklet1(), dax::internal::make_ParameterPack(constantFieldArg));
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count;
@@ -77,7 +79,9 @@ void CollectCount()
 
   //verify that a single array returns a count equal to its size
   {
-  typedef Worklet1 Sig(dax::cont::ArrayHandle<dax::Scalar> );
+  typedef dax::internal::ParameterPack<
+      dax::cont::ArrayHandle<dax::Scalar> > Invocation1;
+  typedef dax::cont::internal::Bindings<Worklet1, Invocation1>::type Bindings1;
   typedef Worklet1::DomainType DomainType;
 
 
@@ -85,7 +89,8 @@ void CollectCount()
   std::vector<dax::Scalar> f(size); for(int i=0; i <size; ++i) { f[i] = i;}
   dax::cont::ArrayHandle<dax::Scalar> scalarHandle =
                                             dax::cont::make_ArrayHandle(f);
-  dax::cont::internal::Bindings<Sig> bindings(scalarHandle);
+  Bindings1 bindings = dax::cont::internal::BindingsCreate(
+        Worklet1(), dax::internal::make_ParameterPack(scalarHandle));
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count;
@@ -104,11 +109,14 @@ void CollectCount()
                                               dax::cont::make_ArrayHandle(f);
 
 
-  typedef Worklet2 TwoArgSig(dax::cont::ArrayHandle<dax::Scalar>, int);
+  typedef dax::internal::ParameterPack<
+      dax::cont::ArrayHandle<dax::Scalar>, int> Invocation2;
+  typedef dax::cont::internal::Bindings<Worklet2, Invocation2>::type Bindings2;
   typedef Worklet2::DomainType DomainType;
 
-  dax::cont::internal::Bindings<TwoArgSig> bindings(scalarHandle,
-                                                    constantFieldArg);
+  Bindings2 bindings = dax::cont::internal::BindingsCreate(
+        Worklet2(), dax::internal::make_ParameterPack(scalarHandle,
+                                                      constantFieldArg));
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count;
@@ -118,10 +126,14 @@ void CollectCount()
                   "CollectCount was not the length of the array.");
 
 
+  typedef dax::internal::ParameterPack<
+      int, dax::cont::ArrayHandle<dax::Scalar> > InvertedInvocation2;
+  typedef dax::cont::internal::Bindings<Worklet2, InvertedInvocation2>::type
+      InvertedBindings2;
   typedef Worklet2 InvertedTwoSigArg(int,dax::cont::ArrayHandle<dax::Scalar>);
-  dax::cont::internal::Bindings<InvertedTwoSigArg> secondBindings(
-                                                          constantFieldArg,
-                                                          scalarHandle);
+  InvertedBindings2 secondBindings = dax::cont::internal::BindingsCreate(
+        Worklet2(), dax::internal::make_ParameterPack(constantFieldArg,
+                                                      scalarHandle));
 
   secondBindings.ForEachCont(
                          dax::cont::scheduling::CollectCount<DomainType>(count));
@@ -149,11 +161,14 @@ void CollectCount()
                                               dax::cont::make_ArrayHandle(f);
 
 
-  typedef Worklet3 TwoArgSig(dax::cont::ArrayHandle<dax::Scalar>, int);
+  typedef dax::internal::ParameterPack<
+      dax::cont::ArrayHandle<dax::Scalar>, int> Invocation3;
+  typedef dax::cont::internal::Bindings<Worklet3,Invocation3>::type Bindings3;
   typedef Worklet3::DomainType DomainType;
 
-  dax::cont::internal::Bindings<TwoArgSig> bindings(scalarHandle,
-                                                    constantFieldArg);
+  Bindings3 bindings = dax::cont::internal::BindingsCreate(
+        Worklet3(), dax::internal::make_ParameterPack(scalarHandle,
+                                                      constantFieldArg));
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count;
@@ -165,10 +180,13 @@ void CollectCount()
                   "CollectCount wasn't 1 which is expected.");
 
 
-  typedef Worklet3 InvertedTwoSigArg(int,dax::cont::ArrayHandle<dax::Scalar>);
-  dax::cont::internal::Bindings<InvertedTwoSigArg> secondBindings(
-                                                          constantFieldArg,
-                                                          scalarHandle);
+  typedef dax::internal::ParameterPack<
+      int, dax::cont::ArrayHandle<dax::Scalar> > InvertedInvocation3;
+  typedef dax::cont::internal::Bindings<Worklet3, InvertedInvocation3>::type
+      InvertedBindings3;
+  InvertedBindings3 secondBindings = dax::cont::internal::BindingsCreate(
+        Worklet3(), dax::internal::make_ParameterPack(constantFieldArg,
+                                                      scalarHandle));
 
   secondBindings.ForEachCont(
                          dax::cont::scheduling::CollectCount<DomainType>(count));
@@ -201,11 +219,14 @@ void CollectCount()
                                               dax::cont::make_ArrayHandle(f);
 
 
-  typedef Worklet4 TwoArgSig(dax::cont::UniformGrid<>,
-                             dax::cont::ArrayHandle<dax::Scalar>);
+  typedef dax::internal::ParameterPack<
+      dax::cont::UniformGrid<>, dax::cont::ArrayHandle<dax::Scalar> >
+      Invocation4;
+  typedef dax::cont::internal::Bindings<Worklet4, Invocation4>::type Bindings4;
   typedef Worklet4::DomainType DomainType;
 
-  dax::cont::internal::Bindings<TwoArgSig> bindings(grid,scalarHandle);
+  Bindings4 bindings = dax::cont::internal::BindingsCreate(
+        Worklet4(), dax::internal::make_ParameterPack(grid, scalarHandle));
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count;

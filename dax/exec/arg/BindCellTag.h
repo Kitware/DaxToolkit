@@ -22,11 +22,12 @@
 
 namespace dax { namespace exec { namespace arg {
 
-template <typename Invocation, int N>
+template <typename WorkletType, typename ControlInvocationParams, int N>
 class BindCellTag
 {
 public:
-  typedef dax::exec::arg::BindInfo<N,Invocation> MyInfo;
+  typedef dax::exec::arg::BindInfo<
+      N,WorkletType,ControlInvocationParams> MyInfo;
   typedef typename MyInfo::AllControlBindings AllControlBindings;
   typedef typename MyInfo::ExecArgType ExecArgType;
 
@@ -36,7 +37,7 @@ public:
   typedef typename ExecArgType::CellTag const& ReturnType;
   typedef typename ExecArgType::CellTag SaveType;
 
-   DAX_CONT_EXPORT BindCellTag(AllControlBindings& daxNotUsed(bindings)):
+   DAX_CONT_EXPORT BindCellTag(const AllControlBindings& daxNotUsed(bindings)):
     CellTag()
     {}
 

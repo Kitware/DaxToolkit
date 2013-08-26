@@ -45,10 +45,13 @@ float Worklet1::TestValue = 0;
 
 void Functor()
 {
-  typedef Worklet1 Invocation1(float);
-  dax::cont::internal::Bindings<Invocation1> b1(1.0f);
+  typedef dax::internal::ParameterPack<float> Invocation1;
+  typedef dax::cont::internal::Bindings<Worklet1,Invocation1>::type Bindings1;
+  Bindings1 b1(1.0f,
+               dax::internal::MembersInitialArgumentTag(),
+               dax::internal::MembersExecContTag());
   Worklet1 w1;
-  dax::exec::internal::Functor<Invocation1> f1(w1, b1);
+  dax::exec::internal::Functor<Worklet1,Invocation1> f1(w1, b1);
   f1(0);
   DAX_TEST_ASSERT(Worklet1::TestValue == 1.0f, "TestValue is not 1.0f");
 }
