@@ -59,6 +59,76 @@
 #define _dax_pp_args___all(x)           BOOST_PP_ENUM(DAX_MAX_PARAMETER_SIZE, __dax_pp_arg___, x)
 #define __dax_pp_arg___(z,i,x)          __dax_pp_name___(x,i)
 
+/*
+Quick rundown on what parameter pack can do for you, and how to use it.
+
+Add a ParameterPack class to manage variable function arguments.
+
+The new class dax::internal::ParameterPack is somewhat like boost::tuple
+in that it has variable template arguments and holds an instance of each
+of these types. However, this class is specifically meant to be used to
+hold arguments to a function of unknown parameters. In addition to holding
+the parameters, it allows you to modify the arguments (to modify the
+behavior of the function) and to invoke an actual functor using the
+arguments held in the class.
+
+
+To make a parameter pack:
+  dax::internal::ParameterPack<int,double,char> params =
+      dax::internal::make_ParameterPack(1,2.5,'a');
+
+To get the number of items:
+  params.GetNumberOfParameters()
+
+To get an element:
+  params.GetArgument< 1 >()
+
+  or
+
+  dax::interal::ParameterPackGetArgument< 1 >( params )
+
+Argument indexing in a parameter pack is 1 based, NOT 0 based
+
+To change the value of an argument :
+  params.SetArgument<1>( 100 )
+
+  or
+
+  dax::interal::ParameterPackSetArgument< 1 >( params, 100 )
+
+To create a new parameter pack with a extra argument appended to the end:
+  params.Append<std::string>(std::string("New Arg"))
+
+To create a new parameter pack with an argument replaced:
+  params.Replace<1>(std::string("new fisrt argument"))
+
+
+To Invoke a function in the dax control space with the parameter pack, that
+has a void return value :
+  params.InvokeCont( Functor() )
+
+InvokeCont also supports an optional transform functor. Please Read
+the documentation on InvokeCont to see how to use it.
+
+To Invoke a function in the dax exec space with the parameter pack, that
+has a void return value :
+  params.InvokeExec( Functor() )
+
+InvokeExec also supports an optional transform functor. Please Read
+the documentation on InvokeExec to see how to use it.
+
+To Invoke a function in the dax exec space with the parameter pack, that
+has a void return value :
+  params.InvokeExec( Functor() )
+
+To Invoke a function that has a return type you will need to call one of the
+following functions
+  dax::internal::ParameterPackInvokeWithReturnCont< ReturnType >(Functor(), params)
+
+  dax::internal::ParameterPackInvokeWithReturnExec< ReturnType >(Functor(), params)
+
+*/
+
 namespace dax {
 namespace internal {
 
