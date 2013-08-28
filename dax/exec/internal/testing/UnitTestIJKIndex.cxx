@@ -40,9 +40,39 @@ static void TestGridIJK(const Grid &gridstruct)
         {
         ijkIndex.SetI(i);
 
-        //compare this i to the extent functions
+        //verify the int conversion
+        const dax::Id convertedIndex = ijkIndex;
+        DAX_TEST_ASSERT(convertedIndex == correctFlatCellIndex,
+                  "ijk dax::Id casting returned wrong cell index");
+
+        //verify the == operator
         DAX_TEST_ASSERT(ijkIndex == correctFlatCellIndex,
-                  "ijk value method returned wrong cell index");
+                  "ijk operator == is wrong");
+
+        //verify the != operator
+        DAX_TEST_ASSERT(!(ijkIndex != correctFlatCellIndex),
+                "ijk != operator is wrong");
+
+        //verify the comparison operators
+        DAX_TEST_ASSERT( (ijkIndex < (convertedIndex+1) &&
+                         !(ijkIndex < convertedIndex-1)),
+                        "ijk < operator is wrong");
+        DAX_TEST_ASSERT( ( (!(ijkIndex >= convertedIndex+1)) &&
+                           (ijkIndex >= convertedIndex-1) &&
+                           (ijkIndex >= convertedIndex)),
+                        "ijk >= operator is wrong");
+
+        //verify the mult operator
+        DAX_TEST_ASSERT( (ijkIndex * 4) ==  (convertedIndex * 4),
+                        "ijk * operator is wrong");
+
+
+        //verify the get method returns the expect value
+        const dax::Id3 value = ijkIndex.GetIJK();
+        DAX_TEST_ASSERT( i == value[0] &&
+                         j == value[1] &&
+                         k == value[2],
+                       "ijk.GetIJK returned wrong ijk values");
 
         ++correctFlatCellIndex;
         }
