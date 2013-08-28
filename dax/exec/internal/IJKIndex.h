@@ -35,9 +35,6 @@ struct IJKIndex
   operator dax::Id(void) const
   { return this->CachedValue + this->IJK[0]; }
 
-  // DAX_EXEC_EXPORT dax::Id GetValue() const
-  //   { return this->CachedValue + this->IJK[0]; }
-
   DAX_EXEC_EXPORT const dax::Id3 GetIJK() const { return this->IJK; }
 
   DAX_CONT_EXPORT void SetI(dax::Id v) { this->IJK[0]=v; }
