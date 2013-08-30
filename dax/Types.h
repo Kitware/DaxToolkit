@@ -417,6 +417,10 @@ protected:
 typedef dax::Tuple<dax::Scalar,2>
     Vector2 __attribute__ ((aligned(DAX_ALIGNMENT_TWO_SCALAR)));
 
+
+/// Id2 corresponds to a 2-dimensional index
+typedef dax::Tuple<dax::Id,2> Id2 __attribute__ ((aligned(DAX_SIZE_ID)));
+
 template<typename T>
 class Tuple<T,3>{
 public:

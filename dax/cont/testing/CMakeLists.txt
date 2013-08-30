@@ -28,6 +28,7 @@ set(unit_tests
   UnitTestArrayHandle.cxx
   UnitTestArrayHandleConstant.cxx
   UnitTestArrayHandleCounting.cxx
+  UnitTestBuildReductionMap.cxx
   UnitTestContTesting.cxx
   UnitTestDeviceAdapterAlgorithmDependency.cxx
   UnitTestDeviceAdapterAlgorithmGeneral.cxx

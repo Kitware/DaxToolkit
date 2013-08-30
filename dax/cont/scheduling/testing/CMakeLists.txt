@@ -20,6 +20,7 @@ set(unit_tests
   UnitTestCreateExecutionResources.cxx
   UnitTestDetermineScheduler.cxx
   UnitTestInterpolatedCellPermutation.cxx
+  UnitTestGenerateKeysValuesPermutation.cxx
   UnitTestGenerateTopologyPermutation.cxx
   UnitTestVerifyUserArgLength.cxx
   )
