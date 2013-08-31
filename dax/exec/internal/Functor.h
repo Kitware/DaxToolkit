@@ -31,14 +31,13 @@ namespace dax { namespace exec { namespace internal {
 
 namespace detail {
 
-template <typename WorkletType, typename ControlInvocationParams>
+template <typename Invocation>
 struct FunctorMemberMap
 {
   template <int Id, typename Parameter>
   struct Get
   {
-  typedef typename arg::FindBinding<
-    WorkletType, Parameter, ControlInvocationParams>::type type;
+  typedef typename arg::FindBinding<Invocation, Parameter>::type type;
   };
 };
 
@@ -130,16 +129,15 @@ struct FunctorTransformExecArg
 /// \headerfile Functor.h dax/exec/internal/Functor.h
 /// \brief Worklet invocation functor for execution environment
 ///
-/// \tparam WorkletT  The worklet class to be invoked by this Functor
-/// \tparam ControlInvocationParams  Parameters passed to the control environment scheduler
-template<typename WorkletT, typename ControlInvocationParameters>
+/// \tparam Invocation An instance of dax::internal::Invocation that contains
+/// information about the worklet and how it was instantiated.
+template<typename Invocation>
 class Functor
 {
 public:
-  typedef WorkletT WorkletType;
+  typedef typename Invocation::Worklet WorkletType;
   typedef typename WorkletType::ExecutionSignature ExecutionSignature;
-  typedef typename dax::cont::internal::Bindings<
-              WorkletType,ControlInvocationParameters>::type BindingsType;
+  typedef typename dax::cont::internal::Bindings<Invocation>::type BindingsType;
 
   DAX_CONT_EXPORT
   Functor(WorkletType worklet, BindingsType &bindings)
@@ -171,7 +169,7 @@ private:
 
   typedef dax::internal::Members<
       ExecutionSignature,
-      detail::FunctorMemberMap<WorkletType,ControlInvocationParameters>
+      detail::FunctorMemberMap<Invocation>
     > ArgumentsType;
   const ArgumentsType Arguments;
 

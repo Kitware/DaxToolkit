@@ -119,9 +119,9 @@ struct TriangleInitStruct {
   dax::Scalar Hypotenuse;
 } TriangleInit[MAX_VECTOR_SIZE] = {
   { 0.643501108793284, 3.0, 4.0, 5.0 },
-  { (1.0/4.0)*dax::math::Pi(), 1.0, 1.0, dax::math::Sqrt(2.0) },
-  { (1.0/6.0)*dax::math::Pi(), 1.0, dax::math::Sqrt(3.0), 2.0 },
-  { (1.0/3.0)*dax::math::Pi(), dax::math::Sqrt(3.0), 1.0, 2.0 }
+  { (1.0f/4.0f)*dax::math::Pi(), 1.0f, 1.0f, dax::math::Sqrt(2.0f) },
+  { (1.0f/6.0f)*dax::math::Pi(), 1.0f, dax::math::Sqrt(3.0f), 2.0f },
+  { (1.0f/3.0f)*dax::math::Pi(), dax::math::Sqrt(3.0f), 1.0f, 2.0f }
 };
 
 struct TestTrigFunctor

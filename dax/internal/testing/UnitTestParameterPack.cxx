@@ -85,15 +85,15 @@ struct ThreePointerArgFunctor {
 };
 
 struct ThreeArgFunctorWithReturn {
-  std::string operator()(const Type1 &a1,
-                         const Type2 &a2,
-                         const Type3 &a3) const
+  std::string operator()(const Type1 *a1,
+                         const Type2 *a2,
+                         const Type3 *a3) const
   {
     std::cout << "In 3 arg functor with return." << std::endl;
 
     std::stringstream buffer;
     buffer.precision(10);
-    buffer << a1 << " " << a2 << " " << a3;
+    buffer << *a1 << " " << *a2 << " " << *a3;
     return buffer.str();
   }
 };
@@ -139,8 +139,8 @@ struct ThreeFieldObject {
 
   ThreeFieldObject() {  }
 
-  ThreeFieldObject(const Type1 &a1, const Type2 &a2, const Type3 &a3)
-    : Value1(a1), Value2(a2), Value3(a3) {  }
+  ThreeFieldObject(const Type1 *a1, const Type2 *a2, const Type3 *a3)
+    : Value1(*a1), Value2(*a2), Value3(*a3) {  }
 
   void CheckValues() const
   {
@@ -273,21 +273,22 @@ void TestParameterPack()
   std::cout << "Checking invocation with return." << std::endl;
   std::string invokeresult =
       dax::internal::ParameterPackInvokeWithReturnCont<std::string>(
-        ThreeArgFunctorWithReturn(), params);
+        ThreeArgFunctorWithReturn(), params, GetReferenceFunctor());
   std::cout << "Got result: " << invokeresult << std::endl;
   DAX_TEST_ASSERT(invokeresult == "1234 5678.125 Third argument",
                   "Got bad result from invoke.");
   invokeresult = "";
   invokeresult =
       dax::internal::ParameterPackInvokeWithReturnExec<std::string>(
-        ThreeArgFunctorWithReturn(), params);
+        ThreeArgFunctorWithReturn(), params, GetReferenceFunctor());
   std::cout << "Got result: " << invokeresult << std::endl;
   DAX_TEST_ASSERT(invokeresult == "1234 5678.125 Third argument",
                   "Got bad result from invoke.");
 
   std::cout << "Checking parameters to constructor." << std::endl;
   ThreeFieldObject object =
-      dax::internal::ParameterPackConstructCont<ThreeFieldObject>(params);
+      dax::internal::ParameterPackConstructCont<ThreeFieldObject>(
+        params, GetReferenceFunctor());
   object.CheckValues();
 
   std::cout << "Checking standard 5 arg." << std::endl;

@@ -64,9 +64,11 @@ public:
 
 # else // !defined(DAX_DOXYGEN_ONLY)
 
-# if !(__cplusplus >= 201103L)
+# include <dax/internal/Configure.h>
+
+# ifndef DAX_USE_VARIADIC_TEMPLATE
 #  include <dax/internal/ParameterPackCxx03.h>
-# endif // !(__cplusplus >= 201103L)
+# endif // !DAX_USE_VARIADIC_TEMPLATE
 
 # include <boost/mpl/identity.hpp>
 # include <boost/mpl/if.hpp>
@@ -110,16 +112,16 @@ public:
   typedef Tags<Tags1> type;
 };
 
-# if __cplusplus >= 201103L
+# ifdef DAX_USE_VARIADIC_TEMPLATE
 template <typename B, typename T, typename...Ts> struct TagsBase<B(T,Ts...)>: TagsCheck<B,T>::type, TagsCheck<B,Ts>::type... { typedef B base_type; };
 template <typename Tag, typename B, typename...Ts> struct TagsAddImpl<Tag, B(Ts...)> { typedef B type(Ts...,Tag); };
 template <typename Tags1, typename B, typename T, typename...Ts> class TagsAdd< Tags<Tags1>, B(T,Ts...)>: public TagsAdd<typename TagsAdd<Tags<Tags1>,T>::type, B(Ts...)> {};
-# else // !(__cplusplus >= 201103L)
+# else // !DAX_USE_VARIADIC_TEMPLATE
 #  define _dax_TagsCheck(n) TagsCheck<B,T___##n>::type
 #  define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/internal/Tags.h>))
 #  include BOOST_PP_ITERATE()
 #  undef _dax_TagsCheck
-# endif // !(__cplusplus >= 201103L)
+# endif // !DAX_USE_VARIADIC_TEMPLATE
 
 template <typename Tags1, typename Tags2> class TagsAdd< Tags<Tags1>, Tags<Tags2> >: public TagsAdd<Tags<Tags1>,Tags2> {};
 

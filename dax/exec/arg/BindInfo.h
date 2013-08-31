@@ -25,22 +25,21 @@
 
 namespace dax { namespace exec { namespace arg {
 
-/// Given a WorkletType (with a control signature), the control invocation
-/// parameters type (a ParameterPack typed to the arguments of the invoke in
-/// the control environment), and an argument index, finds the executive arg
-/// type (the binding class located in dax::exec::arg that knows how to get and
-/// set values between execution environment arrays and worklet invocations)
-/// and the tags associated with the control signature parameter (things
-/// typically like In, Out, Points, Cells, etc.).
+/// Given a worklet invocation (dax::internal::Invocation) and an argument
+/// index, finds the executive arg type (the binding class located in
+/// dax::exec::arg that knows how to get and set values between execution
+/// environment arrays and worklet invocations) and the tags associated with
+/// the control signature parameter (things typically like In, Out, Points,
+/// Cells, etc.).
 ///
-template<int Index_, typename WorkletType, typename ControlInvocationParams>
+template<int Index_, typename Invocation>
 struct BindInfo
 {
   /// A members type that maps from control environment structure to execution
   /// environment structure.
   ///
-  typedef typename dax::cont::internal::Bindings<
-      WorkletType,ControlInvocationParams>::type AllControlBindings;
+  typedef typename dax::cont::internal::Bindings<Invocation>::type
+      AllControlBindings;
 private:
   typedef typename AllControlBindings::template GetType<Index_>::type
       MyControlBinding;
@@ -62,21 +61,21 @@ public:
 
 /// Given a control parameter type, find the first occurance of the execution
 /// argument associated with that type. For example,
-/// FindBindInfo<dax::cont::arg::Topology,WorkletType,ControlInvocationParams>
+/// FindBindInfo<dax::cont::arg::Topology,Invocation>
 /// will get you the information for the first occurance of
 /// dax::cont::arg::Topology.
 ///
-template<class ContType, typename WorkletType, typename ControlInvocationParams>
+template<class ContType, typename Invocation>
 struct FindBindInfo
 {
   /// A members type that maps from control environment structure to execution
   /// environment structure.
   ///
-  typedef typename dax::cont::internal::Bindings<
-      WorkletType,ControlInvocationParams>::type AllControlBindings;
+  typedef typename dax::cont::internal::Bindings<Invocation>::type
+      AllControlBindings;
 private:
-  typedef typename dax::cont::internal::FindBinding<
-      WorkletType,ControlInvocationParams,ContType>::type Index_;
+  typedef typename dax::cont::internal::FindBinding<Invocation,ContType>::type
+      Index_;
   typedef typename AllControlBindings::template GetType<Index_::value>::type
       MyControlBinding;
   typedef typename dax::cont::arg::ConceptMapTraits<MyControlBinding> MyTraits;

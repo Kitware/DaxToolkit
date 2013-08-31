@@ -22,12 +22,11 @@
 
 namespace dax { namespace exec { namespace arg {
 
-template <typename WorkletType, typename ControlInvocationParams, int N>
+template <typename Invocation, int N>
 class BindCellTag
 {
 public:
-  typedef dax::exec::arg::BindInfo<
-      N,WorkletType,ControlInvocationParams> MyInfo;
+  typedef dax::exec::arg::BindInfo<N,Invocation> MyInfo;
   typedef typename MyInfo::AllControlBindings AllControlBindings;
   typedef typename MyInfo::ExecArgType ExecArgType;
 

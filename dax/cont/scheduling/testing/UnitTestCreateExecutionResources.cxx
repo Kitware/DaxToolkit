@@ -99,9 +99,10 @@ void TestCreateExecutionResources(std::size_t size)
   std::vector<dax::Scalar> v(VECTOR_LENGTH);
   for(int i=0; i <VECTOR_LENGTH; ++i) { v[i] = static_cast<dax::Scalar>(i);}
 
-  typedef dax::internal::ParameterPack<std::vector<dax::Scalar> >
-      Invocation1;
-  typedef dax::cont::internal::Bindings<Worklet1, Invocation1>::type Bindings1;
+  typedef dax::internal::Invocation<
+      Worklet1,
+      dax::internal::ParameterPack<std::vector<dax::Scalar> > > Invocation1;
+  typedef dax::cont::internal::Bindings<Invocation1>::type Bindings1;
 
   Bindings1 bindings = dax::cont::internal::BindingsCreate(
         Worklet1(), dax::internal::make_ParameterPack(v));

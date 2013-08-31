@@ -61,19 +61,16 @@ namespace internal
   };
 }
 
-template< typename WorkletType, typename ControlInvocationParams >
+template<typename Invocation>
 class DetermineIndicesAndGridType
 {
   // Determine the topology type by finding the topo binding. First
   // we look up the index of the binding, the second step is to actually
   // get the type for that binding argument.
   typedef typename dax::cont::internal::FindBinding<
-                                  WorkletType,
-                                  ControlInvocationParams,
+                                  Invocation,
                                   dax::cont::arg::Topology>::type TopoIndex;
-  typedef typename dax::cont::internal::Bindings<
-                                  WorkletType,
-                                  ControlInvocationParams>::type BindingsType;
+  typedef typename dax::cont::internal::Bindings<Invocation>::type BindingsType;
   typedef typename BindingsType::template GetType<
                                   TopoIndex::value>::type TopoControlBinding;
 

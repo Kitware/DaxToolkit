@@ -62,7 +62,8 @@ public:
     // worklet ControlSignature through ConceptMap specializations.
     // The concept maps also know how to make the arguments available
     // in the execution environment.
-    typename dax::cont::internal::Bindings<WorkletType, Parameters>::type
+    typedef dax::internal::Invocation<WorkletType,Parameters> Invocation;
+    typename dax::cont::internal::Bindings<Invocation>::type
         bindings = dax::cont::internal::BindingsCreate(worklet, arguments);
 
     // Visit each bound argument to determine the count to be scheduled.
@@ -77,7 +78,7 @@ public:
           dax::cont::scheduling::CreateExecutionResources(count));
 
     // Schedule the worklet invocations in the execution environment.
-    dax::exec::internal::Functor<WorkletType, Parameters>
+    dax::exec::internal::Functor<Invocation>
         bindingFunctor(worklet, bindings);
     dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>::Schedule(
                                                         bindingFunctor, count);

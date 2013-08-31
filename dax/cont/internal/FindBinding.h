@@ -59,14 +59,12 @@ public:
 
 } // namespace detail
 
-template <typename WorkletType,
-          typename ControlInvocationParams,
+template <typename Invocation,
           typename Concept>
 struct FindBinding
 {
-  enum{ len = ControlInvocationParams::NUM_PARAMETERS };
-  typedef typename dax::cont::internal::Bindings<
-      WorkletType, ControlInvocationParams>::type BindingsType;
+  enum{ len = Invocation::NUM_PARAMETERS };
+  typedef typename dax::cont::internal::Bindings<Invocation>::type BindingsType;
   typedef typename detail::FindBindingImpl<BindingsType, Concept,1,len>::type type;
 };
 

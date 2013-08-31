@@ -30,7 +30,13 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     "${CMAKE_CXX_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS_WARN}")
 
   # Addtional warnings for GCC
-  set(CMAKE_CXX_FLAGS_WARN_EXTRA "-Wno-long-long -ansi -Wcast-align -Wchar-subscripts -Wextra -Wpointer-arith -Wformat -Wformat-security -Wshadow -Wunused-parameter -fno-common")
+  set(CMAKE_CXX_FLAGS_WARN_EXTRA "-Wno-long-long -Wcast-align -Wchar-subscripts -Wextra -Wpointer-arith -Wformat -Wformat-security -Wshadow -Wunused-parameter -fno-common")
+  if (NOT DAX_FORCE_ANSI AND HAS_CXX11_VARIADIC_TEMPLATES)
+    set(CMAKE_CXX_FLAGS_WARN_EXTRA "-std=c++11 ${CMAKE_CXX_FLAGS_WARN_EXTRA}")
+  else (NOT DAX_FORCE_ANSI AND HAS_CXX11_VARIADIC_TEMPLATES)
+    set(CMAKE_CXX_FLAGS_WARN_EXTRA "-ansi ${CMAKE_CXX_FLAGS_WARN_EXTRA}")
+  endif (NOT DAX_FORCE_ANSI AND HAS_CXX11_VARIADIC_TEMPLATES)
+
   # Set up the debug CXX_FLAGS for extra warnings
   option(DAX_EXTRA_COMPILER_WARNINGS "Add compiler flags to do stricter checking when building debug." ON)
   # We used to add the compiler flags globally, but this caused problems with

@@ -62,8 +62,8 @@ void CollectCount()
 
   //verify that a single constant value returns a collect count of 1
   {
-  typedef dax::internal::ParameterPack<int> Invocation1;
-  typedef dax::cont::internal::Bindings<Worklet1,Invocation1>::type Bindings1;
+  typedef dax::internal::Invocation<Worklet1,dax::internal::ParameterPack<int> > Invocation1;
+  typedef dax::cont::internal::Bindings<Invocation1>::type Bindings1;
   typedef Worklet1::DomainType DomainType;
 
   int constantFieldArg=4;
@@ -79,9 +79,11 @@ void CollectCount()
 
   //verify that a single array returns a count equal to its size
   {
-  typedef dax::internal::ParameterPack<
-      dax::cont::ArrayHandle<dax::Scalar> > Invocation1;
-  typedef dax::cont::internal::Bindings<Worklet1, Invocation1>::type Bindings1;
+  typedef dax::internal::Invocation<
+      Worklet1,
+      dax::internal::ParameterPack<
+        dax::cont::ArrayHandle<dax::Scalar> > > Invocation1;
+  typedef dax::cont::internal::Bindings<Invocation1>::type Bindings1;
   typedef Worklet1::DomainType DomainType;
 
 
@@ -109,9 +111,11 @@ void CollectCount()
                                               dax::cont::make_ArrayHandle(f);
 
 
-  typedef dax::internal::ParameterPack<
-      dax::cont::ArrayHandle<dax::Scalar>, int> Invocation2;
-  typedef dax::cont::internal::Bindings<Worklet2, Invocation2>::type Bindings2;
+  typedef dax::internal::Invocation<
+      Worklet2,
+      dax::internal::ParameterPack<
+        dax::cont::ArrayHandle<dax::Scalar>, int> > Invocation2;
+  typedef dax::cont::internal::Bindings<Invocation2>::type Bindings2;
   typedef Worklet2::DomainType DomainType;
 
   Bindings2 bindings = dax::cont::internal::BindingsCreate(
@@ -126,9 +130,11 @@ void CollectCount()
                   "CollectCount was not the length of the array.");
 
 
-  typedef dax::internal::ParameterPack<
-      int, dax::cont::ArrayHandle<dax::Scalar> > InvertedInvocation2;
-  typedef dax::cont::internal::Bindings<Worklet2, InvertedInvocation2>::type
+  typedef dax::internal::Invocation<
+      Worklet2,
+      dax::internal::ParameterPack<
+        int, dax::cont::ArrayHandle<dax::Scalar> > > InvertedInvocation2;
+  typedef dax::cont::internal::Bindings<InvertedInvocation2>::type
       InvertedBindings2;
   typedef Worklet2 InvertedTwoSigArg(int,dax::cont::ArrayHandle<dax::Scalar>);
   InvertedBindings2 secondBindings = dax::cont::internal::BindingsCreate(
@@ -161,9 +167,11 @@ void CollectCount()
                                               dax::cont::make_ArrayHandle(f);
 
 
-  typedef dax::internal::ParameterPack<
-      dax::cont::ArrayHandle<dax::Scalar>, int> Invocation3;
-  typedef dax::cont::internal::Bindings<Worklet3,Invocation3>::type Bindings3;
+  typedef dax::internal::Invocation<
+      Worklet3,
+      dax::internal::ParameterPack<
+        dax::cont::ArrayHandle<dax::Scalar>, int> > Invocation3;
+  typedef dax::cont::internal::Bindings<Invocation3>::type Bindings3;
   typedef Worklet3::DomainType DomainType;
 
   Bindings3 bindings = dax::cont::internal::BindingsCreate(
@@ -180,9 +188,11 @@ void CollectCount()
                   "CollectCount wasn't 1 which is expected.");
 
 
-  typedef dax::internal::ParameterPack<
-      int, dax::cont::ArrayHandle<dax::Scalar> > InvertedInvocation3;
-  typedef dax::cont::internal::Bindings<Worklet3, InvertedInvocation3>::type
+  typedef dax::internal::Invocation<
+      Worklet3,
+      dax::internal::ParameterPack<
+        int, dax::cont::ArrayHandle<dax::Scalar> > > InvertedInvocation3;
+  typedef dax::cont::internal::Bindings<InvertedInvocation3>::type
       InvertedBindings3;
   InvertedBindings3 secondBindings = dax::cont::internal::BindingsCreate(
         Worklet3(), dax::internal::make_ParameterPack(constantFieldArg,
@@ -219,10 +229,12 @@ void CollectCount()
                                               dax::cont::make_ArrayHandle(f);
 
 
-  typedef dax::internal::ParameterPack<
-      dax::cont::UniformGrid<>, dax::cont::ArrayHandle<dax::Scalar> >
+  typedef dax::internal::Invocation<
+      Worklet4,
+      dax::internal::ParameterPack<
+        dax::cont::UniformGrid<>, dax::cont::ArrayHandle<dax::Scalar> > >
       Invocation4;
-  typedef dax::cont::internal::Bindings<Worklet4, Invocation4>::type Bindings4;
+  typedef dax::cont::internal::Bindings<Invocation4>::type Bindings4;
   typedef Worklet4::DomainType DomainType;
 
   Bindings4 bindings = dax::cont::internal::BindingsCreate(

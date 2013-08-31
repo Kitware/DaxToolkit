@@ -13,23 +13,17 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef BOOST_PP_IS_ITERATING
-
 #ifndef __dax_internal_ParameterPack_h
 #define __dax_internal_ParameterPack_h
 
-#include <dax/Types.h>
+#define DAX_PARAMETER_PACK_BUILD
 
-#ifdef DAX_USE_VARIADIC_TEMPLATE
-#error Parameter Pack currently not implemented for variadic template parameters.
-#endif
+#include <dax/Types.h>
 
 #define DAX_MAX_PARAMETER_SIZE 10
 
 #define BOOST_FUSION_INVOKE_PROCEDURE_MAX_ARITY DAX_MAX_PARAMETER_SIZE
 #define FUSION_MAX_VECTOR_SIZE DAX_MAX_PARAMETER_SIZE
-
-#include <dax/internal/ParameterPackCxx03.h>
 
 #include <boost/static_assert.hpp>
 
@@ -49,15 +43,33 @@
 #include <boost/preprocessor/enum.hpp>
 #include <boost/preprocessor/inc.hpp>
 
+#ifdef DAX_USE_VARIADIC_TEMPLATE
+
+#define _dax_pp_T___             T___...
+#define _dax_pp_typename___T     typename ...T___
+// Fake so that always applicable
+#define _dax_pp_sizeof___T       1
+#define _dax_pp_comma            ,
+#define _dax_pp_params___(x)     T___... x
+#define _dax_pp_args___(x)       x...
+
+#define _dax_pp_params_ref___(x) T___&... x
+
+#define _dax_pp_T___all          _dax_pp_T___
+#define _dax_pp_typename___T_all _dax_pp_typename___T
+
+#else //DAX_USE_VARIADIC_TEMPLATE
+
+#include <dax/internal/ParameterPackCxx03.h>
 #define _dax_pp_T___all                 BOOST_PP_ENUM(DAX_MAX_PARAMETER_SIZE, __dax_pp_T___, notUsed)
 #define __dax_pp_name___(x,i)           BOOST_PP_CAT(x,BOOST_PP_INC(i))
 #define __dax_pp_T___(z,i,x)            __dax_pp_name___(T___,i)
 #define _dax_pp_typename___T_all        BOOST_PP_ENUM(DAX_MAX_PARAMETER_SIZE, __dax_pp_typename___T, notUsed)
 #define __dax_pp_typename___T(z,i,x)    typename __dax_pp_T___(z,i,x) = dax::internal::detail::NullParam
-#define _dax_pp_params_default___all(x) BOOST_PP_ENUM(DAX_MAX_PARAMETER_SIZE, __dax_pp_param_default, x)
-#define __dax_pp_param_default(z,i,x)   __dax_pp_T___(z,i,x) __dax_pp_arg___(z,i,x) = __dax_pp_T___(z,i,x)()
-#define _dax_pp_args___all(x)           BOOST_PP_ENUM(DAX_MAX_PARAMETER_SIZE, __dax_pp_arg___, x)
-#define __dax_pp_arg___(z,i,x)          __dax_pp_name___(x,i)
+
+#define _dax_pp_params_ref___(x)        _dax_pp_params___(&x)
+
+#endif //DAX_USE_VARIADIC_TEMPLATE
 
 /*
 Quick rundown on what parameter pack can do for you, and how to use it.
@@ -189,17 +201,22 @@ struct NullParam { };
 /// ParameterPack::Parameter<Index> an invalid Index.
 template<typename T> struct InvalidParameterPackType;
 
+template<typename Signature>
+struct ParameterPackFirstArgument;
+
+template<typename Signature>
+struct ParameterPackRemainingArguments;
+
 template<typename ParameterPackImplType>
 struct ParameterPackImplAccess;
 
 template<int Index, typename ParameterPackImplType>
 struct ParameterPackImplAtIndex;
 
-template<int NumParameters,
-         typename Function,
+template<typename Function,
+         typename ExtractedArgSignature,
          typename Transform,
-         typename ParameterPackImplType,
-         _dax_pp_typename___T_all>
+         typename RemainingArgsType>
 struct ParameterPackDoInvokeContImpl;
 
 template<typename Function,
@@ -207,23 +224,22 @@ template<typename Function,
          typename ParameterPackImplType>
 DAX_CONT_EXPORT
 void ParameterPackDoInvokeCont(Function &f,
-                                   const Transform &transform,
-                                   ParameterPackImplType &params)
+                               const Transform &transform,
+                               ParameterPackImplType &params)
 {
   ParameterPackDoInvokeContImpl<
-      0,
       Function,
+      void(),
       Transform,
       ParameterPackImplType>
     implementation;
   implementation(f, transform, params);
 }
 
-template<int NumParameters,
-         typename Function,
+template<typename Function,
+         typename ExtractedArgSignature,
          typename Transform,
-         typename ParameterPackImplType,
-         _dax_pp_typename___T_all>
+         typename RemainingArgsType>
 struct ParameterPackDoInvokeExecImpl;
 
 template<typename Function,
@@ -235,35 +251,34 @@ void ParameterPackDoInvokeExec(Function &f,
                                ParameterPackImplType &params)
 {
   ParameterPackDoInvokeExecImpl<
-      0,
       Function,
+      void(),
       Transform,
       ParameterPackImplType>
     implementation;
   implementation(f, transform, params);
 }
 
-/// Implementation class of a ParameterPack.  Uses a lisp-like cons construction
-/// to build the type list.
+/// Implementation class of a ParameterPack. Uses a lisp-like cons construction
+/// to build a list of types, but is templated on a function signature to make
+/// errors more readable.
 ///
-/// \tparam CarType The first type in the parameter list.
-/// \tparam CdrType A ParameterPackImpl containing the remaining list.
-template<typename CarT, typename CdrT>
+template<typename Signature>
 class ParameterPackImpl
 {
-  // If there is a compile error here, then a parameter was incorrectly set to
-  // the NullParam type. The only exception is the terminating
-  // ParameterPackImpl<NullParam,NullParam>.
-  BOOST_MPL_ASSERT_NOT(( boost::is_same<CarT,NullParam> ));
-
 private:
-  typedef CarT CarType;
-  typedef CdrT CdrType;
+  typedef typename ParameterPackFirstArgument<Signature>::type CarType;
+  typedef ParameterPackImpl<
+      typename ParameterPackRemainingArguments<Signature>::type> CdrType;
 
-  typedef ParameterPackImpl<CarType, CdrType> ThisType;
+  typedef ParameterPackImpl<Signature> ThisType;
 
   template<typename ParameterPackImplType>
   friend struct ParameterPackImplAccess;
+
+  // If there is a compile error here, then a parameter was incorrectly set to
+  // the NullParam type.
+  BOOST_MPL_ASSERT_NOT(( boost::is_same<CarType,NullParam> ));
 
 public:
   DAX_EXEC_CONT_EXPORT
@@ -274,58 +289,58 @@ public:
     : Car(car), Cdr(cdr) {  }
 
   DAX_EXEC_CONT_EXPORT
-  ParameterPackImpl(const ParameterPackImpl<CarType,CdrType> &src)
+  ParameterPackImpl(const ThisType &src)
     : Car(src.Car), Cdr(src.Cdr) {  }
 
   DAX_CONT_EXPORT
   ParameterPackImpl(CarType car, const CdrType &cdr, ParameterPackContTag)
     : Car(car), Cdr(cdr) {  }
 
-  template<typename SrcCarType, typename SrcCdrType>
+  template<typename SrcSignature>
   DAX_CONT_EXPORT
-  ParameterPackImpl(const ParameterPackImpl<SrcCarType, SrcCdrType> &src,
+  ParameterPackImpl(const ParameterPackImpl<SrcSignature> &src,
                     ParameterPackCopyTag,
                     ParameterPackContTag)
-    : Car(ParameterPackImplAccess<ParameterPackImpl<SrcCarType, SrcCdrType> >
+    : Car(ParameterPackImplAccess<ParameterPackImpl<SrcSignature> >
             ::GetFirstArgument(src)),
-      Cdr(ParameterPackImplAccess<ParameterPackImpl<SrcCarType, SrcCdrType> >
+      Cdr(ParameterPackImplAccess<ParameterPackImpl<SrcSignature> >
             ::GetCdr(src),
           ParameterPackCopyTag(),
           ParameterPackContTag())
   {  }
-  template<typename SrcCarType, typename SrcCdrType>
+  template<typename SrcSignature>
   DAX_EXEC_CONT_EXPORT
-  ParameterPackImpl(const ParameterPackImpl<SrcCarType, SrcCdrType> &src,
+  ParameterPackImpl(const ParameterPackImpl<SrcSignature> &src,
                     ParameterPackCopyTag,
                     ParameterPackExecContTag)
-    : Car(ParameterPackImplAccess<ParameterPackImpl<SrcCarType, SrcCdrType> >
+    : Car(ParameterPackImplAccess<ParameterPackImpl<SrcSignature> >
             ::GetFirstArgument(src)),
-      Cdr(ParameterPackImplAccess<ParameterPackImpl<SrcCarType, SrcCdrType> >
+      Cdr(ParameterPackImplAccess<ParameterPackImpl<SrcSignature> >
             ::GetCdr(src),
           ParameterPackCopyTag(),
           ParameterPackExecContTag())
   {  }
 
-  template<typename SrcCarType, typename SrcCdrType>
+  template<typename SrcSignature>
   DAX_CONT_EXPORT
-  ParameterPackImpl(ParameterPackImpl<SrcCarType, SrcCdrType> &src,
+  ParameterPackImpl(ParameterPackImpl<SrcSignature> &src,
                     ParameterPackCopyTag,
                     ParameterPackContTag)
-    : Car(ParameterPackImplAccess<ParameterPackImpl<SrcCarType, SrcCdrType> >
+    : Car(ParameterPackImplAccess<ParameterPackImpl<SrcSignature> >
             ::GetFirstArgument(src)),
-      Cdr(ParameterPackImplAccess<ParameterPackImpl<SrcCarType, SrcCdrType> >
+      Cdr(ParameterPackImplAccess<ParameterPackImpl<SrcSignature> >
             ::GetCdr(src),
           ParameterPackCopyTag(),
           ParameterPackContTag())
   {  }
-  template<typename SrcCarType, typename SrcCdrType>
+  template<typename SrcSignature>
   DAX_EXEC_CONT_EXPORT
-  ParameterPackImpl(ParameterPackImpl<SrcCarType, SrcCdrType> &src,
+  ParameterPackImpl(ParameterPackImpl<SrcSignature> &src,
                     ParameterPackCopyTag,
                     ParameterPackExecContTag)
-    : Car(ParameterPackImplAccess<ParameterPackImpl<SrcCarType, SrcCdrType> >
+    : Car(ParameterPackImplAccess<ParameterPackImpl<SrcSignature> >
             ::GetFirstArgument(src)),
-      Cdr(ParameterPackImplAccess<ParameterPackImpl<SrcCarType, SrcCdrType> >
+      Cdr(ParameterPackImplAccess<ParameterPackImpl<SrcSignature> >
             ::GetCdr(src),
           ParameterPackCopyTag(),
           ParameterPackExecContTag())
@@ -349,8 +364,7 @@ public:
   {  }
 
   DAX_EXEC_CONT_EXPORT
-  ParameterPackImpl<CarType,CdrType> &operator=(
-      const ParameterPackImpl<CarType,CdrType> &src) {
+  ThisType &operator=(const ThisType &src) {
     this->Car = src.Car;
     this->Cdr = src.Cdr;
     return *this;
@@ -363,21 +377,20 @@ private:
 };
 
 template<>
-class ParameterPackImpl<NullParam, NullParam>
+class ParameterPackImpl<void()>
 {
+  typedef ParameterPackImpl<void()> ThisType;
+
 public:
   DAX_EXEC_CONT_EXPORT
   ParameterPackImpl() {   }
 
   DAX_EXEC_CONT_EXPORT
-  ParameterPackImpl(const NullParam &, const NullParam &) {   }
-
-  DAX_EXEC_CONT_EXPORT
-  ParameterPackImpl(const ParameterPackImpl<NullParam,NullParam> &,
+  ParameterPackImpl(const ThisType &,
                     ParameterPackCopyTag,
                     ParameterPackExecContTag) {   }
   DAX_CONT_EXPORT
-  ParameterPackImpl(const ParameterPackImpl<NullParam,NullParam> &,
+  ParameterPackImpl(const ThisType &,
                     ParameterPackCopyTag,
                     ParameterPackContTag) {   }
 
@@ -393,7 +406,7 @@ public:
                     ParameterPackContTag) {  }
 };
 
-typedef ParameterPackImpl<NullParam,NullParam> ParameterPackImplNull;
+typedef ParameterPackImpl<void()> ParameterPackImplNull;
 
 template<typename ParameterPackImplType>
 struct ParameterPackImplIsNull
@@ -544,6 +557,10 @@ template<typename ParameterPackType,
          typename AppendType>
 struct ParameterPackAppendType;
 
+template<typename PrependType,
+         typename ParameterPackType>
+struct ParameterPackPrependType;
+
 template<typename NewType, typename ParameterPackType>
 struct PPackPrepend;
 
@@ -677,15 +694,15 @@ public:
   /// constructor. The second argument is an instance of the \c
   /// ParamterPackCopyTag.
   ///
-  template<typename SrcCarType, typename SrcCdrType>
+  template<typename SrcSignature>
   DAX_EXEC_CONT_EXPORT
-  ParameterPack(const detail::ParameterPackImpl<SrcCarType, SrcCdrType> &src,
+  ParameterPack(const detail::ParameterPackImpl<SrcSignature> &src,
                 ParameterPackCopyTag,
                 ParameterPackExecContTag)
     : Superclass(src, ParameterPackCopyTag(), ParameterPackExecContTag()) {  }
-  template<typename SrcCarType, typename SrcCdrType>
+  template<typename SrcSignature>
   DAX_CONT_EXPORT
-  ParameterPack(const detail::ParameterPackImpl<SrcCarType, SrcCdrType> &src,
+  ParameterPack(const detail::ParameterPackImpl<SrcSignature> &src,
                 ParameterPackCopyTag,
                 ParameterPackContTag)
     : Superclass(src, ParameterPackCopyTag(), ParameterPackContTag()) {  }
@@ -698,15 +715,15 @@ public:
   /// constructor. The second argument is an instance of the \c
   /// ParamterPackCopyTag.
   ///
-  template<typename SrcCarType, typename SrcCdrType>
+  template<typename SrcSignature>
   DAX_EXEC_CONT_EXPORT
-  ParameterPack(detail::ParameterPackImpl<SrcCarType, SrcCdrType> &src,
+  ParameterPack(detail::ParameterPackImpl<SrcSignature> &src,
                 ParameterPackCopyTag,
                 ParameterPackExecContTag)
     : Superclass(src, ParameterPackCopyTag(), ParameterPackExecContTag()) {  }
-  template<typename SrcCarType, typename SrcCdrType>
+  template<typename SrcSignature>
   DAX_CONT_EXPORT
-  ParameterPack(detail::ParameterPackImpl<SrcCarType, SrcCdrType> &src,
+  ParameterPack(detail::ParameterPackImpl<SrcSignature> &src,
                 ParameterPackCopyTag,
                 ParameterPackContTag)
     : Superclass(src, ParameterPackCopyTag(), ParameterPackContTag()) {  }
@@ -1038,7 +1055,7 @@ struct ParameterPackAppendType<ParameterPack<>, AppendType>
   typedef ParameterPack<AppendType> type;
 
 private:
-  typedef detail::ParameterPackImpl<AppendType,ParameterPackImplNull> _implType;
+  typedef detail::ParameterPackImpl<void(AppendType)> _implType;
 
 public:
   DAX_CONT_EXPORT
@@ -1154,6 +1171,17 @@ void ParameterPackInvokeExec(const Function &f,
 }
 
 namespace detail {
+
+// Given a ParameterPack and a Transform like the type passed to an Invoke
+// method, get a ParameterPack with the transformed arguments.
+template<typename ParameterPackType, typename Transform>
+struct ParameterPackTransform;
+
+template<typename Transform>
+struct ParameterPackTransform<ParameterPack<>, Transform>
+{
+  typedef ParameterPack<> type;
+};
 
 template<typename ReturnType, typename FunctionType>
 class ParameterPackReturnFunctorContBase
@@ -1271,10 +1299,10 @@ protected:
   }
 };
 
-template<typename ReturnType, typename Function, int NumParameters>
+template<typename Signature, typename Function>
 class ParameterPackReturnFunctorCont;
 
-template<typename ReturnType, typename Function, int NumParameters>
+template<typename Signature, typename Function>
 class ParameterPackReturnFunctorExec;
 
 } // namespace detail (in dax::internal)
@@ -1298,9 +1326,10 @@ ReturnType ParameterPackInvokeWithReturnCont(
     const Transform &parameterTransform)
 {
   detail::ParameterPackReturnFunctorCont<
-      ReturnType,
-      Function,
-      ParameterPackType::NUM_PARAMETERS> functor(f);
+      typename ParameterPackToSignature<
+        typename detail::ParameterPackTransform<ParameterPackType, Transform>::type,
+        ReturnType>::type,
+      Function> functor(f);
   ParameterPackInvokeCont(functor, params, parameterTransform);
   return functor.GetReturnValue();
 }
@@ -1315,9 +1344,10 @@ ReturnType ParameterPackInvokeWithReturnCont(
     const Transform &parameterTransform)
 {
   detail::ParameterPackReturnFunctorCont<
-      ReturnType,
-      const Function,
-      ParameterPackType::NUM_PARAMETERS> functor(f);
+      typename ParameterPackToSignature<
+        typename detail::ParameterPackTransform<ParameterPackType, Transform>::type,
+        ReturnType>::type,
+      const Function> functor(f);
   ParameterPackInvokeCont(functor, params, parameterTransform);
   return functor.GetReturnValue();
 }
@@ -1353,9 +1383,10 @@ ReturnType ParameterPackInvokeWithReturnExec(
     const Transform &parameterTransform)
 {
   detail::ParameterPackReturnFunctorExec<
-      ReturnType,
-      Function,
-      ParameterPackType::NUM_PARAMETERS> functor(f);
+      typename ParameterPackToSignature<
+        typename detail::ParameterPackTransform<ParameterPackType, Transform>::type,
+        ReturnType>::type,
+      Function> functor(f);
   ParameterPackInvokeExec(functor, params, parameterTransform);
   return functor.GetReturnValue();
 }
@@ -1370,9 +1401,10 @@ ReturnType ParameterPackInvokeWithReturnExec(
     const Transform &parameterTransform)
 {
   detail::ParameterPackReturnFunctorExec<
-      ReturnType,
-      const Function,
-      ParameterPackType::NUM_PARAMETERS> functor(f);
+      typename ParameterPackToSignature<
+        typename detail::ParameterPackTransform<ParameterPackType, Transform>::type,
+        ReturnType>::type,
+      const Function> functor(f);
   ParameterPackInvokeExec(functor, params, parameterTransform);
   return functor.GetReturnValue();
 }
@@ -1399,10 +1431,10 @@ ReturnType ParameterPackInvokeWithReturnExec(const Function &f,
 
 namespace detail {
 
-template<typename ObjectToConstruct, int NumParameters>
+template<typename Signature>
 struct ParameterPackConstructFunctorCont;
 
-template<typename ObjectToConstruct, int NumParameters>
+template<typename Signature>
 struct ParameterPackConstructFunctorExec;
 
 } // namespace detail
@@ -1424,7 +1456,10 @@ ObjectToConstruct ParameterPackConstructCont(
     const Transform &parameterTransform)
 {
   detail::ParameterPackConstructFunctorCont<
-      ObjectToConstruct, ParameterPackType::NUM_PARAMETERS> functor;
+      typename ParameterPackToSignature<
+        typename detail::ParameterPackTransform<ParameterPackType, Transform>::type,
+        ObjectToConstruct>::type>
+      functor;
   return ParameterPackInvokeWithReturnCont<ObjectToConstruct>(
         functor, params, parameterTransform);
 }
@@ -1445,7 +1480,10 @@ ObjectToConstruct ParameterPackConstructExec(
     const Transform &parameterTransform)
 {
   detail::ParameterPackConstructFunctorExec<
-      ObjectToConstruct, ParameterPackType::NUM_PARAMETERS> functor;
+      typename ParameterPackToSignature<
+        typename detail::ParameterPackTransform<ParameterPackType, Transform>::type,
+        ObjectToConstruct>::type>
+      functor;
   return ParameterPackInvokeWithReturnExec<ObjectToConstruct>(
         functor, params, parameterTransform);
 }
@@ -1457,7 +1495,7 @@ ObjectToConstruct ParameterPackConstructExec(ParameterPackType &params)
         params, IdentityFunctorExec());
 }
 
-#ifdef DAX_DOXYGEN_ONLY
+#if defined(DAX_DOXYGEN_ONLY) || defined(DAX_USE_VARIADIC_TEMPLATE)
 /// Convenience function that creates a \c ParameterPack with parameters of the
 /// same types as the arguments to this function and initialized to the values
 /// passed to this function. Only works in the control environment.
@@ -1466,456 +1504,28 @@ template<typename...T>
 DAX_CONT_EXPORT
 dax::internal::ParameterPack<T...>
 make_ParameterPack(T...arguments);
-#endif // DAX_DOXYGON_ONLY
+#endif // DAX_DOXYGON_ONLY || DAX_USE_VARIADIC_TEMPLATE
 
 
 }
 } // namespace dax::internal
 
-#define BOOST_PP_ITERATION_PARAMS_1 (3, (1, BOOST_PP_INC(DAX_MAX_PARAMETER_SIZE), <dax/internal/ParameterPack.h>))
+#ifdef DAX_USE_VARIADIC_TEMPLATE
+
+#include <dax/internal/ParameterPackVariadic.h>
+
+#else //DAX_USE_VARIADIC_TEMPLATE
+
+#define BOOST_PP_ITERATION_PARAMS_1 (3, (1, BOOST_PP_INC(DAX_MAX_PARAMETER_SIZE), <dax/internal/ParameterPackVariadic.h>))
 #include BOOST_PP_ITERATE()
+
+#endif //DAX_USE_VARIADIC_TEMPLATE
 
 #undef _dax_pp_T___all
 #undef __dax_pp_T___
 #undef _dax_pp_typename___T_all
 #undef __dax_pp_typename___T
 
+#undef DAX_PARAMETER_PACK_BUILD
+
 #endif //__dax_internal_ParameterPack_h
-
-#else //BOOST_PP_IS_ITERATING
-
-namespace dax {
-namespace internal {
-namespace detail {
-
-#if _dax_pp_sizeof___T < DAX_MAX_PARAMETER_SIZE
-
-template<typename FirstType _dax_pp_comma _dax_pp_typename___T>
-struct FindParameterPackImpl<
-    ParameterPack<FirstType _dax_pp_comma _dax_pp_T___> >
-{
-  typedef ParameterPackImpl<
-      typename boost::remove_const<FirstType>::type,
-      typename FindParameterPackImpl<ParameterPack<_dax_pp_T___> >::type> type;
-
-  DAX_EXEC_CONT_EXPORT
-  static type Construct(FirstType first _dax_pp_comma
-                        _dax_pp_params___(rest))
-  {
-    return type(first,
-                FindParameterPackImpl<ParameterPack<_dax_pp_T___> >::Construct(
-                  _dax_pp_args___(rest)));
-  }
-};
-
-#endif //_dax_pp_sizeof___T < DAX_MAX_PARAMETER_SIZE
-
-#if _dax_pp_sizeof___T < DAX_MAX_PARAMETER_SIZE - 1
-
-template<typename FirstType,
-         _dax_pp_typename___T _dax_pp_comma
-         typename AppendType>
-struct ParameterPackAppendType<
-    ParameterPack<FirstType _dax_pp_comma _dax_pp_T___>,AppendType>
-{
-  typedef ParameterPack<FirstType _dax_pp_comma _dax_pp_T___, AppendType> type;
-
-private:
-  typedef typename FindParameterPackImpl<type>::type _implType;
-  typedef typename FindParameterPackImpl<
-    ParameterPack<FirstType _dax_pp_comma _dax_pp_T___> >::type _implInputType;
-
-public:
-  DAX_CONT_EXPORT
-  static _implType ConstructImpl(const _implInputType &originals,
-                                 AppendType toAppend)
-  {
-    typedef ParameterPackImplAccess<_implInputType> Access;
-    typedef ParameterPackAppendType<ParameterPack<_dax_pp_T___>, AppendType>
-        PPackAppendRemainder;
-    return _implType(
-          Access::GetFirstArgument(originals),
-          PPackAppendRemainder::ConstructImpl(Access::GetCdr(originals),
-                                              toAppend),
-          ParameterPackContTag());
-  }
-};
-
-#endif //_dax_pp_sizeof___T < DAX_MAX_PARAMETER_SIZE - 1
-
-#if _dax_pp_sizeof___T < DAX_MAX_PARAMETER_SIZE
-
-template<typename Function,
-         typename Transform,
-         typename ParameterPackImplType _dax_pp_comma
-         _dax_pp_typename___T>
-struct ParameterPackDoInvokeContImpl<
-    _dax_pp_sizeof___T,
-    Function,
-    Transform,
-    ParameterPackImplType _dax_pp_comma
-    _dax_pp_T___>
-{
-  DAX_CONT_EXPORT
-  void operator()(Function &f,
-                  const Transform &transform,
-                  ParameterPackImplType &params _dax_pp_comma
-                  _dax_pp_params___(arguments))
-  {
-    typedef ParameterPackImplAccess<ParameterPackImplType> Access;
-    typedef typename boost::mpl::if_<
-        typename boost::is_const<ParameterPackImplType>::type,
-        const typename Access::CdrType,
-        typename Access::CdrType>::type RemainingArgumentsType;
-    typedef typename boost::mpl::if_<
-        typename boost::is_const<ParameterPackImplType>::type,
-        const typename boost::remove_reference<typename Access::CarType>::type &,
-        typename boost::remove_reference<typename Access::CarType>::type &>::type
-          InputParameterType;
-    typedef typename Transform::template ReturnType<InputParameterType>::type
-        TransformedParameterType;
-    // It is important to explicitly specify the template parameters. When
-    // automatically determining the types, then reference types get dropped and
-    // become pass-by-value instead of pass-by-reference. If the functor has
-    // reference arguments that it modifies, it will modify a variable on the
-    // call stack rather than the original variable.
-    ParameterPackDoInvokeContImpl<
-        _dax_pp_sizeof___T + 1,
-        Function,
-        Transform,
-        RemainingArgumentsType,
-        _dax_pp_T___ _dax_pp_comma
-        TransformedParameterType>()(
-          f,
-          transform,
-          Access::GetCdr(params),
-          _dax_pp_args___(arguments) _dax_pp_comma
-          transform(Access::GetFirstArgument(params)));
-  }
-};
-
-#endif //_dax_pp_sizeof___T < DAX_MAX_PARAMETER_SIZE
-
-template<typename Function,
-         typename Transform _dax_pp_comma
-         _dax_pp_typename___T>
-struct ParameterPackDoInvokeContImpl<
-    _dax_pp_sizeof___T,
-    Function,
-    Transform,
-    ParameterPackImplNull _dax_pp_comma
-    _dax_pp_T___>
-{
-  DAX_CONT_EXPORT
-  void operator()(Function &f,
-                  const Transform &daxNotUsed(transform),
-                  ParameterPackImplNull &daxNotUsed(params) _dax_pp_comma
-                  _dax_pp_params___(arguments))
-  {
-    f(_dax_pp_args___(arguments));
-  }
-};
-
-template<typename Function,
-         typename Transform _dax_pp_comma
-         _dax_pp_typename___T>
-struct ParameterPackDoInvokeContImpl<
-    _dax_pp_sizeof___T,
-    Function,
-    Transform,
-    const ParameterPackImplNull _dax_pp_comma
-    _dax_pp_T___>
-{
-  DAX_CONT_EXPORT
-  void operator()(Function &f,
-                  const Transform &daxNotUsed(transform),
-                  const ParameterPackImplNull &daxNotUsed(params) _dax_pp_comma
-                  _dax_pp_params___(arguments))
-  {
-    f(_dax_pp_args___(arguments));
-  }
-};
-
-#if _dax_pp_sizeof___T < DAX_MAX_PARAMETER_SIZE
-
-template<typename Function,
-         typename Transform,
-         typename ParameterPackImplType _dax_pp_comma
-         _dax_pp_typename___T>
-struct ParameterPackDoInvokeExecImpl<
-    _dax_pp_sizeof___T,
-    Function,
-    Transform,
-    ParameterPackImplType _dax_pp_comma
-    _dax_pp_T___>
-{
-  DAX_EXEC_EXPORT
-  void operator()(Function &f,
-                  const Transform &transform,
-                  ParameterPackImplType &params _dax_pp_comma
-                  _dax_pp_params___(arguments))
-  {
-    typedef ParameterPackImplAccess<ParameterPackImplType> Access;
-    typedef typename boost::mpl::if_<
-        typename boost::is_const<ParameterPackImplType>::type,
-        const typename Access::CdrType,
-        typename Access::CdrType>::type RemainingArgumentsType;
-    typedef typename boost::mpl::if_<
-        typename boost::is_const<ParameterPackImplType>::type,
-        const typename boost::remove_reference<typename Access::CarType>::type &,
-        typename boost::remove_reference<typename Access::CarType>::type &>::type
-          InputParameterType;
-    typedef typename Transform::template ReturnType<InputParameterType>::type
-        TransformedParameterType;
-    // It is important to explicitly specify the template parameters. When
-    // automatically determining the types, then reference types get dropped and
-    // become pass-by-value instead of pass-by-reference. If the functor has
-    // reference arguments that it modifies, it will modify a variable on the
-    // call stack rather than the original variable.
-    ParameterPackDoInvokeExecImpl<
-        _dax_pp_sizeof___T + 1,
-        Function,
-        Transform,
-        RemainingArgumentsType,
-        _dax_pp_T___ _dax_pp_comma
-        TransformedParameterType>()(
-          f,
-          transform,
-          Access::GetCdr(params),
-          _dax_pp_args___(arguments) _dax_pp_comma
-          transform(Access::GetFirstArgument(params)));
-  }
-};
-
-#endif //_dax_pp_sizeof___T < DAX_MAX_PARAMETER_SIZE
-
-template<typename Function,
-         typename Transform _dax_pp_comma
-         _dax_pp_typename___T>
-struct ParameterPackDoInvokeExecImpl<
-    _dax_pp_sizeof___T,
-    Function,
-    Transform,
-    ParameterPackImplNull _dax_pp_comma
-    _dax_pp_T___>
-{
-  DAX_EXEC_EXPORT
-  void operator()(Function &f,
-                  const Transform &daxNotUsed(transform),
-                  ParameterPackImplNull &daxNotUsed(params) _dax_pp_comma
-                  _dax_pp_params___(arguments))
-  {
-    f(_dax_pp_args___(arguments));
-  }
-};
-
-template<typename Function,
-         typename Transform _dax_pp_comma
-         _dax_pp_typename___T>
-struct ParameterPackDoInvokeExecImpl<
-    _dax_pp_sizeof___T,
-    Function,
-    Transform,
-    const ParameterPackImplNull _dax_pp_comma
-    _dax_pp_T___>
-{
-  DAX_EXEC_EXPORT
-  void operator()(Function &f,
-                  const Transform &daxNotUsed(transform),
-                  const ParameterPackImplNull &daxNotUsed(params) _dax_pp_comma
-                  _dax_pp_params___(arguments))
-  {
-    f(_dax_pp_args___(arguments));
-  }
-};
-
-template<typename ReturnType, typename FunctionType>
-class ParameterPackReturnFunctorCont<
-    ReturnType, FunctionType, _dax_pp_sizeof___T>
-    : public ParameterPackReturnFunctorContBase<ReturnType, FunctionType>
-{
-  typedef ParameterPackReturnFunctorContBase<ReturnType, FunctionType>
-      Superclass;
-public:
-  DAX_CONT_EXPORT
-  ParameterPackReturnFunctorCont(const FunctionType &f)
-    : Superclass(f)
-  {  }
-
-#if _dax_pp_sizeof___T > 0
-  template<_dax_pp_typename___T>
-#endif
-  DAX_CONT_EXPORT
-  void operator()(_dax_pp_params___(&arguments)) {
-    this->RecordReturnValue(this->Function(_dax_pp_args___(arguments)));
-  }
-};
-
-template<typename ReturnType, typename FunctionType>
-class ParameterPackReturnFunctorExec<
-    ReturnType, FunctionType, _dax_pp_sizeof___T>
-    : public ParameterPackReturnFunctorExecBase<ReturnType, FunctionType>
-{
-  typedef ParameterPackReturnFunctorExecBase<ReturnType, FunctionType>
-      Superclass;
-public:
-  DAX_EXEC_EXPORT
-  ParameterPackReturnFunctorExec(const FunctionType &f)
-    : Superclass(f)
-  {  }
-
-#if _dax_pp_sizeof___T > 0
-  template<_dax_pp_typename___T>
-#endif
-  DAX_EXEC_EXPORT
-  void operator()(_dax_pp_params___(&arguments)) {
-    this->RecordReturnValue(this->Function(_dax_pp_args___(arguments)));
-  }
-};
-
-template<typename ObjectToConstruct>
-struct ParameterPackConstructFunctorCont<ObjectToConstruct, _dax_pp_sizeof___T>
-{
-public:
-#if _dax_pp_sizeof___T > 0
-  template<_dax_pp_typename___T>
-#endif
-  DAX_CONT_EXPORT
-  ObjectToConstruct operator()(_dax_pp_params___(arguments)) const {
-    return ObjectToConstruct(_dax_pp_args___(arguments));
-  }
-};
-
-template<typename ObjectToConstruct>
-struct ParameterPackConstructFunctorExec<ObjectToConstruct, _dax_pp_sizeof___T>
-{
-public:
-#if _dax_pp_sizeof___T > 0
-  template<_dax_pp_typename___T>
-#endif
-  DAX_EXEC_EXPORT
-  ObjectToConstruct operator()(_dax_pp_params___(arguments)) const {
-    return ObjectToConstruct(_dax_pp_args___(arguments));
-  }
-};
-
-#if _dax_pp_sizeof___T < DAX_MAX_PARAMETER_SIZE
-
-template<typename NewType _dax_pp_comma _dax_pp_typename___T>
-struct PPackPrepend<NewType, ParameterPack<_dax_pp_T___> >
-{
-  typedef ParameterPack<NewType _dax_pp_comma _dax_pp_T___> type;
-};
-
-template<typename NewType,
-         int Index,
-         typename FirstType _dax_pp_comma
-         _dax_pp_typename___T
-         >
-struct PPackReplace<NewType,
-                    Index,
-                    ParameterPack<FirstType _dax_pp_comma _dax_pp_T___> >
-{
-  typedef ParameterPack<FirstType _dax_pp_comma _dax_pp_T___>
-      ParameterPackInputType;
-  // These check for a valid index. If you get a compile error in these lines,
-  // it is probably caused by an invalid Index template parameter for one of
-  // the ParameterPack::Replace. Remember that parameters are index starting at
-  // 1.
-  BOOST_STATIC_ASSERT(Index > 0);
-  BOOST_STATIC_ASSERT(Index <= ParameterPackInputType::NUM_PARAMETERS);
-
-  typedef typename
-      PPackPrepend<
-          FirstType,
-          typename PPackReplace<NewType, Index-1, ParameterPack<_dax_pp_T___> >::type
-      >::type type;
-
-private:
-   typedef typename FindParameterPackImpl<type>::type _implType;
-   typedef typename FindParameterPackImpl<ParameterPackInputType>::type
-      _implInputType;
-
-public:
-   DAX_CONT_EXPORT
-   static _implType ConstructImpl(NewType replacement,
-                                  const _implInputType &originals)
-   {
-     typedef ParameterPackImplAccess<_implInputType> Access;
-     typedef PPackReplace<NewType, Index-1, ParameterPack<_dax_pp_T___> >
-         PPackReplaceRemainder;
-     return _implType(
-           Access::GetFirstArgument(originals),
-           PPackReplaceRemainder::ConstructImpl(replacement,
-                                                Access::GetCdr(originals)),
-           ParameterPackContTag());
-   }
-};
-
-template<typename NewType,
-         typename FirstType _dax_pp_comma
-         _dax_pp_typename___T
-         >
-struct PPackReplace<NewType,
-                    1,
-                    ParameterPack<FirstType _dax_pp_comma _dax_pp_T___> >
-{
-  typedef ParameterPack<FirstType _dax_pp_comma _dax_pp_T___>
-      ParameterPackInputType;
-
-  typedef ParameterPack<NewType _dax_pp_comma _dax_pp_T___> type;
-  typedef typename FindParameterPackImpl<ParameterPackInputType>::type
-     _implInputType;
-
-  typedef typename FindParameterPackImpl<type>::type _implType;
-
-  DAX_CONT_EXPORT
-  static _implType ConstructImpl(NewType replacement,
-                                 const _implInputType &originals)
-  {
-    typedef ParameterPackImplAccess<_implInputType> Access;
-
-    return _implType(replacement,
-                     Access::GetCdr(originals),
-                     ParameterPackContTag());
-  }
-};
-
-#endif //_dax_pp_sizeof___T < DAX_MAX_PARAMETER_SIZE
-
-} // namespace detail
-
-#if _dax_pp_sizeof___T > 0
-
-template<_dax_pp_typename___T>
-DAX_CONT_EXPORT
-dax::internal::ParameterPack<_dax_pp_T___>
-make_ParameterPack(_dax_pp_params___(arguments))
-{
-  typedef dax::internal::ParameterPack<_dax_pp_T___> ParameterPackType;
-  return ParameterPackType(
-        dax::internal::detail::FindParameterPackImpl<ParameterPackType>::
-          Construct(_dax_pp_args___(arguments)),
-        dax::internal::ParameterPackCopyTag(),
-        dax::internal::ParameterPackContTag());
-}
-
-#endif //_dax_pp_sizeof___T > 0
-
-template<_dax_pp_typename___T _dax_pp_comma typename ReturnType>
-struct ParameterPackToSignature<ParameterPack<_dax_pp_T___>, ReturnType>
-{
-  typedef ReturnType type(_dax_pp_T___);
-};
-
-template<typename ReturnType _dax_pp_comma _dax_pp_typename___T>
-struct SignatureToParameterPack<ReturnType(_dax_pp_T___)>
-{
-  typedef dax::internal::ParameterPack<_dax_pp_T___> type;
-};
-
-
-}
-} // namespace dax::internal
-
-#endif //BOOST_PP_IS_ITERATING

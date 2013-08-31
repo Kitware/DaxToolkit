@@ -20,13 +20,16 @@
 # if defined(DAX_DOXYGEN_ONLY)
 # else // !defined(DAX_DOXYGEN_ONLY)
 
+#include <dax/internal/Configure.h>
+
 # ifndef DAX_USE_VARIADIC_TEMPLATE
 #  include <dax/internal/ParameterPackCxx03.h>
-# endif // !(__cplusplus >= 201103L)
+# endif // !DAX_USE_VARIADIC_TEMPLATE
 
 # include <dax/cont/arg/ConceptMap.h>
 # include <dax/cont/sig/Tag.h>
 # include <dax/internal/GetNthType.h>
+# include <dax/internal/Invocation.h>
 # include <dax/internal/Members.h>
 # include <dax/internal/ParameterPack.h>
 # include <dax/internal/Tags.h>
@@ -69,23 +72,23 @@ struct BindingsMemberMap
 
 } // namespace detail
 
-template<typename WorkletType, typename ControlInvocationParameters>
+template<typename Invocation>
 struct Bindings {
-  typedef typename dax::internal::ParameterPackToSignature<
-      ControlInvocationParameters>::type ControlInvocationSignature;
   typedef dax::internal::Members<
-      ControlInvocationSignature,detail::BindingsMemberMap<WorkletType> > type;
+      typename Invocation::ControlInvocationSignature,
+      detail::BindingsMemberMap<typename Invocation::Worklet> > type;
 };
 
 template<typename WorkletType, typename ControlInvocationParameters>
 DAX_CONT_EXPORT
 typename dax::cont::internal::Bindings<
-    WorkletType, ControlInvocationParameters>::type
+    dax::internal::Invocation<WorkletType, ControlInvocationParameters> >::type
 BindingsCreate(const WorkletType &daxNotUsed(worklet),
                const ControlInvocationParameters &arguments)
 {
   typedef typename dax::cont::internal::Bindings<
-      WorkletType, ControlInvocationParameters>::type BindingsType;
+    dax::internal::Invocation<WorkletType, ControlInvocationParameters> >::type
+      BindingsType;
   return BindingsType(arguments,
                       dax::internal::MembersCopyTag(),
                       dax::internal::MembersContTag());

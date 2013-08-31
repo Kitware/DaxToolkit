@@ -63,8 +63,9 @@ public:
     // worklet ControlSignature through ConceptMap specializations.
     // The concept maps also know how to make the arguments available
     // in the execution environment.
-    typedef typename dax::cont::internal::Bindings<
-                                    WorkletType, Parameters>::type BindingsType;
+    typedef dax::internal::Invocation<WorkletType, Parameters> Invocation;
+    typedef typename dax::cont::internal::Bindings<Invocation>::type
+        BindingsType;
     BindingsType bindings =
         dax::cont::internal::BindingsCreate(worklet, arguments);
 
@@ -82,12 +83,11 @@ public:
     //out the new count object and use that.
     //we have the bind
     typedef typename dax::cont::scheduling::DetermineIndicesAndGridType<
-                            WorkletType, Parameters>  CellSchedulingIndices;
+                            Invocation>  CellSchedulingIndices;
 
     typedef typename CellSchedulingIndices::GridTypeTag GridTypeTag;
 
-    dax::exec::internal::Functor<WorkletType, Parameters>
-        bindingFunctor(worklet, bindings);
+    dax::exec::internal::Functor<Invocation> bindingFunctor(worklet, bindings);
 
     CellSchedulingIndices cellScheduler(bindings,count);
 

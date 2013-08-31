@@ -31,9 +31,9 @@
 #include <dax/cont/scheduling/SchedulerReduceKeysValues.h>
 #include <dax/cont/PermutationContainer.h>
 
-#if !DAX_USE_VARIATIC_TEMPLATE
+#ifndef DAX_USE_VARIADIC_TEMPLATE
 # include <dax/internal/ParameterPackCxx03.h>
-#endif // !DAX_USE_VARIATIC_TEMPLATE
+#endif // !DAX_USE_VARIADIC_TEMPLATE
 
 namespace dax { namespace cont {
 
@@ -53,7 +53,7 @@ private:
     realScheduler.Invoke(worklet, arguments);
   }
 public:
-#if __cplusplus >= 201103L
+#ifdef DAX_USE_VARIADIC_TEMPLATE
   // Note any changes to this method must be reflected in the
   // C++03 implementation.
   template <class WorkletType, typename...T>
@@ -61,13 +61,13 @@ public:
     {
     this->InvokeImpl(worklet, dax::internal::make_ParameterPack(args...));
     }
-#else // !(__cplusplus >= 201103L)
+#else // !DAX_USE_VARIADIC_TEMPLATE
   // For C++03 use Boost.Preprocessor file iteration to simulate
   // parameter packs by enumerating implementations for all argument
   // counts.
 #     define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/cont/Scheduler.h>))
 #     include BOOST_PP_ITERATE()
-#endif // !(__cplusplus >= 201103L)
+#endif // !DAX_USE_VARIADIC_TEMPLATE
 };
 
 } } //namespace dax::cont
