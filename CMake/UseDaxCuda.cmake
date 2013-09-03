@@ -37,10 +37,6 @@ endif (Dax_Cuda_FOUND)
 
 # Find the Thrust library.
 if (Dax_Cuda_FOUND)
-  # FindThrust is not distributed with CMake, so find the one distributed
-  # with Dax.
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Dax_CMAKE_MODULE_PATH})
-
   find_package(Thrust)
 
   if (NOT THRUST_FOUND)

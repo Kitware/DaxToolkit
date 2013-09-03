@@ -63,6 +63,10 @@ set(Dax_REQUIRED_THRUST_VERSION "@Dax_REQUIRED_THRUST_VERSION@")
 
 set(Dax_CMAKE_MODULE_PATH "@Dax_CMAKE_MODULE_PATH_CONFIG@")
 
+# Dax requires some CMake Find modules not included with CMake, so
+# include the CMake modules distributed with Dax.
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Dax_CMAKE_MODULE_PATH})
+
 set(USE_Dax_Serial "@Dax_CMAKE_MODULE_PATH_CONFIG@/UseDaxSerial.cmake")
 set(USE_Dax_OpenMP "@Dax_CMAKE_MODULE_PATH_CONFIG@/UseDaxOpenMP.cmake")
 set(USE_Dax_Cuda "@Dax_CMAKE_MODULE_PATH_CONFIG@/UseDaxCuda.cmake")
