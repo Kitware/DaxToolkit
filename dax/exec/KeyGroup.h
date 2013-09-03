@@ -17,6 +17,7 @@
 #define __dax_exec_KeyGroup_h
 
 #include <dax/Types.h>
+#include <dax/exec/internal/WorkletBase.h>
 #include <dax/exec/Assert.h>
 
 namespace dax{ namespace exec {
