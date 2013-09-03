@@ -145,7 +145,7 @@ private:
     // be modified to add this array to the arguments and the execution
     // signature has to be modified to ensure that the ReductionCount signature
     // points to the appropriate array.  The AddReduceKeysArgs does all this.
-    typedef typename dax::cont::scheduling::AddReductionArgs<
+    typedef typename dax::cont::scheduling::AddReduceKeysArgs<
                   WorkletType>::DerivedWorkletType DerivedWorkletType;
 
     //we get our magic here. we need to wrap some parameters and pass
