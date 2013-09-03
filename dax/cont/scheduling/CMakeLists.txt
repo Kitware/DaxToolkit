@@ -15,7 +15,7 @@
 ##=============================================================================
 
 set(headers
-  AddReductionCountArg.h
+  AddReduceKeysArgs.h
   AddVisitIndexArg.h
   CollectCount.h
   CreateExecutionResources.h
