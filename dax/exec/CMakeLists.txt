@@ -22,6 +22,7 @@ set(headers
   ExecutionObjectBase.h
   Interpolate.h
   InterpolatedCellPoints.h
+  KeyGroup.h
   ParametricCoordinates.h
   WorkletInterpolatedCell.h
   WorkletGenerateKeysValues.h

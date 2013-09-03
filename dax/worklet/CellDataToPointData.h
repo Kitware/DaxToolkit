@@ -57,20 +57,19 @@ class CellDataToPointDataReduceKeys
 {
 public:
   typedef void ControlSignature(Values(In), Values(Out));
-  typedef void ExecutionSignature(
-            KeyGroup(_1),
-            _2);
+  typedef _2 ExecutionSignature(KeyGroup(_1));
 
-  template<typename FieldType, typename KeyGroupType>
+  template<typename KeyGroupType>
   DAX_EXEC_EXPORT
-  void operator()(
-                  KeyGroupType inPortal,
-                  FieldType &reducedValue
-          ) const
+  typename KeyGroupType::ValueType operator()(KeyGroupType inPortal) const
   {
-      for(dax::Id iCtr = 0; iCtr < inPortal.GetNumberOfValues(); iCtr++)
-          reducedValue += inPortal.Get(iCtr);
-      reducedValue /= inPortal.GetNumberOfValues();
+    typedef typename KeyGroupType::ValueType VType;
+    VType reducedValue = VType();
+    for(dax::Id iCtr = 0; iCtr < inPortal.GetNumberOfValues(); iCtr++)
+      {
+      reducedValue += inPortal[iCtr];
+      }
+    return (reducedValue / inPortal.GetNumberOfValues());
   }
 };
 

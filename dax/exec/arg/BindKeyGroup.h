@@ -16,45 +16,14 @@
 #ifndef __dax_exec_arg_BindKeyGroup_h
 #define __dax_exec_arg_BindKeyGroup_h
 
-#if defined(DAX_DOXYGEN_ONLY)
-#else // !defined(DAX_DOXYGEN_ONLY)
+#include <dax/exec/KeyGroup.h>
+#include <dax/exec/arg/ArgBase.h>
+#include <dax/exec/arg/BindInfo.h>
 
-#include <dax/cont/sig/KeyGroup.h>
-#include <dax/exec/Assert.h>
+#include <boost/type_traits/function_traits.hpp>
+#include <boost/mpl/if.hpp>
 
 namespace dax{ namespace exec { namespace arg {
-
-template<typename IndexExecArgType,
-         typename ValueExecArgType>
-struct KeyGroup
-{
-private:
-    dax::Id m_StartIndex;
-    dax::Id m_Size;
-    IndexExecArgType m_Indices;
-    ValueExecArgType m_Values;
-    dax::exec::internal::WorkletBase m_Worklet;
-public:
-    DAX_EXEC_EXPORT KeyGroup(
-            dax::Id StartIndex,
-            dax::Id Size,
-            const IndexExecArgType &Indices,
-            const ValueExecArgType &Values,
-            const dax::exec::internal::WorkletBase& Worklet)
-        : m_StartIndex(StartIndex),
-          m_Size(Size),
-          m_Indices(Indices),
-          m_Values(Values),
-          m_Worklet(Worklet){}
-
-    DAX_EXEC_EXPORT dax::Id GetNumberOfValues() const {return m_Size;}
-    DAX_EXEC_EXPORT typename ValueExecArgType::ValueType Get(dax::Id index) const
-    {
-        DAX_ASSERT_EXEC(index < m_Size, m_Worklet);
-        dax::Id ValueIndex = m_Indices(m_StartIndex + index, m_Worklet);
-        return m_Values(ValueIndex, m_Worklet);
-    }
-};
 
 template <typename Invocation, int N>
 class BindKeyGroup : public dax::exec::arg::ArgBase<BindKeyGroup<Invocation, N> >
@@ -137,11 +106,7 @@ public:
                                    ::boost::true_type,
                                    ::boost::false_type>::type HasInTag;
 
-  typedef dax::exec::arg::KeyGroup<KeyIndexExecArgType,
-                                    ExecArgType> KeyGroupType;
-
-
-  typedef KeyGroupType ValueType;
+  typedef dax::exec::KeyGroup<KeyIndexExecArgType,ExecArgType> ValueType;
   typedef typename boost::mpl::if_<typename HasOutTag::type,
                                    ValueType,
                                    ValueType >::type ReturnType;
@@ -151,5 +116,4 @@ public:
 
 } } } //dax exec arg
 
-#endif // !defined(DAX_DOXYGEN_ONLY)
 #endif // __dax_exec_arg_BindKeyGroup_h
