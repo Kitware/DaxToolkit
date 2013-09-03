@@ -37,8 +37,6 @@ endif (Dax_TBB_FOUND)
 
 # Find TBB support.
 if (Dax_TBB_FOUND)
-  # FindTBB is not distributed with CMake, so find the one distributed
-  # with Dax.
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Dax_CMAKE_MODULE_PATH})
 
   find_package(TBB)

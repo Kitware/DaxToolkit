@@ -21,7 +21,7 @@ endif (Dax_Serial_initialize_complete)
 # Find the Boost library.
 if (NOT Dax_Serial_FOUND)
   if(NOT Boost_FOUND)
-    find_package(Boost ${Dax_REQUIRED_BOOST_VERSION})
+    find_package(BoostHeaders ${Dax_REQUIRED_BOOST_VERSION})
   endif()
 
   if (NOT Boost_FOUND)
