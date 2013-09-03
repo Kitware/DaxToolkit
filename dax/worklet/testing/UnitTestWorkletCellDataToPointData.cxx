@@ -46,7 +46,7 @@ void verifyPointData(const TestGrid &grid,
 {
   typedef typename TestGrid::CellTag CellTag;
 
-  std::vector<int> numConnections(grid->GetNumberOfPoints());
+  std::vector<dax::Id> numConnections(grid->GetNumberOfPoints());
   std::fill(numConnections.begin(), numConnections.end(), 0);
 
   std::vector<dax::Scalar> pointDataSums(grid->GetNumberOfPoints());
@@ -103,7 +103,7 @@ struct TestCellDataToPointDataWorklet
                                         = dax::cont::make_ArrayHandle(field);
 
     dax::cont::ArrayHandleConstant<dax::Id> keyGenCounts =
-      dax::cont::make_ArrayHandleConstant(
+      dax::cont::make_ArrayHandleConstant<dax::Id>(
             dax::CellTraits<CellTag>::NUM_VERTICES, grid->GetNumberOfCells());
 
     dax::cont::ArrayHandle<dax::Id> keyHandle;
