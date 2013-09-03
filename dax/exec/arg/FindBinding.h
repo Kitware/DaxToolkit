@@ -23,10 +23,12 @@
 #include <dax/cont/arg/Topology.h>
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Arg.h>
+#include <dax/cont/sig/KeyGroup.h>
 #include <dax/cont/sig/ReductionCount.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/cont/sig/VisitIndex.h>
 #include <dax/cont/sig/WorkId.h>
+
 #include <dax/exec/arg/BindCellPoints.h>
 #include <dax/exec/arg/BindCellTag.h>
 #include <dax/exec/arg/BindDirect.h>

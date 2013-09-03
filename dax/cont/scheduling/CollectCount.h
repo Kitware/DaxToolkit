@@ -30,11 +30,9 @@ template <class DomainType>
 class CollectCount
 {
   dax::Id& Count;
-  bool FirstItem;
 public:
   CollectCount(dax::Id& c):
-    Count(c),
-    FirstItem(true)
+    Count(c)
   { this->Count = 1; }
 
   template <typename C, typename A>
@@ -70,10 +68,12 @@ public:
     if(IgnoreZeroLength() == boost::true_type() && c == 0)
       {
       }
-    else if(this->FirstItem)
+    else if(this->Count == 1 && c > this->Count)
       {
+      //count is equal to 1 so are on the first item that is larger than
+      //than the default iteration of 1. This will become the value
+      //we use to evaluate all other lengths to determine the proper length
       this->Count = c;
-      this->FirstItem = false;
       }
     else if(c < this->Count)
       {

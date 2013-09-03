@@ -24,11 +24,14 @@
 
 namespace {
 
+using dax::exec::internal::IJKIndex;
+
 template<typename Grid>
 static void TestGridIJK(const Grid &gridstruct)
 {
+
   dax::Id3 dims = dax::extentCellDimensions(gridstruct.Extent);
-  dax::exec::internal::IJKIndex ijkIndex(dims);
+  IJKIndex ijkIndex(dims);
   dax::Id correctFlatCellIndex=0;
   for(dax::Id k = 0; k < dims[2]; ++k)
     {
@@ -41,17 +44,25 @@ static void TestGridIJK(const Grid &gridstruct)
         ijkIndex.SetI(i);
 
         //verify the int conversion
+        const IJKIndex greaterByOne(dims,dax::Id3(i,j,k+1));
+        const IJKIndex lesserByOne(dims,dax::Id3(i,j,k-1));
+        const IJKIndex sameIndex = ijkIndex;
         const dax::Id convertedIndex = ijkIndex;
+
         DAX_TEST_ASSERT(convertedIndex == correctFlatCellIndex,
                   "ijk dax::Id casting returned wrong cell index");
 
         //verify the == operator
         DAX_TEST_ASSERT(ijkIndex == correctFlatCellIndex,
                   "ijk operator == is wrong");
+        DAX_TEST_ASSERT(ijkIndex == IJKIndex(dims,dax::Id3(i,j,k)),
+          "ijk operator == is wrong");
 
         //verify the != operator
         DAX_TEST_ASSERT(!(ijkIndex != correctFlatCellIndex),
                 "ijk != operator is wrong");
+        DAX_TEST_ASSERT(!(ijkIndex != sameIndex),
+          "ijk operator == is wrong");
 
         //verify the comparison operators
         DAX_TEST_ASSERT( (ijkIndex < (convertedIndex+1) &&
@@ -62,7 +73,16 @@ static void TestGridIJK(const Grid &gridstruct)
                            (ijkIndex >= convertedIndex)),
                         "ijk >= operator is wrong");
 
-        //verify the mult operator
+        //verify the ijk comparison
+        DAX_TEST_ASSERT( (ijkIndex < greaterByOne &&
+                         !(ijkIndex < lesserByOne)),
+                        "ijk < operator is wrong");
+        DAX_TEST_ASSERT( (!(ijkIndex >= greaterByOne) &&
+                          (ijkIndex >= lesserByOne) &&
+                          (ijkIndex >= sameIndex)),
+                        "ijk >= operator is wrong");
+
+        //verify we can convert and multiply with the implicit dax::id convert
         DAX_TEST_ASSERT( (ijkIndex * 4) ==  (convertedIndex * 4),
                         "ijk * operator is wrong");
 

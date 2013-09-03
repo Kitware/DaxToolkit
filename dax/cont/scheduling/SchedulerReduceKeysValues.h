@@ -23,7 +23,7 @@
 #include <dax/cont/arg/ConceptMap.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/Scheduler.h>
-#include <dax/cont/scheduling/AddReductionCountArg.h>
+#include <dax/cont/scheduling/AddReduceKeysArgs.h>
 #include <dax/cont/scheduling/SchedulerDefault.h>
 #include <dax/cont/scheduling/SchedulerTags.h>
 #include <dax/cont/scheduling/VerifyUserArgLength.h>
@@ -144,8 +144,9 @@ private:
     // if we have the ReductionCount/Offset/Index signature.  The control signature needs to
     // be modified to add this array to the arguments and the execution
     // signature has to be modified to ensure that the ReductionCount signature
-    // points to the appropriate array.  The AddReductionCountArg does all this.
-    typedef typename AddReductionArgs<WorkletType>::DerivedWorkletType DerivedWorkletType;
+    // points to the appropriate array.  The AddReduceKeysArgs does all this.
+    typedef typename dax::cont::scheduling::AddReduceKeysArgs<
+                  WorkletType>::DerivedWorkletType DerivedWorkletType;
 
     //we get our magic here. we need to wrap some parameters and pass
     //them to the real scheduler

@@ -27,7 +27,16 @@ struct IJKIndex
     IJK(0,0,0),
     Dims(dims)
     {
-    this->CachedValue = this->IJK[0] + this->Dims[0]*
+    this->CachedValue = this->Dims[0]*
+                        (this->IJK[1] + this->Dims[1]* this->IJK[2]);
+    }
+
+  DAX_CONT_EXPORT
+  IJKIndex(dax::Id3 dims, dax::Id3 ijk):
+    IJK(ijk),
+    Dims(dims)
+    {
+    this->CachedValue = this->Dims[0]*
                         (this->IJK[1] + this->Dims[1]* this->IJK[2]);
     }
 
@@ -44,24 +53,20 @@ struct IJKIndex
   DAX_CONT_EXPORT void SetK(dax::Id v) { this->IJK[2]=v; this->UpdateCache(); }
 
   DAX_EXEC_EXPORT
-  bool operator == (dax::Id v) const
-    { return (this->CachedValue + this->IJK[0]) == v;}
+  bool operator == (IJKIndex v) const
+    { return (this->CachedValue + this->IJK[0]) == (dax::Id)v;}
 
   DAX_EXEC_EXPORT
-  bool operator != (dax::Id v) const
-    { return (this->CachedValue + this->IJK[0]) != v;}
+  bool operator != (IJKIndex v) const
+    { return (this->CachedValue + this->IJK[0]) != (dax::Id)v;}
 
   DAX_EXEC_EXPORT
-  bool operator < (dax::Id v) const
-    { return (this->CachedValue + this->IJK[0]) < v;}
+  bool operator < (IJKIndex v) const
+    { return (this->CachedValue + this->IJK[0]) < (dax::Id)v;}
 
   DAX_EXEC_EXPORT
-  bool operator >= (dax::Id v) const
-    { return (this->CachedValue + this->IJK[0]) >= v;}
-
-  DAX_EXEC_EXPORT dax::Id operator * (dax::Id v) const
-    { return (this->CachedValue + this->IJK[0]) * v;}
-
+  bool operator >= (IJKIndex v) const
+    { return (this->CachedValue + this->IJK[0]) >= (dax::Id)v;}
 
 private:
 

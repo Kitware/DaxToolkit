@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //===========================================x==================================
-#ifndef __dax_cont_scheduling_AddReductionCountArg_h
-#define __dax_cont_scheduling_AddReductionCountArg_h
+#ifndef __dax_cont_scheduling_AddReduceKeysArgs_h
+#define __dax_cont_scheduling_AddReduceKeysArgs_h
 
 #include <dax/Types.h>
 
@@ -34,6 +34,7 @@
 namespace dax { namespace cont { namespace scheduling {
 
 
+namespace internal{
 //Control side only structure
 template<typename Functor>
 struct AddReductionSignatures
@@ -100,11 +101,12 @@ public:
     //expose the new control signature
     typedef typename PushBackAllContSig::type ControlSignature;
 };
+}
 
 template<class WorkletType>
-class AddReductionArgs
+class AddReduceKeysArgs
 {
-  typedef AddReductionSignatures<
+  typedef  internal::AddReductionSignatures<
               WorkletType>  ModifiedWorkletSignatures;
 
   //now that we have index generated, we have to build the new worklet
@@ -124,4 +126,4 @@ public:
 };
 
 } } } //dax::cont::scheduling
-#endif //__dax_cont_scheduling_AddReductionCountArg_h
+#endif //__dax_cont_scheduling_AddReduceKeysArgs_h
