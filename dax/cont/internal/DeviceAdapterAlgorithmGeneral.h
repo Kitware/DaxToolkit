@@ -23,7 +23,9 @@
 
 #include <dax/Functional.h>
 
+#include <dax/exec/Assert.h>
 #include <dax/exec/internal/ErrorMessageBuffer.h>
+#include <dax/exec/internal/WorkletBase.h>
 
 #include <dax/tbb/cont/internal/DeviceAdapterTagTBB.h>
 
@@ -111,19 +113,59 @@ namespace internal {
 template<class DerivedAlgorithm, class DeviceAdapterTag>
 struct DeviceAdapterAlgorithmGeneral
 {
+  //--------------------------------------------------------------------------
+  // Get Execution Value
+  // This method is used internally to get a single element from the execution
+  // array. Might want to expose this and/or allow actual device adapter
+  // implementations to provide one.
+private:
+  template<typename T, class CIn>
+  DAX_CONT_EXPORT
+  static T GetExecutionValue(
+      const dax::cont::ArrayHandle<T, CIn, DeviceAdapterTag> &input,
+      dax::Id index)
+  {
+    typedef dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> InputArrayType;
+    typedef dax::cont::ArrayHandle<
+        T,dax::cont::ArrayContainerControlTagBasic,DeviceAdapterTag>
+        OutputArrayType;
+
+    OutputArrayType output;
+
+    CopyKernel<
+        typename InputArrayType::PortalConstExecution,
+        typename OutputArrayType::PortalExecution>
+        kernel(input.PrepareForInput(),
+               output.PrepareForOutput(1),
+               index);
+
+    DerivedAlgorithm::Schedule(kernel, 1);
+
+    return output.GetPortalConstControl().Get(0);
+  }
+
+  //--------------------------------------------------------------------------
+  // Copy
 private:
   template<class InputPortalType, class OutputPortalType>
   struct CopyKernel {
     InputPortalType InputPortal;
     OutputPortalType OutputPortal;
+    dax::Id InputOffset;
 
     DAX_CONT_EXPORT
-    CopyKernel(InputPortalType inputPortal, OutputPortalType outputPortal)
-      : InputPortal(inputPortal), OutputPortal(outputPortal) {  }
+    CopyKernel(InputPortalType inputPortal,
+               OutputPortalType outputPortal,
+               dax::Id inputOffset = 0)
+      : InputPortal(inputPortal),
+        OutputPortal(outputPortal),
+        InputOffset(inputOffset)
+    {  }
 
     DAX_EXEC_EXPORT
     void operator()(dax::Id index) const {
-      this->OutputPortal.Set(index, this->InputPortal.Get(index));
+      this->OutputPortal.Set(
+            index, this->InputPortal.Get(index+this->InputOffset));
     }
 
     DAX_CONT_EXPORT
@@ -148,6 +190,8 @@ public:
     DerivedAlgorithm::Schedule(kernel, arraySize);
   }
 
+  //--------------------------------------------------------------------------
+  // Lower Bounds
 private:
   template<class InputPortalType,class ValuesPortalType,class OutputPortalType>
   struct LowerBoundsKernel {
@@ -283,74 +327,84 @@ public:
         LowerBounds(input, values_output, values_output);
   }
 
+  //--------------------------------------------------------------------------
+  // Scan Inclusive
 private:
-  template<class StencilPortalType, class OutputPortalType>
-  struct StencilToIndexFlagKernel
+  template<typename PortalType>
+  struct ScanKernel : dax::exec::internal::WorkletBase
   {
-    typedef typename StencilPortalType::ValueType StencilValueType;
-    StencilPortalType StencilPortal;
-    OutputPortalType OutputPortal;
+    PortalType Portal;
+    dax::Id Stride;
+    dax::Id Offset;
+    dax::Id Distance;
 
     DAX_CONT_EXPORT
-    StencilToIndexFlagKernel(StencilPortalType stencilPortal,
-                             OutputPortalType outputPortal)
-      : StencilPortal(stencilPortal), OutputPortal(outputPortal) {  }
-
-    DAX_EXEC_EXPORT
-    void operator()(dax::Id index) const
-    {
-      StencilValueType value = this->StencilPortal.Get(index);
-      bool flag = dax::not_default_constructor<StencilValueType>()(value);
-      this->OutputPortal.Set(index, flag ? 1 : 0);
-    }
-
-    DAX_CONT_EXPORT
-    void SetErrorMessageBuffer(const dax::exec::internal::ErrorMessageBuffer &)
+    ScanKernel(const PortalType &portal, dax::Id stride, dax::Id offset)
+      : Portal(portal),
+        Stride(stride),
+        Offset(offset),
+        Distance(stride/2)
     {  }
-  };
-
-  template<class InputPortalType,
-           class StencilPortalType,
-           class IndexPortalType,
-           class OutputPortalType>
-  struct CopyIfKernel
-  {
-    InputPortalType InputPortal;
-    StencilPortalType StencilPortal;
-    IndexPortalType IndexPortal;
-    OutputPortalType OutputPortal;
-
-    DAX_CONT_EXPORT
-    CopyIfKernel(InputPortalType inputPortal,
-                 StencilPortalType stencilPortal,
-                 IndexPortalType indexPortal,
-                 OutputPortalType outputPortal)
-      : InputPortal(inputPortal),
-        StencilPortal(stencilPortal),
-        IndexPortal(indexPortal),
-        OutputPortal(outputPortal) {  }
 
     DAX_EXEC_EXPORT
     void operator()(dax::Id index) const
     {
-      typedef typename StencilPortalType::ValueType StencilValueType;
-      StencilValueType stencilValue = this->StencilPortal.Get(index);
-      if (dax::not_default_constructor<StencilValueType>()(stencilValue))
+      typedef typename PortalType::ValueType ValueType;
+
+      dax::Id leftIndex = this->Offset + index*this->Stride;
+      dax::Id rightIndex = leftIndex + this->Distance;
+
+      DAX_ASSERT_EXEC(leftIndex < this->Portal.GetNumberOfValues(), *this);
+
+      if (rightIndex < this->Portal.GetNumberOfValues())
         {
-        dax::Id outputIndex = this->IndexPortal.Get(index);
-
-        typedef typename OutputPortalType::ValueType OutputValueType;
-        OutputValueType value = this->InputPortal.Get(index);
-
-        this->OutputPortal.Set(outputIndex, value);
+        ValueType leftValue = this->Portal.Get(leftIndex);
+        ValueType rightValue = this->Portal.Get(rightIndex);
+        this->Portal.Set(rightIndex, leftValue+rightValue);
         }
     }
-
-    DAX_CONT_EXPORT
-    void SetErrorMessageBuffer(const dax::exec::internal::ErrorMessageBuffer &)
-    {  }
   };
 
+public:
+  template<typename T, class CIn, class COut>
+  DAX_CONT_EXPORT static T ScanInclusive(
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
+      dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>& output)
+  {
+    typedef typename
+        dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>::PortalExecution
+            PortalType;
+
+    DerivedAlgorithm::Copy(input, output);
+
+    dax::Id numValues = output.GetNumberOfValues();
+    if (numValues < 1)
+      {
+      return T();
+      }
+
+    PortalType portal = output.PrepareForInPlace();
+
+    dax::Id stride;
+    for (stride = 2; stride-1 < numValues; stride *= 2)
+      {
+      ScanKernel<PortalType> kernel(portal, stride, stride/2 - 1);
+      DerivedAlgorithm::Schedule(kernel, numValues/stride);
+      }
+
+    // Do reverse operation on odd indices. Start at stride we were just at.
+    for (stride /= 2; stride > 1; stride /= 2)
+      {
+      ScanKernel<PortalType> kernel(portal, stride, stride - 1);
+      DerivedAlgorithm::Schedule(kernel, numValues/stride);
+      }
+
+    return GetExecutionValue(output, numValues-1);
+  }
+
+
+  //--------------------------------------------------------------------------
+  // Sort by Key
 private:
   struct DefaultCompareFunctor
   {
@@ -420,6 +474,76 @@ public:
     DerivedAlgorithm::Sort(zipHandle,KeyCompare<T,U,Compare>(comp));
   }
 
+  //--------------------------------------------------------------------------
+  // Stream Compact
+private:
+  template<class StencilPortalType, class OutputPortalType>
+  struct StencilToIndexFlagKernel
+  {
+    typedef typename StencilPortalType::ValueType StencilValueType;
+    StencilPortalType StencilPortal;
+    OutputPortalType OutputPortal;
+
+    DAX_CONT_EXPORT
+    StencilToIndexFlagKernel(StencilPortalType stencilPortal,
+                             OutputPortalType outputPortal)
+      : StencilPortal(stencilPortal), OutputPortal(outputPortal) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(dax::Id index) const
+    {
+      StencilValueType value = this->StencilPortal.Get(index);
+      bool flag = dax::not_default_constructor<StencilValueType>()(value);
+      this->OutputPortal.Set(index, flag ? 1 : 0);
+    }
+
+    DAX_CONT_EXPORT
+    void SetErrorMessageBuffer(const dax::exec::internal::ErrorMessageBuffer &)
+    {  }
+  };
+
+  template<class InputPortalType,
+           class StencilPortalType,
+           class IndexPortalType,
+           class OutputPortalType>
+  struct CopyIfKernel
+  {
+    InputPortalType InputPortal;
+    StencilPortalType StencilPortal;
+    IndexPortalType IndexPortal;
+    OutputPortalType OutputPortal;
+
+    DAX_CONT_EXPORT
+    CopyIfKernel(InputPortalType inputPortal,
+                 StencilPortalType stencilPortal,
+                 IndexPortalType indexPortal,
+                 OutputPortalType outputPortal)
+      : InputPortal(inputPortal),
+        StencilPortal(stencilPortal),
+        IndexPortal(indexPortal),
+        OutputPortal(outputPortal) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(dax::Id index) const
+    {
+      typedef typename StencilPortalType::ValueType StencilValueType;
+      StencilValueType stencilValue = this->StencilPortal.Get(index);
+      if (dax::not_default_constructor<StencilValueType>()(stencilValue))
+        {
+        dax::Id outputIndex = this->IndexPortal.Get(index);
+
+        typedef typename OutputPortalType::ValueType OutputValueType;
+        OutputValueType value = this->InputPortal.Get(index);
+
+        this->OutputPortal.Set(outputIndex, value);
+        }
+    }
+
+    DAX_CONT_EXPORT
+    void SetErrorMessageBuffer(const dax::exec::internal::ErrorMessageBuffer &)
+    {  }
+  };
+
 public:
 
   template<typename T, typename U, class CIn, class CStencil, class COut>
@@ -484,6 +608,8 @@ public:
     DerivedAlgorithm::StreamCompact(input, stencil, output);
   }
 
+  //--------------------------------------------------------------------------
+  // Unique
 private:
   template<class InputPortalType, class StencilPortalType>
   struct ClassifyUniqueKernel {
@@ -607,6 +733,8 @@ public:
     DerivedAlgorithm::Copy(outputArray, values);
   }
 
+  //--------------------------------------------------------------------------
+  // Upper bounds
 private:
   template<class InputPortalType,class ValuesPortalType,class OutputPortalType>
   struct UpperBoundsKernel {
