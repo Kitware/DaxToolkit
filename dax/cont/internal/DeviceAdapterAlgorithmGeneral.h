@@ -17,6 +17,7 @@
 #define __dax_cont_internal_DeviceAdapterAlgorithmGeneral_h
 
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/ArrayHandleConstant.h>
 #include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/internal/ArrayContainerControlCounting.h>
 #include <dax/cont/internal/ArrayHandleZip.h>
@@ -152,20 +153,24 @@ private:
     InputPortalType InputPortal;
     OutputPortalType OutputPortal;
     dax::Id InputOffset;
+    dax::Id OutputOffset;
 
     DAX_CONT_EXPORT
     CopyKernel(InputPortalType inputPortal,
                OutputPortalType outputPortal,
-               dax::Id inputOffset = 0)
+               dax::Id inputOffset = 0,
+               dax::Id outputOffset = 0)
       : InputPortal(inputPortal),
         OutputPortal(outputPortal),
-        InputOffset(inputOffset)
+        InputOffset(inputOffset),
+        OutputOffset(outputOffset)
     {  }
 
     DAX_EXEC_EXPORT
     void operator()(dax::Id index) const {
       this->OutputPortal.Set(
-            index, this->InputPortal.Get(index+this->InputOffset));
+            index + this->OutputOffset,
+            this->InputPortal.Get(index + this->InputOffset));
     }
 
     DAX_CONT_EXPORT
@@ -328,6 +333,71 @@ public:
   }
 
   //--------------------------------------------------------------------------
+  // Scan Exclusive
+private:
+  template<typename PortalType>
+  struct SetConstantKernel
+  {
+    typedef typename PortalType::ValueType ValueType;
+    PortalType Portal;
+    ValueType Value;
+
+    DAX_CONT_EXPORT
+    SetConstantKernel(const PortalType &portal, ValueType value)
+      : Portal(portal), Value(value) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(dax::Id index) const
+    {
+      this->Portal.Set(index, this->Value);
+    }
+
+    DAX_CONT_EXPORT
+    void SetErrorMessageBuffer(const dax::exec::internal::ErrorMessageBuffer &)
+    {  }
+  };
+
+public:
+  template<typename T, class CIn, class COut>
+  DAX_CONT_EXPORT static T ScanExclusive(
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
+      dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>& output)
+  {
+    typedef dax::cont::ArrayHandle<
+        T,dax::cont::ArrayContainerControlTagBasic,DeviceAdapterTag>
+        TempArrayType;
+    typedef dax::cont::ArrayHandle<T,COut,DeviceAdapterTag> OutputArrayType;
+
+    TempArrayType inclusiveScan;
+    T result = DerivedAlgorithm::ScanInclusive(input, inclusiveScan);
+
+    dax::Id numValues = inclusiveScan.GetNumberOfValues();
+    if (numValues < 1)
+      {
+      return result;
+      }
+
+    typedef typename TempArrayType::PortalConstExecution SrcPortalType;
+    SrcPortalType srcPortal = inclusiveScan.PrepareForInput();
+
+    typedef typename OutputArrayType::PortalExecution DestPortalType;
+    DestPortalType destPortal = output.PrepareForOutput(numValues);
+
+    // Set first value in output (always 0).
+    DerivedAlgorithm::Schedule(
+          SetConstantKernel<DestPortalType>(destPortal,0), 1);
+    // Shift remaining values over by one.
+    DerivedAlgorithm::Schedule(
+          CopyKernel<SrcPortalType,DestPortalType>(srcPortal,
+                                                   destPortal,
+                                                   0,
+                                                   1),
+          numValues - 1);
+
+    return result;
+  }
+
+  //--------------------------------------------------------------------------
   // Scan Inclusive
 private:
   template<typename PortalType>
@@ -380,7 +450,7 @@ public:
     dax::Id numValues = output.GetNumberOfValues();
     if (numValues < 1)
       {
-      return T();
+      return 0;
       }
 
     PortalType portal = output.PrepareForInPlace();

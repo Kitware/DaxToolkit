@@ -181,24 +181,6 @@ public:
     Algorithm::Schedule(functor, rangeMax);
   }
 
-  template<typename T, class CIn, class COut>
-  DAX_CONT_EXPORT static T ScanExclusive(
-      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagTestAlgorithmGeneral> &input,
-      dax::cont::ArrayHandle<T,COut,DeviceAdapterTagTestAlgorithmGeneral>& output)
-  {
-    // Need to use array handles compatible with serial adapter.
-    dax::cont::ArrayHandle<T,CIn,DeviceAdapterTagSerial>
-        inputCopy(input.GetPortalConstControl());
-    dax::cont::ArrayHandle<T,COut,DeviceAdapterTagSerial> originalOutput;
-
-    T result = Algorithm::ScanExclusive(inputCopy, originalOutput);
-
-    // Copy data back into original
-    originalOutput.CopyInto(output.GetPortalControl().GetIteratorBegin());
-
-    return result;
-  }
-
   template<typename T, class Container>
   DAX_CONT_EXPORT static void Sort(
       dax::cont::ArrayHandle<T,Container,DeviceAdapterTagTestAlgorithmGeneral>& values)
