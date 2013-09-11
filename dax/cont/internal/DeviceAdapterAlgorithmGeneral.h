@@ -472,10 +472,83 @@ public:
     return GetExecutionValue(output, numValues-1);
   }
 
-
   //--------------------------------------------------------------------------
-  // Sort by Key
+  // Sort
 private:
+  template<typename PortalType, typename CompareType>
+  struct BitonicSortMergeKernel : dax::exec::internal::WorkletBase
+  {
+    PortalType Portal;
+    CompareType Compare;
+    dax::Id GroupSize;
+
+    DAX_CONT_EXPORT
+    BitonicSortMergeKernel(const PortalType &portal,
+                           const CompareType &compare,
+                           dax::Id groupSize)
+      : Portal(portal), Compare(compare), GroupSize(groupSize) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(dax::Id index) const {
+      typedef typename PortalType::ValueType ValueType;
+
+      dax::Id groupIndex = index%this->GroupSize;
+      dax::Id blockSize = 2*this->GroupSize;
+      dax::Id blockIndex = index/this->GroupSize;
+
+      dax::Id lowIndex = blockIndex * blockSize + groupIndex;
+      dax::Id highIndex = lowIndex + this->GroupSize;
+
+      if (highIndex < this->Portal.GetNumberOfValues())
+        {
+        ValueType lowValue = this->Portal.Get(lowIndex);
+        ValueType highValue = this->Portal.Get(highIndex);
+        if (this->Compare(highValue, lowValue))
+          {
+          this->Portal.Set(highIndex, lowValue);
+          this->Portal.Set(lowIndex, highValue);
+          }
+        }
+    }
+  };
+
+  template<typename PortalType, typename CompareType>
+  struct BitonicSortCrossoverKernel : dax::exec::internal::WorkletBase
+  {
+    PortalType Portal;
+    CompareType Compare;
+    dax::Id GroupSize;
+
+    DAX_CONT_EXPORT
+    BitonicSortCrossoverKernel(const PortalType &portal,
+                               const CompareType &compare,
+                               dax::Id groupSize)
+      : Portal(portal), Compare(compare), GroupSize(groupSize) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(dax::Id index) const {
+      typedef typename PortalType::ValueType ValueType;
+
+      dax::Id groupIndex = index%this->GroupSize;
+      dax::Id blockSize = 2*this->GroupSize;
+      dax::Id blockIndex = index/this->GroupSize;
+
+      dax::Id lowIndex = blockIndex*blockSize + groupIndex;
+      dax::Id highIndex = blockIndex*blockSize + (blockSize - groupIndex - 1);
+
+      if (highIndex < this->Portal.GetNumberOfValues())
+        {
+        ValueType lowValue = this->Portal.Get(lowIndex);
+        ValueType highValue = this->Portal.Get(highIndex);
+        if (this->Compare(highValue, lowValue))
+          {
+          this->Portal.Set(highIndex, lowValue);
+          this->Portal.Set(lowIndex, highValue);
+          }
+        }
+    }
+  };
+
   struct DefaultCompareFunctor
   {
 
@@ -487,6 +560,52 @@ private:
     }
   };
 
+public:
+  template<typename T, class Container, class CompareType>
+  DAX_CONT_EXPORT static void Sort(
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values,
+      CompareType compare)
+  {
+    typedef typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTag>
+        ArrayType;
+    typedef typename ArrayType::PortalExecution PortalType;
+
+    dax::Id numValues = values.GetNumberOfValues();
+    if (numValues < 2) { return; }
+
+    PortalType portal = values.PrepareForInPlace();
+
+    dax::Id numThreads = 1;
+    while (numThreads < numValues) { numThreads *= 2; }
+    numThreads /= 2;
+
+    typedef BitonicSortMergeKernel<PortalType,CompareType> MergeKernel;
+    typedef BitonicSortCrossoverKernel<PortalType,CompareType> CrossoverKernel;
+
+    for (dax::Id crossoverSize = 1;
+         crossoverSize < numValues;
+         crossoverSize *= 2)
+      {
+      DerivedAlgorithm::Schedule(CrossoverKernel(portal,compare,crossoverSize),
+                                 numThreads);
+      for (dax::Id mergeSize = crossoverSize/2; mergeSize > 0; mergeSize /= 2)
+        {
+        DerivedAlgorithm::Schedule(MergeKernel(portal,compare,mergeSize),
+                                   numThreads);
+        }
+      }
+  }
+
+  template<typename T, class Container>
+  DAX_CONT_EXPORT static void Sort(
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values)
+  {
+    DerivedAlgorithm::Sort(values, DefaultCompareFunctor());
+  }
+
+  //--------------------------------------------------------------------------
+  // Sort by Key
+private:
   template<typename T, typename U, class Compare=DefaultCompareFunctor>
   struct KeyCompare
   {
