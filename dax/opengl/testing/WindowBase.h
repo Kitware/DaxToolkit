@@ -72,7 +72,7 @@ public:
   WindowBase<Derived>::StaticGLUTResource = static_cast<Derived*>(this);
 
   glutInit(&argc,argv);
-  glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE );
+  glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
   glutInitWindowPosition(0,0);
   glutInitWindowSize(width,height);
   glutCreateWindow(title.c_str());

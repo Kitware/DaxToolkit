@@ -78,6 +78,7 @@ public:
   DAX_CONT_EXPORT void PostInit()
   {
     glClearColor(1.0, 1.0, 1.0, 1.0);
+    glEnable(GL_DEPTH_TEST);
   }
 
   DAX_CONT_EXPORT void Display()
