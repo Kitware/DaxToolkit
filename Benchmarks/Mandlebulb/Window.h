@@ -79,6 +79,17 @@ public:
   {
     glClearColor(1.0, 1.0, 1.0, 1.0);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
+    glEnable(GL_COLOR_MATERIAL);
+
+    GLfloat lightPosition[] = { -0.5f, 1.0f, 1.0f, 0.0f };
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
   }
 
   DAX_CONT_EXPORT void Display()
