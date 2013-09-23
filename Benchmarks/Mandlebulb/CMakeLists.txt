@@ -17,6 +17,7 @@
 #-----------------------------------------------------------------------------
 set(headers
   ArgumentsParser.h
+  CoolWarmColorMap.h
   Mandlebulb.h
   Window.h
   )
