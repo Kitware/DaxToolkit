@@ -22,6 +22,7 @@
 #include <dax/math/Compare.h>
 
 #include "Mandlebulb.h"
+#include "ArgumentsParser.h"
 
 #include <iostream>
 
@@ -33,6 +34,7 @@ GLvoid* bufferObjectPtr( unsigned int idx )
   return (GLvoid*) ( ((char*)NULL) + idx );
   }
 }
+
 namespace mandle{
 
 /// \brief Render Window for mandlebulb
@@ -44,28 +46,29 @@ namespace mandle{
 class Window : public dax::opengl::testing::WindowBase<Window>
 {
 public:
-  DAX_CONT_EXPORT Window()
+  DAX_CONT_EXPORT Window(const ArgumentsParser &arguments)
   {
-    CurrentTime = 0;
-    PreviousTime = 0;
-    Fps = 0;
-    PreviousFps = 0;
-    FrameCount = 0;
+    this->CurrentTime = 0;
+    this->PreviousTime = 0;
+    this->MaxTime = (float)arguments.time();
+    this->Fps = 0;
+    this->PreviousFps = 0;
+    this->FrameCount = 0;
 
-    MouseX = 0;
-    MouseY = 0;
-    ActiveMouseButtons = 0;
+    this->MouseX = 0;
+    this->MouseY = 0;
+    this->ActiveMouseButtons = 0;
 
-    RotateX = 0;
-    RotateY = 0;
-    TranslateZ = -3;
+    this->RotateX = 0;
+    this->RotateY = 0;
+    this->TranslateZ = -3;
 
     //set this first buffer to be the active buffer
-    BufferCount = 0;
-    BufferHandles =  FirstBuffer;
-    Iteration = 1;
-    Remesh = true;
-    Mode = 0;
+    this->BufferCount = 0;
+    this->BufferHandles =  FirstBuffer;
+    this->Iteration = 1;
+    this->Remesh = true;
+    this->Mode = 0;
 
     //compute the mandlebulb
     this->Info = computeMandlebulb( );
@@ -74,6 +77,19 @@ public:
   //called after opengl is inited
   DAX_CONT_EXPORT void PostInit()
   {
+    glClearColor(1.0, 1.0, 1.0, 1.0);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
+    glEnable(GL_COLOR_MATERIAL);
+
+    GLfloat lightPosition[] = { -0.5f, 1.0f, 1.0f, 0.0f };
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
   }
 
   DAX_CONT_EXPORT void Display()
@@ -134,7 +150,8 @@ public:
     }
 
   //terminate once we have been running for ~10 secs
-  if(this->CurrentTime >= 10000)
+  if((this->MaxTime > 0)
+     && (this->CurrentTime >= 10000))
     {
     exit(0);
     }
@@ -176,7 +193,8 @@ public:
   DAX_CONT_EXPORT void Key(unsigned char key,
                            int daxNotUsed(x), int daxNotUsed(y) )
   {
-   if(key == 27) //escape pressed
+   if ((key == 27) //escape pressed
+       || (key == 'q'))
     {
     exit(0);
     }
@@ -262,6 +280,7 @@ private:
 
   float CurrentTime;
   float PreviousTime;
+  float MaxTime;
   float Fps;
   float PreviousFps;
   int FrameCount;

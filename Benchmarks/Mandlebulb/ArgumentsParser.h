@@ -13,18 +13,26 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#define BOOST_SP_DISABLE_THREADS
 
-#include "Window.h"
-#include "ArgumentsParser.h"
+#ifndef _dax_Benchmarks_Mandlebulb_ArgumentsParser
+#define _dax_Benchmarks_Mandlebulb_ArgumentsParser
 
-int main(int argc, char **argv)
+namespace mandle {
+
+class ArgumentsParser
 {
-  mandle::ArgumentsParser arguments;
-  arguments.parseArguments(argc, argv);
+public:
+  ArgumentsParser();
+  virtual ~ArgumentsParser();
 
-  mandle::Window window(arguments);
-  window.Init("MandleBulb Benchmark", 800, 600);
-  window.Start();
-  return 0;
-}
+  bool parseArguments(int argc, char* argv[]);
+
+  unsigned int time() const { return this->Time; }
+
+private:
+  unsigned int Time;
+};
+
+} // namespace mandle
+
+#endif //_dax_Benchmarks_Mandlebulb_ArgumentsParser

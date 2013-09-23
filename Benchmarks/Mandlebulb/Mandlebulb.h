@@ -28,6 +28,8 @@
 #include <dax/worklet/MarchingCubes.h>
 #include <dax/worklet/Slice.h>
 
+#include "CoolWarmColorMap.h"
+
 //helper structs to make it easier to pass data around between functions
 namespace mandle {
 
@@ -126,25 +128,21 @@ public:
 
   //compute color field, wrap around in both directions
   //with an expanding color field from zero to 1.0
-  const dax::Scalar zero(0.0);
   for (int i=0; i < 3; ++i)
     {
-    if(coordinates[i][2] > 0)
-    {
-    const dax::Scalar c = (coordinates[i][2] / dax::Scalar(3.0));
-    colors[i*4] = 255 * dax::math::Max(zero,c);
-    }
-    else
-    {
-    const dax::Scalar c = (coordinates[i][2] * -1 / dax::Scalar(3.0));
-    colors[i*4] = 255 * dax::math::Max(zero,c);
-    }
-
-    colors[i*4+1]= 0;
-    colors[i*4+2]=64; //b
-    colors[i*4+3]=0; //a
+    const dax::Scalar s =
+        dax::math::Abs(dax::dot(coordinates[i],
+                                dax::make_Vector3(0.09,0.09,0.9)));
+    const mandle::CoolWarmColorMap::ColorType &c = this->ColorMap.GetColor(s);
+    colors[i*4+0] = c[0];
+    colors[i*4+1] = c[1];
+    colors[i*4+2] = c[2];
+    colors[i*4+3] = 255;
     }
   }
+
+private:
+  mandle::CoolWarmColorMap ColorMap;
 };
 
 

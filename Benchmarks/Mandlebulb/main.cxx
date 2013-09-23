@@ -16,10 +16,14 @@
 
 
 #include "Window.h"
+#include "ArgumentsParser.h"
 
-int main(int, char**)
+int main(int argc, char **argv)
 {
-  mandle::Window window;
+  mandle::ArgumentsParser arguments;
+  arguments.parseArguments(argc, argv);
+
+  mandle::Window window(arguments);
   window.Init("MandleBulb Benchmark", 800, 600);
   window.Start();
   return 0;
