@@ -130,7 +130,9 @@ public:
   //with an expanding color field from zero to 1.0
   for (int i=0; i < 3; ++i)
     {
-    const dax::Scalar s = dax::math::Abs(coordinates[i][2])/dax::Scalar(1.0);
+    const dax::Scalar s =
+        dax::math::Abs(dax::dot(coordinates[i],
+                                dax::make_Vector3(0.09,0.09,0.9)));
     const mandle::CoolWarmColorMap::ColorType &c = this->ColorMap.GetColor(s);
     colors[i*4+0] = c[0];
     colors[i*4+1] = c[1];
