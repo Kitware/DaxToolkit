@@ -248,6 +248,10 @@ public:
     this->MouseY = y;
   }
 
+
+  DAX_CONT_EXPORT void PassiveMouseMove(int,int)
+  { }
+
 private:
   MandlebulbInfo Info;
   MandlebulbSurface MandleSurface;
