@@ -97,6 +97,7 @@ public:
   glutSpecialFunc( WindowBase<Derived>::GLUTSpecialKeyCallback );
   glutMouseFunc( WindowBase<Derived>::GLUTMouseCallback );
   glutMotionFunc( WindowBase<Derived>::GLUTMouseMoveCallback );
+  glutPassiveMotionFunc( WindowBase<Derived>::GLUTPassiveMouseMoveCallback );
 
   //call any custom init code you want to have
   WindowBase<Derived>::StaticGLUTResource->PostInit();
@@ -137,6 +138,10 @@ public:
 
   static void GLUTMouseMoveCallback(int x, int y)
     { WindowBase<Derived>::StaticGLUTResource->MouseMove(x,y); }
+
+  static void GLUTPassiveMouseMoveCallback(int x, int y)
+    { WindowBase<Derived>::StaticGLUTResource->PassiveMouseMove(x,y); }
+
 };
 
 

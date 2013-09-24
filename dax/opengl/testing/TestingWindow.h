@@ -65,6 +65,10 @@ public:
 
   DAX_CONT_EXPORT void MouseMove(int daxNotUsed(x), int daxNotUsed(y) )
   {}
+
+  DAX_CONT_EXPORT void PassiveMouseMove(int daxNotUsed(x), int daxNotUsed(y) )
+  {}
+
 };
 
 
