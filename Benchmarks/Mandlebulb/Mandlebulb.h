@@ -262,18 +262,13 @@ MandlebulbSurface extractSlice(  MandlebulbInfo info, dax::Scalar& iteration )
   return surface;
 }
 
-void bindSurface(MandlebulbSurface& surface, GLuint* bufferHandles )
+void bindSurface(MandlebulbSurface& surface, GLuint coord,
+                 GLuint color, GLuint norm )
 {
-  //TransferToOpenGL will do the binding to the given buffers
-  dax::opengl::TransferToOpenGL(surface.Data.GetPointCoordinates(),
-                                bufferHandles[0]);
-
-  dax::opengl::TransferToOpenGL(surface.Colors,
-                                bufferHandles[1]);
-
-  dax::opengl::TransferToOpenGL(surface.Norms,
-                                bufferHandles[2]);
-
+  //TransferToOpenGL will do the binding to the given buffers if needed
+  dax::opengl::TransferToOpenGL(surface.Data.GetPointCoordinates(), coord);
+  dax::opengl::TransferToOpenGL(surface.Colors, color);
+  dax::opengl::TransferToOpenGL(surface.Norms, norm);
 }
 
 #endif

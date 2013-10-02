@@ -36,6 +36,7 @@
 # include <dax/cuda/opengl/SetOpenGLDevice.h>
 #endif
 
+#include <iostream>
 
 
 namespace dax{
@@ -72,16 +73,22 @@ public:
   WindowBase<Derived>::StaticGLUTResource = static_cast<Derived*>(this);
 
   glutInit(&argc,argv);
-  glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+  glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
   glutInitWindowPosition(0,0);
   glutInitWindowSize(width,height);
   glutCreateWindow(title.c_str());
 
+  glewExperimental = GL_TRUE;
   glewInit();
-  if(!glewIsSupported("GL_VERSION_2_0"))
+
+
+
+  if(!glewIsSupported("GL_VERSION_3_2"))
     {
+    std::cout << glGetString(GL_RENDERER) << std::endl;
+    std::cout << glGetString(GL_VERSION) << std::endl;
     throw dax::cont::ErrorControlBadValue(
-                                  "Unable to create an OpenGL 2.0 Context");
+                                  "Unable to create an OpenGL 3.2 Context");
     }
 
 #ifdef DAX_CUDA

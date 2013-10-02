@@ -21,8 +21,10 @@
 #include <dax/Extent.h>
 #include <dax/math/Compare.h>
 
-#include "Mandlebulb.h"
 #include "ArgumentsParser.h"
+#include "Mandlebulb.h"
+#include "ShaderCode.h"
+#include "ShaderProgram.h"
 
 #include <iostream>
 
@@ -33,6 +35,50 @@ GLvoid* bufferObjectPtr( unsigned int idx )
   {
   return (GLvoid*) ( ((char*)NULL) + idx );
   }
+
+
+struct TwizzledGLHandles
+{
+  //stores two sets of handles, each time
+  //you call for the handles it switches
+  //what ones it returns
+  TwizzledGLHandles()
+    {
+    this->State = 0;
+    }
+
+  void initHandles()
+  {
+    glGenBuffers(2,CoordHandles);
+    glGenBuffers(2,ColorHandles);
+    glGenBuffers(2,NormHandles);
+
+    glBindBuffer(GL_ARRAY_BUFFER, CoordHandles[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, CoordHandles[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, ColorHandles[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, ColorHandles[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, NormHandles[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, NormHandles[1]);
+  }
+
+  void handles(GLuint& coord, GLuint& color, GLuint& norm) const
+    {
+    coord = CoordHandles[this->State%2];
+    color = ColorHandles[this->State%2];
+    norm  = NormHandles[this->State%2];
+    }
+
+  void switchHandles()
+    {
+    ++this->State;
+    }
+private:
+  GLuint CoordHandles[2];
+  GLuint ColorHandles[2];
+  GLuint NormHandles[2];
+  unsigned int State; //when we roll over we need to stay positive
+};
+
 }
 
 namespace mandle{
@@ -63,9 +109,6 @@ public:
     this->RotateY = 0;
     this->TranslateZ = -3;
 
-    //set this first buffer to be the active buffer
-    this->BufferCount = 0;
-    this->BufferHandles =  FirstBuffer;
     this->Iteration = 1;
     this->Remesh = true;
     this->Mode = 0;
@@ -74,47 +117,39 @@ public:
     this->Info = computeMandlebulb( );
   }
 
+  virtual ~Window()
+  {
+  }
+
   //called after opengl is inited
   DAX_CONT_EXPORT void PostInit()
   {
-    glClearColor(1.0, 1.0, 1.0, 1.0);
+    //init the gl handles that the twizzler holds
+    this->TwizzleHandles.initHandles();
+
+    //build up our shaders
+    this->ShaderProgram.add_vert_shader(make_vertex_shader_code());
+    this->ShaderProgram.add_frag_shader(make_fragment_shader_code());
+    this->ShaderProgram.build();
+
+    glEnable(GL_DEPTH);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-    glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-    glEnable(GL_COLOR_MATERIAL);
 
-    GLfloat lightPosition[] = { -0.5f, 1.0f, 1.0f, 0.0f };
+    //clear the render window
+    glClearColor(1.0, 1.0, 1.0, 1.0);
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
   }
 
   DAX_CONT_EXPORT void Display()
   {
-  if(this->Remesh)
-    {
-
-    if ( this->BufferCount%2==0 )
-      { this->BufferHandles = this->FirstBuffer; }
-    else
-      { this->BufferHandles = this->SecondBuffer; }
-
-    if(this->Mode==0)
-      this->MandleSurface = extractSurface(this->Info,this->Iteration);
-    else
-      {
-      this->MandleSurface = extractSlice(this->Info,this->Iteration);
-      }
-    bindSurface(this->MandleSurface, this->BufferHandles );
-
-    this->Remesh = false;
-    }
+  GLuint coord, color, norm;
+  this->TwizzleHandles.handles(coord,color,norm);
 
   // Clear Color and Depth Buffers
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  //bind the shaders
+  glUseProgram(this->ShaderProgram.program_id());
 
   //Move the camera
   glMatrixMode(GL_MODELVIEW);
@@ -124,15 +159,15 @@ public:
   glRotatef(this->RotateY, 0.0, 1.0, 0.0);
 
   glEnableClientState(GL_VERTEX_ARRAY);
-  glBindBuffer(GL_ARRAY_BUFFER, this->BufferHandles[0]);
+  glBindBuffer(GL_ARRAY_BUFFER, coord);
   glVertexPointer(3, GL_FLOAT, 0, bufferObjectPtr(0) );
 
   glEnableClientState(GL_COLOR_ARRAY);
-  glBindBuffer(GL_ARRAY_BUFFER, this->BufferHandles[1]);
+  glBindBuffer(GL_ARRAY_BUFFER, color);
   glColorPointer(4, GL_UNSIGNED_BYTE, 0, bufferObjectPtr(0) );
 
   glEnableClientState(GL_NORMAL_ARRAY);
-  glBindBuffer(GL_ARRAY_BUFFER, this->BufferHandles[2]);
+  glBindBuffer(GL_ARRAY_BUFFER, norm);
   glNormalPointer(GL_FLOAT, 0, bufferObjectPtr(0) );
 
   glDrawArrays( GL_TRIANGLES, 0, this->MandleSurface.Data.GetNumberOfPoints() );
@@ -140,6 +175,9 @@ public:
   glDisableClientState(GL_NORMAL_ARRAY);
   glDisableClientState(GL_COLOR_ARRAY);
   glDisableClientState(GL_VERTEX_ARRAY);
+
+  //unbind the shaders
+  glUseProgram(0);
 
   //display the fps
   if(this->Fps > this->PreviousFps+1 || this->Fps < this->PreviousFps-1 )
@@ -157,6 +195,18 @@ public:
     }
 
   glutSwapBuffers();
+
+  if(this->Remesh)
+    {
+    this->TwizzleHandles.switchHandles();
+    this->TwizzleHandles.handles(coord,color,norm); //get new handles
+    if(this->Mode==0)
+      this->MandleSurface = extractSurface(this->Info,this->Iteration);
+    else
+      this->MandleSurface = extractSlice(this->Info,this->Iteration);
+    bindSurface(this->MandleSurface, coord,color,norm );
+    this->Remesh = false;
+    }
   }
 
   DAX_CONT_EXPORT void Idle()
@@ -277,10 +327,11 @@ private:
   bool Remesh;
   int Mode; //0 marching cubes, 1 slice
 
-  GLuint FirstBuffer[4];
-  GLuint SecondBuffer[4];
-  GLuint* BufferHandles;
-  int BufferCount;
+  //gl array ids that hold the rendering info
+  TwizzledGLHandles TwizzleHandles;
+
+  //shader program that holds onto all the shader details
+  mandle::ShaderProgram ShaderProgram;
 
   float CurrentTime;
   float PreviousTime;
