@@ -19,6 +19,8 @@ set(headers
   ArgumentsParser.h
   CoolWarmColorMap.h
   Mandlebulb.h
+  ShaderProgram.h
+  ShaderCode.h
   Window.h
   )
 
