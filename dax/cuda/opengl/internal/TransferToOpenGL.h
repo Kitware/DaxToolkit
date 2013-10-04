@@ -17,7 +17,7 @@
 #ifndef __dax__cuda__opengl__internal_TransferToOpenGL_h
 #define __dax__cuda__opengl__internal_TransferToOpenGL_h
 
-#include <dax/cont/ErrorControlBadValue.h>
+#include <dax/cont/ErrorExecution.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
 
 #include <dax/cuda/cont/internal/SetThrustForCuda.h>
@@ -70,17 +70,20 @@ public:
     glError = glGetError();
     if(glError != GL_NO_ERROR)
       {
-      throw dax::cont::ErrorControlBadValue(
+      throw dax::cont::ErrorExecution(
             "could not generate an OpenGL buffer.");
       }
     }
 
   //bind the buffer to the given buffer type
   glBindBuffer(this->Type, openGLHandle);
+  std::cerr << openGLHandle << std::endl;
   glError = glGetError();
   if(glError != GL_NO_ERROR)
     {
-    throw dax::cont::ErrorControlBadValue(
+
+    std::cerr << "Could not bind to the given OpenGL buffer handle." << std::endl;
+    throw dax::cont::ErrorExecution(
             "Could not bind to the given OpenGL buffer handle.");
     }
 
@@ -100,7 +103,7 @@ public:
                                         cudaGraphicsMapFlagsWriteDiscard);
   if(cError != cudaSuccess)
     {
-    throw dax::cont::ErrorControlBadValue(
+    throw dax::cont::ErrorExecution(
             "Could not register the OpenGL buffer handle to CUDA.");
     }
 
@@ -121,7 +124,7 @@ public:
 
   if(cError != cudaSuccess)
     {
-    throw dax::cont::ErrorControlBadValue(
+    throw dax::cont::ErrorExecution(
             "Unable to get pointers to CUDA memory for OpenGL buffer.");
     }
 
