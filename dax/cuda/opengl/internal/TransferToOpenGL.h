@@ -61,41 +61,19 @@ public:
   //construct a cuda resource handle
   cudaGraphicsResource_t cudaResource;
   cudaError_t cError;
-  GLenum glError;
 
   //make a buffer for the handle if the user has forgotten too
   if(!glIsBuffer(openGLHandle))
     {
     glGenBuffers(1,&openGLHandle);
-    glError = glGetError();
-    if(glError != GL_NO_ERROR)
-      {
-      throw dax::cont::ErrorExecution(
-            "could not generate an OpenGL buffer.");
-      }
     }
 
   //bind the buffer to the given buffer type
   glBindBuffer(this->Type, openGLHandle);
-  std::cerr << openGLHandle << std::endl;
-  glError = glGetError();
-  if(glError != GL_NO_ERROR)
-    {
-
-    std::cerr << "Could not bind to the given OpenGL buffer handle." << std::endl;
-    throw dax::cont::ErrorExecution(
-            "Could not bind to the given OpenGL buffer handle.");
-    }
 
   //Allocate the memory and set it as GL_DYNAMIC_DRAW draw
   const std::size_t size = sizeof(ValueType)* handle.GetNumberOfValues();
   glBufferData(this->Type, size, 0, GL_DYNAMIC_DRAW);
-  glError = glGetError();
-  if(glError != GL_NO_ERROR)
-    {
-    throw dax::cont::ErrorControlOutOfMemory(
-            "Could not allocate enough memory in OpenGL.");
-    }
 
   //register the buffer as being used by cuda
   cError = cudaGraphicsGLRegisterBuffer(&cudaResource,
