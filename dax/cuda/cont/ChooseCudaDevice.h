@@ -16,6 +16,8 @@
 #ifndef __dax__cuda__cont__ChooseCudaDevice_h
 #define __dax__cuda__cont__ChooseCudaDevice_h
 
+#include <dax/cont/ErrorExecution.h>
+
 #include <cuda.h>
 #include <algorithm>
 #include <vector>
@@ -117,9 +119,18 @@ int FindFastestDeviceId()
 }
 
 
+//choose a cuda compute device. This can't be used if you are setting
+//up open gl interop
 void SetCudaDevice(int id)
 {
-  cudaSetDevice(id);
+  cudaError_t cError = cudaSetDevice(id);
+  if(cError != cudaSuccess)
+    {
+    std::string cuda_error_msg(
+                 "Unable to bind to the given cuda device. Error: ");
+    cuda_error_msg.append(cudaGetErrorString(cError));
+    throw dax::cont::ErrorExecution(cuda_error_msg);
+    }
 }
 
 

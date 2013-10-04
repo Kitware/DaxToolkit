@@ -19,6 +19,8 @@
 #include <cuda.h>
 #include <cuda_gl_interop.h>
 
+#include <dax/cont/ErrorExecution.h>
+
 namespace dax{
 namespace cuda{
 namespace opengl {
@@ -26,7 +28,13 @@ namespace opengl {
 
 void SetCudaGLDevice(int id)
 {
-  cudaGLSetGLDevice(id);
+  cudaError_t cError = cudaGLSetGLDevice(id);
+  if(cError != cudaSuccess)
+    {
+    std::string cuda_error_msg("Unable to setup cuda/opengl interop. Error: ");
+    cuda_error_msg.append(cudaGetErrorString(cError));
+    throw dax::cont::ErrorExecution(cuda_error_msg);
+    }
 }
 
 
