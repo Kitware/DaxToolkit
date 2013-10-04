@@ -52,13 +52,6 @@ struct TwizzledGLHandles
     glGenBuffers(2,CoordHandles);
     glGenBuffers(2,ColorHandles);
     glGenBuffers(2,NormHandles);
-
-    glBindBuffer(GL_ARRAY_BUFFER, CoordHandles[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, CoordHandles[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, ColorHandles[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, ColorHandles[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, NormHandles[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, NormHandles[1]);
   }
 
   void handles(GLuint& coord, GLuint& color, GLuint& norm) const
