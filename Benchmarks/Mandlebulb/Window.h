@@ -35,6 +35,9 @@ GLvoid* bufferObjectPtr( unsigned int idx )
   {
   return (GLvoid*) ( ((char*)NULL) + idx );
   }
+}
+
+namespace mandle{
 
 
 struct TwizzledGLHandles
@@ -53,12 +56,14 @@ struct TwizzledGLHandles
     glGenBuffers(2,ColorHandles);
     glGenBuffers(2,NormHandles);
 
+
     glBindBuffer(GL_ARRAY_BUFFER, CoordHandles[0]);
     glBindBuffer(GL_ARRAY_BUFFER, CoordHandles[1]);
     glBindBuffer(GL_ARRAY_BUFFER, ColorHandles[0]);
     glBindBuffer(GL_ARRAY_BUFFER, ColorHandles[1]);
     glBindBuffer(GL_ARRAY_BUFFER, NormHandles[0]);
     glBindBuffer(GL_ARRAY_BUFFER, NormHandles[1]);
+
   }
 
   void handles(GLuint& coord, GLuint& color, GLuint& norm) const
@@ -79,9 +84,6 @@ private:
   unsigned int State; //when we roll over we need to stay positive
 };
 
-}
-
-namespace mandle{
 
 /// \brief Render Window for mandlebulb
 ///
@@ -112,9 +114,6 @@ public:
     this->Iteration = 1;
     this->Remesh = true;
     this->Mode = 0;
-
-    //compute the mandlebulb
-    this->Info = computeMandlebulb( );
   }
 
   virtual ~Window()
@@ -138,12 +137,43 @@ public:
     //clear the render window
     glClearColor(1.0, 1.0, 1.0, 1.0);
 
+    //compute the mandlebulb
+    this->Info = computeMandlebulb( );
+
+    if(this->Mode==0)
+      this->MandleSurface = extractSurface(this->Info,this->Iteration);
+    else
+      this->MandleSurface = extractSlice(this->Info,this->Iteration);
+
+    GLuint coord, color, norm;
+
+    this->TwizzleHandles.handles(coord,color,norm);
+    bindSurface(this->MandleSurface, coord, color, norm );
+
+    this->Remesh = false;
   }
 
   DAX_CONT_EXPORT void Display()
   {
   GLuint coord, color, norm;
-  this->TwizzleHandles.handles(coord,color,norm);
+  if(this->Remesh)
+    {
+    this->TwizzleHandles.switchHandles();
+    this->TwizzleHandles.handles(coord,color,norm);
+
+    if(this->Mode==0)
+      this->MandleSurface = extractSurface(this->Info,this->Iteration);
+    else
+      this->MandleSurface = extractSlice(this->Info,this->Iteration);
+
+    bindSurface(this->MandleSurface, coord, color, norm );
+
+    this->Remesh = false;
+    }
+  else
+    {
+    this->TwizzleHandles.handles(coord,color,norm);
+    }
 
   // Clear Color and Depth Buffers
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -195,18 +225,6 @@ public:
     }
 
   glutSwapBuffers();
-
-  if(this->Remesh)
-    {
-    this->TwizzleHandles.switchHandles();
-    this->TwizzleHandles.handles(coord,color,norm); //get new handles
-    if(this->Mode==0)
-      this->MandleSurface = extractSurface(this->Info,this->Iteration);
-    else
-      this->MandleSurface = extractSlice(this->Info,this->Iteration);
-    bindSurface(this->MandleSurface, coord,color,norm );
-    this->Remesh = false;
-    }
   }
 
   DAX_CONT_EXPORT void Idle()

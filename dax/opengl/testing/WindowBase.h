@@ -78,17 +78,15 @@ public:
   glutInitWindowSize(width,height);
   glutCreateWindow(title.c_str());
 
-  glewExperimental = GL_TRUE;
+  // glewExperimental = GL_TRUE;
   glewInit();
 
-
-
-  if(!glewIsSupported("GL_VERSION_3_2"))
+  if(!glewIsSupported("GL_VERSION_2_1"))
     {
-    std::cout << glGetString(GL_RENDERER) << std::endl;
-    std::cout << glGetString(GL_VERSION) << std::endl;
+    std::cerr << glGetString(GL_RENDERER) << std::endl;
+    std::cerr << glGetString(GL_VERSION) << std::endl;
     throw dax::cont::ErrorControlBadValue(
-                                  "Unable to create an OpenGL 3.2 Context");
+                                  "Unable to create an OpenGL 2.1 Context");
     }
 
 #ifdef DAX_CUDA
