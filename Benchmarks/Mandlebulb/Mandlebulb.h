@@ -162,6 +162,8 @@ MandlebulbInfo computeMandlebulb(  )
   scheduler.Invoke( worklet::Mandlebulb(), info.Grid.GetPointCoordinates(),
                     info.EscapeIteration );
 
+  info.EscapeIteration.GetPortalConstControl();
+
   return info;
 }
 
@@ -203,6 +205,8 @@ MandlebulbSurface extractSurface(  MandlebulbInfo info, dax::Scalar iteration )
                     surface.Data.GetPointCoordinates(),
                     surface.Colors,
                     surface.Norms);
+
+  info.EscapeIteration.ReleaseResourcesExecution();
   return surface;
 }
 
@@ -259,6 +263,9 @@ MandlebulbSurface extractSlice(  MandlebulbInfo info, dax::Scalar& iteration )
                     surface.Data.GetPointCoordinates(),
                     surface.Colors,
                     surface.Norms);
+
+  info.EscapeIteration.ReleaseResourcesExecution();
+
   return surface;
 }
 
@@ -269,6 +276,14 @@ void bindSurface(MandlebulbSurface& surface, GLuint& coord,
   dax::opengl::TransferToOpenGL(surface.Data.GetPointCoordinates(), coord);
   dax::opengl::TransferToOpenGL(surface.Colors, color);
   dax::opengl::TransferToOpenGL(surface.Norms, norm);
+
+  //no need to keep the cuda side, as the next re-computation will have
+  //redo all the work for all three of these
+  surface.Data.GetPointCoordinates().GetPortalConstControl();
+  surface.Data.GetPointCoordinates().ReleaseResourcesExecution();
+  surface.Colors.ReleaseResourcesExecution();
+  surface.Norms.ReleaseResourcesExecution();
+
 }
 
 #endif
