@@ -18,12 +18,8 @@
 #include <dax/cont/testing/Testing.h>
 
 #include <dax/worklet/Threshold.h>
+#include <dax/worklet/testing/VerifyThresholdTopology.h>
 
-#include <math.h>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
 #include <dax/CellTag.h>
 #include <dax/CellTraits.h>
 #include <dax/TypeTraits.h>
@@ -36,8 +32,11 @@
 #include <dax/cont/VectorOperations.h>
 
 #include <dax/cont/testing/Testing.h>
-#include <vector>
 
+#include <iostream>
+#include <math.h>
+#include <string>
+#include <vector>
 
 namespace {
 const dax::Id DIM = 26;
@@ -140,25 +139,6 @@ void CheckConnections(const InGridGeneratorType &inGridGenerator,
                   "Output has too many cells.");
 }
 
-
-class TestThresholdTopology : public dax::exec::WorkletGenerateTopology
-{
-public:
-  typedef void ControlSignature(Topology, Topology(Out),Field(In));
-  typedef void ExecutionSignature(Vertices(_1), Vertices(_2), _3, VisitIndex);
-
-  template<typename InputCellTag, typename OutputCellTag, typename T>
-  DAX_EXEC_EXPORT
-  void operator()(const dax::exec::CellVertices<InputCellTag> &inVertices,
-                  dax::exec::CellVertices<OutputCellTag> &outVertices,
-                  const T&,
-                  const dax::Id& visit_index) const
-  {
-    DAX_ASSERT_EXEC(visit_index==0, *this);
-    outVertices.SetFromTuple(inVertices.GetAsTuple());
-  }
-};
-
 //-----------------------------------------------------------------------------
 struct TestThresholdWorklet
 {
@@ -218,7 +198,8 @@ struct TestThresholdWorklet
 
     try
       {
-      typedef dax::cont::GenerateTopology<TestThresholdTopology> ScheduleGT;
+      typedef dax::cont::GenerateTopology<
+            dax::worklet::testing::VerifyThresholdTopology > ScheduleGT;
       typedef typename ScheduleGT::ClassifyResultType  ClassifyResultType;
       typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
 
@@ -230,8 +211,6 @@ struct TestThresholdWorklet
       //construct the topology generation worklet
       ScheduleGT generateTopo(classification);
 
-      //schedule it, and verify we can handle more than 2 parameter generate
-      //topology worklets
       scheduler.Invoke(generateTopo,inGrid, outGrid, 4.0f);
 
       //request to also compact the topology
@@ -262,7 +241,7 @@ struct TestThresholdWorklet
 
 
 //-----------------------------------------------------------------------------
-void TestThreshold()
+static void TestThreshold()
   {
   dax::cont::testing::GridTesting::TryAllGridTypes(TestThresholdWorklet());
   }
