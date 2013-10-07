@@ -40,8 +40,11 @@ namespace internal {
 ///
 /// This struct provides algorithms that implement "general" device adapter
 /// algorithms. If a device adapter provides implementations for Schedule,
-/// Sort, Scan, and Synchronize, the rest of the algorithms can be implemented
-/// by calling these functions.
+/// and Synchronize, the rest of the algorithms can be implemented by calling
+/// these functions.
+///
+/// It should be noted that we recommend that you also implement Sort,
+/// ScanInclusive, and ScanExclusive for improved performance.
 ///
 /// An easy way to implement the DeviceAdapterAlgorithm specialization is to
 /// subclass this and override the implementation of methods as necessary.
@@ -67,36 +70,6 @@ namespace internal {
 ///     ...
 ///   }
 ///
-///   template<typename T, class Container>
-///   DAX_CONT_EXPORT static void Sort(
-///       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values)
-///   {
-///     ...
-///   }
-///
-///   template<typename T, class Container, class Compare>
-///   DAX_CONT_EXPORT static void Sort(
-///       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values,
-///       Compare comp)
-///   {
-///     ...
-///   }
-///
-///   template<typename T, class CIn, class COut>
-///   DAX_CONT_EXPORT static T ScanExclusive(
-///       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
-///       dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>& output);
-///   {
-///     ...
-///   }
-///
-///   template<typename T, class CIn, class COut>
-///   DAX_CONT_EXPORT static T ScanInclusive(
-///       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
-///       dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>& output);
-///   {
-///     ...
-///   }
 ///   DAX_CONT_EXPORT static void Synchronize()
 ///   {
 ///     ...
@@ -106,9 +79,9 @@ namespace internal {
 ///
 /// You might note that DeviceAdapterAlgorithmGeneral has two template
 /// parameters that are redundant. Although the first parameter, the class for
-/// the actual DeviceAdapterAlgorithm class containing Schedule, Sort, and
-/// Scan, is the same as DeviceAdapterAlgorithm<DeviceAdapterTag>, it is made a
-/// separate template parameter to avoid a recursive dependence between
+/// the actual DeviceAdapterAlgorithm class containing Schedule, and
+/// Synchronize is the same as DeviceAdapterAlgorithm<DeviceAdapterTag>, it is
+/// made a separate template parameter to avoid a recursive dependence between
 /// DeviceAdapterAlgorithmGeneral.h and DeviceAdapterAlgorithm.h
 ///
 template<class DerivedAlgorithm, class DeviceAdapterTag>
