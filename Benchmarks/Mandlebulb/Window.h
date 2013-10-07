@@ -56,13 +56,12 @@ struct TwizzledGLHandles
     glGenBuffers(2,ColorHandles);
     glGenBuffers(2,NormHandles);
 
-
-    glBindBuffer(GL_ARRAY_BUFFER, CoordHandles[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, CoordHandles[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, ColorHandles[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, ColorHandles[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, NormHandles[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, NormHandles[1]);
+    for(int i=0; i < 2; ++i)
+    {
+      glBindBuffer(GL_ARRAY_BUFFER, CoordHandles[i]);
+      glBindBuffer(GL_ARRAY_BUFFER, ColorHandles[i]);
+      glBindBuffer(GL_ARRAY_BUFFER, NormHandles[i]);
+    }
 
   }
 
@@ -131,6 +130,12 @@ public:
     this->ShaderProgram.add_frag_shader(make_fragment_shader_code());
     this->ShaderProgram.build();
 
+    //connect the current time info the the shaders
+    //so we can do a moving light source
+    this->ShaderLightLocation =
+          glGetUniformLocation(this->ShaderProgram.program_id(), "light_xpos");
+
+
     glEnable(GL_DEPTH);
     glEnable(GL_DEPTH_TEST);
 
@@ -180,6 +185,12 @@ public:
 
   //bind the shaders
   glUseProgram(this->ShaderProgram.program_id());
+
+  //transform the time into an x position to upload to shaders
+  //rotate around the model every 7200 seconds (20 * 360).
+  float x_pos = (fmod(this->CurrentTime, 20 * 360)) / 20;
+  x_pos = 2.5f * dax::math::Cos( dax::math::Pi()  * (x_pos / 180.0f));
+  glUniform1f(this->ShaderLightLocation, x_pos );
 
   //Move the camera
   glMatrixMode(GL_MODELVIEW);
@@ -350,6 +361,9 @@ private:
 
   //shader program that holds onto all the shader details
   mandle::ShaderProgram ShaderProgram;
+
+  //holds the location to upload the current time too, for the shader
+  GLint ShaderLightLocation;
 
   float CurrentTime;
   float PreviousTime;
