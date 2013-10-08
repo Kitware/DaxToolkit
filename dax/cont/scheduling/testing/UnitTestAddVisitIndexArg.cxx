@@ -79,8 +79,7 @@ void AddVisitIndex()
   typedef dax::cont::DeviceAdapterTagSerial DeviceAdapterTag;
   typedef dax::cont::scheduling::Scheduler<DeviceAdapterTag,
           dax::cont::scheduling::ScheduleDefaultTag> Scheduler;
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<
-                                DeviceAdapterTag> Algorithm;
+  typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag> Algorithm;
 
   typedef dax::cont::ArrayHandle<dax::Id> IdHandleType;
 

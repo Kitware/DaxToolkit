@@ -41,25 +41,6 @@ struct DeviceAdapterTagTestAlgorithmGeneral { };
 
 namespace dax {
 namespace cont {
-namespace internal {
-
-template <typename T, class ArrayContainerControlTag>
-class ArrayManagerExecution
-    <T,
-    ArrayContainerControlTag,
-    dax::cont::testing::DeviceAdapterTagTestAlgorithmGeneral>
-    : public dax::cont::internal::ArrayManagerExecution
-          <T, ArrayContainerControlTag, dax::cont::DeviceAdapterTagSerial>
-{
-public:
-  typedef dax::cont::internal::ArrayManagerExecution
-      <T, ArrayContainerControlTag, dax::cont::DeviceAdapterTagSerial>
-      Superclass;
-  typedef typename Superclass::ValueType ValueType;
-  typedef typename Superclass::PortalType PortalType;
-  typedef typename Superclass::PortalConstType PortalConstType;
-};
-
 
 template<>
 struct DeviceAdapterAlgorithm<
@@ -70,7 +51,7 @@ struct DeviceAdapterAlgorithm<
         dax::cont::testing::DeviceAdapterTagTestAlgorithmGeneral>
 {
 private:
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<
+  typedef dax::cont::DeviceAdapterAlgorithm<
       dax::cont::DeviceAdapterTagSerial> Algorithm;
 
   typedef dax::cont::testing::DeviceAdapterTagTestAlgorithmGeneral
@@ -97,6 +78,26 @@ public:
     Algorithm::Synchronize();
   }
 };
+
+namespace internal {
+
+template <typename T, class ArrayContainerControlTag>
+class ArrayManagerExecution
+    <T,
+    ArrayContainerControlTag,
+    dax::cont::testing::DeviceAdapterTagTestAlgorithmGeneral>
+    : public dax::cont::internal::ArrayManagerExecution
+          <T, ArrayContainerControlTag, dax::cont::DeviceAdapterTagSerial>
+{
+public:
+  typedef dax::cont::internal::ArrayManagerExecution
+      <T, ArrayContainerControlTag, dax::cont::DeviceAdapterTagSerial>
+      Superclass;
+  typedef typename Superclass::ValueType ValueType;
+  typedef typename Superclass::PortalType PortalType;
+  typedef typename Superclass::PortalConstType PortalConstType;
+};
+
 
 }
 }

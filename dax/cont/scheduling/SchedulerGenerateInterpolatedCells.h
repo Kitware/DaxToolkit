@@ -96,8 +96,7 @@ DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
                                         OutputGrid& outputGrid,
                                         bool removeDuplicates ) const
 {
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
-      Algorithm;
+  typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag> Algorithm;
   if(removeDuplicates)
     {
     // the sort and unique will get us the subset of new points
@@ -162,8 +161,7 @@ DAX_CONT_EXPORT void GenerateNewTopology(
     const InputGrid& inputGrid,
     OutputGrid& outputGrid) const
   {
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
-      Algorithm;
+  typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag> Algorithm;
   typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
       DeviceAdapterTag> IdArrayHandleType;
 
@@ -288,7 +286,7 @@ DAX_CONT_EXPORT void GenerateNewTopology(
     OutputGrid& outputGrid,
     _dax_pp_params___(a)) const
   {
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
+  typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
       Algorithm;
   typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
       DeviceAdapterTag> IdArrayHandleType;

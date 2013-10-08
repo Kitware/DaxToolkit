@@ -122,11 +122,10 @@ private:
     typedef dax::cont::ReduceKeysValues<WorkletType,KeysHandleType>
       WorkletWrapperType;
 
-    typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
-      Algorithm;
+    typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag> Algorithm;
 
-      typedef typename WorkletWrapperType::ReductionMapType ReductionMapType;
-      typedef typename WorkletWrapperType::KeysType KeysType;
+    typedef typename WorkletWrapperType::ReductionMapType ReductionMapType;
+    typedef typename WorkletWrapperType::KeysType KeysType;
 
     //Get a map from output indices to input groups.
     workletWrapper.BuildReductionMap();

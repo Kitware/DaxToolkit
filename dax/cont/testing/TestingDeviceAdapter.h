@@ -85,7 +85,7 @@ private:
       ::ArrayHandle<dax::Vector3,ArrayContainerControlTag,DeviceAdapterTag>
       Vector3ArrayHandle;
 
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
+  typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
       Algorithm;
 
 public:

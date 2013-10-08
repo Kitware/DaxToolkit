@@ -90,8 +90,7 @@ DAX_CONT_EXPORT void InvokeGenerateKeysValues(
     WorkletType,ClassifyHandleType>& workletWrapper,
     const InputGrid& inputGrid) const
   {
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
-      Algorithm;
+  typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag> Algorithm;
   typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
       DeviceAdapterTag> IdArrayHandleType;
 
@@ -191,8 +190,7 @@ DAX_CONT_EXPORT void InvokeGenerateKeysValues(
     const InputGrid& inputGrid,
     _dax_pp_params___(a)) const
   {
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
-      Algorithm;
+  typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag> Algorithm;
   typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
       DeviceAdapterTag> IdArrayHandleType;
 

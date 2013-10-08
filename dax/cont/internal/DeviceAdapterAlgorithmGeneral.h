@@ -301,8 +301,10 @@ public:
       const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTag> &input,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &values_output)
   {
-    DeviceAdapterAlgorithmGeneral<DerivedAlgorithm,DeviceAdapterTag>::
-        LowerBounds(input, values_output, values_output);
+    DeviceAdapterAlgorithmGeneral<
+        DerivedAlgorithm,DeviceAdapterTag>::LowerBounds(input,
+                                                        values_output,
+                                                        values_output);
   }
 
   //--------------------------------------------------------------------------
@@ -962,8 +964,8 @@ public:
       const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTag> &input,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &values_output)
   {
-    DeviceAdapterAlgorithmGeneral<DerivedAlgorithm,DeviceAdapterTag>::
-        UpperBounds(input, values_output, values_output);
+    DeviceAdapterAlgorithmGeneral<DerivedAlgorithm,
+      DeviceAdapterTag>::UpperBounds(input, values_output, values_output);
   }
 
 };

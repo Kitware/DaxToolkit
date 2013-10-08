@@ -52,11 +52,10 @@
 
 namespace dax {
 namespace cont {
-namespace internal {
 
 template<>
 struct DeviceAdapterAlgorithm<dax::tbb::cont::DeviceAdapterTagTBB> :
-    DeviceAdapterAlgorithmGeneral<
+    dax::cont::internal::DeviceAdapterAlgorithmGeneral<
         DeviceAdapterAlgorithm<dax::tbb::cont::DeviceAdapterTagTBB>,
         dax::tbb::cont::DeviceAdapterTagTBB>
 {
@@ -468,13 +467,13 @@ public:
   }
   DAX_CONT_EXPORT void Reset()
   {
-    dax::cont::internal::DeviceAdapterAlgorithm<
+    dax::cont::DeviceAdapterAlgorithm<
         dax::tbb::cont::DeviceAdapterTagTBB>::Synchronize();
     this->StartTime = ::tbb::tick_count::now();
   }
   DAX_CONT_EXPORT dax::Scalar GetElapsedTime()
   {
-    dax::cont::internal::DeviceAdapterAlgorithm<
+    dax::cont::DeviceAdapterAlgorithm<
         dax::tbb::cont::DeviceAdapterTagTBB>::Synchronize();
     ::tbb::tick_count currentTime = ::tbb::tick_count::now();
     ::tbb::tick_count::interval_t elapsedTime = currentTime - this->StartTime;
@@ -486,7 +485,6 @@ private:
 };
 
 }
-}
-} // namespace dax::cont::internal
+} // namespace dax::cont
 
 #endif //__dax_tbb_cont_internal_DeviceAdapterAlgorithmTBB_h

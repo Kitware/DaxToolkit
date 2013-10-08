@@ -92,8 +92,7 @@ DAX_CONT_EXPORT void GenerateNewTopology(
     const InputGrid& inputGrid,
     OutputGrid& outputGrid) const
   {
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
-      Algorithm;
+  typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag> Algorithm;
   typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
       DeviceAdapterTag> IdArrayHandleType;
 
@@ -194,8 +193,7 @@ DAX_CONT_EXPORT void RemoveDuplicatePoints(const InGridType &inGrid,
     // Here we are assuming OutGridType is an UnstructuredGrid so that we
     // can set point and connectivity information.
 
-    typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
-        Algorithm;
+    typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag> Algorithm;
 
     //extract the point coordinates that we need for the new topology
     Algorithm::StreamCompact(inGrid.GetPointCoordinates(),
@@ -263,7 +261,7 @@ DAX_CONT_EXPORT void GenerateNewTopology(
     OutputGrid& outputGrid,
     _dax_pp_params___(a)) const
   {
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
+  typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
       Algorithm;
   typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
       DeviceAdapterTag> IdArrayHandleType;

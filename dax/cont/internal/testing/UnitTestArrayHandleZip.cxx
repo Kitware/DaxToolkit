@@ -104,7 +104,7 @@ private:
     CheckZipFunctor functor;
     functor.Portal = zipArray.PrepareForInput();
 
-    dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapter>::Schedule(
+    dax::cont::DeviceAdapterAlgorithm<DeviceAdapter>::Schedule(
           functor, ARRAY_SIZE);
   }
 
@@ -142,7 +142,7 @@ private:
     SetZipFunctor functor;
     functor.Portal = zipArray.PrepareForOutput(ARRAY_SIZE);
 
-    dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapter>::Schedule(
+    dax::cont::DeviceAdapterAlgorithm<DeviceAdapter>::Schedule(
           functor, ARRAY_SIZE);
 
     DAX_TEST_ASSERT(zipArray.GetNumberOfValues() == ARRAY_SIZE,
