@@ -26,6 +26,8 @@ set(headers
 
 set(sources
   ArgumentsParser.cxx
+  Mandlebulb.cxx
+  Window.cxx
   main.cxx
   )
 
@@ -58,8 +60,9 @@ endif (DAX_ENABLE_TBB)
 if (DAX_ENABLE_CUDA)
   dax_disable_troublesome_thrust_warnings()
   set(cuda_sources ${sources})
-  list(REMOVE_ITEM cuda_sources main.cxx)
-  list(APPEND cuda_sources main.cu)
+  list(REMOVE_ITEM cuda_sources Mandlebulb.cxx)
+  list(REMOVE_ITEM cuda_sources Window.cxx )
+  list(APPEND cuda_sources Mandlebulb.cu Window.cu)
   cuda_add_executable(MandlebulbCuda ${headers} ${cuda_sources})
   set_dax_device_adapter(MandlebulbCuda DAX_DEVICE_ADAPTER_CUDA)
   add_test(MandlebulbCuda ${EXECUTABLE_OUTPUT_PATH}/MandlebulbCuda --time=5000)

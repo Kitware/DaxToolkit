@@ -13,17 +13,6 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
+#define BOOST_SP_DISABLE_THREADS
 
-#include "Window.h"
-#include "ArgumentsParser.h"
-
-int main(int argc, char **argv)
-{
-  mandle::ArgumentsParser arguments;
-  arguments.parseArguments(argc, argv);
-
-  mandle::Window window(arguments);
-  window.Init("MandleBulb Benchmark", 800, 600);
-  window.Start();
-  return 0;
-}
+#include "Window.cxx"

@@ -1,4 +1,4 @@
-//=============================================================================
+    //=============================================================================
 //
 //  Copyright (c) Kitware, Inc.
 //  All rights reserved.
@@ -19,12 +19,19 @@
 #include <iostream>
 
 #include <dax/cont/DeviceAdapter.h>
-
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/UniformGrid.h>
+#include <dax/cont/UnstructuredGrid.h>
+
+#include <dax/Extent.h>
+#include <dax/math/Compare.h>
 #include <dax/math/Exp.h>
 #include <dax/math/Trig.h>
-#include <dax/opengl/TransferToOpenGL.h>
+#include <dax/math/VectorAnalysis.h>
+#include <dax/opengl/internal/OpenGLHeaders.h>
+
+#include <dax/exec/WorkletMapField.h>
+#include <dax/exec/WorkletMapCell.h>
 #include <dax/worklet/MarchingCubes.h>
 #include <dax/worklet/Slice.h>
 
@@ -33,24 +40,27 @@
 //helper structs to make it easier to pass data around between functions
 namespace mandle {
 
-  struct MandlebulbInfo
+  class MandlebulbVolume
   {
-  MandlebulbInfo(  )
+  public:
+  MandlebulbVolume() { }
+
+  MandlebulbVolume(  dax::Vector3 origin,
+                   dax::Vector3 spacing,
+                   dax::Extent3 extent )
   {
-    Grid.SetOrigin( dax::make_Vector3(-1,-1,-1) );
-    Grid.SetExtent( dax::make_Id3(0,0,0),
-                    dax::make_Id3(350,350,200) );
-    Grid.SetSpacing( dax::make_Vector3(0.01,0.01,0.02) );
+    Grid.SetOrigin ( origin  );
+    Grid.SetExtent ( extent  );
+    Grid.SetSpacing( spacing );
   }
 
   dax::cont::UniformGrid< > Grid;
   dax::cont::ArrayHandle<dax::Scalar> EscapeIteration;
   };
 
-  struct MandlebulbSurface
+  class MandlebulbSurface
   {
   typedef dax::cont::UnstructuredGrid< dax::CellTagTriangle > DataType;
-  DataType Data;
 
   //dax doesn't currently have a per vertex worklet type
   //so for use to generate per vertex colors we have to manually make
@@ -60,6 +70,9 @@ namespace mandle {
   typedef dax::Tuple<unsigned char,12> ColorType;
   typedef dax::Tuple<dax::Scalar,9> NormType;
 
+  public:
+
+  DataType Data;
   dax::cont::ArrayHandle<ColorType> Colors;
   dax::cont::ArrayHandle<NormType> Norms;
   };
@@ -145,145 +158,22 @@ private:
   mandle::CoolWarmColorMap ColorMap;
 };
 
-
 }
 
-using namespace mandle;
+//define functions to compute the mandlebulb info
+mandle::MandlebulbVolume computeMandlebulb( dax::Vector3 origin,
+                                            dax::Vector3 spacing,
+                                            dax::Extent3 extent);
 
-//compute the mandlebulbs values for each point
-MandlebulbInfo computeMandlebulb(  )
-{
-  //construct the dataset from -2,-2,-2, to 2,2,2
-  //with the given spacing
-  MandlebulbInfo info;
+mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume info,
+                                          dax::Scalar iteration );
 
-  //compute the escape iterations for each point in the grid
-  dax::cont::Scheduler< > scheduler;
-  scheduler.Invoke( worklet::Mandlebulb(), info.Grid.GetPointCoordinates(),
-                    info.EscapeIteration );
+mandle::MandlebulbSurface extractSlice( mandle::MandlebulbVolume info,
+                                        dax::Scalar& iteration );
 
-  info.EscapeIteration.GetPortalConstControl();
-
-  return info;
-}
-
-//compute the surface of the mandlebulb for a given iteration
-MandlebulbSurface extractSurface(  MandlebulbInfo info, dax::Scalar iteration )
-{
-  //lets extract the surface where the iteration value is greater than
-  //the passed in iteration value
-  MandlebulbSurface surface; //construct surface struct
-  dax::cont::ArrayHandle<dax::Id> classification;
-
-  dax::cont::Scheduler< > scheduler;
-
-  //run the classify step
-  dax::worklet::MarchingCubesClassify classify(iteration);
-  scheduler.Invoke( classify,
-                    info.Grid,
-                    info.EscapeIteration,
-                    classification );
-
-  //setup the info for the second step
-  dax::worklet::MarchingCubesGenerate generateSurface(iteration);
-  dax::cont::GenerateInterpolatedCells<
-      dax::worklet::MarchingCubesGenerate > genWrapper(classification,
-                                                       generateSurface);
-
-  //remove duplicates on purpose
-  genWrapper.SetRemoveDuplicatePoints(false);
-
-  //run the second step
-  scheduler.Invoke(genWrapper,
-                   info.Grid,
-                   surface.Data,
-                   info.EscapeIteration);
-
-  // //generate a color for each point based on the escape iteration
-  scheduler.Invoke(worklet::ColorsAndNorms(),
-                    surface.Data,
-                    surface.Data.GetPointCoordinates(),
-                    surface.Colors,
-                    surface.Norms);
-
-  info.EscapeIteration.ReleaseResourcesExecution();
-  return surface;
-}
-
-//compute the slice of the volume for a given iteration
-//sneaky we are going to modify iteration in this method on purpose
-MandlebulbSurface extractSlice(  MandlebulbInfo info, dax::Scalar& iteration )
-{
-  dax::Vector3 origin = info.Grid.GetOrigin();
-  dax::Vector3 spacing = info.Grid.GetSpacing();
-  dax::Id3 dims = dax::extentCellDimensions(info.Grid.GetExtent());
-
-  //slicing at the edges where nothing is causes problems
-  dax::Id index = dax::math::Max((int)iteration,5);
-  index = dax::math::Min(index,dax::Id(20));
-  iteration = index;
-
-  dax::Vector3 location(origin[0] + spacing[0] * (index * (dims[0]/30) ),
-                        origin[1] + spacing[1] * (dims[1]/2),
-                        origin[2] + spacing[2] * (dims[2]/2) );
-
-  dax::Vector3 normal(1,0,0);
-
-  //lets extract the slice
-  MandlebulbSurface surface;
-
-  dax::cont::ArrayHandle<dax::Id> classification;
-
-  dax::cont::Scheduler< > scheduler;
-
-  //run the classify step
-  dax::worklet::SliceClassify classify(location, normal);
-  scheduler.Invoke( classify,
-                    info.Grid,
-                    info.Grid.GetPointCoordinates(),
-                    classification );
-
-  //setup the info for the second step
-  dax::worklet::SliceGenerate generateSurface(location, normal);
-  dax::cont::GenerateInterpolatedCells<
-      dax::worklet::SliceGenerate > genWrapper(classification,generateSurface);
-
-  //remove duplicates on purpose
-  genWrapper.SetRemoveDuplicatePoints(false);
-
-  //run the second step
-  scheduler.Invoke(genWrapper,
-                   info.Grid,
-                   surface.Data,
-                   info.Grid.GetPointCoordinates());
-
-  // //generate a color for each point based on the escape iteration
-  scheduler.Invoke(worklet::ColorsAndNorms(),
-                    surface.Data,
-                    surface.Data.GetPointCoordinates(),
-                    surface.Colors,
-                    surface.Norms);
-
-  info.EscapeIteration.ReleaseResourcesExecution();
-
-  return surface;
-}
-
-void bindSurface(MandlebulbSurface& surface, GLuint& coord,
-                 GLuint& color, GLuint& norm )
-{
-  //TransferToOpenGL will do the binding to the given buffers if needed
-  dax::opengl::TransferToOpenGL(surface.Data.GetPointCoordinates(), coord);
-  dax::opengl::TransferToOpenGL(surface.Colors, color);
-  dax::opengl::TransferToOpenGL(surface.Norms, norm);
-
-  //no need to keep the cuda side, as the next re-computation will have
-  //redo all the work for all three of these
-  surface.Data.GetPointCoordinates().GetPortalConstControl();
-  surface.Data.GetPointCoordinates().ReleaseResourcesExecution();
-  surface.Colors.ReleaseResourcesExecution();
-  surface.Norms.ReleaseResourcesExecution();
-
-}
+void bindSurface( mandle::MandlebulbSurface& surface,
+                  GLuint& coord,
+                  GLuint& color,
+                  GLuint& norm );
 
 #endif
