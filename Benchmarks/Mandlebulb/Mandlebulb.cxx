@@ -90,44 +90,41 @@ mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume vol,
   return surface;
 }
 
-//compute the slice of the volume for a given iteration
-//sneaky we are going to modify iteration in this method on purpose
-mandle::MandlebulbSurface extractSlice( mandle::MandlebulbVolume vol,
-                                        dax::Scalar& iteration )
+//compute the cut of the volume for a given iteration
+mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume vol,
+                                        dax::Scalar cut_percent,
+                                        dax::Scalar iteration )
 {
+
   dax::Vector3 origin = vol.Grid.GetOrigin();
   dax::Vector3 spacing = vol.Grid.GetSpacing();
   dax::Id3 dims = dax::extentCellDimensions(vol.Grid.GetExtent());
 
   //slicing at the edges where nothing is causes problems
-  dax::Id index = dax::math::Max((int)iteration,5);
-  index = dax::math::Min(index,dax::Id(20));
-  iteration = index;
+  dax::Vector3 location(origin[0] + spacing[0] * dims[0],
+                        origin[1] + spacing[1] * (dims[1] * cut_percent),
+                        origin[2] + spacing[2] * dims[2] );
+  dax::Vector3 normal(0,1,0);
 
-  dax::Vector3 location(origin[0] + spacing[0] * (index * (dims[0]/30) ),
-                        origin[1] + spacing[1] * (dims[1]/2),
-                        origin[2] + spacing[2] * (dims[2]/2) );
-
-  dax::Vector3 normal(1,0,0);
-
-  //lets extract the slice
+  //lets extract the cut
   mandle::MandlebulbSurface surface;
-
   dax::cont::ArrayHandle<dax::Id> classification;
 
   dax::cont::Scheduler< > scheduler;
 
   //run the classify step
-  dax::worklet::SliceClassify classify(location, normal);
+  worklet::MandlebulbCutClassify classify(origin, location, normal, iteration);
   scheduler.Invoke( classify,
                     vol.Grid,
                     vol.Grid.GetPointCoordinates(),
+                    vol.EscapeIteration,
                     classification );
 
   //setup the info for the second step
-  dax::worklet::SliceGenerate generateSurface(location, normal);
+  dax::worklet::MarchingCubesGenerate generateSurface(iteration);
   dax::cont::GenerateInterpolatedCells<
-      dax::worklet::SliceGenerate > genWrapper(classification,generateSurface);
+      dax::worklet::MarchingCubesGenerate > genWrapper(classification,
+                                                       generateSurface);
 
   //remove duplicates on purpose
   genWrapper.SetRemoveDuplicatePoints(false);
@@ -136,14 +133,17 @@ mandle::MandlebulbSurface extractSlice( mandle::MandlebulbVolume vol,
   scheduler.Invoke(genWrapper,
                    vol.Grid,
                    surface.Data,
-                   vol.Grid.GetPointCoordinates());
+                   vol.EscapeIteration);
 
-  // //generate a color for each point based on the escape iteration
-  scheduler.Invoke(worklet::ColorsAndNorms(),
+  if(surface.Data.GetNumberOfPoints() > 0)
+    {
+    //generate a color for each point based on the escape iteration
+    scheduler.Invoke(worklet::ColorsAndNorms(),
                     surface.Data,
                     surface.Data.GetPointCoordinates(),
                     surface.Colors,
                     surface.Norms);
+    }
 
   vol.EscapeIteration.ReleaseResourcesExecution();
 
@@ -155,6 +155,9 @@ void bindSurface( mandle::MandlebulbSurface& surface,
                   GLuint& color,
                   GLuint& norm )
 {
+  if(surface.Data.GetNumberOfPoints() == 0)
+    return;
+
   //TransferToOpenGL will do the binding to the given buffers if needed
   dax::opengl::TransferToOpenGL(surface.Data.GetPointCoordinates(), coord);
   dax::opengl::TransferToOpenGL(surface.Colors, color);

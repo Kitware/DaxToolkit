@@ -33,7 +33,6 @@
 #include <dax/exec/WorkletMapField.h>
 #include <dax/exec/WorkletMapCell.h>
 #include <dax/worklet/MarchingCubes.h>
-#include <dax/worklet/Slice.h>
 
 #include "CoolWarmColorMap.h"
 
@@ -97,15 +96,15 @@ public:
   dax::Vector3 pos(0.0);
 
   //find the iteration we escape on
-  for (dax::Id i=0; i < 32; ++i)
+  for (dax::Id i=0; i < 35; ++i)
     {
     const dax::Scalar r = dax::math::Sqrt( dax::dot(pos,pos) );
     const dax::Scalar t = dax::math::Sqrt(pos[0] * pos[0] + pos[1] * pos[1]);
-    const dax::Scalar theta = 8 * dax::math::ATan2( t, pos[2]);
-    const dax::Scalar phi = 8 * dax::math::ATan2( pos[1], pos[2] );
+    const dax::Scalar theta = 10 * dax::math::ATan2( t, pos[2]);
+    const dax::Scalar phi = 10 * dax::math::ATan2( pos[1], pos[2] );
 
-    const dax::Scalar powR = dax::math::Pow(r,8);
-    pos[0] = powR * dax::math::Sin(theta) * dax::math::Cos(phi) + inCoordinate[0];
+    const dax::Scalar powR = dax::math::Pow(r,10);
+    pos[0] = powR * dax::math::Sin(theta) * dax::math::Tan(phi) + inCoordinate[0];
     pos[1] = powR * dax::math::Sin(theta) * dax::math::Sin(phi) + inCoordinate[1];
     pos[2] = powR * dax::math::Cos(theta) + inCoordinate[2];
     if(dax::dot(pos,pos) > 2)
@@ -116,6 +115,69 @@ public:
   return 0;
   }
 };
+
+//does a combined slice and marching cubes at the same time
+class MandlebulbCutClassify : public dax::exec::WorkletMapCell
+{
+public:
+  typedef void ControlSignature(Topology, Field(Point), Field(Point), Field(Out));
+  typedef _4 ExecutionSignature(_2, _3);
+
+  DAX_CONT_EXPORT MandlebulbCutClassify(dax::Vector3 origin,
+                                        dax::Vector3 location,
+                                        dax::Vector3 normal,
+                                        dax::Scalar isoValue)
+  : Origin(origin),
+    Location(location),
+    Normal(normal),
+    MClassify(isoValue)
+  {
+  }
+
+  template<class CellTag>
+  DAX_EXEC_EXPORT
+  dax::Scalar operator()(
+    const dax::exec::CellField<dax::Vector3,CellTag> &coords,
+    const dax::exec::CellField<dax::Scalar,CellTag> &values) const
+  {
+    dax::Id faces = 0;
+    const bool is_good = this->InCutArea(coords,
+                   typename dax::CellTraits<CellTag>::CanonicalCellTag());
+    if(is_good)
+      {
+      //if we intersect the slice plane generate faces
+      faces = this->MClassify(values);
+      }
+    return faces;
+  }
+ private:
+
+  template<class CellTag>
+    DAX_EXEC_EXPORT
+    bool InCutArea(
+      const dax::exec::CellField<dax::Vector3,CellTag> &coords,
+      dax::CellTagHexahedron) const
+    {
+      //compute the location
+      const dax::Scalar loca_value = dax::dot(Normal,Location);
+      const int voxelClass =(
+            ( dax::dot(Normal, coords[0] - Origin ) > loca_value ) |
+            ( dax::dot(Normal, coords[1] - Origin ) > loca_value ) |
+            ( dax::dot(Normal, coords[2] - Origin ) > loca_value ) |
+            ( dax::dot(Normal, coords[3] - Origin ) > loca_value ) |
+            ( dax::dot(Normal, coords[4] - Origin ) > loca_value ) |
+            ( dax::dot(Normal, coords[5] - Origin ) > loca_value ) |
+            ( dax::dot(Normal, coords[6] - Origin ) > loca_value ) |
+            ( dax::dot(Normal, coords[7] - Origin ) > loca_value ) );
+      return voxelClass != 0;
+    }
+
+    dax::Vector3 Origin;
+    dax::Vector3 Location;
+    dax::Vector3 Normal;
+    dax::worklet::MarchingCubesClassify MClassify;
+};
+
 
 //basic implementation of computing color and norms for triangles
 class ColorsAndNorms : public dax::exec::WorkletMapCell
@@ -165,11 +227,14 @@ mandle::MandlebulbVolume computeMandlebulb( dax::Vector3 origin,
                                             dax::Vector3 spacing,
                                             dax::Extent3 extent);
 
-mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume info,
+mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume vol,
                                           dax::Scalar iteration );
 
-mandle::MandlebulbSurface extractSlice( mandle::MandlebulbVolume info,
-                                        dax::Scalar& iteration );
+//slice percent represents the ratio from 0 - 1 that we want the slice
+//to be along the axis
+mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume vol,
+                                        dax::Scalar cut_percent,
+                                        dax::Scalar iteration );
 
 void bindSurface( mandle::MandlebulbSurface& surface,
                   GLuint& coord,

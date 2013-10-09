@@ -59,6 +59,7 @@ Window::Window(const ArgumentsParser &arguments)
   this->TranslateZ = -3;
 
   this->Iteration = 1;
+  this->CutRatio = 0.25;
   this->Remesh = true;
   this->Mode = 0;
 }
@@ -84,7 +85,7 @@ void Window::NextAutoPlayStep()
 {
   if(this->AutoPlay)
     {
-    this->Iteration += 0.1;
+    this->Iteration = dax::math::Min(35.0, this->Iteration + 0.05);
     this->Remesh = true;
     }
 }
@@ -115,7 +116,8 @@ void Window::RemeshSurface()
                 extractSurface(this->MandleData->Volume,this->Iteration);
     else
       this->MandleData->Surface =
-                extractSlice(this->MandleData->Volume,this->Iteration);
+                extractCut(this->MandleData->Volume,
+                             this->CutRatio,this->Iteration);
 
     bindSurface(this->MandleData->Surface, coord, color, norm );
 
@@ -258,6 +260,13 @@ void Window::Key(unsigned char key, int daxNotUsed(x), int daxNotUsed(y) )
   {
   exit(0);
   }
+
+  if(key == 32 ) //space bar pressed
+    {
+    //flip the mode we are using
+    this->Mode = !this->Mode;
+    this->Remesh = true;
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -266,25 +275,19 @@ void Window::SpecialKey(int key, int daxNotUsed(x), int daxNotUsed(y) )
   switch (key)
     {
     case GLUT_KEY_UP:
-      if(this->Iteration < 30)
-        {
-        this->Iteration += 1;
-        this->Remesh = true;
-        }
+      this->Iteration = dax::math::Min(35.0, this->Iteration + 0.05);
+      this->Remesh = true;
       break;
     case GLUT_KEY_DOWN :
-      if(this->Iteration > 0)
-        {
-        this->Iteration -= 1;
-        this->Remesh = true;
-        }
+      this->Iteration = dax::math::Max(0.0, this->Iteration - 0.05);
+      this->Remesh = true;
       break;
     case GLUT_KEY_LEFT:
-      this->Mode = 0;
+      this->CutRatio = dax::math::Max(0.25, this->CutRatio - 0.01);
       this->Remesh = true;
       break;
     case GLUT_KEY_RIGHT:
-      this->Mode = 1;
+      this->CutRatio = dax::math::Min(1.0, this->CutRatio + 0.01);
       this->Remesh = true;
       break;
     default:

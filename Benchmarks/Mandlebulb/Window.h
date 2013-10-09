@@ -110,9 +110,11 @@ private:
   class InternalMandleData;
   InternalMandleData* MandleData;
 
-  dax::Scalar Iteration;
+  dax::Scalar Iteration; //tracks the escape iteration to contour on
+  dax::Scalar CutRatio; //tracks where to cut at
   bool Remesh;
-  int Mode; //0 marching cubes, 1 slice
+  int Mode; //0 marching cubes, 1 cut
+
 
   //gl array ids that hold the rendering info
   TwizzledGLHandles TwizzleHandles;
