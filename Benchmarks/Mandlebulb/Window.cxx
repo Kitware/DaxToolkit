@@ -85,7 +85,13 @@ void Window::NextAutoPlayStep()
 {
   if(this->AutoPlay)
     {
-    this->Iteration = dax::math::Min(35.0, this->Iteration + 0.05);
+    //alternating every 60 seconds move iteration from 1 to 30, and back to 1
+    int sign = (fmod(this->CurrentTime,(1000.0f * 60)) > 1000 * 30) ?  -1 : 1;
+
+    this->Iteration = dax::math::Min(30.0f, this->Iteration + (sign * 0.2f));
+    this->Iteration = dax::math::Max(1.0f, this->Iteration);
+    std::cout << this->Iteration << std::endl;
+
     this->Remesh = true;
     }
 }
@@ -154,7 +160,7 @@ void Window::PostInit()
                                   dax::make_Vector3(-1,-1,-1),
                                   dax::make_Vector3(0.01,0.01,0.02),
                                   dax::Extent3( dax::make_Id3(0,0,0),
-                                                dax::make_Id3(350,350,200) )
+                                                dax::make_Id3(350,350,100) )
                                   );
 
   this->Remesh = true;
