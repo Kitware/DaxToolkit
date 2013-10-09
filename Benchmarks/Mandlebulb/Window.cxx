@@ -59,7 +59,7 @@ Window::Window(const ArgumentsParser &arguments)
   this->TranslateZ = -3;
 
   this->Iteration = 1;
-  this->CutRatio = 0.25;
+  this->CutRatio = 0.3;
   this->Remesh = true;
   this->Mode = 0;
 }
@@ -85,12 +85,33 @@ void Window::NextAutoPlayStep()
 {
   if(this->AutoPlay)
     {
-    //alternating every 60 seconds move iteration from 1 to 30, and back to 1
-    int sign = (fmod(this->CurrentTime,(1000.0f * 60)) > 1000 * 30) ?  -1 : 1;
 
-    this->Iteration = dax::math::Min(30.0f, this->Iteration + (sign * 0.2f));
-    this->Iteration = dax::math::Max(1.0f, this->Iteration);
-    std::cout << this->Iteration << std::endl;
+    const int num_demo_steps = 4;
+    int demo_step = (fmod(this->CurrentTime,(60000.0f * num_demo_steps))) / 60000.0f;
+
+    //determine if we do marching cubes or cut based on the time.
+    //we cycle through cut / marching cubes every 1 minute
+    //so demo step 0,2 = mc, 1,3 = cut
+    this->Mode  = (fmod(this->CurrentTime,120000.0f) < 60000) ?  0 : 1;
+
+    //move the cut plane and not iso value second 4
+    //move the cut plane and iso value for second 2
+    if(demo_step <= 2)
+      {
+      //alternating every 60 seconds move iteration from 1 to 30, and back to 1
+      int sign = (fmod(this->CurrentTime,60000.0f) < 30000) ?  1 : -1;
+      this->Iteration = dax::math::Min(30.0f, this->Iteration + (sign * 0.2f));
+      this->Iteration = dax::math::Max(1.0f, this->Iteration);
+      }
+    if(demo_step == 1 || demo_step == 3)
+      {
+      int sign = (fmod(this->CurrentTime,60000.0f) < 30000) ?  1 : -1;
+      this->CutRatio = dax::math::Max(0.3f, this->CutRatio + (sign * 0.02f) );
+      this->CutRatio = dax::math::Min(1.0f, this->CutRatio);
+      }
+
+    std::cout << "demo_step: " << demo_step << std::endl;
+    std::cout << "Iteration: " << this->Iteration << " Cut: " << this->CutRatio << std::endl;
 
     this->Remesh = true;
     }
@@ -160,7 +181,7 @@ void Window::PostInit()
                                   dax::make_Vector3(-1,-1,-1),
                                   dax::make_Vector3(0.01,0.01,0.02),
                                   dax::Extent3( dax::make_Id3(0,0,0),
-                                                dax::make_Id3(350,350,100) )
+                                                dax::make_Id3(350,350,200) )
                                   );
 
   this->Remesh = true;
@@ -289,7 +310,7 @@ void Window::SpecialKey(int key, int daxNotUsed(x), int daxNotUsed(y) )
       this->Remesh = true;
       break;
     case GLUT_KEY_LEFT:
-      this->CutRatio = dax::math::Max(0.25, this->CutRatio - 0.01);
+      this->CutRatio = dax::math::Max(0.3, this->CutRatio - 0.01);
       this->Remesh = true;
       break;
     case GLUT_KEY_RIGHT:

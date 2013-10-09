@@ -102,9 +102,9 @@ mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume vol,
 
   //slicing at the edges where nothing is causes problems
   dax::Vector3 location(origin[0] + spacing[0] * dims[0],
-                        origin[1] + spacing[1] * (dims[1] * cut_percent),
-                        origin[2] + spacing[2] * dims[2] );
-  dax::Vector3 normal(0,1,0);
+                        origin[1] + spacing[1] * dims[1],
+                        origin[2] + spacing[2] * (dims[2] * cut_percent) );
+  dax::Vector3 normal(0,0,1);
 
   //lets extract the cut
   mandle::MandlebulbSurface surface;
