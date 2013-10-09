@@ -28,9 +28,11 @@ public:
   bool parseArguments(int argc, char* argv[]);
 
   unsigned int time() const { return this->Time; }
+  bool AutoPlay() const { return this->Auto; }
 
 private:
   unsigned int Time;
+  bool Auto;
 };
 
 } // namespace mandle
