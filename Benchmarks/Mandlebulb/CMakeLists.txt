@@ -37,14 +37,14 @@ set_source_files_properties(${headers} PROPERTIES HEADER_FILE_ONLY TRUE)
 #-----------------------------------------------------------------------------
 add_executable(MandlebulbSerial ${headers} ${sources})
 set_dax_device_adapter(MandlebulbSerial DAX_DEVICE_ADAPTER_SERIAL)
-add_test(MandlebulbSerial ${EXECUTABLE_OUTPUT_PATH}/MandlebulbSerial --time=5000)
+add_test(MandlebulbSerial ${EXECUTABLE_OUTPUT_PATH}/MandlebulbSerial --time=5000 --auto-play)
 target_link_libraries(MandlebulbSerial ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${GLEW_LIBRARIES})
 
 #-----------------------------------------------------------------------------
 if (DAX_ENABLE_OPENMP)
   add_executable(MandlebulbOpenMP ${headers} ${sources})
   set_dax_device_adapter(MandlebulbOpenMP DAX_DEVICE_ADAPTER_OPENMP)
-  add_test(MandlebulbOpenMP ${EXECUTABLE_OUTPUT_PATH}/MandlebulbOpenMP --time=5000)
+  add_test(MandlebulbOpenMP ${EXECUTABLE_OUTPUT_PATH}/MandlebulbOpenMP --time=5000 --auto-play)
   target_link_libraries(MandlebulbOpenMP ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${GLEW_LIBRARIES})
 endif (DAX_ENABLE_OPENMP)
 
@@ -52,7 +52,7 @@ endif (DAX_ENABLE_OPENMP)
 if (DAX_ENABLE_TBB)
   add_executable(MandlebulbTBB ${headers} ${sources})
   set_dax_device_adapter(MandlebulbTBB DAX_DEVICE_ADAPTER_TBB)
-  add_test(MandlebulbTBB ${EXECUTABLE_OUTPUT_PATH}/MandlebulbTBB --time=5000)
+  add_test(MandlebulbTBB ${EXECUTABLE_OUTPUT_PATH}/MandlebulbTBB --time=5000 --auto-play)
   target_link_libraries(MandlebulbTBB ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${GLEW_LIBRARIES})
 endif (DAX_ENABLE_TBB)
 
@@ -65,7 +65,7 @@ if (DAX_ENABLE_CUDA)
   list(APPEND cuda_sources Mandlebulb.cu Window.cu)
   cuda_add_executable(MandlebulbCuda ${headers} ${cuda_sources})
   set_dax_device_adapter(MandlebulbCuda DAX_DEVICE_ADAPTER_CUDA)
-  add_test(MandlebulbCuda ${EXECUTABLE_OUTPUT_PATH}/MandlebulbCuda --time=5000)
+  add_test(MandlebulbCuda ${EXECUTABLE_OUTPUT_PATH}/MandlebulbCuda --time=5000 --auto-play)
   target_link_libraries(MandlebulbCuda
                         ${OPENGL_LIBRARIES}
                         ${GLUT_LIBRARIES}
