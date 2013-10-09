@@ -44,7 +44,7 @@ namespace mandle {
   public:
   MandlebulbVolume() { }
 
-  MandlebulbVolume(  dax::Vector3 origin,
+  MandlebulbVolume( dax::Vector3 origin,
                    dax::Vector3 spacing,
                    dax::Extent3 extent )
   {

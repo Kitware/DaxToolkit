@@ -101,6 +101,7 @@ mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume vol,
   dax::Id3 dims = dax::extentCellDimensions(vol.Grid.GetExtent());
 
   //slicing at the edges where nothing is causes problems
+  //we are doing z slice so we have to go from positive
   dax::Vector3 location(origin[0] + spacing[0] * dims[0],
                         origin[1] + spacing[1] * dims[1],
                         origin[2] + spacing[2] * (dims[2] * cut_percent) );

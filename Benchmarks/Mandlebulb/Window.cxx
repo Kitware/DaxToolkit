@@ -55,7 +55,7 @@ Window::Window(const ArgumentsParser &arguments)
   this->ActiveMouseButtons = 0;
 
   this->RotateX = 0;
-  this->RotateY = 0;
+  this->RotateY = 180;
   this->TranslateZ = -3;
 
   this->Iteration = 1;
@@ -109,10 +109,6 @@ void Window::NextAutoPlayStep()
       this->CutRatio = dax::math::Max(0.3f, this->CutRatio + (sign * 0.02f) );
       this->CutRatio = dax::math::Min(1.0f, this->CutRatio);
       }
-
-    std::cout << "demo_step: " << demo_step << std::endl;
-    std::cout << "Iteration: " << this->Iteration << " Cut: " << this->CutRatio << std::endl;
-
     this->Remesh = true;
     }
 }

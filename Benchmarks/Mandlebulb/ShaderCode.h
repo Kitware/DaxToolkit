@@ -24,6 +24,7 @@ static std::string const& make_fragment_shader_code()
 "#version 120\n"
 "varying vec4 vert_pos;"
 "varying vec3 normal;"
+"varying vec3 back_normal;"
 "uniform float light_xpos;"
 "void main()"
 "{"
@@ -32,9 +33,17 @@ static std::string const& make_fragment_shader_code()
 "  /*move the light around the x axis*/"
 "  light_pos = vec3(light_xpos,-1.0,1.0);"
 "  frag_to_light = normalize(light_pos + vec3(vert_pos));"
-"  n = normalize(normal);"
-"  brightness = max(0.0, dot(n, frag_to_light));"
-"  gl_FragColor = brightness * vec4(1,1,1,1) * gl_Color;"
+"  /* the models normals are point in, so this is inverted */ "
+"  if (gl_FrontFacing)"
+"   {"
+"   n = normalize(back_normal);"
+"   }"
+" else"
+"   {"
+"   n = normalize(normal);"
+"   }"
+"   brightness = max(0.0, dot(n, frag_to_light));"
+"   gl_FragColor = brightness * gl_Color;"
 "}";
   return data;
 }
@@ -46,11 +55,13 @@ static std::string const& make_vertex_shader_code()
 "#version 120\n"
 "varying vec4 vert_pos;"
 "varying vec3 normal;"
+"varying vec3 back_normal;"
 "void main()"
 "{"
 "  normal = normalize(gl_NormalMatrix * gl_Normal);"
+"  back_normal = normalize(gl_NormalMatrix * -gl_Normal);"
 "  vert_pos = gl_ModelViewMatrix * gl_Vertex;"
-"  gl_FrontColor =  gl_Color;"
+"  gl_FrontColor = gl_Color;"
 "  gl_Position = ftransform();"
 "}";
 
