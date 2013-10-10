@@ -30,6 +30,17 @@ namespace mandle {
 class Window::InternalMandleData
 {
 public:
+  void release()
+  {
+    Volume.EscapeIteration.ReleaseResources();
+
+    Surface.Data.GetPointCoordinates().ReleaseResources();
+    Surface.Data.GetCellConnections().ReleaseResources();
+
+    Surface.Colors.ReleaseResources();
+    Surface.Norms.ReleaseResources();
+  }
+
   MandlebulbVolume Volume;
   MandlebulbSurface Surface;
 };
@@ -67,15 +78,27 @@ Window::Window(const ArgumentsParser &arguments)
 //-----------------------------------------------------------------------------
 Window::~Window()
 {
+  this->Cleanup();
+
+}
+
+//-----------------------------------------------------------------------------
+void Window::Cleanup()
+{
+  //cleanup memory allocation this way so we can handle exit and signal
+  //kills and
+  this->TwizzleHandles.release();
+  this->MandleData->release();
   delete this->MandleData;
 }
 
 //-----------------------------------------------------------------------------
-void Window::CheckMaxTime() const
+void Window::CheckMaxTime()
 {
   //terminate once we have been running for ~10 secs
   if((this->MaxTime > 0) && (this->CurrentTime >= 10000))
     {
+    this->Cleanup();
     exit(0);
     }
 }
@@ -230,6 +253,8 @@ void Window::Display()
   glDisableClientState(GL_COLOR_ARRAY);
   glDisableClientState(GL_VERTEX_ARRAY);
 
+  glBindBuffer(GL_ARRAY_BUFFER, 0 );
+
   //unbind the shaders
   glUseProgram(0);
 
@@ -281,6 +306,7 @@ void Window::Key(unsigned char key, int daxNotUsed(x), int daxNotUsed(y) )
  if ((key == 27) //escape pressed
      || (key == 'q'))
   {
+  this->Cleanup();
   exit(0);
   }
 

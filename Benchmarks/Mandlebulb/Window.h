@@ -36,6 +36,18 @@ struct TwizzledGLHandles
     this->State = 0;
     }
 
+  ~TwizzledGLHandles()
+    {
+    this->release();
+    }
+
+  void release()
+  {
+    glDeleteBuffers(2,CoordHandles);
+    glDeleteBuffers(2,ColorHandles);
+    glDeleteBuffers(2,NormHandles);
+  }
+
   void initHandles()
   {
     glGenBuffers(2,CoordHandles);
@@ -48,7 +60,6 @@ struct TwizzledGLHandles
       glBindBuffer(GL_ARRAY_BUFFER, ColorHandles[i]);
       glBindBuffer(GL_ARRAY_BUFFER, NormHandles[i]);
     }
-
   }
 
   void handles(GLuint& coord, GLuint& color, GLuint& norm) const
@@ -62,6 +73,7 @@ struct TwizzledGLHandles
     {
     ++this->State;
     }
+
 private:
   GLuint CoordHandles[2];
   GLuint ColorHandles[2];
@@ -81,8 +93,11 @@ public:
   Window(const ArgumentsParser &arguments);
   virtual ~Window();
 
+  //properly release all gpu and cuda memory
+  void Cleanup();
+
   //controls if we should auto exit
-  void CheckMaxTime() const;
+  void CheckMaxTime();
 
   //increment to the demo based on the current time
   void NextAutoPlayStep();
