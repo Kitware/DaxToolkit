@@ -156,14 +156,14 @@ void Window::PostInit()
   this->TwizzleHandles.initHandles();
 
   //build up our shaders
-  this->ShaderProgram.add_vert_shader(make_vertex_shader_code());
-  this->ShaderProgram.add_frag_shader(make_fragment_shader_code());
-  this->ShaderProgram.build();
+  this->Shaders.add_vert_shader(make_vertex_shader_code());
+  this->Shaders.add_frag_shader(make_fragment_shader_code());
+  this->Shaders.build();
 
   //connect the current time info the the shaders
   //so we can do a moving light source
   this->ShaderLightLocation =
-        glGetUniformLocation(this->ShaderProgram.program_id(), "light_xpos");
+        glGetUniformLocation(this->Shaders.program_id(), "light_xpos");
 
 
   glEnable(GL_DEPTH);
@@ -196,7 +196,7 @@ void Window::Display()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   //bind the shaders
-  glUseProgram(this->ShaderProgram.program_id());
+  glUseProgram(this->Shaders.program_id());
 
   //transform the time into an x position to upload to shaders
   //rotate around the model every 7200 seconds (20 * 360).

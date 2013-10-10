@@ -120,7 +120,7 @@ private:
   TwizzledGLHandles TwizzleHandles;
 
   //shader program that holds onto all the shader details
-  ShaderProgram ShaderProgram;
+  mandle::ShaderProgram Shaders;
 
   //holds the location to upload the current time too, for the shader
   GLint ShaderLightLocation;
