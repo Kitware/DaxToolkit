@@ -17,13 +17,16 @@
 #define __dax_cont_internal_DeviceAdapterAlgorithmGeneral_h
 
 #include <dax/cont/ArrayHandle.h>
+#include <dax/cont/ArrayHandleConstant.h>
 #include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/internal/ArrayContainerControlCounting.h>
 #include <dax/cont/internal/ArrayHandleZip.h>
 
 #include <dax/Functional.h>
 
+#include <dax/exec/Assert.h>
 #include <dax/exec/internal/ErrorMessageBuffer.h>
+#include <dax/exec/internal/WorkletBase.h>
 
 #include <algorithm>
 
@@ -35,8 +38,11 @@ namespace internal {
 ///
 /// This struct provides algorithms that implement "general" device adapter
 /// algorithms. If a device adapter provides implementations for Schedule,
-/// Sort, Scan, and Synchronize, the rest of the algorithms can be implemented
-/// by calling these functions.
+/// and Synchronize, the rest of the algorithms can be implemented by calling
+/// these functions.
+///
+/// It should be noted that we recommend that you also implement Sort,
+/// ScanInclusive, and ScanExclusive for improved performance.
 ///
 /// An easy way to implement the DeviceAdapterAlgorithm specialization is to
 /// subclass this and override the implementation of methods as necessary.
@@ -62,36 +68,6 @@ namespace internal {
 ///     ...
 ///   }
 ///
-///   template<typename T, class Container>
-///   DAX_CONT_EXPORT static void Sort(
-///       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values)
-///   {
-///     ...
-///   }
-///
-///   template<typename T, class Container, class Compare>
-///   DAX_CONT_EXPORT static void Sort(
-///       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values,
-///       Compare comp)
-///   {
-///     ...
-///   }
-///
-///   template<typename T, class CIn, class COut>
-///   DAX_CONT_EXPORT static T ScanExclusive(
-///       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
-///       dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>& output);
-///   {
-///     ...
-///   }
-///
-///   template<typename T, class CIn, class COut>
-///   DAX_CONT_EXPORT static T ScanInclusive(
-///       const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
-///       dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>& output);
-///   {
-///     ...
-///   }
 ///   DAX_CONT_EXPORT static void Synchronize()
 ///   {
 ///     ...
@@ -101,27 +77,71 @@ namespace internal {
 ///
 /// You might note that DeviceAdapterAlgorithmGeneral has two template
 /// parameters that are redundant. Although the first parameter, the class for
-/// the actual DeviceAdapterAlgorithm class containing Schedule, Sort, and
-/// Scan, is the same as DeviceAdapterAlgorithm<DeviceAdapterTag>, it is made a
-/// separate template parameter to avoid a recursive dependence between
+/// the actual DeviceAdapterAlgorithm class containing Schedule, and
+/// Synchronize is the same as DeviceAdapterAlgorithm<DeviceAdapterTag>, it is
+/// made a separate template parameter to avoid a recursive dependence between
 /// DeviceAdapterAlgorithmGeneral.h and DeviceAdapterAlgorithm.h
 ///
 template<class DerivedAlgorithm, class DeviceAdapterTag>
 struct DeviceAdapterAlgorithmGeneral
 {
+  //--------------------------------------------------------------------------
+  // Get Execution Value
+  // This method is used internally to get a single element from the execution
+  // array. Might want to expose this and/or allow actual device adapter
+  // implementations to provide one.
+private:
+  template<typename T, class CIn>
+  DAX_CONT_EXPORT
+  static T GetExecutionValue(
+      const dax::cont::ArrayHandle<T, CIn, DeviceAdapterTag> &input,
+      dax::Id index)
+  {
+    typedef dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> InputArrayType;
+    typedef dax::cont::ArrayHandle<
+        T,dax::cont::ArrayContainerControlTagBasic,DeviceAdapterTag>
+        OutputArrayType;
+
+    OutputArrayType output;
+
+    CopyKernel<
+        typename InputArrayType::PortalConstExecution,
+        typename OutputArrayType::PortalExecution>
+        kernel(input.PrepareForInput(),
+               output.PrepareForOutput(1),
+               index);
+
+    DerivedAlgorithm::Schedule(kernel, 1);
+
+    return output.GetPortalConstControl().Get(0);
+  }
+
+  //--------------------------------------------------------------------------
+  // Copy
 private:
   template<class InputPortalType, class OutputPortalType>
   struct CopyKernel {
     InputPortalType InputPortal;
     OutputPortalType OutputPortal;
+    dax::Id InputOffset;
+    dax::Id OutputOffset;
 
     DAX_CONT_EXPORT
-    CopyKernel(InputPortalType inputPortal, OutputPortalType outputPortal)
-      : InputPortal(inputPortal), OutputPortal(outputPortal) {  }
+    CopyKernel(InputPortalType inputPortal,
+               OutputPortalType outputPortal,
+               dax::Id inputOffset = 0,
+               dax::Id outputOffset = 0)
+      : InputPortal(inputPortal),
+        OutputPortal(outputPortal),
+        InputOffset(inputOffset),
+        OutputOffset(outputOffset)
+    {  }
 
     DAX_EXEC_EXPORT
     void operator()(dax::Id index) const {
-      this->OutputPortal.Set(index, this->InputPortal.Get(index));
+      this->OutputPortal.Set(
+            index + this->OutputOffset,
+            this->InputPortal.Get(index + this->InputOffset));
     }
 
     DAX_CONT_EXPORT
@@ -146,6 +166,8 @@ public:
     DerivedAlgorithm::Schedule(kernel, arraySize);
   }
 
+  //--------------------------------------------------------------------------
+  // Lower Bounds
 private:
   template<class InputPortalType,class ValuesPortalType,class OutputPortalType>
   struct LowerBoundsKernel {
@@ -277,10 +299,345 @@ public:
       const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTag> &input,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &values_output)
   {
-    DeviceAdapterAlgorithmGeneral<DerivedAlgorithm,DeviceAdapterTag>::
-        LowerBounds(input, values_output, values_output);
+    DeviceAdapterAlgorithmGeneral<
+        DerivedAlgorithm,DeviceAdapterTag>::LowerBounds(input,
+                                                        values_output,
+                                                        values_output);
   }
 
+  //--------------------------------------------------------------------------
+  // Scan Exclusive
+private:
+  template<typename PortalType>
+  struct SetConstantKernel
+  {
+    typedef typename PortalType::ValueType ValueType;
+    PortalType Portal;
+    ValueType Value;
+
+    DAX_CONT_EXPORT
+    SetConstantKernel(const PortalType &portal, ValueType value)
+      : Portal(portal), Value(value) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(dax::Id index) const
+    {
+      this->Portal.Set(index, this->Value);
+    }
+
+    DAX_CONT_EXPORT
+    void SetErrorMessageBuffer(const dax::exec::internal::ErrorMessageBuffer &)
+    {  }
+  };
+
+public:
+  template<typename T, class CIn, class COut>
+  DAX_CONT_EXPORT static T ScanExclusive(
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
+      dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>& output)
+  {
+    typedef dax::cont::ArrayHandle<
+        T,dax::cont::ArrayContainerControlTagBasic,DeviceAdapterTag>
+        TempArrayType;
+    typedef dax::cont::ArrayHandle<T,COut,DeviceAdapterTag> OutputArrayType;
+
+    TempArrayType inclusiveScan;
+    T result = DerivedAlgorithm::ScanInclusive(input, inclusiveScan);
+
+    dax::Id numValues = inclusiveScan.GetNumberOfValues();
+    if (numValues < 1)
+      {
+      return result;
+      }
+
+    typedef typename TempArrayType::PortalConstExecution SrcPortalType;
+    SrcPortalType srcPortal = inclusiveScan.PrepareForInput();
+
+    typedef typename OutputArrayType::PortalExecution DestPortalType;
+    DestPortalType destPortal = output.PrepareForOutput(numValues);
+
+    // Set first value in output (always 0).
+    DerivedAlgorithm::Schedule(
+          SetConstantKernel<DestPortalType>(destPortal,0), 1);
+    // Shift remaining values over by one.
+    DerivedAlgorithm::Schedule(
+          CopyKernel<SrcPortalType,DestPortalType>(srcPortal,
+                                                   destPortal,
+                                                   0,
+                                                   1),
+          numValues - 1);
+
+    return result;
+  }
+
+  //--------------------------------------------------------------------------
+  // Scan Inclusive
+private:
+  template<typename PortalType>
+  struct ScanKernel : dax::exec::internal::WorkletBase
+  {
+    PortalType Portal;
+    dax::Id Stride;
+    dax::Id Offset;
+    dax::Id Distance;
+
+    DAX_CONT_EXPORT
+    ScanKernel(const PortalType &portal, dax::Id stride, dax::Id offset)
+      : Portal(portal),
+        Stride(stride),
+        Offset(offset),
+        Distance(stride/2)
+    {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(dax::Id index) const
+    {
+      typedef typename PortalType::ValueType ValueType;
+
+      dax::Id leftIndex = this->Offset + index*this->Stride;
+      dax::Id rightIndex = leftIndex + this->Distance;
+
+      DAX_ASSERT_EXEC(leftIndex < this->Portal.GetNumberOfValues(), *this);
+
+      if (rightIndex < this->Portal.GetNumberOfValues())
+        {
+        ValueType leftValue = this->Portal.Get(leftIndex);
+        ValueType rightValue = this->Portal.Get(rightIndex);
+        this->Portal.Set(rightIndex, leftValue+rightValue);
+        }
+    }
+  };
+
+public:
+  template<typename T, class CIn, class COut>
+  DAX_CONT_EXPORT static T ScanInclusive(
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
+      dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>& output)
+  {
+    typedef typename
+        dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>::PortalExecution
+            PortalType;
+
+    DerivedAlgorithm::Copy(input, output);
+
+    dax::Id numValues = output.GetNumberOfValues();
+    if (numValues < 1)
+      {
+      return 0;
+      }
+
+    PortalType portal = output.PrepareForInPlace();
+
+    dax::Id stride;
+    for (stride = 2; stride-1 < numValues; stride *= 2)
+      {
+      ScanKernel<PortalType> kernel(portal, stride, stride/2 - 1);
+      DerivedAlgorithm::Schedule(kernel, numValues/stride);
+      }
+
+    // Do reverse operation on odd indices. Start at stride we were just at.
+    for (stride /= 2; stride > 1; stride /= 2)
+      {
+      ScanKernel<PortalType> kernel(portal, stride, stride - 1);
+      DerivedAlgorithm::Schedule(kernel, numValues/stride);
+      }
+
+    return GetExecutionValue(output, numValues-1);
+  }
+
+  //--------------------------------------------------------------------------
+  // Sort
+private:
+  template<typename PortalType, typename CompareType>
+  struct BitonicSortMergeKernel : dax::exec::internal::WorkletBase
+  {
+    PortalType Portal;
+    CompareType Compare;
+    dax::Id GroupSize;
+
+    DAX_CONT_EXPORT
+    BitonicSortMergeKernel(const PortalType &portal,
+                           const CompareType &compare,
+                           dax::Id groupSize)
+      : Portal(portal), Compare(compare), GroupSize(groupSize) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(dax::Id index) const {
+      typedef typename PortalType::ValueType ValueType;
+
+      dax::Id groupIndex = index%this->GroupSize;
+      dax::Id blockSize = 2*this->GroupSize;
+      dax::Id blockIndex = index/this->GroupSize;
+
+      dax::Id lowIndex = blockIndex * blockSize + groupIndex;
+      dax::Id highIndex = lowIndex + this->GroupSize;
+
+      if (highIndex < this->Portal.GetNumberOfValues())
+        {
+        ValueType lowValue = this->Portal.Get(lowIndex);
+        ValueType highValue = this->Portal.Get(highIndex);
+        if (this->Compare(highValue, lowValue))
+          {
+          this->Portal.Set(highIndex, lowValue);
+          this->Portal.Set(lowIndex, highValue);
+          }
+        }
+    }
+  };
+
+  template<typename PortalType, typename CompareType>
+  struct BitonicSortCrossoverKernel : dax::exec::internal::WorkletBase
+  {
+    PortalType Portal;
+    CompareType Compare;
+    dax::Id GroupSize;
+
+    DAX_CONT_EXPORT
+    BitonicSortCrossoverKernel(const PortalType &portal,
+                               const CompareType &compare,
+                               dax::Id groupSize)
+      : Portal(portal), Compare(compare), GroupSize(groupSize) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(dax::Id index) const {
+      typedef typename PortalType::ValueType ValueType;
+
+      dax::Id groupIndex = index%this->GroupSize;
+      dax::Id blockSize = 2*this->GroupSize;
+      dax::Id blockIndex = index/this->GroupSize;
+
+      dax::Id lowIndex = blockIndex*blockSize + groupIndex;
+      dax::Id highIndex = blockIndex*blockSize + (blockSize - groupIndex - 1);
+
+      if (highIndex < this->Portal.GetNumberOfValues())
+        {
+        ValueType lowValue = this->Portal.Get(lowIndex);
+        ValueType highValue = this->Portal.Get(highIndex);
+        if (this->Compare(highValue, lowValue))
+          {
+          this->Portal.Set(highIndex, lowValue);
+          this->Portal.Set(lowIndex, highValue);
+          }
+        }
+    }
+  };
+
+  struct DefaultCompareFunctor
+  {
+
+    template<typename T>
+    DAX_EXEC_EXPORT
+    bool operator()(const T& first, const T& second) const
+    {
+      return first < second;
+    }
+  };
+
+public:
+  template<typename T, class Container, class CompareType>
+  DAX_CONT_EXPORT static void Sort(
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values,
+      CompareType compare)
+  {
+    typedef typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTag>
+        ArrayType;
+    typedef typename ArrayType::PortalExecution PortalType;
+
+    dax::Id numValues = values.GetNumberOfValues();
+    if (numValues < 2) { return; }
+
+    PortalType portal = values.PrepareForInPlace();
+
+    dax::Id numThreads = 1;
+    while (numThreads < numValues) { numThreads *= 2; }
+    numThreads /= 2;
+
+    typedef BitonicSortMergeKernel<PortalType,CompareType> MergeKernel;
+    typedef BitonicSortCrossoverKernel<PortalType,CompareType> CrossoverKernel;
+
+    for (dax::Id crossoverSize = 1;
+         crossoverSize < numValues;
+         crossoverSize *= 2)
+      {
+      DerivedAlgorithm::Schedule(CrossoverKernel(portal,compare,crossoverSize),
+                                 numThreads);
+      for (dax::Id mergeSize = crossoverSize/2; mergeSize > 0; mergeSize /= 2)
+        {
+        DerivedAlgorithm::Schedule(MergeKernel(portal,compare,mergeSize),
+                                   numThreads);
+        }
+      }
+  }
+
+  template<typename T, class Container>
+  DAX_CONT_EXPORT static void Sort(
+      dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values)
+  {
+    DerivedAlgorithm::Sort(values, DefaultCompareFunctor());
+  }
+
+  //--------------------------------------------------------------------------
+  // Sort by Key
+private:
+  template<typename T, typename U, class Compare=DefaultCompareFunctor>
+  struct KeyCompare
+  {
+    KeyCompare(): CompareFunctor() {}
+    explicit KeyCompare(Compare c): CompareFunctor(c) {}
+
+    DAX_EXEC_EXPORT
+    bool operator()(const dax::Pair<T,U>& a, const dax::Pair<T,U>& b) const
+    {
+      return CompareFunctor(a.first,b.first);
+    }
+  private:
+    Compare CompareFunctor;
+  };
+
+public:
+
+  template<typename T, typename U, class ContainerT,  class ContainerU>
+  DAX_CONT_EXPORT static void SortByKey(
+      dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag> &keys,
+      dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag> &values)
+  {
+    //combine the keys and values into a ZipArrayHandle
+    //we than need to specify a custom compare function wrapper
+    //that only checks for key side of the pair, using a custom compare functor.
+    typedef dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag> KeyType;
+    typedef dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag> ValueType;
+    typedef dax::cont::internal::ArrayHandleZip<KeyType,ValueType> ZipHandleType;
+    typedef typename ZipHandleType::Superclass HandleType;
+
+    //slice the zip handle so we can pass it to the sort algorithm
+    HandleType zipHandle =
+                    dax::cont::internal::make_ArrayHandleZip(keys,values);
+    DerivedAlgorithm::Sort(zipHandle,KeyCompare<T,U>());
+  }
+
+  template<typename T, typename U, class ContainerT,  class ContainerU, class Compare>
+  DAX_CONT_EXPORT static void SortByKey(
+      dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag> &keys,
+      dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag> &values,
+      Compare comp)
+  {
+    //combine the keys and values into a ZipArrayHandle
+    //we than need to specify a custom compare function wrapper
+    //that only checks for key side of the pair, using the custom compare
+    //functor that the user passed in
+    typedef dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag> KeyType;
+    typedef dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag> ValueType;
+    typedef dax::cont::internal::ArrayHandleZip<KeyType,ValueType> ZipHandleType;
+    typedef typename ZipHandleType::Superclass HandleType;
+
+    //slice the zip handle so we can pass it to the sort algorithm
+    HandleType zipHandle =
+                    dax::cont::internal::make_ArrayHandleZip(keys,values);
+    DerivedAlgorithm::Sort(zipHandle,KeyCompare<T,U,Compare>(comp));
+  }
+
+  //--------------------------------------------------------------------------
+  // Stream Compact
 private:
   template<class StencilPortalType, class OutputPortalType>
   struct StencilToIndexFlagKernel
@@ -349,75 +706,6 @@ private:
     {  }
   };
 
-private:
-  struct DefaultCompareFunctor
-  {
-
-    template<typename T>
-    DAX_EXEC_EXPORT
-    bool operator()(const T& first, const T& second) const
-    {
-      return first < second;
-    }
-  };
-
-  template<typename T, typename U, class Compare=DefaultCompareFunctor>
-  struct KeyCompare
-  {
-    KeyCompare(): CompareFunctor() {}
-    explicit KeyCompare(Compare c): CompareFunctor(c) {}
-
-    DAX_EXEC_EXPORT
-    bool operator()(const dax::Pair<T,U>& a, const dax::Pair<T,U>& b) const
-    {
-      return CompareFunctor(a.first,b.first);
-    }
-  private:
-    Compare CompareFunctor;
-  };
-
-public:
-
-  template<typename T, typename U, class ContainerT,  class ContainerU>
-  DAX_CONT_EXPORT static void SortByKey(
-      dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag> &keys,
-      dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag> &values)
-  {
-    //combine the keys and values into a ZipArrayHandle
-    //we than need to specify a custom compare function wrapper
-    //that only checks for key side of the pair, using a custom compare functor.
-    typedef dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag> KeyType;
-    typedef dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag> ValueType;
-    typedef dax::cont::internal::ArrayHandleZip<KeyType,ValueType> ZipHandleType;
-    typedef typename ZipHandleType::Superclass HandleType;
-
-    //slice the zip handle so we can pass it to the sort algorithm
-    HandleType zipHandle =
-                    dax::cont::internal::make_ArrayHandleZip(keys,values);
-    DerivedAlgorithm::Sort(zipHandle,KeyCompare<T,U>());
-  }
-
-  template<typename T, typename U, class ContainerT,  class ContainerU, class Compare>
-  DAX_CONT_EXPORT static void SortByKey(
-      dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag> &keys,
-      dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag> &values,
-      Compare comp)
-  {
-    //combine the keys and values into a ZipArrayHandle
-    //we than need to specify a custom compare function wrapper
-    //that only checks for key side of the pair, using the custom compare
-    //functor that the user passed in
-    typedef dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag> KeyType;
-    typedef dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag> ValueType;
-    typedef dax::cont::internal::ArrayHandleZip<KeyType,ValueType> ZipHandleType;
-    typedef typename ZipHandleType::Superclass HandleType;
-
-    //slice the zip handle so we can pass it to the sort algorithm
-    HandleType zipHandle =
-                    dax::cont::internal::make_ArrayHandleZip(keys,values);
-    DerivedAlgorithm::Sort(zipHandle,KeyCompare<T,U,Compare>(comp));
-  }
-
 public:
 
   template<typename T, typename U, class CIn, class CStencil, class COut>
@@ -482,6 +770,8 @@ public:
     DerivedAlgorithm::StreamCompact(input, stencil, output);
   }
 
+  //--------------------------------------------------------------------------
+  // Unique
 private:
   template<class InputPortalType, class StencilPortalType>
   struct ClassifyUniqueKernel {
@@ -605,6 +895,8 @@ public:
     DerivedAlgorithm::Copy(outputArray, values);
   }
 
+  //--------------------------------------------------------------------------
+  // Upper bounds
 private:
   template<class InputPortalType,class ValuesPortalType,class OutputPortalType>
   struct UpperBoundsKernel {
@@ -670,8 +962,8 @@ public:
       const dax::cont::ArrayHandle<dax::Id,CIn,DeviceAdapterTag> &input,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &values_output)
   {
-    DeviceAdapterAlgorithmGeneral<DerivedAlgorithm,DeviceAdapterTag>::
-        UpperBounds(input, values_output, values_output);
+    DeviceAdapterAlgorithmGeneral<DerivedAlgorithm,
+      DeviceAdapterTag>::UpperBounds(input, values_output, values_output);
   }
 
 };

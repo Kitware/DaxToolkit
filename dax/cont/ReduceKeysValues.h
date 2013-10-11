@@ -178,7 +178,7 @@ public:
   DAX_CONT_EXPORT
   void BuildReductionMap()
   {
-    typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
+    typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
         Algorithms;
 
     if (this->ReductionMapValid) { return; } // Nothing to do.

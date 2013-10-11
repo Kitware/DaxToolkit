@@ -70,7 +70,7 @@ private:
   DAX_CONT_EXPORT Timer(const Timer<DeviceAdapter> &);  // Not implemented.
   DAX_CONT_EXPORT void operator=(const Timer<DeviceAdapter> &); // Not implemented.
 
-  dax::cont::internal::DeviceAdapterTimerImplementation<DeviceAdapter>
+  dax::cont::DeviceAdapterTimerImplementation<DeviceAdapter>
       TimerImplementation;
 };
 

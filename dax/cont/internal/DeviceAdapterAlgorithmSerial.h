@@ -33,12 +33,10 @@
 
 namespace dax {
 namespace cont {
-namespace internal {
-
 
 template<>
 struct DeviceAdapterAlgorithm<dax::cont::DeviceAdapterTagSerial> :
-    DeviceAdapterAlgorithmGeneral<
+    dax::cont::internal::DeviceAdapterAlgorithmGeneral<
         DeviceAdapterAlgorithm<dax::cont::DeviceAdapterTagSerial>,
         dax::cont::DeviceAdapterTagSerial>
 {
@@ -208,7 +206,6 @@ public:
 };
 
 }
-}
-} // namespace dax::cont::internal
+} // namespace dax::cont
 
 #endif //__dax_cont_internal_DeviceAdapterAlgorithmSerial_h

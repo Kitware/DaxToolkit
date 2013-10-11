@@ -85,7 +85,7 @@ private:
       ::ArrayHandle<dax::Vector3,ArrayContainerControlTag,DeviceAdapterTag>
       Vector3ArrayHandle;
 
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
+  typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
       Algorithm;
 
 public:
@@ -714,7 +714,7 @@ private:
     dax::Id testData[ARRAY_SIZE];
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
       {
-      testData[i]= OFFSET+(i % 50);
+      testData[i]= OFFSET+((ARRAY_SIZE-i) % 50);
       }
     IdArrayHandle input = MakeArrayHandle(testData, ARRAY_SIZE);
 
@@ -724,15 +724,25 @@ private:
     Algorithm::Copy(input,sorted);
     Algorithm::Copy(input,comp_sorted);
 
-    //Validate the sort, and SortGreater are inverse
+    //Validate the standard sort is correct
     Algorithm::Sort(sorted);
+
+    for (dax::Id i = 0; i < ARRAY_SIZE-1; ++i)
+      {
+      dax::Id sorted1 = sorted.GetPortalConstControl().Get(i);
+      dax::Id sorted2 = sorted.GetPortalConstControl().Get(i+1);
+//      std::cout << sorted1 << " <= " << sorted2 << std::endl;
+      DAX_TEST_ASSERT(sorted1 <= sorted2, "Values not properly sorted.");
+      }
+
+    //Validate the sort, and SortGreater are inverse
     Algorithm::Sort(comp_sorted,dax::math::SortGreater());
 
     for(dax::Id i=0; i < ARRAY_SIZE; ++i)
       {
       dax::Id sorted1 = sorted.GetPortalConstControl().Get(i);
       dax::Id sorted2 = comp_sorted.GetPortalConstControl().Get(ARRAY_SIZE - (i + 1));
-//      std::cout << sorted1 << "<" << sorted2 << std::endl;
+//      std::cout << sorted1 << "==" << sorted2 << std::endl;
       DAX_TEST_ASSERT(sorted1 == sorted2,
                       "Got bad sort values when using SortGreater");
       }

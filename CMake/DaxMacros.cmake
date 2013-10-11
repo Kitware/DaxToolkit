@@ -52,15 +52,18 @@ function(dax_add_header_build_test name dir_prefix use_cuda)
 
   endforeach (header)
 
-  if (use_cuda)
+  #only attempt to add a test build executable if we have any headers to
+  #test. this might not happen when everything depends on thrust.
+  list(LENGTH cxxfiles cxxfiles_len)
+  if (use_cuda AND ${cxxfiles_len} GREATER 0)
     cuda_add_library(TestBuild_${name} ${cxxfiles} ${hfiles})
-  else (use_cuda)
+  elseif (${cxxfiles_len} GREATER 0)
     add_library(TestBuild_${name} ${cxxfiles} ${hfiles})
     if(DAX_EXTRA_COMPILER_WARNINGS)
       set_target_properties(TestBuild_${name}
         PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS_WARN_EXTRA})
     endif(DAX_EXTRA_COMPILER_WARNINGS)
-  endif (use_cuda)
+  endif ()
   set_source_files_properties(${hfiles}
     PROPERTIES HEADER_FILE_ONLY TRUE
     )

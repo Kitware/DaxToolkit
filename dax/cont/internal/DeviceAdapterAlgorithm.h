@@ -29,7 +29,6 @@
 
 namespace dax {
 namespace cont {
-namespace internal {
 
 /// \brief Struct containing device adapter algorithms.
 ///
@@ -366,7 +365,7 @@ public:
 
   DAX_CONT_EXPORT TimeStamp GetCurrentTime()
   {
-    dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
+    dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
         ::Synchronize();
 
     TimeStamp retval;
@@ -386,8 +385,7 @@ public:
 };
 
 }
-}
-} // namespace dax::cont::internal
+} // namespace dax::cont
 
 
 //-----------------------------------------------------------------------------
@@ -405,4 +403,4 @@ public:
 #include <dax/tbb/cont/internal/DeviceAdapterAlgorithmTBB.h>
 #endif
 
-#endif //__dax_cont_internal_DeviceAdapterAlgorithm_h
+#endif //__dax_cont_DeviceAdapterAlgorithm_h

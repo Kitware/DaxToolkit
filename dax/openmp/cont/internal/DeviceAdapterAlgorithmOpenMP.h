@@ -30,7 +30,6 @@
 
 namespace dax {
 namespace cont {
-namespace internal {
 
 template<>
 struct DeviceAdapterAlgorithm<dax::openmp::cont::DeviceAdapterTagOpenMP>
@@ -128,13 +127,13 @@ public:
   }
   DAX_CONT_EXPORT void Reset()
   {
-    dax::cont::internal::DeviceAdapterAlgorithm<
+    dax::cont::DeviceAdapterAlgorithm<
         dax::openmp::cont::DeviceAdapterTagOpenMP>::Synchronize();
     this->StartTime = omp_get_wtime();
   }
   DAX_CONT_EXPORT dax::Scalar GetElapsedTime()
   {
-    dax::cont::internal::DeviceAdapterAlgorithm<
+    dax::cont::DeviceAdapterAlgorithm<
         dax::openmp::cont::DeviceAdapterTagOpenMP>::Synchronize();
     double currentTime = omp_get_wtime();
     return static_cast<dax::Scalar>(currentTime - this->StartTime);
@@ -145,7 +144,6 @@ private:
 };
 
 }
-}
-} // namespace dax::cont::internal
+} // namespace dax::cont
 
 #endif //__dax_openmp_cont_internal_DeviceAdapterAlgorithmOpenMP_h

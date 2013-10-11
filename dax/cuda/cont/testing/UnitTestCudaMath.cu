@@ -287,7 +287,7 @@ DAX_CONT_EXPORT
 void TestSchedule(Functor functor)
 {
   // Schedule on device.
-  dax::cont::internal::DeviceAdapterAlgorithm<
+  dax::cont::DeviceAdapterAlgorithm<
       dax::cuda::cont::DeviceAdapterTagCuda>::Schedule(functor, 1);
 
   // Run on host. The return value has the same qualification as mentioned

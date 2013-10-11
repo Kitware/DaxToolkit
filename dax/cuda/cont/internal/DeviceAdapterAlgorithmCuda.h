@@ -30,7 +30,6 @@
 
 namespace dax {
 namespace cont {
-namespace internal {
 
 template<>
 struct DeviceAdapterAlgorithm<dax::cuda::cont::DeviceAdapterTagCuda>
@@ -89,7 +88,6 @@ private:
 };
 
 }
-}
-} // namespace dax::cont::internal
+} // namespace dax::cont
 
 #endif //__dax_cuda_cont_internal_DeviceAdapterAlgorithmCuda_h

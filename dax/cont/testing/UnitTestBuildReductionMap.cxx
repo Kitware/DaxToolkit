@@ -85,7 +85,7 @@ ArrayType MakeInputArray()
   // we go out of scope.  (Perhaps the deep array copy should be made more
   // accessable to client code.)
   ArrayType dataCopy;
-  dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapter>::Copy(dataWrapper,
+  dax::cont::DeviceAdapterAlgorithm<DeviceAdapter>::Copy(dataWrapper,
                                                                    dataCopy);
 
   return dataCopy;
