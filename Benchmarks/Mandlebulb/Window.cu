@@ -13,28 +13,6 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
+#define BOOST_SP_DISABLE_THREADS
 
-#ifndef _dax_Benchmarks_Mandlebulb_ArgumentsParser
-#define _dax_Benchmarks_Mandlebulb_ArgumentsParser
-
-namespace mandle {
-
-class ArgumentsParser
-{
-public:
-  ArgumentsParser();
-  virtual ~ArgumentsParser();
-
-  bool parseArguments(int argc, char* argv[]);
-
-  unsigned int time() const { return this->Time; }
-  bool AutoPlay() const { return this->Auto; }
-
-private:
-  unsigned int Time;
-  bool Auto;
-};
-
-} // namespace mandle
-
-#endif //_dax_Benchmarks_Mandlebulb_ArgumentsParser
+#include "Window.cxx"

@@ -25,8 +25,6 @@
 
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 
-#include <dax/tbb/cont/internal/DeviceAdapterTagTBB.h>
-
 #include <algorithm>
 
 namespace dax {

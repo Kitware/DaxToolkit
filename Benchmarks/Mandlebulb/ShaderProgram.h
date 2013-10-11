@@ -23,7 +23,7 @@
 
 namespace mandle
 {
-  bool bind_shader(const std::string& shader_contents, GLenum type,
+  static bool bind_shader(const std::string& shader_contents, GLenum type,
                      std::vector<GLuint>& storage)
   {
       GLuint shader_id = glCreateShader( type );
@@ -98,7 +98,7 @@ namespace mandle
   };
 
 
-bool ShaderProgram::build()
+inline bool ShaderProgram::build()
 {
   typedef std::vector<GLuint>::const_iterator c_it;
   if(this->ProgramId != 0)
@@ -119,7 +119,7 @@ bool ShaderProgram::build()
 }
 
 //presumes that ProgramId isn't 0 and we have bound some shaders already
-void ShaderProgram::release_shaders()
+inline void ShaderProgram::release_shaders()
 {
   typedef std::vector<GLuint>::const_iterator c_it;
   //clear the shaders

@@ -48,7 +48,7 @@ endif()
 macro(set_dax_device_adapter target adapter)
   set_property(TARGET ${target}
          APPEND
-         PROPERTY COMPILE_FLAGS -DDAX_DEVICE_ADAPTER=${adapter})
+         PROPERTY COMPILE_DEFINITIONS "DAX_DEVICE_ADAPTER=${adapter}")
 endmacro()
 
 
@@ -72,7 +72,6 @@ add_subdirectory(BlackScholes)
 add_subdirectory(FY11Timing)
 add_subdirectory(MarchingCubes)
 add_subdirectory(Threshold)
-
 
 
 #enable the benchmarks if we have glut and interop
