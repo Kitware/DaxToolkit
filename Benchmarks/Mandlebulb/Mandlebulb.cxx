@@ -26,43 +26,17 @@
 
 #include <dax/opengl/TransferToOpenGL.h>
 
-
-//compute the mandlebulbs values for each point
-mandle::MandlebulbVolume computeMandlebulb( dax::Vector3 origin,
-                                          dax::Vector3 spacing,
-                                          dax::Extent3 extent)
+namespace detail
 {
-  //construct the dataset from -2,-2,-2, to 2,2,2
-  //with the given spacing
-  mandle::MandlebulbVolume vol(origin,spacing,extent);
 
-  //compute the escape iterations for each point in the grid
-  dax::cont::Scheduler< > scheduler;
-  scheduler.Invoke( worklet::Mandlebulb(), vol.Grid.GetPointCoordinates(),
-                    vol.EscapeIteration );
+  mandle::MandlebulbSurface generateSurface( mandle::MandlebulbVolume vol,
+                            dax::Scalar iteration,
+                            dax::cont::ArrayHandle<dax::Id> classification)
 
-  vol.EscapeIteration.GetPortalConstControl();
-
-  return vol;
-}
-
-//compute the surface of the mandlebulb for a given iteration
-mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume vol,
-                                          dax::Scalar iteration )
 {
-  //lets extract the surface where the iteration value is greater than
-  //the passed in iteration value
   mandle::MandlebulbSurface surface; //construct surface struct
-  dax::cont::ArrayHandle<dax::Id> classification;
 
   dax::cont::Scheduler< > scheduler;
-
-  //run the classify step
-  dax::worklet::MarchingCubesClassify classify(iteration);
-  scheduler.Invoke( classify,
-                    vol.Grid,
-                    vol.EscapeIteration,
-                    classification );
 
   //setup the info for the second step
   dax::worklet::MarchingCubesGenerate generateSurface(iteration);
@@ -90,7 +64,50 @@ mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume vol,
   return surface;
 }
 
-//compute the cut of the volume for a given iteration
+}
+
+
+//compute the mandlebulbs values for each point
+mandle::MandlebulbVolume computeMandlebulb( dax::Vector3 origin,
+                                          dax::Vector3 spacing,
+                                          dax::Extent3 extent)
+{
+  //construct the dataset from -2,-2,-2, to 2,2,2
+  //with the given spacing
+  mandle::MandlebulbVolume vol(origin,spacing,extent);
+
+  //compute the escape iterations for each point in the grid
+  dax::cont::Scheduler< > scheduler;
+  scheduler.Invoke( worklet::Mandlebulb(), vol.Grid.GetPointCoordinates(),
+                    vol.EscapeIteration );
+
+  vol.EscapeIteration.GetPortalConstControl();
+
+  return vol;
+}
+
+//compute the surface of the mandlebulb for a given iteration
+mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume vol,
+                                          dax::Scalar iteration )
+{
+  //lets extract the surface where the iteration value is greater than
+  //the passed in iteration value
+
+  dax::cont::ArrayHandle<dax::Id> classification;
+
+  dax::cont::Scheduler< > scheduler;
+
+  //run the classify step
+  ::dax::worklet::MarchingCubesClassify classify(iteration);
+  scheduler.Invoke( classify,
+                    vol.Grid,
+                    vol.EscapeIteration,
+                    classification );
+
+  return detail::generateSurface(vol,iteration,classification);
+}
+
+//compute the clip of the volume for a given iteration
 mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume vol,
                                         dax::Scalar cut_percent,
                                         dax::Scalar iteration )
@@ -107,49 +124,23 @@ mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume vol,
                         origin[2] + spacing[2] * (dims[2] * cut_percent) );
   dax::Vector3 normal(0,0,1);
 
-  //lets extract the cut
+  //lets extract the clip
   mandle::MandlebulbSurface surface;
   dax::cont::ArrayHandle<dax::Id> classification;
 
   dax::cont::Scheduler< > scheduler;
 
   //run the classify step
-  worklet::MandlebulbCutClassify classify(origin, location, normal, iteration);
+  ::worklet::MandlebulbClipClassify classify(origin, location, normal, iteration);
   scheduler.Invoke( classify,
                     vol.Grid,
                     vol.Grid.GetPointCoordinates(),
                     vol.EscapeIteration,
                     classification );
 
-  //setup the info for the second step
-  dax::worklet::MarchingCubesGenerate generateSurface(iteration);
-  dax::cont::GenerateInterpolatedCells<
-      dax::worklet::MarchingCubesGenerate > genWrapper(classification,
-                                                       generateSurface);
-
-  //remove duplicates on purpose
-  genWrapper.SetRemoveDuplicatePoints(false);
-
-  //run the second step
-  scheduler.Invoke(genWrapper,
-                   vol.Grid,
-                   surface.Data,
-                   vol.EscapeIteration);
-
-  if(surface.Data.GetNumberOfPoints() > 0)
-    {
-    //generate a color for each point based on the escape iteration
-    scheduler.Invoke(worklet::ColorsAndNorms(),
-                    surface.Data,
-                    surface.Data.GetPointCoordinates(),
-                    surface.Colors,
-                    surface.Norms);
-    }
-
-  vol.EscapeIteration.ReleaseResourcesExecution();
-
-  return surface;
+  return detail::generateSurface(vol,iteration,classification);
 }
+
 
 void bindSurface( mandle::MandlebulbSurface& surface,
                   GLuint& coord,

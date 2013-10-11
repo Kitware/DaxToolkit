@@ -70,7 +70,7 @@ Window::Window(const ArgumentsParser &arguments)
   this->TranslateZ = -3;
 
   this->Iteration = 1;
-  this->CutRatio = 0.3;
+  this->ClipRatio = 0.3;
   this->Remesh = true;
   this->Mode = 0;
 }
@@ -112,13 +112,13 @@ void Window::NextAutoPlayStep()
     const int num_demo_steps = 4;
     int demo_step = (fmod(this->CurrentTime,(60000.0f * num_demo_steps))) / 60000.0f;
 
-    //determine if we do marching cubes or cut based on the time.
-    //we cycle through cut / marching cubes every 1 minute
-    //so demo step 0,2 = mc, 1,3 = cut
+    //determine if we do marching cubes or clip based on the time.
+    //we cycle through clip / marching cubes every 1 minute
+    //so demo step 0,2 = mc, 1,3 = clip
     this->Mode  = (fmod(this->CurrentTime,120000.0f) < 60000) ?  0 : 1;
 
-    //move the cut plane and not iso value second 4
-    //move the cut plane and iso value for second 2
+    //move the clip plane and not iso value second 4
+    //move the clip plane and iso value for second 2
     if(demo_step <= 2)
       {
       //alternating every 60 seconds move iteration from 1 to 30, and back to 1
@@ -129,8 +129,8 @@ void Window::NextAutoPlayStep()
     if(demo_step == 1 || demo_step == 3)
       {
       int sign = (fmod(this->CurrentTime,60000.0f) < 30000) ?  1 : -1;
-      this->CutRatio = dax::math::Max(0.3f, this->CutRatio + (sign * 0.02f) );
-      this->CutRatio = dax::math::Min(1.0f, this->CutRatio);
+      this->ClipRatio = dax::math::Max(0.3f, this->ClipRatio + (sign * 0.02f) );
+      this->ClipRatio = dax::math::Min(1.0f, this->ClipRatio);
       }
     this->Remesh = true;
     }
@@ -163,7 +163,7 @@ void Window::RemeshSurface()
     else
       this->MandleData->Surface =
                 extractCut(this->MandleData->Volume,
-                             this->CutRatio,this->Iteration);
+                             this->ClipRatio,this->Iteration);
 
     bindSurface(this->MandleData->Surface, coord, color, norm );
 
@@ -332,11 +332,11 @@ void Window::SpecialKey(int key, int daxNotUsed(x), int daxNotUsed(y) )
       this->Remesh = true;
       break;
     case GLUT_KEY_LEFT:
-      this->CutRatio = dax::math::Max(0.3, this->CutRatio - 0.01);
+      this->ClipRatio = dax::math::Max(0.3, this->ClipRatio - 0.01);
       this->Remesh = true;
       break;
     case GLUT_KEY_RIGHT:
-      this->CutRatio = dax::math::Min(1.0, this->CutRatio + 0.01);
+      this->ClipRatio = dax::math::Min(1.0, this->ClipRatio + 0.01);
       this->Remesh = true;
       break;
     default:

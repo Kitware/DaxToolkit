@@ -126,9 +126,9 @@ private:
   InternalMandleData* MandleData;
 
   dax::Scalar Iteration; //tracks the escape iteration to contour on
-  dax::Scalar CutRatio; //tracks where to cut at
+  dax::Scalar ClipRatio; //tracks where to clip at
   bool Remesh;
-  int Mode; //0 marching cubes, 1 cut
+  int Mode; //0 marching cubes, 1 clip
 
 
   //gl array ids that hold the rendering info

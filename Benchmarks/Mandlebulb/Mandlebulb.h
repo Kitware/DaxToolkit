@@ -116,14 +116,14 @@ public:
   }
 };
 
-//does a combined slice and marching cubes at the same time
-class MandlebulbCutClassify : public dax::exec::WorkletMapCell
+//does a combined clip and marching cubes at the same time
+class MandlebulbClipClassify : public dax::exec::WorkletMapCell
 {
 public:
   typedef void ControlSignature(Topology, Field(Point), Field(Point), Field(Out));
   typedef _4 ExecutionSignature(_2, _3);
 
-  DAX_CONT_EXPORT MandlebulbCutClassify(dax::Vector3 origin,
+  DAX_CONT_EXPORT MandlebulbClipClassify(dax::Vector3 origin,
                                         dax::Vector3 location,
                                         dax::Vector3 normal,
                                         dax::Scalar isoValue)
@@ -141,7 +141,7 @@ public:
     const dax::exec::CellField<dax::Scalar,CellTag> &values) const
   {
     dax::Id faces = 0;
-    const bool is_good = this->InCutArea(coords,
+    const bool is_good = this->InClipArea(coords,
                    typename dax::CellTraits<CellTag>::CanonicalCellTag());
     if(is_good)
       {
@@ -154,7 +154,7 @@ public:
 
   template<class CellTag>
     DAX_EXEC_EXPORT
-    bool InCutArea(
+    bool InClipArea(
       const dax::exec::CellField<dax::Vector3,CellTag> &coords,
       dax::CellTagHexahedron) const
     {
@@ -230,7 +230,7 @@ mandle::MandlebulbVolume computeMandlebulb( dax::Vector3 origin,
 mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume vol,
                                           dax::Scalar iteration );
 
-//slice percent represents the ratio from 0 - 1 that we want the slice
+//cut percent represents the ratio from 0 - 1 that we want the cut
 //to be along the axis
 mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume vol,
                                         dax::Scalar cut_percent,
