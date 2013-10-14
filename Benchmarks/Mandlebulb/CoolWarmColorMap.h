@@ -17,6 +17,8 @@
 #define __dax_Benchmarks_Mandlebulb_CoolWarmColorMap_h
 
 #include <dax/Types.h>
+#include <dax/math/Compare.h>
+#include <dax/internal/ExportMacros.h>
 
 #include <algorithm>
 
@@ -35,8 +37,9 @@ public:
   DAX_EXEC_CONT_EXPORT
   const ColorType &GetColor(dax::Scalar scalar) const
   {
-    if (scalar < 0.0) { scalar = 0.0; }
-    if (scalar > 0.9999) { scalar = 0.9999; }
+    scalar = dax::math::Max(0.0f,scalar);
+    scalar = dax::math::Min(0.9999f,scalar);
+
     int index = (int)(NUM_COLORS*scalar);
     return this->Colors[index];
   }
