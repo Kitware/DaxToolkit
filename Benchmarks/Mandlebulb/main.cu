@@ -13,33 +13,6 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax__cuda__opengl__SetOpenGLDevice_h
-#define __dax__cuda__opengl__SetOpenGLDevice_h
+#define BOOST_SP_DISABLE_THREADS
 
-#include <cuda.h>
-#include <cuda_gl_interop.h>
-
-#include <dax/cont/ErrorExecution.h>
-
-namespace dax{
-namespace cuda{
-namespace opengl {
-
-
-static void SetCudaGLDevice(int id)
-{
-  cudaError_t cError = cudaGLSetGLDevice(id);
-  if(cError != cudaSuccess)
-    {
-    std::string cuda_error_msg("Unable to setup cuda/opengl interop. Error: ");
-    cuda_error_msg.append(cudaGetErrorString(cError));
-    throw dax::cont::ErrorExecution(cuda_error_msg);
-    }
-}
-
-
-}
-}
-} //namespace
-
-#endif
+#include "main.cxx"

@@ -15,14 +15,11 @@
 //=============================================================================
 
 #include "Mandlebulb.h"
+#include "Worklets.h"
 
-
-#include <dax/cont/DeviceAdapter.h>
-
-#include <dax/cont/ArrayHandle.h>
+#include <dax/cont/ArrayHandleCounting.h>
 #include <dax/cont/Scheduler.h>
-#include <dax/cont/UniformGrid.h>
-#include <dax/cont/UnstructuredGrid.h>
+#include <dax/cont/Timer.h>
 
 #include <dax/opengl/TransferToOpenGL.h>
 
@@ -34,9 +31,17 @@ namespace detail
                             dax::cont::ArrayHandle<dax::Id> classification)
 
 {
+  //find the default device adapter
+  typedef DAX_DEFAULT_DEVICE_ADAPTER_TAG AdapterTag;
+
+  //Make it easy to call the DeviceAdapter with the right tag
+  typedef dax::cont::DeviceAdapterAlgorithm<AdapterTag> DeviceAdapter;
+
   mandle::MandlebulbSurface surface; //construct surface struct
 
   dax::cont::Scheduler< > scheduler;
+
+  dax::cont::Timer<> timer;
 
   //setup the info for the second step
   dax::worklet::MarchingCubesGenerate generateSurface(iteration);
@@ -53,14 +58,18 @@ namespace detail
                    surface.Data,
                    vol.EscapeIteration);
 
-  // //generate a color for each point based on the escape iteration
-  scheduler.Invoke(worklet::ColorsAndNorms(),
-                    surface.Data,
-                    surface.Data.GetPointCoordinates(),
-                    surface.Colors,
-                    surface.Norms);
+  std::cout << "mc stage 2: " << timer.GetElapsedTime() << std::endl;
 
-  vol.EscapeIteration.ReleaseResourcesExecution();
+  //generate a color for each point based on the escape iteration
+  mandle::SurfaceCoords surface_coords(surface.Data);
+  scheduler.Invoke( worklet::ColorsAndNorms(),
+                    dax::cont::make_ArrayHandleCounting(0, surface.Data.GetNumberOfPoints()),
+                    surface_coords,
+                    surface.Norms,
+                    surface.Colors);
+
+  std::cout << "colors & norms: " << timer.GetElapsedTime() << std::endl;
+
   return surface;
 }
 
@@ -81,8 +90,6 @@ mandle::MandlebulbVolume computeMandlebulb( dax::Vector3 origin,
   scheduler.Invoke( worklet::Mandlebulb(), vol.Grid.GetPointCoordinates(),
                     vol.EscapeIteration );
 
-  vol.EscapeIteration.GetPortalConstControl();
-
   return vol;
 }
 
@@ -97,12 +104,14 @@ mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume vol,
 
   dax::cont::Scheduler< > scheduler;
 
+  dax::cont::Timer<> timer;
   //run the classify step
   ::dax::worklet::MarchingCubesClassify classify(iteration);
   scheduler.Invoke( classify,
                     vol.Grid,
                     vol.EscapeIteration,
                     classification );
+  std::cout << "mc stage 1: " << timer.GetElapsedTime() << std::endl;
 
   return detail::generateSurface(vol,iteration,classification);
 }
@@ -130,6 +139,8 @@ mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume vol,
 
   dax::cont::Scheduler< > scheduler;
 
+  dax::cont::Timer<> timer;
+
   //run the classify step
   ::worklet::MandlebulbClipClassify classify(origin, location, normal, iteration);
   scheduler.Invoke( classify,
@@ -137,6 +148,7 @@ mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume vol,
                     vol.Grid.GetPointCoordinates(),
                     vol.EscapeIteration,
                     classification );
+  std::cout << "mc stage 1: "  << timer.GetElapsedTime() << std::endl;
 
   return detail::generateSurface(vol,iteration,classification);
 }
@@ -157,8 +169,6 @@ void bindSurface( mandle::MandlebulbSurface& surface,
 
   //no need to keep the cuda side, as the next re-computation will have
   //redo all the work for all three of these
-  surface.Data.GetPointCoordinates().GetPortalConstControl();
-  surface.Data.GetPointCoordinates().ReleaseResourcesExecution();
   surface.Colors.ReleaseResourcesExecution();
   surface.Norms.ReleaseResourcesExecution();
 

@@ -17,6 +17,11 @@
 #include "Window.h"
 #include "ShaderCode.h"
 
+#include <dax/math/Compare.h>
+#include <dax/math/Exp.h>
+#include <dax/math/Trig.h>
+#include <dax/math/VectorAnalysis.h>
+
 namespace
 {
 GLvoid* bufferObjectPtr( unsigned int idx )
@@ -89,6 +94,9 @@ void Window::Cleanup()
   //kills and
   this->TwizzleHandles.release();
   this->MandleData->release();
+#ifdef DAX_CUDA
+  cudaDeviceReset();
+#endif
   delete this->MandleData;
 }
 

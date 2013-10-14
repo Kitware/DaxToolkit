@@ -89,7 +89,7 @@ int Performance;
 
 ///Returns the fastest cuda device id that the current system has
 ///A result of zero means no cuda device has been found
-int FindFastestDeviceId()
+static int FindFastestDeviceId()
 {
   //get the number of devices and store information
   int numberOfDevices;
@@ -121,7 +121,7 @@ int FindFastestDeviceId()
 
 //choose a cuda compute device. This can't be used if you are setting
 //up open gl interop
-void SetCudaDevice(int id)
+static void SetCudaDevice(int id)
 {
   cudaError_t cError = cudaSetDevice(id);
   if(cError != cudaSuccess)
