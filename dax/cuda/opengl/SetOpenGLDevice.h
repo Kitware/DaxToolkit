@@ -26,7 +26,7 @@ namespace cuda{
 namespace opengl {
 
 
-void SetCudaGLDevice(int id)
+static void SetCudaGLDevice(int id)
 {
   cudaError_t cError = cudaGLSetGLDevice(id);
   if(cError != cudaSuccess)
