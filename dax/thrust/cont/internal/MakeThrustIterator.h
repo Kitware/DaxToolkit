@@ -42,6 +42,7 @@
 #endif // gcc version >= 4.6
 #endif // gcc && !CUDA
 
+
 namespace dax {
 namespace thrust {
 namespace cont {
@@ -199,4 +200,31 @@ IteratorEnd(PortalType portal)
 }
 }
 } //namespace dax::thrust::cont::internal
+
+namespace thrust {
+
+template< typename PortalType >
+struct less< dax::thrust::cont::internal::detail::PortalValue< PortalType > > :
+        public binary_function<
+          dax::thrust::cont::internal::detail::PortalValue< PortalType >,
+          dax::thrust::cont::internal::detail::PortalValue< PortalType >,
+          bool>
+{
+  typedef dax::thrust::cont::internal::detail::PortalValue< PortalType > T;
+
+  /*! Function call operator. The return value is <tt>lhs < rhs</tt>.
+   */
+  __host__ __device__ bool operator()(const T &lhs, const T &rhs) const
+  {return lhs < rhs;}
+
+  /*! Function call operator. The return value is <tt>lhs < rhs</tt>.
+      specially designed to work with dax portal values, which can
+      be compared to their underline type
+   */
+  __host__ __device__ bool operator()(const T &lhs,
+                                      const typename T::ValueType &rhs) const
+  {return lhs < rhs;}
+}; // end less
+
+}
 #endif

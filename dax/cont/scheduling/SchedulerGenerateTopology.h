@@ -25,6 +25,7 @@
 #include <dax/cont/sig/Tag.h>
 #include <dax/cont/sig/VisitIndex.h>
 #include <dax/cont/Scheduler.h>
+#include <dax/cont/ArrayHandleCounting.h>
 #include <dax/cont/scheduling/SchedulerTags.h>
 #include <dax/cont/scheduling/SchedulerDefault.h>
 #include <dax/cont/scheduling/VerifyUserArgLength.h>
@@ -114,16 +115,12 @@ DAX_CONT_EXPORT void GenerateNewTopology(
     return;
     }
 
-  //fill the validCellRange with the values from 1 to size+1, this is used
-  //for the lower bounds to compute the right indices
-  IdArrayHandleType validCellRange;
-  validCellRange.PrepareForOutput(numNewCells);
-  this->DefaultScheduler.Invoke(dax::exec::internal::kernel::Index(),
-                  validCellRange);
-
   //now do the lower bounds of the cell indices so that we figure out
   //which original topology indexs match the new indices.
-  Algorithm::UpperBounds(scannedNewCellCounts, validCellRange);
+  IdArrayHandleType validCellRange;
+  Algorithm::UpperBounds(scannedNewCellCounts,
+                         dax::cont::make_ArrayHandleCounting(0,numNewCells),
+                         validCellRange);
 
   // We are done with scannedNewCellCounts.
   scannedNewCellCounts.ReleaseResources();
@@ -284,16 +281,12 @@ DAX_CONT_EXPORT void GenerateNewTopology(
     return;
     }
 
-  //fill the validCellRange with the values from 0 to size, this is used
-  //for the upper bounds to compute the right indices
-  IdArrayHandleType validCellRange;
-  validCellRange.PrepareForOutput(numNewCells);
-  this->DefaultScheduler.Invoke(dax::exec::internal::kernel::Index(),
-                    validCellRange);
-
   //now do the uppper bounds of the cell indices so that we figure out
   //which original topology indexs match the new indices.
-  Algorithm::UpperBounds(scannedNewCellCounts, validCellRange);
+  IdArrayHandleType validCellRange;
+  Algorithm::UpperBounds(scannedNewCellCounts,
+                         dax::cont::make_ArrayHandleCounting(0,numNewCells),
+                         validCellRange);
 
   // We are done with scannedNewCellCounts.
   scannedNewCellCounts.ReleaseResources();
