@@ -17,6 +17,8 @@
 #include "Mandlebulb.h"
 #include "Worklets.h"
 
+#include <iostream>
+
 #include <dax/cont/ArrayHandleCounting.h>
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/Timer.h>
