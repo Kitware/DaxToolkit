@@ -166,9 +166,9 @@ public:
   void DoReleaseKeys() { this->Keys.ReleaseResourcesExecution(); }
 
   DAX_CONT_EXPORT
-  void SetReleaseReductionMap(bool flag){ this->ReleaseKeys = flag; }
+  void SetReleaseReductionMap(bool flag){ this->ReleaseReductionMap = flag; }
   DAX_CONT_EXPORT
-  bool GetReleaseReductionMap() const { return ReleaseKeys; }
+  bool GetReleaseReductionMap() const { return ReleaseReductionMap; }
 
 public:
   /// Builds a map from output indices to input indices that describes how
