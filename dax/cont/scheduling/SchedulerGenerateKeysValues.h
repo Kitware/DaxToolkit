@@ -239,7 +239,7 @@ DAX_CONT_EXPORT void InvokeGenerateKeysValues(
 
   DerivedWorkletType derivedWorklet(workletWrapper.GetWorklet());
 
-  //we get our magic here. we need to wrap some paramemters and pass
+  //we get our magic here. we need to wrap some parameters and pass
   //them to the real scheduler. The visitIndex must be last, as that is the
   //hardcoded location the ReplaceAndExtendSignatures will place it at
   this->DefaultScheduler.Invoke(
