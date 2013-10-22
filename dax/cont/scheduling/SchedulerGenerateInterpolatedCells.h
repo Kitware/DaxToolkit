@@ -102,7 +102,6 @@ DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
     // the sort and unique will get us the subset of new points
     // the lower bounds on the subset and the original coords, will produce
     // the resulting topology array
-
     dax::math::SortLess comparisonFunctor;
 
     typedef typename OutputGrid::PointCoordinatesType::ValueType

@@ -31,8 +31,8 @@
 namespace dax {
 namespace cont {
 
-//we need a base class with no template parameters so that the scheduling triats
-//infastructure can properly determine when a worklet is derived from
+//we need a base class with no template parameters so that the scheduling traits
+//infrastructure can properly determine when a worklet is derived from
 //GenerateKeysValues
 namespace internal {
   class GenerateKeysValuesBase {};
