@@ -31,6 +31,31 @@
 
 #include "CoolWarmColorMap.h"
 
+namespace mandle
+{
+
+  class SurfaceCoords : public dax::exec::ExecutionObjectBase
+  {
+    typedef dax::cont::UnstructuredGrid< dax::CellTagTriangle > DataType;
+    typedef DataType::PointCoordinatesType CoordType;
+    typedef CoordType::PortalConstExecution PortalType;
+
+  public:
+    DAX_CONT_EXPORT
+    SurfaceCoords( DataType& grid ):
+      Coords( grid.GetPointCoordinates().PrepareForInput() )
+      {
+      }
+
+  DAX_EXEC_EXPORT dax::Vector3 operator[](int idx) const {
+      return this->Coords.Get(idx);
+      }
+
+  private:
+    PortalType Coords;
+  };
+
+}
 
 namespace worklet {
 

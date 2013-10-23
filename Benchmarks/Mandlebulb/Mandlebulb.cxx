@@ -28,7 +28,7 @@
 namespace detail
 {
 
-  mandle::MandlebulbSurface generateSurface( mandle::MandlebulbVolume vol,
+  mandle::MandlebulbSurface generateSurface( mandle::MandlebulbVolume& vol,
                             dax::Scalar iteration,
                             dax::cont::ArrayHandle<dax::Id> classification)
 
@@ -63,14 +63,16 @@ namespace detail
   std::cout << "mc stage 2: " << timer.GetElapsedTime() << std::endl;
 
   //generate a color for each point based on the escape iteration
-  mandle::SurfaceCoords surface_coords(surface.Data);
-  scheduler.Invoke( worklet::ColorsAndNorms(),
-                    dax::cont::make_ArrayHandleCounting(0, surface.Data.GetNumberOfPoints()),
-                    surface_coords,
-                    surface.Norms,
-                    surface.Colors);
-
-  std::cout << "colors & norms: " << timer.GetElapsedTime() << std::endl;
+  if(surface.Data.GetNumberOfPoints() > 0)
+    {
+    mandle::SurfaceCoords surface_coords(surface.Data);
+    scheduler.Invoke( worklet::ColorsAndNorms(),
+                      dax::cont::make_ArrayHandleCounting(0, surface.Data.GetNumberOfPoints()),
+                      surface_coords,
+                      surface.Norms,
+                      surface.Colors);
+    std::cout << "colors & norms: " << timer.GetElapsedTime() << std::endl;
+    }
 
   return surface;
 }
@@ -96,7 +98,7 @@ mandle::MandlebulbVolume computeMandlebulb( dax::Vector3 origin,
 }
 
 //compute the surface of the mandlebulb for a given iteration
-mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume vol,
+mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume& vol,
                                           dax::Scalar iteration )
 {
   //lets extract the surface where the iteration value is greater than
@@ -119,7 +121,7 @@ mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume vol,
 }
 
 //compute the clip of the volume for a given iteration
-mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume vol,
+mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume& vol,
                                         dax::Scalar cut_percent,
                                         dax::Scalar iteration )
 {
