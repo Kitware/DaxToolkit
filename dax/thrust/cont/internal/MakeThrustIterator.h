@@ -211,19 +211,22 @@ struct less< dax::thrust::cont::internal::detail::PortalValue< PortalType > > :
           bool>
 {
   typedef dax::thrust::cont::internal::detail::PortalValue< PortalType > T;
+  typedef typename dax::thrust::cont::internal::detail::PortalValue<
+                        PortalType >::ValueType ValueType;
+
 
   /*! Function call operator. The return value is <tt>lhs < rhs</tt>.
    */
   __host__ __device__ bool operator()(const T &lhs, const T &rhs) const
-  {return lhs < rhs;}
+  {return (ValueType)lhs < (ValueType)rhs;}
 
   /*! Function call operator. The return value is <tt>lhs < rhs</tt>.
       specially designed to work with dax portal values, which can
       be compared to their underline type
    */
   __host__ __device__ bool operator()(const T &lhs,
-                                      const typename T::ValueType &rhs) const
-  {return lhs < rhs;}
+                                      const ValueType &rhs) const
+  {return (ValueType)lhs < rhs;}
 }; // end less
 
 }
