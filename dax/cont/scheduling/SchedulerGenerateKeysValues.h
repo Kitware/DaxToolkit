@@ -25,6 +25,7 @@
 #include <dax/cont/sig/Tag.h>
 #include <dax/cont/sig/VisitIndex.h>
 #include <dax/cont/Scheduler.h>
+#include <dax/cont/ArrayHandleCounting.h>
 #include <dax/cont/scheduling/SchedulerTags.h>
 #include <dax/cont/scheduling/SchedulerDefault.h>
 #include <dax/cont/scheduling/VerifyUserArgLength.h>
@@ -106,16 +107,11 @@ DAX_CONT_EXPORT void InvokeGenerateKeysValues(
     workletWrapper.DoReleaseOutputCountArray();
     }
 
-  //fill the outputIndexRanges with the values from 1 to size+1, this is used
-  //for the lower bounds to compute the right indices
-  IdArrayHandleType outputIndexRanges;
-  outputIndexRanges.PrepareForOutput(numNewValues);
-  this->DefaultScheduler.Invoke(dax::exec::internal::kernel::Index(),
-                                outputIndexRanges);
-
   //now do the lower bounds of the cell indices so that we figure out
-  //which original topology indexs match the new indices.
-  Algorithm::UpperBounds(scannedOutputCounts, outputIndexRanges);
+  IdArrayHandleType outputIndexRanges;
+  Algorithm::UpperBounds(scannedOutputCounts,
+                         dax::cont::make_ArrayHandleCounting(0,numNewValues),
+                         outputIndexRanges);
 
   // We are done with scannedOutputCounts.
   scannedOutputCounts.ReleaseResources();
@@ -206,16 +202,11 @@ DAX_CONT_EXPORT void InvokeGenerateKeysValues(
     workletWrapper.DoReleaseOutputCountArray();
     }
 
-  //fill the outputIndexRanges with the values from 0 to size, this is used
-  //for the upper bounds to compute the right indices
+  //now do the lower bounds of the cell indices so that we figure out
   IdArrayHandleType outputIndexRanges;
-  outputIndexRanges.PrepareForOutput(numNewValues);
-  this->DefaultScheduler.Invoke(dax::exec::internal::kernel::Index(),
-                                outputIndexRanges);
-
-  //now do the uppper bounds of the cell indices so that we figure out
-  //which original topology indexs match the new indices.
-  Algorithm::UpperBounds(scannedOutputCounts, outputIndexRanges);
+  Algorithm::UpperBounds(scannedOutputCounts,
+                         dax::cont::make_ArrayHandleCounting(0,numNewValues),
+                         outputIndexRanges);
 
   // We are done with scannedOutputCounts.
   scannedOutputCounts.ReleaseResources();
@@ -239,7 +230,7 @@ DAX_CONT_EXPORT void InvokeGenerateKeysValues(
 
   DerivedWorkletType derivedWorklet(workletWrapper.GetWorklet());
 
-  //we get our magic here. we need to wrap some paramemters and pass
+  //we get our magic here. we need to wrap some parameters and pass
   //them to the real scheduler. The visitIndex must be last, as that is the
   //hardcoded location the ReplaceAndExtendSignatures will place it at
   this->DefaultScheduler.Invoke(

@@ -59,28 +59,6 @@ namespace mandle
   dax::cont::ArrayHandle<ColorType> Colors;
   dax::cont::ArrayHandle<dax::Vector3> Norms;
   };
-
-  class SurfaceCoords : public dax::exec::ExecutionObjectBase
-  {
-    typedef dax::cont::UnstructuredGrid< dax::CellTagTriangle > DataType;
-    typedef DataType::PointCoordinatesType CoordType;
-    typedef CoordType::PortalConstExecution PortalType;
-
-  public:
-    DAX_CONT_EXPORT
-    SurfaceCoords( DataType grid ):
-      Coords( grid.GetPointCoordinates().PrepareForInput() )
-      {
-      }
-
-  DAX_EXEC_EXPORT dax::Vector3 operator[](int idx) const {
-      return this->Coords.Get(idx);
-      }
-
-  private:
-    PortalType Coords;
-  };
-
 }
 
 //define functions to compute the mandlebulb info
@@ -88,12 +66,12 @@ mandle::MandlebulbVolume computeMandlebulb( dax::Vector3 origin,
                                             dax::Vector3 spacing,
                                             dax::Extent3 extent);
 
-mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume vol,
+mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume& vol,
                                           dax::Scalar iteration );
 
 //cut percent represents the ratio from 0 - 1 that we want the cut
 //to be along the axis
-mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume vol,
+mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume& vol,
                                         dax::Scalar cut_percent,
                                         dax::Scalar iteration );
 
