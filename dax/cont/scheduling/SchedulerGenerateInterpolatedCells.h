@@ -191,7 +191,7 @@ DAX_CONT_EXPORT void GenerateNewTopology(
   //which original topology indexs match the new indices.
   IdArrayHandleType validCellRange;
   Algorithm::UpperBounds(scannedNewCellCounts,
-                         dax::cont::make_ArrayHandleCounting(0,numNewCells),
+                         dax::cont::make_ArrayHandleCounting(dax::Id(0),numNewCells),
                          validCellRange);
 
   // We are done with scannedNewCellCounts.
@@ -308,8 +308,8 @@ DAX_CONT_EXPORT void GenerateNewTopology(
   //which original topology indexs match the new indices.
   IdArrayHandleType validCellRange;
   Algorithm::UpperBounds(scannedNewCellCounts,
-                         dax::cont::make_ArrayHandleCounting(0,numNewCells),
-                         validCellRange);
+                   dax::cont::make_ArrayHandleCounting(dax::Id(0),numNewCells),
+                   validCellRange);
 
   // We are done with scannedNewCellCounts.
   scannedNewCellCounts.ReleaseResources();
