@@ -71,7 +71,7 @@ endif (DAX_ENABLE_OPENMP)
 if (DAX_ENABLE_TBB)
   add_executable(ThresholdTimingTBB ${sources} ${headers})
   set_dax_device_adapter(ThresholdTimingTBB DAX_DEVICE_ADAPTER_TBB)
-  target_link_libraries(ThresholdTimingTBB ${DAX_TIMING_LIBS})
+  target_link_libraries(ThresholdTimingTBB ${TBB_LIBRARIES})
   add_timing_tests(ThresholdTimingTBB)
 endif (DAX_ENABLE_TBB)
 

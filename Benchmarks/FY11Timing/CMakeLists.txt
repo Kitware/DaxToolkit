@@ -55,7 +55,7 @@ endif (DAX_ENABLE_OPENMP)
 if (DAX_ENABLE_TBB)
   add_executable(FY11TimingTBB ${sources} ${headers})
   set_dax_device_adapter(FY11TimingTBB DAX_DEVICE_ADAPTER_TBB)
-  target_link_libraries(FY11TimingTBB ${DAX_TIMING_LIBS})
+  target_link_libraries(FY11TimingTBB ${TBB_LIBRARIES})
   add_timing_tests(FY11TimingTBB)
 endif (DAX_ENABLE_TBB)
 

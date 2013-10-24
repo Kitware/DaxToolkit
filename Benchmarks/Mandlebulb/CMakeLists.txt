@@ -53,7 +53,8 @@ if (DAX_ENABLE_TBB)
   add_executable(MandlebulbTBB ${headers} ${sources})
   set_dax_device_adapter(MandlebulbTBB DAX_DEVICE_ADAPTER_TBB)
   add_test(MandlebulbTBB ${EXECUTABLE_OUTPUT_PATH}/MandlebulbTBB --time=5000 --auto-play)
-  target_link_libraries(MandlebulbTBB ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${GLEW_LIBRARIES})
+  target_link_libraries(MandlebulbTBB ${OPENGL_LIBRARIES}
+                        ${GLUT_LIBRARIES} ${GLEW_LIBRARIES} ${TBB_LIBRARIES})
 endif (DAX_ENABLE_TBB)
 
 #-----------------------------------------------------------------------------

@@ -144,7 +144,7 @@ function(dax_unit_tests)
     )
 
   #set up what we possibly need to link too.
-  list(APPEND DAX_UT_LIBRARIES ${DAX_TIMING_LIBS})
+  list(APPEND DAX_UT_LIBRARIES ${TBB_LIBRARIES})
   #set up storage for the include dirs
   set(DAX_UT_INCLUDE_DIRS )
 
