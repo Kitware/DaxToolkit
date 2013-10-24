@@ -110,8 +110,8 @@ DAX_CONT_EXPORT void InvokeGenerateKeysValues(
   //now do the lower bounds of the cell indices so that we figure out
   IdArrayHandleType outputIndexRanges;
   Algorithm::UpperBounds(scannedOutputCounts,
-                         dax::cont::make_ArrayHandleCounting(0,numNewValues),
-                         outputIndexRanges);
+                 dax::cont::make_ArrayHandleCounting(dax::Id(0),numNewValues),
+                 outputIndexRanges);
 
   // We are done with scannedOutputCounts.
   scannedOutputCounts.ReleaseResources();
@@ -205,7 +205,7 @@ DAX_CONT_EXPORT void InvokeGenerateKeysValues(
   //now do the lower bounds of the cell indices so that we figure out
   IdArrayHandleType outputIndexRanges;
   Algorithm::UpperBounds(scannedOutputCounts,
-                         dax::cont::make_ArrayHandleCounting(0,numNewValues),
+                         dax::cont::make_ArrayHandleCounting(dax::Id(0),numNewValues),
                          outputIndexRanges);
 
   // We are done with scannedOutputCounts.

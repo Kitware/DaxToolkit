@@ -131,14 +131,17 @@ void Window::NextAutoPlayStep()
       {
       //alternating every 60 seconds move iteration from 1 to 30, and back to 1
       int sign = (fmod(this->CurrentTime,60000.0f) < 30000) ?  1 : -1;
-      this->Iteration = dax::math::Min(30.0f, this->Iteration + (sign * 0.2f));
-      this->Iteration = dax::math::Max(1.0f, this->Iteration);
+      this->Iteration = dax::math::Min(dax::Scalar(30.0),
+                                       this->Iteration + (sign * 0.2f));
+      this->Iteration = dax::math::Max(dax::Scalar(1.0), this->Iteration);
       }
     if(demo_step == 1 || demo_step == 3)
       {
       int sign = (fmod(this->CurrentTime,60000.0f) < 30000) ?  1 : -1;
-      this->ClipRatio = dax::math::Max(0.3f, this->ClipRatio + (sign * 0.02f) );
-      this->ClipRatio = dax::math::Min(1.0f, this->ClipRatio);
+      this->ClipRatio = dax::math::Max(dax::Scalar(0.3),
+                                       this->ClipRatio + (sign * 0.02f) );
+      this->ClipRatio = dax::math::Min(dax::Scalar(1.0),
+                                       this->ClipRatio);
       }
     this->Remesh = true;
     }

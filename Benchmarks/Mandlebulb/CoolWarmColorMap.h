@@ -37,8 +37,8 @@ public:
   DAX_EXEC_CONT_EXPORT
   const ColorType &GetColor(dax::Scalar scalar) const
   {
-    scalar = dax::math::Max(0.0f,scalar);
-    scalar = dax::math::Min(0.9999f,scalar);
+    scalar = dax::math::Max(dax::Scalar(0.0),scalar);
+    scalar = dax::math::Min(dax::Scalar(0.9999),scalar);
 
     int index = (int)(NUM_COLORS*scalar);
     return this->Colors[index];

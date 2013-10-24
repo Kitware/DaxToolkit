@@ -67,7 +67,8 @@ namespace detail
     {
     mandle::SurfaceCoords surface_coords(surface.Data);
     scheduler.Invoke( worklet::ColorsAndNorms(),
-                      dax::cont::make_ArrayHandleCounting(0, surface.Data.GetNumberOfPoints()),
+                dax::cont::make_ArrayHandleCounting(dax::Id(0),
+                                            surface.Data.GetNumberOfPoints()),
                       surface_coords,
                       surface.Norms,
                       surface.Colors);
