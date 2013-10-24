@@ -49,12 +49,15 @@ endif (Dax_TBB_FOUND)
 
 # Set up all these dependent packages (if they were all found).
 if (Dax_TBB_FOUND)
+  #we create a target to link to for TBB which brings
+  #in the correct include directories
+
   include_directories(
     ${Boost_INCLUDE_DIRS}
     ${TBB_INCLUDE_DIRS}
     ${Dax_INCLUDE_DIRS}
     )
-  link_libraries(${TBB_LIBRARIES})
+
 
   set(Dax_TBB_initialize_complete TRUE)
 endif (Dax_TBB_FOUND)

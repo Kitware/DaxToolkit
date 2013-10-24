@@ -210,6 +210,11 @@ make_library_set(TBB_LIBRARY)
 
 findpkg_finish(TBB)
 
+#on unix we need to also link to rt
+if(UNIX AND NOT APPLE)
+  list(APPEND TBB_LIBRARIES rt)
+endif()
+
 #if we haven't found TBB no point on going any further
 if (NOT TBB_FOUND)
   return()
@@ -252,6 +257,9 @@ find_library(TBB_MALLOC_PROXY_LIBRARY_DEBUG
 make_library_set(TBB_MALLOC_PROXY_LIBRARY)
 
 findpkg_finish(TBB_MALLOC_PROXY)
+
+#-----------------------------------------------------------------------------
+# setup timing libs we need to link too
 
 
 #=============================================================================

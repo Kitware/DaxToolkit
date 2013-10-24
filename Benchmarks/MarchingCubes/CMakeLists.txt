@@ -44,8 +44,8 @@ macro(add_resolveDuplicate_timing_tests target)
   add_test(${target}ResolveDuplicatePoints-128
     ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline=2 --size=128)
     add_test(${target}ResolveDuplicatePoints-256
-    ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline=2 --size=256)    
-endmacro()    
+    ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline=2 --size=256)
+endmacro()
 
 
 #-----------------------------------------------------------------------------
@@ -81,7 +81,7 @@ endif (DAX_ENABLE_OPENMP)
 if (DAX_ENABLE_TBB)
   add_executable(MarchingCubesTimingTBB ${sources} ${headers})
   set_dax_device_adapter(MarchingCubesTimingTBB DAX_DEVICE_ADAPTER_TBB)
-  target_link_libraries(MarchingCubesTimingTBB ${DAX_TIMING_LIBS})
+  target_link_libraries(MarchingCubesTimingTBB ${TBB_LIBRARIES})
   add_timing_tests(MarchingCubesTimingTBB)
   add_resolveDuplicate_timing_tests(MarchingCubesTimingTBB)
 endif (DAX_ENABLE_TBB)

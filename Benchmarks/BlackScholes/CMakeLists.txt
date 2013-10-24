@@ -40,7 +40,7 @@ if (DAX_ENABLE_TBB)
   add_executable(BlackScholesTBB ${headers} main.cxx)
   set_dax_device_adapter(BlackScholesTBB DAX_DEVICE_ADAPTER_TBB)
   add_test(BlackScholesTBB ${EXECUTABLE_OUTPUT_PATH}/BlackScholesTBB)
-  target_link_libraries(BlackScholesTBB ${DAX_TIMING_LIBS})
+  target_link_libraries(BlackScholesTBB ${TBB_LIBRARIES})
 endif (DAX_ENABLE_TBB)
 
 #-----------------------------------------------------------------------------

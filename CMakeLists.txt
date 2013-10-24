@@ -14,7 +14,7 @@
 ##
 ##=============================================================================
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.10)
 project (Dax)
 
 set(Dax_MAJOR_VERSION 0)
@@ -68,13 +68,6 @@ endif()
 
 if (DAX_ENABLE_DOXYGEN)
   add_subdirectory(Doxygen)
-endif()
-
-#-----------------------------------------------------------------------------
-# setup timing libs we need to link too
-set(DAX_TIMING_LIBS)
-if(UNIX AND NOT APPLE)
-  set(DAX_TIMING_LIBS rt)
 endif()
 
 #-----------------------------------------------------------------------------
