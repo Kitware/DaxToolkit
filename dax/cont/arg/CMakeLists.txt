@@ -22,6 +22,7 @@ set(headers
   FieldArrayHandle.h
   FieldArrayHandleConstant.h
   FieldArrayHandleCounting.h
+  FieldArrayHandlePermutation.h
   FieldConstant.h
   FieldMap.h
   Geometry.h
