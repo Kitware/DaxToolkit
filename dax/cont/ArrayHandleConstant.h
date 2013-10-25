@@ -45,6 +45,8 @@ public:
     :Superclass(PortalType(value,length))
   {
   }
+
+  ArrayHandleConstant():Superclass() {}
 };
 
 /// A convenience function for creating a ArrayHandleConstant. It only
