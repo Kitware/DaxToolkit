@@ -31,20 +31,20 @@ namespace cont {
 /// of an integer type.
 ///
 
-template <typename KeyHandleType,
+template <typename IndicesHandleType,
           typename ValueHandleType,
           class DeviceAdapterTag_ = DAX_DEFAULT_DEVICE_ADAPTER_TAG >
 class ArrayHandlePermutation
     : public ArrayHandle <
       typename dax::cont::internal::ArrayContainerControlPermutationTypes<
-               KeyHandleType,ValueHandleType>::ValueType,
+               IndicesHandleType,ValueHandleType>::ValueType,
       typename dax::cont::internal::ArrayContainerControlPermutationTypes<
-               KeyHandleType,ValueHandleType>::ArrayContainerControlTag,
+               IndicesHandleType,ValueHandleType>::ArrayContainerControlTag,
       DeviceAdapterTag_>
 {
 private:
   typedef dax::cont::internal::ArrayContainerControlPermutationTypes<
-      KeyHandleType,ValueHandleType> PermTypes;
+      IndicesHandleType,ValueHandleType> PermTypes;
 
 public:
   typedef typename PermTypes::ValueType ValueType;
@@ -58,7 +58,7 @@ private:
       ValueType,ArrayContainerControlTag,DeviceAdapterTag> ArrayTransferType;
 
 public:
-  ArrayHandlePermutation(const KeyHandleType& keyHandle,
+  ArrayHandlePermutation(const IndicesHandleType& keyHandle,
                          const ValueHandleType& valueHandle)
     : Superclass(
         typename PermTypes::ArrayContainerControlType(keyHandle,valueHandle),
@@ -71,14 +71,14 @@ public:
 };
 
 /// make_ArrayHandlePermutation is convenience function to generate an
-/// ArrayHandlePermutation.  It takes in a Key Handle and Value Handle as
+/// ArrayHandlePermutation.  It takes in a Indices Handle and Value Handle as
 /// inputs to generate a ArrayHandlePermutation.
-template <typename KeyHandle, typename ValueHandle>
+template <typename IndicesHandle, typename ValueHandle>
 DAX_CONT_EXPORT
-dax::cont::ArrayHandlePermutation<KeyHandle,ValueHandle>
-make_ArrayHandlePermutation(KeyHandle key, ValueHandle value)
+dax::cont::ArrayHandlePermutation<IndicesHandle,ValueHandle>
+make_ArrayHandlePermutation(IndicesHandle key, ValueHandle value)
 {
-  return ArrayHandlePermutation<KeyHandle,ValueHandle>(key,value);
+  return ArrayHandlePermutation<IndicesHandle,ValueHandle>(key,value);
 }
 
 }
