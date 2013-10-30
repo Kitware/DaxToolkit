@@ -38,7 +38,7 @@
 namespace
 {
 
-dax::Scalar ISOVALUE = 5;
+dax::Scalar ISOVALUE = 100;
 
 void PrintResults(int pipeline, double time)
 {
@@ -49,7 +49,7 @@ void PrintResults(int pipeline, double time)
 
 void RunDAXPipeline(const dax::cont::UniformGrid<> &grid, int pipeline)
 {
-  std::cout << "Running pipeline 1: Magnitude -> MarchingCubes" << std::endl;
+  std::cout << "Running pipeline " << pipeline << ": Magnitude -> MarchingCubes" << std::endl;
 
   dax::cont::UnstructuredGrid<dax::CellTagTriangle> outGrid;
 
@@ -89,7 +89,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid, int pipeline)
   std::cout << "number of coordinates in: " << grid.GetNumberOfPoints() << std::endl;
   std::cout << "number of coordinates out: " << outGrid.GetNumberOfPoints() << std::endl;
   std::cout << "number of cells out: " << outGrid.GetNumberOfCells() << std::endl;
-  PrintResults(1, time);
+  PrintResults(pipeline, time);
 
 }
 
