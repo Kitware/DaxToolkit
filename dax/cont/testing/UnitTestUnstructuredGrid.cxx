@@ -19,8 +19,8 @@
 #include <dax/CellTag.h>
 #include <dax/CellTraits.h>
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace {
 
@@ -29,7 +29,7 @@ void TestUnstructuredGrid()
   const dax::Id DIM = 5;
 
   typedef dax::cont::UnstructuredGrid<dax::CellTagHexahedron> GridType;
-  dax::cont::internal::TestGrid<GridType> gridGen(DIM);
+  dax::cont::testing::TestGrid<GridType> gridGen(DIM);
   GridType grid = gridGen.GetRealGrid();
 
   std::cout << "Test basic information." << std::endl;
@@ -62,5 +62,5 @@ void TestUnstructuredGrid()
 
 int UnitTestUnstructuredGrid(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestUnstructuredGrid);
+  return dax::cont::testing::Testing::Run(TestUnstructuredGrid);
 }

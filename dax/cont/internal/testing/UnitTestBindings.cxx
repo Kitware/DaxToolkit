@@ -15,7 +15,7 @@
 //=============================================================================
 
 #include <dax/cont/internal/Bindings.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/arg/FieldConstant.h>
 
@@ -48,5 +48,5 @@ void Bindings()
 
 int UnitTestBindings(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(Bindings);
+  return dax::cont::testing::Testing::Run(Bindings);
 }

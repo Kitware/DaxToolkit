@@ -79,6 +79,8 @@ template<> struct MakePermuted<NullDomain>
   typedef NullDomain Type;
 };
 
+typedef MakePermuted<AnyDomain>::Type PermutedAnyDomain;
+
 typedef MakePermuted<Cell>::Type PermutedCell;
 
 

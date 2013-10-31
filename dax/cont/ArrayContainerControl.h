@@ -77,14 +77,14 @@ public:
   /// The actual portal object can take any form. This is a simple example of a
   /// portal to a C array.
   ///
-  typedef dax::cont::ArrayPortalFromIterators<ValueType*> PortalType;
+  typedef ::dax::cont::internal::ArrayPortalFromIterators<ValueType*> PortalType;
 
   /// \brief The type of portal objects (const version) for the array.
   ///
   /// The actual portal object can take any form. This is a simple example of a
   /// portal to a C array.
   ///
-  typedef dax::cont::ArrayPortalFromIterators<const ValueType*> PortalConstType;
+  typedef ::dax::cont::internal::ArrayPortalFromIterators<const ValueType*> PortalConstType;
 
   /// Returns a portal to the array.
   ///

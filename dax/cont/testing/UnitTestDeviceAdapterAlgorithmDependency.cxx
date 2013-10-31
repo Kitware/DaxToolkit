@@ -23,7 +23,7 @@
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/Scheduler.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 // Important for this test! This file must be included after Scheduler.h
 #include <dax/cont/DeviceAdapterSerial.h>
@@ -53,5 +53,5 @@ void CheckPostDefinedDeviceAdapter()
 
 int UnitTestDeviceAdapterAlgorithmDependency(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(CheckPostDefinedDeviceAdapter);
+  return dax::cont::testing::Testing::Run(CheckPostDefinedDeviceAdapter);
 }

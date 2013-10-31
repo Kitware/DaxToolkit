@@ -15,7 +15,7 @@
 //=============================================================================
 
 #include <dax/cont/arg/FieldArrayHandle.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Tag.h>
@@ -72,5 +72,5 @@ void ArrayHandle()
 
 int UnitTestFieldArrayHandle(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(ArrayHandle);
+  return dax::cont::testing::Testing::Run(ArrayHandle);
 }

@@ -19,15 +19,12 @@ include_directories(${Boost_INCLUDE_DIRS})
 set(headers
   ArrayContainerControl.h
   ArrayContainerControlBasic.h
-  ArrayContainerControlCounting.h
-  ArrayContainerControlConstantValue.h
   ArrayContainerControlImplicit.h
-  ArrayContainerControlPermutation.h
   ArrayHandle.h
-  ArrayHandleConstantValue.h
+  ArrayHandleConstant.h
   ArrayHandleCounting.h
+  ArrayHandlePermutation.h
   ArrayPortal.h
-  ArrayPortalFromIterators.h
   Assert.h
   DeviceAdapter.h
   DeviceAdapterSerial.h
@@ -35,13 +32,15 @@ set(headers
   ErrorControl.h
   ErrorControlAssert.h
   ErrorControlBadValue.h
+  ErrorControlInternal.h
   ErrorControlOutOfMemory.h
   ErrorExecution.h
-  IteratorFromArrayPortal.h
-  Scheduler.h
-  PermutationContainer.h
   GenerateInterpolatedCells.h
+  GenerateKeysValues.h
   GenerateTopology.h
+  PermutationContainer.h
+  ReduceKeysValues.h
+  Scheduler.h
   Timer.h
   UniformGrid.h
   UnstructuredGrid.h

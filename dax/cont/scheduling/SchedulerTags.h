@@ -28,6 +28,12 @@ struct ScheduleCellsTag{};
 //tag used to specify the Topology Generation
 struct GenerateTopologyTag{};
 
+//tag used to specify Keys/Values Generation
+struct GenerateKeysValuesTag{};
+
+//tag used to specify Keys/Values Reduction
+struct ReduceKeysValuesTag{};
+
 //tag used to specify the Coordinates Generation
 struct GenerateInterpolatedCellsTag{};
 

@@ -19,3 +19,6 @@ set(unit_tests
   UnitTestDeviceAdapterOpenMP.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})
+
+#test all worklets with the OpenMP device adapter
+dax_worklet_unit_tests( DAX_DEVICE_ADAPTER_OPENMP )

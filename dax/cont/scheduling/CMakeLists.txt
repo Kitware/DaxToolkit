@@ -15,6 +15,7 @@
 ##=============================================================================
 
 set(headers
+  AddReduceKeysArgs.h
   AddVisitIndexArg.h
   CollectCount.h
   CreateExecutionResources.h
@@ -24,7 +25,9 @@ set(headers
   SchedulerDefault.h
   SchedulerCells.h
   SchedulerGenerateInterpolatedCells.h
+  SchedulerGenerateKeysValues.h
   SchedulerGenerateTopology.h
+  SchedulerReduceKeysValues.h
   SchedulerTags.h
   VerifyUserArgLength.h
   )

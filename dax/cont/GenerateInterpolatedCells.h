@@ -54,7 +54,7 @@ class GenerateInterpolatedCells :
   //using a worklet that doesn't inherit from WorkletInterpolatedCell
   typedef typename boost::is_base_of<
           dax::exec::WorkletInterpolatedCell,
-          WorkletType_ > Worklet_Should_Inherit_From_WorkletGenerateCells;
+          WorkletType_ > Worklet_Should_Inherit_From_WorkletInterpolatedCell;
 public:
   typedef WorkletType_ WorkletType;
 
@@ -67,7 +67,7 @@ public:
     Classification(classification),
     Worklet()
     {
-    BOOST_MPL_ASSERT((Worklet_Should_Inherit_From_WorkletGenerateCells));
+    BOOST_MPL_ASSERT((Worklet_Should_Inherit_From_WorkletInterpolatedCell));
     }
 
   GenerateInterpolatedCells(const ClassifyResultType &classification,
@@ -77,7 +77,7 @@ public:
     Classification(classification),
     Worklet(work)
     {
-    BOOST_MPL_ASSERT((Worklet_Should_Inherit_From_WorkletGenerateCells));
+    BOOST_MPL_ASSERT((Worklet_Should_Inherit_From_WorkletInterpolatedCell));
     }
 
   void SetReleaseClassification(bool b){ ReleaseClassification = b; }

@@ -16,39 +16,47 @@
 #ifndef __dax_cont_ArrayHandleCounting_h
 #define __dax_cont_ArrayHandleCounting_h
 
-#include <dax/cont/ArrayContainerControlCounting.h>
+#include <dax/cont/internal/ArrayContainerControlCounting.h>
 #include <dax/cont/ArrayHandle.h>
 
 namespace dax {
 namespace cont {
-/// ArrayHandleCountings are a specialization of ArrayHandles. By default it
-/// contains a counting implicit array portal. An implicit array is a array
-/// portal with a function generating values and holds no memory. The counting
-/// implicit array simply returns the value of the index.
-template <class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
-class ArrayHandleCounting : public ArrayHandle < dax::Id,
-                                 ArrayContainerControlTagCounting,
-                                 DeviceAdapterTag >
+/// ArrayHandleCountings is a specialization of ArrayHandle. By default it
+/// contains a increment value, that is increment for each step between zero
+/// and the passed in length
+template <typename CountingValueType,
+          class DeviceAdapterTag = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
+class ArrayHandleCounting : public ArrayHandle < CountingValueType,
+                         dax::cont::internal::ArrayContainerControlTagCounting,
+                         DeviceAdapterTag >
 {
 public:
-  typedef dax::cont::ArrayHandle < dax::Id,
-                        ArrayContainerControlTagCounting,
-                        DeviceAdapterTag> superclass;
-  typedef dax::cont::ArrayPortalCounting PortalType;
+  typedef dax::cont::ArrayHandle < CountingValueType,
+                        dax::cont::internal::ArrayContainerControlTagCounting,
+                        DeviceAdapterTag> Superclass;
+  typedef dax::cont::internal::ArrayPortalCounting<
+                                              CountingValueType> PortalType;
 
-  ArrayHandleCounting(dax::Id length)
-    :superclass(PortalType(length))
+  ArrayHandleCounting(CountingValueType startingValue, dax::Id length)
+    :Superclass(PortalType(startingValue, length))
   {
   }
+
+  ArrayHandleCounting():Superclass() {}
 };
 
-/// A convenience function for creating an ArrayHandleCounting. It only takes
-/// the length of the array and constructs a ArrayHandleCounting of that length.
+/// A convenience function for creating an ArrayHandleCounting. It takes the
+/// value to start counting from and and the number of times to increment.
+template<typename CountingValueType>
 DAX_CONT_EXPORT
-dax::cont::ArrayHandleCounting< > make_ArrayHandleCounting(dax::Id length)
+dax::cont::ArrayHandleCounting<CountingValueType> make_ArrayHandleCounting(
+                                               CountingValueType startingValue,
+                                               dax::Id length)
 {
-  return dax::cont::ArrayHandleCounting< >(length);
+  return dax::cont::ArrayHandleCounting<CountingValueType>(startingValue,
+                                                           length);
 }
+
 
 }
 }

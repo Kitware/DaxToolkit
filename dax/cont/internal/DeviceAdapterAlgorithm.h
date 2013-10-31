@@ -33,7 +33,6 @@
 
 namespace dax {
 namespace cont {
-namespace internal {
 
 /// \brief Struct containing device adapter algorithms.
 ///
@@ -200,6 +199,29 @@ struct DeviceAdapterAlgorithm
       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values,
       Compare comp);
 
+  /// \brief Unstable ascending key-value sort of the values array.
+  ///
+  /// Sorts the contents of \c values based on the \c keys so that the \c values
+  /// are in ascending \c keys order.
+  /// Doesn't guarantee stability.
+  ///
+  template<typename T, typename U, class ContainerT,  class ContainerU, class Compare>
+  DAX_CONT_EXPORT static void SortByKey(
+      dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag> &keys,
+      dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag> &values);
+
+  /// \brief Unstable ascending key-value sort of the values array.
+  ///
+  /// Sorts the contents of \c values based on the \c keys so that the \c values
+  /// are in ascending \c keys order. Uses \C Compare to evaluate the keys.
+  /// Doesn't guarantee stability.
+  ///
+  template<typename T, typename U, class ContainerT,  class ContainerU, class Compare>
+  DAX_CONT_EXPORT static void SortByKey(
+      dax::cont::ArrayHandle<T,ContainerT,DeviceAdapterTag> &keys,
+      dax::cont::ArrayHandle<U,ContainerU,DeviceAdapterTag> &values,
+      Compare comp);
+
   /// \brief Performs stream compaction to remove unwanted elements in the input array. Output becomes the index values of input that are valid.
   ///
   /// Calls the parallel primitive function of stream compaction on the \c
@@ -347,7 +369,7 @@ public:
 
   DAX_CONT_EXPORT TimeStamp GetCurrentTime()
   {
-    dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
+    dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
         ::Synchronize();
 
     TimeStamp retval;
@@ -367,8 +389,7 @@ public:
 };
 
 }
-}
-} // namespace dax::cont::internal
+} // namespace dax::cont
 
 
 //-----------------------------------------------------------------------------
@@ -386,4 +407,4 @@ public:
 #include <dax/tbb/cont/internal/DeviceAdapterAlgorithmTBB.h>
 #endif
 
-#endif //__dax_cont_internal_DeviceAdapterAlgorithm_h
+#endif //__dax_cont_DeviceAdapterAlgorithm_h

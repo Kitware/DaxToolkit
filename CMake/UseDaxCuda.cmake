@@ -26,7 +26,7 @@ endif (NOT Dax_Cuda_FOUND)
 # Find the Boost library.
 if (Dax_Cuda_FOUND)
   if(NOT Boost_FOUND)
-    find_package(Boost ${Dax_REQUIRED_BOOST_VERSION})
+    find_package(BoostHeaders ${Dax_REQUIRED_BOOST_VERSION})
   endif()
 
   if (NOT Boost_FOUND)
@@ -37,10 +37,6 @@ endif (Dax_Cuda_FOUND)
 
 # Find the Thrust library.
 if (Dax_Cuda_FOUND)
-  # FindThrust is not distributed with CMake, so find the one distributed
-  # with Dax.
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Dax_CMAKE_MODULE_PATH})
-
   find_package(Thrust)
 
   if (NOT THRUST_FOUND)

@@ -14,11 +14,8 @@
 //
 //=============================================================================
 
-#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
-
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/worklet/Magnitude.h>
 
@@ -31,23 +28,22 @@
 
 namespace {
 
-const dax::Id DIM = 64;
+const dax::Id DIM = 8;
 
 //-----------------------------------------------------------------------------
 struct TestMagnitudeWorklet
 {
   //----------------------------------------------------------------------------
   template<typename GridType>
+  DAX_CONT_EXPORT
   void operator()(const GridType&) const
   {
-  dax::cont::internal::TestGrid<GridType> grid(DIM);
+  dax::cont::testing::TestGrid<GridType> grid(DIM);
 
-  dax::cont::ArrayHandle<dax::Scalar,
-                         dax::cont::ArrayContainerControlTagBasic,
-                         dax::cont::DeviceAdapterTagSerial> magnitudeHandle;
+  dax::cont::ArrayHandle<dax::Scalar> magnitudeHandle;
 
   std::cout << "Running Magnitude worklet" << std::endl;
-  dax::cont::Scheduler<> scheduler;
+  dax::cont::Scheduler< > scheduler;
   scheduler.Invoke(dax::worklet::Magnitude(),
                    grid->GetPointCoordinates(),
                    magnitudeHandle);
@@ -71,7 +67,7 @@ struct TestMagnitudeWorklet
 //-----------------------------------------------------------------------------
 void TestMagnitude()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestMagnitudeWorklet());
+  dax::cont::testing::GridTesting::TryAllGridTypes(TestMagnitudeWorklet());
   }
 
 
@@ -81,5 +77,5 @@ void TestMagnitude()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletMagnitude(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestMagnitude);
+  return dax::cont::testing::Testing::Run(TestMagnitude);
 }

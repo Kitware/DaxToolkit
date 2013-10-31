@@ -15,7 +15,7 @@
 //=============================================================================
 
 #include <dax/internal/Tags.h>
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 #include <boost/type_traits/is_same.hpp>
 
@@ -79,5 +79,5 @@ void Tags()
 
 int UnitTestTags(int, char *[])
 {
-  return dax::internal::Testing::Run(Tags);
+  return dax::testing::Testing::Run(Tags);
 }

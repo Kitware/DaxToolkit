@@ -15,10 +15,16 @@
 ##=============================================================================
 
 set(headers
+  ArrayContainerControlConstant.h
+  ArrayContainerControlCounting.h
   ArrayContainerControlError.h
+  ArrayContainerControlPermutation.h
+  ArrayContainerControlZip.h
+  ArrayHandleZip.h
   ArrayManagerExecution.h
   ArrayManagerExecutionSerial.h
   ArrayManagerExecutionShareWithControl.h
+  ArrayPortalFromIterators.h
   ArrayPortalShrink.h
   ArrayTransfer.h
   Bindings.h
@@ -29,6 +35,8 @@ set(headers
   DeviceAdapterTag.h
   DeviceAdapterTagSerial.h
   FindBinding.h
+  GridTags.h
+  IteratorFromArrayPortal.h
   )
 
 dax_declare_headers(${headers})

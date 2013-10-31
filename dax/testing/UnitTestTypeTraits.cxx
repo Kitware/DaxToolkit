@@ -18,7 +18,7 @@
 
 #include <dax/VectorTraits.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace {
 
@@ -65,7 +65,7 @@ private:
 static void TestTypeTraits()
 {
   TypeTraitTest test;
-  dax::internal::Testing::TryAllTypes(test);
+  dax::testing::Testing::TryAllTypes(test);
   std::cout << "dax::Tuple<dax::Scalar, 5>" << std::endl;
   test(dax::Tuple<dax::Scalar, 5>());
 }
@@ -75,5 +75,5 @@ static void TestTypeTraits()
 //-----------------------------------------------------------------------------
 int UnitTestTypeTraits(int, char *[])
 {
-  return dax::internal::Testing::Run(TestTypeTraits);
+  return dax::testing::Testing::Run(TestTypeTraits);
 }

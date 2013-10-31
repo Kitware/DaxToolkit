@@ -19,7 +19,7 @@
 #include <dax/cont/sig/Arg.h>
 #include <dax/exec/internal/Functor.h>
 #include <dax/exec/internal/WorkletBase.h>
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace {
 using dax::cont::arg::Field;
@@ -57,5 +57,5 @@ void Functor()
 
 int UnitTestFunctor(int, char *[])
 {
-  return dax::internal::Testing::Run(Functor);
+  return dax::testing::Testing::Run(Functor);
 }

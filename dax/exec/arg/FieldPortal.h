@@ -50,18 +50,14 @@ public:
     {
     }
 
-  DAX_EXEC_EXPORT ReturnType GetValueForWriting()
+  template<typename IndexType>
+  DAX_EXEC_EXPORT ReturnType GetValueForWriting(const IndexType&,
+                            const dax::exec::internal::WorkletBase&)
     { return this->Value; }
 
+  template<typename IndexType>
   DAX_EXEC_EXPORT ReturnType GetValueForReading(
-                            const dax::exec::internal::IJKIndex& index,
-                            const dax::exec::internal::WorkletBase& work) const
-    {
-    return dax::exec::internal::FieldGet(this->Portal,index.GetValue(),work);
-    }
-
-  DAX_EXEC_EXPORT ReturnType GetValueForReading(
-                            dax::Id index,
+                            IndexType& index,
                             const dax::exec::internal::WorkletBase& work) const
     {
     return dax::exec::internal::FieldGet(this->Portal,index,work);

@@ -16,11 +16,12 @@
 
 // This teases out a bug where math functions in the std namespace conflict
 // with math functions in other namespaces.
+namespace std { } // make sure std defined
 using namespace std;
 
 #include <dax/math/Sign.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace {
 
@@ -130,7 +131,7 @@ struct TestSignFunctor
 
 void TestSign()
 {
-  dax::internal::Testing::TryAllTypes(TestSignFunctor());
+  dax::testing::Testing::TryAllTypes(TestSignFunctor());
   TestIsNegative(-2.3, 4.5);
   TestSignBit(-2.3, 4.5);
   TestCopySign(-2.3, 4.5);
@@ -140,5 +141,5 @@ void TestSign()
 
 int UnitTestMathSign(int, char *[])
 {
-  return dax::internal::Testing::Run(TestSign);
+  return dax::testing::Testing::Run(TestSign);
 }

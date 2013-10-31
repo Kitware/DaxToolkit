@@ -238,6 +238,7 @@ struct copy_vector<3>
   }
 };
 
+
 } // namespace internal
 
 //-----------------------------------------------------------------------------
@@ -328,15 +329,25 @@ public:
       }
     return same;
   }
+
+  DAX_EXEC_CONT_EXPORT
+  bool operator<(const Tuple<T,NUM_COMPONENTS> &other) const
+  {
+    for(dax::Id i=0; i < NUM_COMPONENTS; ++i)
+      {
+      //ignore equals as that represents check next value
+      if(this->Components[i] < other[i])
+        return true;
+      else if(other[i] < this->Components[i])
+        return false;
+      } //if all same we are not less
+      return false;
+  }
+
   DAX_EXEC_CONT_EXPORT
   bool operator!=(const Tuple<T,NUM_COMPONENTS> &other) const
   {
-    bool same = true;
-    for (int componentIndex=0; componentIndex<NUM_COMPONENTS; componentIndex++)
-      {
-      same &= (this->Components[componentIndex] != other[componentIndex]);
-      }
-    return same;
+    return !(this->operator==(other));
   }
 
 protected:
@@ -397,12 +408,23 @@ public:
     return !(this->operator==(other));
   }
 
+  DAX_EXEC_CONT_EXPORT
+  bool operator<(const Tuple<T,NUM_COMPONENTS> &other) const
+  {
+  return( (this->Components[0] < other[0])  ||
+         (!(other[0] < this->Components[0]) && (this->Components[1] < other[1]))
+        );
+  }
+
 protected:
   ComponentType Components[NUM_COMPONENTS];
 };
 
 /// Vector2 corresponds to a 2-tuple
-typedef DAX_ALIGN_BEGIN(DAX_SIZE_TWO_SCALAR) dax::Tuple<dax::Scalar,2> Vector2 DAX_ALIGN_END(DAX_SIZE_TWO_SCALAR);
+typedef DAX_ALIGN_BEGIN(DAX_ALIGNMENT_TWO_SCALAR) dax::Tuple<dax::Scalar,2> Vector2 DAX_ALIGN_END(DAX_ALIGNMENT_TWO_SCALAR);
+
+/// Id2 corresponds to a 2-dimensional index
+typedef DAX_ALIGN_BEGIN(DAX_SIZE_ID) dax::Tuple<dax::Id,2> Id2 DAX_ALIGN_END(DAX_SIZE_ID);
 
 template<typename T>
 class Tuple<T,3>{
@@ -455,6 +477,17 @@ public:
   bool operator!=(const Tuple<T,NUM_COMPONENTS> &other) const
   {
     return !(this->operator==(other));
+  }
+
+  DAX_EXEC_CONT_EXPORT
+  bool operator<(const Tuple<T,NUM_COMPONENTS> &other) const
+  {
+  return((this->Components[0] < other[0])    ||
+         ( !(other[0] < this->Components[0]) &&
+          (this->Components[1] < other[1]))  ||
+         ( !(other[0] < this->Components[0]) &&
+           !(other[1] < this->Components[1]) &&
+            (this->Components[2] < other[2]) ) );
   }
 
 protected:
@@ -518,12 +551,28 @@ public:
     return !(this->operator==(other));
   }
 
+  DAX_EXEC_CONT_EXPORT
+  bool operator<(const Tuple<T,NUM_COMPONENTS> &other) const
+  {
+  return((this->Components[0] < other[0])       ||
+         ( !(other[0] < this->Components[0])    &&
+               this->Components[1] < other[1])  ||
+         ( !(other[0] < this->Components[0])    &&
+           !(other[1] < this->Components[1])    &&
+           (this->Components[2] < other[2]) )   ||
+         ( !(other[0] < this->Components[0])    &&
+           !(other[1] < this->Components[1])    &&
+           !(other[2] < this->Components[2])    &&
+           (this->Components[3] < other[3])) );
+  }
+
 protected:
   ComponentType Components[NUM_COMPONENTS];
 };
 
 /// Vector4 corresponds to a 4-tuple
-typedef DAX_ALIGN_BEGIN(DAX_SIZE_FOUR_SCALAR) dax::Tuple<dax::Scalar,4> Vector4 DAX_ALIGN_END(DAX_SIZE_FOUR_SCALAR);
+typedef DAX_ALIGN_BEGIN(DAX_ALIGNMENT_FOUR_SCALAR) dax::Tuple<dax::Scalar,4> Vector4 DAX_ALIGN_END(DAX_ALIGNMENT_FOUR_SCALAR);
+
 
 /// Id3 corresponds to a 3-dimensional index for 3d arrays.  Note that
 /// the precision of each index may be less than dax::Id.

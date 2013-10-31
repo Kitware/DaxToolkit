@@ -34,10 +34,10 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ArrayPortal.h>
 #include <dax/cont/Assert.h>
-#include <dax/cont/IteratorFromArrayPortal.h>
+#include <dax/cont/internal/IteratorFromArrayPortal.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace {
 
@@ -111,7 +111,7 @@ public:
       }
   }
 
-  typedef dax::cont::IteratorFromArrayPortal<ArrayPortalZip
+  typedef dax::cont::internal::IteratorFromArrayPortal<ArrayPortalZip
       <T,ComponentArrayPortal> > IteratorType;
 
   DAX_CONT_EXPORT
@@ -261,7 +261,7 @@ void TestCustomContainer()
   OutputArrayType outputArray;
 
   std::cout << "Do a simple operation on the arrays." << std::endl;
-  dax::cont::internal::DeviceAdapterAlgorithm<
+  dax::cont::DeviceAdapterAlgorithm<
       dax::openmp::cont::DeviceAdapterTagOpenMP>::Copy(inputArray, outputArray);
 
   std::cout << "Check the result." << std::endl;
@@ -281,5 +281,5 @@ void TestCustomContainer()
 
 int OpenMPCustomContainer(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestCustomContainer);
+  return dax::cont::testing::Testing::Run(TestCustomContainer);
 }

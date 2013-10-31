@@ -21,6 +21,7 @@
 #include <dax/Types.h>
 #include <dax/CellTraits.h>
 #include <dax/cont/arg/ConceptMap.h>
+#include <dax/cont/ArrayHandleCounting.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/scheduling/AddVisitIndexArg.h>
@@ -48,7 +49,7 @@ class Scheduler<DeviceAdapterTag,dax::cont::scheduling::GenerateInterpolatedCell
   const SchedulerDefaultType DefaultScheduler;
 
 public:
-  //default constructor so we can insantiate const schedulers
+  //default constructor so we can instantiate const schedulers
   DAX_CONT_EXPORT Scheduler():DefaultScheduler(){}
 
   //copy constructor so that people can pass schedulers around by value
@@ -95,37 +96,31 @@ DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
                                         OutputGrid& outputGrid,
                                         bool removeDuplicates ) const
 {
-  typedef typename OutputGrid::PointCoordinatesType::ArrayContainerControlTag
-      ArrayContainerControlTag;
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
-      Algorithm;
+  typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag> Algorithm;
   if(removeDuplicates)
     {
     // the sort and unique will get us the subset of new points
     // the lower bounds on the subset and the original coords, will produce
     // the resulting topology array
-
     dax::math::SortLess comparisonFunctor;
-    typename OutputGrid::PointCoordinatesType uniqueCoords;
+
+    typedef typename OutputGrid::PointCoordinatesType::ValueType
+                                                            PointCoordValueType;
+    typename dax::cont::ArrayHandle<PointCoordValueType,
+               dax::cont::ArrayContainerControlTagBasic,
+                                       DeviceAdapterTag> uniqueCoords;
 
     Algorithm::Copy(outputGrid.GetPointCoordinates(),
                     uniqueCoords);
 
-    typedef dax::cont::ArrayHandle<
-        dax::Id3,ArrayContainerControlTag,DeviceAdapterTag> IdArrayType;
-    IdArrayType* coordsAsIds;
-    coordsAsIds = reinterpret_cast<IdArrayType*>(&uniqueCoords);
-
-
-    Algorithm::Sort(*coordsAsIds, comparisonFunctor );
+    Algorithm::Sort(uniqueCoords, comparisonFunctor );
     Algorithm::Unique(uniqueCoords);
     Algorithm::LowerBounds(uniqueCoords,
                            outputGrid.GetPointCoordinates(),
                            outputGrid.GetCellConnections(),
                            comparisonFunctor );
 
-    //reduce and resize outputGrid
-    //outputGrid.SetPointCoordinates(uniqueCoords);
+    // //reduce and resize outputGrid
     Algorithm::Copy(uniqueCoords,outputGrid.GetPointCoordinates());
     }
 
@@ -165,8 +160,7 @@ DAX_CONT_EXPORT void GenerateNewTopology(
     const InputGrid& inputGrid,
     OutputGrid& outputGrid) const
   {
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
-      Algorithm;
+  typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag> Algorithm;
   typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
       DeviceAdapterTag> IdArrayHandleType;
 
@@ -182,16 +176,23 @@ DAX_CONT_EXPORT void GenerateNewTopology(
     newTopo.DoReleaseClassification();
     }
 
-  //fill the validCellRange with the values from 1 to size+1, this is used
-  //for the lower bounds to compute the right indices
-  IdArrayHandleType validCellRange;
-  validCellRange.PrepareForOutput(numNewCells);
-  this->DefaultScheduler.Invoke(dax::exec::internal::kernel::Index(),
-                  validCellRange);
+  if(numNewCells == 0)
+    {
+    //nothing to do
+    return;
+    }
 
-  //now do the lower bounds of the cell indices so that we figure out
+  if(newTopo.GetReleaseClassification())
+    {
+    newTopo.DoReleaseClassification();
+    }
+
+  //now do the uppper bounds of the cell indices so that we figure out
   //which original topology indexs match the new indices.
-  Algorithm::UpperBounds(scannedNewCellCounts, validCellRange);
+  IdArrayHandleType validCellRange;
+  Algorithm::UpperBounds(scannedNewCellCounts,
+                         dax::cont::make_ArrayHandleCounting(dax::Id(0),numNewCells),
+                         validCellRange);
 
   // We are done with scannedNewCellCounts.
   scannedNewCellCounts.ReleaseResources();
@@ -280,7 +281,7 @@ DAX_CONT_EXPORT void GenerateNewTopology(
     OutputGrid& outputGrid,
     _dax_pp_params___(a)) const
   {
-  typedef dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>
+  typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
       Algorithm;
   typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
       DeviceAdapterTag> IdArrayHandleType;
@@ -297,16 +298,18 @@ DAX_CONT_EXPORT void GenerateNewTopology(
     newTopo.DoReleaseClassification();
     }
 
-  //fill the validCellRange with the values from 0 to size, this is used
-  //for the upper bounds to compute the right indices
-  IdArrayHandleType validCellRange;
-  validCellRange.PrepareForOutput(numNewCells);
-  this->DefaultScheduler.Invoke(dax::exec::internal::kernel::Index(),
-                    validCellRange);
+  if(numNewCells == 0)
+    {
+    //nothing to do
+    return;
+    }
 
   //now do the uppper bounds of the cell indices so that we figure out
   //which original topology indexs match the new indices.
-  Algorithm::UpperBounds(scannedNewCellCounts, validCellRange);
+  IdArrayHandleType validCellRange;
+  Algorithm::UpperBounds(scannedNewCellCounts,
+                   dax::cont::make_ArrayHandleCounting(dax::Id(0),numNewCells),
+                   validCellRange);
 
   // We are done with scannedNewCellCounts.
   scannedNewCellCounts.ReleaseResources();

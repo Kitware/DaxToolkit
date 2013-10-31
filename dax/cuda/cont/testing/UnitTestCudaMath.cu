@@ -127,11 +127,11 @@ struct TestExpKernel : public MathTestFunctor<TestExpKernel>
           test_equal(dax::math::Log2(dax::make_Vector4(0.5, 1.0, 2.0, 4.0)),
                      dax::make_Vector4(-1.0, 0.0, 1.0, 2.0)),
           "Bad value from Log2");
-    MY_ASSERT(test_equal(dax::math::Log(3.75),
-                         dax::math::Log2(3.75)/dax::math::Log2(2.71828183)),
+    MY_ASSERT(test_equal(dax::math::Log(dax::Scalar(3.75)),
+                         dax::Scalar(1.321755839982319)),
               "Bad log result.");
-    MY_ASSERT(test_equal(dax::math::Log10(3.75),
-                         dax::math::Log(3.75)/dax::math::Log(10.0)),
+    MY_ASSERT(test_equal(dax::math::Log10(dax::Scalar(3.75)),
+                         dax::Scalar(0.574031267727719)),
               "Bad log10 result.");
     MY_ASSERT(test_equal(dax::math::Log1P(3.75),
                          dax::math::Log(4.75)),
@@ -287,7 +287,7 @@ DAX_CONT_EXPORT
 void TestSchedule(Functor functor)
 {
   // Schedule on device.
-  dax::cont::internal::DeviceAdapterAlgorithm<
+  dax::cont::DeviceAdapterAlgorithm<
       dax::cuda::cont::DeviceAdapterTagCuda>::Schedule(functor, 1);
 
   // Run on host. The return value has the same qualification as mentioned

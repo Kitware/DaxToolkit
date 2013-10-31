@@ -18,7 +18,7 @@
 
 #include <dax/VectorTraits.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace {
 
@@ -577,8 +577,8 @@ struct VectorMultFunctor
 void TestMatrices()
 {
   std::cout << "****** Rectangle tests" << std::endl;
-  dax::internal::Testing::TryAllTypes(
-        MatrixTestFunctor(), dax::internal::Testing::TypeCheckScalar());
+  dax::testing::Testing::TryAllTypes(
+        MatrixTestFunctor(), dax::testing::Testing::TypeCheckScalar());
 
   std::cout << "****** Square tests" << std::endl;
   RunSquareMatrixTest<1>();
@@ -593,13 +593,13 @@ void TestMatrices()
   RunKnownSquareMatrixTest<dax::math::Matrix4x4,4>();
 
   std::cout << "***** Vector multiply tests" << std::endl;
-  dax::internal::Testing::TryAllTypes(
-        VectorMultFunctor(), dax::internal::Testing::TypeCheckVector());
+  dax::testing::Testing::TryAllTypes(
+        VectorMultFunctor(), dax::testing::Testing::TypeCheckVector());
 }
 
 } // anonymous namespace
 
 int UnitTestMathMatrix(int, char *[])
 {
-  return dax::internal::Testing::Run(TestMatrices);
+  return dax::testing::Testing::Run(TestMatrices);
 }

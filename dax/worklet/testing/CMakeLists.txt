@@ -24,6 +24,7 @@ dax_declare_worklets(${worklets})
 
 set(unit_tests
   UnitTestWorkletCellAverage.cxx
+  UnitTestWorkletCellDataToPointData.cxx
   UnitTestWorkletCellGradient.cxx
   UnitTestWorkletCosine.cxx
   UnitTestWorkletElevation.cxx
@@ -31,6 +32,7 @@ set(unit_tests
   UnitTestWorkletMarchingCubes.cxx
   UnitTestWorkletPointDataToCellData.cxx
   UnitTestWorkletSine.cxx
+  UnitTestWorkletSlice.cxx
   UnitTestWorkletSquare.cxx
   UnitTestWorkletTetrahedralize.cxx
   UnitTestWorkletThreshold.cxx
@@ -38,4 +40,6 @@ set(unit_tests
   UnitTestWorkletMapCellError.cxx
   UnitTestWorkletMapFieldError.cxx
   )
-dax_unit_tests(SOURCES ${unit_tests})
+
+dax_save_worklet_unit_tests( ${unit_tests} )
+

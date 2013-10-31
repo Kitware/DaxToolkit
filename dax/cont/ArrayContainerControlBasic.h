@@ -18,10 +18,10 @@
 
 #include <dax/Types.h>
 #include <dax/cont/ArrayContainerControl.h>
-#include <dax/cont/ArrayPortalFromIterators.h>
 #include <dax/cont/Assert.h>
 #include <dax/cont/ErrorControlBadValue.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
+#include <dax/cont/internal/ArrayPortalFromIterators.h>
 
 namespace dax {
 namespace cont {
@@ -44,8 +44,8 @@ class ArrayContainerControl<ValueT, dax::cont::ArrayContainerControlTagBasic>
 {
 public:
   typedef ValueT ValueType;
-  typedef dax::cont::ArrayPortalFromIterators<ValueType*> PortalType;
-  typedef dax::cont::ArrayPortalFromIterators<const ValueType*> PortalConstType;
+  typedef dax::cont::internal::ArrayPortalFromIterators<ValueType*> PortalType;
+  typedef dax::cont::internal::ArrayPortalFromIterators<const ValueType*> PortalConstType;
 
 private:
   /// The original design of this class provided an allocator as a template

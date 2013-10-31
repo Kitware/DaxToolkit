@@ -95,7 +95,7 @@ public:
     {
     if(this->GetRemoveDuplicatePoints())
       {
-      dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapter>::
+      dax::cont::DeviceAdapterAlgorithm<DeviceAdapter>::
           StreamCompact(input, this->PointMask, output);
 
       return true;

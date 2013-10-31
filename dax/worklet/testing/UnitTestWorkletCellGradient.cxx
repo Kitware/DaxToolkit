@@ -14,13 +14,8 @@
 //
 //=============================================================================
 
-// These macros help tease out when the default template arguments to
-// ArrayHandle are inappropriately used.
-#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
-
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/worklet/CellGradient.h>
 
@@ -35,16 +30,16 @@
 
 namespace {
 
-const dax::Id DIM = 64;
+const dax::Id DIM = 8;
 
 //-----------------------------------------------------------------------------
 template<typename CellTag>
 void verifyGradient(
-    const dax::exec::CellField<dax::Vector3,CellTag> &pointCoordinates,
+    const dax::cont::testing::CellCoordinates<CellTag> &pointCoordinates,
     const dax::Vector3& computedGradient,
     const dax::Vector3& trueGradient)
 {
-  //the true gradient needs to be fixed based on the toplogical demensions
+  //the true gradient needs to be fixed based on the topological dimensions
   const int TOPOLOGICAL_DIMENSIONS =
       dax::CellTraits<CellTag>::TOPOLOGICAL_DIMENSIONS;
   dax::Vector3 expectedGradient;
@@ -84,13 +79,10 @@ struct TestCellGradientWorklet
 {
   //----------------------------------------------------------------------------
   template<typename GridType>
+  DAX_CONT_EXPORT
   void operator()(const GridType&) const
     {
-    dax::cont::internal::TestGrid<
-        GridType,
-        dax::cont::ArrayContainerControlTagBasic,
-        dax::cont::DeviceAdapterTagSerial> grid(DIM);
-
+    dax::cont::testing::TestGrid<GridType> grid(DIM);
 
     dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
@@ -102,19 +94,13 @@ struct TestCellGradientWorklet
       field[pointIndex]
           = dax::dot(grid->ComputePointCoordinates(pointIndex), trueGradient);
       }
-    dax::cont::ArrayHandle<dax::Scalar,
-      dax::cont::ArrayContainerControlTagBasic,
-      dax::cont::DeviceAdapterTagSerial> fieldHandle =
-        dax::cont::make_ArrayHandle(field,
-                                    dax::cont::ArrayContainerControlTagBasic(),
-                                    dax::cont::DeviceAdapterTagSerial());
+    dax::cont::ArrayHandle<dax::Scalar> fieldHandle =
+        dax::cont::make_ArrayHandle(field);
 
-    dax::cont::ArrayHandle<dax::Vector3,
-        dax::cont::ArrayContainerControlTagBasic,
-        dax::cont::DeviceAdapterTagSerial> gradientHandle;
+    dax::cont::ArrayHandle<dax::Vector3> gradientHandle;
 
     std::cout << "Running CellGradient worklet" << std::endl;
-    dax::cont::Scheduler<> scheduler;
+    dax::cont::Scheduler< > scheduler;
     scheduler.Invoke(dax::worklet::CellGradient(),
                     grid.GetRealGrid(),
                     grid->GetPointCoordinates(),
@@ -138,17 +124,13 @@ struct TestCellGradientWorklet
 //-----------------------------------------------------------------------------
 void TestCellGradient()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(
-        TestCellGradientWorklet(),
-        dax::cont::ArrayContainerControlTagBasic(),
-        dax::cont::DeviceAdapterTagSerial());
+  dax::cont::testing::GridTesting::TryAllGridTypes( TestCellGradientWorklet() );
   }
-
 
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
 int UnitTestWorkletCellGradient(int, char *[])
   {
-  return dax::cont::internal::Testing::Run(TestCellGradient);
+  return dax::cont::testing::Testing::Run(TestCellGradient);
   }

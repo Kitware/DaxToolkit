@@ -16,13 +16,14 @@
 
 // This teases out a bug where math functions in the std namespace conflict
 // with math functions in other namespaces.
+namespace std { } // make sure std defined
 using namespace std;
 
 #include <dax/math/Precision.h>
 
 #include <dax/exec/VectorOperations.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace {
 
@@ -205,13 +206,13 @@ struct TestPrecisionFunctor
 void TestPrecision()
 {
   TestNonFinites();
-  dax::internal::Testing::TryAllTypes(TestPrecisionFunctor(),
-                                      dax::internal::Testing::TypeCheckReal());
+  dax::testing::Testing::TryAllTypes(TestPrecisionFunctor(),
+                                      dax::testing::Testing::TypeCheckReal());
 }
 
 } // anonymous namespace
 
 int UnitTestMathPrecision(int, char *[])
 {
-  return dax::internal::Testing::Run(TestPrecision);
+  return dax::testing::Testing::Run(TestPrecision);
 }

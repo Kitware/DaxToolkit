@@ -18,6 +18,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 set(worklets
   CellAverage.h
+  CellDataToPointData.h
   CellGradient.h
   Cosine.h
   Elevation.h
@@ -25,6 +26,7 @@ set(worklets
   MarchingCubes.h
   PointDataToCellData.h
   Sine.h
+  Slice.h
   Square.h
   Tetrahedralize.h
   Threshold.h

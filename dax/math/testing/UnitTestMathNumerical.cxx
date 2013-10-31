@@ -19,7 +19,7 @@
 #include <dax/Types.h>
 #include <dax/math/Matrix.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace {
 
@@ -93,5 +93,5 @@ void TestNumerical()
 
 int UnitTestMathNumerical(int, char *[])
 {
-  return dax::internal::Testing::Run(TestNumerical);
+  return dax::testing::Testing::Run(TestNumerical);
 }

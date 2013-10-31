@@ -16,30 +16,23 @@
 #ifndef __dax_cont_arg_FieldArrayHandleCounting_h
 #define __dax_cont_arg_FieldArrayHandleCounting_h
 
-#include <dax/Types.h>
-#include <dax/cont/arg/ConceptMap.h>
-#include <dax/cont/arg/Field.h>
-#include <dax/cont/ArrayHandle.h>
-#include <dax/cont/sig/Tag.h>
-#include <dax/exec/arg/FieldPortal.h>
-#include <dax/internal/Tags.h>
-
-#include <boost/mpl/if.hpp>
+#include <dax/cont/arg/FieldArrayHandle.h>
+#include <dax/cont/ArrayHandleCounting.h>
 
 namespace dax { namespace cont { namespace arg {
 
 /// \headerfile FieldArrayHandle.h dax/cont/arg/FieldArrayHandle.h
 /// \brief Map array of a single constant value to \c Field worklet parameters.
-template <typename Tags, typename Device>
-class ConceptMap< Field(Tags), dax::cont::ArrayHandleCounting<Device> > :
-  public ConceptMap< Field(Tags), dax::cont::ArrayHandle < dax::Id,
-                                  dax::cont::ArrayContainerControlTagCounting,
-                                  Device > >
+template <typename Tags, typename T, typename Device>
+class ConceptMap< Field(Tags), dax::cont::ArrayHandleCounting<T, Device> > :
+  public ConceptMap< Field(Tags), dax::cont::ArrayHandle < T,
+                          dax::cont::internal::ArrayContainerControlTagCounting,
+                          Device > >
 {
-  typedef ConceptMap< Field(Tags), dax::cont::ArrayHandle < dax::Id,
-                                  dax::cont::ArrayContainerControlTagCounting,
-                                  Device > > superclass;
-  typedef dax::cont::ArrayHandleCounting<Device> HandleType;
+  typedef ConceptMap< Field(Tags), dax::cont::ArrayHandle < T,
+                          dax::cont::internal::ArrayContainerControlTagCounting,
+                          Device > > superclass;
+  typedef dax::cont::ArrayHandleCounting<T, Device> HandleType;
 public:
   ConceptMap(HandleType handle):
     superclass(handle)
@@ -48,16 +41,16 @@ public:
 
 /// \headerfile FieldArrayHandle.h dax/cont/arg/FieldArrayHandle.h
 /// \brief Map array of a single constant value to \c Field worklet parameters.
-template <typename Tags, typename Device>
-class ConceptMap< Field(Tags), const dax::cont::ArrayHandleCounting<Device> > :
-  public ConceptMap< Field(Tags), const dax::cont::ArrayHandle < dax::Id,
-                                  dax::cont::ArrayContainerControlTagCounting,
-                                  Device > >
+template <typename Tags, typename T, typename Device>
+class ConceptMap< Field(Tags), const dax::cont::ArrayHandleCounting<T, Device> > :
+  public ConceptMap< Field(Tags), const dax::cont::ArrayHandle < T,
+                          dax::cont::internal::ArrayContainerControlTagCounting,
+                          Device > >
 {
-  typedef ConceptMap< Field(Tags), const dax::cont::ArrayHandle < dax::Id,
-                                  dax::cont::ArrayContainerControlTagCounting,
-                                  Device > > superclass;
-  typedef dax::cont::ArrayHandleCounting<Device> HandleType;
+  typedef ConceptMap< Field(Tags), const dax::cont::ArrayHandle < T,
+                          dax::cont::internal::ArrayContainerControlTagCounting,
+                          Device > > superclass;
+  typedef dax::cont::ArrayHandleCounting<T, Device> HandleType;
 public:
   ConceptMap(HandleType handle):
     superclass(handle)

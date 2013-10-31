@@ -30,6 +30,8 @@
 namespace dax {
 namespace worklet {
 
+namespace internal{
+namespace marchingcubes{
 // -----------------------------------------------------------------------------
 template<typename T, typename U>
 DAX_EXEC_EXPORT
@@ -43,6 +45,8 @@ int GetHexahedronClassification(const T isoValue, const U& values )
           (values[5] > isoValue) << 5 |
           (values[6] > isoValue) << 6 |
           (values[7] > isoValue) << 7);
+}
+}
 }
 
 // -----------------------------------------------------------------------------
@@ -75,21 +79,22 @@ private:
   dax::Id GetNumFaces(const dax::exec::CellField<dax::Scalar,CellTag> &values,
                       dax::CellTagHexahedron) const
   {
-    const int voxelClass = GetHexahedronClassification(IsoValue,values);
+    const int voxelClass =
+    internal::marchingcubes::GetHexahedronClassification(IsoValue,values);
     return dax::worklet::internal::marchingcubes::NumFaces[voxelClass];
   }
 };
 
 
 // -----------------------------------------------------------------------------
-class MarchingCubesTopology : public dax::exec::WorkletInterpolatedCell
+class MarchingCubesGenerate : public dax::exec::WorkletInterpolatedCell
 {
 public:
 
   typedef void ControlSignature(Topology, Geometry(Out), Field(Point,In));
   typedef void ExecutionSignature(Vertices(_1), _2, _3, VisitIndex);
 
-  DAX_CONT_EXPORT MarchingCubesTopology(dax::Scalar isoValue)
+  DAX_CONT_EXPORT MarchingCubesGenerate(dax::Scalar isoValue)
     : IsoValue(isoValue){ }
 
   template<class CellTag>
@@ -129,7 +134,8 @@ private:
         {0,4}, {1,5}, {2,6}, {3,7},
       };
 
-    const int voxelClass = GetHexahedronClassification(IsoValue, values);
+    const int voxelClass =
+        internal::marchingcubes::GetHexahedronClassification(IsoValue,values);
 
     //save the point ids and ratio to interpolate the points of the new cell
     for (dax::Id outVertIndex = 0;

@@ -16,7 +16,7 @@
 
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace {
 
@@ -110,12 +110,12 @@ struct TestVectorTypeFunctor
 
 static void TestVectorTypes()
 {
-  dax::internal::Testing::TryAllTypes(TestVectorTypeFunctor());
+  dax::testing::Testing::TryAllTypes(TestVectorTypeFunctor());
 }
 
 } // anonymous namespace
 
 int UnitTestVectorOperations(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestVectorTypes);
+  return dax::cont::testing::Testing::Run(TestVectorTypes);
 }

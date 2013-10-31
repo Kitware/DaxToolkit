@@ -17,7 +17,7 @@
 #include <dax/cont/arg/ExecutionObject.h>
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Tag.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 namespace{
 using dax::cont::arg::ExecObject;
@@ -79,5 +79,5 @@ void FieldConstant()
 
 int UnitTestExecutionObject(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(FieldConstant);
+  return dax::cont::testing::Testing::Run(FieldConstant);
 }

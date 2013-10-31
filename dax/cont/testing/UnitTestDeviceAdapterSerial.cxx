@@ -18,10 +18,10 @@
 
 #include <dax/cont/DeviceAdapterSerial.h>
 
-#include <dax/cont/internal/testing/TestingDeviceAdapter.h>
+#include <dax/cont/testing/TestingDeviceAdapter.h>
 
 int UnitTestDeviceAdapterSerial(int, char *[])
 {
-  return dax::cont::internal::TestingDeviceAdapter
+  return dax::cont::testing::TestingDeviceAdapter
       <dax::cont::DeviceAdapterTagSerial>::Run();
 }

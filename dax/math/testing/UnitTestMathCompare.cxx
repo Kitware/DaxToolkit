@@ -16,7 +16,7 @@
 
 #include <functional>
 #include <dax/math/Compare.h>
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace {
 
@@ -137,12 +137,12 @@ struct TestCompareFunctor
 
 void TestCompare()
 {
-  dax::internal::Testing::TryAllTypes(TestCompareFunctor());
+  dax::testing::Testing::TryAllTypes(TestCompareFunctor());
 }
 
 } // anonymous namespace
 
 int UnitTestMathCompare(int, char *[])
 {
-  return dax::internal::Testing::Run(TestCompare);
+  return dax::testing::Testing::Run(TestCompare);
 }

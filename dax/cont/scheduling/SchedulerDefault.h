@@ -87,8 +87,8 @@ public:
     // Schedule the worklet invocations in the execution environment.
     dax::exec::internal::Functor<ControlInvocationSignature>
         bindingFunctor(w, bindings);
-    dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>::
-        Schedule(bindingFunctor, count);
+    dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>::Schedule(
+                                                      bindingFunctor, count);
     }
 #else // !(__cplusplus >= 201103L)
   // For C++03 use Boost.Preprocessor file iteration to simulate
@@ -144,8 +144,8 @@ public:
     // Schedule the worklet invocations in the execution environment.
     dax::exec::internal::Functor<ControlInvocationSignature>
         bindingFunctor(w, bindings);
-    dax::cont::internal::DeviceAdapterAlgorithm<DeviceAdapterTag>::
-        Schedule(bindingFunctor, count);
+    dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>::Schedule(
+                                                      bindingFunctor, count);
     }
 
 #endif // defined(BOOST_PP_IS_ITERATING)

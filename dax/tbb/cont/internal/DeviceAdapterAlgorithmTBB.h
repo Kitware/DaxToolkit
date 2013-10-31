@@ -16,6 +16,10 @@
 #ifndef __dax_tbb_cont_internal_DeviceAdapterAlgorithmTBB_h
 #define __dax_tbb_cont_internal_DeviceAdapterAlgorithmTBB_h
 
+
+#include <dax/cont/internal/IteratorFromArrayPortal.h>
+
+
 #include <dax/tbb/cont/internal/DeviceAdapterTagTBB.h>
 #include <dax/tbb/cont/internal/ArrayManagerExecutionTBB.h>
 
@@ -33,21 +37,25 @@
 #include <dax/exec/internal/IJKIndex.h>
 #include <boost/type_traits/remove_reference.hpp>
 
+
+//we provide an patched implementation of tbb parallel_sort
+//that fixes ADL for std::swap. This patch has been submitted to Intel
+//and should be included in future version of TBB.
+#include <dax/tbb/cont/internal/parallel_sort.h>
 #include <tbb/blocked_range.h>
 #include <tbb/blocked_range3d.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_scan.h>
-#include <tbb/parallel_sort.h>
 #include <tbb/partitioner.h>
 #include <tbb/tick_count.h>
 
+
 namespace dax {
 namespace cont {
-namespace internal {
 
 template<>
 struct DeviceAdapterAlgorithm<dax::tbb::cont::DeviceAdapterTagTBB> :
-    DeviceAdapterAlgorithmGeneral<
+    dax::cont::internal::DeviceAdapterAlgorithmGeneral<
         DeviceAdapterAlgorithm<dax::tbb::cont::DeviceAdapterTagTBB>,
         dax::tbb::cont::DeviceAdapterTagTBB>
 {
@@ -253,7 +261,7 @@ public:
   }
 
 private:
-template<class FunctorType>
+  template<class FunctorType>
   class ScheduleKernel
   {
   public:
@@ -323,6 +331,7 @@ public:
       }
   }
 
+private:
   template<class FunctorType>
   class ScheduleKernelId3
   {
@@ -375,6 +384,7 @@ public:
     dax::exec::internal::ErrorMessageBuffer ErrorMessage;
   };
 
+public:
   template<class FunctorType>
   DAX_CONT_EXPORT
   static void Schedule(FunctorType functor,
@@ -457,13 +467,13 @@ public:
   }
   DAX_CONT_EXPORT void Reset()
   {
-    dax::cont::internal::DeviceAdapterAlgorithm<
+    dax::cont::DeviceAdapterAlgorithm<
         dax::tbb::cont::DeviceAdapterTagTBB>::Synchronize();
     this->StartTime = ::tbb::tick_count::now();
   }
   DAX_CONT_EXPORT dax::Scalar GetElapsedTime()
   {
-    dax::cont::internal::DeviceAdapterAlgorithm<
+    dax::cont::DeviceAdapterAlgorithm<
         dax::tbb::cont::DeviceAdapterTagTBB>::Synchronize();
     ::tbb::tick_count currentTime = ::tbb::tick_count::now();
     ::tbb::tick_count::interval_t elapsedTime = currentTime - this->StartTime;
@@ -475,7 +485,6 @@ private:
 };
 
 }
-}
-} // namespace dax::cont::internal
+} // namespace dax::cont
 
 #endif //__dax_tbb_cont_internal_DeviceAdapterAlgorithmTBB_h

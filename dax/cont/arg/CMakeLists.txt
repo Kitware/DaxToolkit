@@ -20,8 +20,9 @@ set(headers
   ExecutionObject.h
   Field.h
   FieldArrayHandle.h
-  FieldArrayHandleConstantValue.h
+  FieldArrayHandleConstant.h
   FieldArrayHandleCounting.h
+  FieldArrayHandlePermutation.h
   FieldConstant.h
   FieldMap.h
   Geometry.h

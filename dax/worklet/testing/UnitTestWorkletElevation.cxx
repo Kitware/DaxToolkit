@@ -14,11 +14,8 @@
 //
 //=============================================================================
 
-#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
-
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/worklet/Elevation.h>
 
@@ -33,28 +30,27 @@
 
 namespace {
 
-const dax::Id DIM = 64;
+const dax::Id DIM = 8;
 
 //-----------------------------------------------------------------------------
 struct TestElevationWorklet
 {
   //----------------------------------------------------------------------------
   template<typename GridType>
+  DAX_CONT_EXPORT
   void operator()(const GridType&) const
   {
-  dax::cont::internal::TestGrid<GridType> grid(DIM);
+  dax::cont::testing::TestGrid<GridType> grid(DIM);
   dax::Id numPoints = grid->GetNumberOfPoints();
 
-  dax::cont::ArrayHandle<dax::Scalar,
-                         dax::cont::ArrayContainerControlTagBasic,
-                         dax::cont::DeviceAdapterTagSerial> elevationHandle;
+  dax::cont::ArrayHandle<dax::Scalar> elevationHandle;
 
   dax::Vector3 maxCoordinate = grid.GetPointCoordinates(numPoints-1);
   dax::Scalar scale = 0.5/dax::math::MagnitudeSquared(maxCoordinate);
 
   std::cout << "Running Elevation worklet" << std::endl;
   dax::worklet::Elevation elev(-1.0*maxCoordinate, maxCoordinate);
-  dax::cont::Scheduler<> scheduler;
+  dax::cont::Scheduler< > scheduler;
   scheduler.Invoke(elev,
                    grid->GetPointCoordinates(),
                    elevationHandle);
@@ -77,7 +73,7 @@ struct TestElevationWorklet
 //-----------------------------------------------------------------------------
 void TestElevation()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestElevationWorklet());
+  dax::cont::testing::GridTesting::TryAllGridTypes(TestElevationWorklet());
   }
 
 
@@ -87,5 +83,5 @@ void TestElevation()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletElevation(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestElevation);
+  return dax::cont::testing::Testing::Run(TestElevation);
 }

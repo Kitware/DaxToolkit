@@ -14,9 +14,6 @@
 //
 //=============================================================================
 
-#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
-
 #include <dax/worklet/Square.h>
 
 #include <dax/VectorTraits.h>
@@ -25,23 +22,24 @@
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <vector>
 
 namespace {
 
-const dax::Id DIM = 64;
+const dax::Id DIM = 8;
 
 //-----------------------------------------------------------------------------
-struct TestElevationWorklet
+struct TestSquareWorklet
 {
   //----------------------------------------------------------------------------
   template<typename GridType>
+  DAX_CONT_EXPORT
   void operator()(const GridType&) const
   {
-  dax::cont::internal::TestGrid<GridType> grid(DIM);
+  dax::cont::testing::TestGrid<GridType> grid(DIM);
   dax::Vector3 trueGradient = dax::make_Vector3(1.0, 1.0, 1.0);
 
   std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
@@ -52,16 +50,10 @@ struct TestElevationWorklet
     field[pointIndex]
         = dax::dot(grid->ComputePointCoordinates(pointIndex), trueGradient);
     }
-  dax::cont::ArrayHandle<dax::Scalar,
-                        dax::cont::ArrayContainerControlTagBasic,
-                        dax::cont::DeviceAdapterTagSerial> fieldHandle =
-      dax::cont::make_ArrayHandle(field,
-                                  dax::cont::ArrayContainerControlTagBasic(),
-                                  dax::cont::DeviceAdapterTagSerial());
+  dax::cont::ArrayHandle<dax::Scalar> fieldHandle =
+      dax::cont::make_ArrayHandle(field);
 
-  dax::cont::ArrayHandle<dax::Scalar,
-                        dax::cont::ArrayContainerControlTagBasic,
-                        dax::cont::DeviceAdapterTagSerial> squareHandle;
+  dax::cont::ArrayHandle<dax::Scalar> squareHandle;
 
   std::cout << "Running Square worklet" << std::endl;
   dax::cont::Scheduler<> scheduler;
@@ -86,12 +78,12 @@ struct TestElevationWorklet
 //-----------------------------------------------------------------------------
 static void TestSquare()
 {
-  dax::cont::internal::GridTesting::TryAllGridTypes(TestElevationWorklet());
+  dax::cont::testing::GridTesting::TryAllGridTypes(TestSquareWorklet());
 }
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
 int UnitTestWorkletSquare(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestSquare);
+  return dax::cont::testing::Testing::Run(TestSquare);
 }

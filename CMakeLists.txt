@@ -14,7 +14,7 @@
 ##
 ##=============================================================================
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.10)
 project (Dax)
 
 set(Dax_MAJOR_VERSION 0)
@@ -68,13 +68,6 @@ endif()
 
 if (DAX_ENABLE_DOXYGEN)
   add_subdirectory(Doxygen)
-endif()
-
-#-----------------------------------------------------------------------------
-# setup timing libs we need to link too
-set(DAX_TIMING_LIBS)
-if(UNIX AND NOT APPLE)
-  set(DAX_TIMING_LIBS rt)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -142,19 +135,41 @@ dax_install_headers(
 
 
 if (NOT DAX_DISABLE_KITS)
-
   # List of Boost features used:
   # * Smart Ptr
   # * Meta programming language
-  find_package(Boost ${Dax_REQUIRED_BOOST_VERSION} REQUIRED)
+  find_package(BoostHeaders ${Dax_REQUIRED_BOOST_VERSION} REQUIRED)
 
-#-----------------------------------------------------------------------------
-# Add subdirectories
-add_subdirectory(dax)
+  # Find OpenGL and GLEW, if both are found we can enable
+  # the OpenGL Interop support. We use
+  include(CMakeDependentOption)
 
-if (DAX_ENABLE_TESTING)
-  add_subdirectory(Benchmarks)
-endif (DAX_ENABLE_TESTING)
+  #enable Interop only if we have OpenGL and GLEW
+  find_package(OpenGL)
+  find_package(GLEW)
+  find_package(GLUT)
+
+  #dependent option reads, value to set, if condition is true, otherwise
+  #use last value
+  cmake_dependent_option(DAX_ENABLE_OPENGL_INTEROP
+                         "Enable OpenGL Interop will require GLEW"
+                         ON "OPENGL_FOUND;GLEW_FOUND" OFF)
+
+  #Only enable OpenGL Interop tests if we have Interop enabled
+  #and we have GLUT
+  #dependent option reads, value to set, if condition is true, otherwise
+  #use last value
+  CMAKE_DEPENDENT_OPTION(DAX_ENABLE_OPENGL_TESTS
+                         "Enable OpenGL Interop Render Window Tests"
+                         ON "DAX_ENABLE_OPENGL_INTEROP;GLUT_FOUND" OFF)
+
+  #-----------------------------------------------------------------------------
+  # Add subdirectories
+  add_subdirectory(dax)
+
+  if (DAX_ENABLE_TESTING)
+    add_subdirectory(Benchmarks)
+  endif (DAX_ENABLE_TESTING)
 
 endif(NOT DAX_DISABLE_KITS)
 
@@ -203,10 +218,20 @@ install(FILES ${Dax_SOURCE_DIR}/LICENSE.txt
 # Install helper configure files.
 install(
   FILES
+    ${Dax_SOURCE_DIR}/CMake/FindBoostHeaders.cmake
+    ${Dax_SOURCE_DIR}/CMake/FindGLEW.cmake
     ${Dax_SOURCE_DIR}/CMake/FindTBB.cmake
     ${Dax_SOURCE_DIR}/CMake/FindThrust.cmake
   DESTINATION ${Dax_INSTALL_CMAKE_MODULE_DIR}
   )
+# Install tool chain files.
+install(
+  FILES
+    ${Dax_SOURCE_DIR}/CMake/XeonPhiToolchain.cmake
+  DESTINATION ${Dax_INSTALL_CMAKE_MODULE_DIR}
+  )
+
+# Install Use files.
 install(
   FILES
     ${Dax_SOURCE_DIR}/CMake/UseDaxSerial.cmake

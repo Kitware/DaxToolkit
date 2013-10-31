@@ -19,7 +19,7 @@
 #include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/VectorOperations.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <algorithm>
 #include <vector>
@@ -164,12 +164,12 @@ struct TestFunctor
 
 void TestArrayManagerShare()
 {
-  dax::internal::Testing::TryAllTypes(TestFunctor());
+  dax::testing::Testing::TryAllTypes(TestFunctor());
 }
 
 } // Anonymous namespace
 
 int UnitTestArrayManagerExecutionShareWithControl(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestArrayManagerShare);
+  return dax::cont::testing::Testing::Run(TestArrayManagerShare);
 }

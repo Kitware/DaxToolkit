@@ -25,11 +25,9 @@
 
 #include <dax/cont/arg/ConceptMap.h>
 #include <dax/cont/arg/Topology.h>
-#include <dax/cont/internal/Bindings.h>
-#include <dax/cont/internal/FindBinding.h>
-#include <dax/cont/sig/Tag.h>
 
 #include <dax/exec/arg/ArgBase.h>
+#include <dax/exec/arg/BindInfo.h>
 #include <dax/exec/CellField.h>
 #include <dax/exec/CellVertices.h>
 #include <dax/exec/internal/IJKIndex.h>
@@ -44,7 +42,7 @@ class BindCellPoints : public dax::exec::arg::ArgBase< BindCellPoints<Invocation
 {
   typedef dax::exec::arg::ArgBaseTraits< BindCellPoints< Invocation, N > > Traits;
 
-  typedef typename Traits::TopoExecIndex TopoExecIndex;
+  enum{TopoIndex=Traits::TopoIndex};
   typedef typename Traits::TopoExecArgType TopoExecArgType;
   typedef typename Traits::ExecArgType ExecArgType;
   typedef typename TopoExecArgType::CellTag CellTag;
@@ -56,11 +54,13 @@ public:
   typedef typename Traits::SaveType SaveType;
 
   DAX_CONT_EXPORT BindCellPoints(dax::cont::internal::Bindings<Invocation>& bindings):
-    TopoExecArg(bindings.template Get<TopoExecIndex::value>().GetExecArg()),
-    ExecArg(bindings.template Get<N>().GetExecArg()),
+    TopoExecArg(dax::exec::arg::GetNthExecArg<TopoIndex>(bindings)),
+    ExecArg(dax::exec::arg::GetNthExecArg<N>(bindings)),
     Value(typename dax::VectorTraits<ValueType>::ComponentType()) {}
 
-  DAX_EXEC_EXPORT ReturnType GetValueForWriting()
+  template<typename IndexType>
+  DAX_EXEC_EXPORT ReturnType GetValueForWriting(const IndexType&,
+                            const dax::exec::internal::WorkletBase&)
     { return this->Value; }
 
   template<typename IndexType>
@@ -113,17 +113,15 @@ template <typename Invocation,  int N >
 struct ArgBaseTraits< BindCellPoints<Invocation, N> >
 {
 private:
-  typedef typename dax::cont::internal::Bindings<Invocation> BindingsType;
-  typedef typename dax::cont::internal::FindBinding<BindingsType, dax::cont::arg::Topology>::type TopoIndex;
-  typedef typename BindingsType::template GetType<TopoIndex::value>::type TopoControlBinding;
-
-  typedef typename dax::cont::internal::Bindings<Invocation>::template GetType<N>::type ControlBinding;
-  typedef typename dax::cont::arg::ConceptMapTraits<ControlBinding>::Tags Tags;
-
+  typedef typename dax::exec::arg::FindBindInfo<dax::cont::arg::Topology,
+                                               Invocation> TopoInfo;
+  typedef typename dax::exec::arg::BindInfo<N,Invocation> MyInfo;
+  typedef typename MyInfo::Tags Tags;
 public:
-  typedef TopoIndex TopoExecIndex;
-  typedef typename TopoControlBinding::ExecArg TopoExecArgType;
-  typedef typename ControlBinding::ExecArg ExecArgType;
+  enum{TopoIndex=TopoInfo::Index};
+
+  typedef typename TopoInfo::ExecArgType TopoExecArgType;
+  typedef typename MyInfo::ExecArgType ExecArgType;
 
   typedef typename ::boost::mpl::if_<typename Tags::template Has<dax::cont::sig::Out>,
                                    ::boost::true_type,

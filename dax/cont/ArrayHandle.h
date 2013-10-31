@@ -365,6 +365,23 @@ public:
     return this->Internals->ExecutionArray.GetPortalExecution();
   }
 
+protected:
+  /// Special constructor for subclass specializations that need to set the
+  /// initial state of the control and execution arrays.
+  ///
+  ArrayHandle(const ArrayContainerControlType &container,
+              bool controlArrayValid,
+              const ArrayTransferType &transfer,
+              bool executionArrayValid)
+    : Internals(new InternalStruct)
+  {
+    this->Internals->UserPortalValid = false;
+    this->Internals->ControlArray = container;
+    this->Internals->ControlArrayValid = controlArrayValid;
+    this->Internals->ExecutionArray = transfer;
+    this->Internals->ExecutionArrayValid = executionArrayValid;
+  }
+
 private:
   struct InternalStruct {
     PortalConstControl UserPortal;
@@ -493,8 +510,4 @@ make_ArrayHandle(const std::vector<T,Allocator> &array)
 }
 }
 
-//to simplify the user experience we bring in all different types of array
-//handles when you include array handle
-#include <dax/cont/ArrayHandleCounting.h>
-#include <dax/cont/ArrayHandleConstantValue.h>
 #endif //__dax_cont_ArrayHandle_h

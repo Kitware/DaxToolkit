@@ -15,15 +15,20 @@
 ##=============================================================================
 
 set(headers
+  ArrayManagerExecutionThrustDevice.h
   ArrayManagerExecutionThrustShare.h
   CheckThrustBackend.h
+  Copy.h
+  DeviceAdapterAlgorithmThrust.h
+  MakeThrustIterator.h
   )
 
-if(DAX_ENABLE_OPENMP)
-  list(APPEND headers
+dax_requires_thrust_to_test(
     ArrayManagerExecutionThrustDevice.h
+    CheckThrustBackend.h
+    Copy.h
     DeviceAdapterAlgorithmThrust.h
+    MakeThrustIterator.h
     )
-endif()
 
 dax_declare_headers(${headers})

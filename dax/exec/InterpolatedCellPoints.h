@@ -54,16 +54,7 @@ public:
   void SetInterpolationPoint( dax::Id index, dax::Id pos1, dax::Id pos2,
                               dax::Scalar weight )
     {
-    //cast the memory location from an id to a scalar.
-    //Not a static cast, but instead convert the actual
-    //memory layout from representing a IEEE float to a signed integer. This
-    //works since IEEE float standard states that each float value memory
-    //representation is a valid signed integer.
-    //We do this so that we don't have to worry about the conversion to float
-    //losing any data
-    (*this)[index]=dax::Vector3( *(reinterpret_cast<dax::Scalar*>(&pos1)),
-                                 *(reinterpret_cast<dax::Scalar*>(&pos2)),
-                                 weight);
+    (*this)[index]=dax::Vector3( pos1, pos2, weight);
     }
 };
 

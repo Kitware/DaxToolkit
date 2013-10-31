@@ -19,9 +19,7 @@
 #include <dax/Types.h>
 #include <dax/exec/VectorOperations.h>
 
-#include <dax/internal/testing/Testing.h>
-
-#include <boost/lambda/lambda.hpp>
+#include <dax/testing/Testing.h>
 
 //-----------------------------------------------------------------------------
 namespace {
@@ -296,8 +294,8 @@ void RunExpTests()
 {
   PowTest();
   Log2Test();
-  dax::internal::Testing::TryAllTypes(TestExpFunctor(),
-                                      dax::internal::Testing::TypeCheckReal());
+  dax::testing::Testing::TryAllTypes(TestExpFunctor(),
+                                      dax::testing::Testing::TypeCheckReal());
 }
 
 } // Anonymous namespace
@@ -305,5 +303,5 @@ void RunExpTests()
 //-----------------------------------------------------------------------------
 int UnitTestMathExp(int, char *[])
 {
-  return dax::internal::Testing::Run(RunExpTests);
+  return dax::testing::Testing::Run(RunExpTests);
 }

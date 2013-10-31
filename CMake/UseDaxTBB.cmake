@@ -26,7 +26,7 @@ endif (NOT Dax_TBB_FOUND)
 # Find the Boost library.
 if (Dax_TBB_FOUND)
   if(NOT Boost_FOUND)
-    find_package(Boost ${Dax_REQUIRED_BOOST_VERSION})
+    find_package(BoostHeaders ${Dax_REQUIRED_BOOST_VERSION})
   endif()
 
   if (NOT Boost_FOUND)
@@ -37,8 +37,6 @@ endif (Dax_TBB_FOUND)
 
 # Find TBB support.
 if (Dax_TBB_FOUND)
-  # FindTBB is not distributed with CMake, so find the one distributed
-  # with Dax.
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Dax_CMAKE_MODULE_PATH})
 
   find_package(TBB)
@@ -51,12 +49,15 @@ endif (Dax_TBB_FOUND)
 
 # Set up all these dependent packages (if they were all found).
 if (Dax_TBB_FOUND)
+  #we create a target to link to for TBB which brings
+  #in the correct include directories
+
   include_directories(
     ${Boost_INCLUDE_DIRS}
     ${TBB_INCLUDE_DIRS}
     ${Dax_INCLUDE_DIRS}
     )
-  link_libraries(${TBB_LIBRARIES})
+
 
   set(Dax_TBB_initialize_complete TRUE)
 endif (Dax_TBB_FOUND)

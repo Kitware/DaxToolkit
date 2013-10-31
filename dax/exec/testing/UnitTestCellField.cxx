@@ -20,7 +20,7 @@
 
 #include <dax/exec/internal/testing/TestingTopologyGenerator.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 #include <dax/testing/VectorTraitsTests.h>
 
 #include <boost/mpl/if.hpp>
@@ -259,7 +259,7 @@ struct TestCellFieldFunctor
   void operator()(const TopologyGenType &)
   {
     typedef typename TopologyGenType::CellTag CellTag;
-    dax::internal::Testing::TryAllTypes(TestCellFieldFunctorType<CellTag>());
+    dax::testing::Testing::TryAllTypes(TestCellFieldFunctorType<CellTag>());
   }
 };
 
@@ -272,5 +272,5 @@ void TestCellField()
 
 int UnitTestCellField(int, char *[])
 {
-  return dax::internal::Testing::Run(TestCellField);
+  return dax::testing::Testing::Run(TestCellField);
 }

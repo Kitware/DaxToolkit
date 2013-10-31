@@ -20,7 +20,7 @@
 
 #include <dax/TypeTraits.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 #include <boost/type_traits/remove_const.hpp>
 

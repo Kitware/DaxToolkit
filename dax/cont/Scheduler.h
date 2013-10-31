@@ -26,7 +26,9 @@
 #include <dax/cont/scheduling/SchedulerDefault.h>
 #include <dax/cont/scheduling/SchedulerCells.h>
 #include <dax/cont/scheduling/SchedulerGenerateInterpolatedCells.h>
+#include <dax/cont/scheduling/SchedulerGenerateKeysValues.h>
 #include <dax/cont/scheduling/SchedulerGenerateTopology.h>
+#include <dax/cont/scheduling/SchedulerReduceKeysValues.h>
 #include <dax/cont/PermutationContainer.h>
 
 #if !(__cplusplus >= 201103L)

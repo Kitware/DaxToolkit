@@ -16,9 +16,11 @@
 
 set(headers
   ArgBase.h
-  BindCellTag.h
   BindCellPoints.h
+  BindCellTag.h
   BindDirect.h
+  BindInfo.h
+  BindKeyGroup.h
   BindPermutedCellField.h
   BindWorkId.h
   FieldConstant.h

@@ -14,13 +14,8 @@
 //
 //=============================================================================
 
-// These macros help tease out when the default template arguments to
-// ArrayHandle are inappropriately used.
-#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
-
-#include <dax/cont/internal/testing/TestingGridGenerator.h>
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/TestingGridGenerator.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/worklet/PointDataToCellData.h>
 
@@ -34,12 +29,13 @@
 
 namespace {
 
-const dax::Id DIM = 64;
+const dax::Id DIM = 8;
 
 //-----------------------------------------------------------------------------
 template<typename CellTag>
-void verifyCellData(const dax::exec::CellVertices<CellTag> &cellVertices,
-                    const dax::Scalar& computedCellData)
+void verifyCellData(
+              const dax::cont::testing::CellConnections<CellTag> &cellVertices,
+              const dax::Scalar& computedCellData)
 {
   dax::Scalar expectedCellData = 0.0;
   for (int vertexIndex = 0;
@@ -57,13 +53,10 @@ struct TestPointDataToCellDataWorklet
 {
   //----------------------------------------------------------------------------
   template<typename GridType>
+  DAX_CONT_EXPORT
   void operator()(const GridType&) const
     {
-    dax::cont::internal::TestGrid<
-        GridType,
-        dax::cont::ArrayContainerControlTagBasic,
-        dax::cont::DeviceAdapterTagSerial> grid(DIM);
-
+    dax::cont::testing::TestGrid< GridType > grid(DIM);
 
     std::vector<dax::Scalar> field(grid->GetNumberOfPoints());
     for (dax::Id pointIndex = 0;
@@ -73,16 +66,10 @@ struct TestPointDataToCellDataWorklet
       field[pointIndex] = pointIndex;
       }
 
-    dax::cont::ArrayHandle<dax::Scalar,
-      dax::cont::ArrayContainerControlTagBasic,
-      dax::cont::DeviceAdapterTagSerial> fieldHandle =
-        dax::cont::make_ArrayHandle(field,
-                                    dax::cont::ArrayContainerControlTagBasic(),
-                                    dax::cont::DeviceAdapterTagSerial());
+    dax::cont::ArrayHandle<dax::Scalar> fieldHandle =
+        dax::cont::make_ArrayHandle(field);
 
-    dax::cont::ArrayHandle<dax::Scalar,
-        dax::cont::ArrayContainerControlTagBasic,
-        dax::cont::DeviceAdapterTagSerial> resultHandle;
+    dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
     std::cout << "Running PointDataToCellData worklet" << std::endl;
     dax::cont::Scheduler<> scheduler;
@@ -107,10 +94,8 @@ struct TestPointDataToCellDataWorklet
 //-----------------------------------------------------------------------------
 void TestPointDataToCellData()
   {
-  dax::cont::internal::GridTesting::TryAllGridTypes(
-        TestPointDataToCellDataWorklet(),
-        dax::cont::ArrayContainerControlTagBasic(),
-        dax::cont::DeviceAdapterTagSerial());
+  dax::cont::testing::GridTesting::TryAllGridTypes(
+                                           TestPointDataToCellDataWorklet() );
   }
 
 
@@ -119,5 +104,5 @@ void TestPointDataToCellData()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletPointDataToCellData(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestPointDataToCellData);
+  return dax::cont::testing::Testing::Run(TestPointDataToCellData);
 }

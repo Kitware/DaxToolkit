@@ -25,13 +25,13 @@
 #include <dax/cont/Scheduler.h>
 #include <dax/cont/UniformGrid.h>
 
-#include <dax/cont/internal/testing/Testing.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <vector>
 
 namespace {
 
-const dax::Id DIM = 64;
+const dax::Id DIM = 8;
 
 //-----------------------------------------------------------------------------
 static void TestFieldMapError()
@@ -44,7 +44,8 @@ static void TestFieldMapError()
   bool gotError = false;
   try
     {
-    dax::cont::Scheduler<>().Invoke(dax::worklet::testing::FieldMapError(),arrayHandle);
+    dax::cont::Scheduler< >().Invoke(dax::worklet::testing::FieldMapError(),
+                                     arrayHandle);
     }
   catch (dax::cont::ErrorExecution error)
     {
@@ -61,5 +62,5 @@ static void TestFieldMapError()
 //-----------------------------------------------------------------------------
 int UnitTestWorkletMapFieldError(int, char *[])
 {
-  return dax::cont::internal::Testing::Run(TestFieldMapError);
+  return dax::cont::testing::Testing::Run(TestFieldMapError);
 }

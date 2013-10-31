@@ -20,10 +20,8 @@
 #else // !defined(DAX_DOXYGEN_ONLY)
 
 #include <dax/Types.h>
-#include <dax/cont/internal/Bindings.h>
-
+#include <dax/exec/arg/BindInfo.h>
 #include <dax/exec/internal/WorkletBase.h>
-
 #include <boost/utility/enable_if.hpp>
 
 namespace dax { namespace exec { namespace arg {
@@ -31,16 +29,16 @@ namespace dax { namespace exec { namespace arg {
 template <typename Invocation, int N>
 class BindDirect
 {
-  typedef dax::cont::internal::Bindings<Invocation> AllControlBindings;
-  typedef typename AllControlBindings::template GetType<N>::type MyControlBinding;
-  typedef typename MyControlBinding::ExecArg ExecArgType;
-  typedef typename dax::cont::arg::ConceptMapTraits<MyControlBinding>::Tags Tags;
+  typedef dax::exec::arg::BindInfo<N,Invocation> MyInfo;
+  typedef typename MyInfo::AllControlBindings AllControlBindings;
+  typedef typename MyInfo::ExecArgType ExecArgType;
+  typedef typename MyInfo::Tags Tags;
   ExecArgType ExecArg;
 public:
   typedef typename ExecArgType::ReturnType ReturnType;
 
   DAX_CONT_EXPORT BindDirect(AllControlBindings& bindings):
-    ExecArg(bindings.template Get<N>().GetExecArg()) {}
+    ExecArg(dax::exec::arg::GetNthExecArg<N>(bindings)) {}
 
   template<typename IndexType>
   DAX_EXEC_EXPORT ReturnType operator()(const IndexType& id,

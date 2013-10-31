@@ -20,7 +20,7 @@
 
 #include <dax/exec/internal/testing/TestingTopologyGenerator.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 #include <dax/testing/VectorTraitsTests.h>
 
 #include <boost/mpl/if.hpp>
@@ -212,5 +212,5 @@ void TestCellVertices()
 
 int UnitTestCellVertices(int, char *[])
 {
-  return dax::internal::Testing::Run(TestCellVertices);
+  return dax::testing::Testing::Run(TestCellVertices);
 }

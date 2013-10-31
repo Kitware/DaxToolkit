@@ -19,7 +19,7 @@
 #include <dax/exec/VectorOperations.h>
 #include <dax/math/Exp.h>
 
-#include <dax/internal/testing/Testing.h>
+#include <dax/testing/Testing.h>
 
 namespace {
 
@@ -147,13 +147,13 @@ void TestTrig()
 {
   TestPi();
   TestArcTan2();
-  dax::internal::Testing::TryAllTypes(TestTrigFunctor(),
-                                      dax::internal::Testing::TypeCheckReal());
+  dax::testing::Testing::TryAllTypes(TestTrigFunctor(),
+                                      dax::testing::Testing::TypeCheckReal());
 }
 
 } // anonymous namespace
 
 int UnitTestMathTrig(int, char *[])
 {
-  return dax::internal::Testing::Run(TestTrig);
+  return dax::testing::Testing::Run(TestTrig);
 }
