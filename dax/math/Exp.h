@@ -224,7 +224,7 @@ DAX_EXEC_CONT_EXPORT dax::Scalar Log2(dax::Scalar x) {
 #ifdef _WIN32
   //windows and boost don't provide log2
   //0.6931471805599453 is the constant value of log(2)
-  const dax::Scalar log2v(0.6931471805599453f);
+  const dax::Scalar log2v(0.6931471805599453);
   return dax::math::Log( x ) / log2v;
 #else
   return DAX_SYS_MATH_FUNCTION(log2)(x);
