@@ -25,8 +25,8 @@
 #ifndef __dax_internal_Configure32_h
 #define __dax_internal_Configure32_h
 
-#undef DAX_USE_DOUBLE_PRECISION
-#undef DAX_USE_64BIT_IDS
+#define DAX_NO_DOUBLE_PRECISION
+#define DAX_NO_64BIT_IDS
 
 #include <dax/internal/Configure.h>
 
