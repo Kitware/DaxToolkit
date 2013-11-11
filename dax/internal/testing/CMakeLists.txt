@@ -15,6 +15,8 @@
 ##=============================================================================
 
 set(unit_tests
+  UnitTestConfigureFor32.cxx
+  UnitTestConfigureFor64.cxx
   UnitTestGetNthType.cxx
   UnitTestMembers.cxx
   UnitTestTags.cxx
