@@ -19,6 +19,7 @@
 #include <dax/thrust/cont/internal/CheckThrustBackend.h>
 
 #include <dax/cont/ArrayContainerControl.h>
+#include <dax/cont/ErrorControlOutOfMemory.h>
 
 #include <dax/exec/internal/ArrayPortalFromIterators.h>
 
@@ -86,8 +87,15 @@ public:
   template<class PortalControl>
   DAX_CONT_EXPORT void LoadDataForInput(PortalControl arrayPortal)
   {
-    this->Array.assign(arrayPortal.GetIteratorBegin(),
-                       arrayPortal.GetIteratorEnd());
+    try
+      {
+      this->Array.assign(arrayPortal.GetIteratorBegin(),
+                         arrayPortal.GetIteratorEnd());
+      }
+    catch (std::bad_alloc error)
+      {
+      throw dax::cont::ErrorControlOutOfMemory(error.what());
+      }
   }
 
   /// Allocates the appropriate size of the array and copies the given data
@@ -104,9 +112,16 @@ public:
       ContainerType &daxNotUsed(container),
       dax::Id numberOfValues)
   {
-    // This call is a bit wasteful in that it sets all the values of the
-    // array to the default value.
-    this->Array.resize(numberOfValues);
+    try
+      {
+      // This call is a bit wasteful in that it sets all the values of the
+      // array to the default value.
+      this->Array.resize(numberOfValues);
+      }
+    catch (std::bad_alloc error)
+      {
+      throw dax::cont::ErrorControlOutOfMemory(error.what());
+      }
   }
 
   /// Copies the data currently in the device array into the given iterators.

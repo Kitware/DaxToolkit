@@ -17,12 +17,20 @@
 #define __dax_internal_Configure_h
 
 
-#ifndef DAX_USE_DOUBLE_PRECISION
+#if !defined(DAX_USE_DOUBLE_PRECISION) && !defined(DAX_NO_DOUBLE_PRECISION)
 #cmakedefine DAX_USE_DOUBLE_PRECISION
 #endif
 
-#ifndef DAX_USE_64BIT_IDS
+#if defined(DAX_USE_DOUBLE_PRECISION) && defined(DAX_NO_DOUBLE_PRECISION)
+# error Both DAX_USE_DOUBLE_PRECISION and DAX_NO_DOUBLE_PRECISION defined.  Do not know what to do.
+#endif
+
+#if !defined(DAX_USE_64BIT_IDS) && !defined(DAX_NO_64BIT_IDS)
 #cmakedefine DAX_USE_64BIT_IDS
+#endif
+
+#if defined(DAX_USE_64BIT_IDS) && defined(DAX_NO_64BIT_IDS)
+# error Both DAX_USE_64BIT_IDS and DAX_NO_64BIT_IDS defined.  Do not know what to do.
 #endif
 
 #define DAX_SIZE_FLOAT @DAX_SIZE_FLOAT@
