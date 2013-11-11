@@ -85,7 +85,7 @@ int main(int argc, char **argv)
   double time = launchBlackScholes(stockPrice, optionStrike, optionYears,
                                   callResult, putResult);
   //Both call and put is calculated
-  printf("Options count             : %i     \n", 2 * OPT_N);
+  printf("Options count             : %i     \n", static_cast<int>(2 * OPT_N));
   printf("\tBlackScholes() time    : %f sec\n", time);
   printf("Effective memory bandwidth: %f GB/s\n",
         ((double)(5 * OPT_N * sizeof(dax::Scalar)) * 1E-9) / time);
