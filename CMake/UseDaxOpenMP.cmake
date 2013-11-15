@@ -59,7 +59,7 @@ endif (Dax_OpenMP_FOUND)
 if (Dax_OpenMP_FOUND)
   include_directories(
     ${Boost_INCLUDE_DIRS}
-    ${THRUST_INCLUDE_DIR}
+    ${THRUST_INCLUDE_DIRS}
     ${Dax_INCLUDE_DIRS}
     )
 
