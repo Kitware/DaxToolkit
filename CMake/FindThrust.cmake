@@ -36,7 +36,6 @@ find_path( THRUST_INCLUDE_DIR
   )
 if( THRUST_INCLUDE_DIR )
   list( REMOVE_DUPLICATES THRUST_INCLUDE_DIR )
-  include_directories( ${THRUST_INCLUDE_DIR} )
 endif( THRUST_INCLUDE_DIR )
 
 # Find thrust version
@@ -65,3 +64,6 @@ find_package_handle_standard_args( Thrust
   REQUIRED_VARS THRUST_INCLUDE_DIR
   VERSION_VAR THRUST_VERSION
   )
+
+set(THRUST_INCLUDE_DIRS ${THRUST_INCLUDE_DIR})
+mark_as_advanced(THRUST_INCLUDE_DIR)

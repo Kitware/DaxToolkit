@@ -19,7 +19,7 @@ set(headers
   )
 
 #-----------------------------------------------------------------------------
-include_directories(${THRUST_INCLUDE_DIR})
+include_directories(${THRUST_INCLUDE_DIRS})
 
 add_subdirectory(internal)
 
