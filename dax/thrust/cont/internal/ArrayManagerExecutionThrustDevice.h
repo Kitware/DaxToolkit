@@ -17,6 +17,7 @@
 #define __dax_thrust_cont_internal_ArrayManagerExecutionThrustDevice_h
 
 #include <dax/thrust/cont/internal/CheckThrustBackend.h>
+#include <dax/thrust/cont/internal/UninitializedAllocator.h>
 
 #include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/ErrorControlOutOfMemory.h>
@@ -60,6 +61,7 @@ namespace internal {
 /// as an OpenMP or TBB backend), then the device adapter should just use
 /// ArrayManagerExecutionThrustShare.
 ///
+
 template<typename T, class ArrayContainerControlTag>
 class ArrayManagerExecutionThrustDevice
 {
@@ -114,8 +116,6 @@ public:
   {
     try
       {
-      // This call is a bit wasteful in that it sets all the values of the
-      // array to the default value.
       this->Array.resize(numberOfValues);
       }
     catch (std::bad_alloc error)
@@ -180,7 +180,8 @@ private:
   void operator=(
       ArrayManagerExecutionThrustDevice<T, ArrayContainerControlTag> &);
 
-  ::thrust::device_vector<ValueType> Array;
+  ::thrust::device_vector<ValueType,
+      dax::thrust::cont::internal::UninitializedAllocator<ValueType> > Array;
 };
 
 }
