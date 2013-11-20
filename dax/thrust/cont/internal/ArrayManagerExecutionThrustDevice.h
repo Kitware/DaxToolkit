@@ -173,29 +173,6 @@ public:
     this->Array.shrink_to_fit();
   }
 
-  // These features are expected by thrust device adapters to run thrust
-  // algorithms (see DeviceAdapterAlgorithmThrust.h).
-
-  typedef ::thrust::device_ptr<ValueType> ThrustIteratorType;
-  typedef ::thrust::device_ptr<const ValueType> ThrustIteratorConstType;
-
-  DAX_CONT_EXPORT static ThrustIteratorType
-  ThrustIteratorBegin(PortalType portal) {
-    return ::thrust::device_ptr<ValueType>(portal.GetIteratorBegin());
-  }
-  DAX_CONT_EXPORT static ThrustIteratorType
-  ThrustIteratorEnd(PortalType portal) {
-    return ::thrust::device_ptr<ValueType>(portal.GetIteratorEnd());
-  }
-  DAX_CONT_EXPORT static ThrustIteratorConstType
-  ThrustIteratorBegin(PortalConstType portal) {
-    return ::thrust::device_ptr<const ValueType>(portal.GetIteratorBegin());
-  }
-  DAX_CONT_EXPORT static ThrustIteratorConstType
-  ThrustIteratorEnd(PortalConstType portal) {
-    return ::thrust::device_ptr<const ValueType>(portal.GetIteratorEnd());
-  }
-
 private:
   // Not implemented
   ArrayManagerExecutionThrustDevice(

@@ -43,9 +43,6 @@ public:
   typedef typename Superclass::PortalType PortalType;
   typedef typename Superclass::PortalConstType PortalConstType;
 
-  typedef typename Superclass::ThrustIteratorType ThrustIteratorType;
-  typedef typename Superclass::ThrustIteratorConstType ThrustIteratorConstType;
-
   template<class PortalControl>
   DAX_CONT_EXPORT void LoadDataForInput(PortalControl arrayPortal)
   {

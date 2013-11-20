@@ -42,9 +42,6 @@ public:
   typedef typename Superclass::ValueType ValueType;
   typedef typename Superclass::PortalType PortalType;
   typedef typename Superclass::PortalConstType PortalConstType;
-
-  typedef typename Superclass::ThrustIteratorType ThrustIteratorType;
-  typedef typename Superclass::ThrustIteratorConstType ThrustIteratorConstType;
 };
 
 }
