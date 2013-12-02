@@ -17,7 +17,6 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 
-#include <dax/cont/internal/ArrayContainerControlConstant.h>
 #include <dax/cont/ArrayHandleConstant.h>
 
 #include <dax/cont/testing/Testing.h>
@@ -32,9 +31,10 @@ struct TemplatedTests
   typedef dax::cont::ArrayHandleConstant<ValueType> ArrayHandleType;
 
   typedef dax::cont::ArrayHandle<ValueType,
-    dax::cont::internal::ArrayContainerControlTagConstant> ArrayHandleType2;
+    typename dax::cont::internal::ArrayHandleConstantTraits<ValueType>::Tag>
+  ArrayHandleType2;
 
-  typedef typename ArrayHandleType2::PortalConstControl PortalType;
+  typedef typename ArrayHandleType::PortalConstControl PortalType;
 
   void operator()(const ValueType constantValue) const
   {

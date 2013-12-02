@@ -18,8 +18,8 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ArrayHandleConstant.h>
+#include <dax/cont/ArrayHandleCounting.h>
 #include <dax/cont/ArrayContainerControlBasic.h>
-#include <dax/cont/internal/ArrayContainerControlCounting.h>
 #include <dax/cont/internal/ArrayHandleZip.h>
 
 #include <dax/Functional.h>
@@ -761,12 +761,19 @@ public:
       const dax::cont::ArrayHandle<T,CStencil,DeviceAdapterTag> &stencil,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &output)
   {
-    typedef dax::cont::ArrayHandle< dax::Id,
-                    dax::cont::internal::ArrayContainerControlTagCounting,
-                    DeviceAdapterTag> CountingHandleType;
-    typedef dax::cont::internal::ArrayPortalCounting<dax::Id> CountingPortal;
+    DerivedAlgorithm::StreamCompact(
+          dax::cont::make_ArrayHandleCounting(dax::Id(0),
+                                              stencil.GetNumberOfValues(),
+                                              DeviceAdapterTag()),
+          stencil,
+          output);
+    typedef dax::cont::ArrayHandleCounting<dax::Id,DeviceAdapterTag>
+        CountingHandleType;
 
-    CountingHandleType input( CountingPortal(0,stencil.GetNumberOfValues()) );
+    CountingHandleType input =
+        dax::cont::make_ArrayHandleCounting(dax::Id(0),
+                                            stencil.GetNumberOfValues(),
+                                            DeviceAdapterTag());
     DerivedAlgorithm::StreamCompact(input, stencil, output);
   }
 
