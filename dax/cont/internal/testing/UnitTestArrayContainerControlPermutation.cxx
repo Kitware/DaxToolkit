@@ -17,7 +17,6 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_ERROR
 #include <dax/cont/ArrayContainerControlBasic.h>
 
-#include <dax/cont/internal/ArrayContainerControlCounting.h>
 #include <dax/cont/internal/ArrayContainerControlPermutation.h>
 #include <dax/cont/internal/ArrayPortalFromIterators.h>
 

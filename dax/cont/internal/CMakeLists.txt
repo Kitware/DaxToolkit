@@ -15,8 +15,6 @@
 ##=============================================================================
 
 set(headers
-  ArrayContainerControlConstant.h
-  ArrayContainerControlCounting.h
   ArrayContainerControlError.h
   ArrayContainerControlPermutation.h
   ArrayContainerControlZip.h

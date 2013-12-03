@@ -16,7 +16,6 @@
 
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
-#include <dax/cont/internal/ArrayContainerControlCounting.h>
 #include <dax/cont/ArrayHandleCounting.h>
 
 #include <dax/cont/testing/Testing.h>
@@ -57,9 +56,10 @@ struct TemplatedTests
   typedef dax::cont::ArrayHandleCounting<ValueType> ArrayHandleType;
 
   typedef dax::cont::ArrayHandle<ValueType,
-    dax::cont::internal::ArrayContainerControlTagCounting> ArrayHandleType2;
+    typename dax::cont::internal::ArrayHandleCountingTraits<ValueType>::Tag>
+  ArrayHandleType2;
 
-  typedef typename ArrayHandleType2::PortalConstControl PortalType;
+  typedef typename ArrayHandleType::PortalConstControl PortalType;
 
   void operator()( const ValueType startingValue )
   {
