@@ -103,9 +103,10 @@ public:
   /// Allocates the appropriate size of the array and copies the given data
   /// into the array.
   ///
-  DAX_CONT_EXPORT void LoadDataForInPlace(ContainerType &controlArray)
+  template<class PortalControl>
+  DAX_CONT_EXPORT void LoadDataForInPlace(PortalControl arrayPortal)
   {
-    this->LoadDataForInput(controlArray.GetPortalConst());
+    this->LoadDataForInput(arrayPortal);
   }
 
   /// Allocates the array to the given size.

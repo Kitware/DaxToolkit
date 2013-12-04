@@ -307,7 +307,7 @@ public:
   }
 
   DAX_CONT_EXPORT
-  void LoadDataForInPlace(ContainerType &daxNotUsed(controlArray)) {
+  void LoadDataForInPlace(PortalControl daxNotUsed(portal)) {
     // Assuming controlArray uses the same first and second arrays as this.
     this->ExecutionPortal = PortalExecution(
                               this->FirstArray.PrepareForInput(),

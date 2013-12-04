@@ -97,7 +97,7 @@ struct TemplatedTests
     SetContainer(controlArray, INPUT_VALUE);
 
     ArrayManagerType executionArray;
-    executionArray.LoadDataForInPlace(controlArray);
+    executionArray.LoadDataForInPlace(controlArray.GetPortal());
 
     // Although the ArrayManagerExecutionShareWithControl class wraps the
     // control array portal in a different array portal, it should still
