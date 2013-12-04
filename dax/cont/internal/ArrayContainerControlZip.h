@@ -287,6 +287,7 @@ public:
 
   DAX_CONT_EXPORT
   dax::Id GetNumberOfValues() const {
+    DAX_ASSERT_CONT(this->ArraysValid);
     DAX_ASSERT_CONT(this->FirstArray.GetNumberOfValues()
                     == this->SecondArray.GetNumberOfValues());
     return this->FirstArray.GetNumberOfValues();
@@ -298,6 +299,7 @@ public:
     // a portal zipping the data already in the two arrays. (That is, assumes
     // that a user portal was not given directly the the zipped array handle.)
     // It would be good to check that, but how?
+    DAX_ASSERT_CONT(this->ArraysValid);
     this->ExecutionPortalConst = PortalConstExecution(
                                    this->FirstArray.PrepareForInput(),
                                    this->SecondArray.PrepareForInput());
@@ -307,7 +309,8 @@ public:
 
   DAX_CONT_EXPORT
   void LoadDataForInPlace(PortalControl daxNotUsed(portal)) {
-    // Assuming controlArray uses the same first and second arrays as this.
+    // Assuming portal uses the same first and second arrays as this.
+    DAX_ASSERT_CONT(this->ArraysValid);
     this->ExecutionPortal = PortalExecution(
                               this->FirstArray.PrepareForInPlace(),
                               this->SecondArray.PrepareForInPlace());
@@ -321,6 +324,7 @@ public:
   void AllocateArrayForOutput(ContainerType &daxNotUsed(controlArray),
                               dax::Id numberOfValues) {
     // Assuming controlArray uses the same first and second arrays as this.
+    DAX_ASSERT_CONT(this->ArraysValid);
     this->ExecutionPortal
         = PortalExecution(this->FirstArray.PrepareForOutput(numberOfValues),
                           this->SecondArray.PrepareForOutput(numberOfValues));
@@ -349,6 +353,7 @@ public:
 
   DAX_CONT_EXPORT
   void Shrink(dax::Id numberOfValues) {
+    DAX_ASSERT_CONT(this->ArraysValid);
     this->FirstArray.Shrink(numberOfValues);
     this->SecondArray.Shrink(numberOfValues);
   }
@@ -367,8 +372,11 @@ public:
 
   DAX_CONT_EXPORT
   void ReleaseResources() {
+    DAX_ASSERT_CONT(this->ArraysValid);
     this->FirstArray.ReleaseResourcesExecution();
     this->SecondArray.ReleaseResourcesExecution();
+    this->ExecutionPortalValid = false;
+    this->ExecutionPortalConstValid = false;
   }
 
 private:
