@@ -87,7 +87,7 @@ public:
   /// this method may save the iterators of the container to be returned in the
   /// \c GetPortal* methods.
   ///
-  DAX_CONT_EXPORT void LoadDataForInPlace(ContainerType &controlArray);
+  DAX_CONT_EXPORT void LoadDataForInPlace(PortalType portal);
 
   /// Allocates an array in the execution environment of the specified size.
   /// If control and execution share arrays, then this class can allocate
