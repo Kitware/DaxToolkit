@@ -279,27 +279,27 @@ private:
     DAX_EXEC_EXPORT
     void operator()(const ::tbb::blocked_range<dax::Id> &range) const {
       // The TBB device adapter causes array classes to be shared between
-      // control and execution environment. This means that it is possible for an
-      // exception to be thrown even though this is typically not allowed.
+      // control and execution environment. This means that it is possible for
+      // an exception to be thrown even though this is typically not allowed.
       // Throwing an exception from here is bad because there are several
       // simultaneous threads running. Get around the problem by catching the
       // error and setting the message buffer as expected.
       try
-      {
-      for (dax::Id index = range.begin(); index < range.end(); index++)
         {
-        this->Functor(index);
+        for (dax::Id index = range.begin(); index < range.end(); index++)
+          {
+          this->Functor(index);
+          }
         }
-      }
       catch (dax::cont::Error error)
-      {
+        {
         this->ErrorMessage.RaiseError(error.GetMessage().c_str());
-      }
+        }
       catch (...)
-      {
-      this->ErrorMessage.RaiseError(
+        {
+        this->ErrorMessage.RaiseError(
             "Unexpected error in execution environment.");
-      }
+        }
     }
   private:
     FunctorType Functor;
@@ -317,9 +317,8 @@ public:
     dax::exec::internal::ErrorMessageBuffer
         errorMessage(errorString, MESSAGE_SIZE);
 
-    functor.SetErrorMessageBuffer(errorMessage);
-
     ScheduleKernel<FunctorType> kernel(functor);
+    kernel.SetErrorMessageBuffer(errorMessage);
 
     ::tbb::blocked_range<dax::Id> range(0, numInstances, TBB_GRAIN_SIZE);
 
@@ -352,31 +351,31 @@ private:
     DAX_EXEC_EXPORT
     void operator()(const ::tbb::blocked_range3d<dax::Id> &range) const {
       try
-      {
-      dax::exec::internal::IJKIndex index(this->Dims);
-      for( dax::Id k=range.pages().begin(); k!=range.pages().end(); ++k)
         {
-        index.SetK(k);
-        for( dax::Id j=range.rows().begin(); j!=range.rows().end(); ++j)
+        dax::exec::internal::IJKIndex index(this->Dims);
+        for( dax::Id k=range.pages().begin(); k!=range.pages().end(); ++k)
           {
-          index.SetJ(j);
-          for( dax::Id i=range.cols().begin(); i!=range.cols().end(); ++i)
+          index.SetK(k);
+          for( dax::Id j=range.rows().begin(); j!=range.rows().end(); ++j)
             {
-            index.SetI(i);
-            this->Functor(index);
+            index.SetJ(j);
+            for( dax::Id i=range.cols().begin(); i!=range.cols().end(); ++i)
+              {
+              index.SetI(i);
+              this->Functor(index);
+              }
             }
           }
         }
-      }
       catch (dax::cont::Error error)
-      {
+        {
         this->ErrorMessage.RaiseError(error.GetMessage().c_str());
-      }
+        }
       catch (...)
-      {
-      this->ErrorMessage.RaiseError(
+        {
+        this->ErrorMessage.RaiseError(
             "Unexpected error in execution environment.");
-      }
+        }
     }
   private:
     FunctorType Functor;
@@ -397,8 +396,6 @@ public:
     dax::exec::internal::ErrorMessageBuffer
         errorMessage(errorString, MESSAGE_SIZE);
 
-    functor.SetErrorMessageBuffer(errorMessage);
-
     //memory is generally setup in a way that iterating the first range
     //in the tightest loop has the best cache coherence.
     ::tbb::blocked_range3d<dax::Id> range(0, rangeMax[2],
@@ -406,6 +403,8 @@ public:
                                           0, rangeMax[0]);
 
     ScheduleKernelId3<FunctorType> kernel(functor,rangeMax);
+    kernel.SetErrorMessageBuffer(errorMessage);
+
     ::tbb::parallel_for(range, kernel);
 
     if (errorMessage.IsErrorRaised())
