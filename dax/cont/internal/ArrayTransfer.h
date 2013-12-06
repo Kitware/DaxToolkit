@@ -74,8 +74,8 @@ public:
 
   /// Allocates a large enough array in the execution environment and copies
   /// the given data to that array. The allocated array can later be accessed
-  /// via the GetPortal method. If control and execution share arrays, then
-  /// this method may save the iterators to be returned in the \c
+  /// via the GetPortalConstExecution method. If control and execution share
+  /// arrays, then this method may save the iterators to be returned in the \c
   /// GetPortalConst methods.
   ///
   DAX_CONT_EXPORT void LoadDataForInput(PortalConstControl portal)
@@ -85,9 +85,9 @@ public:
 
   /// Allocates a large enough array in the execution environment and copies
   /// the given data to that array. The allocated array can later be accessed
-  /// via the GetPortal method. If control and execution share arrays, then
-  /// this method may save the iterators of the container to be returned in the
-  /// \c GetPortal* methods.
+  /// via the GetPortalExection method. If control and execution share arrays,
+  /// then this method may save the iterators of the container to be returned
+  /// in the \c GetPortal* methods.
   ///
   DAX_CONT_EXPORT void LoadDataForInPlace(PortalControl portal)
   {

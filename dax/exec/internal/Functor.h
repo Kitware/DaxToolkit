@@ -176,7 +176,7 @@ public:
   DAX_CONT_EXPORT
   Functor(WorkletType worklet, BindingsType& args): derived(worklet, args) {}
   DAX_CONT_EXPORT void SetErrorMessageBuffer(
-      dax::exec::internal::ErrorMessageBuffer &errorBuffer) {
+      const dax::exec::internal::ErrorMessageBuffer &errorBuffer) {
     this->Worklet.SetErrorMessageBuffer(errorBuffer);
   }
 };
