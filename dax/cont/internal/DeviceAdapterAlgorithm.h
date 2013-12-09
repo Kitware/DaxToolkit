@@ -281,7 +281,7 @@ struct DeviceAdapterAlgorithm
       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag>& values,
       Compare comp);
 
-  /// \brief Output is the first index in input for each item in values that wouldn't alter the ordering of input
+  /// \brief Output is the last index in input for each item in values that wouldn't alter the ordering of input
   ///
   /// UpperBounds is a vectorized search. From each value in \c values it finds
   /// the last place the item can be inserted in the ordered \c input array and
@@ -296,12 +296,29 @@ struct DeviceAdapterAlgorithm
       const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag___>& values,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag___>& output);
 
+  /// \brief Output is the last index in input for each item in values that wouldn't alter the ordering of input
+  ///
+  /// LowerBounds is a vectorized search. From each value in \c values it finds
+  /// the last place the item can be inserted in the ordered \c input array and
+  /// stores the index in \c output. Uses the custom comparison functor to
+  /// determine the correct location for each item.
+  ///
+  /// \par Requirements:
+  /// \arg \c input must already be sorted
+  ///
+  template<typename T, class CIn, class CVal, class COut, class Compare>
+  DAX_CONT_EXPORT static void UpperBounds(
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag>& input,
+      const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag>& values,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag>& output,
+      Compare comp);
+
   /// \brief A special version of UpperBounds that does an in place operation.
   ///
   /// This version of lower bounds performs an in place operation where each
-  /// value in the \c values_output array is replaced by the index in \c input
-  /// where it occurs. Because this is an in place operation, the type of the
-  /// arrays is limited to dax::Id.
+  /// value in the \c values_output array is replaced by the last index in
+  /// \c input where it occurs. Because this is an in place operation, the type
+  /// of the arrays is limited to dax::Id.
   ///
   template<class CIn, class COut>
   DAX_CONT_EXPORT static void UpperBounds(

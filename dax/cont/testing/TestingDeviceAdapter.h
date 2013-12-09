@@ -829,7 +829,7 @@ private:
       }
   }
 
-  static DAX_CONT_EXPORT void TestLowerBoundstWithComparisonObject()
+  static DAX_CONT_EXPORT void TestLowerBoundsWithComparisonObject()
   {
     std::cout << "-------------------------------------------------" << std::endl;
     std::cout << "Testing LowerBounds with comparison object" << std::endl;
@@ -846,7 +846,7 @@ private:
     Algorithm::Unique(temp);
 
     IdArrayHandle handle;
-    //verify lower and upper bounds work
+    //verify lower bounds work
     Algorithm::LowerBounds(temp,input,handle, dax::math::SortLess());
 
     // Check to make sure that temp was resized correctly during Unique.
@@ -861,6 +861,42 @@ private:
       {
       dax::Id value = handle.GetPortalConstControl().Get(i);
       DAX_TEST_ASSERT(value == i % 50, "Got bad LowerBounds value with SortLess");
+      }
+  }
+
+
+  static DAX_CONT_EXPORT void TestUpperBoundsWithComparisonObject()
+  {
+    std::cout << "-------------------------------------------------" << std::endl;
+    std::cout << "Testing UpperBounds with comparison object" << std::endl;
+    dax::Id testData[ARRAY_SIZE];
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      testData[i]= OFFSET+(i % 50);
+      }
+    IdArrayHandle input = MakeArrayHandle(testData, ARRAY_SIZE);
+
+    IdArrayHandle temp;
+    Algorithm::Copy(input,temp);
+    Algorithm::Sort(temp);
+    Algorithm::Unique(temp);
+
+    IdArrayHandle handle;
+    //verify upper bounds work
+    Algorithm::UpperBounds(temp,input,handle, dax::math::SortLess());
+
+    // Check to make sure that temp was resized correctly during Unique.
+    // (This was a discovered bug at one point.)
+    temp.GetPortalConstControl();  // Forces copy back to control.
+    temp.ReleaseResourcesExecution(); // Make sure not counting on execution.
+    DAX_TEST_ASSERT(
+          temp.GetNumberOfValues() == 50,
+          "Unique did not resize array (or size did not copy to control).");
+
+    for(dax::Id i=0; i < ARRAY_SIZE; ++i)
+      {
+      dax::Id value = handle.GetPortalConstControl().Get(i);
+      DAX_TEST_ASSERT(value == (i % 50)+1, "Got bad UpperBounds value with SortLess");
       }
   }
 
@@ -1183,7 +1219,8 @@ private:
       TestScanExclusive();
       TestSortWithComparisonObject();
       TestSortByKey();
-      TestLowerBoundstWithComparisonObject();
+      TestLowerBoundsWithComparisonObject();
+      TestUpperBoundsWithComparisonObject();
       TestUniqueWithComparisonObject();
       TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
       TestContScheduler();

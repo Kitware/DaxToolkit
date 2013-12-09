@@ -278,6 +278,22 @@ private:
                           IteratorBegin(output));
   }
 
+
+  template<class InputPortal, class ValuesPortal, class OutputPortal,
+           class Compare>
+  DAX_CONT_EXPORT static void UpperBoundsPortal(const InputPortal &input,
+                                                const ValuesPortal &values,
+                                                const OutputPortal &output,
+                                                Compare comp)
+  {
+    ::thrust::upper_bound(IteratorBegin(input),
+                          IteratorEnd(input),
+                          IteratorBegin(values),
+                          IteratorEnd(values),
+                          IteratorBegin(output),
+                          comp);
+  }
+
   template<class InputPortal, class OutputPortal>
   DAX_CONT_EXPORT static
   void UpperBoundsPortal(const InputPortal &input,
@@ -522,6 +538,20 @@ public:
     UpperBoundsPortal(input.PrepareForInput(),
                       values.PrepareForInput(),
                       output.PrepareForOutput(numberOfValues));
+  }
+
+  template<typename T, class CIn, class CVal, class COut, class Compare>
+  DAX_CONT_EXPORT static void UpperBounds(
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag>& input,
+      const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag>& values,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag>& output,
+      Compare comp)
+  {
+    dax::Id numberOfValues = values.GetNumberOfValues();
+    UpperBoundsPortal(input.PrepareForInput(),
+                      values.PrepareForInput(),
+                      output.PrepareForOutput(numberOfValues),
+                      comp);
   }
 
   template<class CIn, class COut>
