@@ -44,8 +44,7 @@ struct ParametricCoordinates
 
   /// The location of each vertex.
   ///
-  DAX_EXEC_EXPORT static
-  dax::Tuple<dax::Vector3,dax::CellTraits<CellTag>::NUM_VERTICES> Vertex();
+  DAX_EXEC_EXPORT static dax::exec::CellField<CellTag> Vertex();
 };
 #else //DAX_DOXYGEN_ONLY
     ;
@@ -57,7 +56,8 @@ struct ParametricCoordinates<dax::CellTagHexahedron>
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(0.5, 0.5, 0.5);
   }
-  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 8> Vertex() {
+  DAX_EXEC_EXPORT
+  static dax::exec::CellField<dax::Vector3, dax::CellTagHexahedron> Vertex() {
     const dax::Vector3 cellVertexToParametricCoords[8] = {
       dax::make_Vector3(0, 0, 0),
       dax::make_Vector3(1, 0, 0),
@@ -68,13 +68,33 @@ struct ParametricCoordinates<dax::CellTagHexahedron>
       dax::make_Vector3(1, 1, 1),
       dax::make_Vector3(0, 1, 1)
     };
-    return dax::Tuple<dax::Vector3, 8>(cellVertexToParametricCoords);
+    return dax::exec::CellField<dax::Vector3, dax::CellTagHexahedron>(
+          cellVertexToParametricCoords);
   }
 };
 
 template<>
 struct ParametricCoordinates<dax::CellTagVoxel>
-    : public ParametricCoordinates<dax::CellTagHexahedron> {  };
+{
+  DAX_EXEC_EXPORT static dax::Vector3 Center() {
+    return dax::make_Vector3(0.5, 0.5, 0.5);
+  }
+  DAX_EXEC_EXPORT
+  static dax::exec::CellField<dax::Vector3, dax::CellTagVoxel> Vertex() {
+    const dax::Vector3 cellVertexToParametricCoords[8] = {
+      dax::make_Vector3(0, 0, 0),
+      dax::make_Vector3(1, 0, 0),
+      dax::make_Vector3(1, 1, 0),
+      dax::make_Vector3(0, 1, 0),
+      dax::make_Vector3(0, 0, 1),
+      dax::make_Vector3(1, 0, 1),
+      dax::make_Vector3(1, 1, 1),
+      dax::make_Vector3(0, 1, 1)
+    };
+    return dax::exec::CellField<dax::Vector3, dax::CellTagVoxel>(
+          cellVertexToParametricCoords);
+  }
+};
 
 template<>
 struct ParametricCoordinates<dax::CellTagTetrahedron>
@@ -82,14 +102,16 @@ struct ParametricCoordinates<dax::CellTagTetrahedron>
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(0.25, 0.25, 0.25);
   }
-  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 4> Vertex() {
+  DAX_EXEC_EXPORT
+  static dax::exec::CellField<dax::Vector3, dax::CellTagTetrahedron> Vertex() {
     const dax::Vector3 cellToParametricCoords[4] = {
       dax::make_Vector3(0, 0, 0),
       dax::make_Vector3(1, 0, 0),
       dax::make_Vector3(0, 1, 0),
       dax::make_Vector3(0, 0, 1)
     };
-    return dax::Tuple<dax::Vector3, 4>(cellToParametricCoords);
+    return dax::exec::CellField<dax::Vector3, dax::CellTagTetrahedron>(
+          cellToParametricCoords);
   }
 };
 
@@ -99,7 +121,8 @@ struct ParametricCoordinates<dax::CellTagWedge>
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(1.0/3.0, 1.0/3.0, 0.5);
   }
-  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 6> Vertex() {
+  DAX_EXEC_EXPORT
+  static dax::exec::CellField<dax::Vector3, dax::CellTagWedge> Vertex() {
     const dax::Vector3 cellToParametricCoords[6] = {
       dax::make_Vector3(0, 0, 0),
       dax::make_Vector3(0, 1, 0),
@@ -108,7 +131,8 @@ struct ParametricCoordinates<dax::CellTagWedge>
       dax::make_Vector3(0, 1, 1),
       dax::make_Vector3(1, 0, 1)
     };
-    return dax::Tuple<dax::Vector3, 6>(cellToParametricCoords);
+    return dax::exec::CellField<dax::Vector3, dax::CellTagWedge>(
+          cellToParametricCoords);
   }
 };
 
@@ -118,13 +142,15 @@ struct ParametricCoordinates<dax::CellTagTriangle>
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(1.0/3.0, 1.0/3.0, 0.0);
   }
-  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 3> Vertex() {
+  DAX_EXEC_EXPORT
+  static dax::exec::CellField<dax::Vector3, dax::CellTagTriangle> Vertex() {
     const dax::Vector3 cellVertexToParametricCoords[3] = {
       dax::make_Vector3(0, 0, 0),
       dax::make_Vector3(1, 0, 0),
       dax::make_Vector3(0, 1, 0)
     };
-    return dax::Tuple<dax::Vector3, 3>(cellVertexToParametricCoords);
+    return dax::exec::CellField<dax::Vector3, dax::CellTagTriangle>(
+          cellVertexToParametricCoords);
   }
 };
 
@@ -134,14 +160,17 @@ struct ParametricCoordinates<dax::CellTagQuadrilateral>
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(0.5, 0.5, 0.0);
   }
-  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 4> Vertex() {
+  DAX_EXEC_EXPORT
+  static dax::exec::CellField<dax::Vector3, dax::CellTagQuadrilateral>
+  Vertex() {
     const dax::Vector3 cellVertexToParametricCoords[4] = {
       dax::make_Vector3(0, 0, 0),
       dax::make_Vector3(1, 0, 0),
       dax::make_Vector3(1, 1, 0),
       dax::make_Vector3(0, 1, 0)
     };
-    return dax::Tuple<dax::Vector3, 4>(cellVertexToParametricCoords);
+    return dax::exec::CellField<dax::Vector3, dax::CellTagQuadrilateral>(
+          cellVertexToParametricCoords);
   }
 };
 
@@ -151,12 +180,14 @@ struct ParametricCoordinates<dax::CellTagLine>
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(0.5, 0.0, 0.0);
   }
-  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 2> Vertex() {
+  DAX_EXEC_EXPORT
+  static dax::exec::CellField<dax::Vector3, dax::CellTagLine> Vertex() {
     const dax::Vector3 cellVertexToParametricCoords[2] = {
       dax::make_Vector3(0, 0, 0),
       dax::make_Vector3(1, 0, 0)
     };
-    return dax::Tuple<dax::Vector3, 2>(cellVertexToParametricCoords);
+    return dax::exec::CellField<dax::Vector3, dax::CellTagLine>(
+          cellVertexToParametricCoords);
   }
 };
 
@@ -166,11 +197,13 @@ struct ParametricCoordinates<dax::CellTagVertex>
   DAX_EXEC_EXPORT static dax::Vector3 Center() {
     return dax::make_Vector3(0.0, 0.0, 0.0);
   }
-  DAX_EXEC_EXPORT static dax::Tuple<dax::Vector3, 1> Vertex() {
+  DAX_EXEC_EXPORT
+  static dax::exec::CellField<dax::Vector3, dax::CellTagVertex> Vertex() {
     const dax::Vector3 cellVertexToParametricCoords[1] = {
       dax::make_Vector3(0, 0, 0)
     };
-    return dax::Tuple<dax::Vector3, 1>(cellVertexToParametricCoords);
+    return dax::exec::CellField<dax::Vector3, dax::CellTagVertex>(
+          cellVertexToParametricCoords);
   }
 };
 

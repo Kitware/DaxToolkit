@@ -30,12 +30,11 @@ class CellGradient : public dax::exec::WorkletMapCell
 public:
 
   typedef void ControlSignature(Topology, Field(Point), Field(Point), Field(Out));
-  typedef _4 ExecutionSignature(_1,_2,_3);
+  typedef _4 ExecutionSignature(_2,_3);
 
   template<class CellTag>
   DAX_EXEC_EXPORT
   dax::Vector3 operator()(
-      CellTag cellTag,
       const dax::exec::CellField<dax::Vector3,CellTag> &coords,
       const dax::exec::CellField<dax::Scalar,CellTag> &pointField) const
   {
@@ -44,7 +43,7 @@ public:
     return dax::exec::CellDerivative(parametricCellCenter,
                                      coords,
                                      pointField,
-                                     cellTag);
+                                     CellTag());
   }
 };
 
