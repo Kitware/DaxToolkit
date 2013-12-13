@@ -112,7 +112,7 @@ DAX_EXEC_CONT_EXPORT int SignBit(dax::Scalar x)
 
 //-----------------------------------------------------------------------------
 /// Copies the sign of \p y onto \p x.  If \p y is positive, returns Abs(\p x).
-/// If \p x is negative, returns -Abs(\p x).
+/// If \p y is negative, returns -Abs(\p x).
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar CopySign(dax::Scalar x, dax::Scalar y)
 {

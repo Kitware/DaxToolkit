@@ -50,7 +50,7 @@ DAX_EXEC_CONT_EXPORT ValueType lerp_template(
 }
 }
 
-/// \brief Returns the linera interpolation of two scalar or vector values based on weight
+/// \brief Returns the linear interpolation of two scalar or vector values based on weight
 ///
 /// lerp interpolates return the linerar interpolation of x and y based on w.  x
 /// and y are Scalars or vectors of same lenght. w can either be a scalar or a
@@ -135,7 +135,7 @@ DAX_EXEC_CONT_EXPORT dax::Scalar magnitude_template(const T &x)
 /// It is usually much faster to compute MagnitudeSquared, so that should be
 /// substituted when possible (unless you are just going to take the square
 /// root, which would be besides the point). On some hardware it is also faster
-/// to find the reciprical magnitude, so RMagnitude should be used if you
+/// to find the reciprocal magnitude, so RMagnitude should be used if you
 /// actually plan to divide by the magnitude.
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar Magnitude(dax::Scalar x) {
@@ -160,7 +160,7 @@ DAX_EXEC_CONT_EXPORT dax::Scalar rmagnitude_template(const T &x)
 }
 }
 
-/// \brief Returns the reciprical magnitude of a vector.
+/// \brief Returns the reciprocal magnitude of a vector.
 ///
 /// On some hardware RMagnitude is faster than Magnitude, but neither is
 /// as fast as MagnitudeSquared.
