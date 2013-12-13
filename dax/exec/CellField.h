@@ -42,9 +42,13 @@ public:
   CellField(const TupleType &values)
     : Values(values) {  }
 
-  DAX_CONT_EXPORT
-  CellField(const FieldType &value)
+  DAX_EXEC_CONT_EXPORT
+  explicit CellField(const FieldType &value)
     : Values(value) {  }
+
+  DAX_EXEC_CONT_EXPORT
+  explicit CellField(const FieldType *values)
+    : Values(values) {  }
 
   // Although this copy constructor should be identical to the default copy
   // constructor, we have noticed that NVCC's default copy constructor can
