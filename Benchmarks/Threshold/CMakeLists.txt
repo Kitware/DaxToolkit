@@ -111,6 +111,7 @@ if(DAX_ENABLE_VTK_BENCHMARKS)
     vtkCommonExecutionModel
     vtkFiltersCore
     vtkFiltersGeometry
+    ${TBB_LIBRARIES}
     )
   add_timing_tests(ThresholdTimingVTK)
 endif()
