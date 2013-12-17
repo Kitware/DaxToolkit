@@ -20,19 +20,15 @@
 #include <dax/exec/arg/ArgBase.h>
 #include <dax/exec/arg/BindInfo.h>
 
-#include <boost/type_traits/function_traits.hpp>
 #include <boost/mpl/if.hpp>
 
 namespace dax{ namespace exec { namespace arg {
 
-template <typename WorkletType, typename ControlInvocationParams, int N>
+template <typename Invocation, int N>
 class BindKeyGroup
-  : public dax::exec::arg::ArgBase<
-      BindKeyGroup< WorkletType, ControlInvocationParams, N> >
+    : public dax::exec::arg::ArgBase<BindKeyGroup<Invocation,N> >
 {
-  typedef dax::exec::arg::ArgBaseTraits<
-      BindKeyGroup< WorkletType, ControlInvocationParams, N > > Traits;
-
+  typedef dax::exec::arg::ArgBaseTraits< BindKeyGroup< Invocation, N > > Traits;
 
   typedef typename Traits::ExecArgType ExecArgType;
   typedef typename Traits::KeyCountExecArgType KeyCountExecArgType;
@@ -50,8 +46,7 @@ public:
   typedef typename Traits::SaveType SaveType;
 
   DAX_CONT_EXPORT BindKeyGroup(
-    typename dax::cont::internal::Bindings<
-        WorkletType,ControlInvocationParams>::type &bindings):
+         typename dax::cont::internal::Bindings<Invocation>::type &bindings):
     ExecArg(dax::exec::arg::GetNthExecArg<N>(bindings)),
     KeyCountExecArg(dax::exec::arg::GetNthExecArg<Traits::KeyCountIndex>(bindings)),
     KeyOffsetExecArg(dax::exec::arg::GetNthExecArg<Traits::KeyOffsetIndex>(bindings)),
@@ -74,22 +69,21 @@ public:
 
 
 //the traits for BindKeyGroup
-template <typename WorkletType, typename ControlInvocationParams, int N >
-struct ArgBaseTraits< BindKeyGroup<WorkletType, ControlInvocationParams, N> >
+template <typename Invocation,  int N >
+struct ArgBaseTraits< BindKeyGroup<Invocation, N> >
 {
 private:
-  typedef typename dax::exec::arg::BindInfo<
-              N, WorkletType, ControlInvocationParams> MyInfo;
+  typedef typename dax::exec::arg::BindInfo<N,Invocation> MyInfo;
   typedef typename MyInfo::Tags Tags;
 
   //We need the argument count to grab the last few bindings,
   //which have been special-purposed to be the parts necessary
   //to create the requested key-groups.
-  enum { ArgumentCount = boost::function_traits<ControlInvocationParams>::arity };
+  enum { ArgumentCount = Invocation::NUM_PARAMETERS };
 
-  typedef dax::exec::arg::BindInfo<ArgumentCount - 2, WorkletType, ControlInvocationParams> KeyCountInfo;
-  typedef dax::exec::arg::BindInfo<ArgumentCount - 1, WorkletType, ControlInvocationParams> KeyOffsetInfo;
-  typedef dax::exec::arg::BindInfo<ArgumentCount - 0, WorkletType, ControlInvocationParams> KeyIndexInfo;
+  typedef dax::exec::arg::BindInfo<ArgumentCount - 2, Invocation> KeyCountInfo;
+  typedef dax::exec::arg::BindInfo<ArgumentCount - 1, Invocation> KeyOffsetInfo;
+  typedef dax::exec::arg::BindInfo<ArgumentCount - 0, Invocation> KeyIndexInfo;
 
 public:
 

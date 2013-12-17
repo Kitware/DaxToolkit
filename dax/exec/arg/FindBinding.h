@@ -175,7 +175,7 @@ class FindBinding<Invocation,
                   dax::cont::sig::KeyGroup(*)(dax::cont::sig::Arg<N>) >
 {
 public:
-  typedef BindDirect<Invocation,N> type;
+  typedef BindKeyGroup<Invocation,N> type;
 };
 
 }}} // namespace dax::exec::arg
