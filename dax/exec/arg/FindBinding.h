@@ -99,8 +99,13 @@ public:
   typedef typename boost::mpl::if_<
       typename Tags::template Has<dax::cont::sig::Point>,
       BindCellPoints<Invocation, N>,
-      BindPermutedCellField<Invocation, N> >::type type;
+      typename boost::mpl::if_<
+          typename Tags::template Has<dax::cont::sig::Out>,
+          BindDirect<Invocation, N>,
+          BindPermutedCellField<Invocation, N> >::type>::type type;
+
 };
+
 
 
 //find binding finds the correct binding for a parameter

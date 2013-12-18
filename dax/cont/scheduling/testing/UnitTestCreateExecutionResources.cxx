@@ -35,7 +35,7 @@ int EXPECTED_LENGTH;
 namespace dax { namespace cont { namespace arg{
 
 template <typename Tags, typename T>
-class ConceptMap< Field(Tags), std::vector<T> >
+class ConceptMap< Field(Tags), std::vector<T>* >
 {
   typedef std::vector<T> ArrayType;
 
@@ -45,7 +45,7 @@ public:
   typedef ::dax::cont::internal::ArrayPortalFromIterators<const T*> PortalType;
   typedef dax::exec::arg::FieldPortal<T,Tags,PortalType> ExecArg;
 
-  ConceptMap(const ArrayType& array):
+  ConceptMap(ArrayType* array):
     Array(array),
     Portal()
     {}
@@ -60,22 +60,23 @@ public:
     {
     DAX_TEST_ASSERT( (EXPECTED_LENGTH==size),
                     "Incorrect allocation length passed to std::vector concept map");
-    if(size > static_cast<dax::Id>(this->Array.size()))
+    if(size > static_cast<dax::Id>(this->Array->size()))
       {
-      this->Array.resize(size);
+      this->Array->resize(size);
       }
-    this->Portal = PortalType(&Array[0],&Array[size+1]);
+    ArrayType& a = *this->Array;
+    this->Portal = PortalType(&a[0],&a[size+1]);
     }
 
   DAX_CONT_EXPORT dax::Id GetDomainLength(sig::Domain) const
     {
     //determine the proper work count be seing if we are being used
     //as input or output
-    return static_cast<dax::Id>(this->Array.size());
+    return static_cast<dax::Id>(this->Array->size());
     }
 
 private:
-  ArrayType Array;
+  ArrayType* Array;
   PortalType Portal;
 };
 
@@ -102,13 +103,13 @@ void TestCreateExecutionResources(std::size_t size)
 
   for(std::size_t i=0; i <size; ++i) { in[i] = static_cast<dax::Scalar>(i);}
 
-  typedef std::vector<dax::Scalar> VectorType;
+  typedef std::vector<dax::Scalar>* VectorType;
   typedef dax::internal::Invocation< Worklet1,
           dax::internal::ParameterPack<VectorType,VectorType> > Invocation1;
   typedef dax::cont::internal::Bindings<Invocation1>::type Bindings1;
 
   Bindings1 bindings = dax::cont::internal::BindingsCreate(
-        Worklet1(), dax::internal::make_ParameterPack(in,out));
+        Worklet1(), dax::internal::make_ParameterPack(&in, &out) );
 
   // Visit each bound argument to determine the count to be scheduled.
   const dax::Id count(size);
