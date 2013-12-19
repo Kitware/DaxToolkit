@@ -31,11 +31,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
 
   # Addtional warnings for GCC
   set(CMAKE_CXX_FLAGS_WARN_EXTRA "-Wno-long-long -Wcast-align -Wchar-subscripts -Wextra -Wpointer-arith -Wformat -Wformat-security -Wshadow -Wunused-parameter -fno-common")
-  if (NOT DAX_FORCE_ANSI AND HAS_CXX11_VARIADIC_TEMPLATES)
-    set(CMAKE_CXX_FLAGS_WARN_EXTRA "-std=c++11 ${CMAKE_CXX_FLAGS_WARN_EXTRA}")
-  else (NOT DAX_FORCE_ANSI AND HAS_CXX11_VARIADIC_TEMPLATES)
+  if (DAX_FORCE_ANSI)
     set(CMAKE_CXX_FLAGS_WARN_EXTRA "-ansi ${CMAKE_CXX_FLAGS_WARN_EXTRA}")
-  endif (NOT DAX_FORCE_ANSI AND HAS_CXX11_VARIADIC_TEMPLATES)
+  endif()
 
   # Set up the debug CXX_FLAGS for extra warnings
   option(DAX_EXTRA_COMPILER_WARNINGS "Add compiler flags to do stricter checking when building debug." ON)
