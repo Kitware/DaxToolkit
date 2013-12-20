@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_scheduling_SchedulerGenerateTopology_h
-#define __dax_cont_scheduling_SchedulerGenerateTopology_h
+#ifndef __dax_cont_dispatcher_SchedulerGenerateTopology_h
+#define __dax_cont_dispatcher_SchedulerGenerateTopology_h
 
 #include <dax/Types.h>
 #include <dax/cont/DeviceAdapter.h>
@@ -27,17 +27,17 @@
 
 #include <dax/internal/ParameterPack.h>
 
-#include <dax/cont/scheduling/SchedulerTags.h>
-#include <dax/cont/scheduling/SchedulerDefault.h>
-#include <dax/cont/scheduling/VerifyUserArgLength.h>
-#include <dax/cont/scheduling/AddVisitIndexArg.h>
+#include <dax/cont/dispatcher/SchedulerTags.h>
+#include <dax/cont/dispatcher/SchedulerDefault.h>
+#include <dax/cont/dispatcher/VerifyUserArgLength.h>
+#include <dax/cont/dispatcher/AddVisitIndexArg.h>
 
 #include <dax/exec/internal/kernel/GenerateWorklets.h>
 
-namespace dax { namespace cont { namespace scheduling {
+namespace dax { namespace cont { namespace dispatcher {
 
 template <class DeviceAdapterTag>
-class Scheduler<DeviceAdapterTag,dax::cont::scheduling::GenerateTopologyTag>
+class Scheduler<DeviceAdapterTag,dax::cont::dispatcher::GenerateTopologyTag>
 {
 public:
   //default constructor so we can insantiate const schedulers
@@ -46,7 +46,7 @@ public:
   //copy constructor so that people can pass schedulers around by value
   DAX_CONT_EXPORT Scheduler(
       const Scheduler<DeviceAdapterTag,
-          dax::cont::scheduling::GenerateTopologyTag>& other ):
+          dax::cont::dispatcher::GenerateTopologyTag>& other ):
   DefaultScheduler(other.DefaultScheduler)
   {
   }
@@ -58,7 +58,7 @@ public:
     //we are being passed dax::cont::GenerateTopology,
     //we want the actual exec worklet that is being passed to scheduleGenerateTopo
     typedef typename WorkletType::WorkletType RealWorkletType;
-    typedef dax::cont::scheduling::VerifyUserArgLength<RealWorkletType,
+    typedef dax::cont::dispatcher::VerifyUserArgLength<RealWorkletType,
                 ParameterPackType::NUM_PARAMETERS> WorkletUserArgs;
     //if you are getting this error you are passing less arguments than requested
     //in the control signature of this worklet
@@ -75,8 +75,8 @@ public:
           args);
     }
 private:
-  typedef dax::cont::scheduling::Scheduler<DeviceAdapterTag,
-    dax::cont::scheduling::ScheduleDefaultTag> SchedulerDefaultType;
+  typedef dax::cont::dispatcher::Scheduler<DeviceAdapterTag,
+    dax::cont::dispatcher::DispatcherMapFieldTag> SchedulerDefaultType;
   const SchedulerDefaultType DefaultScheduler;
 
   template<class InGridType, class OutGridType, typename MaskType>
@@ -190,7 +190,7 @@ private:
 
     //The AddVisitIndexArg does all this, plus creates a derived worklet
     //from the users worklet with the visit index added to the signature.
-    typedef dax::cont::scheduling::AddVisitIndexArg<WorkletType,
+    typedef dax::cont::dispatcher::AddVisitIndexArg<WorkletType,
       Algorithm,IdArrayHandleType> AddVisitIndexFunctor;
     typedef typename AddVisitIndexFunctor::VisitIndexArgType IndexArgType;
     typedef typename AddVisitIndexFunctor::DerivedWorkletType DerivedWorkletType;
@@ -221,4 +221,4 @@ private:
 
 } } }
 
-#endif //__dax_cont_scheduling_GenerateTopology_h
+#endif //__dax_cont_dispatcher_GenerateTopology_h

@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_scheduling_SchedulerGenerateInterpolatedCells_h
-#define __dax_cont_scheduling_SchedulerGenerateInterpolatedCells_h
+#ifndef __dax_cont_dispatcher_SchedulerGenerateInterpolatedCells_h
+#define __dax_cont_dispatcher_SchedulerGenerateInterpolatedCells_h
 
 #include <dax/Types.h>
 #include <dax/CellTraits.h>
@@ -22,10 +22,10 @@
 #include <dax/cont/ArrayHandleCounting.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/Scheduler.h>
-#include <dax/cont/scheduling/AddVisitIndexArg.h>
-#include <dax/cont/scheduling/SchedulerDefault.h>
-#include <dax/cont/scheduling/SchedulerTags.h>
-#include <dax/cont/scheduling/VerifyUserArgLength.h>
+#include <dax/cont/dispatcher/AddVisitIndexArg.h>
+#include <dax/cont/dispatcher/SchedulerDefault.h>
+#include <dax/cont/dispatcher/SchedulerTags.h>
+#include <dax/cont/dispatcher/VerifyUserArgLength.h>
 #include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/cont/sig/VisitIndex.h>
@@ -33,13 +33,13 @@
 
 #include <dax/exec/internal/kernel/GenerateWorklets.h>
 
-namespace dax { namespace cont { namespace scheduling {
+namespace dax { namespace cont { namespace dispatcher {
 
 template <class DeviceAdapterTag>
-class Scheduler<DeviceAdapterTag,dax::cont::scheduling::GenerateInterpolatedCellsTag>
+class Scheduler<DeviceAdapterTag,dax::cont::dispatcher::GenerateInterpolatedCellsTag>
 {
-  typedef dax::cont::scheduling::Scheduler<DeviceAdapterTag,
-    dax::cont::scheduling::ScheduleDefaultTag> SchedulerDefaultType;
+  typedef dax::cont::dispatcher::Scheduler<DeviceAdapterTag,
+    dax::cont::dispatcher::DispatcherMapFieldTag> SchedulerDefaultType;
   const SchedulerDefaultType DefaultScheduler;
 
 public:
@@ -49,7 +49,7 @@ public:
   //copy constructor so that people can pass schedulers around by value
   DAX_CONT_EXPORT Scheduler(
       const Scheduler<DeviceAdapterTag,
-          dax::cont::scheduling::GenerateInterpolatedCellsTag>& other ):
+          dax::cont::dispatcher::GenerateInterpolatedCellsTag>& other ):
   DefaultScheduler(other.DefaultScheduler)
   {
   }
@@ -61,7 +61,7 @@ public:
     //we are being passed dax::cont::GenerateInterpolatedCells,
     //we want the actual exec worklet that is being passed to scheduleGenerateTopo
     typedef typename WorkletType::WorkletType RealWorkletType;
-    typedef dax::cont::scheduling::VerifyUserArgLength<RealWorkletType,
+    typedef dax::cont::dispatcher::VerifyUserArgLength<RealWorkletType,
                 ParameterPackType::NUM_PARAMETERS> WorkletUserArgs;
     //if you are getting this error you are passing less arguments than requested
     //in the control signature of this worklet
@@ -199,7 +199,7 @@ private:
 
     //The AddVisitIndexArg does all this, plus creates a derived worklet
     //from the users worklet with the visit index added to the signature.
-    typedef dax::cont::scheduling::AddVisitIndexArg<WorkletType,
+    typedef dax::cont::dispatcher::AddVisitIndexArg<WorkletType,
       Algorithm,IdArrayHandleType> AddVisitIndexFunctor;
     typedef typename AddVisitIndexFunctor::VisitIndexArgType IndexArgType;
     typedef typename AddVisitIndexFunctor::DerivedWorkletType DerivedWorkletType;
@@ -240,5 +240,5 @@ private:
 
 } } }
 
-#endif //__dax_cont_scheduling_GenerateInterpolatedCells_h
+#endif //__dax_cont_dispatcher_GenerateInterpolatedCells_h
 

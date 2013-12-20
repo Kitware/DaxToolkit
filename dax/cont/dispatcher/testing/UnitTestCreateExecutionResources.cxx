@@ -21,7 +21,7 @@
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/testing/Testing.h>
-#include <dax/cont/scheduling/CreateExecutionResources.h>
+#include <dax/cont/dispatcher/CreateExecutionResources.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/exec/WorkletMapField.h>
 #include <dax/Types.h>
@@ -114,7 +114,7 @@ void TestCreateExecutionResources(std::size_t size)
   // Visit each bound argument to determine the count to be scheduled.
   const dax::Id count(size);
   bindings.ForEachCont(
-             dax::cont::scheduling::CreateExecutionResources(count));
+             dax::cont::dispatcher::CreateExecutionResources(count));
 
   DAX_TEST_ASSERT( out.size() == in.size(),
                   "out vector not allocated to correct size");

@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_scheduling_DetermineIndicesAndGridType_h
-#define __dax_cont_scheduling_DetermineIndicesAndGridType_h
+#ifndef __dax_cont_dispatcher_DetermineIndicesAndGridType_h
+#define __dax_cont_dispatcher_DetermineIndicesAndGridType_h
 
 #include <dax/Extent.h>
 #include <dax/cont/arg/Topology.h>
@@ -22,7 +22,7 @@
 #include <dax/cont/internal/FindBinding.h>
 #include <dax/cont/internal/GridTags.h>
 
-namespace dax { namespace cont { namespace scheduling {
+namespace dax { namespace cont { namespace dispatcher {
 
 namespace internal
 {
@@ -111,5 +111,5 @@ public:
 
 };
 
-} } } //namespace dax::cont::scheduling
+} } } //namespace dax::cont::dispatcher
 #endif

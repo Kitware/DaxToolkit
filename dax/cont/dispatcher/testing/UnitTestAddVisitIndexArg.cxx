@@ -26,8 +26,8 @@
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/testing/Testing.h>
-#include <dax/cont/scheduling/AddVisitIndexArg.h>
-#include <dax/cont/scheduling/SchedulerDefault.h>
+#include <dax/cont/dispatcher/AddVisitIndexArg.h>
+#include <dax/cont/dispatcher/SchedulerDefault.h>
 #include <dax/cont/sig/Arg.h>
 #include <dax/exec/WorkletGenerateTopology.h>
 #include <vector>
@@ -77,13 +77,13 @@ void AddVisitIndex()
 {
   typedef ::WithVisitIndexWorklet Worklet;
   typedef dax::cont::DeviceAdapterTagSerial DeviceAdapterTag;
-  typedef dax::cont::scheduling::Scheduler<DeviceAdapterTag,
-          dax::cont::scheduling::ScheduleDefaultTag> Scheduler;
+  typedef dax::cont::dispatcher::Scheduler<DeviceAdapterTag,
+          dax::cont::dispatcher::DispatcherMapFieldTag> Scheduler;
   typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag> Algorithm;
 
   typedef dax::cont::ArrayHandle<dax::Id> IdHandleType;
 
-  typedef dax::cont::scheduling::AddVisitIndexArg<Worklet,
+  typedef dax::cont::dispatcher::AddVisitIndexArg<Worklet,
                                                   Algorithm,
                                                   IdHandleType> VisitIndexType;
   typedef VisitIndexType::VisitIndexArgType IndexType;
@@ -94,7 +94,7 @@ void AddVisitIndex()
 
   //verify that when we don't want the visit index arg that the field
   //is being filled be a single dax::id, not an array handle
-  typedef dax::cont::scheduling::AddVisitIndexArg< ::WithoutVisitIndexWorklet,
+  typedef dax::cont::dispatcher::AddVisitIndexArg< ::WithoutVisitIndexWorklet,
                                                   Algorithm,
                                                   IdHandleType> NoVisitIndexType;
   typedef NoVisitIndexType::VisitIndexArgType NoIndexType;

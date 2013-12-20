@@ -21,7 +21,7 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <dax/math/VectorAnalysis.h>
@@ -49,11 +49,10 @@ struct TestElevationWorklet
   dax::Scalar scale = 0.5/dax::math::MagnitudeSquared(maxCoordinate);
 
   std::cout << "Running Elevation worklet" << std::endl;
+
   dax::worklet::Elevation elev(-1.0*maxCoordinate, maxCoordinate);
-  dax::cont::Scheduler< > scheduler;
-  scheduler.Invoke(elev,
-                   grid->GetPointCoordinates(),
-                   elevationHandle);
+  dax::cont::DispatcherMapField< dax::worklet::Elevation > dispatcher(elev);
+  dispatcher.Invoke( grid->GetPointCoordinates(), elevationHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> elevation(grid->GetNumberOfPoints());

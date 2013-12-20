@@ -20,9 +20,8 @@
 
 #include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/ErrorExecution.h>
-#include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Scheduler.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <dax/cont/testing/Testing.h>
@@ -44,8 +43,8 @@ static void TestFieldMapError()
   bool gotError = false;
   try
     {
-    dax::cont::Scheduler< >().Invoke(dax::worklet::testing::FieldMapError(),
-                                     arrayHandle);
+    dax::cont::DispatcherMapField<
+        dax::worklet::testing::FieldMapError >().Invoke( arrayHandle );
     }
   catch (dax::cont::ErrorExecution error)
     {

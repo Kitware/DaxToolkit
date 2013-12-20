@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //===========================================x==================================
-#ifndef __dax_cont_scheduling_AddVisitIndexArg_h
-#define __dax_cont_scheduling_AddVisitIndexArg_h
+#ifndef __dax_cont_dispatcher_AddVisitIndexArg_h
+#define __dax_cont_dispatcher_AddVisitIndexArg_h
 
 #include <dax/Types.h>
 
@@ -29,7 +29,7 @@
 #include <dax/internal/WorkletSignatureFunctions.h>
 
 
-namespace dax { namespace cont { namespace scheduling {
+namespace dax { namespace cont { namespace dispatcher {
 
 namespace internal
 {
@@ -118,5 +118,5 @@ public:
 
 };
 
-} } } //dax::cont::scheduling
-#endif //__dax_cont_scheduling_AddVisitIndexArg_h
+} } } //dax::cont::dispatcher
+#endif //__dax_cont_dispatcher_AddVisitIndexArg_h

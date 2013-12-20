@@ -13,31 +13,30 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_scheduling_CreateExecutionResources_h
-#define __dax_cont_scheduling_CreateExecutionResources_h
+#ifndef __dax_cont_dispatcher_Scheduler_h
+#define __dax_cont_dispatcher_Scheduler_h
 
-#include <dax/Types.h>
-#include <dax/cont/arg/ConceptMap.h>
 
-namespace dax { namespace cont { namespace scheduling {
+namespace dax { namespace cont { namespace dispatcher {
 
-class CreateExecutionResources
+template <class DeviceAdapterTag, class SchedulerTag>
+class Scheduler
+#ifdef DAX_DOXYGEN_ONLY
 {
-protected:
-  const dax::Id NumElementsToAlloc;
 public:
-  CreateExecutionResources(dax::Id size):
-    NumElementsToAlloc(size)
-    {}
-
-  template <typename C, typename A>
-  void operator()(dax::cont::arg::ConceptMap<C,A>& concept) const
+  /// \brief Executes the giving worklet with the user parameters
+  /// using the device adapter specified with DeviceAdapterTag
+  ///
+  template <class WorkletType, typename...T>
+  DAX_CONT_EXPORT void Invoke(WorkletType w, T...a) const
     {
-    //we must call to execution on everything.
-    concept.ToExecution(NumElementsToAlloc);
     }
 };
+#else
+//this should be an empty class that people specialize
+;
+#endif
 
-} } } //dax::cont::scheduling
+} } }
 
-#endif //__dax_cont_scheduling_CreateExecutionResources_h
+#endif //__dax_cont_dispatcher_Scheduler_h

@@ -22,7 +22,7 @@
 #include <dax/cont/testing/Testing.h>
 #include <dax/cont/GenerateInterpolatedCells.h>
 #include <dax/cont/GenerateTopology.h>
-#include <dax/cont/scheduling/DetermineScheduler.h>
+#include <dax/cont/dispatcher/DetermineScheduler.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/exec/arg/FieldPortal.h>
 #include <dax/exec/WorkletMapField.h>
@@ -46,46 +46,46 @@ void DetermineScheduler()
   //We will verify that the picking of schedulers at compile time
   //is correct.
 
-  typedef dax::cont::scheduling::DetermineScheduler<fieldWorklet>
+  typedef dax::cont::dispatcher::DetermineScheduler<fieldWorklet>
     DetermineFieldScheduler;
 
-  typedef dax::cont::scheduling::DetermineScheduler<cellWorklet>
+  typedef dax::cont::dispatcher::DetermineScheduler<cellWorklet>
     DetermineCellScheduler;
 
   typedef dax::cont::GenerateTopology<topoWorklet>
     ConstTopoWorklet;
 
-  typedef dax::cont::scheduling::DetermineScheduler<ConstTopoWorklet>
+  typedef dax::cont::dispatcher::DetermineScheduler<ConstTopoWorklet>
     DetermineTopoScheduler;
 
   typedef dax::cont::GenerateInterpolatedCells<interpCellWorklet>
     ConstInterpCellWorklet;
 
-  typedef dax::cont::scheduling::DetermineScheduler<ConstInterpCellWorklet>
+  typedef dax::cont::dispatcher::DetermineScheduler<ConstInterpCellWorklet>
     DetermineInterpCellScheduler;
 
 
   //verify that filed worklets map to the default scheduler
   typedef DetermineFieldScheduler::SchedulerTag FieldScheduler;
   BOOST_MPL_ASSERT((boost::is_same<FieldScheduler,
-                   dax::cont::scheduling::ScheduleDefaultTag>));
+                   dax::cont::dispatcher::DispatcherMapFieldTag>));
 
 
   //verify that map cell worklets map to the default scheduler
   typedef DetermineCellScheduler::SchedulerTag CellScheduler;
   BOOST_MPL_ASSERT((boost::is_same<CellScheduler,
-                   dax::cont::scheduling::ScheduleCellsTag>));
+                   dax::cont::dispatcher::ScheduleCellsTag>));
 
   //verify that generate topolo worklets map  to the topologly scheduler
   typedef DetermineTopoScheduler::SchedulerTag TopoScheduler;
   BOOST_MPL_ASSERT((boost::is_same<TopoScheduler,
-                   dax::cont::scheduling::GenerateTopologyTag>));
+                   dax::cont::dispatcher::GenerateTopologyTag>));
 
   //verify that generate coordinates worklets map
   //to the gen coordinates scheduler
   typedef DetermineInterpCellScheduler::SchedulerTag InterpCellScheduler;
   BOOST_MPL_ASSERT((boost::is_same<InterpCellScheduler,
-                   dax::cont::scheduling::GenerateInterpolatedCellsTag>));
+                   dax::cont::dispatcher::GenerateInterpolatedCellsTag>));
 }
 
 

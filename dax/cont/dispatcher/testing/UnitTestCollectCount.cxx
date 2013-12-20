@@ -24,7 +24,7 @@
 #include <dax/cont/arg/TopologyUniformGrid.h>
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/testing/Testing.h>
-#include <dax/cont/scheduling/CollectCount.h>
+#include <dax/cont/dispatcher/CollectCount.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/exec/WorkletMapCell.h>
@@ -72,7 +72,7 @@ void CollectCount()
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count;
-  bindings.ForEachCont(dax::cont::scheduling::CollectCount<DomainType>(count));
+  bindings.ForEachCont(dax::cont::dispatcher::CollectCount<DomainType>(count));
   DAX_TEST_ASSERT((count == 1),
                   "CollectCount must be 1 when we have a constant field arg");
   }
@@ -96,7 +96,7 @@ void CollectCount()
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count;
-  bindings.ForEachCont(dax::cont::scheduling::CollectCount<DomainType>(count));
+  bindings.ForEachCont(dax::cont::dispatcher::CollectCount<DomainType>(count));
   DAX_TEST_ASSERT((count == size),
               "CollectCount was not the length of the array.");
   }
@@ -124,7 +124,7 @@ void CollectCount()
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count;
-  bindings.ForEachCont(dax::cont::scheduling::CollectCount<DomainType>(count));
+  bindings.ForEachCont(dax::cont::dispatcher::CollectCount<DomainType>(count));
 
   DAX_TEST_ASSERT((count == size),
                   "CollectCount was not the length of the array.");
@@ -142,7 +142,7 @@ void CollectCount()
                                                       scalarHandle));
 
   secondBindings.ForEachCont(
-                         dax::cont::scheduling::CollectCount<DomainType>(count));
+                         dax::cont::dispatcher::CollectCount<DomainType>(count));
 
   DAX_TEST_ASSERT((count == size),
                   "CollectCount was not the length of the array.");
@@ -180,7 +180,7 @@ void CollectCount()
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count;
-  bindings.ForEachCont(dax::cont::scheduling::CollectCount<DomainType>(count));
+  bindings.ForEachCont(dax::cont::dispatcher::CollectCount<DomainType>(count));
 
   //verify that count is equal to one, not the length of the vector, see
   //above comment for why
@@ -199,7 +199,7 @@ void CollectCount()
                                                       scalarHandle));
 
   secondBindings.ForEachCont(
-                         dax::cont::scheduling::CollectCount<DomainType>(count));
+                         dax::cont::dispatcher::CollectCount<DomainType>(count));
 
   //verify that count is equal to one, not the length of the vector, see
   //above comment for why
@@ -242,7 +242,7 @@ void CollectCount()
 
   // Visit each bound argument to determine the count to be scheduled.
   dax::Id count;
-  bindings.ForEachCont(dax::cont::scheduling::CollectCount<DomainType>(count));
+  bindings.ForEachCont(dax::cont::dispatcher::CollectCount<DomainType>(count));
   DAX_TEST_ASSERT((count == validCollectCount),
                   "CollectCount wasn't the number of cells in grid.");
   }

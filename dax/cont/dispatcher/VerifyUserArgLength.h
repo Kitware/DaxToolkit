@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_scheduling_VerifyUserArgLegnth_h
-#define __dax_cont_scheduling_VerifyUserArgLegnth_h
+#ifndef __dax_cont_dispatcher_VerifyUserArgLegnth_h
+#define __dax_cont_dispatcher_VerifyUserArgLegnth_h
 
 # include <boost/mpl/if.hpp>
 # include <boost/mpl/less.hpp>
@@ -28,7 +28,7 @@
 #  define DAX_ASSERT_ARG_LENGTH BOOST_MPL_ASSERT
 #endif
 
-namespace dax { namespace cont { namespace scheduling {
+namespace dax { namespace cont { namespace dispatcher {
 
 template<class WorkType,int NumUserArgs>
 class VerifyUserArgLength
@@ -51,7 +51,7 @@ public:
           TooManyParameters;
 };
 
-} } } //dax::cont::scheduling
+} } } //dax::cont::dispatcher
 
 
-#endif //__dax_cont_scheduling_VerifyUserArgLegnth_h
+#endif //__dax_cont_dispatcher_VerifyUserArgLegnth_h

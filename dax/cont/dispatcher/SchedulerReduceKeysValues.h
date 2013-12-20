@@ -13,18 +13,18 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //===========================================x==================================
-#ifndef __dax_cont_scheduling_SchedulerReduceKeysValues_h
-#define __dax_cont_scheduling_SchedulerReduceKeysValues_h
+#ifndef __dax_cont_dispatcher_SchedulerReduceKeysValues_h
+#define __dax_cont_dispatcher_SchedulerReduceKeysValues_h
 
 #include <dax/Types.h>
 #include <dax/CellTraits.h>
 #include <dax/cont/arg/ConceptMap.h>
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/Scheduler.h>
-#include <dax/cont/scheduling/AddReduceKeysArgs.h>
-#include <dax/cont/scheduling/SchedulerDefault.h>
-#include <dax/cont/scheduling/SchedulerTags.h>
-#include <dax/cont/scheduling/VerifyUserArgLength.h>
+#include <dax/cont/dispatcher/AddReduceKeysArgs.h>
+#include <dax/cont/dispatcher/SchedulerDefault.h>
+#include <dax/cont/dispatcher/SchedulerTags.h>
+#include <dax/cont/dispatcher/VerifyUserArgLength.h>
 #include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/cont/sig/VisitIndex.h>
@@ -36,11 +36,11 @@
 # include <dax/internal/ParameterPackCxx03.h>
 #endif // !(__cplusplus >= 201103L)
 
-namespace dax { namespace cont { namespace scheduling {
+namespace dax { namespace cont { namespace dispatcher {
 
 
 template <class DeviceAdapterTag>
-class Scheduler<DeviceAdapterTag,dax::cont::scheduling::ReduceKeysValuesTag>
+class Scheduler<DeviceAdapterTag,dax::cont::dispatcher::ReduceKeysValuesTag>
 {
 
 public:
@@ -50,7 +50,7 @@ public:
   //copy constructor so that people can pass schedulers around by value
   DAX_CONT_EXPORT Scheduler(
       const Scheduler<DeviceAdapterTag,
-          dax::cont::scheduling::ReduceKeysValuesTag>& other ):
+          dax::cont::dispatcher::ReduceKeysValuesTag>& other ):
   DefaultScheduler(other.DefaultScheduler)
   {
   }
@@ -60,7 +60,7 @@ public:
                               ParameterPackType& args) const
   {
     typedef typename WorkletType::WorkletType RealWorkletType;
-    typedef dax::cont::scheduling::VerifyUserArgLength<RealWorkletType,
+    typedef dax::cont::dispatcher::VerifyUserArgLength<RealWorkletType,
                 ParameterPackType::NUM_PARAMETERS> WorkletUserArgs;
 
     //if you are getting this error you are passing less arguments than requested
@@ -75,8 +75,8 @@ public:
   }
 
 private:
-  typedef dax::cont::scheduling::Scheduler<DeviceAdapterTag,
-    dax::cont::scheduling::ScheduleDefaultTag> SchedulerDefaultType;
+  typedef dax::cont::dispatcher::Scheduler<DeviceAdapterTag,
+    dax::cont::dispatcher::DispatcherMapFieldTag> SchedulerDefaultType;
   const SchedulerDefaultType DefaultScheduler;
 
   template <class WorkletType,
@@ -112,7 +112,7 @@ private:
     // be modified to add this array to the arguments and the execution
     // signature has to be modified to ensure that the ReductionCount signature
     // points to the appropriate array.  The AddReduceKeysArgs does all this.
-    typedef typename dax::cont::scheduling::AddReduceKeysArgs<
+    typedef typename dax::cont::dispatcher::AddReduceKeysArgs<
                   WorkletType>::DerivedWorkletType DerivedWorkletType;
 
     //we get our magic here. we need to wrap some parameters and pass
@@ -128,4 +128,4 @@ private:
 
 } } }
 
-#endif //__dax_cont_scheduling_ReduceKeysValues_h
+#endif //__dax_cont_dispatcher_ReduceKeysValues_h

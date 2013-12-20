@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_scheduling_CollectCount_h
-#define __dax_cont_scheduling_CollectCount_h
+#ifndef __dax_cont_dispatcher_CollectCount_h
+#define __dax_cont_dispatcher_CollectCount_h
 
 
 #include <dax/Types.h>
@@ -24,7 +24,7 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/utility/enable_if.hpp>
 
-namespace dax { namespace cont { namespace scheduling {
+namespace dax { namespace cont { namespace dispatcher {
 
 template <class DomainType>
 class CollectCount
@@ -92,4 +92,4 @@ public:
 
 } } }
 
-#endif //__dax_cont_scheduling_CollectCount_h
+#endif //__dax_cont_dispatcher_CollectCount_h
