@@ -71,7 +71,9 @@ public:
 
   ConceptMap(GridType g): Grid(g) {}
 
-  ExecArg GetExecArg() { return ExecGridType(this->Topology,this->Points); }
+  ExecArg GetExecArg() const {
+    return ExecGridType(this->Topology,this->Points);
+  }
 
   //All topology fields are required by scheduler to expose the cont arg
   DAX_CONT_EXPORT const ContArg& GetContArg() const { return this->Grid; }
@@ -146,7 +148,9 @@ public:
 
   ConceptMap(GridType g): Grid(g) {}
 
-  ExecArg GetExecArg() { return ExecGridType(this->Topology,this->Points); }
+  ExecArg GetExecArg() const {
+    return ExecGridType(this->Topology,this->Points);
+  }
 
   //All topology fields are required by scheduler to expose the cont arg
   DAX_CONT_EXPORT const ContArg& GetContArg() const { return this->Grid; }

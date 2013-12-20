@@ -45,7 +45,10 @@ namespace dax { namespace exec { namespace arg {
 
 //bind returns a specific execution and control signature binding
 //only specialized for bindings that refer to a control side argument
-template <typename DomainType, typename Tags, typename Invocation,int N>
+template <typename DomainType,
+          typename Tags,
+          typename Invocation,
+          int N>
 class BindArg
 {
 public:
@@ -53,19 +56,23 @@ public:
 };
 
 //specialize on Topology to pure arg binding, which is a BindCellTag mapping
-template<typename Tags, typename Invocation, int N>
+template<typename Tags,
+         typename Invocation,
+         int N>
 class BindArg<dax::cont::sig::Cell,
               dax::cont::arg::Topology(Tags),
               Invocation,
               N>
 {
 public:
-  typedef BindCellTag<Invocation,N> type;
+  typedef BindCellTag<Invocation, N> type;
 };
 
 //specialize on arg to field mapping, with Field(Point) being understood
 //as a specialization of the default bind direct behavior
-template<typename Tags, typename Invocation, int N>
+template<typename Tags,
+         typename Invocation,
+         int N>
 class BindArg<dax::cont::sig::Cell,
               dax::cont::arg::Field(Tags),
               Invocation,
@@ -80,7 +87,9 @@ public:
 };
 
 //specialize on arg to field mapping when the cells are being permuted
-template<typename Tags, typename Invocation, int N>
+template<typename Tags,
+         typename Invocation,
+         int N>
 class BindArg<dax::cont::sig::PermutedCell,
               dax::cont::arg::Field(Tags),
               Invocation,
@@ -94,21 +103,24 @@ public:
           typename Tags::template Has<dax::cont::sig::Out>,
           BindDirect<Invocation, N>,
           BindPermutedCellField<Invocation, N> >::type>::type type;
+
 };
+
 
 
 //find binding finds the correct binding for a parameter
 //the main job is to extract out the control signature position and tag
 //from Invocation if it exists
-template <typename WorkletType, typename Parameter, typename Invocation>
+template <typename Invocation,
+          typename Parameter>
 class FindBinding;
 
 //bind find the specialization for arg binding based on control side tags
-template <typename WorkletType, int N, typename Invocation>
-class FindBinding<WorkletType, dax::cont::sig::Arg<N>, Invocation>
+template <typename Invocation, int N>
+class FindBinding<Invocation, dax::cont::sig::Arg<N> >
 {
-  typedef typename WorkletType::DomainType DomainType;
-  typedef typename dax::cont::internal::Bindings<Invocation>::template GetType<N>::type ControlBinding;
+  typedef typename Invocation::Worklet::DomainType DomainType;
+  typedef typename dax::cont::internal::Bindings<Invocation>::type::template GetType<N>::type ControlBinding;
   typedef typename dax::cont::arg::ConceptMapTraits<ControlBinding>::Concept Concept;
   typedef typename dax::cont::arg::ConceptMapTraits<ControlBinding>::Tags Tags;
 public:
@@ -119,18 +131,17 @@ public:
 
 //specialize on Topology to Vertices(_N) binding, which is a BindCellVerts mapping
 //since the user wants the cell vertices not cell tag
-template<typename WorkletType, int N, typename Invocation>
-class FindBinding<WorkletType,
-                  dax::cont::arg::Topology::Vertices(*)(dax::cont::sig::Arg<N>),
-                  Invocation>
+template<typename Invocation, int N>
+class FindBinding<Invocation,
+                  dax::cont::arg::Topology::Vertices(*)(dax::cont::sig::Arg<N>)>
 {
 public:
   typedef BindDirect<Invocation,N> type;
 };
 
 //bind workid in the execution signature to the bindworkId class
-template <typename WorkletType, typename Invocation>
-class FindBinding<WorkletType, dax::cont::sig::WorkId, Invocation>
+template <typename Invocation>
+class FindBinding<Invocation, dax::cont::sig::WorkId>
 {
 public:
   typedef BindWorkId<Invocation> type;
@@ -138,8 +149,8 @@ public:
 
 //bind VertexId directly to the input array (which should be specially
 //constructed by the scheduler)
-template<typename WorkletType, int N, typename Invocation>
-class FindBinding<WorkletType, dax::cont::sig::VisitIndexArg<N>, Invocation>
+template<typename Invocation, int N>
+class FindBinding<Invocation, dax::cont::sig::VisitIndexArg<N> >
 {
 public:
   typedef BindDirect<Invocation,N> type;
@@ -147,8 +158,8 @@ public:
 
 //bind ReductionCount directly to the input array (which should be specially
 //constructed by the scheduler)
-template<typename WorkletType, int N, typename Invocation>
-class FindBinding<WorkletType, dax::cont::sig::ReductionCountArg<N>, Invocation>
+template<typename Invocation, int N>
+class FindBinding<Invocation, dax::cont::sig::ReductionCountArg<N> >
 {
 public:
   typedef BindDirect<Invocation,N> type;
@@ -156,18 +167,17 @@ public:
 
 //bind ReductionOffset directly to the input array (which should be specially
 //constructed by the scheduler)
-template<typename WorkletType, int N, typename Invocation>
-class FindBinding<WorkletType, dax::cont::sig::ReductionOffsetArg<N>, Invocation>
+template<typename Invocation, int N>
+class FindBinding<Invocation, dax::cont::sig::ReductionOffsetArg<N> >
 {
 public:
   typedef BindDirect<Invocation,N> type;
 };
 
 //specialize on KeyGroup(_N) binding
-template<typename WorkletType, int N, typename Invocation>
-class FindBinding<WorkletType,
-                  dax::cont::sig::KeyGroup(*)(dax::cont::sig::Arg<N>),
-                  Invocation>
+template<typename Invocation, int N>
+class FindBinding<Invocation,
+                  dax::cont::sig::KeyGroup(*)(dax::cont::sig::Arg<N>) >
 {
 public:
   typedef BindKeyGroup<Invocation,N> type;

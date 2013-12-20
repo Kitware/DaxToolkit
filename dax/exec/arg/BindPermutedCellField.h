@@ -38,9 +38,11 @@
 namespace dax { namespace exec { namespace arg {
 
 template <typename Invocation, int N>
-class BindPermutedCellField : public dax::exec::arg::ArgBase< BindPermutedCellField<Invocation, N> >
+class BindPermutedCellField
+    : public dax::exec::arg::ArgBase< BindPermutedCellField<Invocation, N> >
 {
-  typedef dax::exec::arg::ArgBaseTraits< BindPermutedCellField< Invocation, N > > Traits;
+  typedef dax::exec::arg::ArgBaseTraits< BindPermutedCellField<Invocation, N > >
+      Traits;
 
   enum{TopoIndex=Traits::TopoIndex};
   typedef typename Traits::TopoExecArgType TopoExecArgType;
@@ -52,7 +54,7 @@ public:
   typedef typename Traits::SaveType SaveType;
 
   DAX_CONT_EXPORT BindPermutedCellField(
-      dax::cont::internal::Bindings<Invocation>& bindings):
+      typename dax::cont::internal::Bindings<Invocation>::type &bindings):
     TopoExecArg(dax::exec::arg::GetNthExecArg<TopoIndex>(bindings)),
     ExecArg(dax::exec::arg::GetNthExecArg<N>(bindings)),
     Value() {}
@@ -96,9 +98,9 @@ template <typename Invocation,  int N >
 struct ArgBaseTraits< BindPermutedCellField<Invocation, N> >
 {
 private:
-  typedef typename dax::exec::arg::FindBindInfo<dax::cont::arg::Topology,
-                                               Invocation> TopoInfo;
-  typedef typename dax::exec::arg::BindInfo<N,Invocation> MyInfo;
+  typedef dax::exec::arg::FindBindInfo<dax::cont::arg::Topology,Invocation>
+      TopoInfo;
+  typedef dax::exec::arg::BindInfo<N,Invocation> MyInfo;
   typedef typename MyInfo::Tags Tags;
 
 public:

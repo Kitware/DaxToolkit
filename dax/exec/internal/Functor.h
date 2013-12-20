@@ -13,35 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#if !defined(BOOST_PP_IS_ITERATING)
-
 # ifndef __dax_exec_internal_Functor_h
 # define __dax_exec_internal_Functor_h
-# if defined(DAX_DOXYGEN_ONLY)
-
-# include <dax/Types.h>
-
-/// \headerfile Functor.h dax/exec/internal/Functor.h
-/// \brief Worklet invocation functor for execution environment
-///
-/// \tparam Invocation   Control environment invocation signature
-template <typename Invocation>
-class Functor
-{
-public:
-  typedef typename dax::internal::GetNthType<0, Invocation>::type WorkletType;
-  typedef dax::cont::internal::Bindings<Invocation> BindingsType;
-  Functor(WorkletType worklet, BindingsType& args);
-  void operator()(dax::Id id);
-  DAX_CONT_EXPORT void SetErrorMessageBuffer(
-      dax::exec::internal::ErrorMessageBuffer &errorBuffer);
-};
-
-# else // !defined(DAX_DOXYGEN_ONLY)
-
-# if !(__cplusplus >= 201103L)
-#  include <dax/internal/ParameterPackCxx03.h>
-# endif // !(__cplusplus >= 201103L)
 
 # include <dax/Types.h>
 # include <dax/cont/internal/Bindings.h>
@@ -51,157 +24,203 @@ public:
 # include <dax/internal/GetNthType.h>
 # include <dax/internal/Members.h>
 
+#include <boost/type_traits/remove_reference.hpp>
+#include <boost/utility/enable_if.hpp>
+
 namespace dax { namespace exec { namespace internal {
 
 namespace detail {
 
+template <typename Invocation>
+struct FunctorMemberMap
+{
+  template <int Id, typename Parameter>
+  struct Get
+  {
+  typedef typename arg::FindBinding<Invocation, Parameter>::type type;
+  };
+};
+
+struct FunctorWorkletMemberMap
+{
+  template<int N, typename ExecArgType>
+  struct Get {
+    typedef typename ExecArgType::ReturnType type;
+  };
+};
+
+template<typename ExecBindings>
+struct FunctorExecBindingToWorkletBinding
+{
+  typedef dax::internal::Members<
+      typename dax::internal::ParameterPackToSignature<
+        typename ExecBindings::ParameterPackType,
+        typename ExecBindings::ReturnType>::type,
+      FunctorWorkletMemberMap> type;
+};
+
 template<typename IndexType>
-struct SaveOutArgs
+struct FunctorGetArgs
+{
+protected:
+  const IndexType Index;
+  const dax::exec::internal::WorkletBase &Work;
+public:
+  DAX_EXEC_EXPORT FunctorGetArgs(IndexType index,
+                                 const dax::exec::internal::WorkletBase &w)
+    : Index(index), Work(w) {  }
+
+  template<typename BindType>
+  DAX_EXEC_EXPORT
+  typename BindType::ReturnType
+  operator()(BindType &execArg) const
+  {
+    return execArg(IndexGetValue(this->Index), this->Work);
+  }
+};
+
+template<typename IndexType>
+struct FunctorSaveArgs
 {
 protected:
   const IndexType Index;
   const dax::exec::internal::WorkletBase& Work;
 public:
-  DAX_EXEC_EXPORT SaveOutArgs(IndexType index,
-                              const dax::exec::internal::WorkletBase& w):
-    Index(index), Work(w)
-    {}
+  DAX_EXEC_EXPORT FunctorSaveArgs(IndexType index,
+                                  const dax::exec::internal::WorkletBase& w)
+    : Index(index), Work(w) {  }
 
   template <typename BindType>
-  DAX_EXEC_EXPORT void operator()(BindType& execArg) const
+  DAX_EXEC_EXPORT
+  void operator()(BindType& execArg) const
     {
-    execArg.SaveExecutionResult(Index,Work);
+    execArg.SaveExecutionResult(this->Index, this->Work);
     }
 };
 
-template <typename Invocation>
-struct FunctorMemberMap
+template<typename IndexType, typename WorkletType>
+struct FunctorTransformExecArg
 {
-  typedef typename dax::internal::GetNthType<0, Invocation>::type WorkletType;
-  template <int Id, typename Parameter>
-  struct Get
-  {
-  typedef typename arg::FindBinding<WorkletType, Parameter, Invocation>::type type;
+  template<typename ExecArgType>
+  struct ReturnType {
+    typedef typename boost::remove_reference<ExecArgType>::type::ReturnType type;
   };
-};
 
-# if __cplusplus >= 201103L
-template <typename Invocation, typename ExecutionSignature, typename NumList> class FunctorImpl;
-template <typename ExecutionSignature> struct FunctorNums;
-template <typename T0, typename...T> struct FunctorNums<T0(T...)>
-{
-  typedef typename dax::internal::detail::Nums<sizeof...(T)>::type type;
-};
-template <typename Invocation> struct FunctorImplLookup
-{
-  typedef typename dax::internal::GetNthType<0, Invocation>::type WorkletType;
-  typedef typename WorkletType::ExecutionSignature Sig;
-  typedef FunctorImpl<Invocation, Sig, typename FunctorNums<Sig>::type> type;
-};
-# else // !(__cplusplus >= 201103L)
-template <typename Invocation, typename ExecutionSignature> class FunctorImpl;
-template <typename Invocation> struct FunctorImplLookup
-{
-  typedef typename dax::internal::GetNthType<0, Invocation>::type WorkletType;
-  typedef FunctorImpl<Invocation, typename WorkletType::ExecutionSignature> type;
-};
-# endif // !(__cplusplus >= 201103L)
+  DAX_EXEC_EXPORT
+  FunctorTransformExecArg(const IndexType &index, const WorkletType &worklet)
+    : Index(index), Worklet(worklet) {  }
 
-#define _dax_FunctorImpl_Argument(n) instance.template Get<n>()(id,this->Worklet)
-#define _dax_FunctorImpl_T0          instance.template Get<0>()(id,this->Worklet) =
-#define _dax_FunctorImpl_void
-#define _dax_FunctorImpl(r)                                             \
-public:                                                                 \
-  typedef typename dax::internal::GetNthType<0, Invocation>::type       \
-    WorkletType;                                                        \
-  typedef dax::cont::internal::Bindings<Invocation> BindingsType;       \
-protected:                                                              \
-  typedef dax::internal::Members<                                       \
-      ExecutionSignature, FunctorMemberMap<Invocation>                  \
-    > ArgumentsType;                                                    \
-  WorkletType Worklet;                                                  \
-  const ArgumentsType Arguments;                                        \
-public:                                                                 \
-  DAX_CONT_EXPORT                                                       \
-  FunctorImpl(WorkletType worklet, BindingsType& bindings):             \
-    Worklet(worklet), Arguments(bindings) {}                            \
-                                                                        \
-  template<typename IndexType>                                          \
-  DAX_EXEC_EXPORT void operator()(IndexType id) const                   \
-    {                                                                   \
-    ArgumentsType instance(this->Arguments);                            \
-    _dax_FunctorImpl_##r                                                \
-    this->Worklet(_dax_pp_enum___(_dax_FunctorImpl_Argument));          \
-    instance.ForEachExec(                                               \
-        SaveOutArgs<IndexType>(id,this->Worklet));                      \
-    }                                                                   \
+  template<typename ExecArgType>
+  DAX_EXEC_EXPORT
+  typename ExecArgType::ReturnType
+  operator()(ExecArgType &argument) const
+  {
+    return argument(this->Index, this->Worklet);
+  }
 
-
-# if __cplusplus >= 201103L
-#  define _dax_pp_enum___(x) x(N)...
-template <typename Invocation, typename T0, typename...T, int...N>
-class FunctorImpl<Invocation, T0(T...), dax::internal::detail::NumList<N...> >
-{
-  typedef T0 ExecutionSignature(T...);
-  _dax_FunctorImpl(T0)
+  const IndexType &Index;
+  const WorkletType &Worklet;
 };
-template <typename Invocation, typename...T, int...N>
-class FunctorImpl<Invocation, void(T...), dax::internal::detail::NumList<N...> >
-{
-  typedef void ExecutionSignature(T...);
-  _dax_FunctorImpl(void)
-};
-#  undef _dax_pp_enum___
-# else // !(__cplusplus >= 201103L)
-#  define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/exec/internal/Functor.h>))
-#  include BOOST_PP_ITERATE()
-# endif // !(__cplusplus >= 201103L)
-
-# undef _dax_FunctorImpl
-# undef _dax_FunctorImpl_T0
-# undef _dax_FunctorImpl_void
-# undef _dax_FunctorImpl_Argument
 
 } // namespace detail
 
 //----------------------------------------------------------------------------
 
-template <typename Invocation>
-class Functor: public detail::FunctorImplLookup<Invocation>::type
+/// \headerfile Functor.h dax/exec/internal/Functor.h
+/// \brief Worklet invocation functor for execution environment
+///
+/// \tparam Invocation An instance of dax::internal::Invocation that contains
+/// information about the worklet and how it was instantiated.
+template<typename Invocation>
+class Functor
 {
-  typedef typename detail::FunctorImplLookup<Invocation>::type derived;
 public:
-  typedef typename derived::WorkletType WorkletType;
-  typedef typename derived::BindingsType BindingsType;
+  typedef typename Invocation::Worklet WorkletType;
+  typedef typename WorkletType::ExecutionSignature ExecutionSignature;
+  typedef typename dax::cont::internal::Bindings<Invocation>::type BindingsType;
+
   DAX_CONT_EXPORT
-  Functor(WorkletType worklet, BindingsType& args): derived(worklet, args) {}
-  DAX_CONT_EXPORT void SetErrorMessageBuffer(
-      const dax::exec::internal::ErrorMessageBuffer &errorBuffer) {
+  Functor(WorkletType worklet, BindingsType &bindings)
+    : Worklet(worklet),
+      Arguments(bindings,
+                dax::internal::MembersInitialArgumentTag(),
+                dax::internal::MembersContTag()) {  }
+
+  DAX_CONT_EXPORT
+  void SetErrorMessageBuffer(
+      const dax::exec::internal::ErrorMessageBuffer &errorBuffer)
+  {
     this->Worklet.SetErrorMessageBuffer(errorBuffer);
+  }
+
+  DAX_EXEC_EXPORT
+  void operator()(dax::Id index) const
+  {
+    this->InvokeWorklet(index);
+  }
+  DAX_EXEC_EXPORT
+  void operator()(dax::exec::internal::IJKIndex index) const
+  {
+    this->InvokeWorklet(index);
+  }
+
+private:
+  WorkletType Worklet;
+
+  typedef dax::internal::Members<
+      ExecutionSignature,
+      detail::FunctorMemberMap<Invocation>
+    > ArgumentsType;
+  const ArgumentsType Arguments;
+
+  template<typename IndexType>
+  DAX_EXEC_EXPORT
+  void InvokeWorklet(IndexType index) const
+  {
+    // Make a copy of the Arguments object, which should remain constant
+    // for thread performance (?)
+    ArgumentsType instance(this->Arguments);
+
+    // Invoke the worklet with these arguments.
+    this->DoInvokeWorklet<ArgumentsType::FIRST_INDEX>(instance, index);
+
+    // Save the results back to any arrays in the ExecArgs bindings. The
+    // WorkletBindingsType should contain reference types back to any output
+    // types in this->Arguments, so they can be directly written back.
+    instance.ForEachExec(
+          detail::FunctorSaveArgs<IndexType>(index, this->Worklet));
+  }
+
+  template<int FirstIndex, typename IndexType>
+  DAX_EXEC_EXPORT
+  typename boost::enable_if_c<FirstIndex == 0>::type
+  DoInvokeWorklet(ArgumentsType &argumentsInstance,
+                  const IndexType &index) const
+  {
+    typedef typename ArgumentsType::ReturnType::ReturnType ReturnType;
+    argumentsInstance.template Get<0>()(index,this->Worklet) =
+        dax::internal::ParameterPackInvokeWithReturnExec<
+            typename boost::remove_reference<ReturnType>::type>(
+          this->Worklet,
+          argumentsInstance.GetArgumentValues(),
+          detail::FunctorTransformExecArg<IndexType,WorkletType>(
+            index, this->Worklet));
+  }
+
+  template<int FirstIndex, typename IndexType>
+  DAX_EXEC_EXPORT
+  typename boost::enable_if_c<FirstIndex != 0>::type
+  DoInvokeWorklet(ArgumentsType &argumentsInstance,
+                  const IndexType &index) const
+  {
+    dax::internal::ParameterPackInvokeExec(
+          this->Worklet,
+          argumentsInstance.GetArgumentValues(),
+          detail::FunctorTransformExecArg<IndexType,WorkletType>(
+            index, this->Worklet));
   }
 };
 
 }}} // namespace dax::exec::internal
 
-# endif // !defined(DAX_DOXYGEN_ONLY)
 # endif //__dax_exec_internal_Functor_h
-
-#else // defined(BOOST_PP_IS_ITERATING)
-
-template <typename Invocation, typename T0 _dax_pp_comma _dax_pp_typename___T>
-class FunctorImpl<Invocation, T0(_dax_pp_T___)>
-{
-  typedef T0 ExecutionSignature(_dax_pp_T___);
-  _dax_FunctorImpl(T0)
-};
-
-# if _dax_pp_sizeof___T > 0
-template <typename Invocation, _dax_pp_typename___T>
-class FunctorImpl<Invocation, void(_dax_pp_T___)>
-{
-  typedef void ExecutionSignature(_dax_pp_T___);
-  _dax_FunctorImpl(void)
-};
-# endif // _dax_pp_sizeof___T > 0
-
-#endif // defined(BOOST_PP_IS_ITERATING)

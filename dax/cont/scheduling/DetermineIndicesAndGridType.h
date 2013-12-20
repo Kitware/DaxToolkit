@@ -61,15 +61,17 @@ namespace internal
   };
 }
 
-template< class Bindings >
+template<typename Invocation>
 class DetermineIndicesAndGridType
 {
   // Determine the topology type by finding the topo binding. First
   // we look up the index of the binding, the second step is to actually
   // get the type for that binding argument.
-  typedef typename dax::cont::internal::FindBinding<Bindings,
+  typedef typename dax::cont::internal::FindBinding<
+                                  Invocation,
                                   dax::cont::arg::Topology>::type TopoIndex;
-  typedef typename Bindings::template GetType<
+  typedef typename dax::cont::internal::Bindings<Invocation>::type BindingsType;
+  typedef typename BindingsType::template GetType<
                                   TopoIndex::value>::type TopoControlBinding;
 
   //2: now that we have the execution arg object we can extract the grid
@@ -86,7 +88,7 @@ public:
   typedef typename internal::DetermineGridIndexType< GridTypeTag >::type
                                                     GridIndexType;
 
-  DetermineIndicesAndGridType(const Bindings& bindings,
+  DetermineIndicesAndGridType(const BindingsType& bindings,
                               dax::Id numInstances):
     Topology(bindings.template Get<TopoIndex::value>().GetContArg()),
     NumInstances(numInstances)

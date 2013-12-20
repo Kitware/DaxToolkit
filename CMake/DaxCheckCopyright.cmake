@@ -30,7 +30,6 @@ set(FILES_TO_CHECK
   *.h.in
   *.cxx
   *.cu
-  *.worklet
   )
 
 set(EXCEPTIONS

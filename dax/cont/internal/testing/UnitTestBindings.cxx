@@ -35,13 +35,32 @@ struct Worklet2 : public dax::exec::internal::WorkletBase
   typedef void ControlSignature(Field,Field);
 };
 
+template<typename BindingType>
+void TestWorklet1Binding(const BindingType &b1)
+{
+  DAX_TEST_ASSERT((b1.template Get<1>().GetExecArg()(0,Worklet1()) == 1.0f),
+                  "ExecArg value incorrect!");
+}
+
+template<typename BindingType>
+void TestWorklet2Binding(const BindingType &b2)
+{
+  DAX_TEST_ASSERT((b2.template Get<1>().GetExecArg()(0,Worklet2()) == 1.0f),
+                  "ExecArg value incorrect!");
+  DAX_TEST_ASSERT((b2.template Get<2>().GetExecArg()(0,Worklet2()) == 2.0f),
+                  "ExecArg value incorrect!");
+}
+
 void Bindings()
 {
-  dax::cont::internal::Bindings<Worklet1(float)> b1(1.0f);
-  dax::cont::internal::Bindings<Worklet2(float,float)> b2(1.0f, 2.0f);
-  DAX_TEST_ASSERT((b1.Get<1>().GetExecArg()(0,Worklet1()) == 1.0f), "ExecArg value incorrect!");
-  DAX_TEST_ASSERT((b2.Get<1>().GetExecArg()(0,Worklet2()) == 1.0f), "ExecArg value incorrect!");
-  DAX_TEST_ASSERT((b2.Get<2>().GetExecArg()(0,Worklet2()) == 2.0f), "ExecArg value incorrect!");
+  TestWorklet1Binding(
+        dax::cont::internal::BindingsCreate(
+          Worklet1(),
+          dax::internal::make_ParameterPack(1.0f)));
+  TestWorklet2Binding(
+        dax::cont::internal::BindingsCreate(
+          Worklet2(),
+          dax::internal::make_ParameterPack(1.0f, 2.0f)));
 }
 
 } // anonymous namespace

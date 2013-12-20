@@ -30,7 +30,9 @@ struct BindWorkId
 {
   //can't used BindInfo, since the WorkId has no control side mapping
   //it is only an exec argument
-  typedef dax::cont::internal::Bindings<Invocation> AllControlBindings;
+  typedef typename dax::cont::internal::Bindings<Invocation>::type
+      AllControlBindings;
+
   typedef dax::Id ReturnType;
 
   DAX_CONT_EXPORT BindWorkId(AllControlBindings& daxNotUsed(bindings)) {}

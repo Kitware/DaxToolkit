@@ -41,9 +41,11 @@ struct GetNthType
 
 # else // !defined(DAX_DOXYGEN_ONLY)
 
-# if !(__cplusplus >= 201103L)
+# include <dax/internal/Configure.h>
+
+# ifndef DAX_USE_VARIADIC_TEMPLATE
 #  include <dax/internal/ParameterPackCxx03.h>
-# endif // !(__cplusplus >= 201103L)
+# endif // !DAX_USE_VARIADIC_TEMPLATE
 
 namespace dax { namespace internal {
 
@@ -52,14 +54,14 @@ template <unsigned int N, typename TypeSequence> struct GetNthType;
 
 // Specialize for function types of each arity.
 template <typename T0> struct GetNthType<0, T0()> { typedef T0 type; };
-# if __cplusplus >= 201103L
+# ifdef DAX_USE_VARIADIC_TEMPLATE
 template <typename T0, typename T1, typename... T> struct GetNthType<0, T0(T1,T...)> { typedef T0 type; };
 template <typename T0, typename T1, typename... T> struct GetNthType<1, T0(T1,T...)> { typedef T1 type; };
 template <unsigned int N, typename T0, typename T1, typename... T> struct GetNthType<N, T0(T1,T...)> { typedef typename GetNthType<N-1,T0(T...)>::type type; };
-# else // !(__cplusplus >= 201103L)
+# else // !DAX_USE_VARIADIC_TEMPLATE
 #  define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/internal/GetNthType.h>))
 #  include BOOST_PP_ITERATE()
-# endif // !(__cplusplus >= 201103L)
+# endif // !DAX_USE_VARIADIC_TEMPLATE
 
 }} // namespace dax::internal
 

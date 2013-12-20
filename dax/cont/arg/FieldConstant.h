@@ -40,7 +40,7 @@ public:
   typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<dax::Scalar> ExecArg;
   explicit ConceptMap(T x): ExecArg_(static_cast<dax::Scalar>(x)) {}
-  ExecArg GetExecArg() { return this->ExecArg_; }
+  ExecArg GetExecArg() const { return this->ExecArg_; }
   void ToExecution(dax::Id) const {}
 private:
   ExecArg ExecArg_;
@@ -56,7 +56,7 @@ public:
   typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<T> ExecArg;
   explicit ConceptMap(T x): ExecArg_(x) {}
-  ExecArg GetExecArg() { return this->ExecArg_; }
+  ExecArg GetExecArg() const { return this->ExecArg_; }
   void ToExecution(dax::Id) const {}
 private:
   ExecArg ExecArg_;
@@ -73,7 +73,7 @@ public:
   typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<Type> ExecArg;
   explicit ConceptMap(const Type& x): ExecArg_(x) {}
-  ExecArg GetExecArg() { return this->ExecArg_; }
+  ExecArg GetExecArg() const { return this->ExecArg_; }
   void ToExecution(dax::Id) const {}
 private:
   ExecArg ExecArg_;
@@ -89,7 +89,7 @@ public:
   typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<Type> ExecArg;
   explicit ConceptMap(const Type& x): ExecArg_(x) {}
-  ExecArg GetExecArg() { return this->ExecArg_; }
+  ExecArg GetExecArg() const { return this->ExecArg_; }
   void ToExecution(dax::Id) const {}
 private:
   ExecArg ExecArg_;
@@ -105,7 +105,7 @@ public:
   typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<Type> ExecArg;
   explicit ConceptMap(const Type& x): ExecArg_(x) {}
-  ExecArg GetExecArg() { return this->ExecArg_; }
+  ExecArg GetExecArg() const { return this->ExecArg_; }
   void ToExecution(dax::Id) const {}
 private:
   ExecArg ExecArg_;
@@ -121,7 +121,7 @@ public:
   typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<Type> ExecArg;
   explicit ConceptMap(const Type& x): ExecArg_(x) {}
-  ExecArg GetExecArg() { return this->ExecArg_; }
+  ExecArg GetExecArg() const { return this->ExecArg_; }
   void ToExecution(dax::Id) const {}
 private:
   ExecArg ExecArg_;
@@ -137,7 +137,7 @@ public:
   typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<Type> ExecArg;
   explicit ConceptMap(const Type& x): ExecArg_(x) {}
-  ExecArg GetExecArg() { return this->ExecArg_; }
+  ExecArg GetExecArg() const { return this->ExecArg_; }
   void ToExecution(dax::Id) const {}
 private:
   ExecArg ExecArg_;
@@ -153,7 +153,7 @@ public:
   typedef dax::cont::sig::NullDomain DomainTag;
   typedef dax::exec::arg::FieldConstant<Type> ExecArg;
   explicit ConceptMap(const Type& x): ExecArg_(x) {}
-  ExecArg GetExecArg() { return this->ExecArg_; }
+  ExecArg GetExecArg() const { return this->ExecArg_; }
   void ToExecution(dax::Id) const {}
 private:
   ExecArg ExecArg_;

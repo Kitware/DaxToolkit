@@ -13,8 +13,6 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //===========================================x==================================
-#if !defined(BOOST_PP_IS_ITERATING)
-
 #ifndef __dax_cont_scheduling_SchedulerReduceKeysValues_h
 #define __dax_cont_scheduling_SchedulerReduceKeysValues_h
 
@@ -44,9 +42,6 @@ namespace dax { namespace cont { namespace scheduling {
 template <class DeviceAdapterTag>
 class Scheduler<DeviceAdapterTag,dax::cont::scheduling::ReduceKeysValuesTag>
 {
-  typedef dax::cont::scheduling::Scheduler<DeviceAdapterTag,
-    dax::cont::scheduling::ScheduleDefaultTag> SchedulerDefaultType;
-  const SchedulerDefaultType DefaultScheduler;
 
 public:
   //default constructor so we can insantiate const schedulers
@@ -60,46 +55,14 @@ public:
   {
   }
 
-#if __cplusplus >= 201103L
-  template <class WorkletType, _dax_pp_typename___T>
-  DAX_CONT_EXPORT void Invoke(WorkletType w, T...a)
+  template <class WorkletType, typename ParameterPackType>
+  DAX_CONT_EXPORT void Invoke(WorkletType worklet,
+                              ParameterPackType& args) const
   {
-    typedef dax::cont::scheduling::VerifyUserArgLength<WorkletType,
-              sizeof...(T)> WorkletUserArgs;
-    //if you are getting this error you are passing less arguments than requested
-    //in the control signature of this worklet
-    DAX_ASSERT_ARG_LENGTH((typename WorkletUserArgs::NotEnoughParameters));
-
-    //if you are getting this error you are passing too many arguments
-    //than requested in the control signature of this worklet
-    DAX_ASSERT_ARG_LENGTH((typename WorkletUserArgs::TooManyParameters));
-
-    this->DoReduce(w,T...);
-  }
-
-  //todo implement the DoReduce method with C11 syntax
-
-#else
-# define BOOST_PP_ITERATION_PARAMS_1 (3, (2, 10, <dax/cont/scheduling/SchedulerReduceKeysValues.h>))
-# include BOOST_PP_ITERATE()
-#endif
-};
-
-} } }
-
-#endif //__dax_cont_scheduling_ReduceKeysValues_h
-
-#else // defined(BOOST_PP_IS_ITERATING)
-public: //needed so that each iteration of invoke is public
-  template <class WorkletType, _dax_pp_typename___T>
-  DAX_CONT_EXPORT void Invoke(WorkletType w, _dax_pp_params___(a)) const
-  {
-    //we are being passed dax::cont::ReduceKeysValues,
-    //we want the actual exec worklet that is being passed to
-    //ScheduleReduceKeyValues
     typedef typename WorkletType::WorkletType RealWorkletType;
     typedef dax::cont::scheduling::VerifyUserArgLength<RealWorkletType,
-              _dax_pp_sizeof___T> WorkletUserArgs;
+                ParameterPackType::NUM_PARAMETERS> WorkletUserArgs;
+
     //if you are getting this error you are passing less arguments than requested
     //in the control signature of this worklet
     DAX_ASSERT_ARG_LENGTH((typename WorkletUserArgs::NotEnoughParameters));
@@ -108,16 +71,21 @@ public: //needed so that each iteration of invoke is public
     //than requested in the control signature of this worklet
     DAX_ASSERT_ARG_LENGTH((typename WorkletUserArgs::TooManyParameters));
 
-    this->DoReduce(w,_dax_pp_args___(a));
+    this->DoReduce(worklet, args);
   }
 
 private:
+  typedef dax::cont::scheduling::Scheduler<DeviceAdapterTag,
+    dax::cont::scheduling::ScheduleDefaultTag> SchedulerDefaultType;
+  const SchedulerDefaultType DefaultScheduler;
+
   template <class WorkletType,
             typename KeysHandleType,
-            _dax_pp_typename___T>
+            typename ParameterPackType>
   DAX_CONT_EXPORT void DoReduce(
-      dax::cont::ReduceKeysValues<WorkletType,KeysHandleType>& workletWrapper,
-      _dax_pp_params___(a)) const
+      dax::cont::ReduceKeysValues<
+        WorkletType, KeysHandleType>& workletWrapper,
+      const ParameterPackType &arguments) const
   {
     typedef dax::cont::ReduceKeysValues<WorkletType,KeysHandleType>
       WorkletWrapperType;
@@ -151,10 +119,13 @@ private:
     //them to the real scheduler
     DerivedWorkletType derivedWorklet(workletWrapper.GetWorklet());
     this->DefaultScheduler.Invoke(derivedWorklet,
-                                  _dax_pp_args___(a),
-                                  reductionCounts,
-                                  reductionOffsets,
-                                  reductionIndices
+                                  arguments.Append(reductionCounts)
+                                  .Append(reductionOffsets)
+                                  .Append(reductionIndices)
                                   );
   }
-#endif // defined(BOOST_PP_IS_ITERATING)
+};
+
+} } }
+
+#endif //__dax_cont_scheduling_ReduceKeysValues_h

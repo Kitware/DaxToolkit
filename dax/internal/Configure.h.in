@@ -102,4 +102,19 @@
 # endif
 #endif
 
+// Determine whether we will use variadic templates (a new feature in C++11).
+// Currently have VARIADIC_TEMPLATE support off.
+#cmakedefine DAX_NO_VARIADIC_TEMPLATE
+#if !defined(DAX_USE_VARIADIC_TEMPLATE) && !defined(DAX_NO_VARIADIC_TEMPLATE)
+// Currently using Boost to determine support.
+# include <boost/config.hpp>
+# if defined(BOOST_HAS_VARIADIC_TMPL)
+#  define DAX_USE_VARIADIC_TEMPLATE 1
+# endif
+#endif
+
+#if defined(DAX_USE_VARIADIC_TEMPLATE) && defined(DAX_NO_VARIADIC_TEMPLATE)
+# error Both DAX_USE_VARIADIC_TEMPLATE and DAX_NO_VARIADIC_TEMPLATE defined.  Do not know what to do.
+#endif
+
 #endif //__dax_internal_Configure_h

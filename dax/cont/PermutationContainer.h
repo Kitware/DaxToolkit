@@ -52,6 +52,9 @@ public:
   {
   }
 
+  DAX_CONT_EXPORT PermutationContainer()
+    : ValueSizeToAllocate(0) {  }
+
   DAX_CONT_EXPORT void SetValueSize(dax::Id v) { this->ValueSizeToAllocate = v; }
   DAX_CONT_EXPORT dax::Id GetValueSize() const
   {
@@ -64,8 +67,8 @@ public:
 
 private:
 
-  const KeyType& Key_;
-  const ValueType& Value_;
+  KeyType Key_;
+  ValueType Value_;
   dax::Id ValueSizeToAllocate;
 };
 
@@ -73,7 +76,7 @@ private:
 template<class Key, class Value>
 DAX_CONT_EXPORT
 dax::cont::PermutationContainer<Key,Value>
-make_Permutation(Key& k,Value& v, dax::Id valueLen)
+make_Permutation(const Key& k, const Value& v, dax::Id valueLen)
 {
   return dax::cont::PermutationContainer<Key,Value>(k,v,valueLen);
 }

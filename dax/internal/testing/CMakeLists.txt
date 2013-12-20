@@ -19,6 +19,7 @@ set(unit_tests
   UnitTestConfigureFor64.cxx
   UnitTestGetNthType.cxx
   UnitTestMembers.cxx
+  UnitTestParameterPack.cxx
   UnitTestTags.cxx
   UnitTestWorkletSignatureFunctions.cxx
   )
