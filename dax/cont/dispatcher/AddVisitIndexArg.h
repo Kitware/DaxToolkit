@@ -18,6 +18,8 @@
 
 #include <dax/Types.h>
 
+#include <dax/cont/DispatcherMapField.h>
+
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/sig/Arg.h>
 #include <dax/cont/sig/VisitIndex.h>
@@ -42,9 +44,8 @@ struct MakeVisitIndexControlType
 {
   typedef HandleType Type;
 
-  template<class Scheduler, typename OtherHandleType>
-  void operator()(Scheduler &scheduler,
-                  const OtherHandleType& inputCellIds, Type& visitIndices) const
+  template<typename OtherHandleType>
+  void operator()(const OtherHandleType& inputCellIds, Type& visitIndices) const
   {
     //To determine the number of times we have already visited
     //the current input cell, we take the lower bounds of the
@@ -52,9 +53,12 @@ struct MakeVisitIndexControlType
     //gives us the number of times we have visited that cell
     visitIndices.PrepareForOutput(inputCellIds.GetNumberOfValues());
     Algorithm::LowerBounds(inputCellIds, inputCellIds, visitIndices);
-    scheduler.Invoke(dax::exec::internal::kernel::ComputeVisitIndex(),
-                     dax::internal::make_ParameterPack(
-                       visitIndices, visitIndices)); //as input and output
+
+    dax::cont::DispatcherMapField<
+           dax::exec::internal::kernel::ComputeVisitIndex,
+          typename OtherHandleType::DeviceAdapterTag > dispatcher;
+
+    dispatcher.Invoke( visitIndices, visitIndices ); //as input and output
   }
 };
 
@@ -63,9 +67,8 @@ struct MakeVisitIndexControlType<false,Algorithm,HandleType>
 {
   typedef dax::Id Type;
 
-  template<class Scheduler, typename OtherHandleType>
-  void operator()(Scheduler &daxNotUsed(scheduler),
-                  const OtherHandleType& daxNotUsed(handle), Type& value) const
+  template<typename OtherHandleType>
+  void operator()(const OtherHandleType& daxNotUsed(handle), Type& value) const
   {
     //The visitIndex is not requested, so we fill in the control side argument
     //with a integer value that will be parsed by the bindings code, but
@@ -110,10 +113,10 @@ public:
   typedef typename VisitContFunction::Type VisitIndexArgType;
 
 
-  template<class Scheduler, class HandleType>
-  void operator()(Scheduler& scheduler, const HandleType& cellRange, VisitIndexArgType& visitIndex)
+  template<class HandleType>
+  void operator()(const HandleType& cellRange, VisitIndexArgType& visitIndex)
     {
-    VisitContFunction()(scheduler,cellRange,visitIndex);
+    VisitContFunction()(cellRange,visitIndex);
     }
 
 };

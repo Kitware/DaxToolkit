@@ -34,8 +34,8 @@ set(unit_tests
   UnitTestWorkletSine.cxx
   # UnitTestWorkletSlice.cxx
   UnitTestWorkletSquare.cxx
-  # UnitTestWorkletTetrahedralize.cxx
-  # UnitTestWorkletThreshold.cxx
+  UnitTestWorkletTetrahedralize.cxx
+  UnitTestWorkletThreshold.cxx
   UnitTestWorkletAssert.cxx
   UnitTestWorkletMapCellError.cxx
   UnitTestWorkletMapFieldError.cxx

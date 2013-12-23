@@ -58,14 +58,14 @@ public:
   // C++03 implementation.
   template <typename...T>
   DAX_CONT_EXPORT
-  void Invoke(T...arguments) const
+  void Invoke(T...arguments)
     {
     // If you get a compile error on the following line, then you are
     // using the wrong type of Dispatcher class with your worklet.
     // (Check the type for WorkletType. It should match WorkletBaseType.)
     BOOST_MPL_ASSERT((Worklet_Should_Match_DispatcherType));
 
-    static_cast<const DerivedDispatcher*>(this)->DoInvoke(
+    static_cast<DerivedDispatcher*>(this)->DoInvoke(
       this->Worklet, dax::internal::make_ParameterPack(arguments...));
     }
 #else // !DAX_USE_VARIADIC_TEMPLATE
@@ -81,11 +81,19 @@ protected:
   DispatcherBase(WorkletType worklet) : Worklet(worklet)
     { }
 
-  template <typename WorkletType, typename ParameterPackType>
+  template <typename DerivedWorkletType, typename ParameterPackType>
   DAX_CONT_EXPORT
-  void BasicInvoke(WorkletType worklet, const ParameterPackType &arguments) const
+  void BasicInvoke(DerivedWorkletType worklet, const ParameterPackType &arguments) const
   {
-  typedef dax::cont::dispatcher::VerifyUserArgLength<WorkletType,
+  typedef typename boost::is_base_of<
+        WorkletType, DerivedWorkletType > DerivedWorklet_Should_Match;
+
+  // If you get a compile error on the following line, then you are
+  // calling BasicInvoke with a worklet type that doesn't inherit from
+  // from the worklet that the dispatcher is templated on.
+  BOOST_MPL_ASSERT((DerivedWorklet_Should_Match));
+
+  typedef dax::cont::dispatcher::VerifyUserArgLength<DerivedWorkletType,
               ParameterPackType::NUM_PARAMETERS> WorkletUserArgs;
   //if you are getting this error you are passing less arguments than requested
   //in the control signature of this worklet
@@ -99,12 +107,12 @@ protected:
   // worklet ControlSignature through ConceptMap specializations.
   // The concept maps also know how to make the arguments available
   // in the execution environment.
-  typedef dax::internal::Invocation<WorkletType,ParameterPackType> Invocation;
+  typedef dax::internal::Invocation<DerivedWorkletType,ParameterPackType> Invocation;
   typename dax::cont::internal::Bindings<Invocation>::type
       bindings = dax::cont::internal::BindingsCreate(worklet, arguments);
 
   // Visit each bound argument to determine the count to be scheduled.
-  typedef typename WorkletType::DomainType DomainType;
+  typedef typename DerivedWorkletType::DomainType DomainType;
   dax::Id count=1;
   bindings.ForEachCont(
         dax::cont::dispatcher::CollectCount<DomainType>(count));
@@ -150,14 +158,14 @@ private:
 #if _dax_pp_sizeof___T > 0
   template <_dax_pp_typename___T>
   DAX_CONT_EXPORT
-  void Invoke(_dax_pp_params___(arguments)) const
+  void Invoke(_dax_pp_params___(arguments))
     {
     // If you get a compile error on the following line, then you are
     // using the wrong type of Dispatcher class with your worklet.
     // (Check the type for WorkletType. It should match WorkletBaseType.)
     BOOST_MPL_ASSERT((Worklet_Should_Match_DispatcherType));
 
-    static_cast<const DerivedDispatcher*>(this)->DoInvoke(
+    static_cast<DerivedDispatcher*>(this)->DoInvoke(
       this->Worklet,
       dax::internal::make_ParameterPack( _dax_pp_args___(arguments) ) );
     }

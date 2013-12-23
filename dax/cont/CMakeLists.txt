@@ -28,6 +28,7 @@ set(headers
   Assert.h
   DeviceAdapter.h
   DeviceAdapterSerial.h
+  DispatcherGenerateTopology.h
   DispatcherMapCell.h
   DispatcherMapField.h
   Error.h
@@ -39,7 +40,6 @@ set(headers
   ErrorExecution.h
   GenerateInterpolatedCells.h
   GenerateKeysValues.h
-  GenerateTopology.h
   PermutationContainer.h
   ReduceKeysValues.h
   Timer.h
