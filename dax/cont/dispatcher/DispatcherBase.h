@@ -20,6 +20,7 @@
 
 #include <dax/Types.h>
 
+#include <iostream>
 #include <boost/type_traits/is_base_of.hpp>
 
 #ifndef DAX_USE_VARIADIC_TEMPLATE
@@ -113,11 +114,28 @@ protected:
   bindings.ForEachCont(
         dax::cont::dispatcher::CreateExecutionResources(count));
 
-  // Schedule the worklet invocations in the execution environment.
-  dax::exec::internal::Functor<Invocation>
-      bindingFunctor(worklet, bindings);
-  dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>::Schedule(
-                                                      bindingFunctor, count);
+  //Schedule the worklet invocations in the execution environment, based
+  //on its type. If the worklet is a MapCell we can optimize the iteration
+  //compared to a basic MapField
+  dax::exec::internal::Functor<Invocation> bindingFunctor(worklet, bindings);
+
+  typedef typename dax::cont::dispatcher::DetermineIndicesAndGridType<
+                      WorkletBaseType, Invocation>  CellSchedulingIndices;
+
+  CellSchedulingIndices cellScheduler(bindings,count);
+  if(cellScheduler.isValidForGridScheduling())
+    {
+    // Schedule the worklet invocations in the execution environment
+    // using the specialized id3 scheduler
+    dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>::
+            Schedule(bindingFunctor,cellScheduler.gridCount());
+    }
+  else
+    {
+    // Schedule the worklet invocations in the execution environment.
+    dax::cont::DeviceAdapterAlgorithm< DeviceAdapterTag >::
+            Schedule(bindingFunctor,count);
+    }
   }
 
 private:

@@ -23,21 +23,21 @@ set(worklets
 dax_declare_worklets(${worklets})
 
 set(unit_tests
-  # UnitTestWorkletCellAverage.cxx
+  UnitTestWorkletCellAverage.cxx
   # UnitTestWorkletCellDataToPointData.cxx
-  # UnitTestWorkletCellGradient.cxx
+  UnitTestWorkletCellGradient.cxx
   UnitTestWorkletCosine.cxx
   UnitTestWorkletElevation.cxx
   UnitTestWorkletMagnitude.cxx
   # UnitTestWorkletMarchingCubes.cxx
-  # UnitTestWorkletPointDataToCellData.cxx
+  UnitTestWorkletPointDataToCellData.cxx
   UnitTestWorkletSine.cxx
   # UnitTestWorkletSlice.cxx
   UnitTestWorkletSquare.cxx
   # UnitTestWorkletTetrahedralize.cxx
   # UnitTestWorkletThreshold.cxx
   UnitTestWorkletAssert.cxx
-  # UnitTestWorkletMapCellError.cxx
+  UnitTestWorkletMapCellError.cxx
   UnitTestWorkletMapFieldError.cxx
   )
 

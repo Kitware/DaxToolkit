@@ -17,7 +17,7 @@
 #define __dax__opengl__testing__TestingOpenGLInterop_h
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/worklet/Magnitude.h>
 
 #include <dax/opengl/testing/TestingWindow.h>
@@ -236,10 +236,9 @@ private:
                            ArrayContainerTag,
                            DeviceAdapterTag> magnitudeHandle;
 
-    dax::cont::Scheduler<DeviceAdapterTag> scheduler;
-    scheduler.Invoke(dax::worklet::Magnitude(),
-                     grid->GetPointCoordinates(),
-                     magnitudeHandle);
+    dax::cont::DispatcherMapField< dax::worklet::Magnitude,
+                                   DeviceAdapterTag> dispatcher;
+    dispatcher.Invoke(grid->GetPointCoordinates(), magnitudeHandle);
 
     //transfer to openGL 3 handles and catch any errors
     //
