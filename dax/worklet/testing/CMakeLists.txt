@@ -29,10 +29,10 @@ set(unit_tests
   UnitTestWorkletCosine.cxx
   UnitTestWorkletElevation.cxx
   UnitTestWorkletMagnitude.cxx
-  # UnitTestWorkletMarchingCubes.cxx
+  UnitTestWorkletMarchingCubes.cxx
   UnitTestWorkletPointDataToCellData.cxx
   UnitTestWorkletSine.cxx
-  # UnitTestWorkletSlice.cxx
+  UnitTestWorkletSlice.cxx
   UnitTestWorkletSquare.cxx
   UnitTestWorkletTetrahedralize.cxx
   UnitTestWorkletThreshold.cxx
