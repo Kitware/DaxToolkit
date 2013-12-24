@@ -24,7 +24,7 @@ dax_declare_worklets(${worklets})
 
 set(unit_tests
   UnitTestWorkletCellAverage.cxx
-  # UnitTestWorkletCellDataToPointData.cxx
+  UnitTestWorkletCellDataToPointData.cxx
   UnitTestWorkletCellGradient.cxx
   UnitTestWorkletCosine.cxx
   UnitTestWorkletElevation.cxx

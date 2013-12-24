@@ -29,9 +29,11 @@ set(headers
   DeviceAdapter.h
   DeviceAdapterSerial.h
   DispatcherGenerateInterpolatedCells.h
+  DispatcherGenerateKeysValues.h
   DispatcherGenerateTopology.h
   DispatcherMapCell.h
   DispatcherMapField.h
+  DispatcherReduceKeysValues.h
   Error.h
   ErrorControl.h
   ErrorControlAssert.h
@@ -39,9 +41,7 @@ set(headers
   ErrorControlInternal.h
   ErrorControlOutOfMemory.h
   ErrorExecution.h
-  GenerateKeysValues.h
   PermutationContainer.h
-  ReduceKeysValues.h
   Timer.h
   UniformGrid.h
   UnstructuredGrid.h
