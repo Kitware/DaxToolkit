@@ -66,6 +66,6 @@ configure_file(
   )
 
 add_subdirectory(arg)
-#add_subdirectory(dispatcher_internal)
+add_subdirectory(dispatcher)
 add_subdirectory(sig)
-#add_subdirectory(testing)
+add_subdirectory(testing)

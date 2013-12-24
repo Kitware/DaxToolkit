@@ -465,12 +465,12 @@ private:
     } //release memory
   }
 
-  static DAX_CONT_EXPORT void TestContScheduler()
+  static DAX_CONT_EXPORT void TestDispatcher()
   {
     std::cout << "-------------------------------------------" << std::endl;
-    std::cout << "Testing dax::cont::Scheduler class" << std::endl;
+    std::cout << "Testing dax::cont::Dispatcher* classes" << std::endl;
 
-    std::cout << "Testing dax::cont::Scheduler with array of size 1" << std::endl;
+    std::cout << "Testing dax::cont::Dispatcher with array of size 1" << std::endl;
 
     std::vector<dax::Id> singleElement; singleElement.push_back(1234);
     IdArrayHandle hSingleElement = MakeArrayHandle(singleElement);
@@ -1225,7 +1225,7 @@ private:
       TestUpperBoundsWithComparisonObject();
       TestUniqueWithComparisonObject();
       TestOrderedUniqueValues(); //tests Copy, LowerBounds, Sort, Unique
-      TestContScheduler();
+      TestDispatcher();
       TestStreamCompactWithStencil();
       TestStreamCompact();
 

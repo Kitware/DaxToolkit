@@ -18,10 +18,6 @@ set(unit_tests
   UnitTestAddVisitIndexArg.cxx
   UnitTestCollectCount.cxx
   UnitTestCreateExecutionResources.cxx
-  UnitTestDetermineScheduler.cxx
-  UnitTestInterpolatedCellPermutation.cxx
-  UnitTestGenerateKeysValuesPermutation.cxx
-  UnitTestGenerateTopologyPermutation.cxx
   UnitTestVerifyUserArgLength.cxx
   )
 dax_unit_tests(SOURCES ${unit_tests})

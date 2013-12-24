@@ -27,7 +27,6 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/testing/Testing.h>
 #include <dax/cont/dispatcher/AddVisitIndexArg.h>
-#include <dax/cont/dispatcher/SchedulerDefault.h>
 #include <dax/cont/sig/Arg.h>
 #include <dax/exec/WorkletGenerateTopology.h>
 #include <vector>
@@ -77,8 +76,6 @@ void AddVisitIndex()
 {
   typedef ::WithVisitIndexWorklet Worklet;
   typedef dax::cont::DeviceAdapterTagSerial DeviceAdapterTag;
-  typedef dax::cont::dispatcher::Scheduler<DeviceAdapterTag,
-          dax::cont::dispatcher::DispatcherMapFieldTag> Scheduler;
   typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag> Algorithm;
 
   typedef dax::cont::ArrayHandle<dax::Id> IdHandleType;
@@ -131,8 +128,7 @@ void AddVisitIndex()
 
   IdHandleType cellCounts = dax::cont::make_ArrayHandle(example_cell_counts);
   IdHandleType result;
-  Scheduler s;
-  addIndex(s,cellCounts,result);
+  addIndex(cellCounts,result);
 
   std::vector<dax::Id> visitIndices(example_cell_counts.size());
   result.CopyInto(visitIndices.begin());

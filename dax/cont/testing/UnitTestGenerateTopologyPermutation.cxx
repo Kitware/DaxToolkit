@@ -20,23 +20,17 @@
 #include <dax/cont/testing/TestingGridGenerator.h>
 #include <dax/cont/testing/Testing.h>
 
-#include <math.h>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
 #include <dax/CellTag.h>
 #include <dax/TypeTraits.h>
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ArrayHandleConstant.h>
 #include <dax/cont/UniformGrid.h>
-#include <dax/cont/Scheduler.h>
-#include <dax/cont/GenerateTopology.h>
+#include <dax/cont/DispatcherGenerateTopology.h>
 
 #include <dax/exec/WorkletGenerateTopology.h>
 
-#include <dax/cont/testing/Testing.h>
+#include <iostream>
 #include <vector>
 
 
@@ -109,13 +103,12 @@ struct TestGenerateTopologyPermutation
         dax::cont::make_ArrayHandle(cellFieldData);
 
     std::cout << "Trying cell field permutation" << std::endl;
-    dax::cont::Scheduler<> scheduler;
 
-    dax::cont::GenerateTopology<
+    dax::cont::DispatcherGenerateTopology<
         TestGenerateTopologyCellPermutationWorklet,
         CellCountArrayType> cellPermutationWorklet(cellCounts);
     cellPermutationWorklet.SetRemoveDuplicatePoints(false);
-    scheduler.Invoke(cellPermutationWorklet, inGrid, outGrid, cellField);
+    cellPermutationWorklet.Invoke(inGrid, outGrid, cellField);
 
     this->CheckCellPermutation(
           outGrid.GetCellConnections().GetPortalConstControl());
@@ -132,11 +125,11 @@ struct TestGenerateTopologyPermutation
 
     std::cout << "Trying point field permutation" << std::endl;
 
-    dax::cont::GenerateTopology<
+    dax::cont::DispatcherGenerateTopology<
         TestGenerateTopologyPointPermutationWorklet,
         CellCountArrayType> pointPermutationWorklet(cellCounts);
     pointPermutationWorklet.SetRemoveDuplicatePoints(false);
-    scheduler.Invoke(pointPermutationWorklet, inGrid, outGrid, pointField);
+    pointPermutationWorklet.Invoke(inGrid, outGrid, pointField);
 
     this->CheckPointPermutation(
           inGenerator,
@@ -153,7 +146,6 @@ private:
       {
       dax::Id expectedValue = 10*((index/COUNTS)+1) + 1000*(index%COUNTS);
       dax::Id actualValue = outConnections.Get(index);
-//      std::cout << index << " - " << actualValue << ", " << expectedValue << std::endl;
       DAX_TEST_ASSERT(actualValue == expectedValue,
                       "Got bad value testing cell permutation.");
       }
@@ -175,7 +167,6 @@ private:
       int vertexIndex = visitIndex%dax::CellTraits<InCellTag>::NUM_VERTICES;
       dax::Id expectedValue =
           inGenerator.GetCellConnections(cellIndex)[vertexIndex] + 1;
-//      std::cout << index << " - " << actualValue << ", " << expectedValue << std::endl;
       DAX_TEST_ASSERT(actualValue == expectedValue,
                       "Got bad value testing cell permutation.");
       }
@@ -186,8 +177,6 @@ private:
 //-----------------------------------------------------------------------------
 void RunTestGenerateTopologyPermutation()
   {
-//  dax::cont::testing::GridTesting::TryAllGridTypes(
-//        TestGenerateTopologyPermutation());
   TestGenerateTopologyPermutation()(dax::cont::UniformGrid<>());
   }
 } // Anonymous namespace
