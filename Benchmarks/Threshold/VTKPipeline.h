@@ -18,14 +18,10 @@
 #include <iostream>
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/Timer.h>
 #include <dax/cont/UniformGrid.h>
-#include <dax/cont/UnstructuredGrid.h>
-#include <dax/cont/VectorOperations.h>
-
 #include <dax/worklet/Magnitude.h>
-#include <dax/worklet/Threshold.h>
 
 #include <vector>
 
@@ -56,10 +52,8 @@ void RunVTKPipeline(const dax::cont::UniformGrid<> &dgrid, vtkImageData* grid)
   dax::cont::ArrayHandle<dax::Scalar> elevHandle;
 
   //use dax to compute the elevation
-  dax::cont::Scheduler<> schedule;
-  schedule.Invoke(dax::worklet::Magnitude(),
-                        dgrid.GetPointCoordinates(),
-                        elevHandle);
+  dax::cont::DispatcherMapField< dax::worklet::Magnitude > dispatcher;
+  dispatcher.Invoke( dgrid.GetPointCoordinates(), elevHandle);
 
   elevHandle.CopyInto(elev.begin());
 

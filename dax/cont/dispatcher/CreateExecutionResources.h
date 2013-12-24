@@ -13,13 +13,13 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_scheduling_CreateExecutionResources_h
-#define __dax_cont_scheduling_CreateExecutionResources_h
+#ifndef __dax_cont_dispatcher_CreateExecutionResources_h
+#define __dax_cont_dispatcher_CreateExecutionResources_h
 
 #include <dax/Types.h>
 #include <dax/cont/arg/ConceptMap.h>
 
-namespace dax { namespace cont { namespace scheduling {
+namespace dax { namespace cont { namespace dispatcher {
 
 class CreateExecutionResources
 {
@@ -38,6 +38,6 @@ public:
     }
 };
 
-} } } //dax::cont::scheduling
+} } } //dax::cont::dispatcher
 
-#endif //__dax_cont_scheduling_CreateExecutionResources_h
+#endif //__dax_cont_dispatcher_CreateExecutionResources_h

@@ -17,8 +17,9 @@
 #include "ArgumentsParser.h"
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Scheduler.h>
-#include <dax/cont/GenerateInterpolatedCells.h>
+#include <dax/cont/DispatcherGenerateInterpolatedCells.h>
+#include <dax/cont/DispatcherMapCell.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/Timer.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
@@ -54,35 +55,30 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid, int pipeline)
   dax::cont::UnstructuredGrid<dax::CellTagTriangle> outGrid;
 
   dax::cont::ArrayHandle<dax::Scalar> intermediate1;
-  dax::cont::Scheduler<> schedule;
-  schedule.Invoke(dax::worklet::Magnitude(),
-        grid.GetPointCoordinates(),
-        intermediate1);
+  dax::cont::DispatcherMapField< dax::worklet::Magnitude > magDispatcher;
+  magDispatcher.Invoke( grid.GetPointCoordinates(), intermediate1);
 
   dax::cont::Timer<> timer;
 
   //schedule marching cubes worklet generate step
-  typedef dax::cont::GenerateInterpolatedCells<dax::worklet::MarchingCubesGenerate> GenerateIC;
-  typedef GenerateIC::ClassifyResultType  ClassifyResultType;
+  typedef dax::cont::DispatcherGenerateInterpolatedCells< dax::worklet::MarchingCubesGenerate > DispatcherIC;
+  typedef DispatcherIC::ClassifyHandleType  ClassifyHandleType;
 
   dax::worklet::MarchingCubesClassify classifyWorklet(ISOVALUE);
   dax::worklet::MarchingCubesGenerate generateWorklet(ISOVALUE);
 
-
   //run the first step
-  ClassifyResultType classification; //array handle for the first step classification
-  schedule.Invoke(classifyWorklet, grid,
-                   intermediate1, classification);
+  ClassifyHandleType classification; //array handle for the first step classification
+  dax::cont::DispatcherMapCell<dax::worklet::MarchingCubesClassify > cellDispatcher( classifyWorklet );
+  cellDispatcher.Invoke(grid, intermediate1, classification);
 
   //construct the topology generation worklet
-  GenerateIC generate(classification,generateWorklet);
-
-  generate.SetRemoveDuplicatePoints(
+  DispatcherIC icDispatcher(classification, generateWorklet );
+  icDispatcher.SetRemoveDuplicatePoints(
                 pipeline == dax::testing::ArgumentsParser::MARCHING_CUBES_REMOVE_DUPLICATES);
 
   //run the second step
-  schedule.Invoke(generate,
-                   grid, outGrid, intermediate1);
+  icDispatcher.Invoke(grid, outGrid, intermediate1);
 
   double time = timer.GetElapsedTime();
 

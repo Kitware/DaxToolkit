@@ -34,7 +34,10 @@ set(unit_tests
   UnitTestDeviceAdapterAlgorithmDependency.cxx
   UnitTestDeviceAdapterAlgorithmGeneral.cxx
   UnitTestDeviceAdapterSerial.cxx
-  UnitTestSchedule.cxx
+  UnitTestDispatch.cxx
+  UnitTestGenerateKeysValuesPermutation.cxx
+  UnitTestGenerateTopologyPermutation.cxx
+  UnitTestInterpolatedCellPermutation.cxx
   UnitTestTimer.cxx
   UnitTestUniformGrid.cxx
   UnitTestUnstructuredGrid.cxx

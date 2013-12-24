@@ -20,7 +20,7 @@
 
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/testing/Testing.h>
-#include <dax/cont/scheduling/VerifyUserArgLength.h>
+#include <dax/cont/dispatcher/VerifyUserArgLength.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/exec/WorkletMapField.h>
 #include <boost/type_traits/is_same.hpp>
@@ -30,7 +30,7 @@
 namespace{
 
 using dax::cont::arg::Field;
-using dax::cont::scheduling::VerifyUserArgLength;
+using dax::cont::dispatcher::VerifyUserArgLength;
 
 struct Worklet : public dax::exec::WorkletMapField
 {

@@ -23,7 +23,7 @@
 #include <dax/cont/arg/FieldConstant.h>
 #include <dax/cont/arg/FieldArrayHandle.h>
 
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/DeviceAdapterSerial.h>
 #include <dax/exec/WorkletMapField.h>
 #include <dax/cont/sig/Tag.h>
@@ -108,33 +108,36 @@ struct ArbFunctorWorklet: dax::exec::WorkletMapField
 
 void VerifyConstantArgs()
 {
-  dax::cont::Scheduler<> scheduler;
-  scheduler.Invoke(ExampleWorklet(),1); //convert to dax::Id
+
+  dax::cont::DispatcherMapField<ExampleWorklet> dispatcher1;
+  dispatcher1.Invoke(1); //convert to dax::Id
   DAX_TEST_ASSERT(ExampleWorklet::TestValue == 1, "TestValue is not 1");
 
-  scheduler.Invoke(ExampleWorklet(),1.35); //convert double to dax::Scalar
+  dispatcher1.Invoke(1.35); //convert double to dax::Scalar
   DAX_TEST_ASSERT(ExampleWorklet::TestValue == 1.35f, "TestValue is not 1.35f");
 
-  scheduler.Invoke(Example2Worklet(),1.0f,3.0f); //convert double to dax::Scalar
+  dax::cont::DispatcherMapField<Example2Worklet> dispatcher2;
+  dispatcher2.Invoke(1.0f,3.0f); //convert double to dax::Scalar
   DAX_TEST_ASSERT(Example2Worklet::TestValue == 3.0f, "TestValue is not 3.0f");
 
 
+  dax::cont::DispatcherMapField<ExampleTupleWorklet> tupleDispatcher;
   dax::Tuple<dax::Scalar,6> tuple6;
   tuple6[0]=0.0f; tuple6[1]=0.5f; tuple6[2]=0.25f;
   tuple6[3]=0.0f; tuple6[4]=-0.5f; tuple6[5]=-0.25f;
-  scheduler.Invoke(ExampleTupleWorklet(),tuple6);
+  tupleDispatcher.Invoke(tuple6);
 
   dax::Vector2 vec2(-1, -2);
-  scheduler.Invoke(ExampleTupleWorklet(),vec2);
+  tupleDispatcher.Invoke(vec2);
 
   dax::Vector3 vec3(-1, -2, -3);
-  scheduler.Invoke(ExampleTupleWorklet(),vec3);
+  tupleDispatcher.Invoke(vec3);
 
   dax::Vector4 vec4(-1, -2, -3, -4);
-  scheduler.Invoke(ExampleTupleWorklet(),vec4);
+  tupleDispatcher.Invoke(vec4);
 
   dax::Id3 id3(1,2,3);
-  scheduler.Invoke(ExampleTupleWorklet(),id3);
+  tupleDispatcher.Invoke(id3);
 }
 
 void VerifyArrayHandleArgs()
@@ -143,9 +146,7 @@ void VerifyArrayHandleArgs()
   for(int i=0; i < 10; ++i){in[i]=i;}
   dax::cont::ArrayHandle<dax::Id> input = dax::cont::make_ArrayHandle(in);
   dax::cont::ArrayHandle<dax::Id> output;
-  dax::cont::Scheduler<> scheduler;
-  scheduler.Invoke(ExampleSquare(),input,output);
-
+  dax::cont::DispatcherMapField< ExampleSquare >().Invoke(input,output);
 }
 
 void VerifyObjectArgs()
@@ -154,12 +155,13 @@ void VerifyObjectArgs()
   for(int i=0; i < 10; ++i){in[i]=i;}
   dax::cont::ArrayHandle<dax::Id> input = dax::cont::make_ArrayHandle(in);
   dax::cont::ArrayHandle<dax::Id> output;
-  dax::cont::Scheduler<> scheduler;
-  scheduler.Invoke(ArbFunctorWorklet(),input,Functor1(),output);
+  dax::cont::DispatcherMapField< ArbFunctorWorklet >().Invoke(input,
+                                                              Functor1(),
+                                                              output);
 }
 
 
-void Schedule()
+void Dispatch()
 {
   VerifyConstantArgs();
   VerifyArrayHandleArgs();
@@ -168,7 +170,7 @@ void Schedule()
 
 }
 
-int UnitTestSchedule(int, char *[])
+int UnitTestDispatch(int, char *[])
 {
-  return dax::cont::testing::Testing::Run(Schedule);
+  return dax::cont::testing::Testing::Run(Dispatch);
 }

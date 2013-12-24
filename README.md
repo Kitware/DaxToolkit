@@ -89,7 +89,7 @@ And here is how to execute the worklet:
 ``` cpp
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/UniformGrid.h>
 
 //construct a handle to store the results
@@ -99,10 +99,9 @@ dax::cont::ArrayHandle<dax::Scalar> magnitudeHandle;
 dax::cont::UniformGrid<> inputGrid;
 inputGrid.SetExtent(dax::make_Id3(0), dax::make_Id3(127));
 
-//construct a scheduler and launch the magnitude worklet.
-dax::cont::Scheduler<> scheduler;
-scheduler.Invoke(dax::worklet::Magnitude(),
-                 grid->GetPointCoordinates(),
+//construct and launch the magnitude worklet.
+dax::cont::DispatcherMapField< dax::worklet::Magnitude > dispatcher;
+dispatcher.Invoke(grid->GetPointCoordinates(),
                  magnitudeHandle);
 
 
@@ -123,35 +122,35 @@ More examples can be found on our [Getting Started page](http://www.daxtoolkit.o
 
 ## Contacts ##
 
-Kenneth Moreland  
-Sandia National Laboratories  
-kmorel@sandia.gov  
+Kenneth Moreland
+Sandia National Laboratories
+kmorel@sandia.gov
 
-Robert Maynard  
-Kitware, Inc.  
-robert.maynard@kitware.com  
+Robert Maynard
+Kitware, Inc.
+robert.maynard@kitware.com
 
-Berk Geveci  
-Kitware, Inc.  
-berk.geveci@kitware.com  
+Berk Geveci
+Kitware, Inc.
+berk.geveci@kitware.com
 
-Kwan-Liu Ma  
-University of California at Davis  
-ma@cs.ucdavis.edu  
+Kwan-Liu Ma
+University of California at Davis
+ma@cs.ucdavis.edu
 
 
 
 ## License ##
 
-Copyright (c) Kitware, Inc.  
-All rights reserved.  
-[See LICENSE.txt for details](LICENSE.txt).  
+Copyright (c) Kitware, Inc.
+All rights reserved.
+[See LICENSE.txt for details](LICENSE.txt).
 
-Copyright 2011 Sandia Corporation.  
-Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,  
-the U.S. Government retains certain rights in this software.  
+Copyright 2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
 
-This software is distributed WITHOUT ANY WARRANTY; without even  
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-[See the copyright file for more information](LICENSE.txt).  
+This software is distributed WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+[See the copyright file for more information](LICENSE.txt).
 

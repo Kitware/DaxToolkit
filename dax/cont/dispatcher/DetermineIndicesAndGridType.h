@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_scheduling_DetermineIndicesAndGridType_h
-#define __dax_cont_scheduling_DetermineIndicesAndGridType_h
+#ifndef __dax_cont_dispatcher_DetermineIndicesAndGridType_h
+#define __dax_cont_dispatcher_DetermineIndicesAndGridType_h
 
 #include <dax/Extent.h>
 #include <dax/cont/arg/Topology.h>
@@ -22,7 +22,9 @@
 #include <dax/cont/internal/FindBinding.h>
 #include <dax/cont/internal/GridTags.h>
 
-namespace dax { namespace cont { namespace scheduling {
+#include <dax/exec/WorkletMapCell.h>
+
+namespace dax { namespace cont { namespace dispatcher {
 
 namespace internal
 {
@@ -61,8 +63,35 @@ namespace internal
   };
 }
 
-template<typename Invocation>
+//the default is that the worklet isn't a candidate for grid scheduling
+template<typename WorkletBaseType, typename Invocation>
 class DetermineIndicesAndGridType
+{
+  typedef typename dax::cont::internal::Bindings<Invocation>::type BindingsType;
+  const dax::Id NumInstances;
+
+public:
+  DetermineIndicesAndGridType(const BindingsType& daxNotUsed(bindings),
+                              dax::Id numInstances ):
+    NumInstances(numInstances)
+    {
+    }
+
+  //return the proper exec object that can be used to dispatch
+  dax::Id gridCount() const
+  {
+    return NumInstances;
+  }
+
+ bool isValidForGridScheduling() const
+    { return false; }
+};
+
+
+//worklet map cell is a candidate for grid scheduling.
+template<typename Invocation>
+class DetermineIndicesAndGridType<dax::exec::WorkletMapCell,
+                                  Invocation>
 {
   // Determine the topology type by finding the topo binding. First
   // we look up the index of the binding, the second step is to actually
@@ -111,5 +140,5 @@ public:
 
 };
 
-} } } //namespace dax::cont::scheduling
+} } } //namespace dax::cont::dispatcher
 #endif

@@ -20,7 +20,9 @@
 #include <iostream>
 
 #include <dax/cont/ArrayHandleCounting.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherGenerateInterpolatedCells.h>
+#include <dax/cont/DispatcherMapCell.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/Timer.h>
 
 #include <dax/opengl/TransferToOpenGL.h>
@@ -41,24 +43,18 @@ namespace detail
 
   mandle::MandlebulbSurface surface; //construct surface struct
 
-  dax::cont::Scheduler< > scheduler;
-
   dax::cont::Timer<> timer;
 
   //setup the info for the second step
   dax::worklet::MarchingCubesGenerate generateSurface(iteration);
-  dax::cont::GenerateInterpolatedCells<
-      dax::worklet::MarchingCubesGenerate > genWrapper(classification,
-                                                       generateSurface);
+  dax::cont::DispatcherGenerateInterpolatedCells<
+      ::dax::worklet::MarchingCubesGenerate > surfDispacther(classification,
+                                                             generateSurface);
 
-  //remove duplicates on purpose
-  genWrapper.SetRemoveDuplicatePoints(false);
+  surfDispacther.SetRemoveDuplicatePoints(false);
 
   //run the second step
-  scheduler.Invoke(genWrapper,
-                   vol.Grid,
-                   surface.Data,
-                   vol.EscapeIteration);
+  surfDispacther.Invoke( vol.Grid, surface.Data, vol.EscapeIteration);
 
   std::cout << "mc stage 2: " << timer.GetElapsedTime() << std::endl;
 
@@ -66,12 +62,13 @@ namespace detail
   if(surface.Data.GetNumberOfPoints() > 0)
     {
     mandle::SurfaceCoords surface_coords(surface.Data);
-    scheduler.Invoke( worklet::ColorsAndNorms(),
-                dax::cont::make_ArrayHandleCounting(dax::Id(0),
-                                            surface.Data.GetNumberOfPoints()),
-                      surface_coords,
-                      surface.Norms,
-                      surface.Colors);
+    dax::cont::DispatcherMapField<worklet::ColorsAndNorms> colorNormsDispatcher;
+    colorNormsDispatcher.Invoke(
+                  dax::cont::make_ArrayHandleCounting(dax::Id(0),
+                                          surface.Data.GetNumberOfPoints()),
+                  surface_coords,
+                  surface.Norms,
+                  surface.Colors);
     std::cout << "colors & norms: " << timer.GetElapsedTime() << std::endl;
     }
 
@@ -91,9 +88,9 @@ mandle::MandlebulbVolume computeMandlebulb( dax::Vector3 origin,
   mandle::MandlebulbVolume vol(origin,spacing,extent);
 
   //compute the escape iterations for each point in the grid
-  dax::cont::Scheduler< > scheduler;
-  scheduler.Invoke( worklet::Mandlebulb(), vol.Grid.GetPointCoordinates(),
-                    vol.EscapeIteration );
+  dax::cont::DispatcherMapField< worklet::Mandlebulb >().Invoke(
+                                              vol.Grid.GetPointCoordinates(),
+                                              vol.EscapeIteration );
 
   return vol;
 }
@@ -107,15 +104,13 @@ mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume& vol,
 
   dax::cont::ArrayHandle<dax::Id> classification;
 
-  dax::cont::Scheduler< > scheduler;
-
   dax::cont::Timer<> timer;
   //run the classify step
-  ::dax::worklet::MarchingCubesClassify classify(iteration);
-  scheduler.Invoke( classify,
-                    vol.Grid,
-                    vol.EscapeIteration,
-                    classification );
+  dax::cont::DispatcherMapCell< ::dax::worklet::MarchingCubesClassify >
+        classify( (::dax::worklet::MarchingCubesClassify(iteration)) );
+  classify.Invoke(vol.Grid, vol.EscapeIteration, classification );
+
+
   std::cout << "mc stage 1: " << timer.GetElapsedTime() << std::endl;
 
   return detail::generateSurface(vol,iteration,classification);
@@ -142,17 +137,15 @@ mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume& vol,
   mandle::MandlebulbSurface surface;
   dax::cont::ArrayHandle<dax::Id> classification;
 
-  dax::cont::Scheduler< > scheduler;
-
   dax::cont::Timer<> timer;
 
   //run the classify step
-  ::worklet::MandlebulbClipClassify classify(origin, location, normal, iteration);
-  scheduler.Invoke( classify,
-                    vol.Grid,
-                    vol.Grid.GetPointCoordinates(),
-                    vol.EscapeIteration,
-                    classification );
+  dax::cont::DispatcherMapCell< ::worklet::MandlebulbClipClassify >
+      classify( (::worklet::MandlebulbClipClassify( origin, location, normal, iteration)) );
+  classify.Invoke(vol.Grid,
+                  vol.Grid.GetPointCoordinates(),
+                  vol.EscapeIteration,
+                  classification );
   std::cout << "mc stage 1: "  << timer.GetElapsedTime() << std::endl;
 
   return detail::generateSurface(vol,iteration,classification);

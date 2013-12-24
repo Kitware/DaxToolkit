@@ -20,7 +20,7 @@
 #include <iostream>
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/Timer.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/worklet/Magnitude.h>
@@ -75,10 +75,8 @@ void RunPISTONPipeline(const dax::cont::UniformGrid<> &dgrid)
   dax::cont::ArrayHandle<dax::Scalar> elevHandle = dax::cont::make_ArrayHandle(elev);
 
   //use dax to compute the magnitude
-  dax::cont::Scheduler<> scheduler;
-  scheduler.Invoke(dax::worklet::Magnitude(),
-            dgrid.GetPointCoordinates(),
-            elevHandle);
+  dax::cont::DispatcherMapField< dax::worklet::Magnitude > dispatcher;
+  dispatcher.Invoke( dgrid.GetPointCoordinates(), elevHandle);
 
   //return results to host
   elevHandle.CopyInto(elev.begin());

@@ -19,16 +19,7 @@ set(headers
   AddVisitIndexArg.h
   CollectCount.h
   CreateExecutionResources.h
-  DetermineScheduler.h
   DetermineIndicesAndGridType.h
-  Scheduler.h
-  SchedulerDefault.h
-  SchedulerCells.h
-  SchedulerGenerateInterpolatedCells.h
-  SchedulerGenerateKeysValues.h
-  SchedulerGenerateTopology.h
-  SchedulerReduceKeysValues.h
-  SchedulerTags.h
   VerifyUserArgLength.h
   )
 

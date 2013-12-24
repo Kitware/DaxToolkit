@@ -21,8 +21,9 @@
 #include <dax/CellTraits.h>
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Scheduler.h>
-#include <dax/cont/GenerateTopology.h>
+#include <dax/cont/DispatcherMapField.h>
+#include <dax/cont/DispatcherMapCell.h>
+#include <dax/cont/DispatcherGenerateTopology.h>
 #include <dax/cont/Timer.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
@@ -167,25 +168,26 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Scalar> intermediate1;
   dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
-  dax::cont::Scheduler<> schedule;
-  schedule.Invoke(dax::worklet::Magnitude(),
+  dax::cont::DispatcherMapField<dax::worklet::Magnitude>().Invoke(
         grid.GetPointCoordinates(),
         intermediate1);
 
   dax::cont::Timer<> timer;
 
-  typedef dax::cont::GenerateTopology<dax::worklet::ThresholdTopology> GenTopo;
-  typedef GenTopo::ClassifyResultType  ClassifyResultType;
+  typedef dax::worklet::ThresholdTopology ThresholdTopologyType;
   typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
 
-  ClassifyResultType classification;
-  schedule.Invoke(ThresholdClassifyType(THRESHOLD_MIN,THRESHOLD_MAX),
-           grid, intermediate1, classification);
+  dax::cont::ArrayHandle<dax::Id> classification;
+  dax::cont::DispatcherMapCell< ThresholdClassifyType > clasifyDispatcher
+        ( ThresholdClassifyType(THRESHOLD_MIN,THRESHOLD_MAX) );
 
-  GenTopo resolveTopology(classification);
-  //resolveTopology.SetRemoveDuplicatePoints(false);
-  schedule.Invoke(resolveTopology,grid,grid2);
-  resolveTopology.CompactPointField(intermediate1,resultHandle);
+  clasifyDispatcher.Invoke(grid, intermediate1, classification);
+
+  dax::cont::DispatcherGenerateTopology< ThresholdTopologyType >
+        topoDispatcher(classification);
+  //topoDispatcher.SetRemoveDuplicatePoints(false);
+  topoDispatcher.Invoke(grid,grid2);
+  topoDispatcher.CompactPointField(intermediate1,resultHandle);
 
 
   double time = timer.GetElapsedTime();

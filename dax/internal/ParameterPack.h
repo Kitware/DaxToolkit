@@ -643,7 +643,7 @@ ParameterPackGetArgument(const ParameterPackType &params)
 /// \brief Holds an arbitrary set of parameters in a single class.
 ///
 /// To make using Dax easier for the end user developer, the
-/// dax::cont::Scheduler::Invoke() method takes an arbitrary amount of
+/// dax::cont::Dispatcher*::Invoke() method takes an arbitrary amount of
 /// arguments that get transformed and swizzled into arguments and return value
 /// for a worklet operator. In between these two invocations in a complicated
 /// series of transformations and operations that can occur.

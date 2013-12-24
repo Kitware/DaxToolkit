@@ -21,11 +21,12 @@
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapField.h>
 
 #include <dax/cont/testing/Testing.h>
 
-// Important for this test! This file must be included after Scheduler.h
+// Important for this test!
+//This file must be included after DispatcherMapField.h
 #include <dax/cont/DeviceAdapterSerial.h>
 
 namespace {
@@ -41,8 +42,9 @@ struct ExampleWorklet : public dax::exec::WorkletMapField
 
 void CheckPostDefinedDeviceAdapter()
 {
-  dax::cont::Scheduler<dax::cont::DeviceAdapterTagSerial> scheduler;
-  scheduler.Invoke(ExampleWorklet(), 1);
+  dax::cont::DispatcherMapField<ExampleWorklet,
+        dax::cont::DeviceAdapterTagSerial> dispatcher;
+  dispatcher.Invoke(1);
 
   // Nothing to really check. If this compiles, then the test is probably
   // successful. UnitTestSchedule and the DeviceAdapter tests will check the

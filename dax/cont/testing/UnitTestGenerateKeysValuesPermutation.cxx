@@ -20,84 +20,73 @@
 #include <dax/cont/testing/TestingGridGenerator.h>
 #include <dax/cont/testing/Testing.h>
 
-#include <math.h>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
 #include <dax/CellTag.h>
 #include <dax/TypeTraits.h>
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ArrayHandleConstant.h>
 #include <dax/cont/UniformGrid.h>
-#include <dax/cont/Scheduler.h>
-#include <dax/cont/GenerateInterpolatedCells.h>
+#include <dax/cont/DispatcherGenerateKeysValues.h>
 
-#include <dax/exec/WorkletInterpolatedCell.h>
+#include <dax/exec/WorkletGenerateKeysValues.h>
 
-#include <dax/cont/testing/Testing.h>
+#include <string>
 #include <vector>
-
 
 namespace {
 
 const dax::Id DIM = 4;
 const dax::Id COUNTS = 7;
 
-struct TestInterpolatedCellCellPermutationWorklet
-    : public dax::exec::WorkletInterpolatedCell
+struct TestGenerateKeysValuesCellPermutationWorklet
+    : public dax::exec::WorkletGenerateKeysValues
 {
-  typedef void ControlSignature(Topology, Geometry(Out), Field(In,Cell));
-  typedef void ExecutionSignature(Vertices(_2), _3, VisitIndex);
+  typedef void ControlSignature(Topology, Field(In,Cell), Field(Out));
+  typedef _3 ExecutionSignature(_2, VisitIndex);
 
   DAX_EXEC_EXPORT
-  void operator()(dax::exec::InterpolatedCellPoints<dax::CellTagVertex> &outCell,
-                  dax::Id index,
-                  dax::Id) const
+  dax::Scalar operator()(dax::Id index, dax::Id visitIndex) const
   {
-    outCell.SetInterpolationPoint(0, index,
-                                     index,
-                                     1.0f);
+    return 10*index + 1000*visitIndex;
   }
 };
 
-struct TestInterpolatedCellPointPermutationWorklet
-    : public dax::exec::WorkletInterpolatedCell
+struct TestGenerateKeysValuesPointPermutationWorklet
+    : public dax::exec::WorkletGenerateKeysValues
 {
-  typedef void ControlSignature(Topology, Geometry(Out), Field(In,Point));
-  typedef void ExecutionSignature(Vertices(_2), _3, VisitIndex);
+  typedef void ControlSignature(Topology, Field(In,Point), Field(Out));
+  typedef _3 ExecutionSignature(_2, VisitIndex);
 
   template<class InCellTag>
   DAX_EXEC_EXPORT
-  void operator()(dax::exec::InterpolatedCellPoints<dax::CellTagVertex> &outCell,
-                  const dax::exec::CellField<dax::Id,InCellTag> &,
-                  dax::Id visitIndex) const
+  dax::Scalar operator()(
+      const dax::exec::CellField<dax::Id,InCellTag> &pointScalars,
+      dax::Id visitIndex) const
   {
-   outCell.SetInterpolationPoint(0, visitIndex, visitIndex, 1.0f);
+    return pointScalars[visitIndex%dax::CellTraits<InCellTag>::NUM_VERTICES];
   }
 };
 
 //-----------------------------------------------------------------------------
-struct TestInterpolatedCellPermutation
+struct TestGenerateKeysValuesPermutation
 {
   //----------------------------------------------------------------------------
   template <typename InGridType>
   void operator()(const InGridType&) const
     {
     typedef dax::CellTagVertex OutGridTag;
-    typedef dax::cont::UnstructuredGrid<OutGridTag> OutGridType;
 
     dax::cont::testing::TestGrid<InGridType> inGenerator(DIM);
     InGridType inGrid = inGenerator.GetRealGrid();
-    OutGridType outGrid;
 
     // Perhaps there should be a better way to specify a constant value for
     // the number of cells generated per location.
     typedef dax::cont::ArrayHandleConstant<dax::Id> CellCountArrayType;
     CellCountArrayType cellCounts =
         dax::cont::make_ArrayHandleConstant(dax::Id(COUNTS),
-                                                 inGrid.GetNumberOfCells());
+                                            inGrid.GetNumberOfCells());
+
+    dax::cont::ArrayHandle<dax::Id> outField;
 
     std::vector<dax::Id> cellFieldData(inGrid.GetNumberOfCells());
     for (dax::Id cellIndex = 0;
@@ -110,18 +99,13 @@ struct TestInterpolatedCellPermutation
         dax::cont::make_ArrayHandle(cellFieldData);
 
     std::cout << "Trying cell field permutation" << std::endl;
-    dax::cont::Scheduler<> scheduler;
 
-    dax::cont::GenerateInterpolatedCells<
-        TestInterpolatedCellCellPermutationWorklet,
-        CellCountArrayType> cellPermutationWorklet(cellCounts);
-    cellPermutationWorklet.SetRemoveDuplicatePoints(true);
-    scheduler.Invoke(cellPermutationWorklet, inGrid, outGrid, cellField);
+    dax::cont::DispatcherGenerateKeysValues<
+        TestGenerateKeysValuesCellPermutationWorklet,
+        CellCountArrayType> cellPermutation(cellCounts);
+    cellPermutation.Invoke(inGrid, cellField, outField);
 
-    std::cout << "inGrid numCells: " << inGrid.GetNumberOfCells() << std::endl;
-
-    this->CheckCellPermutation(
-          outGrid.GetCellConnections().GetPortalConstControl());
+    this->CheckCellPermutation(outField.GetPortalConstControl());
 
     std::vector<dax::Id> pointFieldData(inGrid.GetNumberOfPoints());
     for (dax::Id pointIndex = 0;
@@ -135,40 +119,47 @@ struct TestInterpolatedCellPermutation
 
     std::cout << "Trying point field permutation" << std::endl;
 
-    dax::cont::GenerateInterpolatedCells<
-        TestInterpolatedCellPointPermutationWorklet,
-        CellCountArrayType> pointPermutationWorklet(cellCounts);
-    pointPermutationWorklet.SetRemoveDuplicatePoints(true);
-    scheduler.Invoke(pointPermutationWorklet, inGrid, outGrid, pointField);
+    dax::cont::DispatcherGenerateKeysValues<
+        TestGenerateKeysValuesPointPermutationWorklet,
+        CellCountArrayType> pointPermutation(cellCounts);
+    pointPermutation.Invoke(inGrid, pointField, outField);
 
-    this->CheckPointPermutation(
-          outGrid.GetCellConnections().GetPortalConstControl());
+    this->CheckPointPermutation(inGenerator, outField.GetPortalConstControl());
   }
 
 private:
   //----------------------------------------------------------------------------
-  template<class OutConnectionsPortal>
-  void CheckCellPermutation(const OutConnectionsPortal &outConnections) const
+  template<class OutValuesPortal>
+  void CheckCellPermutation(const OutValuesPortal &outValues) const
   {
     std::cout << "Checking cell field permutation" << std::endl;
-    for (dax::Id index = 0; index < outConnections.GetNumberOfValues(); index++)
+    for (dax::Id index = 0; index < outValues.GetNumberOfValues(); index++)
       {
-      dax::Id expectedValue = index/COUNTS;
-      dax::Id actualValue = outConnections.Get(index);
+      dax::Id expectedValue = 10*((index/COUNTS)+1) + 1000*(index%COUNTS);
+      dax::Id actualValue = outValues.Get(index);
+//      std::cout << index << " - " << actualValue << ", " << expectedValue << std::endl;
       DAX_TEST_ASSERT(actualValue == expectedValue,
                       "Got bad value testing cell permutation.");
       }
   }
 
   //----------------------------------------------------------------------------
-  template<class OutConnectionsPortal>
-  void CheckPointPermutation( const OutConnectionsPortal &outConnections) const
+  template<class InGridType, class OutValuesPortal>
+  void CheckPointPermutation(
+      const dax::cont::testing::TestGrid<InGridType> &inGenerator,
+      const OutValuesPortal &outValues) const
   {
     std::cout << "Checking point field permutation" << std::endl;
-    for (dax::Id index = 0; index < outConnections.GetNumberOfValues(); index++)
+    for (dax::Id index = 0; index < outValues.GetNumberOfValues(); index++)
       {
-      dax::Id actualValue = outConnections.Get(index);
-      dax::Id expectedValue = index%COUNTS;
+      dax::Id actualValue = outValues.Get(index);
+      dax::Id cellIndex = index/COUNTS;
+      dax::Id visitIndex = index%COUNTS;
+      typedef typename InGridType::CellTag InCellTag;
+      int vertexIndex = visitIndex%dax::CellTraits<InCellTag>::NUM_VERTICES;
+      dax::Id expectedValue =
+          inGenerator.GetCellConnections(cellIndex)[vertexIndex] + 1;
+//      std::cout << index << " - " << actualValue << ", " << expectedValue << std::endl;
       DAX_TEST_ASSERT(actualValue == expectedValue,
                       "Got bad value testing cell permutation.");
       }
@@ -177,14 +168,16 @@ private:
 
 
 //-----------------------------------------------------------------------------
-void RunTestInterpolatedCellPermutation()
+void RunTestGenerateKeysValuesPermutation()
   {
-  TestInterpolatedCellPermutation()(dax::cont::UniformGrid<>());
+//  dax::cont::testing::GridTesting::TryAllGridTypes(
+//        TestGenerateKeysValuesPermutation());
+  TestGenerateKeysValuesPermutation()(dax::cont::UniformGrid<>());
   }
 } // Anonymous namespace
 
 //-----------------------------------------------------------------------------
-int UnitTestInterpolatedCellPermutation(int, char *[])
+int UnitTestGenerateKeysValuesPermutation(int, char *[])
 {
-  return dax::cont::testing::Testing::Run(RunTestInterpolatedCellPermutation);
+  return dax::cont::testing::Testing::Run(RunTestGenerateKeysValuesPermutation);
 }

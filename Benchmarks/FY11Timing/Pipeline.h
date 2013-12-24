@@ -17,7 +17,8 @@
 #include <iostream>
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapCell.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/Timer.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/VectorOperations.h>
@@ -109,14 +110,17 @@ void RunPipeline1(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Vector3> results;
 
   dax::cont::Timer<> timer;
-  dax::cont::Scheduler<> schedule;
-  schedule.Invoke(dax::worklet::Magnitude(),
+
+  dax::cont::DispatcherMapField< dax::worklet::Magnitude >().Invoke(
         grid.GetPointCoordinates(),
         intermediate1);
-  schedule.Invoke(dax::worklet::CellGradient(),grid,
-                                   grid.GetPointCoordinates(),
-                                   intermediate1,
-                                   results);
+
+  dax::cont::DispatcherMapCell< dax::worklet::CellGradient >().Invoke(
+        grid,
+        grid.GetPointCoordinates(),
+        intermediate1,
+        results);
+
   double time = timer.GetElapsedTime();
 
   PrintCheckValues(results);
@@ -135,21 +139,27 @@ void RunPipeline2(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Vector3> results;
 
   dax::cont::Timer<> timer;
-  dax::cont::Scheduler<> schedule;
-  schedule.Invoke(dax::worklet::Magnitude(),
+
+  dax::cont::DispatcherMapField<dax::worklet::Magnitude>().Invoke(
         grid.GetPointCoordinates(),
         intermediate1);
 
-  schedule.Invoke(dax::worklet::CellGradient(),grid,
-           grid.GetPointCoordinates(),
-           intermediate1,
-           intermediate2);
+  dax::cont::DispatcherMapCell< dax::worklet::CellGradient >().Invoke(
+        grid,
+        grid.GetPointCoordinates(),
+        intermediate1,
+        intermediate2);
 
   intermediate1.ReleaseResources();
-  schedule.Invoke(dax::worklet::Sine(),intermediate2, intermediate3);
-  schedule.Invoke(dax::worklet::Square(),intermediate3, intermediate2);
+
+
+  dax::cont::DispatcherMapField< dax::worklet::Sine >().Invoke(intermediate2,
+                                                               intermediate3);
+  dax::cont::DispatcherMapField< dax::worklet::Square>().Invoke(intermediate3,
+                                                                intermediate2);
   intermediate3.ReleaseResources();
-  schedule.Invoke(dax::worklet::Cosine(),intermediate2, results);
+  dax::cont::DispatcherMapField< dax::worklet::Cosine>().Invoke(intermediate2,
+                                                                results);
   double time = timer.GetElapsedTime();
 
   PrintCheckValues(results);
@@ -168,14 +178,19 @@ void RunPipeline3(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Scalar> results;
 
   dax::cont::Timer<> timer;
-  dax::cont::Scheduler<> schedule;
-  schedule.Invoke(dax::worklet::Magnitude(),
+
+  dax::cont::DispatcherMapField<dax::worklet::Magnitude>().Invoke(
         grid.GetPointCoordinates(),
         intermediate1);
-  schedule.Invoke(dax::worklet::Sine(),intermediate1, intermediate2);
-  schedule.Invoke(dax::worklet::Square(),intermediate2, intermediate1);
+
+  dax::cont::DispatcherMapField< dax::worklet::Sine >().Invoke(intermediate1,
+                                                               intermediate2);
+  dax::cont::DispatcherMapField< dax::worklet::Square>().Invoke(intermediate2,
+                                                                intermediate1);
   intermediate2.ReleaseResources();
-  schedule.Invoke(dax::worklet::Cosine(),intermediate1, results);
+  dax::cont::DispatcherMapField< dax::worklet::Cosine>().Invoke(intermediate1,
+                                                                results);
+
   double time = timer.GetElapsedTime();
 
   PrintCheckValues(results);

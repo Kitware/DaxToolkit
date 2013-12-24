@@ -20,10 +20,9 @@
 #include <dax/worklet/PointDataToCellData.h>
 
 #include <dax/Types.h>
-#include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapCell.h>
 
 #include <vector>
 
@@ -72,11 +71,8 @@ struct TestPointDataToCellDataWorklet
     dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
     std::cout << "Running PointDataToCellData worklet" << std::endl;
-    dax::cont::Scheduler<> scheduler;
-    scheduler.Invoke(dax::worklet::PointDataToCellData(),
-                     grid.GetRealGrid(),
-                     fieldHandle,
-                     resultHandle);
+    dax::cont::DispatcherMapCell< dax::worklet::PointDataToCellData> dispatcher;
+    dispatcher.Invoke(grid.GetRealGrid(), fieldHandle, resultHandle);
 
     std::cout << "Checking result" << std::endl;
     std::vector<dax::Scalar> cellData(grid->GetNumberOfCells());

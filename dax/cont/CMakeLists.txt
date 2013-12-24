@@ -28,6 +28,12 @@ set(headers
   Assert.h
   DeviceAdapter.h
   DeviceAdapterSerial.h
+  DispatcherGenerateInterpolatedCells.h
+  DispatcherGenerateKeysValues.h
+  DispatcherGenerateTopology.h
+  DispatcherMapCell.h
+  DispatcherMapField.h
+  DispatcherReduceKeysValues.h
   Error.h
   ErrorControl.h
   ErrorControlAssert.h
@@ -35,12 +41,7 @@ set(headers
   ErrorControlInternal.h
   ErrorControlOutOfMemory.h
   ErrorExecution.h
-  GenerateInterpolatedCells.h
-  GenerateKeysValues.h
-  GenerateTopology.h
   PermutationContainer.h
-  ReduceKeysValues.h
-  Scheduler.h
   Timer.h
   UniformGrid.h
   UnstructuredGrid.h
@@ -65,6 +66,6 @@ configure_file(
   )
 
 add_subdirectory(arg)
-add_subdirectory(scheduling)
+add_subdirectory(dispatcher)
 add_subdirectory(sig)
 add_subdirectory(testing)
