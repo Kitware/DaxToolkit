@@ -175,16 +175,16 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
   dax::cont::Timer<> timer;
 
   typedef dax::worklet::ThresholdTopology ThresholdTopologyType;
-  typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
+  typedef dax::worklet::ThresholdCount<dax::Scalar> ThresholdCountType;
 
-  dax::cont::ArrayHandle<dax::Id> classification;
-  dax::cont::DispatcherMapCell< ThresholdClassifyType > clasifyDispatcher
-        ( ThresholdClassifyType(THRESHOLD_MIN,THRESHOLD_MAX) );
+  dax::cont::ArrayHandle<dax::Id> count;
+  dax::cont::DispatcherMapCell< ThresholdCountType > clasifyDispatcher
+        ( ThresholdCountType(THRESHOLD_MIN,THRESHOLD_MAX) );
 
-  clasifyDispatcher.Invoke(grid, intermediate1, classification);
+  clasifyDispatcher.Invoke(grid, intermediate1, count);
 
   dax::cont::DispatcherGenerateTopology< ThresholdTopologyType >
-        topoDispatcher(classification);
+        topoDispatcher(count);
   //topoDispatcher.SetRemoveDuplicatePoints(false);
   topoDispatcher.Invoke(grid,grid2);
   topoDispatcher.CompactPointField(intermediate1,resultHandle);

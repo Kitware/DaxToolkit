@@ -50,13 +50,13 @@ int GetHexahedronClassification(const T isoValue, const U& values )
 }
 
 // -----------------------------------------------------------------------------
-class MarchingCubesClassify : public dax::exec::WorkletMapCell
+class MarchingCubesCount : public dax::exec::WorkletMapCell
 {
 public:
   typedef void ControlSignature(Topology, Field(Point), Field(Out));
   typedef _3 ExecutionSignature(_2);
 
-  DAX_CONT_EXPORT MarchingCubesClassify(dax::Scalar isoValue)
+  DAX_CONT_EXPORT MarchingCubesCount(dax::Scalar isoValue)
     : IsoValue(isoValue) {  }
 
   template<class CellTag>

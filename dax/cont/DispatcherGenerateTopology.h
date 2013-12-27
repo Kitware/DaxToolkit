@@ -31,28 +31,28 @@ namespace dax { namespace cont {
 
 template <
   class WorkletType_,
-  class ClassifyHandleType_ = dax::cont::ArrayHandle< dax::Id >,
+  class CountHandleType_ = dax::cont::ArrayHandle< dax::Id >,
   class DeviceAdapterTag_ = DAX_DEFAULT_DEVICE_ADAPTER_TAG>
 class DispatcherGenerateTopology :
   public dax::cont::dispatcher::DispatcherBase<
-          DispatcherGenerateTopology< WorkletType_, ClassifyHandleType_, DeviceAdapterTag_ >,
+          DispatcherGenerateTopology< WorkletType_, CountHandleType_, DeviceAdapterTag_ >,
           dax::exec::WorkletGenerateTopology,
           WorkletType_,
           DeviceAdapterTag_ >
 {
 
-  typedef dax::cont::dispatcher::DispatcherBase< DispatcherGenerateTopology< WorkletType_, ClassifyHandleType_,  DeviceAdapterTag_>,
+  typedef dax::cont::dispatcher::DispatcherBase< DispatcherGenerateTopology< WorkletType_, CountHandleType_,  DeviceAdapterTag_>,
                                                  dax::exec::WorkletGenerateTopology,
                                                  WorkletType_,
                                                  DeviceAdapterTag_> Superclass;
-  friend class dax::cont::dispatcher::DispatcherBase< DispatcherGenerateTopology< WorkletType_, ClassifyHandleType_, DeviceAdapterTag_>,
+  friend class dax::cont::dispatcher::DispatcherBase< DispatcherGenerateTopology< WorkletType_, CountHandleType_, DeviceAdapterTag_>,
                                                  dax::exec::WorkletGenerateTopology,
                                                  WorkletType_,
                                                  DeviceAdapterTag_>;
 
 public:
   typedef WorkletType_ WorkletType;
-  typedef ClassifyHandleType_ ClassifyHandleType;
+  typedef CountHandleType_ CountHandleType;
   typedef DeviceAdapterTag_ DeviceAdapterTag;
 
   typedef dax::cont::ArrayHandle< dax::Id,
@@ -60,34 +60,34 @@ public:
             DeviceAdapterTag> PointMaskType;
 
   DAX_CONT_EXPORT
-  DispatcherGenerateTopology(ClassifyHandleType classification):
+  DispatcherGenerateTopology(CountHandleType count):
     Superclass(WorkletType()),
     RemoveDuplicatePoints(true),
-    ReleaseClassification(true),
-    Classification(classification),
+    ReleaseCount(true),
+    Count(count),
     PointMask()
     { }
 
   DAX_CONT_EXPORT
-  DispatcherGenerateTopology(ClassifyHandleType classification, WorkletType& work):
+  DispatcherGenerateTopology(CountHandleType count, WorkletType& work):
     Superclass(work),
     RemoveDuplicatePoints(true),
-    ReleaseClassification(true),
-    Classification(classification),
+    ReleaseCount(true),
+    Count(count),
     PointMask()
     { }
 
-  DAX_CONT_EXPORT void SetReleaseClassification(bool b)
-    { ReleaseClassification = b; }
+  DAX_CONT_EXPORT void SetReleaseCount(bool b)
+    { ReleaseCount = b; }
 
-  DAX_CONT_EXPORT bool GetReleaseClassification() const
-    { return ReleaseClassification; }
+  DAX_CONT_EXPORT bool GetReleaseCount() const
+    { return ReleaseCount; }
 
-  DAX_CONT_EXPORT ClassifyHandleType GetClassification() const
-    { return Classification; }
+  DAX_CONT_EXPORT CountHandleType GetCount() const
+    { return Count; }
 
-  DAX_CONT_EXPORT void DoReleaseClassification()
-    { Classification.ReleaseResourcesExecution(); }
+  DAX_CONT_EXPORT void DoReleaseCount()
+    { Count.ReleaseResourcesExecution(); }
 
   DAX_CONT_EXPORT
   PointMaskType GetPointMask() { return PointMask; }
@@ -149,12 +149,12 @@ private:
     //of cells in the output
     IdArrayHandleType scannedNewCellCounts;
     const dax::Id numNewCells =
-        Algorithm::ScanInclusive(this->GetClassification(),
+        Algorithm::ScanInclusive(this->GetCount(),
                                  scannedNewCellCounts);
 
-    if(this->GetReleaseClassification())
+    if(this->GetReleaseCount())
       {
-      this->DoReleaseClassification();
+      this->DoReleaseCount();
       }
 
     if(numNewCells == 0)
@@ -264,8 +264,8 @@ private:
   }
 
   bool RemoveDuplicatePoints;
-  bool ReleaseClassification;
-  ClassifyHandleType Classification;
+  bool ReleaseCount;
+  CountHandleType Count;
   PointMaskType PointMask;
 };
 
