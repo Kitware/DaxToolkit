@@ -80,28 +80,28 @@ struct TestMarchingCubesWorklet
     try
       {
       typedef dax::cont::ArrayHandle<dax::Id, ArrayContainer, DeviceAdapter>
-                    ClassifyHandleType;
+                    CountHandleType;
 
       //construct the two dispatcher that will be used to do the marching cubes
       typedef  dax::cont::DispatcherMapCell<
-                          dax::worklet::MarchingCubesClassify > CellDispatcher;
+                          dax::worklet::MarchingCubesCount > CellDispatcher;
       typedef  dax::cont::DispatcherGenerateInterpolatedCells<
                   dax::worklet::MarchingCubesGenerate > InterpolatedDispatcher;
 
       //run the first step
-      ClassifyHandleType classification; //array handle for the first step classification
-      CellDispatcher cellDispatcher( (dax::worklet::MarchingCubesClassify(isoValue)) );
+      CountHandleType count; //array handle for the first step count
+      CellDispatcher cellDispatcher( (dax::worklet::MarchingCubesCount(isoValue)) );
       cellDispatcher.Invoke( inGrid.GetRealGrid(),
                              fieldHandle,
-                             classification);
+                             count);
 
       //construct the topology generation worklet
-      InterpolatedDispatcher interpDispatcher( classification,
+      InterpolatedDispatcher interpDispatcher( count,
                               dax::worklet::MarchingCubesGenerate(isoValue) );
 
       interpDispatcher.SetRemoveDuplicatePoints(false);
-      //so we can use the classification again
-      interpDispatcher.SetReleaseClassification(false);
+      //so we can use the count again
+      interpDispatcher.SetReleaseCount(false);
 
       //run the second step
       interpDispatcher.Invoke(inGrid.GetRealGrid(),

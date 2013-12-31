@@ -97,20 +97,20 @@ public:
 };
 
 //does a combined clip and marching cubes at the same time
-class MandlebulbClipClassify : public dax::exec::WorkletMapCell
+class MandlebulbClipCount : public dax::exec::WorkletMapCell
 {
 public:
   typedef void ControlSignature(Topology, Field(Point), Field(Point), Field(Out));
   typedef _4 ExecutionSignature(_2, _3);
 
-  DAX_CONT_EXPORT MandlebulbClipClassify(dax::Vector3 origin,
+  DAX_CONT_EXPORT MandlebulbClipCount(dax::Vector3 origin,
                                         dax::Vector3 location,
                                         dax::Vector3 normal,
                                         dax::Scalar isoValue)
   : Origin(origin),
     Location(location),
     Normal(normal),
-    MClassify(isoValue)
+    MCount(isoValue)
   {
   }
 
@@ -126,7 +126,7 @@ public:
     if(is_good)
       {
       //if we intersect the slice plane generate faces
-      faces = this->MClassify(values);
+      faces = this->MCount(values);
       }
     return faces;
   }
@@ -155,7 +155,7 @@ public:
     dax::Vector3 Origin;
     dax::Vector3 Location;
     dax::Vector3 Normal;
-    dax::worklet::MarchingCubesClassify MClassify;
+    dax::worklet::MarchingCubesCount MCount;
 };
 
 

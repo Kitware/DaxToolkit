@@ -32,7 +32,7 @@ namespace detail
 
   mandle::MandlebulbSurface generateSurface( mandle::MandlebulbVolume& vol,
                             dax::Scalar iteration,
-                            dax::cont::ArrayHandle<dax::Id> classification)
+                            dax::cont::ArrayHandle<dax::Id> count)
 
 {
   //find the default device adapter
@@ -48,7 +48,7 @@ namespace detail
   //setup the info for the second step
   dax::worklet::MarchingCubesGenerate generateSurface(iteration);
   dax::cont::DispatcherGenerateInterpolatedCells<
-      ::dax::worklet::MarchingCubesGenerate > surfDispacther(classification,
+      ::dax::worklet::MarchingCubesGenerate > surfDispacther(count,
                                                              generateSurface);
 
   surfDispacther.SetRemoveDuplicatePoints(false);
@@ -102,18 +102,18 @@ mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume& vol,
   //lets extract the surface where the iteration value is greater than
   //the passed in iteration value
 
-  dax::cont::ArrayHandle<dax::Id> classification;
+  dax::cont::ArrayHandle<dax::Id> count;
 
   dax::cont::Timer<> timer;
   //run the classify step
-  dax::cont::DispatcherMapCell< ::dax::worklet::MarchingCubesClassify >
-        classify( (::dax::worklet::MarchingCubesClassify(iteration)) );
-  classify.Invoke(vol.Grid, vol.EscapeIteration, classification );
+  dax::cont::DispatcherMapCell< ::dax::worklet::MarchingCubesCount >
+        classify( (::dax::worklet::MarchingCubesCount(iteration)) );
+  classify.Invoke(vol.Grid, vol.EscapeIteration, count );
 
 
   std::cout << "mc stage 1: " << timer.GetElapsedTime() << std::endl;
 
-  return detail::generateSurface(vol,iteration,classification);
+  return detail::generateSurface(vol,iteration,count);
 }
 
 //compute the clip of the volume for a given iteration
@@ -135,20 +135,20 @@ mandle::MandlebulbSurface extractCut( mandle::MandlebulbVolume& vol,
 
   //lets extract the clip
   mandle::MandlebulbSurface surface;
-  dax::cont::ArrayHandle<dax::Id> classification;
+  dax::cont::ArrayHandle<dax::Id> count;
 
   dax::cont::Timer<> timer;
 
   //run the classify step
-  dax::cont::DispatcherMapCell< ::worklet::MandlebulbClipClassify >
-      classify( (::worklet::MandlebulbClipClassify( origin, location, normal, iteration)) );
+  dax::cont::DispatcherMapCell< ::worklet::MandlebulbClipCount >
+      classify( (::worklet::MandlebulbClipCount( origin, location, normal, iteration)) );
   classify.Invoke(vol.Grid,
                   vol.Grid.GetPointCoordinates(),
                   vol.EscapeIteration,
-                  classification );
+                  count );
   std::cout << "mc stage 1: "  << timer.GetElapsedTime() << std::endl;
 
-  return detail::generateSurface(vol,iteration,classification);
+  return detail::generateSurface(vol,iteration,count);
 }
 
 

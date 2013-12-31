@@ -64,19 +64,19 @@ struct TestSliceWorklet
     try
       {
       typedef dax::cont::ArrayHandle<dax::Id, ArrayContainer, DeviceAdapter>
-        ClassifyHandleType;
+        CountHandleType;
 
       //construct the two worklets that will be used to do the marching cubes
       typedef  dax::cont::DispatcherMapCell<
-                          dax::worklet::SliceClassify > CellDispatcher;
+                          dax::worklet::SliceCount > CellDispatcher;
       typedef  dax::cont::DispatcherGenerateInterpolatedCells<
                   dax::worklet::SliceGenerate > InterpolatedDispatcher;
 
 
 
       //run the first step
-      ClassifyHandleType classification; //array handle for the first step classification
-      CellDispatcher cellDispatcher((dax::worklet::SliceClassify(ORIGIN,NORMAL)));
+      CountHandleType classification; //array handle for the first step classification
+      CellDispatcher cellDispatcher((dax::worklet::SliceCount(ORIGIN,NORMAL)));
       cellDispatcher.Invoke( inGrid.GetRealGrid(),
                             inGrid->GetPointCoordinates(),
                             classification);
@@ -85,7 +85,7 @@ struct TestSliceWorklet
                                 dax::worklet::SliceGenerate(ORIGIN,NORMAL));
       interpDispatcher.SetRemoveDuplicatePoints(false);
       //so we can use the classification again
-      interpDispatcher.SetReleaseClassification(false);
+      interpDispatcher.SetReleaseCount(false);
 
       //run the second step
       interpDispatcher.Invoke(inGrid.GetRealGrid(),

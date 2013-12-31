@@ -198,19 +198,19 @@ struct TestThresholdWorklet
       {
       typedef dax::cont::DispatcherGenerateTopology<
             dax::worklet::testing::VerifyThresholdTopology > DispatcherGT;
-      typedef typename DispatcherGT::ClassifyHandleType  ClassifyHandleType;
+      typedef typename DispatcherGT::CountHandleType  CountHandleType;
 
 
-      typedef dax::worklet::ThresholdClassify< dax::Scalar> ClassifyWorklet;
-      dax::cont::DispatcherMapCell< ClassifyWorklet > classifyDispatcher(
-                                                    ClassifyWorklet(min,max) );
+      typedef dax::worklet::ThresholdCount< dax::Scalar> CountWorklet;
+      dax::cont::DispatcherMapCell< CountWorklet > classifyDispatcher(
+                                                    CountWorklet(min,max) );
 
 
-      ClassifyHandleType classification;
-      classifyDispatcher.Invoke(inGrid, fieldHandle, classification);
+      CountHandleType count;
+      classifyDispatcher.Invoke(inGrid, fieldHandle, count);
 
       //construct the topology generation worklet
-      DispatcherGT dispatcherTopo(classification);
+      DispatcherGT dispatcherTopo(count);
 
       dispatcherTopo.Invoke( inGrid, outGrid, 4.0f );
 

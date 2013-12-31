@@ -103,11 +103,11 @@ struct TestTetrahedralizeWorklet
                             dax::worklet::Tetrahedralize,
                             dax::cont::ArrayHandleConstant<dax::Id>
                             > DispatcherTopology;
-      typedef dax::cont::ArrayHandleConstant<dax::Id> ClassifyHandleType;
+      typedef dax::cont::ArrayHandleConstant<dax::Id> CountHandleType;
 
-      ClassifyHandleType classification(5,inGrid.GetNumberOfCells());
+      CountHandleType count(5,inGrid.GetNumberOfCells());
 
-      DispatcherTopology dispatcher(classification);
+      DispatcherTopology dispatcher(count);
 
       //don't remove duplicate points.
       dispatcher.SetRemoveDuplicatePoints(false);

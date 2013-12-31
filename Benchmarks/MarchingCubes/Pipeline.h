@@ -62,18 +62,18 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid, int pipeline)
 
   //schedule marching cubes worklet generate step
   typedef dax::cont::DispatcherGenerateInterpolatedCells< dax::worklet::MarchingCubesGenerate > DispatcherIC;
-  typedef DispatcherIC::ClassifyHandleType  ClassifyHandleType;
+  typedef DispatcherIC::CountHandleType  CountHandleType;
 
-  dax::worklet::MarchingCubesClassify classifyWorklet(ISOVALUE);
+  dax::worklet::MarchingCubesCount classifyWorklet(ISOVALUE);
   dax::worklet::MarchingCubesGenerate generateWorklet(ISOVALUE);
 
   //run the first step
-  ClassifyHandleType classification; //array handle for the first step classification
-  dax::cont::DispatcherMapCell<dax::worklet::MarchingCubesClassify > cellDispatcher( classifyWorklet );
-  cellDispatcher.Invoke(grid, intermediate1, classification);
+  CountHandleType count; //array handle for the first step count
+  dax::cont::DispatcherMapCell<dax::worklet::MarchingCubesCount > cellDispatcher( classifyWorklet );
+  cellDispatcher.Invoke(grid, intermediate1, count);
 
   //construct the topology generation worklet
-  DispatcherIC icDispatcher(classification, generateWorklet );
+  DispatcherIC icDispatcher(count, generateWorklet );
   icDispatcher.SetRemoveDuplicatePoints(
                 pipeline == dax::testing::ArgumentsParser::MARCHING_CUBES_REMOVE_DUPLICATES);
 
