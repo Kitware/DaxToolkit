@@ -20,6 +20,7 @@ set(headers
   CollectCount.h
   CreateExecutionResources.h
   DetermineIndicesAndGridType.h
+  DispatcherBase.h
   VerifyUserArgLength.h
   )
 
