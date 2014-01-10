@@ -41,12 +41,12 @@ namespace cont {
 ///
 /// \li \c DAX_DEVICE_ADAPTER_SERIAL Runs all algorithms in serial. Can be
 /// helpful for debugging.
-/// \li \c DAX_DEVICE_ADAPTER_CUDA Schedules and runs algorithms on a GPU
+/// \li \c DAX_DEVICE_ADAPTER_CUDA Dispatches and runs algorithms on a GPU
 /// using CUDA.  Must be compiling with a CUDA compiler (nvcc).
-/// \li \c DAX_DEVICE_ADAPTER_OPENMP Schedules an algorithm over multiple
+/// \li \c DAX_DEVICE_ADAPTER_OPENMP Dispatches an algorithm over multiple
 /// CPU cores using OpenMP compiler directives.  Must be compiling with an
 /// OpenMP-compliant compiler with OpenMP pragmas enabled.
-/// \li \c DAX_DEVICE_ADAPTER_TBB Schedule and runs algorithms on multiple
+/// \li \c DAX_DEVICE_ADAPTER_TBB Dispatches and runs algorithms on multiple
 /// threads using the Intel Threading Building Blocks (TBB) libraries. Must
 /// have the TBB headers available and the resulting code must be linked with
 /// the TBB libraries.

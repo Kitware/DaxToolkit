@@ -155,7 +155,7 @@ DAX_CONT_EXPORT void InvokeGenerateKeysValues(
   DerivedWorkletType derivedWorklet(worklet);
 
   //we get our magic here. we need to wrap some paramemters and pass
-  //them to the real scheduler
+  //them to the real dispatcher
   this->BasicInvoke( derivedWorklet,
         arguments.template Replace<1>(
             dax::cont::make_Permutation(outputIndexRanges,inputGrid,

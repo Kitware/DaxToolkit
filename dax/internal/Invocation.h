@@ -23,7 +23,7 @@ namespace internal {
 
 /// \brief Container for schedule invocation of worklets
 ///
-/// When a scheduler invokes a worklet, it has to create several templated
+/// When a dispatcher invokes a worklet, it has to create several templated
 /// classes that depend on how the invoke method was called. In particular,
 /// they need to know the type of the worklet and the type of the parameters
 /// passed to Invoke on the control side. This simple struct wraps up those

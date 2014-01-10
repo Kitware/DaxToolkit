@@ -133,7 +133,7 @@ void ParameterPackCallFunctionCont(Function &f _dax_pp_comma
   // FunctionType and look at its operator(). If the error is there is no
   // matched method in FunctionType::operator(), it probably means an invalid
   // argument is being passed. This is likely caused from bad arguments to
-  // Scheduler::Invoke.
+  // Dispatcher::Invoke.
   f(_dax_pp_args___(arguments));
 }
 
@@ -240,7 +240,7 @@ void ParameterPackCallFunctionExec(Function &f _dax_pp_comma
   // FunctionType and look at its operator(). If the error is there is no
   // matched method in FunctionType::operator(), it probably means an invalid
   // argument is being passed. This is likely caused from bad arguments to
-  // Scheduler::Invoke.
+  // Dispatcher::Invoke.
   f(_dax_pp_args___(arguments));
 }
 
@@ -358,7 +358,7 @@ public:
     // probably means an invalid argument is being passed. If the error is that
     // there is no valid conversion, then the return type is probably
     // mismatched. In either case, it is likely caused from bad arguments to
-    // Scheduler::Invoke.
+    // Dispatcher::Invoke.
     const ReturnType returnValue = this->Function(_dax_pp_args___(arguments));
     this->RecordReturnValue(returnValue);
   }
@@ -388,7 +388,7 @@ public:
     // probably means an invalid argument is being passed. If the error is that
     // there is no valid conversion, then the return type is probably
     // mismatched. In either case, it is likely caused from bad arguments to
-    // Scheduler::Invoke.
+    // Dispatcher::Invoke.
     const ReturnType returnValue = this->Function(_dax_pp_args___(arguments));
     this->RecordReturnValue(returnValue);
   }

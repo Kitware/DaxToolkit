@@ -60,7 +60,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid, int pipeline)
 
   dax::cont::Timer<> timer;
 
-  //schedule marching cubes worklet generate step
+  //dispatch marching cubes worklet generate step
   typedef dax::cont::DispatcherGenerateInterpolatedCells< dax::worklet::MarchingCubesGenerate > DispatcherIC;
   typedef DispatcherIC::CountHandleType  CountHandleType;
 

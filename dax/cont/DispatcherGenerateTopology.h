@@ -194,7 +194,7 @@ private:
     DerivedWorkletType derivedWorklet(worklet);
 
     //we get our magic here. we need to wrap some paramemters and pass
-    //them to the real scheduler. The visitIndex must be last, as that is the
+    //them to the real dispatcher. The visitIndex must be last, as that is the
     //hardcoded location the ReplaceAndExtendSignatures will place it at
     this->BasicInvoke( derivedWorklet,
           arguments.template Replace<1>(

@@ -15,7 +15,7 @@
 //=============================================================================
 
 // This tests a previous problem where code templated on the device adapter and
-// used one of the device adapter algorithms (for example, the scheduler) had
+// used one of the device adapter algorithms (for example, the dispatcher) had
 // to be declared after any device adapter it was ever used with.
 
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR

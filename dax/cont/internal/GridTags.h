@@ -38,7 +38,7 @@ struct UniformGridTag {  };
 
 
 /// A tag you can use to state you don't have a grid.
-/// Mainly used by algorithms and schedulers to state they work on all grid
+/// Mainly used by algorithms and dispatchers to state they work on all grid
 /// types
 struct UnspecifiedGridTag { };
 }
