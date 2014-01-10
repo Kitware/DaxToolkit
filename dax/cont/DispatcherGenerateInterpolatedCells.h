@@ -178,13 +178,13 @@ private:
     dax::cont::DispatcherMapField< dax::exec::internal::kernel::Index >()
                                       .Invoke(outputGrid.GetCellConnections());
 
-    //Next step is to set the scheduler to fill the output geometry
+    //Next step is to set the dispatcher to fill the output geometry
     //with the interpolated cell values. We use the outputGrid,
     //since a vec3 is what the interpolated cell values and the outputGrids
     //coordinate space are
 
     //we get our magic here. we need to wrap some parameters and pass
-    //them to the real scheduler
+    //them to the real dispatcher
     DerivedWorkletType derivedWorklet(worklet);
 
     this->BasicInvoke( derivedWorklet,
@@ -249,8 +249,8 @@ private:
     //2. talk to bob to see how he did this in parallel, I expect it is far
     //more complicated than what I am going to do
 
-    //end result is I am going to use the raw schedule and not write a proper
-    //worklet to this step
+    //end result is I am going to use the device adapter scheduler and not
+    //write a proper worklet to this step
     typedef typename InputGrid::PointCoordinatesType::PortalConstExecution InPortalType;
     typedef typename OutputGrid::PointCoordinatesType::PortalExecution OutPortalType;
 

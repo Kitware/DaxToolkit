@@ -132,7 +132,7 @@ private:
                   WorkletType>::DerivedWorkletType DerivedWorkletType;
 
     //we get our magic here. we need to wrap some parameters and pass
-    //them to the real scheduler
+    //them to the real dispatcher
     DerivedWorkletType derivedWorklet(worklet);
     this->BasicInvoke(derivedWorklet,
                       arguments.Append(this->ReductionCounts)

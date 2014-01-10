@@ -7,14 +7,14 @@ The Dax Toolkit is an open source C++ header only library that provides a collec
 The Dax Toolkit uses fine-grained concurrency for data analysis and visualization algorithms.
 The basic computational unit of the Dax Toolkit is a worklet, a function that implements the algorithm’s behavior on an element of a mesh (that is, a point, edge, face, or cell) or a small local neighborhood.
 
-The worklet is constrained to be serial and stateless; it can access only the element passed to and from the invocation. With this constraint, the serial worklet function can be concurrently scheduled on an unlimited number of threads without the complications of threads or race conditions.
+The worklet is constrained to be serial and stateless; it can access only the element passed to and from the invocation. With this constraint, the serial worklet function can be concurrently executed on an unlimited number of threads without the complications of threads or race conditions.
 
-Although worklets are not allowed communication, many visualization algorithms require operations such as variable array packing and coincident topology resolution that intrinsically require significant coordination among threads. Dax enables such algorithms by classifying and implementing the most common and versatile communicative operations into worklet types which are managed by the Dax scheduler.
+Although worklets are not allowed communication, many visualization algorithms require operations such as variable array packing and coincident topology resolution that intrinsically require significant coordination among threads. Dax enables such algorithms by classifying and implementing the most common and versatile communicative operations into worklet types which are managed by the Dax dispatcher.
 
 ### Why ###
 
 
-The Dax Toolkit simplifies the development of parallel visualization algorithms. Consider the computation of gradients using finite differences. Because the Dax Toolkit is structured such that it can schedule its execution on a GPU, we measure that it performs this operation over 100 times faster than VTK running on a single CPU. Furthermore, the Dax API can be switched to a different device by changing only a single line of code. Dax currently provides scheduling for CUDA (GPU), OpenMP (multicore CPU), and serial execution.
+The Dax Toolkit simplifies the development of parallel visualization algorithms. Consider the computation of gradients using finite differences. Because the Dax Toolkit is structured such that it can execute worklets on a GPU, we measure that it performs this operation over 100 times faster than VTK running on a single CPU. Furthermore, the Dax API can be switched to a different device by changing only a single line of code. Dax currently provides support for CUDA (GPU), OpenMP (multicore CPU), and serial execution.
 
 ``` cpp
 struct CellGradient : public dax::exec::WorkletMapCell

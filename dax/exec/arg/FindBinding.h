@@ -148,7 +148,7 @@ public:
 };
 
 //bind VertexId directly to the input array (which should be specially
-//constructed by the scheduler)
+//constructed by the dispatcher)
 template<typename Invocation, int N>
 class FindBinding<Invocation, dax::cont::sig::VisitIndexArg<N> >
 {
@@ -157,7 +157,7 @@ public:
 };
 
 //bind ReductionCount directly to the input array (which should be specially
-//constructed by the scheduler)
+//constructed by the dispatcher)
 template<typename Invocation, int N>
 class FindBinding<Invocation, dax::cont::sig::ReductionCountArg<N> >
 {
@@ -166,7 +166,7 @@ public:
 };
 
 //bind ReductionOffset directly to the input array (which should be specially
-//constructed by the scheduler)
+//constructed by the dispatcher)
 template<typename Invocation, int N>
 class FindBinding<Invocation, dax::cont::sig::ReductionOffsetArg<N> >
 {

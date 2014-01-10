@@ -25,7 +25,7 @@ namespace worklet {
 
 // It might be prudent to change this to create keys and values separately.
 // That way if you have multiple fields to interpolate, you can do them one at
-// atime without continually recreating keys.  It would nice if the scheduler
+// atime without continually recreating keys.  It would nice if the dispatcher
 // for generate keys values was able to cache the indexing structures so that
 // they did not have to continually be rebuilt.
 
