@@ -31,7 +31,8 @@ public:
     {
     CELL_GRADIENT = 1,
     CELL_GRADIENT_SINE_SQUARE_COS = 2,
-    SINE_SQUARE_COS = 3
+    SINE_SQUARE_COS = 3,
+    TANGLE_SINE_SQUARE_COS = 4
     };
   PipelineMode pipeline() const
     { return this->Pipeline; }

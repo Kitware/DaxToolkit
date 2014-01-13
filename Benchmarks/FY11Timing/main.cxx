@@ -31,6 +31,9 @@ void RunPipeline(int pipeline, const dax::cont::UniformGrid<> &grid)
     case 3:
       RunPipeline3(grid);
       break;
+    case 4:
+      RunPipeline4(grid);
+      break;
     default:
       std::cout << "Invalid pipeline selected." << std::endl;
       exit(1);
@@ -55,7 +58,7 @@ int main(int argc, char* argv[])
     return 1;
     }
 
-  
+
   //init grid vars from parser
   const dax::Id MAX_SIZE = parser.problemSize();
 
