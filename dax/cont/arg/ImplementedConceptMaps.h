@@ -25,6 +25,7 @@
 #include <dax/cont/arg/FieldArrayHandleCounting.h>
 #include <dax/cont/arg/FieldArrayHandleImplicit.h>
 #include <dax/cont/arg/FieldArrayHandlePermutation.h>
+#include <dax/cont/arg/FieldArrayHandleTransform.h>
 #include <dax/cont/arg/FieldConstant.h>
 #include <dax/cont/arg/FieldMap.h>
 #include <dax/cont/arg/GeometryUniformGrid.h>

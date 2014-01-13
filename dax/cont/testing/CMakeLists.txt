@@ -30,6 +30,7 @@ set(unit_tests
   UnitTestArrayHandleCounting.cxx
   UnitTestArrayHandleImplicit.cxx
   UnitTestArrayHandlePermutation.cxx
+  UnitTestArrayHandleTransform.cxx
   UnitTestBuildReductionMap.cxx
   UnitTestContTesting.cxx
   UnitTestDeviceAdapterAlgorithmDependency.cxx
