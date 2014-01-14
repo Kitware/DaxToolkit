@@ -1,4 +1,4 @@
-//=============================================================================
+  //=============================================================================
 //
 //  Copyright (c) Kitware, Inc.
 //  All rights reserved.
@@ -14,46 +14,99 @@
 //
 //=============================================================================
 
-//This sets up the ArrayHandle semantics to allocate pointers and share memory
-//between control and execution.
-#define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
-#define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
+#define BOOST_SP_DISABLE_THREADS
 
+#include <dax/cuda/cont/DeviceAdapterCuda.h>
 
+#include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ArrayHandleCounting.h>
 #include <dax/cont/ArrayHandlePermutation.h>
-#include <dax/cont/internal/ArrayPortalFromIterators.h>
-#include <dax/cont/ArrayHandle.h>
+#include <dax/cont/DispatcherMapField.h>
+#include <dax/VectorTraits.h>
 
-#include <dax/cont/testing/Testing.h>
+#include <dax/exec/WorkletMapField.h>
 
-namespace {
+#include <dax/cuda/cont/internal/testing/Testing.h>
+
+namespace ut_Permutation
+{
 
 const dax::Id ARRAY_SIZE = 10;
+
+struct Pass : public dax::exec::WorkletMapField
+{
+  typedef void ControlSignature(Field(In), Field(Out));
+  typedef _2 ExecutionSignature(_1);
+
+  template<class ValueType>
+  DAX_EXEC_EXPORT
+  ValueType operator()(const ValueType &inValue) const
+  { return inValue; }
+
+};
 
 template<typename T>
 struct CountByThree
 {
+  DAX_EXEC_CONT_EXPORT
   CountByThree(): Value() {}
+
+  DAX_EXEC_CONT_EXPORT
   explicit CountByThree(T t): Value(t) {}
 
-  bool operator==(const T& other) const
-    { return Value == other; }
-
-  bool operator==(const CountByThree<T>& other) const
-    { return Value == other.Value; }
-
+  DAX_EXEC_CONT_EXPORT
   CountByThree<T> operator+(dax::Id count) const
   { return CountByThree<T>(Value+(count*3)); }
 
-  CountByThree<T>& operator++()
-    { ++Value; ++Value; ++Value; return *this; }
+  DAX_CONT_EXPORT
+  bool operator==(const CountByThree<T>& other) const
+  { return Value == other.Value; }
 
-  friend std::ostream& operator<< (std::ostream& os, const CountByThree<T>& obj)
-    { os << obj.Value; return os; }
   T Value;
 };
 
+}
+
+
+namespace dax {
+
+/// Implement Vector Traits for CountByThree so we can use it in the execution
+/// environment
+template<typename T>
+struct VectorTraits< ut_Permutation::CountByThree<T> >
+{
+  typedef ut_Permutation::CountByThree<T> ComponentType;
+  static const int NUM_COMPONENTS = 1;
+  typedef VectorTraitsTagSingleComponent HasMultipleComponents;
+
+  DAX_EXEC_EXPORT
+  static const ComponentType &GetComponent(const ComponentType &vector,
+                                           int component) {
+    return vector;
+  }
+  DAX_EXEC_EXPORT
+  static ComponentType &GetComponent(ComponentType &vector, int component) {
+    return vector;
+  }
+
+  DAX_EXEC_EXPORT static void SetComponent(ComponentType &vector,
+                                           int component,
+                                           ComponentType value) {
+    vector = value;
+  }
+
+  DAX_EXEC_CONT_EXPORT
+  static dax::Tuple<ComponentType,NUM_COMPONENTS>
+  ToTuple(const ComponentType &vector)
+  {
+    return dax::Tuple<T,1>(vector);
+  }
+};
+
+}
+
+
+namespace ut_Permutation {
 
 template< typename ValueType>
 struct TemplatedTests
@@ -102,19 +155,22 @@ struct TemplatedTests
   ArrayPermHandleType permutation =
       dax::cont::make_ArrayHandlePermutation(keys,values);
 
-  typename ArrayPermHandleType::PortalConstExecution permPortal =
-                                      permutation.PrepareForInput();
+  //verify the results by executing a worklet to copy the results
+  dax::cont::ArrayHandle< ValueType > result;
+  dax::cont::DispatcherMapField< ut_Permutation::Pass >().Invoke(
+                                                     permutation, result);
 
-  //now lets try to actually get some values of these permutation arrays
+  typename dax::cont::ArrayHandle< ValueType >::PortalConstControl portal =
+                                      result.GetPortalConstControl();
   ValueType correct_value = startingValue;
   for(int i=0; i < ARRAY_SIZE/2; ++i)
     {
-    ++correct_value; //the permutation should have every other value
-    ValueType v = permPortal.Get(i);
+     //the permutation should have every other value
+    correct_value = correct_value + 1;
+    ValueType v = portal.Get(i);
     DAX_TEST_ASSERT(v == correct_value, "Count By Three permutation wrong");
-    ++correct_value;
+    correct_value = correct_value + 1;
     }
-
   }
 
   //make a long permutation array, verify its length and values
@@ -126,16 +182,19 @@ struct TemplatedTests
   ArrayPermHandleType permutation =
       dax::cont::make_ArrayHandlePermutation(keys,values);
 
-  typename ArrayPermHandleType::PortalConstExecution permPortal =
-                                      permutation.PrepareForInput();
+  //verify the results by executing a worklet to copy the results
+  dax::cont::ArrayHandle< ValueType > result;
+  dax::cont::DispatcherMapField< ut_Permutation::Pass >().Invoke(
+                                                     permutation, result);
 
-  //now lets try to actually get some values of these permutation arrays
+  typename dax::cont::ArrayHandle< ValueType >::PortalConstControl portal =
+                                      result.GetPortalConstControl();
   ValueType correct_value = startingValue;
   for(int i=0; i < ARRAY_SIZE; ++i)
     {
-    ValueType v = permPortal.Get(i);
+    ValueType v = portal.Get(i);
     DAX_TEST_ASSERT(v == correct_value, "Full permutation wrong");
-    ++correct_value;
+    correct_value = correct_value + 1;
     }
   }
 
@@ -165,7 +224,8 @@ void TestArrayHandlePermutation()
 
 } // annonymous namespace
 
-int UnitTestArrayHandlePermutation(int, char *[])
+int UnitTestCudaArrayHandlePermutation(int, char *[])
 {
-  return dax::cont::testing::Testing::Run(TestArrayHandlePermutation);
+  return dax::cuda::cont::internal::Testing::Run(
+                                  ut_Permutation::TestArrayHandlePermutation);
 }

@@ -62,17 +62,17 @@ public:
       SecondPortal(src.GetSecondPortal())
   {  }
 
-  DAX_EXEC_CONT_EXPORT
+  DAX_EXEC_EXPORT
   dax::Id GetNumberOfValues() const {
     return this->FirstPortal.GetNumberOfValues();
   }
 
-  DAX_EXEC_CONT_EXPORT
+  DAX_EXEC_EXPORT
   ValueType Get(dax::Id index) const {
     return this->SecondPortal.Get( this->FirstPortal.Get(index) );
   }
 
-  DAX_EXEC_CONT_EXPORT
+  DAX_EXEC_EXPORT
   void Set(dax::Id index, const ValueType &value) const {
     this->SecondPortal.Set( this->FirstPortal.Get(index), value);
   }
@@ -80,24 +80,24 @@ public:
   typedef dax::cont::internal::IteratorFromArrayPortal<
       ArrayPortalPermutation<FirstPortalType,SecondPortalType> > IteratorType;
 
-  DAX_CONT_EXPORT
+  DAX_EXEC_EXPORT
   IteratorType GetIteratorBegin() const {
     return IteratorType(*this);
   }
 
-  DAX_CONT_EXPORT
+  DAX_EXEC_EXPORT
   IteratorType GetIteratorEnd() const {
     return IteratorType(*this, this->GetNumberOfValues());
   }
 
-  DAX_EXEC_CONT_EXPORT
+  DAX_CONT_EXPORT
   FirstPortalType &GetFirstPortal() { return this->FirstPortal; }
-  DAX_EXEC_CONT_EXPORT
+  DAX_CONT_EXPORT
   SecondPortalType &GetSecondPortal() { return this->SecondPortal; }
 
-  DAX_EXEC_CONT_EXPORT
+  DAX_CONT_EXPORT
   const FirstPortalType &GetFirstPortal() const { return this->FirstPortal; }
-  DAX_EXEC_CONT_EXPORT
+  DAX_CONT_EXPORT
   const SecondPortalType &GetSecondPortal() const { return this->SecondPortal; }
 
 private:
@@ -105,11 +105,38 @@ private:
   SecondPortalType SecondPortal;
 };
 
+//simple container for the array handle and functor
+//so we can get them inside the array transfer class
+template<class Handle1Type, class Handle2Type>
+struct ArrayPortalConstPermutation
+{
+  DAX_CONT_EXPORT
+  ArrayPortalConstPermutation():
+  FirstArray(),
+  SecondArray()
+  { }
+
+  DAX_CONT_EXPORT
+  ArrayPortalConstPermutation(Handle1Type handle1, Handle2Type handle2):
+  FirstArray(handle1),
+  SecondArray(handle2)
+  { }
+
+  DAX_CONT_EXPORT
+  dax::Id GetNumberOfValues() const {
+    return this->FirstArray.GetNumberOfValues();
+  }
+
+  Handle1Type FirstArray;
+  Handle2Type SecondArray;
+};
+
+
 template<class FirstArrayHandleType, class SecondArrayHandleType>
 struct ArrayContainerControlTagPermutation { };
 
-/// This helper struct defines the value type for a zip container containing
-/// the given two array handles.
+/// This helper struct defines the value type for a permutation container
+/// containing the given two array handles.
 ///
 template<class FirstArrayHandleType, class SecondArrayHandleType>
 struct ArrayContainerControlPermutationTypes {
@@ -129,15 +156,13 @@ struct ArrayContainerControlPermutationTypes {
   typedef ArrayContainerControlTagPermutation<
       FirstArrayHandleType,SecondArrayHandleType> ArrayContainerControlTag;
 
-  /// The portal types used with the zip container.
+  /// The portal types used with the permutation container.
   ///
-  typedef dax::cont::internal::ArrayPortalPermutation<
-      typename FirstArrayHandleType::PortalControl,
-      typename SecondArrayHandleType::PortalControl> PortalControl;
+  typedef dax::cont::internal::ArrayPortalConstPermutation<
+      FirstArrayHandleType,
+      SecondArrayHandleType> PortalControl;
 
-  typedef dax::cont::internal::ArrayPortalPermutation<
-      typename FirstArrayHandleType::PortalConstControl,
-      typename SecondArrayHandleType::PortalConstControl> PortalConstControl;
+  typedef PortalControl PortalConstControl;
 };
 
 template<class FirstArrayHandleType, class SecondArrayHandleType>
@@ -148,7 +173,6 @@ class ArrayContainerControl<
 private:
   typedef ArrayContainerControlPermutationTypes<
       FirstArrayHandleType,SecondArrayHandleType> PermutationTypes;
-  typedef typename PermutationTypes::ArrayContainerControlType ThisType;
 
 public:
   typedef typename PermutationTypes::ValueType ValueType;
@@ -158,35 +182,29 @@ public:
 
 public:
   DAX_CONT_EXPORT
-  ArrayContainerControl() : Valid(false) {  }
+  ArrayContainerControl():
+  Portal()
+  {  }
 
   DAX_CONT_EXPORT
-  ArrayContainerControl(const FirstArrayHandleType firstArrayHandle,
-                        const SecondArrayHandleType secondArrayHandle)
-    : FirstArray(firstArrayHandle), SecondArray(secondArrayHandle), Valid(true)
-  {
-    // TODO: MPL ASSERT to make sure DeviceAdapter of FirstArrayHandleType
-    // and SecondArrayHandleType are the same.
-  }
+  ArrayContainerControl(FirstArrayHandleType first,
+                        SecondArrayHandleType second):
+  Portal(first,second)
+  {  }
 
   DAX_CONT_EXPORT
   PortalType GetPortal() {
-    DAX_ASSERT_CONT(this->Valid);
-    return PortalType(this->FirstArray.GetPortalControl(),
-                      this->SecondArray.GetPortalControl());
+    return Portal;
   }
 
   DAX_CONT_EXPORT
   PortalConstType GetPortalConst() const {
-    DAX_ASSERT_CONT(this->Valid);
-    return PortalConstType(this->FirstArray.GetPortalConstControl(),
-                           this->SecondArray.GetPortalConstControl());
+    return Portal;
   }
 
   DAX_CONT_EXPORT
   dax::Id GetNumberOfValues() const {
-    DAX_ASSERT_CONT(this->Valid);
-    return this->FirstArray.GetNumberOfValues();
+    return Portal.GetNumberOfValues();
   }
 
   DAX_CONT_EXPORT
@@ -200,25 +218,18 @@ public:
   }
 
   DAX_CONT_EXPORT
-  void Shrink(dax::Id numberOfValues) {
-    DAX_ASSERT_CONT(this->Valid);
-    //we only shrink the lookup array, since
-    //that is what we report as our length
-    this->FirstArray.Shrink(numberOfValues);
+  void Shrink(dax::Id daxNotUsed(numberOfValues)) {
+    throw dax::cont::ErrorControlBadValue("Permutation arrays are read-only.");
   }
 
   //We don't own the memory, the handles do, so don't deallocate
   //underneath of them.
   DAX_CONT_EXPORT
   void ReleaseResources() {
-    DAX_ASSERT_CONT(this->Valid);
-    //don't release anything we are just a view onto the data
+    throw dax::cont::ErrorControlBadValue("Permutation arrays are read-only.");
   }
-
 private:
-  FirstArrayHandleType FirstArray;
-  SecondArrayHandleType SecondArray;
-  bool Valid;
+  PortalType Portal;
 };
 
 template<typename T,
@@ -266,25 +277,12 @@ public:
 
   DAX_CONT_EXPORT
   ArrayTransfer() :
-    ArraysValid(false),
     ExecutionPortalConstValid(false),
     ExecutionPortalValid(false) {
     // TODO: MPL ASSERT to make sure DeviceAdapter of this class is the same
     // as that of the first and second array handles.
   }
 
-  DAX_CONT_EXPORT
-  ArrayTransfer(FirstArrayHandleType firstArray,
-                SecondArrayHandleType secondArray)
-    : FirstArray(firstArray),
-      SecondArray(secondArray),
-      ArraysValid(true),
-      ExecutionPortalConstValid(false),
-      ExecutionPortalValid(false)
-  {
-    // TODO: MPL ASSERT to make sure DeviceAdapter of this class is the same
-    // as that of the first and second array handles.
-  }
 
   DAX_CONT_EXPORT
   dax::Id GetNumberOfValues() const {
@@ -294,11 +292,11 @@ public:
   }
 
   DAX_CONT_EXPORT
-  void LoadDataForInput(PortalConstControl daxNotUsed(portal)) {
-    // This method assumes that the given portal is one that is equivalent to
-    // a portal zipping the data already in the two arrays. (That is, assumes
-    // that a user portal was not given directly the the zipped array handle.)
-    // It would be good to check that, but how?
+  void LoadDataForInput(PortalConstControl portal) {
+
+    this->FirstArray = portal.FirstArray;
+    this->SecondArray = portal.SecondArray;
+
     this->ExecutionPortalConst = PortalConstExecution(
                                    this->FirstArray.PrepareForInput(),
                                    this->SecondArray.PrepareForInput());
@@ -307,8 +305,10 @@ public:
   }
 
   DAX_CONT_EXPORT
-  void LoadDataForInPlace(PortalControl daxNotUsed(portal)) {
-    // Assuming controlArray uses the same first and second arrays as this.
+  void LoadDataForInPlace(PortalControl portal) {
+    this->FirstArray = portal.FirstArray;
+    this->SecondArray = portal.SecondArray;
+
     this->ExecutionPortal = PortalExecution(
                               this->FirstArray.PrepareForInput(),
                               this->SecondArray.PrepareForInPlace());
@@ -319,11 +319,13 @@ public:
   }
 
   DAX_CONT_EXPORT
-  void AllocateArrayForOutput(ContainerType &daxNotUsed(controlArray),
+  void AllocateArrayForOutput(ContainerType controlArray,
                               dax::Id numberOfValues) {
-    // Assuming controlArray uses the same first and second arrays as this.
+
+    this->FirstArray = controlArray.GetPortal().FirstArray;
+    this->SecondArray = controlArray.GetPortal().SecondArray;
     this->ExecutionPortal
-        = PortalExecution(this->FirstArray.PrepareForOutput(numberOfValues),
+        = PortalExecution(this->SecondArray.PrepareForOutput(numberOfValues),
                           this->SecondArray.PrepareForOutput(numberOfValues));
     this->ExecutionPortalValid = true;
     this->ExecutionPortalConstValid = false;
@@ -367,13 +369,14 @@ public:
   void ReleaseResources() { }
 
 private:
+  bool ExecutionPortalConstValid;
+  bool ExecutionPortalValid;
+
   FirstArrayHandleType FirstArray;
   SecondArrayHandleType SecondArray;
-  bool ArraysValid;
-  PortalConstExecution ExecutionPortalConst;
-  bool ExecutionPortalConstValid;
   PortalExecution ExecutionPortal;
-  bool ExecutionPortalValid;
+  PortalConstExecution ExecutionPortalConst;
+
 };
 
 }

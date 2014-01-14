@@ -15,6 +15,7 @@
 ##=============================================================================
 
 set(unit_tests
+  UnitTestCudaArrayHandlePermutation.cu
   UnitTestCudaMath.cu
   UnitTestDeviceAdapterCuda.cu
   )
