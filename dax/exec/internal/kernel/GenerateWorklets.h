@@ -60,29 +60,44 @@ struct GetUsedPointsFunctor : public WorkletMapField
   }
 };
 
-template<class InVec3PortalType, class OutVec3PortalType>
-struct InterpolateEdgesToPoint
+template<class InterpolationWeights,
+         class InPortalType,
+         class OutPortalType >
+struct InterpolateFieldToField
   {
-    DAX_CONT_EXPORT InterpolateEdgesToPoint(const InVec3PortalType &coords,
-                                            const OutVec3PortalType &interpCoords) :
-    Coords(coords),
-    InterpCoords(interpCoords)
+    DAX_CONT_EXPORT InterpolateFieldToField(const InterpolationWeights &interp,
+                                            const InPortalType &inPortal,
+                                            const OutPortalType &outPortal) :
+    Weights(interp),
+    Input(inPortal),
+    Output(outPortal)
     {  }
 
 
     DAX_EXEC_EXPORT void operator()(dax::Id index) const
     {
-      const dax::Vector3 pointInterpInfo = InterpCoords.Get(index);
-      const dax::Vector3 point1 = Coords.Get(pointInterpInfo[0]);
-      const dax::Vector3 point2 = Coords.Get(pointInterpInfo[1]);
-      InterpCoords.Set(index, dax::math::Lerp(point1,point2,pointInterpInfo[2]));
+      const dax::Vector3 interpolationInfo = this->Weights.Get(index);
+      //a vector3 holding the following:
+      // 0 the first id to load from input
+      // 1 the second id to load from input
+      // 2 the weight/ratio to interpolate from the two ids
+
+      typedef typename InPortalType::ValueType InValueType;
+      typedef typename OutPortalType::ValueType OutValueType;
+
+      const InValueType first = this->Input.Get(interpolationInfo[0]);
+      const InValueType second = this->Input.Get(interpolationInfo[1]);
+
+      this->Output.Set(index,
+                       dax::math::Lerp(first,second,interpolationInfo[2]) );
     }
 
     DAX_CONT_EXPORT void SetErrorMessageBuffer(
         const dax::exec::internal::ErrorMessageBuffer &) {  }
 
-    InVec3PortalType Coords;
-    OutVec3PortalType InterpCoords;
+    InterpolationWeights Weights;
+    InPortalType Input;
+    OutPortalType Output;
   };
 
 template< typename ReductionMapType >

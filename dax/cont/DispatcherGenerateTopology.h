@@ -90,12 +90,6 @@ public:
     { Count.ReleaseResourcesExecution(); }
 
   DAX_CONT_EXPORT
-  PointMaskType GetPointMask() { return PointMask; }
-
-  DAX_CONT_EXPORT
-  const PointMaskType GetPointMask() const { return PointMask; }
-
-  DAX_CONT_EXPORT
   void SetRemoveDuplicatePoints(bool b){ RemoveDuplicatePoints = b; }
 
   DAX_CONT_EXPORT

@@ -51,17 +51,23 @@ class DispatcherGenerateInterpolatedCells :
                                                  WorkletType_,
                                                  DeviceAdapterTag_>;
 
+  typedef dax::cont::ArrayHandle< dax::Vector3,
+                  dax::cont::ArrayContainerControlTagBasic,
+                  DeviceAdapterTag_ >  InterpolationWeightsType;
+
 public:
   typedef WorkletType_ WorkletType;
   typedef CountHandleType_ CountHandleType;
   typedef DeviceAdapterTag_ DeviceAdapterTag;
+
 
   DAX_CONT_EXPORT
   DispatcherGenerateInterpolatedCells(const CountHandleType &count):
     Superclass( WorkletType() ),
     RemoveDuplicatePoints(true),
     ReleaseCount(true),
-    Count(count)
+    Count(count),
+    InterpolationWeights()
     { }
 
   DAX_CONT_EXPORT
@@ -70,7 +76,8 @@ public:
     Superclass( work ),
     RemoveDuplicatePoints(true),
     ReleaseCount(true),
-    Count(count)
+    Count(count),
+    InterpolationWeights()
     { }
 
 
@@ -95,6 +102,42 @@ public:
   DAX_CONT_EXPORT
   bool GetRemoveDuplicatePoints() const
     { return RemoveDuplicatePoints; }
+
+
+  template<typename T, typename Container1,
+           typename Container2, typename DeviceAdapter>
+  DAX_CONT_EXPORT
+  bool CompactPointField(
+      const dax::cont::ArrayHandle<T,Container1,DeviceAdapter>& input,
+      dax::cont::ArrayHandle<T,Container2,DeviceAdapter>& output)
+    {
+    typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
+                                        Algorithm;
+    typedef typename dax::cont::ArrayHandle<T,Container1,DeviceAdapter>::
+                                        PortalConstExecution InPortalType;
+    typedef typename InterpolationWeightsType::
+                                        PortalConstExecution InterpPortalType;
+    typedef typename dax::cont::ArrayHandle<T,Container2,DeviceAdapter>::
+                                        PortalExecution OutPortalType;
+
+    const dax::Id size = this->InterpolationWeights.GetNumberOfValues();
+    dax::exec::internal::kernel::InterpolateFieldToField<InterpPortalType,
+                                                         InPortalType,
+                                                         OutPortalType>
+        interpolate( InterpolationWeights.PrepareForInput(),
+                     input.PrepareForInput(),
+                     output.PrepareForOutput(size));
+
+    Algorithm::Schedule(interpolate, size);
+
+    //after each time we interpolate we unload the interpolation weights
+    //from the execution env so that we don't hold reserve exec memory
+    //longer than needed
+    this->InterpolationWeights.GetPortalControl(); //copy to cont
+    this->InterpolationWeights.ReleaseResourcesExecution();
+
+    return true;
+    }
 
 private:
 
@@ -207,10 +250,17 @@ private:
   template <typename InputGrid, typename OutputGrid>
   DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
                                           OutputGrid& outputGrid,
-                                          bool removeDuplicates ) const
+                                          bool removeDuplicates )
   {
     typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
         Algorithm;
+
+    //we have stored the interpolation weights inside the output grid coordinates
+    //which in the future needs to be changed. So store a copy of them
+    //into our own array handle
+    Algorithm::Copy(outputGrid.GetPointCoordinates(),
+                    this->InterpolationWeights);
+
     if(removeDuplicates)
       {
       // the sort and unique will get us the subset of new points
@@ -219,53 +269,29 @@ private:
 
       dax::math::SortLess comparisonFunctor;
 
-      typedef typename OutputGrid::PointCoordinatesType::ValueType
-          PointCoordValueType;
-      typename dax::cont::ArrayHandle<PointCoordValueType,
-          dax::cont::ArrayContainerControlTagBasic,
-          DeviceAdapterTag> uniqueCoords;
-
-      Algorithm::Copy(outputGrid.GetPointCoordinates(),
-                      uniqueCoords);
-
-      Algorithm::Sort(uniqueCoords, comparisonFunctor );
-      Algorithm::Unique(uniqueCoords);
-      Algorithm::LowerBounds(uniqueCoords,
+      Algorithm::Sort(this->InterpolationWeights, comparisonFunctor );
+      Algorithm::Unique(this->InterpolationWeights);
+      Algorithm::LowerBounds(this->InterpolationWeights,
                              outputGrid.GetPointCoordinates(),
                              outputGrid.GetCellConnections(),
                              comparisonFunctor );
 
-      // //reduce and resize outputGrid
-      Algorithm::Copy(uniqueCoords,outputGrid.GetPointCoordinates());
+      //reduce and resize outputGrid
+      Algorithm::Copy(this->InterpolationWeights,
+                      outputGrid.GetPointCoordinates());
       }
 
-    //all we have to do is convert the interpolated cell coords into real coords.
-    //The vector 3 that is the coords have the correct point ids we need to read
-    //we just don't have a nice way to map those to a functor.
-
-    //1. We write worklet that has access to all the points, easy to write
-    //no clue on the speed.
-
-    //2. talk to bob to see how he did this in parallel, I expect it is far
-    //more complicated than what I am going to do
-
-    //end result is I am going to use the device adapter scheduler and not
-    //write a proper worklet to this step
-    typedef typename InputGrid::PointCoordinatesType::PortalConstExecution InPortalType;
-    typedef typename OutputGrid::PointCoordinatesType::PortalExecution OutPortalType;
-
-    const dax::Id numPoints = outputGrid.GetNumberOfPoints();
-    dax::exec::internal::kernel::InterpolateEdgesToPoint<InPortalType,OutPortalType>
-        interpolate( inputGrid.GetPointCoordinates().PrepareForInput(),
-                     outputGrid.GetPointCoordinates().PrepareForOutput(numPoints));
-
-    Algorithm::Schedule(interpolate, numPoints);
+    this->CompactPointField(inputGrid.GetPointCoordinates(),
+                            outputGrid.GetPointCoordinates());
   }
 
 
   bool RemoveDuplicatePoints;
   bool ReleaseCount;
   CountHandleType Count;
+
+  InterpolationWeightsType InterpolationWeights;
+
 };
 
 } }
