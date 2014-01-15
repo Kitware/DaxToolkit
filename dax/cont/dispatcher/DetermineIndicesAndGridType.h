@@ -61,6 +61,12 @@ namespace internal
       return dax::extentCellDimensions(t.GetExtent());
       }
   };
+
+  template<typename ReturnType, int N, typename BindingsType>
+  const ReturnType& get_topology(const BindingsType& bindings)
+  {
+    return bindings.template Get<N>().GetContArg();
+  }
 }
 
 //the default is that the worklet isn't a candidate for grid scheduling
@@ -119,7 +125,7 @@ public:
 
   DetermineIndicesAndGridType(const BindingsType& bindings,
                               dax::Id numInstances):
-    Topology(bindings.template Get<TopoIndex::value>().GetContArg()),
+    Topology( internal::get_topology<TopoContArgType, TopoIndex::value >(bindings) ),
     NumInstances(numInstances)
     {
     }
