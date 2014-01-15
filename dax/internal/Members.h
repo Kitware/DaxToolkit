@@ -267,6 +267,12 @@ struct MembersSet
   }
 };
 
+template<typename ReturnType, int N, typename T>
+ReturnType get_index_value(const T& t)
+{
+  return t.template Get<N>();
+}
+
 } // namespace detail (in dax::internal)
 
 /// \class Members       Members.h dax/internal/Members.h
@@ -291,6 +297,9 @@ struct MembersSet
 /// must be valid for each valid index \c N and corresponding \c TypeSequence
 /// element \c TN. The default performs identity mapping of \c TN.
 ///
+
+
+
 template<typename Signature, typename MemberMap>
 class Members
 {
@@ -380,7 +389,7 @@ public:
   Members(const Members<CopySig,CopyMap> &src,
           MembersCopyTag,
           MembersExecContTag)
-    : ReturnValue(src.template Get<0>()),
+    : ReturnValue( detail::get_index_value<ReturnType,0>(src) ),
       ArgumentValues(src.GetArgumentValues(),
                      ParameterPackCopyTag(),
                      ParameterPackExecContTag())
@@ -390,7 +399,7 @@ public:
   Members(const Members<CopySig,CopyMap> &src,
           MembersCopyTag,
           MembersContTag)
-    : ReturnValue(src.template Get<0>()),
+    : ReturnValue( detail::get_index_value<ReturnType,0>(src) ),
       ArgumentValues(src.GetArgumentValues(),
                      ParameterPackCopyTag(),
                      ParameterPackContTag())
@@ -558,7 +567,9 @@ private:
     BOOST_STATIC_ASSERT(N >= FIRST_INDEX);
     BOOST_STATIC_ASSERT(N < NUM_MEMBERS);
     this->CopyImpl<N-1>(src);
-    this->Get<N>() = src.template Get<N>();
+    typedef typename boost::remove_reference<
+              typename GetType<N>::type>::type  ReturnNType;
+    this->Get<N>() = detail::get_index_value<ReturnNType,N>(src);
   }
 
   template<int N, typename CopySig, typename CopyMap>
