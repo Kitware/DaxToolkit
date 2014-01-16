@@ -16,6 +16,7 @@
 
 set(unit_tests
   UnitTestCudaArrayHandleImplicit.cu
+  UnitTestCudaArrayHandlePermutation.cu
   UnitTestCudaArrayHandleTransform.cu
   UnitTestCudaMath.cu
   UnitTestDeviceAdapterCuda.cu
