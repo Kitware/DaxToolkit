@@ -23,7 +23,9 @@ set(headers
   ArrayHandle.h
   ArrayHandleConstant.h
   ArrayHandleCounting.h
+  ArrayHandleImplicit.h
   ArrayHandlePermutation.h
+  ArrayHandleTransform.h
   ArrayPortal.h
   Assert.h
   DeviceAdapter.h

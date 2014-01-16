@@ -15,6 +15,8 @@
 ##=============================================================================
 
 set(unit_tests
+  UnitTestCudaArrayHandleImplicit.cu
+  UnitTestCudaArrayHandleTransform.cu
   UnitTestCudaMath.cu
   UnitTestDeviceAdapterCuda.cu
   )

@@ -17,6 +17,7 @@
 set(headers
   ArrayContainerControlError.h
   ArrayContainerControlPermutation.h
+  ArrayContainerControlTransform.h
   ArrayContainerControlZip.h
   ArrayHandleZip.h
   ArrayManagerExecution.h

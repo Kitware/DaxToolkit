@@ -22,6 +22,8 @@ macro(add_timing_tests target)
     ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline=2 --size=128)
   add_test(${target}3-128
     ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline=3 --size=128)
+  add_test(${target}4-128
+    ${EXECUTABLE_OUTPUT_PATH}/${target} --pipeline=4 --size=128)
 endmacro()
 
 #-----------------------------------------------------------------------------

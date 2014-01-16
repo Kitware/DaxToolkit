@@ -28,7 +28,9 @@ set(unit_tests
   UnitTestArrayHandle.cxx
   UnitTestArrayHandleConstant.cxx
   UnitTestArrayHandleCounting.cxx
+  UnitTestArrayHandleImplicit.cxx
   UnitTestArrayHandlePermutation.cxx
+  UnitTestArrayHandleTransform.cxx
   UnitTestBuildReductionMap.cxx
   UnitTestContTesting.cxx
   UnitTestDeviceAdapterAlgorithmDependency.cxx
