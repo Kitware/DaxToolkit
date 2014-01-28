@@ -54,6 +54,23 @@ public:
     NumberOfValues(numValues)
   {  }
 
+  template<typename OtherValueType>
+  DAX_EXEC_CONT_EXPORT
+  ArrayPortalConstant(const ArrayPortalConstant<OtherValueType> &src)
+    : ConstantValue(src.ConstantValue),
+      NumberOfValues(src.NumberOfValues)
+  {  }
+
+  template<typename OtherValueType>
+  DAX_EXEC_CONT_EXPORT
+  ArrayPortalConstant<ValueType> &operator=(
+      const ArrayPortalConstant<OtherValueType> &src)
+  {
+    this->ConstantValue = src.ConstantValue;
+    this->NumberOfValues = src.NumberOfValues;
+    return *this;
+  }
+
   DAX_EXEC_CONT_EXPORT
   dax::Id GetNumberOfValues() const { return this->NumberOfValues; }
 
