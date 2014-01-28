@@ -52,11 +52,20 @@ public:
   /// type casting that the iterators do (like the non-const to const cast).
   ///
   template<class OtherP1, class OtherP2>
-  DAX_CONT_EXPORT
+  DAX_EXEC_CONT_EXPORT
   ArrayPortalZip(const ArrayPortalZip<OtherP1,OtherP2> &src)
     : FirstPortal(src.GetFirstPortal()),
       SecondPortal(src.GetSecondPortal())
   {  }
+
+  template<class OtherP1, class OtherP2>
+  DAX_EXEC_CONT_EXPORT
+  ArrayPortalZip<P1,P2> &operator=(const ArrayPortalZip<OtherP1,OtherP2> &src)
+  {
+    this->FirstPortal = src.GetFirstPortal();
+    this->SecondPortal = src.GetSecondPortal();
+    return *this;
+  }
 
   DAX_EXEC_CONT_EXPORT
   dax::Id GetNumberOfValues() const {

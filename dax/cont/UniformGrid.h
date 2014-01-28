@@ -56,6 +56,26 @@ public:
   }
 
   DAX_EXEC_CONT_EXPORT
+  ArrayPortalFromUniformGridPointCoordinates(
+      const ArrayPortalFromUniformGridPointCoordinates &src)
+    : Origin(src.Origin),
+      Spacing(src.Spacing),
+      Extent(src.Extent),
+      NumberOfValues(src.NumberOfValues)
+  {  }
+
+  DAX_EXEC_CONT_EXPORT
+  ArrayPortalFromUniformGridPointCoordinates &operator=(
+      const ArrayPortalFromUniformGridPointCoordinates &src)
+  {
+    this->Origin = src.Origin;
+    this->Spacing = src.Spacing;
+    this->Extent = src.Extent;
+    this->NumberOfValues = src.NumberOfValues;
+    return *this;
+  }
+
+  DAX_EXEC_CONT_EXPORT
   dax::Id GetNumberOfValues() const { return this->NumberOfValues; }
 
   DAX_EXEC_CONT_EXPORT

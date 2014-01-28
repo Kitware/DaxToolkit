@@ -56,11 +56,21 @@ public:
   /// type casting that the iterators do (like the non-const to const cast).
   ///
   template<class OtherP1, class OtherP2>
-  DAX_CONT_EXPORT
+  DAX_EXEC_CONT_EXPORT
   ArrayPortalPermutation(const ArrayPortalPermutation<OtherP1,OtherP2> &src)
-    : FirstPortal(src.GetFirstPortal()),
-      SecondPortal(src.GetSecondPortal())
+    : FirstPortal(src.FirstPortal),
+      SecondPortal(src.SecondPortal)
   {  }
+
+  template<class OtherP1, class OtherP2>
+  DAX_EXEC_CONT_EXPORT
+  ArrayPortalPermutation<P1,P2> &operator=(
+      const ArrayPortalPermutation<OtherP1,OtherP2> &src)
+  {
+    this->FirstPortal = src.FirstPortal;
+    this->SecondPortal = src.SecondPortal;
+    return *this;
+  }
 
   DAX_EXEC_EXPORT
   dax::Id GetNumberOfValues() const {

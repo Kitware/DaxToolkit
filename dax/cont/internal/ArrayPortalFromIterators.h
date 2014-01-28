@@ -49,12 +49,22 @@ public:
   /// type that can be copied to this iterator type. This allows us to do any
   /// type casting that the iterators do (like the non-const to const cast).
   ///
-  template<class OtherIteratorT>
+  template<typename OtherIteratorT>
   DAX_CONT_EXPORT
   ArrayPortalFromIterators(const ArrayPortalFromIterators<OtherIteratorT> &src)
     : BeginIterator(src.GetIteratorBegin()),
       EndIterator(src.GetIteratorEnd())
   {  }
+
+  template<typename OtherIteratorT>
+  DAX_CONT_EXPORT
+  ArrayPortalFromIterators<IteratorType> &operator=(
+      const ArrayPortalFromIterators<OtherIteratorT> &src)
+  {
+    this->BeginIterator = src.GetIteratorBegin();
+    this->EndIterator = src.GetIteratorBegin();
+    return *this;
+  }
 
   DAX_CONT_EXPORT
   dax::Id GetNumberOfValues() const {

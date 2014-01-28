@@ -40,6 +40,27 @@ public:
   ArrayPortalFromIterators(IteratorType begin, IteratorType end)
     : BeginIterator(begin), EndIterator(end) {  }
 
+  /// Copy constructor for any other ArrayPortalFromIterators with an iterator
+  /// type that can be copied to this iterator type. This allows us to do any
+  /// type casting that the iterators do (like the non-const to const cast).
+  ///
+  template<typename OtherIteratorT>
+  DAX_EXEC_CONT_EXPORT
+  ArrayPortalFromIterators(const ArrayPortalFromIterators<OtherIteratorT> &src)
+    : BeginIterator(src.BeginIterator),
+      EndIterator(src.EndIterator)
+  {  }
+
+  template<typename OtherIteratorT>
+  DAX_EXEC_CONT_EXPORT
+  ArrayPortalFromIterators<IteratorType> &operator=(
+      const ArrayPortalFromIterators<OtherIteratorT> &src)
+  {
+    this->BeginIterator = src.BeginIterator;
+    this->EndIterator = src.EndIterator;
+    return *this;
+  }
+
   DAX_EXEC_CONT_EXPORT
   dax::Id GetNumberOfValues() const {
     // Not using std::distance because on CUDA it cannot be used on a device.

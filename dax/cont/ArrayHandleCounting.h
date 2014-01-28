@@ -44,6 +44,23 @@ public:
   NumberOfValues(numValues)
   {  }
 
+  template<typename OtherValueType>
+  DAX_EXEC_CONT_EXPORT
+  ArrayPortalCounting(const ArrayPortalCounting<OtherValueType> &src)
+    : StartingValue(src.StartingValue),
+      NumberOfValues(src.NumberOfValues)
+  {  }
+
+  template<typename OtherValueType>
+  DAX_EXEC_CONT_EXPORT
+  ArrayPortalCounting<ValueType> &operator=(
+      const ArrayPortalCounting<OtherValueType> &src)
+  {
+    this->StartingValue = src.StartingValue;
+    this->NumberOfValues = src.NumberOfValues;
+    return *this;
+  }
+
   DAX_EXEC_CONT_EXPORT
   dax::Id GetNumberOfValues() const { return this->NumberOfValues; }
 
