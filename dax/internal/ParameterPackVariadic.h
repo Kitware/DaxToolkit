@@ -382,13 +382,31 @@ public:
   DAX_EXEC_EXPORT
   void operator()(_dax_pp_params___(arguments)) {
     // If you get a compiler error on the following line, it means we tried to
-    // invoke a functor or worklet with the wrong arguments or the wrong return
-    // value. Check the type of FunctionType and look at its operator(). If the
-    // error is there is no matched method in FunctionType::operator(), it
-    // probably means an invalid argument is being passed. If the error is that
-    // there is no valid conversion, then the return type is probably
-    // mismatched. In either case, it is likely caused from bad arguments to
-    // Dispatcher::Invoke.
+    // invoke a functor or worklet and the compiler could not match the
+    // parenthesis operator to the call. The following are likely causes:
+    //
+    // 1. If the error states that the "this" argument discards the const
+    //    qualifier, then it probably means that the parenthesis operator is
+    //    not declared const. It should look like
+    //        void operator()(...) const
+    //    If instead it looks like
+    //        void operator()(...)
+    //    you will get a compile error here.
+    //
+    // 2. If the error is that there is no matched method in
+    //    FunctionType::operator() and the operator is declared const, it
+    //    probably means an invalid argument is being passed. This means that
+    //    the argument passed to the Invoke method gets passed to an operator
+    //    argument of a different type. One common reason is for this is that
+    //    the arguments are given to Invoke in the wrong order. Another common
+    //    reason is that the control-side object (such as ArrayHandle) is
+    //    templated on the wrong basic type (e.g. dax::Scalar instead of
+    //    dax::Vector3).
+    //
+    // 3. If the error is that there is no valid conversion, then the return
+    //    type is probably mismatched. The root cause is the same as above
+    //    (a bad argument to Invoke), but it is specifically pointing to the
+    //    return of operator() instead of one of its arguments.
     const ReturnType returnValue = this->Function(_dax_pp_args___(arguments));
     this->RecordReturnValue(returnValue);
   }
