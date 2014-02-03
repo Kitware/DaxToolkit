@@ -22,6 +22,7 @@ set(headers
   ShaderProgram.h
   ShaderCode.h
   Window.h
+  Worklets.h
   )
 
 set(sources
