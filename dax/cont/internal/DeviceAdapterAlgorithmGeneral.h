@@ -761,12 +761,6 @@ public:
       const dax::cont::ArrayHandle<T,CStencil,DeviceAdapterTag> &stencil,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &output)
   {
-    DerivedAlgorithm::StreamCompact(
-          dax::cont::make_ArrayHandleCounting(dax::Id(0),
-                                              stencil.GetNumberOfValues(),
-                                              DeviceAdapterTag()),
-          stencil,
-          output);
     typedef dax::cont::ArrayHandleCounting<dax::Id,DeviceAdapterTag>
         CountingHandleType;
 
