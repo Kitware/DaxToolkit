@@ -56,7 +56,7 @@ namespace detail
   //run the second step
   surfDispacther.Invoke( vol.Grid, surface.Data, vol.EscapeIteration);
 
-  std::cout << "mc stage 2: " << timer.GetElapsedTime() << std::endl;
+  std::cout << "mc stage 2: " << timer.GetElapsedTime() << " sec" << std::endl;
 
   //generate a color for each point based on the escape iteration
   if(surface.Data.GetNumberOfPoints() > 0)
@@ -69,7 +69,8 @@ namespace detail
                   surface_coords,
                   surface.Norms,
                   surface.Colors);
-    std::cout << "colors & norms: " << timer.GetElapsedTime() << std::endl;
+    std::cout << "colors & norms: " << timer.GetElapsedTime() << " sec"
+              << std::endl;
     }
 
   return surface;
@@ -83,14 +84,19 @@ mandle::MandlebulbVolume computeMandlebulb( dax::Vector3 origin,
                                           dax::Vector3 spacing,
                                           dax::Extent3 extent)
 {
-  //construct the dataset from -2,-2,-2, to 2,2,2
-  //with the given spacing
+  dax::cont::Timer<> timer;
+
+  //construct the dataset with the given origin, spacing, and extent
   mandle::MandlebulbVolume vol(origin,spacing,extent);
 
   //compute the escape iterations for each point in the grid
   dax::cont::DispatcherMapField< worklet::Mandlebulb >().Invoke(
                                               vol.Grid.GetPointCoordinates(),
                                               vol.EscapeIteration );
+
+  std::cout << "Compute Mandelbulb Field: " << timer.GetElapsedTime()
+            << " sec (" << vol.Grid.GetNumberOfPoints() << " points)"
+            << std::endl;
 
   return vol;
 }
@@ -111,7 +117,7 @@ mandle::MandlebulbSurface extractSurface( mandle::MandlebulbVolume& vol,
   classify.Invoke(vol.Grid, vol.EscapeIteration, count );
 
 
-  std::cout << "mc stage 1: " << timer.GetElapsedTime() << std::endl;
+  std::cout << "mc stage 1: " << timer.GetElapsedTime() << " sec" << std::endl;
 
   return detail::generateSurface(vol,iteration,count);
 }
