@@ -61,7 +61,7 @@ namespace worklet {
 
 
 //basic implementation of computing the Mandlebulb if a point
-//escapes the mandlebulb of the 8th order
+//escapes the mandlebulb of the 10th order
 class Mandlebulb : public dax::exec::WorkletMapField
 {
 public:
@@ -69,30 +69,42 @@ public:
   typedef _2 ExecutionSignature(_1);
 
   DAX_EXEC_EXPORT
-  dax::Scalar operator()(dax::Vector3 inCoordinate) const
+  dax::Scalar operator()(const dax::Vector3 &inCoordinate) const
   {
-  //going to compute the 8th order mandlebulb. This step computes
-  //the iteration that a given point escapes at
-  dax::Vector3 pos(0.0);
+    // The fractal is defined as the number of iterations of
+    // pos -> pos^N + inCoordiante it takes to escape. We consider anything
+    // outside of the radius sqrt(2) to be escaped.
+    const dax::Id MAX_ITERATION = 35;
 
-  //find the iteration we escape on
-  for (dax::Id i=0; i < 35; ++i)
-    {
-    const dax::Scalar r = dax::math::Sqrt( dax::dot(pos,pos) );
-    const dax::Scalar t = dax::math::Sqrt(pos[0] * pos[0] + pos[1] * pos[1]);
-    const dax::Scalar theta = 10 * dax::math::ATan2( t, pos[2]);
-    const dax::Scalar phi = 10 * dax::math::ATan2( pos[1], pos[2] );
+    dax::Vector3 pos = inCoordinate;
+    if (dax::math::MagnitudeSquared(pos) > 2) { return 0; }
 
-    const dax::Scalar powR = dax::math::Pow(r,10);
-    pos[0] = powR * dax::math::Sin(theta) * dax::math::Tan(phi) + inCoordinate[0];
-    pos[1] = powR * dax::math::Sin(theta) * dax::math::Sin(phi) + inCoordinate[1];
-    pos[2] = powR * dax::math::Cos(theta) + inCoordinate[2];
-    if(dax::dot(pos,pos) > 2)
+    //find the iteration we escape on
+    for (dax::Id i=1; i < MAX_ITERATION; ++i)
       {
-      return i;
+      pos = this->PowerN(pos) + inCoordinate;
+      if(dax::math::MagnitudeSquared(pos) > 2) { return i; }
       }
-    }
-  return 0;
+    return MAX_ITERATION;
+  }
+
+  DAX_EXEC_EXPORT
+  dax::Vector3 PowerN(dax::Vector3 pos) const
+  {
+    // Compute the 10th power Mandelbulb. This function raises a coordinate
+    // to the 10th power based on White and Nylander's formula.
+    const int N = 10;
+
+    const dax::Scalar squareR = dax::math::MagnitudeSquared(pos);
+    const dax::Scalar t = dax::math::Sqrt(pos[0] * pos[0] + pos[1] * pos[1]);
+    const dax::Scalar thetaN = N * dax::math::ATan2( t, pos[2]);
+    const dax::Scalar phiN = N * dax::math::ATan2( pos[1], pos[2] );
+
+    const dax::Scalar powR = dax::math::Pow(squareR,0.5*N); //(r^2)^(N/2) == r^N
+    return powR *
+        dax::make_Vector3(dax::math::Sin(thetaN) * dax::math::Tan(phiN),
+                          dax::math::Sin(thetaN) * dax::math::Sin(phiN),
+                          dax::math::Cos(thetaN));
   }
 };
 
