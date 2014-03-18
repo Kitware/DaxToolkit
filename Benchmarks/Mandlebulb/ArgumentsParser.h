@@ -27,12 +27,14 @@ public:
 
   bool parseArguments(int argc, char* argv[]);
 
-  unsigned int time() const { return this->Time; }
-  bool AutoPlay() const { return this->Auto; }
+  unsigned int GetTime() const { return this->Time; }
+  bool GetAutoPlay() const { return this->AutoPlay; }
+  unsigned int GetSize() const { return this->Size; }
 
 private:
   unsigned int Time;
-  bool Auto;
+  bool AutoPlay;
+  unsigned int Size;
 };
 
 } // namespace mandle

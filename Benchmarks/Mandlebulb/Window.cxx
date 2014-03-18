@@ -56,11 +56,13 @@ Window::Window(const ArgumentsParser &arguments)
 {
   this->MandleData = new mandle::Window::InternalMandleData();
 
-  this->AutoPlay = arguments.AutoPlay();
+  this->AutoPlay = arguments.GetAutoPlay();
+
+  this->GridSize = arguments.GetSize();
 
   this->CurrentTime = 0;
   this->PreviousTime = 0;
-  this->MaxTime = (float)arguments.time();
+  this->MaxTime = (float)arguments.GetTime();
 
   this->Fps = -100;
   this->PreviousFps = -100;
@@ -207,12 +209,11 @@ void Window::PostInit()
   glClearColor(1.0, 1.0, 1.0, 1.0);
 
   //compute the mandlebulb
-  this->MandleData->Volume =  computeMandlebulb(
-                                  dax::make_Vector3(-1,-1,-1),
-                                  dax::make_Vector3(0.01,0.01,0.01),
-                                  dax::Extent3( dax::make_Id3(0,0,0),
-                                                dax::make_Id3(200,200,200) )
-                                  );
+  dax::Vector3 origin(-1);
+  dax::Vector3 spacing(2.0/this->GridSize);
+  dax::Extent3 extent(dax::Id3(0),
+                      dax::Id3(this->GridSize));
+  this->MandleData->Volume =  computeMandlebulb(origin, spacing, extent);
 
   this->Remesh = true;
   this->RemeshSurface();

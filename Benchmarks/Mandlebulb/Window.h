@@ -162,6 +162,9 @@ private:
 
   //auto play demo tracking
   bool AutoPlay;
+
+  //size of each dimension of the grid
+  dax::Id GridSize;
 };
 
 }
