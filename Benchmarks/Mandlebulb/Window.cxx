@@ -62,8 +62,8 @@ Window::Window(const ArgumentsParser &arguments)
   this->PreviousTime = 0;
   this->MaxTime = (float)arguments.time();
 
-  this->Fps = 0;
-  this->PreviousFps = 0;
+  this->Fps = -100;
+  this->PreviousFps = -100;
   this->FrameCount = 0;
 
   this->MouseX = 0;
@@ -155,7 +155,7 @@ void Window::DisplayCurrentFPS()
     std::cout << "fps: " << this->Fps << std::endl;
     std::cout << "triangles: " <<
                  this->MandleData->Surface.Data.GetNumberOfCells() << std::endl;
-    this->Fps = this->PreviousFps;
+    this->PreviousFps = this->Fps;
     }
 }
 
@@ -209,9 +209,9 @@ void Window::PostInit()
   //compute the mandlebulb
   this->MandleData->Volume =  computeMandlebulb(
                                   dax::make_Vector3(-1,-1,-1),
-                                  dax::make_Vector3(0.01,0.01,0.02),
+                                  dax::make_Vector3(0.01,0.01,0.01),
                                   dax::Extent3( dax::make_Id3(0,0,0),
-                                                dax::make_Id3(350,350,200) )
+                                                dax::make_Id3(200,200,200) )
                                   );
 
   this->Remesh = true;
