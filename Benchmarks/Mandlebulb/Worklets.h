@@ -88,7 +88,7 @@ public:
         return i;
         }
       }
-    return 0;
+    return MAX_ITERATION;
   }
 
   DAX_EXEC_EXPORT
