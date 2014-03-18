@@ -69,15 +69,18 @@ public:
   typedef _2 ExecutionSignature(_1);
 
   DAX_EXEC_EXPORT
-  dax::Scalar operator()(dax::Vector3 inCoordinate) const
+  dax::Scalar operator()(const dax::Vector3 &inCoordinate) const
   {
     // The fractal is defined as the number of iterations of
     // pos -> pos^N + inCoordiante it takes to escape. We consider anything
     // outside of the radius sqrt(2) to be escaped.
-    dax::Vector3 pos(0.0);
+    const dax::Id MAX_ITERATION = 35;
+
+    dax::Vector3 pos = inCoordinate;
+    if (dax::math::MagnitudeSquared(pos) > 2) { return 0; }
 
     //find the iteration we escape on
-    for (dax::Id i=0; i < 35; ++i)
+    for (dax::Id i=1; i < MAX_ITERATION; ++i)
       {
       pos = this->PowerN(pos) + inCoordinate;
       if(dax::math::MagnitudeSquared(pos) > 2)
