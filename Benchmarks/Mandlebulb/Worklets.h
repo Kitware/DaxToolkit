@@ -61,7 +61,7 @@ namespace worklet {
 
 
 //basic implementation of computing the Mandlebulb if a point
-//escapes the mandlebulb of the 8th order
+//escapes the mandlebulb of the 10th order
 class Mandlebulb : public dax::exec::WorkletMapField
 {
 public:
@@ -83,10 +83,7 @@ public:
     for (dax::Id i=1; i < MAX_ITERATION; ++i)
       {
       pos = this->PowerN(pos) + inCoordinate;
-      if(dax::math::MagnitudeSquared(pos) > 2)
-        {
-        return i;
-        }
+      if(dax::math::MagnitudeSquared(pos) > 2) { return i; }
       }
     return MAX_ITERATION;
   }
