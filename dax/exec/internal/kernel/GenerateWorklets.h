@@ -60,15 +60,12 @@ struct GetUsedPointsFunctor : public WorkletMapField
   }
 };
 
-template<class InterpolationWeights,
-         class InPortalType,
+template<class InPortalType,
          class OutPortalType >
 struct InterpolateFieldToField
   {
-    DAX_CONT_EXPORT InterpolateFieldToField(const InterpolationWeights &interp,
-                                            const InPortalType &inPortal,
+    DAX_CONT_EXPORT InterpolateFieldToField(const InPortalType &inPortal,
                                             const OutPortalType &outPortal) :
-    Weights(interp),
     Input(inPortal),
     Output(outPortal)
     {  }
@@ -76,7 +73,7 @@ struct InterpolateFieldToField
 
     DAX_EXEC_EXPORT void operator()(dax::Id index) const
     {
-      const dax::Vector3 interpolationInfo = this->Weights.Get(index);
+      const dax::Vector3 interpolationInfo = this->Output.Get(index);
       //a vector3 holding the following:
       // 0 the first id to load from input
       // 1 the second id to load from input
@@ -95,7 +92,6 @@ struct InterpolateFieldToField
     DAX_CONT_EXPORT void SetErrorMessageBuffer(
         const dax::exec::internal::ErrorMessageBuffer &) {  }
 
-    InterpolationWeights Weights;
     InPortalType Input;
     OutPortalType Output;
   };
