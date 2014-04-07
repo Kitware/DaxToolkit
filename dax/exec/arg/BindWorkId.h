@@ -47,14 +47,9 @@ struct BindWorkId
   DAX_EXEC_EXPORT ReturnType operator()(const IndexType& id,
                               const dax::exec::internal::WorkletBase&)
     {
-    return id.value();
-    }
-
-  DAX_EXEC_EXPORT ReturnType operator()(const dax::Id& id,
-                              const dax::exec::internal::WorkletBase&)
-    {
     return id;
     }
+
 
   DAX_EXEC_EXPORT void SaveExecutionResult(int,
                  const dax::exec::internal::WorkletBase&) const

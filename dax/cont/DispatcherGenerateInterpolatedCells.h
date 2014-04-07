@@ -111,30 +111,21 @@ public:
       const dax::cont::ArrayHandle<T,Container1,DeviceAdapter>& input,
       dax::cont::ArrayHandle<T,Container2,DeviceAdapter>& output)
     {
+
     typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
                                         Algorithm;
     typedef typename dax::cont::ArrayHandle<T,Container1,DeviceAdapter>::
                                         PortalConstExecution InPortalType;
-    typedef typename InterpolationWeightsType::
-                                        PortalConstExecution InterpPortalType;
     typedef typename dax::cont::ArrayHandle<T,Container2,DeviceAdapter>::
                                         PortalExecution OutPortalType;
 
-    const dax::Id size = this->InterpolationWeights.GetNumberOfValues();
-    dax::exec::internal::kernel::InterpolateFieldToField<InterpPortalType,
-                                                         InPortalType,
+    const dax::Id size = output.GetNumberOfValues();
+    dax::exec::internal::kernel::InterpolateFieldToField<InPortalType,
                                                          OutPortalType>
-        interpolate( InterpolationWeights.PrepareForInput(),
-                     input.PrepareForInput(),
+        interpolate( input.PrepareForInput(),
                      output.PrepareForOutput(size));
 
     Algorithm::Schedule(interpolate, size);
-
-    //after each time we interpolate we unload the interpolation weights
-    //from the execution env so that we don't hold reserve exec memory
-    //longer than needed
-    this->InterpolationWeights.GetPortalControl(); //copy to cont
-    this->InterpolationWeights.ReleaseResourcesExecution();
 
     return true;
     }
@@ -185,6 +176,7 @@ private:
       //nothing to do
       return;
       }
+
 
     //now do the uppper bounds of the cell indices so that we figure out
     //which original topology indexs match the new indices.
@@ -255,14 +247,14 @@ private:
     typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
         Algorithm;
 
-    //we have stored the interpolation weights inside the output grid coordinates
-    //which in the future needs to be changed. So store a copy of them
-    //into our own array handle
-    Algorithm::Copy(outputGrid.GetPointCoordinates(),
-                    this->InterpolationWeights);
-
     if(removeDuplicates)
       {
+      //we have stored the interpolation weights inside the output grid coordinates
+      //which in the future needs to be changed. So store a copy of them
+      //into our own array handle
+      Algorithm::Copy(outputGrid.GetPointCoordinates(),
+                    this->InterpolationWeights);
+
       // the sort and unique will get us the subset of new points
       // the lower bounds on the subset and the original coords, will produce
       // the resulting topology array
@@ -283,6 +275,15 @@ private:
 
     this->CompactPointField(inputGrid.GetPointCoordinates(),
                             outputGrid.GetPointCoordinates());
+
+    if(removeDuplicates)
+      {
+      //after each time we interpolate we unload the interpolation weights
+      //from the execution env so that we don't hold reserve exec memory
+      //longer than needed
+      this->InterpolationWeights.GetPortalControl(); //copy to cont
+      this->InterpolationWeights.ReleaseResourcesExecution();
+      }
   }
 
 
