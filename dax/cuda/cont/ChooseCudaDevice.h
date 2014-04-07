@@ -92,7 +92,7 @@ int Performance;
 static int FindFastestDeviceId()
 {
   //get the number of devices and store information
-  int numberOfDevices;
+  int numberOfDevices=0;
   cudaGetDeviceCount(&numberOfDevices);
 
   std::vector<compute_info> devices;
