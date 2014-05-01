@@ -27,8 +27,19 @@
 #include <dax/cont/dispatcher/AddVisitIndexArg.h>
 #include <dax/exec/internal/kernel/GenerateWorklets.h>
 
+
 namespace dax { namespace cont {
 
+namespace detail
+{
+  struct sort_V3_less
+  {
+  DAX_EXEC_CONT_EXPORT bool operator()(const dax::Vector3& a,
+                                       const dax::Vector3& b) const
+    { return (a[0] < b[0]) || (a[0] == b[0] && a[1] < b[1]); }
+  };
+
+}
 
 template <
   class WorkletType_,
@@ -259,7 +270,7 @@ private:
       // the lower bounds on the subset and the original coords, will produce
       // the resulting topology array
 
-      dax::math::SortLess comparisonFunctor;
+      detail::sort_V3_less comparisonFunctor;
 
       Algorithm::Sort(this->InterpolationWeights, comparisonFunctor );
       Algorithm::Unique(this->InterpolationWeights);
@@ -282,7 +293,7 @@ private:
       //from the execution env so that we don't hold reserve exec memory
       //longer than needed
       this->InterpolationWeights.GetPortalControl(); //copy to cont
-      this->InterpolationWeights.ReleaseResourcesExecution();
+      // this->InterpolationWeights.ReleaseResourcesExecution();
       }
   }
 
