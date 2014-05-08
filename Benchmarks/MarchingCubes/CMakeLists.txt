@@ -124,6 +124,7 @@ if(DAX_ENABLE_VTK_BENCHMARKS)
     vtkCommonMisc
     vtkFiltersCore
     vtkFiltersGeometry
+    ${TBB_LIBRARIES}
     )
   add_timing_tests(MarchingCubesTimingVTK)
 endif()

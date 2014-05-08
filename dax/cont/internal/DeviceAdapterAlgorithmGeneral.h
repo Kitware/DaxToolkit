@@ -18,8 +18,8 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ArrayHandleConstant.h>
+#include <dax/cont/ArrayHandleCounting.h>
 #include <dax/cont/ArrayContainerControlBasic.h>
-#include <dax/cont/internal/ArrayContainerControlCounting.h>
 #include <dax/cont/internal/ArrayHandleZip.h>
 
 #include <dax/Functional.h>
@@ -761,12 +761,13 @@ public:
       const dax::cont::ArrayHandle<T,CStencil,DeviceAdapterTag> &stencil,
       dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &output)
   {
-    typedef dax::cont::ArrayHandle< dax::Id,
-                    dax::cont::internal::ArrayContainerControlTagCounting,
-                    DeviceAdapterTag> CountingHandleType;
-    typedef dax::cont::internal::ArrayPortalCounting<dax::Id> CountingPortal;
+    typedef dax::cont::ArrayHandleCounting<dax::Id,DeviceAdapterTag>
+        CountingHandleType;
 
-    CountingHandleType input( CountingPortal(0,stencil.GetNumberOfValues()) );
+    CountingHandleType input =
+        dax::cont::make_ArrayHandleCounting(dax::Id(0),
+                                            stencil.GetNumberOfValues(),
+                                            DeviceAdapterTag());
     DerivedAlgorithm::StreamCompact(input, stencil, output);
   }
 
@@ -937,6 +938,50 @@ private:
     {  }
   };
 
+
+  template<class InputPortalType,class ValuesPortalType,class OutputPortalType,class Compare>
+  struct UpperBoundsKernelComparisonKernel {
+    InputPortalType InputPortal;
+    ValuesPortalType ValuesPortal;
+    OutputPortalType OutputPortal;
+    Compare CompareFunctor;
+
+    DAX_CONT_EXPORT
+    UpperBoundsKernelComparisonKernel(InputPortalType inputPortal,
+                      ValuesPortalType valuesPortal,
+                      OutputPortalType outputPortal,
+                      Compare comp)
+      : InputPortal(inputPortal),
+        ValuesPortal(valuesPortal),
+        OutputPortal(outputPortal),
+        CompareFunctor(comp) {  }
+
+    DAX_EXEC_EXPORT
+    void operator()(dax::Id index) const {
+      // This method assumes that (1) InputPortalType can return working
+      // iterators in the execution environment and that (2) methods not
+      // specified with DAX_EXEC_EXPORT (such as the STL algorithms) can be
+      // called from the execution environment. Neither one of these is
+      // necessarily true, but it is true for the current uses of this general
+      // function and I don't want to compete with STL if I don't have to.
+
+      typename InputPortalType::IteratorType resultPos =
+          std::upper_bound(this->InputPortal.GetIteratorBegin(),
+                           this->InputPortal.GetIteratorEnd(),
+                           this->ValuesPortal.Get(index),
+                           this->CompareFunctor);
+
+      dax::Id resultIndex =
+          static_cast<dax::Id>(
+            std::distance(this->InputPortal.GetIteratorBegin(), resultPos));
+      this->OutputPortal.Set(index, resultIndex);
+    }
+
+    DAX_CONT_EXPORT
+    void SetErrorMessageBuffer(const dax::exec::internal::ErrorMessageBuffer &)
+    {  }
+  };
+
 public:
   template<typename T, class CIn, class CVal, class COut>
   DAX_CONT_EXPORT static void UpperBounds(
@@ -953,6 +998,28 @@ public:
         kernel(input.PrepareForInput(),
                values.PrepareForInput(),
                output.PrepareForOutput(arraySize));
+
+    DerivedAlgorithm::Schedule(kernel, arraySize);
+  }
+
+  template<typename T, class CIn, class CVal, class COut, class Compare>
+  DAX_CONT_EXPORT static void UpperBounds(
+      const dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag> &input,
+      const dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag> &values,
+      dax::cont::ArrayHandle<dax::Id,COut,DeviceAdapterTag> &output,
+      Compare comp)
+  {
+    dax::Id arraySize = values.GetNumberOfValues();
+
+    UpperBoundsKernelComparisonKernel<
+        typename dax::cont::ArrayHandle<T,CIn,DeviceAdapterTag>::PortalConstExecution,
+        typename dax::cont::ArrayHandle<T,CVal,DeviceAdapterTag>::PortalConstExecution,
+        typename dax::cont::ArrayHandle<T,COut,DeviceAdapterTag>::PortalExecution,
+        Compare>
+        kernel(input.PrepareForInput(),
+               values.PrepareForInput(),
+               output.PrepareForOutput(arraySize),
+               comp);
 
     DerivedAlgorithm::Schedule(kernel, arraySize);
   }

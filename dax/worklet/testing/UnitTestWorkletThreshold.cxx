@@ -26,16 +26,14 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/UniformGrid.h>
-#include <dax/cont/Scheduler.h>
-#include <dax/cont/GenerateTopology.h>
+#include <dax/cont/DispatcherGenerateTopology.h>
+#include <dax/cont/DispatcherMapCell.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/VectorOperations.h>
 
 #include <dax/cont/testing/Testing.h>
 
 #include <iostream>
-#include <math.h>
-#include <string>
 #include <vector>
 
 namespace {
@@ -198,23 +196,26 @@ struct TestThresholdWorklet
 
     try
       {
-      typedef dax::cont::GenerateTopology<
-            dax::worklet::testing::VerifyThresholdTopology > ScheduleGT;
-      typedef typename ScheduleGT::ClassifyResultType  ClassifyResultType;
-      typedef dax::worklet::ThresholdClassify<dax::Scalar> ThresholdClassifyType;
+      typedef dax::cont::DispatcherGenerateTopology<
+            dax::worklet::testing::VerifyThresholdTopology > DispatcherGT;
+      typedef typename DispatcherGT::CountHandleType  CountHandleType;
 
-      dax::cont::Scheduler<> scheduler;
-      ClassifyResultType classification;
-      scheduler.Invoke(ThresholdClassifyType(min,max),
-                inGrid, fieldHandle, classification);
+
+      typedef dax::worklet::ThresholdCount< dax::Scalar> CountWorklet;
+      dax::cont::DispatcherMapCell< CountWorklet > classifyDispatcher(
+                                                    CountWorklet(min,max) );
+
+
+      CountHandleType count;
+      classifyDispatcher.Invoke(inGrid, fieldHandle, count);
 
       //construct the topology generation worklet
-      ScheduleGT generateTopo(classification);
+      DispatcherGT dispatcherTopo(count);
 
-      scheduler.Invoke(generateTopo,inGrid, outGrid, 4.0f);
+      dispatcherTopo.Invoke( inGrid, outGrid, 4.0f );
 
       //request to also compact the topology
-      generateTopo.CompactPointField(fieldHandle,resultHandle);
+      dispatcherTopo.CompactPointField(fieldHandle,resultHandle);
       }
     catch (dax::cont::ErrorControl error)
       {

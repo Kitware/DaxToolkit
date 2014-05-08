@@ -19,9 +19,12 @@ set(headers
   ConfigureFor64.h
   ExportMacros.h
   GetNthType.h
+  Invocation.h
   MathSystemFunctions.h
   Members.h
+  ParameterPack.h
   ParameterPackCxx03.h
+  ParameterPackVariadic.h
   Tags.h
   WorkletSignatureFunctions.h
   )

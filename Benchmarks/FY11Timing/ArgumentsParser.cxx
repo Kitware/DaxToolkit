@@ -97,6 +97,10 @@ bool dax::testing::ArgumentsParser::parseArguments(int argc, char* argv[])
       {
       this->Pipeline = SINE_SQUARE_COS;
       }
+    if (pipelineflag == 4)
+      {
+      this->Pipeline = TANGLE_SINE_SQUARE_COS;
+      }
     }
 
   delete[] options;

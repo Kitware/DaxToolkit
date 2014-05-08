@@ -7,14 +7,14 @@ The Dax Toolkit is an open source C++ header only library that provides a collec
 The Dax Toolkit uses fine-grained concurrency for data analysis and visualization algorithms.
 The basic computational unit of the Dax Toolkit is a worklet, a function that implements the algorithm’s behavior on an element of a mesh (that is, a point, edge, face, or cell) or a small local neighborhood.
 
-The worklet is constrained to be serial and stateless; it can access only the element passed to and from the invocation. With this constraint, the serial worklet function can be concurrently scheduled on an unlimited number of threads without the complications of threads or race conditions.
+The worklet is constrained to be serial and stateless; it can access only the element passed to and from the invocation. With this constraint, the serial worklet function can be concurrently executed on an unlimited number of threads without the complications of threads or race conditions.
 
-Although worklets are not allowed communication, many visualization algorithms require operations such as variable array packing and coincident topology resolution that intrinsically require significant coordination among threads. Dax enables such algorithms by classifying and implementing the most common and versatile communicative operations into worklet types which are managed by the Dax scheduler.
+Although worklets are not allowed communication, many visualization algorithms require operations such as variable array packing and coincident topology resolution that intrinsically require significant coordination among threads. Dax enables such algorithms by classifying and implementing the most common and versatile communicative operations into worklet types which are managed by the Dax dispatcher.
 
 ### Why ###
 
 
-The Dax Toolkit simplifies the development of parallel visualization algorithms. Consider the computation of gradients using finite differences. Because the Dax Toolkit is structured such that it can schedule its execution on a GPU, we measure that it performs this operation over 100 times faster than VTK running on a single CPU. Furthermore, the Dax API can be switched to a different device by changing only a single line of code. Dax currently provides scheduling for CUDA (GPU), OpenMP (multicore CPU), and serial execution.
+The Dax Toolkit simplifies the development of parallel visualization algorithms. Consider the computation of gradients using finite differences. Because the Dax Toolkit is structured such that it can execute worklets on a GPU, we measure that it performs this operation over 100 times faster than VTK running on a single CPU. Furthermore, the Dax API can be switched to a different device by changing only a single line of code. Dax currently provides support for CUDA (GPU), OpenMP (multicore CPU), and serial execution.
 
 ``` cpp
 struct CellGradient : public dax::exec::WorkletMapCell
@@ -89,7 +89,7 @@ And here is how to execute the worklet:
 ``` cpp
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/UniformGrid.h>
 
 //construct a handle to store the results
@@ -99,10 +99,9 @@ dax::cont::ArrayHandle<dax::Scalar> magnitudeHandle;
 dax::cont::UniformGrid<> inputGrid;
 inputGrid.SetExtent(dax::make_Id3(0), dax::make_Id3(127));
 
-//construct a scheduler and launch the magnitude worklet.
-dax::cont::Scheduler<> scheduler;
-scheduler.Invoke(dax::worklet::Magnitude(),
-                 grid->GetPointCoordinates(),
+//construct and launch the magnitude worklet.
+dax::cont::DispatcherMapField< dax::worklet::Magnitude > dispatcher;
+dispatcher.Invoke(grid->GetPointCoordinates(),
                  magnitudeHandle);
 
 
@@ -123,35 +122,35 @@ More examples can be found on our [Getting Started page](http://www.daxtoolkit.o
 
 ## Contacts ##
 
-Kenneth Moreland  
-Sandia National Laboratories  
-kmorel@sandia.gov  
+Kenneth Moreland
+Sandia National Laboratories
+kmorel@sandia.gov
 
-Robert Maynard  
-Kitware, Inc.  
-robert.maynard@kitware.com  
+Robert Maynard
+Kitware, Inc.
+robert.maynard@kitware.com
 
-Berk Geveci  
-Kitware, Inc.  
-berk.geveci@kitware.com  
+Berk Geveci
+Kitware, Inc.
+berk.geveci@kitware.com
 
-Kwan-Liu Ma  
-University of California at Davis  
-ma@cs.ucdavis.edu  
+Kwan-Liu Ma
+University of California at Davis
+ma@cs.ucdavis.edu
 
 
 
 ## License ##
 
-Copyright (c) Kitware, Inc.  
-All rights reserved.  
-[See LICENSE.txt for details](LICENSE.txt).  
+Copyright (c) Kitware, Inc.
+All rights reserved.
+[See LICENSE.txt for details](LICENSE.txt).
 
-Copyright 2011 Sandia Corporation.  
-Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,  
-the U.S. Government retains certain rights in this software.  
+Copyright 2011 Sandia Corporation.
+Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
+the U.S. Government retains certain rights in this software.
 
-This software is distributed WITHOUT ANY WARRANTY; without even  
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-[See the copyright file for more information](LICENSE.txt).  
+This software is distributed WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+[See the copyright file for more information](LICENSE.txt).
 

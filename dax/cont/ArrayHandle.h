@@ -348,7 +348,7 @@ public:
     else if (this->Internals->ControlArrayValid)
       {
       this->Internals->ExecutionArray.LoadDataForInPlace(
-            this->Internals->ControlArray);
+            this->Internals->ControlArray.GetPortal());
       this->Internals->ExecutionArrayValid = true;
       }
     else

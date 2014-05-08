@@ -18,9 +18,11 @@
 #if defined(DAX_DOXYGEN_ONLY)
 #else // !defined(DAX_DOXYGEN_ONLY)
 
-# if __cplusplus >= 201103L
-#  error "Do not include this header with C++11."
-# else // !(__cplusplus >= 201103L)
+#include <dax/internal/Configure.h>
+
+#if defined(DAX_USE_VARIADIC_TEMPLATE) && !defined(DAX_TEST_HEADER_BUILD)
+#  error "Do not include this header with variadic templates."
+# else // !DAX_USE_VARIADIC_TEMPLATE
 // In C++03 use Boost.Preprocessor file iteration to approximate
 // template parameter packs.
 #  include <boost/preprocessor/arithmetic/dec.hpp>
@@ -42,7 +44,7 @@
 #  define _dax_pp_repeat_(z,n,x)  x(n)
 #  define _dax_pp_params___(x)    BOOST_PP_ENUM_SHIFTED_BINARY_PARAMS(BOOST_PP_ITERATION(), T___, x)
 #  define _dax_pp_args___(x)      BOOST_PP_ENUM_SHIFTED_PARAMS(BOOST_PP_ITERATION(), x)
-# endif // !(__cplusplus >= 201103L)
+# endif // !DAX_USE_VARIADIC_TEMPLATE
 
 #endif // !defined(DAX_DOXYGEN_ONLY)
 #endif //__dax__internal__ParameterPackCxx03_h

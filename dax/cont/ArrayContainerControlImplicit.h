@@ -123,8 +123,7 @@ public:
     this->PortalValid = true;
   }
 
-  DAX_CONT_EXPORT void LoadDataForInPlace(
-      ContainerType &daxNotUsed(controlArray))
+  DAX_CONT_EXPORT void LoadDataForInPlace(PortalControl daxNotUsed(portal))
   {
     throw dax::cont::ErrorControlBadValue(
           "Implicit arrays cannot be used for output or in place.");

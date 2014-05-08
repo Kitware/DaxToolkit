@@ -21,7 +21,7 @@
 
 #include <dax/cont/DeviceAdapter.h>
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/Timer.h>
 
 #include <dax/math/Exp.h>
@@ -106,18 +106,16 @@ double launchBlackScholes(const std::vector<dax::Scalar>& stockPrice,
 
   dax::cont::ArrayHandle<dax::Scalar> callResultHandle, putResultHandle;
 
-  dax::cont::Scheduler<> scheduler;
+  dax::cont::DispatcherMapField< worklet::BlackScholes > dispatcher;
 
   dax::cont::Timer<> timer;
 
   //invoke the black scholes worklet 512 averaging the elapsed time
-  worklet::BlackScholes scholes;
   for (int i = 0; i < 12; i++)
     {
-    scheduler.Invoke(scholes,
-                     sPriceHandle, oStrikeHandle,
-                     oYearsHandle, RISKFREE, VOLATILITY,
-                     callResultHandle, putResultHandle);
+    dispatcher.Invoke(  sPriceHandle, oStrikeHandle,
+                        oYearsHandle, RISKFREE, VOLATILITY,
+                        callResultHandle, putResultHandle );
     }
 
   callResultHandle.CopyInto(callResult.begin());

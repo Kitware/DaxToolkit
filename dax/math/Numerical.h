@@ -35,14 +35,15 @@ namespace math {
 // not be totally against that, but it would probably be confusing to split the
 // math functions like that (which one is where and why?).
 
-/// Uses Newton's method to solve a nonlinear system of equations. This
-/// function assumes that the number of variables equals the number of
-/// equations. Newton's method operates on an iterative evaluate and search.
-/// Evaluations are performed using the functors passed into the NewtonsMethod.
-/// The first functor returns the NxN matrix of the Jacobian at a given input
-/// point. The second functor returns the N tuple that is the function
-/// evaluation at the given input point. The input point that evaluates to the
-/// desired output, or the closest point found, is returned.
+/// Uses Newton's method (a.k.a. Newton-Raphson method) to solve a nonlinear
+/// system of equations. This function assumes that the number of variables
+/// equals the number of equations. Newton's method operates on an iterative
+/// evaluate and search. Evaluations are performed using the functors passed
+/// into the NewtonsMethod. The first functor returns the NxN matrix of the
+/// Jacobian at a given input point. The second functor returns the N tuple
+/// that is the function evaluation at the given input point. The input point
+/// that evaluates to the desired output, or the closest point found, is
+/// returned.
 ///
 template<int Size, class JacobianFunctor, class FunctionFunctor>
 DAX_EXEC_EXPORT

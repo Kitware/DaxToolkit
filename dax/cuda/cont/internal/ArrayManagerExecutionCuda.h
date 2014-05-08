@@ -43,8 +43,45 @@ public:
   typedef typename Superclass::PortalType PortalType;
   typedef typename Superclass::PortalConstType PortalConstType;
 
-  typedef typename Superclass::ThrustIteratorType ThrustIteratorType;
-  typedef typename Superclass::ThrustIteratorConstType ThrustIteratorConstType;
+  template<class PortalControl>
+  DAX_CONT_EXPORT void LoadDataForInput(PortalControl arrayPortal)
+  {
+    try
+      {
+      this->Superclass::LoadDataForInput(arrayPortal);
+      }
+    catch (dax::cont::ErrorControlOutOfMemory error)
+      {
+      // Thrust does not seem to be clearing the CUDA error, so do it here.
+      cudaError_t cudaError = cudaPeekAtLastError();
+      if (cudaError == cudaErrorMemoryAllocation)
+        {
+        cudaGetLastError();
+        }
+      throw error;
+      }
+  }
+
+  DAX_CONT_EXPORT void AllocateArrayForOutput(
+      dax::cont::internal::ArrayContainerControl<ValueType,ArrayContainerTag>
+        &container,
+      dax::Id numberOfValues)
+  {
+    try
+      {
+      this->Superclass::AllocateArrayForOutput(container, numberOfValues);
+      }
+    catch (dax::cont::ErrorControlOutOfMemory error)
+      {
+      // Thrust does not seem to be clearing the CUDA error, so do it here.
+      cudaError_t cudaError = cudaPeekAtLastError();
+      if (cudaError == cudaErrorMemoryAllocation)
+        {
+        cudaGetLastError();
+        }
+      throw error;
+      }
+  }
 };
 
 }

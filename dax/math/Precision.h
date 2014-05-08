@@ -204,7 +204,7 @@ DAX_EXEC_CONT_EXPORT T fmod_template(T numerator, T denominator)
 /// Computes the remainder on division of 2 floating point numbers. The return
 /// value is \p numerator - n \p denominator, where n is the quotient of \p
 /// numerator divided by \p denominator rounded towards zero to an integer. For
-/// example, <tt>FMod(6.5, 2.3)</tt> returns 1.9, which is 6.5 minus 4.6.
+/// example, <tt>FMod(6.5, 2.3)</tt> returns 1.9, which is 6.5 - 2*2.3.
 ///
 DAX_EXEC_CONT_EXPORT
 dax::Scalar FMod(dax::Scalar numerator, dax::Scalar denominator) {
@@ -257,7 +257,7 @@ DAX_EXEC_CONT_EXPORT T remainder_template(T numerator, T denominator)
 /// value is \p numerator - n \p denominator, where n is the quotient of \p
 /// numerator divided by \p denominator rounded towards the nearest integer
 /// (instead of toward zero like FMod). For example, <tt>FMod(6.5, 2.3)</tt>
-/// returns -0.4, which is 6.5 minus 6.9.
+/// returns -0.4, which is 6.5 - 3*2.3.
 ///
 DAX_EXEC_CONT_EXPORT
 dax::Scalar Remainder(dax::Scalar numerator, dax::Scalar denominator) {

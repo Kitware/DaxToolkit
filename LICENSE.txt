@@ -57,6 +57,7 @@ The following files and directories come from third parties. Check the
 contents of these for details on the specifics of their respective
 licenses.
 - - - - - - - - - - - - - - - - - - - - - - - - do not remove this line
+CMake/CheckCXX11Features.cmake
 CMake/FindBoostHeaders.cmake
 CMake/FindGLEW.cmake
 CMake/FindTBB.cmake

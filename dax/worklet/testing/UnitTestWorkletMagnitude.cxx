@@ -21,7 +21,7 @@
 
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <vector>
@@ -43,10 +43,8 @@ struct TestMagnitudeWorklet
   dax::cont::ArrayHandle<dax::Scalar> magnitudeHandle;
 
   std::cout << "Running Magnitude worklet" << std::endl;
-  dax::cont::Scheduler< > scheduler;
-  scheduler.Invoke(dax::worklet::Magnitude(),
-                   grid->GetPointCoordinates(),
-                   magnitudeHandle);
+  dax::cont::DispatcherMapField< dax::worklet::Magnitude > dispatcher;
+  dispatcher.Invoke(grid->GetPointCoordinates(), magnitudeHandle);
 
   std::cout << "Checking result" << std::endl;
   dax::Id numPoints = grid->GetNumberOfPoints();

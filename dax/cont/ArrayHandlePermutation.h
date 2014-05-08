@@ -63,7 +63,7 @@ public:
     : Superclass(
         typename PermTypes::ArrayContainerControlType(keyHandle,valueHandle),
         true,
-        ArrayTransferType(keyHandle,valueHandle),
+        ArrayTransferType(),
         false)
   {
   }

@@ -25,14 +25,14 @@ namespace worklet {
 //In the future we could extend this to be more general so we can accept
 //any implicit function, that would help reduce the duplicate code between
 //this class and marching cubes
-class SliceClassify : public dax::exec::WorkletMapCell
+class SliceCount : public dax::exec::WorkletMapCell
 {
 
 public:
   typedef void ControlSignature(Topology, Field(Point), Field(Out));
   typedef _3 ExecutionSignature(_2);
 
-  DAX_CONT_EXPORT SliceClassify(dax::Vector3 origin, dax::Vector3 normal)
+  DAX_CONT_EXPORT SliceCount(dax::Vector3 origin, dax::Vector3 normal)
     : Origin(origin),
       Normal(normal)
   {

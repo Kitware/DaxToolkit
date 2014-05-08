@@ -52,11 +52,20 @@ public:
   /// type casting that the iterators do (like the non-const to const cast).
   ///
   template<class OtherP1, class OtherP2>
-  DAX_CONT_EXPORT
+  DAX_EXEC_CONT_EXPORT
   ArrayPortalZip(const ArrayPortalZip<OtherP1,OtherP2> &src)
     : FirstPortal(src.GetFirstPortal()),
       SecondPortal(src.GetSecondPortal())
   {  }
+
+  template<class OtherP1, class OtherP2>
+  DAX_EXEC_CONT_EXPORT
+  ArrayPortalZip<P1,P2> &operator=(const ArrayPortalZip<OtherP1,OtherP2> &src)
+  {
+    this->FirstPortal = src.GetFirstPortal();
+    this->SecondPortal = src.GetSecondPortal();
+    return *this;
+  }
 
   DAX_EXEC_CONT_EXPORT
   dax::Id GetNumberOfValues() const {
@@ -287,6 +296,7 @@ public:
 
   DAX_CONT_EXPORT
   dax::Id GetNumberOfValues() const {
+    DAX_ASSERT_CONT(this->ArraysValid);
     DAX_ASSERT_CONT(this->FirstArray.GetNumberOfValues()
                     == this->SecondArray.GetNumberOfValues());
     return this->FirstArray.GetNumberOfValues();
@@ -298,6 +308,7 @@ public:
     // a portal zipping the data already in the two arrays. (That is, assumes
     // that a user portal was not given directly the the zipped array handle.)
     // It would be good to check that, but how?
+    DAX_ASSERT_CONT(this->ArraysValid);
     this->ExecutionPortalConst = PortalConstExecution(
                                    this->FirstArray.PrepareForInput(),
                                    this->SecondArray.PrepareForInput());
@@ -306,8 +317,9 @@ public:
   }
 
   DAX_CONT_EXPORT
-  void LoadDataForInPlace(ContainerType &daxNotUsed(controlArray)) {
-    // Assuming controlArray uses the same first and second arrays as this.
+  void LoadDataForInPlace(PortalControl daxNotUsed(portal)) {
+    // Assuming portal uses the same first and second arrays as this.
+    DAX_ASSERT_CONT(this->ArraysValid);
     this->ExecutionPortal = PortalExecution(
                               this->FirstArray.PrepareForInPlace(),
                               this->SecondArray.PrepareForInPlace());
@@ -321,6 +333,7 @@ public:
   void AllocateArrayForOutput(ContainerType &daxNotUsed(controlArray),
                               dax::Id numberOfValues) {
     // Assuming controlArray uses the same first and second arrays as this.
+    DAX_ASSERT_CONT(this->ArraysValid);
     this->ExecutionPortal
         = PortalExecution(this->FirstArray.PrepareForOutput(numberOfValues),
                           this->SecondArray.PrepareForOutput(numberOfValues));
@@ -349,6 +362,7 @@ public:
 
   DAX_CONT_EXPORT
   void Shrink(dax::Id numberOfValues) {
+    DAX_ASSERT_CONT(this->ArraysValid);
     this->FirstArray.Shrink(numberOfValues);
     this->SecondArray.Shrink(numberOfValues);
   }
@@ -367,8 +381,11 @@ public:
 
   DAX_CONT_EXPORT
   void ReleaseResources() {
+    DAX_ASSERT_CONT(this->ArraysValid);
     this->FirstArray.ReleaseResourcesExecution();
     this->SecondArray.ReleaseResourcesExecution();
+    this->ExecutionPortalValid = false;
+    this->ExecutionPortalConstValid = false;
   }
 
 private:

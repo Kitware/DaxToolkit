@@ -17,7 +17,9 @@
 #include <iostream>
 
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/ArrayHandleTransform.h>
+#include <dax/cont/DispatcherMapCell.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/Timer.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/VectorOperations.h>
@@ -33,6 +35,23 @@
 #define MAKE_STRING2(x) #x
 #define MAKE_STRING1(x) MAKE_STRING2(x)
 #define DEVICE_ADAPTER MAKE_STRING1(DAX_DEFAULT_DEVICE_ADAPTER_TAG)
+
+namespace worklets
+{
+struct MagWrapper
+{
+  //dax::worklet::Magnitude isn't a unary function, so
+  //we have to wrap it
+  DAX_EXEC_EXPORT
+  dax::Scalar operator()(dax::Vector3 inValue) const
+  {
+    dax::Scalar result;
+    dax::worklet::Magnitude()(inValue,result);
+    return result;
+  }
+};
+
+}
 
 namespace
 {
@@ -109,14 +128,17 @@ void RunPipeline1(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Vector3> results;
 
   dax::cont::Timer<> timer;
-  dax::cont::Scheduler<> schedule;
-  schedule.Invoke(dax::worklet::Magnitude(),
+
+  dax::cont::DispatcherMapField< dax::worklet::Magnitude >().Invoke(
         grid.GetPointCoordinates(),
         intermediate1);
-  schedule.Invoke(dax::worklet::CellGradient(),grid,
-                                   grid.GetPointCoordinates(),
-                                   intermediate1,
-                                   results);
+
+  dax::cont::DispatcherMapCell< dax::worklet::CellGradient >().Invoke(
+        grid,
+        grid.GetPointCoordinates(),
+        intermediate1,
+        results);
+
   double time = timer.GetElapsedTime();
 
   PrintCheckValues(results);
@@ -135,21 +157,27 @@ void RunPipeline2(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Vector3> results;
 
   dax::cont::Timer<> timer;
-  dax::cont::Scheduler<> schedule;
-  schedule.Invoke(dax::worklet::Magnitude(),
+
+  dax::cont::DispatcherMapField<dax::worklet::Magnitude>().Invoke(
         grid.GetPointCoordinates(),
         intermediate1);
 
-  schedule.Invoke(dax::worklet::CellGradient(),grid,
-           grid.GetPointCoordinates(),
-           intermediate1,
-           intermediate2);
+  dax::cont::DispatcherMapCell< dax::worklet::CellGradient >().Invoke(
+        grid,
+        grid.GetPointCoordinates(),
+        intermediate1,
+        intermediate2);
 
   intermediate1.ReleaseResources();
-  schedule.Invoke(dax::worklet::Sine(),intermediate2, intermediate3);
-  schedule.Invoke(dax::worklet::Square(),intermediate3, intermediate2);
+
+
+  dax::cont::DispatcherMapField< dax::worklet::Sine >().Invoke(intermediate2,
+                                                               intermediate3);
+  dax::cont::DispatcherMapField< dax::worklet::Square>().Invoke(intermediate3,
+                                                                intermediate2);
   intermediate3.ReleaseResources();
-  schedule.Invoke(dax::worklet::Cosine(),intermediate2, results);
+  dax::cont::DispatcherMapField< dax::worklet::Cosine>().Invoke(intermediate2,
+                                                                results);
   double time = timer.GetElapsedTime();
 
   PrintCheckValues(results);
@@ -168,19 +196,63 @@ void RunPipeline3(const dax::cont::UniformGrid<> &grid)
   dax::cont::ArrayHandle<dax::Scalar> results;
 
   dax::cont::Timer<> timer;
-  dax::cont::Scheduler<> schedule;
-  schedule.Invoke(dax::worklet::Magnitude(),
+
+  dax::cont::DispatcherMapField<dax::worklet::Magnitude>().Invoke(
         grid.GetPointCoordinates(),
         intermediate1);
-  schedule.Invoke(dax::worklet::Sine(),intermediate1, intermediate2);
-  schedule.Invoke(dax::worklet::Square(),intermediate2, intermediate1);
+
+  dax::cont::DispatcherMapField< dax::worklet::Sine >().Invoke(intermediate1,
+                                                               intermediate2);
+  dax::cont::DispatcherMapField< dax::worklet::Square>().Invoke(intermediate2,
+                                                                intermediate1);
   intermediate2.ReleaseResources();
-  schedule.Invoke(dax::worklet::Cosine(),intermediate1, results);
+  dax::cont::DispatcherMapField< dax::worklet::Cosine>().Invoke(intermediate1,
+                                                                results);
+
   double time = timer.GetElapsedTime();
 
   PrintCheckValues(results);
 
   PrintResults(3, time);
+}
+
+void RunPipeline4(const dax::cont::UniformGrid<> &grid)
+{
+  std::cout << "Running Fused Pipeline 4: Magnitude -> Sine -> Square -> Cosine"
+            << std::endl;
+
+  dax::cont::ArrayHandle<dax::Scalar> results;
+
+  dax::cont::Timer<> timer;
+
+  //fuse the first three worklets into the transform handle instead of
+  //explicitly calling each of them, only the cosine worklet will be called
+  typedef dax::cont::ArrayHandleTransform< dax::Scalar,
+          dax::cont::UniformGrid<>::PointCoordinatesType,
+          ::worklets::MagWrapper > MagnitudeHandle;
+
+  typedef dax::cont::ArrayHandleTransform< dax::Scalar,
+          MagnitudeHandle,
+          dax::worklet::Sine > SineFusedHandle;
+
+  typedef dax::cont::ArrayHandleTransform< dax::Scalar,
+          SineFusedHandle,
+          dax::worklet::Square > SquareFusedHandle;
+
+  MagnitudeHandle mag(grid.GetPointCoordinates());
+
+  SineFusedHandle sine(mag);
+  SquareFusedHandle fused(sine);
+
+  dax::cont::DispatcherMapField< dax::worklet::Cosine>().Invoke(fused,
+                                                                results);
+
+  double time = timer.GetElapsedTime();
+
+  PrintCheckValues(results);
+
+
+  PrintResults(4, time);
 }
 
 } // Anonymous namespace

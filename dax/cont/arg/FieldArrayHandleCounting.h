@@ -26,11 +26,11 @@ namespace dax { namespace cont { namespace arg {
 template <typename Tags, typename T, typename Device>
 class ConceptMap< Field(Tags), dax::cont::ArrayHandleCounting<T, Device> > :
   public ConceptMap< Field(Tags), dax::cont::ArrayHandle < T,
-                          dax::cont::internal::ArrayContainerControlTagCounting,
+                          typename dax::cont::internal::ArrayHandleCountingTraits<T>::Tag,
                           Device > >
 {
   typedef ConceptMap< Field(Tags), dax::cont::ArrayHandle < T,
-                          dax::cont::internal::ArrayContainerControlTagCounting,
+                          typename dax::cont::internal::ArrayHandleCountingTraits<T>::Tag,
                           Device > > superclass;
   typedef dax::cont::ArrayHandleCounting<T, Device> HandleType;
 public:
@@ -44,11 +44,11 @@ public:
 template <typename Tags, typename T, typename Device>
 class ConceptMap< Field(Tags), const dax::cont::ArrayHandleCounting<T, Device> > :
   public ConceptMap< Field(Tags), const dax::cont::ArrayHandle < T,
-                          dax::cont::internal::ArrayContainerControlTagCounting,
+                          typename dax::cont::internal::ArrayHandleCountingTraits<T>::Tag,
                           Device > >
 {
   typedef ConceptMap< Field(Tags), const dax::cont::ArrayHandle < T,
-                          dax::cont::internal::ArrayContainerControlTagCounting,
+                          typename dax::cont::internal::ArrayHandleCountingTraits<T>::Tag,
                           Device > > superclass;
   typedef dax::cont::ArrayHandleCounting<T, Device> HandleType;
 public:

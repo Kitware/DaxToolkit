@@ -26,9 +26,8 @@
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/ArrayHandleConstant.h>
 #include <dax/cont/DeviceAdapterSerial.h>
-#include <dax/cont/GenerateKeysValues.h>
-#include <dax/cont/ReduceKeysValues.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherGenerateKeysValues.h>
+#include <dax/cont/DispatcherReduceKeysValues.h>
 
 #include <iostream>
 #include <algorithm>
@@ -111,27 +110,19 @@ struct TestCellDataToPointDataWorklet
     dax::cont::ArrayHandle<dax::Scalar> resultHandle;
 
     std::cout << "Running CellDataToPointDataGenerateKeys worklet" << std::endl;
-    dax::cont::Scheduler< > scheduler;
 
-    dax::cont::GenerateKeysValues<
+    dax::cont::DispatcherGenerateKeysValues<
         dax::worklet::CellDataToPointDataGenerateKeys,
         dax::cont::ArrayHandleConstant<dax::Id> > generateKeys(keyGenCounts);
 
-    scheduler.Invoke(generateKeys,
-                     grid.GetRealGrid(),
-                     fieldHandle,
-                     keyHandle,
-                     valueHandle);
+    generateKeys.Invoke(grid.GetRealGrid(),fieldHandle,keyHandle,valueHandle);
 
     std::cout << "Running CellDataToPointDataReduceKeys worklet" << std::endl;
 
-    dax::worklet::CellDataToPointDataReduceKeys CD2PD;
+    dax::cont::DispatcherReduceKeysValues<
+      dax::worklet::CellDataToPointDataReduceKeys> reduceKeys(keyHandle);
 
-    dax::cont::ReduceKeysValues<
-      dax::worklet::CellDataToPointDataReduceKeys,
-      dax::cont::ArrayHandle<dax::Id> > reduceKeys(keyHandle, CD2PD);
-
-    scheduler.Invoke(reduceKeys, valueHandle, resultHandle);
+    reduceKeys.Invoke(valueHandle, resultHandle);
 
     std::cout << "Checking result" << std::endl;
     std::vector<dax::Scalar> pointData(resultHandle.GetNumberOfValues());

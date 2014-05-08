@@ -18,9 +18,10 @@
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_ERROR
 
 #include <dax/cont/ArrayContainerControlBasic.h>
+#include <dax/cont/ArrayHandleCounting.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapterSerial.h>
-#include <dax/cont/ReduceKeysValues.h>
+#include <dax/cont/DispatcherReduceKeysValues.h>
 
 #include <dax/exec/WorkletReduceKeysValues.h>
 
@@ -31,10 +32,9 @@
 #include <set>
 #include <vector>
 
-#include <stdlib.h>
 #include <time.h>
 
-#define PRINT_VALUES
+// #define PRINT_VALUES
 
 namespace {
 
@@ -46,10 +46,35 @@ typedef dax::cont::ArrayHandle<dax::Id,Container,DeviceAdapter> ArrayType;
 const int ARRAY_SIZE = 10;
 const int NUM_KEYS = 10;
 
-struct DummyWorklet : dax::exec::WorkletReduceKeysValues {  };
-
 typedef std::map<dax::Id, std::set<dax::Id> > KeyMapType;
-typedef dax::cont::ReduceKeysValues<DummyWorklet, ArrayType> DaxKeyMapType;
+
+class TrackReduceWorklet : public dax::exec::WorkletReduceKeysValues
+{
+public:
+  TrackReduceWorklet():
+    KeyValues( new KeyMapType() )
+  {}
+
+  typedef void ControlSignature( Values(In) );
+  typedef void ExecutionSignature(KeyGroup(_1), WorkId);
+
+  template<typename KeyGroupType>
+  DAX_EXEC_EXPORT
+  void operator()(KeyGroupType inPortal, dax::Id work_id) const
+  {
+  for(dax::Id iCtr = 0; iCtr < inPortal.GetNumberOfValues(); iCtr++)
+    {
+    (*this->KeyValues)[work_id].insert( inPortal[iCtr] );
+    }
+
+  }
+
+  //only works with serial/openmp/tbb backends
+  boost::shared_ptr<KeyMapType> KeyValues;
+};
+
+
+
 
 template<class IteratorType>
 void PrintArray(IteratorType beginIter, IteratorType endIter)
@@ -102,99 +127,39 @@ KeyMapType BuildSerialKeyMap(const ArrayType &inputKeys)
     keyMap[keysPortal.Get(index)].insert(index);
     }
 
-#ifdef PRINT_VALUES
-  for (KeyMapType::iterator mapIter = keyMap.begin();
-       mapIter != keyMap.end();
-       mapIter++)
-    {
-    std::cout << mapIter->first << ":";
-    PrintArray(mapIter->second.begin(), mapIter->second.end());
-    }
-#endif
-
   return keyMap;
 }
 
-DaxKeyMapType BuildDaxKeyMap(const ArrayType &inputKeys)
+void CheckKeyMap(const ArrayType &inputKeys, KeyMapType serialMap)
 {
-  std::cout << "Building Dax version of key map" << std::endl;
+  std::cout << "Run Dax KeyMap and store counts, offsets, and indices" << std::endl;
 
-  DaxKeyMapType keyMap(inputKeys);
-  keyMap.BuildReductionMap();
+  TrackReduceWorklet track;
+  dax::cont::DispatcherReduceKeysValues< TrackReduceWorklet,
+        ArrayType, DeviceAdapter > reduceKeyValues(inputKeys, track);
 
-#ifdef PRINT_VALUES
-  std::cout << "Counts:" << std::endl;
-  PrintArray(
-        keyMap.GetReductionCounts().GetPortalConstControl().GetIteratorBegin(),
-        keyMap.GetReductionCounts().GetPortalConstControl().GetIteratorEnd());
-  std::cout << "Offsets:" << std::endl;
-  PrintArray(
-        keyMap.GetReductionOffsets().GetPortalConstControl().GetIteratorBegin(),
-        keyMap.GetReductionOffsets().GetPortalConstControl().GetIteratorEnd());
-  std::cout << "Indices:" << std::endl;
-  PrintArray(
-        keyMap.GetReductionIndices().GetPortalConstControl().GetIteratorBegin(),
-        keyMap.GetReductionIndices().GetPortalConstControl().GetIteratorEnd());
-#endif
+  //we need to pass the index as the values to bind too
+  typedef dax::cont::ArrayHandleCounting<dax::Id, DeviceAdapter> CountingHandle;
 
-  return keyMap;
-}
+  reduceKeyValues.Invoke( CountingHandle(0,inputKeys.GetNumberOfValues()) );
 
-void CheckKeyMap(KeyMapType serialMap, DaxKeyMapType daxMap)
-{
+
+  //compose the info we stored during execution to make up
+  KeyMapType* daxKeyMap = track.KeyValues.get();
+
   std::cout << "Comparing key maps" << std::endl;
-
-  typedef ArrayType::PortalConstControl PortalType;
-  PortalType keys = daxMap.GetKeys().GetPortalConstControl();
-  PortalType counts = daxMap.GetReductionCounts().GetPortalConstControl();
-  PortalType offsets = daxMap.GetReductionOffsets().GetPortalConstControl();
-  PortalType indices = daxMap.GetReductionIndices().GetPortalConstControl();
-
-  dax::Id inputSize = keys.GetNumberOfValues();
-
-  std::vector<bool> foundIndices(inputSize);
-  std::fill(foundIndices.begin(), foundIndices.end(), false);
-
-  DAX_TEST_ASSERT(indices.GetNumberOfValues() == inputSize,
+  DAX_TEST_ASSERT(daxKeyMap->size() == serialMap.size(),
                   "Wrong number of indices.");
-  DAX_TEST_ASSERT(counts.GetNumberOfValues() == (dax::Id)serialMap.size(),
-                  "Wrong number of counts.");
-  DAX_TEST_ASSERT(offsets.GetNumberOfValues() == (dax::Id)serialMap.size(),
-                  "Wrong number of offsets.");
 
-  // Although the ordering of the output shouldn't really matter, this test
-  // assumes that both are in ascending order.
-  KeyMapType::iterator serialIter = serialMap.begin();
-  for (dax::Id outputIndex = 0;
-       outputIndex < counts.GetNumberOfValues();
-       outputIndex++)
+  typedef KeyMapType::const_iterator it;
+  it serElem = serialMap.begin();
+  for( it daxElem = daxKeyMap->begin();
+       daxElem != daxKeyMap->end();
+       ++daxElem, ++serElem)
     {
-    DAX_TEST_ASSERT(serialIter != serialMap.end(),
-                    "Dax made too many key buckets.");
-    dax::Id key = serialIter->first;
-    dax::Id count = counts.Get(outputIndex);
-    dax::Id offset = offsets.Get(outputIndex);
-    DAX_TEST_ASSERT(count == static_cast<dax::Id>(serialIter->second.size()),
-                    "Dax key bucket does not agree.");
-    for (dax::Id visitIndex = 0; visitIndex < count; visitIndex++)
-      {
-      dax::Id inputIndex = indices.Get(offset + visitIndex);
-      DAX_TEST_ASSERT((inputIndex >= 0) && (inputIndex < inputSize),
-                      "Got bad index");
-      DAX_TEST_ASSERT(!foundIndices[inputIndex],
-                      "An index was listed twice.");
-      foundIndices[inputIndex] = true;
-      dax::Id foundKey = keys.Get(inputIndex);
-      DAX_TEST_ASSERT(key == foundKey, "Bucket has wrong key.");
-      }
-    serialIter++;
-    }
-  DAX_TEST_ASSERT(serialIter == serialMap.end(),
-                  "Dax made too few key buckets.");
-  for (dax::Id inputIndex = 0; inputIndex < inputSize; inputIndex++)
-    {
-    DAX_TEST_ASSERT(foundIndices[inputIndex],
-                    "An index did not make it to the indices list.");
+    bool matches = std::equal( daxElem->second.begin(), daxElem->second.end(),
+                               serElem->second.begin() );
+    DAX_TEST_ASSERT( matches == true, "key index values are wrong.");
     }
 }
 
@@ -204,8 +169,7 @@ void RunBuildReductionMap()
 
   ArrayType randomKeyInput = MakeInputArray();
   KeyMapType serialMap = BuildSerialKeyMap(randomKeyInput);
-  DaxKeyMapType daxMap = BuildDaxKeyMap(randomKeyInput);
-  CheckKeyMap(serialMap, daxMap);
+  CheckKeyMap(randomKeyInput, serialMap);
 }
 
 } // anonymous namespace

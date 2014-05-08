@@ -60,14 +60,14 @@ public:
 
 
   DAX_EXEC_EXPORT void SaveExecutionResult(int index,
-                        const dax::exec::internal::WorkletBase& work)
+                        const dax::exec::internal::WorkletBase& work) const
     {
     this->saveValue(index,work,HasOutTag());
     }
 
   DAX_EXEC_EXPORT void SaveExecutionResult(int index,
                         const SaveType& v,
-                        const dax::exec::internal::WorkletBase& work)
+                        const dax::exec::internal::WorkletBase& work) const
     {
     this->saveValue(index,v,work,HasOutTag());
     }

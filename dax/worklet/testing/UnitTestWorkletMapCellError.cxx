@@ -19,14 +19,9 @@
 
 #include <dax/worklet/testing/CellMapError.h>
 
-#include <dax/VectorTraits.h>
-
-#include <dax/cont/ArrayContainerControl.h>
 #include <dax/cont/DeviceAdapter.h>
+#include <dax/cont/DispatcherMapCell.h>
 #include <dax/cont/ErrorExecution.h>
-#include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Scheduler.h>
-#include <dax/cont/UniformGrid.h>
 
 namespace {
 
@@ -45,8 +40,9 @@ struct TestCellMapErrorWorklet
   bool gotError = false;
   try
     {
-    dax::cont::Scheduler< > scheduler;
-    scheduler.Invoke(dax::worklet::testing::CellMapError(),grid.GetRealGrid());
+    dax::cont::DispatcherMapCell< dax::worklet::testing::CellMapError >
+                                                                    dispatcher;
+    dispatcher.Invoke( grid.GetRealGrid() );
     }
   catch (dax::cont::ErrorExecution error)
     {

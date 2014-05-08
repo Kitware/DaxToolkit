@@ -19,7 +19,7 @@
 #include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <dax/cont/testing/TestingGridGenerator.h>
@@ -56,8 +56,8 @@ struct TestSquareWorklet
   dax::cont::ArrayHandle<dax::Scalar> squareHandle;
 
   std::cout << "Running Square worklet" << std::endl;
-  dax::cont::Scheduler<> scheduler;
-  scheduler.Invoke(dax::worklet::Square(),fieldHandle, squareHandle);
+  dax::cont::DispatcherMapField< dax::worklet::Square > dispatcher;
+  dispatcher.Invoke(fieldHandle, squareHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> square(grid->GetNumberOfPoints());

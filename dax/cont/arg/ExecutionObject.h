@@ -42,7 +42,7 @@ public:
 
   explicit ConceptMap(UserClass f): UserClassInstance(f) {}
 
-  ExecArg GetExecArg() { return this->UserClassInstance; }
+  ExecArg GetExecArg() const { return this->UserClassInstance; }
 
   void ToExecution(dax::Id) const {}
 private:

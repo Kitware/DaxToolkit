@@ -53,8 +53,10 @@ struct Worklet1: public WorkType1
 template<typename T>
 void verifyConstantExists(T value)
 {
-  typedef Worklet1 Invocation1(T);
-  dax::cont::internal::Bindings<Invocation1> binded(value);
+  typedef dax::internal::Invocation<Worklet1,dax::internal::ParameterPack<T> > Invocation1;
+  typedef typename dax::cont::internal::Bindings<Invocation1>::type Bindings1;
+  Bindings1 binded = dax::cont::internal::BindingsCreate(
+        Worklet1(), dax::internal::make_ParameterPack(value));
   (void)binded;
 }
 

@@ -65,7 +65,7 @@ public:
     ValueConcept(input.Value())
     {}
 
-  DAX_CONT_EXPORT ExecArg GetExecArg()
+  DAX_CONT_EXPORT ExecArg GetExecArg() const
     {
     return ExecArg(KeyConcept.GetExecArg(),
                    ValueConcept.GetExecArg());

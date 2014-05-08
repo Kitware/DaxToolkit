@@ -23,7 +23,7 @@
 #include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapField.h>
 
 
 #include <vector>
@@ -53,13 +53,13 @@ struct TestCosineWorklet
       }
 
     dax::cont::ArrayHandle< dax::Scalar > fieldHandle =
-   dax::cont::make_ArrayHandle(field);
+                                            dax::cont::make_ArrayHandle(field);
 
     dax::cont::ArrayHandle<dax::Scalar> cosineHandle;
 
     std::cout << "Running Cosine worklet" << std::endl;
-    dax::cont::Scheduler< > scheduler;
-    scheduler.Invoke(dax::worklet::Cosine(),fieldHandle, cosineHandle);
+    dax::cont::DispatcherMapField< dax::worklet::Cosine > dispatcher;
+    dispatcher.Invoke(fieldHandle, cosineHandle);
 
     std::cout << "Checking result" << std::endl;
     std::vector<dax::Scalar> cosine(grid->GetNumberOfPoints());

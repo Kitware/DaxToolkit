@@ -43,7 +43,7 @@ public:
   }
 
   /// Set the error message buffer so that running algorithms can report
-  /// errors. This is supposed to be set by the scheduler. This method may be
+  /// errors. This is supposed to be set by the dispatcher. This method may be
   /// replaced as the execution semantics change.
   ///
   DAX_CONT_EXPORT void SetErrorMessageBuffer(

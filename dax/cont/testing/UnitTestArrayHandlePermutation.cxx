@@ -102,8 +102,8 @@ struct TemplatedTests
   ArrayPermHandleType permutation =
       dax::cont::make_ArrayHandlePermutation(keys,values);
 
-  typename ArrayPermHandleType::PortalConstControl permPortal =
-                                      permutation.GetPortalConstControl();
+  typename ArrayPermHandleType::PortalConstExecution permPortal =
+                                      permutation.PrepareForInput();
 
   //now lets try to actually get some values of these permutation arrays
   ValueType correct_value = startingValue;
@@ -126,8 +126,8 @@ struct TemplatedTests
   ArrayPermHandleType permutation =
       dax::cont::make_ArrayHandlePermutation(keys,values);
 
-  typename ArrayPermHandleType::PortalConstControl permPortal =
-                                              permutation.GetPortalConstControl();
+  typename ArrayPermHandleType::PortalConstExecution permPortal =
+                                      permutation.PrepareForInput();
 
   //now lets try to actually get some values of these permutation arrays
   ValueType correct_value = startingValue;

@@ -25,34 +25,72 @@
 
 namespace dax { namespace exec { namespace arg {
 
-template<int Index_, class Invocation>
+/// Given a worklet invocation (dax::internal::Invocation) and an argument
+/// index, finds the executive arg type (the binding class located in
+/// dax::exec::arg that knows how to get and set values between execution
+/// environment arrays and worklet invocations) and the tags associated with
+/// the control signature parameter (things typically like In, Out, Points,
+/// Cells, etc.).
+///
+template<int Index_, typename Invocation>
 struct BindInfo
 {
-  typedef dax::cont::internal::Bindings<Invocation> AllControlBindings;
+  /// A members type that maps from control environment structure to execution
+  /// environment structure.
+  ///
+  typedef typename dax::cont::internal::Bindings<Invocation>::type
+      AllControlBindings;
 private:
-  typedef typename AllControlBindings::template GetType<Index_>::type MyControlBinding;
+  typedef typename AllControlBindings::template GetType<Index_>::type
+      MyControlBinding;
   typedef typename dax::cont::arg::ConceptMapTraits<MyControlBinding> MyTraits;
 public:
+  /// The executive arg type (the binding class located in dax::exec::arg that
+  /// knows how to get and set values between execution environment arrays and
+  /// worklet invocations.
+  ///
   typedef typename MyControlBinding::ExecArg ExecArgType;
+
+  /// The tags associated wtih the control signature parameter (things
+  /// typically like In, Out, Points, Cells, etc.).
+  ///
   typedef typename MyTraits::Tags Tags;
+
   enum{Index=Index_};
 };
 
-//Set ContType to the ControlSignature parameter type that you are
-//searching for. After that you can extract the exec::arg:: object type
-//for example FindBindInfo<dax::cont::arg::Topology,Sig> will get you
-//the info for the first occurance of dax::cont::arg::Topology
-template< class ContType, class Invocation>
+/// Given a control parameter type, find the first occurance of the execution
+/// argument associated with that type. For example,
+/// FindBindInfo<dax::cont::arg::Topology,Invocation>
+/// will get you the information for the first occurance of
+/// dax::cont::arg::Topology.
+///
+template<class ContType, typename Invocation>
 struct FindBindInfo
 {
-  typedef dax::cont::internal::Bindings<Invocation> AllControlBindings;
+  /// A members type that maps from control environment structure to execution
+  /// environment structure.
+  ///
+  typedef typename dax::cont::internal::Bindings<Invocation>::type
+      AllControlBindings;
 private:
-  typedef typename dax::cont::internal::FindBinding<AllControlBindings,ContType>::type Index_;
-  typedef typename AllControlBindings::template GetType<Index_::value>::type MyControlBinding;
+  typedef typename dax::cont::internal::FindBinding<Invocation,ContType>::type
+      Index_;
+  typedef typename AllControlBindings::template GetType<Index_::value>::type
+      MyControlBinding;
   typedef typename dax::cont::arg::ConceptMapTraits<MyControlBinding> MyTraits;
 public:
+  /// The executive arg type (the binding class located in dax::exec::arg that
+  /// knows how to get and set values between execution environment arrays and
+  /// worklet invocations.
+  ///
   typedef typename MyControlBinding::ExecArg ExecArgType;
+
+  /// The tags associated wtih the control signature parameter (things
+  /// typically like In, Out, Points, Cells, etc.).
+  ///
   typedef typename MyTraits::Tags Tags;
+
   enum{Index=Index_::value};
 };
 

@@ -30,7 +30,9 @@ struct BindWorkId
 {
   //can't used BindInfo, since the WorkId has no control side mapping
   //it is only an exec argument
-  typedef dax::cont::internal::Bindings<Invocation> AllControlBindings;
+  typedef typename dax::cont::internal::Bindings<Invocation>::type
+      AllControlBindings;
+
   typedef dax::Id ReturnType;
 
   DAX_CONT_EXPORT BindWorkId(AllControlBindings& daxNotUsed(bindings)) {}
@@ -45,14 +47,9 @@ struct BindWorkId
   DAX_EXEC_EXPORT ReturnType operator()(const IndexType& id,
                               const dax::exec::internal::WorkletBase&)
     {
-    return id.value();
-    }
-
-  DAX_EXEC_EXPORT ReturnType operator()(const dax::Id& id,
-                              const dax::exec::internal::WorkletBase&)
-    {
     return id;
     }
+
 
   DAX_EXEC_EXPORT void SaveExecutionResult(int,
                  const dax::exec::internal::WorkletBase&) const

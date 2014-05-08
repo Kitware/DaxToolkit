@@ -19,7 +19,7 @@
 #include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapField.h>
 #include <dax/cont/UniformGrid.h>
 
 #include <dax/cont/testing/TestingGridGenerator.h>
@@ -58,8 +58,8 @@ struct TestSineWorklet
   dax::cont::ArrayHandle<dax::Scalar> sineHandle;
 
   std::cout << "Running Sine worklet" << std::endl;
-  dax::cont::Scheduler<> scheduler;
-  scheduler.Invoke(dax::worklet::Sine(),fieldHandle, sineHandle);
+  dax::cont::DispatcherMapField< dax::worklet::Sine > dispatcher;
+  dispatcher.Invoke(fieldHandle, sineHandle);
 
   std::cout << "Checking result" << std::endl;
   std::vector<dax::Scalar> sine(grid->GetNumberOfPoints());
@@ -77,7 +77,7 @@ struct TestSineWorklet
   std::cout << "Running Sine worklet on constant ArrayHandle" << std::endl;
   dax::cont::ArrayHandleConstant<dax::Scalar> constantHandle(5.034,
                                                     grid->GetNumberOfPoints());
-  scheduler.Invoke(dax::worklet::Sine(), constantHandle, sineHandle);
+  dispatcher.Invoke( constantHandle, sineHandle );
 
 
   std::cout << "Checking result of constant handle" << std::endl;
@@ -93,7 +93,7 @@ struct TestSineWorklet
     }
 
   std::cout << "Running Sine worklet on constant value" << std::endl;
-  scheduler.Invoke(dax::worklet::Sine(), 5.034, sineHandle);
+  dispatcher.Invoke( 5.034, sineHandle );
 
   std::cout << "Checking result of constant value" << std::endl;
   sineHandle.CopyInto(sine.begin());
@@ -112,7 +112,7 @@ struct TestSineWorklet
   std::cout << "Running Sine worklet on counting ArrayHandle" << std::endl;
   dax::cont::ArrayHandleCounting<dax::Scalar> arrayCounting(5.034,grid->GetNumberOfPoints());
   dax::cont::ArrayHandle<dax::Scalar> countingOut;
-  scheduler.Invoke(dax::worklet::Sine(), arrayCounting, countingOut);
+  dispatcher.Invoke( arrayCounting, countingOut );
 
   std::cout << "Checking result of counting handle" << std::endl;
   std::vector<dax::Scalar> sineId(grid->GetNumberOfPoints());

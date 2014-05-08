@@ -19,22 +19,17 @@
 
 #include <dax/worklet/MarchingCubes.h>
 
-#include <math.h>
-#include <fstream>
 #include <iostream>
-#include <sstream>
-#include <string>
+
 #include <dax/CellTag.h>
 #include <dax/CellTraits.h>
 #include <dax/TypeTraits.h>
 
-#include <dax/cont/ArrayContainerControlBasic.h>
 #include <dax/cont/ArrayHandle.h>
-#include <dax/cont/GenerateInterpolatedCells.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherGenerateInterpolatedCells.h>
+#include <dax/cont/DispatcherMapCell.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
-#include <dax/cont/VectorOperations.h>
 
 #include <dax/cont/testing/Testing.h>
 #include <vector>
@@ -85,58 +80,54 @@ struct TestMarchingCubesWorklet
     try
       {
       typedef dax::cont::ArrayHandle<dax::Id, ArrayContainer, DeviceAdapter>
-        ClassifyResultType;
-      typedef dax::cont::GenerateInterpolatedCells<
-        dax::worklet::MarchingCubesGenerate,ClassifyResultType> GenerateIC;
+                    CountHandleType;
 
-      //construct the scheduler that will execute all the worklets
-      dax::cont::Scheduler<DeviceAdapter> scheduler;
-
-      //construct the two worklets that will be used to do the marching cubes
-      dax::worklet::MarchingCubesClassify classifyWorklet(isoValue);
-      dax::worklet::MarchingCubesGenerate generateWorklet(isoValue);
-
+      //construct the two dispatcher that will be used to do the marching cubes
+      typedef  dax::cont::DispatcherMapCell<
+                          dax::worklet::MarchingCubesCount > CellDispatcher;
+      typedef  dax::cont::DispatcherGenerateInterpolatedCells<
+                  dax::worklet::MarchingCubesGenerate > InterpolatedDispatcher;
 
       //run the first step
-      ClassifyResultType classification; //array handle for the first step classification
-      scheduler.Invoke(classifyWorklet,
-                       inGrid.GetRealGrid(),
-                       fieldHandle,
-                       classification);
+      CountHandleType count; //array handle for the first step count
+      CellDispatcher cellDispatcher( (dax::worklet::MarchingCubesCount(isoValue)) );
+      cellDispatcher.Invoke( inGrid.GetRealGrid(),
+                             fieldHandle,
+                             count);
 
       //construct the topology generation worklet
-      GenerateIC generate(classification,generateWorklet);
-      generate.SetRemoveDuplicatePoints(false);
-      //so we can use the classification again
-      generate.SetReleaseClassification(false);
+      InterpolatedDispatcher interpDispatcher( count,
+                              dax::worklet::MarchingCubesGenerate(isoValue) );
+
+      interpDispatcher.SetRemoveDuplicatePoints(false);
+      //so we can use the count again
+      interpDispatcher.SetReleaseCount(false);
 
       //run the second step
-      scheduler.Invoke(generate,
-                       inGrid.GetRealGrid(),
-                       outGrid,
-                       fieldHandle);
+      interpDispatcher.Invoke(inGrid.GetRealGrid(),
+                              outGrid,
+                              fieldHandle);
 
-    const dax::Id valid_num_points =
-          dax::CellTraits<CellType>::NUM_VERTICES * outGrid.GetNumberOfCells();
-    DAX_TEST_ASSERT(valid_num_points==outGrid.GetNumberOfPoints(),
-                    "Incorrect number of points in the output grid when not merging");
+      const dax::Id valid_num_points =
+            dax::CellTraits<CellType>::NUM_VERTICES * outGrid.GetNumberOfCells();
+      DAX_TEST_ASSERT(valid_num_points==outGrid.GetNumberOfPoints(),
+                      "Incorrect number of points in the output grid when not merging");
 
-    generate.SetRemoveDuplicatePoints(true);
-    //run the second step again with point merging
+      interpDispatcher.SetRemoveDuplicatePoints(true);
+      //run the second step again with point merging
 
-    UnstructuredGridType secondOutGrid;
-    scheduler.Invoke(generate,
-                     inGrid.GetRealGrid(),
-                     secondOutGrid,
-                     fieldHandle);
+      UnstructuredGridType secondOutGrid;
+      interpDispatcher.Invoke(inGrid.GetRealGrid(),
+                              secondOutGrid,
+                              fieldHandle);
 
-    //45 is the number I got from running the algorithm by hand and seeing
-    //the number of unique points
-    const dax::Id NumberOfUniquePoints = 45;
-    DAX_TEST_ASSERT(NumberOfUniquePoints == secondOutGrid.GetNumberOfPoints() &&
-                    NumberOfUniquePoints != valid_num_points,
-        "We didn't merge to the correct number of points");
-    }
+      //45 is the number I got from running the algorithm by hand and seeing
+      //the number of unique points
+      const dax::Id NumberOfUniquePoints = 45;
+      DAX_TEST_ASSERT(NumberOfUniquePoints == secondOutGrid.GetNumberOfPoints() &&
+                      NumberOfUniquePoints != valid_num_points,
+          "We didn't merge to the correct number of points");
+      }
     catch (dax::cont::ErrorControl error)
       {
       std::cout << "Got error: " << error.GetMessage() << std::endl;

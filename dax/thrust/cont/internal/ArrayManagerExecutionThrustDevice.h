@@ -17,8 +17,10 @@
 #define __dax_thrust_cont_internal_ArrayManagerExecutionThrustDevice_h
 
 #include <dax/thrust/cont/internal/CheckThrustBackend.h>
+#include <dax/thrust/cont/internal/UninitializedAllocator.h>
 
 #include <dax/cont/ArrayContainerControl.h>
+#include <dax/cont/ErrorControlOutOfMemory.h>
 
 #include <dax/exec/internal/ArrayPortalFromIterators.h>
 
@@ -59,6 +61,7 @@ namespace internal {
 /// as an OpenMP or TBB backend), then the device adapter should just use
 /// ArrayManagerExecutionThrustShare.
 ///
+
 template<typename T, class ArrayContainerControlTag>
 class ArrayManagerExecutionThrustDevice
 {
@@ -86,16 +89,24 @@ public:
   template<class PortalControl>
   DAX_CONT_EXPORT void LoadDataForInput(PortalControl arrayPortal)
   {
-    this->Array.assign(arrayPortal.GetIteratorBegin(),
-                       arrayPortal.GetIteratorEnd());
+    try
+      {
+      this->Array.assign(arrayPortal.GetIteratorBegin(),
+                         arrayPortal.GetIteratorEnd());
+      }
+    catch (std::bad_alloc error)
+      {
+      throw dax::cont::ErrorControlOutOfMemory(error.what());
+      }
   }
 
   /// Allocates the appropriate size of the array and copies the given data
   /// into the array.
   ///
-  DAX_CONT_EXPORT void LoadDataForInPlace(ContainerType &controlArray)
+  template<class PortalControl>
+  DAX_CONT_EXPORT void LoadDataForInPlace(PortalControl arrayPortal)
   {
-    this->LoadDataForInput(controlArray.GetPortalConst());
+    this->LoadDataForInput(arrayPortal);
   }
 
   /// Allocates the array to the given size.
@@ -104,9 +115,14 @@ public:
       ContainerType &daxNotUsed(container),
       dax::Id numberOfValues)
   {
-    // This call is a bit wasteful in that it sets all the values of the
-    // array to the default value.
-    this->Array.resize(numberOfValues);
+    try
+      {
+      this->Array.resize(numberOfValues);
+      }
+    catch (std::bad_alloc error)
+      {
+      throw dax::cont::ErrorControlOutOfMemory(error.what());
+      }
   }
 
   /// Copies the data currently in the device array into the given iterators.
@@ -158,29 +174,6 @@ public:
     this->Array.shrink_to_fit();
   }
 
-  // These features are expected by thrust device adapters to run thrust
-  // algorithms (see DeviceAdapterAlgorithmThrust.h).
-
-  typedef ::thrust::device_ptr<ValueType> ThrustIteratorType;
-  typedef ::thrust::device_ptr<const ValueType> ThrustIteratorConstType;
-
-  DAX_CONT_EXPORT static ThrustIteratorType
-  ThrustIteratorBegin(PortalType portal) {
-    return ::thrust::device_ptr<ValueType>(portal.GetIteratorBegin());
-  }
-  DAX_CONT_EXPORT static ThrustIteratorType
-  ThrustIteratorEnd(PortalType portal) {
-    return ::thrust::device_ptr<ValueType>(portal.GetIteratorEnd());
-  }
-  DAX_CONT_EXPORT static ThrustIteratorConstType
-  ThrustIteratorBegin(PortalConstType portal) {
-    return ::thrust::device_ptr<const ValueType>(portal.GetIteratorBegin());
-  }
-  DAX_CONT_EXPORT static ThrustIteratorConstType
-  ThrustIteratorEnd(PortalConstType portal) {
-    return ::thrust::device_ptr<const ValueType>(portal.GetIteratorEnd());
-  }
-
 private:
   // Not implemented
   ArrayManagerExecutionThrustDevice(
@@ -188,7 +181,8 @@ private:
   void operator=(
       ArrayManagerExecutionThrustDevice<T, ArrayContainerControlTag> &);
 
-  ::thrust::device_vector<ValueType> Array;
+  ::thrust::device_vector<ValueType,
+      dax::thrust::cont::internal::UninitializedAllocator<ValueType> > Array;
 };
 
 }

@@ -45,14 +45,14 @@ struct CellTraits
   ///
   const static int NUM_VERTICES = 8;
 
-  /// This defines the topological dimensions of the class. 3 for polyhedra,
-  /// 2 for polygons, 1 for lines, 0 for points.
+  /// This defines the topological dimensions of the cell type. 3 for
+  /// polyhedra, 2 for polygons, 1 for lines, 0 for points.
   ///
   const static int TOPOLOGICAL_DIMENSIONS = 3;
 
   /// This tag is typedef'ed to
   /// dax::CellTopologicalDimensionsTag<TOPOLOGICAL_DIMENSIONS>. This provides
-  /// a convienient way to overload a function based on topological dimensions
+  /// a convenient way to overload a function based on topological dimensions
   /// (which is usually more efficient than conditionals).
   ///
   typedef dax::CellTopologicalDimensionsTag<TOPOLOGICAL_DIMENSIONS>

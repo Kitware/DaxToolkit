@@ -28,7 +28,14 @@ namespace opengl {
 
 static void SetCudaGLDevice(int id)
 {
+//With Cuda 5.0 cudaGLSetGLDevice is deprecated and shouldn't be needed
+//anymore. But it seems that macs still require you to call it or we
+//segfault
+#ifdef __APPLE__
   cudaError_t cError = cudaGLSetGLDevice(id);
+#else
+  cudaError_t cError = cudaSetDevice(id);
+#endif
   if(cError != cudaSuccess)
     {
     std::string cuda_error_msg("Unable to setup cuda/opengl interop. Error: ");

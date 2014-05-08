@@ -13,8 +13,13 @@
 ##  the U.S. Government retains certain rights in this software.
 ##
 ##=============================================================================
-
 cmake_minimum_required(VERSION 2.8.10)
+
+#setup policy rules for CMake 3.0 while we have a minimum required of 2.8.X
+if(POLICY CMP0025)
+  cmake_policy(SET CMP0025 NEW)#Clang and AppleClang are different compiler ids
+endif()
+
 project (Dax)
 
 set(Dax_MAJOR_VERSION 0)
@@ -33,6 +38,16 @@ set(Dax_REQUIRED_THRUST_VERSION 1.4.0)
 include(CMake/DaxMacros.cmake)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Dax_SOURCE_DIR}/CMake)
+
+#-----------------------------------------------------------------------------
+# Check for Cxx11 support.
+option(DAX_FORCE_ANSI
+ "Turn off compiling any features not compatible with ISO-C++98 (ANSI)." OFF)
+if (NOT DAX_FORCE_ANSI)
+  include(CMake/CheckCXX11Features.cmake)
+else (NOT DAX_FORCE_ANSI)
+  set(DAX_NO_VARIADIC_TEMPLATE TRUE)
+endif (NOT DAX_FORCE_ANSI)
 
 #-----------------------------------------------------------------------------
 # Add supplemental compiler warnings, and GCC visibility support.

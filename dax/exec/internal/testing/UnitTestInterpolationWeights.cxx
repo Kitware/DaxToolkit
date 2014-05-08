@@ -30,7 +30,7 @@ void CheckVertexWeights(CellTag)
   std::cout << "  Checking weights of vertices." << std::endl;
 
   const dax::Id NUM_VERTICES = dax::CellTraits<CellTag>::NUM_VERTICES;
-  dax::Tuple<dax::Vector3,NUM_VERTICES> vertexParametricCoords =
+  dax::exec::CellField<dax::Vector3,CellTag> vertexParametricCoords =
       dax::exec::ParametricCoordinates<CellTag>::Vertex();
 
   for (dax::Id vertexIndex = 0; vertexIndex < NUM_VERTICES; vertexIndex++)

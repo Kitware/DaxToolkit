@@ -19,19 +19,14 @@
 
 #include <dax/worklet/Tetrahedralize.h>
 
-#include <math.h>
-#include <fstream>
 #include <iostream>
-#include <sstream>
-#include <string>
 #include <vector>
 
 #include <dax/CellTag.h>
 #include <dax/TypeTraits.h>
 #include <dax/cont/ArrayHandle.h>
-
-#include <dax/cont/GenerateTopology.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/ArrayHandleConstant.h>
+#include <dax/cont/DispatcherGenerateTopology.h>
 #include <dax/cont/UniformGrid.h>
 #include <dax/cont/UnstructuredGrid.h>
 #include <dax/cont/testing/Testing.h>
@@ -104,22 +99,21 @@ struct TestTetrahedralizeWorklet
             dax::cont::make_ArrayHandle(cellConnections);
     try
       {
-      typedef dax::cont::GenerateTopology<dax::worklet::Tetrahedralize,
-                                          dax::cont::ArrayHandleConstant<dax::Id>
-                                          > GenerateT;
-      typedef typename GenerateT::ClassifyResultType  ClassifyResultType;
+      typedef dax::cont::DispatcherGenerateTopology<
+                            dax::worklet::Tetrahedralize,
+                            dax::cont::ArrayHandleConstant<dax::Id>
+                            > DispatcherTopology;
+      typedef dax::cont::ArrayHandleConstant<dax::Id> CountHandleType;
 
-      dax::cont::Scheduler<> scheduler;
-      ClassifyResultType classification(5,inGrid.GetNumberOfCells());
+      CountHandleType count(5,inGrid.GetNumberOfCells());
 
-      dax::worklet::Tetrahedralize tetWorklet;
-      GenerateT generateTets(classification,tetWorklet);
+      DispatcherTopology dispatcher(count);
 
       //don't remove duplicate points.
-      generateTets.SetRemoveDuplicatePoints(false);
+      dispatcher.SetRemoveDuplicatePoints(false);
 
       outGrid.SetCellConnections(cellHandle);
-      scheduler.Invoke(generateTets,inGrid,outGrid);
+      dispatcher.Invoke(inGrid,outGrid);
 
       }
     catch (dax::cont::ErrorControl error)

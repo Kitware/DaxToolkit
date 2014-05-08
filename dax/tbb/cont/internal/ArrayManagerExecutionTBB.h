@@ -19,7 +19,7 @@
 #include <dax/tbb/cont/internal/DeviceAdapterTagTBB.h>
 
 #include <dax/cont/internal/ArrayManagerExecution.h>
-#include <dax/thrust/cont/internal/ArrayManagerExecutionThrustShare.h>
+#include <dax/cont/internal/ArrayManagerExecutionShareWithControl.h>
 
 // These must be placed in the dax::cont::internal namespace so that
 // the template can be found.
@@ -31,18 +31,9 @@ namespace internal {
 template <typename T, class ArrayContainerTag>
 class ArrayManagerExecution
     <T, ArrayContainerTag, dax::tbb::cont::DeviceAdapterTagTBB>
-    : public dax::thrust::cont::internal::ArrayManagerExecutionThrustShare
+    : public dax::cont::internal::ArrayManagerExecutionShareWithControl
         <T, ArrayContainerTag>
 {
-public:
-  typedef dax::thrust::cont::internal::ArrayManagerExecutionThrustShare
-      <T, ArrayContainerTag> Superclass;
-  typedef typename Superclass::ValueType ValueType;
-  typedef typename Superclass::PortalType PortalType;
-  typedef typename Superclass::PortalConstType PortalConstType;
-
-  typedef typename Superclass::ThrustIteratorType ThrustIteratorType;
-  typedef typename Superclass::ThrustIteratorConstType ThrustIteratorConstType;
 };
 
 }

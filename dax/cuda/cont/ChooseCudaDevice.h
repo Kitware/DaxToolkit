@@ -37,7 +37,7 @@ this->Major = prop.major;
 this->MemorySize = prop.totalGlobalMem;
 this->Performance = prop.multiProcessorCount *
                     prop.maxThreadsPerMultiProcessor *
-                    prop.clockRate;
+                    (prop.clockRate / 100000.0f);
 
 //9999 is equal to emulation make sure it is a super bad device
 if(this->Major >= 9999)
@@ -92,7 +92,7 @@ int Performance;
 static int FindFastestDeviceId()
 {
   //get the number of devices and store information
-  int numberOfDevices;
+  int numberOfDevices=0;
   cudaGetDeviceCount(&numberOfDevices);
 
   std::vector<compute_info> devices;

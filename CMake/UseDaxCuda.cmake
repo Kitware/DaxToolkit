@@ -61,7 +61,7 @@ endif (Dax_Cuda_FOUND)
 if (Dax_Cuda_FOUND)
   cuda_include_directories(
     ${Boost_INCLUDE_DIRS}
-    ${THRUST_INCLUDE_DIR}
+    ${THRUST_INCLUDE_DIRS}
     ${Dax_INCLUDE_DIRS}
     )
   set(Dax_Cuda_initialize_complete TRUE)

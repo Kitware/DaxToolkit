@@ -20,11 +20,9 @@
 #include <dax/worklet/CellGradient.h>
 
 #include <dax/CellTraits.h>
-#include <dax/Types.h>
-#include <dax/VectorTraits.h>
 #include <dax/cont/ArrayHandle.h>
 #include <dax/cont/DeviceAdapter.h>
-#include <dax/cont/Scheduler.h>
+#include <dax/cont/DispatcherMapCell.h>
 
 #include <vector>
 
@@ -100,9 +98,8 @@ struct TestCellGradientWorklet
     dax::cont::ArrayHandle<dax::Vector3> gradientHandle;
 
     std::cout << "Running CellGradient worklet" << std::endl;
-    dax::cont::Scheduler< > scheduler;
-    scheduler.Invoke(dax::worklet::CellGradient(),
-                    grid.GetRealGrid(),
+    dax::cont::DispatcherMapCell< dax::worklet::CellGradient > dispatcher;
+    dispatcher.Invoke(grid.GetRealGrid(),
                     grid->GetPointCoordinates(),
                     fieldHandle,
                     gradientHandle);

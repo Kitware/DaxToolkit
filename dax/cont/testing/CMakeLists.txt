@@ -28,13 +28,18 @@ set(unit_tests
   UnitTestArrayHandle.cxx
   UnitTestArrayHandleConstant.cxx
   UnitTestArrayHandleCounting.cxx
+  UnitTestArrayHandleImplicit.cxx
   UnitTestArrayHandlePermutation.cxx
+  UnitTestArrayHandleTransform.cxx
   UnitTestBuildReductionMap.cxx
   UnitTestContTesting.cxx
   UnitTestDeviceAdapterAlgorithmDependency.cxx
   UnitTestDeviceAdapterAlgorithmGeneral.cxx
   UnitTestDeviceAdapterSerial.cxx
-  UnitTestSchedule.cxx
+  UnitTestDispatch.cxx
+  UnitTestGenerateKeysValuesPermutation.cxx
+  UnitTestGenerateTopologyPermutation.cxx
+  UnitTestInterpolatedCellPermutation.cxx
   UnitTestTimer.cxx
   UnitTestUniformGrid.cxx
   UnitTestUnstructuredGrid.cxx

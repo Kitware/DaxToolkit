@@ -36,7 +36,7 @@ public:
   typedef typename ExecArgType::CellTag const& ReturnType;
   typedef typename ExecArgType::CellTag SaveType;
 
-   DAX_CONT_EXPORT BindCellTag(AllControlBindings& daxNotUsed(bindings)):
+   DAX_CONT_EXPORT BindCellTag(const AllControlBindings& daxNotUsed(bindings)):
     CellTag()
     {}
 

@@ -38,7 +38,7 @@ public:
   typedef dax::exec::arg::unspecified_type ExecArg;
 
   /// Get representation of argument value for the execution environment.
-  ExecArg GetExecArg();
+  ExecArg GetExecArg() const;
 
   /// Tag representing the domain of the data.  Should be the same as one
   /// of the domain tags in dax/cont/sig/Tag.h.

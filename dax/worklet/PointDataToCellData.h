@@ -29,16 +29,15 @@ class PointDataToCellData : public dax::exec::WorkletMapCell
 public:
 
   typedef void ControlSignature(Topology,Field(Point), Field(Out));
-  typedef _3 ExecutionSignature(_1,_2);
+  typedef _3 ExecutionSignature(_2);
 
   template<class CellTag>
   DAX_EXEC_EXPORT
   dax::Scalar operator()(
-      CellTag cellTag,
       const dax::exec::CellField<dax::Scalar,CellTag> &pointField) const
   {
     dax::Vector3 center =  dax::exec::ParametricCoordinates<CellTag>::Center();
-    return dax::exec::CellInterpolate(pointField,center,cellTag);
+    return dax::exec::CellInterpolate(pointField,center,CellTag());
   }
 };
 }

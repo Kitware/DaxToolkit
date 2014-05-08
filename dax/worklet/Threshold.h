@@ -67,7 +67,7 @@ struct ThresholdFunction<T,dax::TypeTraitsVectorTag> {
 
 
 template<typename ValueType>
-class ThresholdClassify : public dax::exec::WorkletMapCell
+class ThresholdCount : public dax::exec::WorkletMapCell
 {
 public:
   typedef void ControlSignature(Topology,Field(Point), Field(Out));
@@ -76,7 +76,7 @@ public:
 
 
   DAX_CONT_EXPORT
-  ThresholdClassify(ValueType thresholdMin, ValueType thresholdMax)
+  ThresholdCount(ValueType thresholdMin, ValueType thresholdMax)
     : ThresholdMin(thresholdMin), ThresholdMax(thresholdMax) {  }
 
   template<class CellTag>
