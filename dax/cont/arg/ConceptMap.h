@@ -62,8 +62,6 @@ class ConceptMapTraits< ConceptMap<C(T), A> >
 
   typedef typename boost::decay<T>::type DecayedT;
 
-  BOOST_STATIC_ASSERT( boost::is_same<T,DecayedT>::value );
-
 public:
   /// The ConceptMap type decomposed by these traits.
   typedef ConceptMap<C(DecayedT), A> Map;
