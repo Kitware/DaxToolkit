@@ -113,7 +113,7 @@ struct MPLIntToArg
   template<typename T>
   struct apply
   {
-    typedef typename ::arg::Arg<T::value> type;
+    typedef typename arg::Arg<T::value> type;
   };
 };
 
