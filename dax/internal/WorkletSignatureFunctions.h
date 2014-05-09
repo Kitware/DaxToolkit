@@ -24,6 +24,7 @@
 # include <boost/function_types/components.hpp>
 # include <boost/function_types/parameter_types.hpp>
 
+# include <boost/type_traits/decay.hpp>
 # include <boost/type_traits/is_same.hpp>
 
 # include <boost/mpl/at.hpp>
@@ -40,8 +41,10 @@ namespace detail {
 #   define _arg_enum___(x)      BOOST_PP_ENUM_SHIFTED(BOOST_PP_ITERATION(), _arg_enum_, x)
 #   define _arg_enum_(z,n,x)    x(n)
 #   define _MPL_ARG_(n) typename boost::mpl::at_c<T,n>::type
+#   define _DECAY_ARG_(n) typename boost::decay< typename boost::mpl::at_c<T,n>::type >::type
 
     template<int N, typename T> struct BuildSig;
+    template<int N, typename T> struct BuildDecaySig;
 
 #   define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 11, <dax/internal/WorkletSignatureFunctions.h>))
 #   include BOOST_PP_ITERATE()
@@ -49,15 +52,24 @@ namespace detail {
 #   undef _arg_enum___
 #   undef _arg_enum_
 #   undef _MPL_ARG_
+#   undef _DECAY_ARG_
+
+
+  template<typename Sig>
+  struct ConvertSigToBoost
+  {
+    typedef boost::function_types::components< Sig > Signature;
+    typedef boost::mpl::size<Signature>   SigSize;
+  };
 
   template<typename Functor>
   struct ConvertToBoost
   {
-    typedef boost::function_types::components<
-              typename Functor::ControlSignature> ControlSignature;
+    typedef ConvertSigToBoost<typename Functor::ControlSignature> ContToBoost;
+    typedef ConvertSigToBoost<typename Functor::ExecutionSignature> ExecToBoost;
 
-    typedef boost::function_types::components<
-              typename Functor::ExecutionSignature> ExecutionSignature;
+    typedef typename ContToBoost::Signature ControlSignature;
+    typedef typename ExecToBoost::Signature ExecutionSignature;
 
     typedef boost::mpl::size<ControlSignature>   ContSize;
     typedef boost::mpl::size<ExecutionSignature> ExecSize;
@@ -93,6 +105,14 @@ struct BuildSignature
 {
   typedef boost::mpl::size<T> Size;
   typedef typename dax::internal::detail::BuildSig<Size::value,T>::type type;
+};
+
+//Control side only structure
+template<typename T>
+struct BuildDecayedSignature
+{
+  typedef boost::mpl::size<T> Size;
+  typedef typename dax::internal::detail::BuildDecaySig<Size::value,T>::type type;
 };
 
 
@@ -138,6 +158,11 @@ public:
 
 template<typename T> struct BuildSig<BOOST_PP_ITERATION(), T>
   {
-  typedef typename boost::mpl::at_c<T,0>::type type(_arg_enum___(_MPL_ARG_));
+  typedef typename boost::mpl::at_c<T,0>::type type( _arg_enum___(_MPL_ARG_));
+  };
+
+template<typename T> struct BuildDecaySig<BOOST_PP_ITERATION(), T>
+  {
+  typedef typename boost::mpl::at_c<T,0>::type type( _arg_enum___(_DECAY_ARG_));
   };
 #endif

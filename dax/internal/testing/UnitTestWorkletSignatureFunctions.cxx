@@ -162,6 +162,9 @@ struct verifyFunctor
   typedef dax::internal::BuildSignature<typename ModifiedType::ControlSignature> NewContSig;
   typedef dax::internal::BuildSignature<typename ModifiedType::ExecutionSignature> NewExecSig;
 
+  typedef dax::internal::BuildDecayedSignature<typename ModifiedType::ControlSignature> DecayedCSig;
+  typedef dax::internal::BuildDecayedSignature<typename ModifiedType::ExecutionSignature> DecayedESig;
+
   typedef ExtendedFunctor<Functor,NewContSig,NewExecSig> RealFunctor;
 
   typedef dax::internal::detail::ConvertToBoost<RealFunctor> BoostExtendFunctor;
