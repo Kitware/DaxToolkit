@@ -42,8 +42,13 @@ const Type5 Arg5(4, 5, 6);
 
 typedef dax::Id (*Type6)(Type3);
 
-dax::Id Arg6(Type3)
- {return 42;}
+dax::Id Arg6(Type3 t3) {return t3.size();}
+
+template<typename T>
+struct Type8Template { typedef dax::Id type(T); };
+typedef dax::Id (*Type8)( Type8Template<Type3>::type );
+
+dax::Id Arg8( Type8Template<Type3>::type t) {return t(Type3());}
 
 struct ThreeArgFunctor {
   void operator()(const Type1 &a1, const Type2 &a2, const Type3 &a3) const
@@ -191,6 +196,14 @@ struct FunctionArgFunctor {
     std::cout << "In function arg functor." << std::endl;
 
     DAX_TEST_ASSERT(a6(a3) == Arg6(a3), "Arg 6 incorrect.");
+  }
+};
+
+struct FunctionArgFunctor2 {
+  void operator()(Type8 t8 ) const
+  {
+    std::cout << "In function arg functor." << std::endl;
+    t8(Arg6);
   }
 };
 
@@ -349,6 +362,11 @@ void TestParameterPack()
 
   dax::internal::ParameterPack<Type3,Type6> params_with_function_sig =
                             dax::internal::make_ParameterPack(Arg3, Arg6);
+  params_with_function_sig.InvokeCont( FunctionArgFunctor() );
+
+  dax::internal::ParameterPack<Type8> params_with_function_sig2 =
+                            dax::internal::make_ParameterPack(Arg8);
+  params_with_function_sig2.InvokeCont(FunctionArgFunctor2());
 }
 
 } // anonymous namespace
