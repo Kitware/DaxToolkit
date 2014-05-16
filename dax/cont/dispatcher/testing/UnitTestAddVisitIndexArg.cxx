@@ -17,6 +17,7 @@
 #define DAX_ARRAY_CONTAINER_CONTROL DAX_ARRAY_CONTAINER_CONTROL_BASIC
 #define DAX_DEVICE_ADAPTER DAX_DEVICE_ADAPTER_SERIAL
 
+#include <dax/cont/arg/ImplementedConceptMaps.h>
 #include <dax/cont/DeviceAdapter.h>
 
 #include <boost/function_types/components.hpp>
@@ -74,7 +75,7 @@ struct WithoutVisitIndexWorklet : public dax::exec::WorkletGenerateTopology
 
 void AddVisitIndex()
 {
-  typedef ::WithVisitIndexWorklet Worklet;
+  typedef WithVisitIndexWorklet Worklet;
   typedef dax::cont::DeviceAdapterTagSerial DeviceAdapterTag;
   typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag> Algorithm;
 
@@ -91,7 +92,7 @@ void AddVisitIndex()
 
   //verify that when we don't want the visit index arg that the field
   //is being filled be a single dax::id, not an array handle
-  typedef dax::cont::dispatcher::AddVisitIndexArg< ::WithoutVisitIndexWorklet,
+  typedef dax::cont::dispatcher::AddVisitIndexArg< WithoutVisitIndexWorklet,
                                                   Algorithm,
                                                   IdHandleType> NoVisitIndexType;
   typedef NoVisitIndexType::VisitIndexArgType NoIndexType;
@@ -100,7 +101,7 @@ void AddVisitIndex()
 
   //next step is to verify that the worklet we created has an extra
   //control signature and a modifed execution signature.
-  typedef ::ConvertToBoost<VisitIndexType::DerivedWorkletType> ModifiedType;
+  typedef ConvertToBoost<VisitIndexType::DerivedWorkletType> ModifiedType;
 
   typedef ModifiedType::ControlSignature NewContSig;
   typedef ModifiedType::ExecutionSignature NewExecSig;

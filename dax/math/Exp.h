@@ -20,6 +20,15 @@
 
 #include <dax/internal/MathSystemFunctions.h>
 
+
+#if _WIN32 && !defined  DAX_CUDA_COMPILATION
+#include <boost/math/special_functions/cbrt.hpp>
+#include <boost/math/special_functions/expm1.hpp>
+#include <boost/math/special_functions/log1p.hpp>
+#define DAX_USE_BOOST_MATH
+
+#endif
+
 namespace dax {
 namespace math {
 
@@ -74,16 +83,22 @@ DAX_EXEC_CONT_EXPORT dax::Vector4 RSqrt(dax::Vector4 x) {
 /// Compute the cube root of \p x.
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar Cbrt(dax::Scalar x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(cbrt)>(x);
+#ifdef DAX_USE_BOOST_MATH
+  //windows doesn't have any of the c99 math functions
+  return boost::math::cbrt(x);
+#else
+  return DAX_SYS_MATH_FUNCTION(cbrt)(x);
+#endif
 }
+
 DAX_EXEC_CONT_EXPORT dax::Vector2 Cbrt(dax::Vector2 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(cbrt)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Cbrt>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector3 Cbrt(dax::Vector3 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(cbrt)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Cbrt>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector4 Cbrt(dax::Vector4 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(cbrt)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Cbrt>(x);
 }
 
 //-----------------------------------------------------------------------------
@@ -128,32 +143,43 @@ DAX_EXEC_CONT_EXPORT dax::Vector4 Exp(dax::Vector4 x) {
 /// Computes 2**\p x, the base-2 exponential of \p x.
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar Exp2(dax::Scalar x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(exp2)>(x);
+#ifdef _WIN32
+  //windows doesn't have any of the c99 math functions
+  return dax::math::Pow(2,x);
+#else
+  //this will call the proper function for cuda and unix/mac serial
+  return DAX_SYS_MATH_FUNCTION(exp2)(x);
+#endif
 }
 DAX_EXEC_CONT_EXPORT dax::Vector2 Exp2(dax::Vector2 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(exp2)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Exp2>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector3 Exp2(dax::Vector3 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(exp2)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Exp2>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector4 Exp2(dax::Vector4 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(exp2)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Exp2>(x);
 }
 
 /// Computes (e**\p x) - 1, the of base-e exponental of \p x then minus 1. The
 /// accuracy of this function is good even for very small values of x.
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar ExpM1(dax::Scalar x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(expm1)>(x);
+#ifdef DAX_USE_BOOST_MATH
+  //windows doesn't have any of the c99 math functions
+  return boost::math::expm1(x);
+#else
+  return DAX_SYS_MATH_FUNCTION(expm1)(x);
+#endif
 }
 DAX_EXEC_CONT_EXPORT dax::Vector2 ExpM1(dax::Vector2 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(expm1)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::ExpM1>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector3 ExpM1(dax::Vector3 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(expm1)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::ExpM1>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector4 ExpM1(dax::Vector4 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(expm1)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::ExpM1>(x);
 }
 
 //-----------------------------------------------------------------------------
@@ -195,16 +221,23 @@ DAX_EXEC_CONT_EXPORT dax::Vector4 Log(dax::Vector4 x) {
 /// Computes the logarithm base 2 of \p x.
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar Log2(dax::Scalar x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(log2)>(x);
+#ifdef _WIN32
+  //windows and boost don't provide log2
+  //0.6931471805599453 is the constant value of log(2)
+  const dax::Scalar log2v(0.6931471805599453);
+  return dax::math::Log( x ) / log2v;
+#else
+  return DAX_SYS_MATH_FUNCTION(log2)(x);
+#endif
 }
 DAX_EXEC_CONT_EXPORT dax::Vector2 Log2(dax::Vector2 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(log2)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Log2>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector3 Log2(dax::Vector3 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(log2)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Log2>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector4 Log2(dax::Vector4 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(log2)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Log2>(x);
 }
 
 /// Computes the logarithm base 10 of \p x.
@@ -225,19 +258,28 @@ DAX_EXEC_CONT_EXPORT dax::Vector4 Log10(dax::Vector4 x) {
 /// Computes the value of log(1+x) accurately for very small values of x.
 ///
 DAX_EXEC_CONT_EXPORT dax::Scalar Log1P(dax::Scalar x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(log1p)>(x);
+#ifdef DAX_USE_BOOST_MATH
+  //windows doesn't have any of the c99 math functions
+  return boost::math::log1p(x);
+#else
+  return DAX_SYS_MATH_FUNCTION(log1p)(x);
+#endif  
 }
 DAX_EXEC_CONT_EXPORT dax::Vector2 Log1P(dax::Vector2 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(log1p)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Log1P>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector3 Log1P(dax::Vector3 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(log1p)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Log1P>(x);
 }
 DAX_EXEC_CONT_EXPORT dax::Vector4 Log1P(dax::Vector4 x) {
-  return dax::internal::SysMathVectorCall<DAX_SYS_MATH_FUNCTION(log1p)>(x);
+  return dax::internal::SysMathVectorCall<dax::math::Log1P>(x);
 }
 
 }
 } // dax::math
+
+#ifdef DAX_USE_BOOST_MATH
+#undef DAX_USE_BOOST_MATH
+#endif
 
 #endif //__dax_math_Exp_h

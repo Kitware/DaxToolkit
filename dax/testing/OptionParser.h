@@ -214,14 +214,18 @@
 #ifndef OPTIONPARSER_H_
 #define OPTIONPARSER_H_
 
+#if defined(_WIN32) && defined(_MSC_VER)
+#include <intrin.h>
+#endif
+
+
 namespace dax { namespace testing {
 
 /** @brief The namespace of The Lean Mean C++ Option Parser. */
 namespace option
 {
 
-#ifdef _MSC_VER
-#include <intrin.h>
+#if defined(_WIN32) && defined(_MSC_VER)
 #pragma intrinsic(_BitScanReverse)
 struct MSC_Builtin_CLZ
 {

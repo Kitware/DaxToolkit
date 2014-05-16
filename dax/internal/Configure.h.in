@@ -39,6 +39,8 @@
 #define DAX_SIZE_LONG @DAX_SIZE_LONG@
 #define DAX_SIZE_LONG_LONG @DAX_SIZE_LONG_LONG@
 
+/// Alignment requirements are prescribed by CUDA on device (Table B-1 in NVIDIA
+/// CUDA C Programming Guide 4.0)
 #ifdef DAX_USE_DOUBLE_PRECISION
 # ifndef DAX_SIZE_SCALAR
 #  define DAX_SIZE_SCALAR DAX_SIZE_DOUBLE
@@ -70,6 +72,17 @@
 # ifndef DAX_SIZE_ID
 #  define DAX_SIZE_ID 4
 # endif
+#endif
+
+#if defined(_WIN32) && defined(_MSC_VER)
+//if we are on windows with visual studio compiler we have some warnings we
+//need to suppress
+
+# pragma warning( disable : 4068 ) //disable warning that pragma are unsupported
+# pragma warning( disable : 4097 ) //typedef is synonym for class
+# pragma warning( disable : 4127 ) //conditional expression is constant
+# pragma warning( disable : 4521 ) //multiple copy constructors of a single type
+
 #endif
 
 // This macro does not definitively determine whether TBB is available. Rather,

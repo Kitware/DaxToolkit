@@ -84,7 +84,8 @@ namespace detail {
 
 template <typename T, bool> struct TagsCheckImpl {};
 template <typename T> struct TagsCheckImpl<T, true> { typedef T type; };
-template <typename B, typename T> struct TagsCheck: public TagsCheckImpl<T, boost::is_base_and_derived<B,T>::value> {};
+template <typename B, typename T> struct TagsCheck: public TagsCheckImpl<T, boost::is_base_and_derived<B,T>::value>
+  { typedef T type; };
 
 template <typename T> struct TagsBase;
 template <typename B> struct TagsBase<B()> { typedef B base_type; };
@@ -106,8 +107,10 @@ public:
 template <typename Tags1, typename B> class TagsAdd< Tags<Tags1>, B()>
 {
   typedef typename Tags<Tags1>::base_type base_type;
+#ifndef _WIN32
   BOOST_STATIC_ASSERT((boost::mpl::or_<boost::is_same<base_type, B>,
                                        boost::is_base_and_derived<base_type, B> >::value));
+#endif
 public:
   typedef Tags<Tags1> type;
 };

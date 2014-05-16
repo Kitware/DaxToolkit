@@ -32,6 +32,7 @@ namespace detail {
 template<typename T1 _dax_pp_comma _dax_pp_typename___T>
 struct ParameterPackFirstArgument<void(T1 _dax_pp_comma _dax_pp_T___)>
 {
+  // typedef typename boost::decay<T1>::type type;
   typedef T1 type;
 };
 
@@ -45,6 +46,8 @@ template<typename FirstType _dax_pp_comma _dax_pp_typename___T>
 struct FindParameterPackImpl<
     ParameterPack<FirstType _dax_pp_comma _dax_pp_T___> >
 {
+  // typedef typename boost::decay< void(FirstType _dax_pp_comma _dax_pp_T___)>::type FType;
+  // typedef ParameterPackImpl<FType> type;
   typedef ParameterPackImpl<void(FirstType _dax_pp_comma _dax_pp_T___)> type;
 
   DAX_EXEC_CONT_EXPORT

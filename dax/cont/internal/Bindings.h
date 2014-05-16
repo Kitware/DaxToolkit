@@ -123,10 +123,10 @@ namespace detail {
 using namespace dax::cont::internal::detail;
 
 template <typename R _dax_pp_comma _dax_pp_typename___T>
-struct GetConceptAndTagsImpl< R (*)(_dax_pp_T___) >
+struct GetConceptAndTagsImpl< R (*) (_dax_pp_T___) >
 {
   typedef R Concept;
-  typedef dax::internal::Tags<sig::Tag(_dax_pp_T___)> Tags;
+  typedef dax::internal::Tags< sig::Tag(_dax_pp_T___) > Tags;
 };
 
 } // namespace detail

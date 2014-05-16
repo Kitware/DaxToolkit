@@ -72,7 +72,7 @@ public:
 /// Contains all the parameters necessary to specify the topology of a uniform
 /// rectilinear grid.
 ///
-struct TopologyUniform {
+DAX_ALIGN_BEGIN(DAX_SIZE_SCALAR) struct TopologyUniform {
   typedef dax::CellTagVoxel CellTag;
 
   Vector3 Origin;
@@ -157,7 +157,8 @@ struct TopologyUniform {
     values[7] = indices.SecondPointIndex + indices.XDim;
     return values;
   }
-};
+} DAX_ALIGN_END(DAX_SIZE_SCALAR);
+
 
 }  }  } //namespace dax::exec::internal
 

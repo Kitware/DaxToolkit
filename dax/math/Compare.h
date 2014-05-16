@@ -23,6 +23,12 @@
 // This header file defines math functions that do comparisons.
 #include <dax/internal/MathSystemFunctions.h>
 
+//if we are compiling with VS2012 and above we support fminf and fmaxf
+#if _MSC_VER <= 1600 && !defined DAX_CUDA_COMPILATION
+  #define DAX_USE_STL_MIN_MAX
+  #include <algorithm>
+#endif
+
 #ifdef DAX_ENABLE_THRUST
   //forward declare thrust::device_reference
   namespace thrust { template<typename T> class device_reference; }
@@ -83,7 +89,13 @@ template<> struct max<dax::TypeTraitsIntegerTag,dax::TypeTraitsScalarTag> {
 template<> struct max<dax::TypeTraitsRealTag,dax::TypeTraitsScalarTag> {
   template<class T>
   DAX_EXEC_CONT_EXPORT T operator()(const T& x, const T& y) const
-  { return DAX_SYS_MATH_FUNCTION(fmax)(x, y); }
+  {
+#ifdef DAX_USE_STL_MIN_MAX
+  return std::max(x, y);
+#else
+  return DAX_SYS_MATH_FUNCTION(fmax)(x, y);
+#endif
+  }
 };
 
 }
@@ -152,7 +164,13 @@ template<> struct min<dax::TypeTraitsIntegerTag,dax::TypeTraitsScalarTag> {
 template<> struct min<dax::TypeTraitsRealTag,dax::TypeTraitsScalarTag> {
   template<class T>
  DAX_EXEC_CONT_EXPORT T operator()(const T& x, const T& y) const
-  { return DAX_SYS_MATH_FUNCTION(fmin)(x, y); }
+  {
+#ifdef DAX_USE_STL_MIN_MAX
+  return std::min(x, y);
+#else
+  return DAX_SYS_MATH_FUNCTION(fmin)(x, y);
+#endif
+  }
 };
 
 }

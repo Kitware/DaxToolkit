@@ -19,6 +19,9 @@
 #include <dax/cont/sig/Tag.h>
 #include <dax/internal/Tags.h>
 
+#include <boost/type_traits/decay.hpp>
+#include <boost/type_traits/is_same.hpp>
+
 /// \namespace dax::cont::arg
 /// \brief Dax Control Environment argument concepts and concept maps
 
@@ -56,9 +59,12 @@ template <typename ConceptMap> class ConceptMapTraits;
 template <typename C, typename T, typename A>
 class ConceptMapTraits< ConceptMap<C(T), A> >
 {
+
+  typedef typename boost::decay<T>::type DecayedT;
+
 public:
   /// The ConceptMap type decomposed by these traits.
-  typedef ConceptMap<C(T), A> Map;
+  typedef ConceptMap<C(DecayedT), A> Map;
 
   /// Type identifying the abstract Concept.
   typedef C Concept;
