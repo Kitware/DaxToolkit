@@ -32,6 +32,11 @@ class Error
 public:
   const std::string &GetMessage() const { return this->Message; }
 
+#if defined(_WIN32) && defined(_MSC_VER)
+  const std::string &GetMessageA() const { return this->Message; }
+  const std::string &GetMessageW() const { return this->Message; }
+#endif
+
 protected:
   Error() { }
   Error(const std::string message) : Message(message) { }
