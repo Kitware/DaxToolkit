@@ -171,11 +171,8 @@ private:
       ExecutionSignature,
       detail::FunctorMemberMap<Invocation>
     > ArgumentsType;
-#ifdef DAX_CUDA
+
   const ArgumentsType Arguments;
-#else
-  mutable ArgumentsType Arguments;
-#endif
 
   template<typename IndexType>
   DAX_EXEC_EXPORT
@@ -183,11 +180,7 @@ private:
   {
     // Make a copy of the Arguments object, which should remain constant
     // for thread performance (?)
-#ifdef DAX_CUDA
     ArgumentsType instance(this->Arguments);
-#else
-    ArgumentsType& instance(this->Arguments);
-#endif
 
     // Invoke the worklet with these arguments.
     this->DoInvokeWorklet<ArgumentsType::FIRST_INDEX>(instance, index);
