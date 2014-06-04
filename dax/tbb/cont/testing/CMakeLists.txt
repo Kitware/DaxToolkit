@@ -21,4 +21,6 @@ dax_unit_tests(SOURCES ${unit_tests})
 
 #test all worklets with the TBB device adapter
 dax_worklet_unit_tests( DAX_DEVICE_ADAPTER_TBB )
-target_link_libraries(WorkletTests_dax_tbb_cont_testing ${TBB_LIBRARIES})
+if(DAX_ENABLE_TESTING)
+  target_link_libraries(WorkletTests_dax_tbb_cont_testing ${TBB_LIBRARIES})
+endif()
