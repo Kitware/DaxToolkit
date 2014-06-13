@@ -50,13 +50,19 @@ void Tags()
   expect_false(Tags::Has<C>());
   expect_false(Tags::Has<D>());
   expect_false(Tags::Has<E>());
+
   expect_true(TagsA::Has<A>());
   expect_true(TagsAB::Has<A>());
   expect_true(TagsAB::Has<B>());
   expect_false(TagsAB::Has<C>());
   expect_true(TagsABC::Has<C>());
   expect_true(boost::is_same<TagsA, TagsA::Add<A>::type>());
+
+  expect_true(boost::is_same<TagsABCD, TagsA::Add<A(B,C,D)>::type>());
   expect_true(boost::is_same<TagsABCD, TagsA::Add<B(B,C,D)>::type>());
+  expect_true(boost::is_same<TagsABCD, TagsA::Add<C(B,C,D)>::type>());
+  expect_true(boost::is_same<TagsABCD, TagsA::Add<D(B,C,D)>::type>());
+  expect_true(boost::is_same<TagsABCD, TagsA::Add<E(B,C,D)>::type>());
   expect_true(boost::is_same<TagsABCD, Tags::Add<TagsABCD>::type>());
   expect_true(TagsA::Add<OtherA>::type::Has<OtherA>());
 
