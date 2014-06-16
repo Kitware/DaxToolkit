@@ -79,6 +79,41 @@ void Tags()
   expect_true(TagsA::Add<OtherTagsAB>::type::Has<A>());
   expect_true(TagsA::Add<OtherTagsAB>::type::Has<OtherA>());
   expect_true(TagsA::Add<OtherTagsAB>::type::Has<OtherB>());
+
+  //verify that Tags resolve type resolve through typedefs.
+  //both for Add and Has
+  typedef A RenamedA;
+  typedef B RenamedB;
+  typedef C RenamedC;
+  typedef D RenamedD;
+  typedef E RenamedE;
+  expect_true(TagsA::Has<RenamedA>());
+  expect_true(TagsAB::Has<RenamedA>());
+  expect_true(TagsAB::Has<RenamedB>());
+  expect_false(TagsAB::Has<RenamedC>());
+  expect_true(TagsABC::Has<RenamedC>());
+
+  typedef dax::internal::Tags<Tag()> Tags;
+  typedef Tags::Add<RenamedA>::type RTagsA;
+  typedef TagsA::Add<RenamedB>::type RTagsAB;
+  typedef TagsAB::Add<RenamedC>::type RTagsABC;
+  typedef TagsABC::Add<RenamedD>::type RTagsABCD;
+  typedef TagsABCD::Add<RenamedE>::type RTagsABCDE;
+
+  expect_false(Tags::Has<int>());
+  expect_false(Tags::Has<Tag>());
+  expect_false(Tags::Has<A>());
+  expect_false(Tags::Has<B>());
+  expect_false(Tags::Has<C>());
+  expect_false(Tags::Has<D>());
+  expect_false(Tags::Has<E>());
+
+  expect_true(TagsA::Has<A>());
+  expect_true(TagsAB::Has<A>());
+  expect_true(TagsAB::Has<B>());
+  expect_false(TagsAB::Has<C>());
+  expect_true(TagsABC::Has<C>());
+  expect_true(boost::is_same<TagsA, TagsA::Add<A>::type>());
 }
 
 } // anonymous namespace
