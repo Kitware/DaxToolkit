@@ -15,6 +15,7 @@
 //=============================================================================
 
 #include <dax/internal/Tags.h>
+#include <dax/internal/GetNthType.h>
 #include <dax/testing/Testing.h>
 
 #include <boost/type_traits/is_same.hpp>
@@ -34,6 +35,43 @@ struct E: public Tag {};
 struct Other: public Tag {};
 struct OtherA: public Other {};
 struct OtherB: public Other {};
+
+namespace detail
+{
+#ifdef _MSC_VER
+  struct MSVC_Field{};
+# define Field MSVC_Field(*)
+# else
+  struct Field{};
+#endif
+
+  struct Worklet
+  {
+    typedef void ControlSignature( Field(A, OtherA, OtherB), Field(A, OtherA));
+  };
+
+  template<typename Tags>
+  struct DerivedTags
+  {
+    typedef Tags type;
+  };
+
+# ifdef DAX_USE_VARIADIC_TEMPLATE
+    template <typename R> struct ExtractTags{};
+
+    template <typename R, typename... T>
+    struct ExtractTags< R(*)(T...) >
+    {
+      typedef dax::internal::Tags<Tag(T...)> Tags;
+    };
+
+    template <typename R, typename... T>
+    struct ExtractTags< R(T...) >
+    {
+      typedef dax::internal::Tags<Tag(T...)> Tags;
+    };
+# endif
+}
 
 void Tags()
 {
@@ -114,6 +152,40 @@ void Tags()
   expect_false(TagsAB::Has<C>());
   expect_true(TagsABC::Has<C>());
   expect_true(boost::is_same<TagsA, TagsA::Add<A>::type>());
+
+  //verify that grabbing tags from a typedef work properly
+  typedef detail::DerivedTags< TagsA::Add<Other(OtherA, OtherB)>::type >::type DTags;
+  expect_true(DTags::Has<A>());
+  expect_true(DTags::Has<OtherA>());
+  expect_true(DTags::Has<OtherB>());
+  expect_false(DTags::Has<C>());
+
+# ifdef DAX_USE_VARIADIC_TEMPLATE
+  {
+  //verify that grabbing tags from a function signature works
+  typedef void Signature(A, OtherA, OtherB);
+  typedef detail::ExtractTags<Signature>::Tags ExtractedTags;
+
+  expect_true(ExtractedTags::Has<A>());
+  expect_true(ExtractedTags::Has<OtherA>());
+  expect_true(ExtractedTags::Has<OtherB>());
+  expect_false(ExtractedTags::Has<C>());
+  }
+
+  {
+  typedef detail::Worklet::ControlSignature WSignature;
+  typedef dax::internal::GetNthType<1,WSignature>::type Signature;
+  typedef detail::ExtractTags<Signature>::Tags ExtractedTags;
+
+  expect_true(ExtractedTags::Has<A>());
+  expect_true(ExtractedTags::Has<OtherA>());
+  expect_true(ExtractedTags::Has<OtherB>());
+  expect_false(ExtractedTags::Has<C>());
+  }
+
+#endif
+
+
 }
 
 } // anonymous namespace
