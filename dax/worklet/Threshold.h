@@ -99,7 +99,7 @@ class ThresholdTopology : public dax::exec::WorkletGenerateTopology
 {
 public:
   typedef void ControlSignature(TopologyIn, TopologyOut);
-  typedef void ExecutionSignature(Vertices(_1),Vertices(_2));
+  typedef void ExecutionSignature(AsVertices(_1), AsVertices(_2));
 
   template<typename InputCellTag, typename OutputCellTag>
   DAX_EXEC_EXPORT

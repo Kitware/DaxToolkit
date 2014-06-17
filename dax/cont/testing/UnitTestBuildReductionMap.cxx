@@ -56,7 +56,7 @@ public:
   {}
 
   typedef void ControlSignature( ValuesIn );
-  typedef void ExecutionSignature(KeyGroup(_1), WorkId);
+  typedef void ExecutionSignature(AsKeyGroup(_1), WorkId);
 
   template<typename KeyGroupType>
   DAX_EXEC_EXPORT

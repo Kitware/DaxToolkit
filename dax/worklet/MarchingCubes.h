@@ -92,7 +92,7 @@ class MarchingCubesGenerate : public dax::exec::WorkletInterpolatedCell
 public:
 
   typedef void ControlSignature(TopologyIn, GeometryOut, FieldPointIn);
-  typedef void ExecutionSignature(Vertices(_1), _2, _3, VisitIndex);
+  typedef void ExecutionSignature(AsVertices(_1), _2, _3, VisitIndex);
 
   DAX_CONT_EXPORT MarchingCubesGenerate(dax::Scalar isoValue)
     : IsoValue(isoValue){ }

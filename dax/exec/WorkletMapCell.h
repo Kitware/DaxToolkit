@@ -63,7 +63,9 @@ protected:
 # define TopologyOut dax::cont::arg::Topology(*)(Out)
 #endif
 
-  typedef dax::cont::arg::Topology::Vertices Vertices;
+#ifndef AsVertices
+# define AsVertices(pos) dax::cont::arg::Topology::Vertices(*)(pos)
+#endif
 };
 
 }

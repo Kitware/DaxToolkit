@@ -84,7 +84,7 @@ class SliceGenerate : public dax::exec::WorkletInterpolatedCell
 public:
 
   typedef void ControlSignature(TopologyIn, GeometryOut, FieldPointIn);
-  typedef void ExecutionSignature(Vertices(_1), _2, _3, VisitIndex);
+  typedef void ExecutionSignature(AsVertices(_1), _2, _3, VisitIndex);
 
   DAX_CONT_EXPORT SliceGenerate(dax::Vector3 origin, dax::Vector3 normal)
     : Origin(origin),

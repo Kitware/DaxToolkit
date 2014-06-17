@@ -43,7 +43,7 @@ struct TestGenerateTopologyCellPermutationWorklet
     : public dax::exec::WorkletGenerateTopology
 {
   typedef void ControlSignature(TopologyIn, TopologyOut, FieldInCell);
-  typedef void ExecutionSignature(Vertices(_2), _3, VisitIndex);
+  typedef void ExecutionSignature(AsVertices(_2), _3, VisitIndex);
 
   DAX_EXEC_EXPORT
   void operator()(dax::exec::CellVertices<dax::CellTagVertex> &outVertex,
@@ -58,7 +58,7 @@ struct TestGenerateTopologyPointPermutationWorklet
     : public dax::exec::WorkletGenerateTopology
 {
   typedef void ControlSignature(TopologyIn, TopologyOut, FieldPointIn);
-  typedef void ExecutionSignature(Vertices(_2), _3, VisitIndex);
+  typedef void ExecutionSignature(AsVertices(_2), _3, VisitIndex);
 
   template<class InCellTag>
   DAX_EXEC_EXPORT

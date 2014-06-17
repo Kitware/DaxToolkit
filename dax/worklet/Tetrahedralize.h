@@ -56,7 +56,7 @@ class Tetrahedralize : public dax::exec::WorkletGenerateTopology
 {
 public:
   typedef void ControlSignature(TopologyIn, TopologyOut);
-  typedef void ExecutionSignature(Vertices(_1),Vertices(_2), WorkId, VisitIndex);
+  typedef void ExecutionSignature(AsVertices(_1), AsVertices(_2), WorkId, VisitIndex);
 
   DAX_EXEC_EXPORT
   void operator()(const dax::exec::CellVertices<dax::CellTagVoxel> &inVertices,

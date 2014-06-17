@@ -37,7 +37,7 @@ public:
                                 FieldCellIn,
                                 FieldOut,
                                 FieldOut);
-  typedef void ExecutionSignature(Vertices(_1), _2, _3, _4, VisitIndex);
+  typedef void ExecutionSignature(AsVertices(_1), _2, _3, _4, VisitIndex);
 
   template<typename CellTag, typename FieldType>
   DAX_EXEC_EXPORT
@@ -57,7 +57,7 @@ class CellDataToPointDataReduceKeys
 {
 public:
   typedef void ControlSignature(ValuesIn, ValuesOut);
-  typedef _2 ExecutionSignature(KeyGroup(_1));
+  typedef _2 ExecutionSignature(AsKeyGroup(_1));
 
   template<typename KeyGroupType>
   DAX_EXEC_EXPORT
