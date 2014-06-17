@@ -19,6 +19,7 @@ set(unit_tests
   UnitTestExecutionObject.cxx
   UnitTestFieldArrayHandle.cxx
   UnitTestFieldArrayHandleConstant.cxx
+  UnitTestFieldArrayHandleCounting.cxx
   UnitTestFieldArrayHandleImplicit.cxx
   UnitTestFieldConstant.cxx
   UnitTestGeometryGrids.cxx
