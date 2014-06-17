@@ -67,7 +67,7 @@ void TestWorklet3Binding(const BindingType &b3)
     "ExecArg value incorrect!");
   DAX_TEST_ASSERT((b3.template Get<2>().GetExecArg()(0, Worklet2()) == 2.0f),
     "ExecArg value incorrect!");
-  DAX_TEST_ASSERT((b3.template Get<2>().GetExecArg()(0, Worklet2()) == 3.0f),
+  DAX_TEST_ASSERT((b3.template Get<3>().GetExecArg()(0, Worklet2()) == 3.0f),
     "ExecArg value incorrect!");
 }
 
