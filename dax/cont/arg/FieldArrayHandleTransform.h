@@ -23,63 +23,126 @@ namespace dax { namespace cont { namespace arg {
 
 /// \headerfile FieldArrayHandle.h dax/cont/arg/FieldArrayHandle.h
 /// \brief Map permutation array handle to \c Field worklet parameters.
-template <typename Tags, typename Value, typename Handle,
+template <typename Tags, typename T, typename THandle,
           typename Functor, typename Device>
-class ConceptMap< Field(Tags), dax::cont::ArrayHandleTransform<Value,
-                                                               Handle,
+class ConceptMap< Field(Tags), dax::cont::ArrayHandleTransform<T,
+                                                               THandle,
                                                                Functor,
-                                                               Device> > :
-  public ConceptMap< Field(Tags),
-    dax::cont::ArrayHandle<
-      Value,
-      typename dax::cont::internal::ArrayHandleTransformTraits<Value,
-        Handle, Functor>::Tag,
-      Device >
-    >
+                                                               Device> >
 {
-  typedef ConceptMap< Field(Tags),
-    dax::cont::ArrayHandle<
-      Value,
-      typename dax::cont::internal::ArrayHandleTransformTraits<Value,
-        Handle, Functor>::Tag,
-      Device > > superclass;
-  typedef dax::cont::ArrayHandleTransform<Value, Handle,
-                                          Functor, Device> HandleType;
+  typedef dax::cont::ArrayHandleTransform<T, THandle,
+                                          Functor, Device > HandleType;
+  //What we have to do is use mpl::if_ to determine the type for
+  //ExecArg
+  typedef typename boost::mpl::if_<
+      typename Tags::template Has<dax::cont::sig::Out>,
+      typename HandleType::PortalExecution,
+      typename HandleType::PortalConstExecution>::type  PortalType;
+
 public:
+  // Arrays are generally used for all types of fields.
+  typedef dax::cont::sig::AnyDomain DomainTag;
+  typedef dax::exec::arg::FieldPortal<T,Tags,PortalType> ExecArg;
+
   ConceptMap(HandleType handle):
-    superclass(handle)
+    Handle(handle),
+    Portal()
     {}
+
+  DAX_CONT_EXPORT ExecArg GetExecArg() const
+    {
+    return ExecArg(this->Portal);
+    }
+
+  DAX_CONT_EXPORT void ToExecution(dax::Id size, boost::false_type, boost::true_type)
+    { /* Output */
+    this->Portal = this->Handle.PrepareForOutput(size);
+    }
+
+  DAX_CONT_EXPORT void ToExecution(dax::Id, boost::true_type,  boost::false_type)
+    { /* Input  */
+    this->Portal = this->Handle.PrepareForInput();
+    }
+
+  //we need to pass the number of elements to allocate
+  DAX_CONT_EXPORT void ToExecution(dax::Id size)
+    {
+    ToExecution(size,typename Tags::template Has<dax::cont::sig::In>(),
+           typename Tags::template Has<dax::cont::sig::Out>());
+    }
+
+  DAX_CONT_EXPORT dax::Id GetDomainLength(sig::Domain) const
+    {
+    //determine the proper work count be seing if we are being used
+    //as input or output
+    return this->Handle.GetNumberOfValues();
+    }
+
+private:
+  HandleType Handle;
+  PortalType Portal;
 };
 
 /// \headerfile FieldArrayHandle.h dax/cont/arg/FieldArrayHandle.h
 /// \brief Map permutation array handle to \c Field worklet parameters.
-template <typename Tags, typename Value, typename Handle,
+template <typename Tags, typename T, typename THandle,
           typename Functor, typename Device>
-class ConceptMap< Field(Tags), const dax::cont::ArrayHandleTransform<Value,
-                                                               Handle,
+class ConceptMap< Field(Tags), const dax::cont::ArrayHandleTransform<T,
+                                                               THandle,
                                                                Functor,
-                                                               Device> > :
-  public ConceptMap< Field(Tags),
-    const dax::cont::ArrayHandle<
-      Value,
-      typename dax::cont::internal::ArrayHandleTransformTraits<Value,
-        Handle, Functor>::Tag,
-      Device >
-    >
+                                                               Device> >
 {
-  typedef ConceptMap< Field(Tags),
-    const dax::cont::ArrayHandle<
-      Value,
-      typename dax::cont::internal::ArrayHandleTransformTraits<Value,
-        Handle, Functor>::Tag,
-      Device > > superclass;
+  typedef dax::cont::ArrayHandleTransform<T, THandle,
+                                          Functor, Device > HandleType;
+  //What we have to do is use mpl::if_ to determine the type for
+  //ExecArg
+  typedef typename boost::mpl::if_<
+      typename Tags::template Has<dax::cont::sig::Out>,
+      typename HandleType::PortalExecution,
+      typename HandleType::PortalConstExecution>::type  PortalType;
 
-    typedef dax::cont::ArrayHandleTransform<Value, Handle,
-                                          Functor, Device> HandleType;
 public:
+  // Arrays are generally used for all types of fields.
+  typedef dax::cont::sig::AnyDomain DomainTag;
+  typedef dax::exec::arg::FieldPortal<T,Tags,PortalType> ExecArg;
+
   ConceptMap(HandleType handle):
-    superclass(handle)
+    Handle(handle),
+    Portal()
     {}
+
+  DAX_CONT_EXPORT ExecArg GetExecArg() const
+    {
+    return ExecArg(this->Portal);
+    }
+
+  DAX_CONT_EXPORT void ToExecution(dax::Id size, boost::false_type, boost::true_type)
+    { /* Output */
+    this->Portal = this->Handle.PrepareForOutput(size);
+    }
+
+  DAX_CONT_EXPORT void ToExecution(dax::Id, boost::true_type,  boost::false_type)
+    { /* Input  */
+    this->Portal = this->Handle.PrepareForInput();
+    }
+
+  //we need to pass the number of elements to allocate
+  DAX_CONT_EXPORT void ToExecution(dax::Id size)
+    {
+    ToExecution(size,typename Tags::template Has<dax::cont::sig::In>(),
+           typename Tags::template Has<dax::cont::sig::Out>());
+    }
+
+  DAX_CONT_EXPORT dax::Id GetDomainLength(sig::Domain) const
+    {
+    //determine the proper work count be seing if we are being used
+    //as input or output
+    return this->Handle.GetNumberOfValues();
+    }
+
+private:
+  HandleType Handle;
+  PortalType Portal;
 };
 
 } } } //namespace dax::cont::arg
