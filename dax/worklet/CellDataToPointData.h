@@ -33,10 +33,10 @@ class CellDataToPointDataGenerateKeys
   : public dax::exec::WorkletGenerateKeysValues
 {
 public:
-  typedef void ControlSignature(Topology,
-                                Field(In,Cell),
-                                Field(Out),
-                                Field(Out));
+  typedef void ControlSignature(TopologyIn,
+                                FieldCellIn,
+                                FieldOut,
+                                FieldOut);
   typedef void ExecutionSignature(Vertices(_1), _2, _3, _4, VisitIndex);
 
   template<typename CellTag, typename FieldType>
@@ -56,7 +56,7 @@ class CellDataToPointDataReduceKeys
   : public dax::exec::WorkletReduceKeysValues
 {
 public:
-  typedef void ControlSignature(Values(In), Values(Out));
+  typedef void ControlSignature(ValuesIn, ValuesOut);
   typedef _2 ExecutionSignature(KeyGroup(_1));
 
   template<typename KeyGroupType>

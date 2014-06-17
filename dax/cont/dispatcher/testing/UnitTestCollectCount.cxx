@@ -38,7 +38,7 @@ using dax::cont::arg::Field;
 
 struct Worklet1 : public dax::exec::WorkletMapField
 {
-  typedef void ControlSignature(Field);
+  typedef void ControlSignature(FieldIn);
 };
 
 struct Worklet2 : public dax::exec::WorkletMapField
@@ -53,7 +53,7 @@ struct Worklet3 : public dax::exec::WorkletMapCell
 
 struct Worklet4 : public dax::exec::WorkletMapCell
 {
-  typedef void ControlSignature(Topology,Field);
+  typedef void ControlSignature(TopologyIn,Field);
 };
 
 

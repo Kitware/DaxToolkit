@@ -41,7 +41,7 @@ const dax::Id COUNTS = 7;
 struct TestGenerateKeysValuesCellPermutationWorklet
     : public dax::exec::WorkletGenerateKeysValues
 {
-  typedef void ControlSignature(Topology, Field(In,Cell), Field(Out));
+  typedef void ControlSignature(TopologyIn, FieldCellIn, FieldOut);
   typedef _3 ExecutionSignature(_2, VisitIndex);
 
   DAX_EXEC_EXPORT
@@ -54,7 +54,7 @@ struct TestGenerateKeysValuesCellPermutationWorklet
 struct TestGenerateKeysValuesPointPermutationWorklet
     : public dax::exec::WorkletGenerateKeysValues
 {
-  typedef void ControlSignature(Topology, Field(In,Point), Field(Out));
+  typedef void ControlSignature(TopologyIn, FieldPointIn, FieldOut);
   typedef _3 ExecutionSignature(_2, VisitIndex);
 
   template<class InCellTag>

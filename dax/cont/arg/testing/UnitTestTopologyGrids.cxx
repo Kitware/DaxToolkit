@@ -27,10 +27,15 @@
 namespace{
 using dax::cont::arg::Topology;
 
+#ifndef TopologyIn
+# define TopologyIn dax::cont::arg::Topology(*)(In)
+# define TopologyOut dax::cont::arg::Topology(*)(Out)
+#endif
+
 
 struct Worklet1: public dax::exec::WorkletMapField
 {
-  typedef void ControlSignature(Topology(In),Topology(Out));
+  typedef void ControlSignature(TopologyIn,TopologyOut);
 };
 
 template<typename T, typename U>

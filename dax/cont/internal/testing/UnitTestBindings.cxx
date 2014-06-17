@@ -13,31 +13,35 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-
 #include <dax/cont/internal/Bindings.h>
-#include <dax/cont/testing/Testing.h>
+
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/arg/FieldConstant.h>
+#include <dax/cont/sig/Tag.h>
+#include <dax/cont/testing/Testing.h>
 
 #include <dax/exec/internal/WorkletBase.h>
 
 namespace {
 
-using dax::cont::arg::Field;
+#ifndef FieldIn
+# define FieldIn dax::cont::arg::Field(*)(In)
+# define FieldOut dax::cont::arg::Field(*)(Out)
+#endif
 
 struct Worklet1 : public dax::exec::internal::WorkletBase
 {
-  typedef void ControlSignature(Field);
+  typedef void ControlSignature(FieldIn);
 };
 
 struct Worklet2 : public dax::exec::internal::WorkletBase
 {
-  typedef void ControlSignature(Field,Field);
+  typedef void ControlSignature(FieldIn,FieldIn);
 };
 
 struct Worklet3 : public dax::exec::internal::WorkletBase
 {
-  typedef void ControlSignature(Field,Field,Field(Out));
+  typedef void ControlSignature(FieldIn,FieldIn,FieldOut);
 };
 
 template<typename BindingType>

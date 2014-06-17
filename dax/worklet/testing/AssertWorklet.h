@@ -27,7 +27,7 @@ namespace testing {
 class Assert : public dax::exec::WorkletMapField
 {
 public:
-  typedef void ControlSignature(Field);
+  typedef void ControlSignature(FieldIn);
   typedef void ExecutionSignature(_1);
 
   template<typename ValueType>

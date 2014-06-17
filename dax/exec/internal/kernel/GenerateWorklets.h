@@ -27,7 +27,7 @@ namespace kernel {
 
 struct ClearUsedPointsFunctor : public WorkletMapField
 {
-  typedef void ControlSignature(Field(Out));
+  typedef void ControlSignature(FieldOut);
   typedef void ExecutionSignature(_1);
 
   template<typename T>
@@ -39,7 +39,7 @@ struct ClearUsedPointsFunctor : public WorkletMapField
 
 struct Index : public WorkletMapField
 {
-  typedef void ControlSignature(Field(Out));
+  typedef void ControlSignature(FieldOut);
   typedef _1 ExecutionSignature(WorkId);
 
   DAX_EXEC_EXPORT dax::Id operator()(dax::Id index) const
@@ -50,7 +50,7 @@ struct Index : public WorkletMapField
 
 struct GetUsedPointsFunctor : public WorkletMapField
 {
-  typedef void ControlSignature(Field(Out));
+  typedef void ControlSignature(FieldOut);
   typedef void ExecutionSignature(_1);
 
   template<typename T>

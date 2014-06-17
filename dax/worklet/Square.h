@@ -24,7 +24,7 @@ namespace worklet {
 class Square : public dax::exec::WorkletMapField
 {
 public:
-  typedef void ControlSignature(Field(In), Field(Out));
+  typedef void ControlSignature(FieldIn, FieldOut);
   typedef _2 ExecutionSignature(_1);
 
 

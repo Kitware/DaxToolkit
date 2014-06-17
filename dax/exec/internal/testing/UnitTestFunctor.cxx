@@ -24,6 +24,10 @@
 namespace {
 using dax::cont::arg::Field;
 
+#ifndef FieldIn
+# define FieldIn dax::cont::arg::Field(*)(In)
+#endif
+
 struct WorkType1 : public dax::exec::internal::WorkletBase
 {
   typedef WorkType1 DomainType;
@@ -32,7 +36,7 @@ struct WorkType1 : public dax::exec::internal::WorkletBase
 struct Worklet1: public WorkType1
 {
   static float TestValue;
-  typedef void ControlSignature(Field);
+  typedef void ControlSignature(FieldIn);
   typedef void ExecutionSignature(_1);
   template <typename T>
   void operator()(T v) const

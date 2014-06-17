@@ -26,7 +26,7 @@ namespace worklet {
 class Magnitude : public dax::exec::WorkletMapField
 {
 public:
-  typedef void ControlSignature(Field(In), Field(Out));
+  typedef void ControlSignature(FieldIn, FieldOut);
   typedef void ExecutionSignature(_1,_2);
 
   DAX_EXEC_EXPORT

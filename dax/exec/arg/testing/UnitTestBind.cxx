@@ -27,6 +27,10 @@ namespace {
 using dax::cont::arg::Field;
 using dax::cont::sig::placeholders::_1;
 
+#ifndef FieldIn
+# define FieldIn dax::cont::arg::Field(*)(In)
+#endif
+
 struct WorkType1 : public dax::exec::internal::WorkletBase
 
 {
@@ -35,7 +39,7 @@ struct WorkType1 : public dax::exec::internal::WorkletBase
 
 struct Worklet1: public WorkType1
 {
-  typedef void ControlSignature(Field);
+  typedef void ControlSignature(FieldIn);
   typedef void ExecutionSignature(_1);
 };
 

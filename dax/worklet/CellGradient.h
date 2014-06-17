@@ -29,7 +29,7 @@ class CellGradient : public dax::exec::WorkletMapCell
 {
 public:
 
-  typedef void ControlSignature(Topology, Field(Point), Field(Point), Field(Out));
+  typedef void ControlSignature(TopologyIn, FieldPointIn, FieldPointIn, FieldOut);
   typedef _4 ExecutionSignature(_2,_3);
 
   template<class CellTag>

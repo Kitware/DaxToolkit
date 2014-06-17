@@ -55,7 +55,7 @@ public:
     KeyValues( new KeyMapType() )
   {}
 
-  typedef void ControlSignature( Values(In) );
+  typedef void ControlSignature( ValuesIn );
   typedef void ExecutionSignature(KeyGroup(_1), WorkId);
 
   template<typename KeyGroupType>

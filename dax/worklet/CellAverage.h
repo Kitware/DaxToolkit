@@ -39,7 +39,7 @@ class CellAverage : public dax::exec::WorkletMapCell
 {
 public:
 
-  typedef void ControlSignature(Topology, Field(Point), Field(Out));
+  typedef void ControlSignature(TopologyIn, FieldPointIn, FieldOut);
   typedef _3 ExecutionSignature(_1,_2);
 
   template<class CellTag>

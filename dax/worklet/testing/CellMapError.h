@@ -26,7 +26,7 @@ namespace testing {
 class CellMapError : public dax::exec::WorkletMapCell
 {
 public:
-  typedef void ControlSignature(Topology);
+  typedef void ControlSignature(TopologyIn);
   typedef void ExecutionSignature(_1);
 
   template<class CellTag>

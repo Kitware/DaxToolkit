@@ -39,11 +39,34 @@ public:
 
   DAX_EXEC_EXPORT WorkletGenerateKeysValues() { }
 protected:
-  typedef dax::cont::arg::Field Field;
-  typedef dax::cont::arg::Topology Topology;
-  typedef dax::cont::arg::Topology::Vertices Vertices;
   typedef dax::cont::sig::Cell Cell;
   typedef dax::cont::sig::Point Point;
+
+#ifndef FieldIn
+# define FieldIn dax::cont::arg::Field(*)(In)
+# define FieldOut dax::cont::arg::Field(*)(Out)
+#endif
+
+#ifndef FieldPoint
+# define FieldPointIn dax::cont::arg::Field(*)(In,Point)
+# define FieldInPoint dax::cont::arg::Field(*)(In,Point)
+# define FieldPointOut dax::cont::arg::Field(*)(Out,Point)
+# define FieldOutPoint dax::cont::arg::Field(*)(Out,Point)
+#endif
+
+#ifndef FieldCell
+# define FieldCellIn dax::cont::arg::Field(*)(In,Cell)
+# define FieldInCell dax::cont::arg::Field(*)(In,Cell)
+# define FieldCellOut dax::cont::arg::Field(*)(Out,Cell)
+# define FieldOutCell dax::cont::arg::Field(*)(Out,Cell)
+#endif
+
+#ifndef TopologyIn
+# define TopologyIn dax::cont::arg::Topology(*)(In)
+# define TopologyOut dax::cont::arg::Topology(*)(Out)
+#endif
+
+  typedef dax::cont::arg::Topology::Vertices Vertices;
   typedef dax::cont::sig::VisitIndex VisitIndex;
 };
 

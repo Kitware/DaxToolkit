@@ -70,7 +70,7 @@ template<typename ValueType>
 class ThresholdCount : public dax::exec::WorkletMapCell
 {
 public:
-  typedef void ControlSignature(Topology,Field(Point), Field(Out));
+  typedef void ControlSignature(TopologyIn,FieldPointIn, FieldOut);
   typedef _3 ExecutionSignature(_2);
 
 
@@ -98,7 +98,7 @@ private:
 class ThresholdTopology : public dax::exec::WorkletGenerateTopology
 {
 public:
-  typedef void ControlSignature(Topology, Topology(Out));
+  typedef void ControlSignature(TopologyIn, TopologyOut);
   typedef void ExecutionSignature(Vertices(_1),Vertices(_2));
 
   template<typename InputCellTag, typename OutputCellTag>

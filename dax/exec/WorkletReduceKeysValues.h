@@ -36,8 +36,11 @@ public:
 
   DAX_EXEC_EXPORT WorkletReduceKeysValues() { }
 protected:
+#ifndef ValuesIn
+# define ValuesIn dax::cont::arg::Field(*)(In)
+# define ValuesOut dax::cont::arg::Field(*)(Out)
+#endif
   typedef dax::cont::arg::Field Values;
-
   typedef dax::cont::sig::ReductionCount ReductionCount;
   typedef dax::cont::sig::ReductionOffset ReductionOffset;
   typedef dax::cont::sig::KeyGroup KeyGroup;
