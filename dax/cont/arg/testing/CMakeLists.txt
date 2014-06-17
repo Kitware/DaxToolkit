@@ -20,6 +20,7 @@ set(unit_tests
   UnitTestFieldArrayHandle.cxx
   UnitTestFieldArrayHandleConstant.cxx
   UnitTestFieldArrayHandleCounting.cxx
+  UnitTestFieldArrayHandlePermutation.cxx
   UnitTestFieldArrayHandleImplicit.cxx
   UnitTestFieldConstant.cxx
   UnitTestGeometryGrids.cxx
