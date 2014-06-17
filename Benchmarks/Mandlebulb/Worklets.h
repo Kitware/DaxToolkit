@@ -177,7 +177,7 @@ public:
 class ColorsAndNorms : public dax::exec::WorkletMapField
 {
 public:
-  typedef void ControlSignature(FieldIn, ExecObject, FieldOut, FieldOut);
+  typedef void ControlSignature(FieldIn, UserObject, FieldOut, FieldOut);
   typedef void ExecutionSignature(_1, _2, _3, _4);
 
   DAX_EXEC_EXPORT void operator()( dax::Id vert_index,

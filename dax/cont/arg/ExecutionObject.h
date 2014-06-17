@@ -31,7 +31,8 @@
 namespace dax { namespace cont { namespace arg {
 
 /// \headerfile FieldFunctor.h dax/cont/arg/FieldFunctor.h
-/// \brief Map user defined objects to \c ExecObject worklet parameters.
+/// \brief Map user defined objects ( UserObject keyword) to
+/// /c ExecObject worklet parameters.
 template< typename Tags, typename UserClass >
 class ConceptMap<ExecObject(Tags), UserClass, typename boost::enable_if< boost::is_base_of<dax::exec::ExecutionObjectBase,UserClass> >::type>
 {

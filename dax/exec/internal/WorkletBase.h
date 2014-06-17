@@ -53,7 +53,6 @@ public:
   }
 
 protected:
-  typedef dax::cont::arg::ExecObject ExecObject;
   typedef dax::cont::sig::placeholders::_1 _1;
   typedef dax::cont::sig::placeholders::_2 _2;
   typedef dax::cont::sig::placeholders::_3 _3;
@@ -66,6 +65,11 @@ protected:
   typedef dax::cont::sig::In In;
   typedef dax::cont::sig::Out Out;
   typedef dax::cont::sig::WorkId WorkId;
+
+#ifndef UserObject
+# define UserObject dax::cont::arg::ExecObject(*)()
+#endif
+
 private:
   dax::exec::internal::ErrorMessageBuffer ErrorMessage;
 };

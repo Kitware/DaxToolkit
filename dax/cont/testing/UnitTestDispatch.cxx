@@ -95,7 +95,7 @@ struct Functor1 : dax::exec::ExecutionObjectBase
 struct ArbFunctorWorklet: dax::exec::WorkletMapField
 {
 
-  typedef void ControlSignature(FieldIn, ExecObject(), FieldOut);
+  typedef void ControlSignature(FieldIn, UserObject, FieldOut);
   typedef _3 ExecutionSignature(_1,_2);
 
   template<typename T, typename Functor>
