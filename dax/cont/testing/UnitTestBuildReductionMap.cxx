@@ -31,7 +31,6 @@
 #include <map>
 #include <set>
 #include <vector>
-
 #include <time.h>
 
 // #define PRINT_VALUES
@@ -95,7 +94,7 @@ ArrayType MakeInputArray()
        iter != data.end();
        iter++)
     {
-    *iter = random()%NUM_KEYS;
+    *iter = rand()%NUM_KEYS;
     }
 
 #ifdef PRINT_VALUES
@@ -165,7 +164,7 @@ void CheckKeyMap(const ArrayType &inputKeys, KeyMapType serialMap)
 
 void RunBuildReductionMap()
 {
-  srandom(time(NULL));
+  srand(static_cast<unsigned int>(time(NULL)));
 
   ArrayType randomKeyInput = MakeInputArray();
   KeyMapType serialMap = BuildSerialKeyMap(randomKeyInput);
