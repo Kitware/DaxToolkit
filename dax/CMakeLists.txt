@@ -25,6 +25,7 @@ set(headers
   Types.h
   TypeTraits.h
   VectorTraits.h
+  Version.h
 
 
   ${Dax_BINARY_DIR}/dax/VectorOperations.h
