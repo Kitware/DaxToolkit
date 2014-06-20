@@ -22,8 +22,8 @@ endif()
 
 project (Dax)
 
-set(Dax_MAJOR_VERSION 0)
-set(Dax_MINOR_VERSION 1)
+set(Dax_MAJOR_VERSION 1)
+set(Dax_MINOR_VERSION 0)
 set(Dax_PATCH_VERSION 0)
 set(Dax_VERSION "${Dax_MAJOR_VERSION}.${Dax_MINOR_VERSION}.${Dax_PATCH_VERSION}")
 
