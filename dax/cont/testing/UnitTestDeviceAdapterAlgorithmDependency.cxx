@@ -33,7 +33,7 @@ namespace {
 
 struct ExampleWorklet : public dax::exec::WorkletMapField
 {
-  typedef void ControlSignature(Field);
+  typedef void ControlSignature(FieldIn);
   typedef void ExecutionSignature(_1);
 
   template <typename T>

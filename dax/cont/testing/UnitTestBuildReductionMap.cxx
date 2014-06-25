@@ -31,7 +31,6 @@
 #include <map>
 #include <set>
 #include <vector>
-
 #include <time.h>
 
 // #define PRINT_VALUES
@@ -55,8 +54,8 @@ public:
     KeyValues( new KeyMapType() )
   {}
 
-  typedef void ControlSignature( Values(In) );
-  typedef void ExecutionSignature(KeyGroup(_1), WorkId);
+  typedef void ControlSignature( ValuesIn );
+  typedef void ExecutionSignature(AsKeyGroup(_1), WorkId);
 
   template<typename KeyGroupType>
   DAX_EXEC_EXPORT
@@ -95,7 +94,7 @@ ArrayType MakeInputArray()
        iter != data.end();
        iter++)
     {
-    *iter = random()%NUM_KEYS;
+    *iter = rand()%NUM_KEYS;
     }
 
 #ifdef PRINT_VALUES
@@ -165,7 +164,7 @@ void CheckKeyMap(const ArrayType &inputKeys, KeyMapType serialMap)
 
 void RunBuildReductionMap()
 {
-  srandom(time(NULL));
+  srand(static_cast<unsigned int>(time(NULL)));
 
   ArrayType randomKeyInput = MakeInputArray();
   KeyMapType serialMap = BuildSerialKeyMap(randomKeyInput);

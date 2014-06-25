@@ -27,10 +27,14 @@
 namespace{
 using dax::cont::arg::Geometry;
 
+#ifndef GeometryIn
+# define GeometryIn dax::cont::arg::Geometry(*)(In)
+# define GeometryOut dax::cont::arg::Geometry(*)(Out)
+#endif
 
 struct Worklet1: public dax::exec::WorkletMapCell
 {
-  typedef void ControlSignature(Geometry(In),Geometry(Out));
+  typedef void ControlSignature(GeometryIn,GeometryOut);
 };
 
 template<typename T, typename U>

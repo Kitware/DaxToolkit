@@ -37,7 +37,7 @@ struct FunctorMemberMap
   template <int Id, typename Parameter>
   struct Get
   {
-  typedef typename arg::FindBinding<Invocation, Parameter>::type type;
+  typedef typename dax::exec::arg::FindBinding<Invocation, Parameter>::type type;
   };
 };
 

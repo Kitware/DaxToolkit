@@ -38,7 +38,7 @@ public:
 
 struct ComputeVisitIndex : public WorkletMapField
 {
-  typedef void ControlSignature(Field(In),Field(Out));
+  typedef void ControlSignature(FieldIn,FieldOut);
   typedef _2 ExecutionSignature(_1,WorkId);
 
   DAX_EXEC_EXPORT dax::Id operator()(const dax::Id& LowerBoundsCount,

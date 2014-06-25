@@ -37,6 +37,8 @@
 #include <dax/exec/arg/BindKeyGroup.h>
 #include <dax/Types.h>
 
+#include <boost/function_types/components.hpp>
+#include <boost/mpl/at.hpp>
 #include <boost/mpl/if.hpp>
 #include <boost/type_traits/is_same.hpp>
 
@@ -106,6 +108,28 @@ public:
 
 };
 
+template <typename Invocation,
+          typename WrapperClass,
+          typename ArgPos>
+class BindWrappedArg;
+
+template<typename Invocation, int N>
+class BindWrappedArg<Invocation,
+                     dax::cont::sig::KeyGroup,
+                     dax::cont::sig::Arg<N> >
+{
+public:
+  typedef BindKeyGroup<Invocation,N> type;
+};
+
+template<typename Invocation, int N>
+class BindWrappedArg<Invocation,
+                    dax::cont::arg::Topology::Vertices,
+                    dax::cont::sig::Arg<N> >
+{
+public:
+  typedef BindDirect<Invocation,N> type;
+};
 
 
 //find binding finds the correct binding for a parameter
@@ -113,7 +137,16 @@ public:
 //from Invocation if it exists
 template <typename Invocation,
           typename Parameter>
-class FindBinding;
+class FindBinding
+{
+  //use boost grab the result type and rip it out as wrapper type
+  //use boost to grab the first argument
+  typedef typename boost::function_types::components<Parameter> ComponentTypes;
+  typedef typename boost::mpl::at_c<ComponentTypes,0>::type WrappingClassType;
+  typedef typename boost::mpl::at_c<ComponentTypes,1>::type IndexType;
+public:
+  typedef typename BindWrappedArg<Invocation,WrappingClassType,IndexType>::type type;
+};
 
 //bind find the specialization for arg binding based on control side tags
 template <typename Invocation, int N>
@@ -126,17 +159,6 @@ class FindBinding<Invocation, dax::cont::sig::Arg<N> >
 public:
   //second argument is the control concept type ( Field, Topo ), and the tags
   typedef typename BindArg<DomainType,Concept(Tags),Invocation,N>::type type;
-};
-
-
-//specialize on Topology to Vertices(_N) binding, which is a BindCellVerts mapping
-//since the user wants the cell vertices not cell tag
-template<typename Invocation, int N>
-class FindBinding<Invocation,
-                  dax::cont::arg::Topology::Vertices(*)(dax::cont::sig::Arg<N>)>
-{
-public:
-  typedef BindDirect<Invocation,N> type;
 };
 
 //bind workid in the execution signature to the bindworkId class
@@ -172,15 +194,6 @@ class FindBinding<Invocation, dax::cont::sig::ReductionOffsetArg<N> >
 {
 public:
   typedef BindDirect<Invocation,N> type;
-};
-
-//specialize on KeyGroup(_N) binding
-template<typename Invocation, int N>
-class FindBinding<Invocation,
-                  dax::cont::sig::KeyGroup(*)(dax::cont::sig::Arg<N>) >
-{
-public:
-  typedef BindKeyGroup<Invocation,N> type;
 };
 
 }}} // namespace dax::exec::arg

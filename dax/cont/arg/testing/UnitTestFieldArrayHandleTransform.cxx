@@ -14,9 +14,11 @@
 //
 //=============================================================================
 
-#include <dax/cont/arg/FieldArrayHandle.h>
+#include <dax/cont/arg/FieldArrayHandleTransform.h>
 #include <dax/cont/testing/Testing.h>
 
+#include <dax/cont/ArrayHandle.h>
+#include <dax/cont/ArrayHandleCounting.h>
 #include <dax/cont/internal/Bindings.h>
 #include <dax/cont/sig/Tag.h>
 #include <dax/exec/WorkletMapField.h>
@@ -24,11 +26,11 @@
 namespace{
 using dax::cont::arg::Field;
 
-
 struct Worklet1: public dax::exec::WorkletMapField
 {
-  typedef void ControlSignature(Field(*)(In,Out));
+  typedef void ControlSignature(FieldIn);
 };
+
 
 template<typename T>
 void verifyBindingExists(T value)
@@ -50,31 +52,58 @@ void verifyConstBindingExists(const T value)
   (void)binded;
 }
 
+template<typename ValueType>
+struct MySquare
+{
+  template<typename U>
+  DAX_EXEC_EXPORT
+  ValueType operator()(U u) const
+    { return ValueType(u*u); }
+};
+
+template<typename T>
+void Verify(T )
+{
+  typedef MySquare<T> FunctorType;
+
+  //verify Transform work with an underlying concrete array handle
+  typedef dax::cont::ArrayHandleTransform< T,
+                                           dax::cont::ArrayHandle< dax::Id >,
+                                           FunctorType > TransformHandle;
+
+  dax::cont::ArrayHandle< dax::Id > input;
+  TransformHandle thandle(input,FunctorType());
+
+  verifyBindingExists<TransformHandle>( thandle );
+  verifyConstBindingExists<TransformHandle>( thandle );
+
+  //verify Transform work with an underlying counting array handle
+  typedef dax::cont::ArrayHandleTransform< T,
+                                    dax::cont::ArrayHandleCounting< dax::Id >,
+                                    FunctorType > CountingTransformHandle;
+
+  CountingTransformHandle countingTransformed =
+      dax::cont::make_ArrayHandleTransform<T>(
+        dax::cont::make_ArrayHandleCounting(dax::Id(0),10),
+        FunctorType());
+
+  verifyBindingExists<CountingTransformHandle>( countingTransformed );
+  verifyConstBindingExists<CountingTransformHandle>( countingTransformed );
+}
 
 void ArrayHandle()
 {
-  //confirm that we can bind to the following types:
-
-  //integer
-  typedef dax::cont::ArrayHandle<dax::Id> IdAType;
-  verifyBindingExists<IdAType>( IdAType() );
-  verifyConstBindingExists<IdAType>( IdAType() );
-
-  //scalar
-  typedef dax::cont::ArrayHandle<dax::Scalar> ScalarAType;
-  verifyBindingExists<ScalarAType>( ScalarAType() );
-  verifyConstBindingExists<ScalarAType>( ScalarAType() );
-
-  //vector
-  typedef dax::cont::ArrayHandle<dax::Vector2> VecAType;
-  verifyBindingExists<VecAType>( VecAType() );
-  verifyConstBindingExists<VecAType>( VecAType() );
+  //confirm that we can bind to the following types with an
+  //transform array handle:
+  Verify(dax::Id());
+  Verify(dax::Scalar());
+  Verify(dax::Vector2());
 
 }
 
 }
 
-int UnitTestFieldArrayHandle(int, char *[])
+int UnitTestFieldArrayHandleTransform(int, char *[])
 {
   return dax::cont::testing::Testing::Run(ArrayHandle);
 }

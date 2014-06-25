@@ -29,7 +29,7 @@ struct WorkType1
 
 struct Worklet1: public WorkType1
 {
-  typedef void ControlSignature(Field);
+  typedef void ControlSignature(Field(*)());
 };
 
 template<typename T>

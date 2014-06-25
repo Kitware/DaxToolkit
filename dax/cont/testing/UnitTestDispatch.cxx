@@ -35,7 +35,7 @@ namespace{
 struct ExampleWorklet : public dax::exec::WorkletMapField
 {
   static float TestValue;
-  typedef void ControlSignature(Field);
+  typedef void ControlSignature(FieldIn);
   typedef void ExecutionSignature(_1);
 
   template <typename T>
@@ -49,7 +49,7 @@ float ExampleWorklet::TestValue = 0;
 struct Example2Worklet : public dax::exec::WorkletMapField
 {
   static float TestValue;
-  typedef void ControlSignature(Field(In), Field(In));
+  typedef void ControlSignature(FieldIn, FieldIn);
   typedef void ExecutionSignature(_1, _2);
 
   template <typename T>
@@ -62,7 +62,7 @@ float Example2Worklet::TestValue = 0;
 
 struct ExampleTupleWorklet : public dax::exec::WorkletMapField
 {
-  typedef void ControlSignature(Field(In));
+  typedef void ControlSignature(FieldIn);
   typedef void ExecutionSignature(_1);
 
   template <typename T>
@@ -73,7 +73,7 @@ struct ExampleTupleWorklet : public dax::exec::WorkletMapField
 
 struct ExampleSquare: public dax::exec::WorkletMapField
 {
-  typedef void ControlSignature(Field(In), Field(Out));
+  typedef void ControlSignature(FieldIn, FieldOut);
   typedef _2 ExecutionSignature(_1);
 
   template<typename T>
@@ -95,7 +95,7 @@ struct Functor1 : dax::exec::ExecutionObjectBase
 struct ArbFunctorWorklet: dax::exec::WorkletMapField
 {
 
-  typedef void ControlSignature(Field(In), ExecObject(), Field(Out));
+  typedef void ControlSignature(FieldIn, UserObject, FieldOut);
   typedef _3 ExecutionSignature(_1,_2);
 
   template<typename T, typename Functor>

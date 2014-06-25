@@ -132,7 +132,7 @@ public:
   struct ClearArrayMapKernel: public dax::exec::WorkletMapField
   {
 
-    typedef void ControlSignature(Field(Out));
+    typedef void ControlSignature(FieldOut);
     typedef void ExecutionSignature(_1);
 
     template<typename T>
@@ -227,7 +227,7 @@ public:
 
   struct NGMult: public dax::exec::WorkletMapField
   {
-    typedef void ControlSignature(Field(In), Field(In), Field(Out));
+    typedef void ControlSignature(FieldIn, FieldIn, FieldOut);
     typedef _3 ExecutionSignature(_1, _2);
 
     template<typename T>
@@ -239,7 +239,7 @@ public:
 
     struct NGNoOp: public dax::exec::WorkletMapField
   {
-    typedef void ControlSignature(Field(In), Field(Out));
+    typedef void ControlSignature(FieldIn, FieldOut);
     typedef _2 ExecutionSignature(_1);
 
     template<typename T>

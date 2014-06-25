@@ -34,6 +34,10 @@ public:
   DAX_EXEC_CONT_EXPORT WorkletMapField() { }
 protected:
   typedef dax::cont::arg::Field Field;
+#ifndef FieldIn
+# define FieldIn dax::cont::arg::Field(*)(In)
+# define FieldOut dax::cont::arg::Field(*)(Out)
+#endif
 
 };
 

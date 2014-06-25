@@ -14,7 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/cont/arg/FieldArrayHandle.h>
+#include <dax/cont/arg/FieldArrayHandleImplicit.h>
 #include <dax/cont/testing/Testing.h>
 
 #include <dax/cont/internal/Bindings.h>
@@ -24,11 +24,11 @@
 namespace{
 using dax::cont::arg::Field;
 
-
 struct Worklet1: public dax::exec::WorkletMapField
 {
-  typedef void ControlSignature(Field(*)(In,Out));
+  typedef void ControlSignature(FieldIn);
 };
+
 
 template<typename T>
 void verifyBindingExists(T value)
@@ -50,23 +50,32 @@ void verifyConstBindingExists(const T value)
   (void)binded;
 }
 
+template<typename ValueType>
+struct IndexSquared
+{
+  DAX_EXEC_CONT_EXPORT
+  ValueType operator()(dax::Id i) const
+    { return ValueType(i*i); }
+};
+
 
 void ArrayHandle()
 {
-  //confirm that we can bind to the following types:
+  //confirm that we can bind to the following types with an
+  //implicit array handle:
 
   //integer
-  typedef dax::cont::ArrayHandle<dax::Id> IdAType;
+  typedef dax::cont::ArrayHandleImplicit<dax::Id,IndexSquared<dax::Id> > IdAType;
   verifyBindingExists<IdAType>( IdAType() );
   verifyConstBindingExists<IdAType>( IdAType() );
 
   //scalar
-  typedef dax::cont::ArrayHandle<dax::Scalar> ScalarAType;
+  typedef dax::cont::ArrayHandleImplicit<dax::Scalar,IndexSquared<dax::Id> > ScalarAType;
   verifyBindingExists<ScalarAType>( ScalarAType() );
   verifyConstBindingExists<ScalarAType>( ScalarAType() );
 
   //vector
-  typedef dax::cont::ArrayHandle<dax::Vector2> VecAType;
+  typedef dax::cont::ArrayHandleImplicit<dax::Vector2,IndexSquared<dax::Id> > VecAType;
   verifyBindingExists<VecAType>( VecAType() );
   verifyConstBindingExists<VecAType>( VecAType() );
 
@@ -74,7 +83,7 @@ void ArrayHandle()
 
 }
 
-int UnitTestFieldArrayHandle(int, char *[])
+int UnitTestFieldArrayHandleImplicit(int, char *[])
 {
   return dax::cont::testing::Testing::Run(ArrayHandle);
 }

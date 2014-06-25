@@ -55,8 +55,8 @@ dax::Scalar CumulativeNormalDistribution(dax::Scalar d)
 class BlackScholes : public dax::exec::WorkletMapField
 {
 public:
-  typedef void ControlSignature(Field(In), Field(In), Field(In), Field(In),
-                                Field(In), Field(Out), Field(Out));
+  typedef void ControlSignature(FieldIn, FieldIn, FieldIn, FieldIn,
+                                FieldIn, FieldOut, FieldOut);
   typedef void ExecutionSignature(_6,_7,_1,_2,_3,_4,_5);
 
   DAX_EXEC_EXPORT

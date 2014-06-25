@@ -29,6 +29,7 @@
 
 namespace dax { namespace cont { namespace arg {
 
+
 /// \headerfile FieldArrayHandle.h dax/cont/arg/FieldArrayHandle.h
 /// \brief Map array of user values to \c Field worklet parameters.
 template <typename Tags, typename T, typename ContainerTag, typename Device>
@@ -92,7 +93,7 @@ template <typename Tags, typename T, typename ContainerTag, typename Device>
 class ConceptMap< Field(Tags), const dax::cont::ArrayHandle<T, ContainerTag, Device> >
 {
   typedef dax::cont::ArrayHandle<T,ContainerTag, Device > HandleType;
-  typedef  typename HandleType::PortalConstExecution  PortalType;
+  typedef typename HandleType::PortalConstExecution  PortalType;
 
 public:
   // Arrays are generally used for all types of fields.

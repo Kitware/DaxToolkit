@@ -105,6 +105,13 @@ struct GetConceptAndTagsImpl< R (*)(T...) >
   typedef dax::internal::Tags<sig::Tag(T...)> Tags;
 };
 
+template <typename R, typename... T>
+struct GetConceptAndTagsImpl< R(T...) >
+{
+  typedef R Concept;
+  typedef dax::internal::Tags<sig::Tag(T...)> Tags;
+};
+
 } // namespace detail
 
 # else // !DAX_USE_VARIADIC_TEMPLATE

@@ -27,7 +27,7 @@ namespace worklet {
 class Elevation : public dax::exec::WorkletMapField
 {
 public:
-  typedef void ControlSignature(Field(In), Field(Out));
+  typedef void ControlSignature(FieldIn, FieldOut);
   typedef void ExecutionSignature(_1,_2);
 
 

@@ -18,6 +18,11 @@
 set(unit_tests
   UnitTestExecutionObject.cxx
   UnitTestFieldArrayHandle.cxx
+  UnitTestFieldArrayHandleConstant.cxx
+  UnitTestFieldArrayHandleCounting.cxx
+  UnitTestFieldArrayHandlePermutation.cxx
+  UnitTestFieldArrayHandleTransform.cxx
+  UnitTestFieldArrayHandleImplicit.cxx
   UnitTestFieldConstant.cxx
   UnitTestGeometryGrids.cxx
   UnitTestTopologyGrids.cxx

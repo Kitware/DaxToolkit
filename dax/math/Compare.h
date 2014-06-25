@@ -91,7 +91,7 @@ template<> struct max<dax::TypeTraitsRealTag,dax::TypeTraitsScalarTag> {
   DAX_EXEC_CONT_EXPORT T operator()(const T& x, const T& y) const
   {
 #ifdef DAX_USE_STL_MIN_MAX
-  return std::max(x, y);
+  return (std::max)(x, y); //wrap in () to avoid window.h max macro
 #else
   return DAX_SYS_MATH_FUNCTION(fmax)(x, y);
 #endif
@@ -166,7 +166,7 @@ template<> struct min<dax::TypeTraitsRealTag,dax::TypeTraitsScalarTag> {
  DAX_EXEC_CONT_EXPORT T operator()(const T& x, const T& y) const
   {
 #ifdef DAX_USE_STL_MIN_MAX
-  return std::min(x, y);
+  return (std::min)(x, y); //wrap in () to avoid window.h min macro
 #else
   return DAX_SYS_MATH_FUNCTION(fmin)(x, y);
 #endif

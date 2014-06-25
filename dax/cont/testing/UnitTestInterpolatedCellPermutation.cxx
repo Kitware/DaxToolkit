@@ -42,8 +42,8 @@ const dax::Id COUNTS = 7;
 struct TestInterpolatedCellCellPermutationWorklet
     : public dax::exec::WorkletInterpolatedCell
 {
-  typedef void ControlSignature(Topology, Geometry(Out), Field(In,Cell));
-  typedef void ExecutionSignature(Vertices(_2), _3, VisitIndex);
+  typedef void ControlSignature(TopologyIn, GeometryOut, FieldCellIn);
+  typedef void ExecutionSignature(AsVertices(_2), _3, VisitIndex);
 
   DAX_EXEC_EXPORT
   void operator()(dax::exec::InterpolatedCellPoints<dax::CellTagVertex> &outCell,
@@ -59,8 +59,8 @@ struct TestInterpolatedCellCellPermutationWorklet
 struct TestInterpolatedCellPointPermutationWorklet
     : public dax::exec::WorkletInterpolatedCell
 {
-  typedef void ControlSignature(Topology, Geometry(Out), Field(In,Point));
-  typedef void ExecutionSignature(Vertices(_2), _3, VisitIndex);
+  typedef void ControlSignature(TopologyIn, GeometryOut, FieldPointIn);
+  typedef void ExecutionSignature(AsVertices(_2), _3, VisitIndex);
 
   template<class InCellTag>
   DAX_EXEC_EXPORT

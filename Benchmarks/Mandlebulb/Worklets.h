@@ -65,7 +65,7 @@ namespace worklet {
 class Mandlebulb : public dax::exec::WorkletMapField
 {
 public:
-  typedef void ControlSignature(Field(In), Field(Out));
+  typedef void ControlSignature(FieldIn, FieldOut);
   typedef _2 ExecutionSignature(_1);
 
   DAX_EXEC_EXPORT
@@ -112,7 +112,7 @@ public:
 class MandlebulbClipCount : public dax::exec::WorkletMapCell
 {
 public:
-  typedef void ControlSignature(Topology, Field(Point), Field(Point), Field(Out));
+  typedef void ControlSignature(TopologyIn, FieldPointIn, FieldPointIn, FieldOut);
   typedef _4 ExecutionSignature(_2, _3);
 
   DAX_CONT_EXPORT MandlebulbClipCount(dax::Vector3 origin,
@@ -177,7 +177,7 @@ public:
 class ColorsAndNorms : public dax::exec::WorkletMapField
 {
 public:
-  typedef void ControlSignature(Field(In),ExecObject(), Field(Out), Field(Out));
+  typedef void ControlSignature(FieldIn, UserObject, FieldOut, FieldOut);
   typedef void ExecutionSignature(_1, _2, _3, _4);
 
   DAX_EXEC_EXPORT void operator()( dax::Id vert_index,

@@ -47,7 +47,7 @@ struct WorkType1
 
 struct Worklet1: public WorkType1
 {
-  typedef void ControlSignature(ExecObject);
+  typedef void ControlSignature(UserObject);
 };
 
 template<typename T>

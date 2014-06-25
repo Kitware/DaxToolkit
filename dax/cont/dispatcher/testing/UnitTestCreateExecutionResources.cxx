@@ -90,7 +90,7 @@ using dax::cont::arg::Field;
 
 struct Worklet1 : public dax::exec::WorkletMapField
 {
-  typedef void ControlSignature(Field, Field(Out));
+  typedef void ControlSignature(Field, FieldOut);
 };
 
 

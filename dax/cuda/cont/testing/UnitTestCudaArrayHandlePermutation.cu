@@ -35,7 +35,7 @@ const dax::Id ARRAY_SIZE = 10;
 
 struct Pass : public dax::exec::WorkletMapField
 {
-  typedef void ControlSignature(Field(In), Field(Out));
+  typedef void ControlSignature(FieldIn, FieldOut);
   typedef _2 ExecutionSignature(_1);
 
   template<class ValueType>

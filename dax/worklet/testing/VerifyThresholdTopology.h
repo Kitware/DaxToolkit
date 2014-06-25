@@ -25,8 +25,8 @@ namespace testing {
 
 struct VerifyThresholdTopology : public dax::exec::WorkletGenerateTopology
 {
-  typedef void ControlSignature(Topology, Topology(Out),Field(In));
-  typedef void ExecutionSignature(Vertices(_1), Vertices(_2), _3, VisitIndex);
+  typedef void ControlSignature(TopologyIn, TopologyOut,FieldIn);
+  typedef void ExecutionSignature(AsVertices(_1), AsVertices(_2), _3, VisitIndex);
 
   template<typename InputCellTag, typename OutputCellTag, typename T>
   DAX_EXEC_EXPORT

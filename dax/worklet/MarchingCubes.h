@@ -53,7 +53,7 @@ int GetHexahedronClassification(const T isoValue, const U& values )
 class MarchingCubesCount : public dax::exec::WorkletMapCell
 {
 public:
-  typedef void ControlSignature(Topology, Field(Point), Field(Out));
+  typedef void ControlSignature(TopologyIn, FieldPointIn, FieldOut);
   typedef _3 ExecutionSignature(_2);
 
   DAX_CONT_EXPORT MarchingCubesCount(dax::Scalar isoValue)
@@ -91,8 +91,8 @@ class MarchingCubesGenerate : public dax::exec::WorkletInterpolatedCell
 {
 public:
 
-  typedef void ControlSignature(Topology, Geometry(Out), Field(Point,In));
-  typedef void ExecutionSignature(Vertices(_1), _2, _3, VisitIndex);
+  typedef void ControlSignature(TopologyIn, GeometryOut, FieldPointIn);
+  typedef void ExecutionSignature(AsVertices(_1), _2, _3, VisitIndex);
 
   DAX_CONT_EXPORT MarchingCubesGenerate(dax::Scalar isoValue)
     : IsoValue(isoValue){ }

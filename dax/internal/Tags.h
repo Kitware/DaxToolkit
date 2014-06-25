@@ -13,8 +13,6 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#if !defined(BOOST_PP_IS_ITERATING)
-
 # ifndef __dax__internal__Tags_h
 # define __dax__internal__Tags_h
 # if defined(DAX_DOXYGEN_ONLY)
@@ -64,93 +62,204 @@ public:
 
 # else // !defined(DAX_DOXYGEN_ONLY)
 
-# include <dax/internal/Configure.h>
+# include <dax/internal/WorkletSignatureFunctions.h>
 
-# ifndef DAX_USE_VARIADIC_TEMPLATE
-#  include <dax/internal/ParameterPackCxx03.h>
-# endif // !DAX_USE_VARIADIC_TEMPLATE
-
+# include <boost/function_types/components.hpp>
+# include <boost/function_types/is_function.hpp>
+# include <boost/function_types/parameter_types.hpp>
+# include <boost/function_types/result_type.hpp>
+# include <boost/mpl/back_inserter.hpp>
+# include <boost/mpl/contains.hpp>
+# include <boost/mpl/copy.hpp>
+# include <boost/mpl/copy_if.hpp>
+# include <boost/mpl/count_if.hpp>
 # include <boost/mpl/identity.hpp>
 # include <boost/mpl/if.hpp>
 # include <boost/mpl/or.hpp>
+# include <boost/mpl/remove_if.hpp>
+# include <boost/mpl/size.hpp>
 # include <boost/static_assert.hpp>
-# include <boost/type_traits/is_base_and_derived.hpp>
+# include <boost/type_traits/is_base_of.hpp>
 
-namespace dax { namespace internal {
+namespace dax {
+namespace internal {
 
 template <typename T> class Tags;
 
 namespace detail {
 
-template <typename T, bool> struct TagsCheckImpl {};
-template <typename T> struct TagsCheckImpl<T, true> { typedef T type; };
-template <typename B, typename T> struct TagsCheck: public TagsCheckImpl<T, boost::is_base_and_derived<B,T>::value>
-  { typedef T type; };
+  //Function that is applied to all arguments, the type of apply is true
+  //when when T is derived from ResultType
+  template<typename ResultType>
+  struct IsDerivedTag
+  {
+    template<typename T>
+    struct apply
+    { typedef typename boost::is_base_of<ResultType, T> type; };
+  };
 
-template <typename T> struct TagsBase;
-template <typename B> struct TagsBase<B()> { typedef B base_type; };
+  template<typename CurrentTags, typename T>
+  struct isAlreadyContained
+  {
+    typedef typename boost::mpl::contains<CurrentTags,T>::type type;
+  };
 
-template <typename Tag, typename Tags> struct TagsAddImpl;
-template <typename Tags1, typename TagOrTags> class TagsAdd;
 
-template <typename Tags1, typename Tag> class TagsAdd<Tags<Tags1>, Tag>
-{
-  typedef typename Tags<Tags1>::base_type base_type;
-  typedef typename TagsCheck<base_type,Tag>::type tag_type;
-public:
-  typedef Tags<typename boost::mpl::if_<typename Tags<Tags1>::template Has<Tag>,
-                                        boost::mpl::identity< Tags1 >,
-                                        TagsAddImpl<Tag,Tags1>
-                                        >::type::type> type;
-};
+  //------------------------------------------------------------------------
+  template <typename T> struct TagsBase
+  {
+  private:
+    typedef boost::function_types::is_function<T> IsFunctionType;
 
-template <typename Tags1, typename B> class TagsAdd< Tags<Tags1>, B()>
-{
-  typedef typename Tags<Tags1>::base_type base_type;
-#ifndef _WIN32
-  BOOST_STATIC_ASSERT((boost::mpl::or_<boost::is_same<base_type, B>,
-                                       boost::is_base_and_derived<base_type, B> >::value));
-#endif
-public:
-  typedef Tags<Tags1> type;
-};
+    //verify that T is a function type
+    BOOST_STATIC_ASSERT((IsFunctionType::value));
 
-# ifdef DAX_USE_VARIADIC_TEMPLATE
-template <typename B, typename T, typename...Ts> struct TagsBase<B(T,Ts...)>: TagsCheck<B,T>::type, TagsCheck<B,Ts>::type... { typedef B base_type; };
-template <typename Tag, typename B, typename...Ts> struct TagsAddImpl<Tag, B(Ts...)> { typedef B type(Ts...,Tag); };
-template <typename Tags1, typename B, typename T, typename...Ts> class TagsAdd< Tags<Tags1>, B(T,Ts...)>: public TagsAdd<typename TagsAdd<Tags<Tags1>,T>::type, B(Ts...)> {};
-# else // !DAX_USE_VARIADIC_TEMPLATE
-#  define _dax_TagsCheck(n) TagsCheck<B,T___##n>::type
-#  define BOOST_PP_ITERATION_PARAMS_1 (3, (1, 10, <dax/internal/Tags.h>))
-#  include BOOST_PP_ITERATE()
-#  undef _dax_TagsCheck
-# endif // !DAX_USE_VARIADIC_TEMPLATE
+    typedef boost::function_types::parameter_types<T> ParameterTypes;
+    typedef typename boost::function_types::result_type<T>::type ResultType;
 
-template <typename Tags1, typename Tags2> class TagsAdd< Tags<Tags1>, Tags<Tags2> >: public TagsAdd<Tags<Tags1>,Tags2> {};
+    //If T has a return type, confirm that everything that is a parameter
+    //is derived from the ResultType
+    typedef boost::mpl::count_if<ParameterTypes, detail::IsDerivedTag<ResultType> > EverythingDerivedFromResultType;
+    typedef boost::mpl::size<ParameterTypes> ExepectedResult;
 
-template <typename Tags, typename Tag> struct TagsHas;
-template <typename T, typename Tag> struct TagsHas<Tags<T>,Tag>: public boost::is_base_and_derived<Tag, Tags<T> > {};
+    //If this asserts, that means that not all the types in ParameterTypes,
+    //derive from the ResultType
+    BOOST_STATIC_ASSERT((EverythingDerivedFromResultType::value==ExepectedResult::value));
+  public:
+    typedef ResultType base_type;
+
+  };
+
+  //------------------------------------------------------------------------
+  // This function combines ExistingTags and TagToAppend to create a new
+  // function signature whose has the return type of ExistingTags
+  // If TagToAppend already exists anywhere in ExistingTags we don't add it
+  //
+  // type = ExistingTags::ReturnType(ExistingsTags,TagToAppend)
+  template <typename TagToAppend, typename ExistingTags>
+  struct AppendSingleTag
+  {
+  private:
+    struct apply
+    {
+      //convert exiting tags to a mpl vector
+      typedef boost::function_types::components< ExistingTags > ExistingItems;
+      //append TagToAppend
+      typedef typename boost::mpl::push_back<ExistingItems,TagToAppend>::type CombinedItems;
+      typedef typename dax::internal::BuildSignature<CombinedItems>::type type;
+     };
+
+     //If we don't already have the Tag call apply and append the Tag, and
+     //rebuild our signature
+     typedef typename Tags<ExistingTags>::template Has<TagToAppend> AlreadyHasTag;
+     typedef typename boost::mpl::if_< AlreadyHasTag,
+                                       boost::mpl::identity< ExistingTags >,
+                                       apply >::type CorrectIfType;
+  public:
+    //set our type to be the result from the mpl::if_
+    typedef typename CorrectIfType::type type;
+
+  };
+
+  //------------------------------------------------------------------------
+  // This function combines ExistingTags and TagsToAppend to create a new
+  // function signature whose has the return type of ExistingTags
+  // The parameters of the signature all the unique tags of ExistingTags + TagsToAppend
+  // So if a tag in TagsToAppend already exists in ExistingTags we don't append it
+  template <typename TagsToAppend, typename ExistingTags>
+  struct AppendMultipleTags
+  {
+  private:
+    typedef typename boost::function_types::result_type< ExistingTags >::type ExistingResultType;
+    typedef typename boost::function_types::result_type< TagsToAppend >::type AppendResultType;
+
+    BOOST_STATIC_ASSERT((boost::mpl::or_<
+                        boost::is_same<   ExistingResultType, AppendResultType>,
+                        boost::is_base_of<ExistingResultType, AppendResultType>
+                          >::value ));
+
+    //convert exiting tags to a mpl vector
+    typedef boost::function_types::components< ExistingTags > ExistingItems;
+
+    //convert TagsToAppend to a mpl vector, ignore the base type
+    //as it is the same as the tags we are adding too
+    typedef boost::function_types::parameter_types< TagsToAppend > PossibleItemsToAdd;
+
+    // Remove every item from PossibleItemsToAdd if they already exist in ExistingItems
+    // have to use a lambda here of a boost mpl Metafunction class since some
+    // version of boost kept failing to compile with the Metafunction
+    typedef typename boost::mpl::remove_if<PossibleItemsToAdd,
+              typename boost::mpl::lambda< detail::isAlreadyContained< ExistingItems, boost::mpl::_1 > >::type
+              >::type ItemsToAdd;
+
+    //append all the items in ItemsToadd  to the end of ExistingTags
+    typedef typename boost::mpl::copy<ItemsToAdd,
+                boost::mpl::back_inserter<ExistingItems> >::type CombinedItems;
+
+
+  public:
+    //convert back to function signature
+    typedef typename dax::internal::BuildSignature<CombinedItems>::type type;
+  };
+
+
+  template <typename CurrentTags, typename Tag> struct TagsAdd;
+
+  //------------------------------------------------------------------------
+  template <typename CurrentTags, typename Tag>
+  struct TagsAdd<Tags<CurrentTags>, Tag>
+  { //determine if Tag is a single struct or a function signature
+  private:
+    typedef boost::function_types::is_function<Tag> TagIsAFunctionType;
+    typedef typename boost::mpl::if_< TagIsAFunctionType,
+                                      AppendMultipleTags< Tag, CurrentTags >,
+                                      AppendSingleTag   < Tag, CurrentTags > >::type CorrectTagsAddMethod;
+  public:
+    typedef Tags< typename CorrectTagsAddMethod::type> type;
+  };
+
+  //------------------------------------------------------------------------
+  template <typename CurrentTags, typename OtherTags>
+  struct TagsAdd<Tags<CurrentTags>, Tags<OtherTags> >
+  { //joining two collection of tags together this is easy to find
+    typedef Tags< typename AppendMultipleTags<OtherTags,CurrentTags>::type > type;
+  };
+
+  //------------------------------------------------------------------------
+  template <typename Tags, typename Tag> struct TagsHas;
+  template <typename T, typename Tag> struct TagsHas<Tags<T>,Tag>
+  {
+  private:
+    //determine if we have the Tag
+    typedef boost::function_types::parameter_types<T> ParameterTypes;
+    typedef typename boost::mpl::contains<ParameterTypes,Tag>::type HasTag;
+  public:
+    //convert the mpl::bool type to boost::true_type
+    typedef typename boost::mpl::if_< HasTag,
+                                      boost::true_type,
+                                      boost::false_type>::type valid;
+  };
+
 
 } // namespace detail
 
-template <typename T> class Tags: public detail::TagsBase<T>
+template <typename T> class Tags : public detail::TagsBase<T>
 {
 public:
-  template <typename Tag> struct Has: public detail::TagsHas<Tags<T>, Tag> {};
-  template <typename TagOrTags> struct Add: public detail::TagsAdd<Tags<T>, TagOrTags> {};
+  template <typename Tag> struct Has : public detail::TagsHas<Tags<T>, Tag>::valid
+  {
+  };
+
+  template <typename TagOrTags> struct Add
+  {
+    typedef typename detail::TagsAdd<Tags<T>, TagOrTags>::type type;
+  };
 };
 
-}} // namespace dax::internal
+}
+} // namespace dax::internal
+
 
 # endif // !defined(DAX_DOXYGEN_ONLY)
-# endif //__dax__internal__Tags_h
+#endif //__dax__internal__Tags_h
 
-#else // defined(BOOST_PP_IS_ITERATING)
-
-template <typename Tag, typename B _dax_pp_comma _dax_pp_typename___T> struct TagsAddImpl<Tag, B(_dax_pp_T___)> { typedef B type(_dax_pp_T___ _dax_pp_comma Tag); };
-template <typename Tags1, typename B, typename T1 _dax_pp_comma _dax_pp_typename___T> class TagsAdd< Tags<Tags1>, B(T1 _dax_pp_comma _dax_pp_T___)>: public TagsAdd<typename TagsAdd<Tags<Tags1>,T1>::type, B(_dax_pp_T___)> {};
-#if _dax_pp_sizeof___T > 0
-template <typename B, _dax_pp_typename___T> struct TagsBase<B(_dax_pp_T___)>: _dax_pp_enum___(_dax_TagsCheck) { typedef B base_type; };
-#endif // _dax_pp_sizeof___T > 0
-
-#endif // defined(BOOST_PP_IS_ITERATING)
