@@ -36,8 +36,14 @@ if(CMAKE_COMPILER_IS_GNUCXX OR
   set(CMAKE_CXX_FLAGS_DEBUG
     "${CMAKE_CXX_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS_WARN}")
 
-  # Addtional warnings for GCC
-  set(CMAKE_CXX_FLAGS_WARN_EXTRA "-Wno-long-long -Wcast-align -Wchar-subscripts -Wextra -Wpointer-arith -Wformat -Wformat-security -Wshadow -Wunused-parameter -fno-common")
+  # Common warnings for all three compilers
+  set(CMAKE_CXX_FLAGS_WARN_EXTRA "-Wno-long-long -Wextra -Wpointer-arith -Wformat -Wformat-security -Wshadow -Wunused-parameter -fno-common")
+
+  # common warnings for clang and gcc
+  if (NOT CMAKE_COMPILER_IS_INTEL)
+    set(CMAKE_CXX_FLAGS_WARN_EXTRA "${CMAKE_CXX_FLAGS_WARN_EXTRA} -Wcast-align -Wchar-subscripts")
+  endif()
+
   if (DAX_FORCE_ANSI)
     set(CMAKE_CXX_FLAGS_WARN_EXTRA "-ansi ${CMAKE_CXX_FLAGS_WARN_EXTRA}")
   endif()
