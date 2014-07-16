@@ -18,6 +18,7 @@ set(headers
   ArrayManagerExecutionTBB.h
   DeviceAdapterAlgorithmTBB.h
   DeviceAdapterTagTBB.h
+  parallel_sort.h
   )
 
 dax_declare_headers(${headers})

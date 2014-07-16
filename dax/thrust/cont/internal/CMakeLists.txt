@@ -21,6 +21,7 @@ set(headers
   Copy.h
   DeviceAdapterAlgorithmThrust.h
   MakeThrustIterator.h
+  UninitializedAllocator.h
   )
 
 dax_requires_thrust_to_test(
@@ -29,6 +30,7 @@ dax_requires_thrust_to_test(
     Copy.h
     DeviceAdapterAlgorithmThrust.h
     MakeThrustIterator.h
+    UninitializedAllocator.h
     )
 
 dax_declare_headers(${headers})
