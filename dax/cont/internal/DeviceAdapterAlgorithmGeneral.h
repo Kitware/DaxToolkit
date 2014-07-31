@@ -28,6 +28,8 @@
 #include <dax/exec/internal/ErrorMessageBuffer.h>
 #include <dax/exec/internal/WorkletBase.h>
 
+#include <dax/math/Compare.h>
+
 #include <algorithm>
 
 namespace dax {
@@ -448,77 +450,112 @@ public:
   //--------------------------------------------------------------------------
   // Sort
 private:
-  template<typename PortalType, typename CompareType>
-  struct BitonicSortMergeKernel : dax::exec::internal::WorkletBase
+
+  // Returns the number of items of the portal in the given range that are
+  // less than the given value.
+  template<typename T, typename PortalType, typename CompareType>
+  DAX_EXEC_EXPORT
+  static dax::Id MergeSortBinarySearch(const PortalType &portal,
+                                       const CompareType &compare,
+                                       dax::Id rangeStart,
+                                       dax::Id rangeLength,
+                                       T value,
+                                       bool tieBreaker)
   {
-    PortalType Portal;
+    dax::Id left = rangeStart;
+    dax::Id right = left+rangeLength;
+
+    while (left < right)
+      {
+      dax::Id middle = (left+right)/2;
+      T middleValue = portal.Get(middle);
+      // Note in the condition below that the tie breaker clause is to be
+      // used when the two values are equal. For normal numbers with a normal
+      // comparison (like less or greater), you could just use ==. However,
+      // The == operator might not be the right check either literally or
+      // mathematically. Thus, the tie breaker is invoked if middleValue is
+      // neither less than or greater than value. We take this to mean that
+      // the two values are equivalent (and it is certainly true when they
+      // are equal.
+      if (compare(middleValue, value)
+          || (tieBreaker && !compare(value,middleValue)))
+        {
+        left = middle+1;
+        }
+      else
+        {
+        right = middle;
+        }
+      }
+    return left - rangeStart;
+  }
+
+  template<typename InputPortalType, typename OutputPortalType, typename CompareType>
+  struct ParallelMergeSortKernel : dax::exec::internal::WorkletBase
+  {
+    InputPortalType InputPortal;
+    OutputPortalType OutputPortal;
     CompareType Compare;
-    dax::Id GroupSize;
+    dax::Id InGroupSize;
+    dax::Id OutGroupSize;
 
     DAX_CONT_EXPORT
-    BitonicSortMergeKernel(const PortalType &portal,
-                           const CompareType &compare,
-                           dax::Id groupSize)
-      : Portal(portal), Compare(compare), GroupSize(groupSize) {  }
+    ParallelMergeSortKernel(const InputPortalType &input,
+                       OutputPortalType output,
+                       const CompareType &compare,
+                       dax::Id outGroupSize)
+      : InputPortal(input), OutputPortal(output), Compare(compare),
+        InGroupSize(outGroupSize/2), OutGroupSize(outGroupSize) { }
 
     DAX_EXEC_EXPORT
-    void operator()(dax::Id index) const {
-      typedef typename PortalType::ValueType ValueType;
+    void operator()(dax::Id index) const
+    {
+      const dax::Id outputIdxOffset = index%this->OutGroupSize;
+      const dax::Id outputBeginIdx= index - outputIdxOffset;
+      const dax::Id numVals = this->InputPortal.GetNumberOfValues();
 
-      dax::Id groupIndex = index%this->GroupSize;
-      dax::Id blockSize = 2*this->GroupSize;
-      dax::Id blockIndex = index/this->GroupSize;
+      const dax::Id input1BeginIdx = outputBeginIdx;
+      // This index might be out of bounds for arrays of size that are not
+      // a power of two. Check for that.
+      const dax::Id input2BeginIdx =
+          dax::math::Min(input1BeginIdx + this->InGroupSize, numVals-1);
 
-      dax::Id lowIndex = blockIndex * blockSize + groupIndex;
-      dax::Id highIndex = lowIndex + this->GroupSize;
-
-      if (highIndex < this->Portal.GetNumberOfValues())
+      bool tieBreaker;
+      dax::Id localIndex;   // Index of value in containing input range
+      dax::Id compareRangeStart;
+      dax::Id compareRangeLength = this->InGroupSize;
+      if (index < input2BeginIdx)
         {
-        ValueType lowValue = this->Portal.Get(lowIndex);
-        ValueType highValue = this->Portal.Get(highIndex);
-        if (this->Compare(highValue, lowValue))
-          {
-          this->Portal.Set(highIndex, lowValue);
-          this->Portal.Set(lowIndex, highValue);
-          }
+        // Index in the first input range.
+        tieBreaker = true; // Place this value before any identicals in range 2.
+        localIndex = index - input1BeginIdx;
+        compareRangeStart = input2BeginIdx;
         }
-    }
-  };
-
-  template<typename PortalType, typename CompareType>
-  struct BitonicSortCrossoverKernel : dax::exec::internal::WorkletBase
-  {
-    PortalType Portal;
-    CompareType Compare;
-    dax::Id GroupSize;
-
-    DAX_CONT_EXPORT
-    BitonicSortCrossoverKernel(const PortalType &portal,
-                               const CompareType &compare,
-                               dax::Id groupSize)
-      : Portal(portal), Compare(compare), GroupSize(groupSize) {  }
-
-    DAX_EXEC_EXPORT
-    void operator()(dax::Id index) const {
-      typedef typename PortalType::ValueType ValueType;
-
-      dax::Id groupIndex = index%this->GroupSize;
-      dax::Id blockSize = 2*this->GroupSize;
-      dax::Id blockIndex = index/this->GroupSize;
-
-      dax::Id lowIndex = blockIndex*blockSize + groupIndex;
-      dax::Id highIndex = blockIndex*blockSize + (blockSize - groupIndex - 1);
-
-      if (highIndex < this->Portal.GetNumberOfValues())
+      else
         {
-        ValueType lowValue = this->Portal.Get(lowIndex);
-        ValueType highValue = this->Portal.Get(highIndex);
-        if (this->Compare(highValue, lowValue))
-          {
-          this->Portal.Set(highIndex, lowValue);
-          this->Portal.Set(lowIndex, highValue);
-          }
+        // Index in the second input range.
+        tieBreaker = false; // Place this value after any identicals in range 2.
+        localIndex = index - input2BeginIdx;
+        compareRangeStart = input1BeginIdx;
         }
+
+      typename InputPortalType::ValueType value = this->InputPortal.Get(index);
+
+      // Check if the calucated compare indices are out of bounds
+      // (This happens for array whose size are not a power of two
+      if((compareRangeStart + compareRangeLength) > numVals)
+        {
+        compareRangeLength = numVals-compareRangeStart;
+        }
+
+      const dax::Id compareIndex = MergeSortBinarySearch(this->InputPortal,
+                                                         this->Compare,
+                                                         compareRangeStart,
+                                                         compareRangeLength,
+                                                         value,
+                                                         tieBreaker);
+
+      this->OutputPortal.Set(outputBeginIdx + localIndex + compareIndex, value);
     }
   };
 
@@ -539,33 +576,54 @@ public:
       dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> &values,
       CompareType compare)
   {
-    typedef typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTag>
-        ArrayType;
-    typedef typename ArrayType::PortalExecution PortalType;
+    typedef typename dax::cont::ArrayHandle<T,Container,DeviceAdapterTag> ArrayHandleType;
+    typedef typename ArrayHandleType::PortalConstExecution ValuesInputPortalType;
+    typedef typename ArrayHandleType::PortalExecution ValuesOutputPortalType;
+
+    typedef typename dax::cont::ArrayHandle<T,dax::cont::ArrayContainerControlTagBasic,DeviceAdapterTag>
+        TmpArrayHandleType;
+    typedef typename TmpArrayHandleType::PortalConstExecution TmpInputPortalType;
+    typedef typename TmpArrayHandleType::PortalExecution TmpOutputPortalType;
 
     dax::Id numValues = values.GetNumberOfValues();
     if (numValues < 2) { return; }
 
-    PortalType portal = values.PrepareForInPlace();
+    TmpArrayHandleType tmpArray;
 
-    dax::Id numThreads = 1;
-    while (numThreads < numValues) { numThreads *= 2; }
-    numThreads /= 2;
 
-    typedef BitonicSortMergeKernel<PortalType,CompareType> MergeKernel;
-    typedef BitonicSortCrossoverKernel<PortalType,CompareType> CrossoverKernel;
-
-    for (dax::Id crossoverSize = 1;
-         crossoverSize < numValues;
-         crossoverSize *= 2)
+    // NOTE: You have to loop over the number of values times 2 becuase
+    // non power of two sized arrays require an extra iteration in order
+    // to merge into one final output array. The strict less than in the
+    // loop terminator skips this "extra" iteration for powers of two.
+    bool dataInTmpArray = false;
+    for (dax::Id size = 2; size < numValues*2; size *= 2)
       {
-      DerivedAlgorithm::Schedule(CrossoverKernel(portal,compare,crossoverSize),
-                                 numThreads);
-      for (dax::Id mergeSize = crossoverSize/2; mergeSize > 0; mergeSize /= 2)
+      if (dataInTmpArray)
         {
-        DerivedAlgorithm::Schedule(MergeKernel(portal,compare,mergeSize),
-                                   numThreads);
+        typedef ParallelMergeSortKernel<
+            TmpInputPortalType, ValuesOutputPortalType, CompareType> MergeSort;
+        DerivedAlgorithm::Schedule(MergeSort(tmpArray.PrepareForInput(),
+                                             values.PrepareForOutput(numValues),
+                                             compare,
+                                             size),
+                                   numValues);
+        dataInTmpArray = false;
         }
+      else
+        {
+        typedef ParallelMergeSortKernel<
+            ValuesInputPortalType, TmpOutputPortalType, CompareType> MergeSort;
+        DerivedAlgorithm::Schedule(MergeSort(values.PrepareForInput(),
+                                             tmpArray.PrepareForOutput(numValues),
+                                             compare,
+                                             size),
+                                   numValues);
+        dataInTmpArray = true;
+        }
+      }
+    if (dataInTmpArray)
+      {
+      DerivedAlgorithm::Copy(tmpArray, values);
       }
   }
 
