@@ -124,7 +124,7 @@ namespace detail {
 
     //If this asserts, that means that not all the types in ParameterTypes,
     //derive from the ResultType
-    BOOST_STATIC_ASSERT((EverythingDerivedFromResultType::value==ExepectedResult::value));
+    BOOST_STATIC_ASSERT(((int)EverythingDerivedFromResultType::value==(int)ExepectedResult::value));
   public:
     typedef ResultType base_type;
 
