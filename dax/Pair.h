@@ -80,7 +80,7 @@ struct Pair
   operator=(const dax::Pair<FirstType,SecondType> &src) {
     this->first = src.first;
     this->second = src.second;
-    return this;
+    return *this;
   }
 
   DAX_EXEC_CONT_EXPORT

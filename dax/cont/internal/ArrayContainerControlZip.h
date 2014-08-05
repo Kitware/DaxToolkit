@@ -338,7 +338,8 @@ public:
         = PortalExecution(this->FirstArray.PrepareForOutput(numberOfValues),
                           this->SecondArray.PrepareForOutput(numberOfValues));
     this->ExecutionPortalValid = true;
-    this->ExecutionPortalConstValid = false;
+    this->ExecutionPortalConst = this->ExecutionPortal;
+    this->ExecutionPortalConstValid = true;
   }
 
   DAX_CONT_EXPORT
