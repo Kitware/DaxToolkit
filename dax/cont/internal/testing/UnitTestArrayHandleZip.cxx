@@ -49,6 +49,9 @@ private:
       SecondArrayType;
   typedef dax::cont::internal::ArrayHandleZip<FirstArrayType,SecondArrayType>
       ZipArrayType;
+  typedef dax::Pair<dax::Id,dax::Scalar> PairType;
+  typedef dax::cont::ArrayHandle<PairType,Container,DeviceAdapter>
+      FlatArrayType;
 
   struct CheckZipFunctor : dax::exec::internal::WorkletBase
   {
@@ -164,6 +167,31 @@ private:
       dax::Scalar secondValue = secondPortal.Get(index);
       DAX_TEST_ASSERT(secondValue == SetZipFunctor::SecondValue(index),
                       "Second value wrong");
+      }
+
+    std::cout << "Checking using zip output as input later." << std::endl;
+    FlatArrayType copiedArray;
+    dax::cont::DeviceAdapterAlgorithm<DeviceAdapter>::Copy(zipArray,
+                                                           copiedArray);
+
+    DAX_TEST_ASSERT(zipArray.GetNumberOfValues() == ARRAY_SIZE,
+                    "Copy changed Zip array size.");
+    DAX_TEST_ASSERT(copiedArray.GetNumberOfValues() == ARRAY_SIZE,
+                    "Copied array has wrong size.");
+
+    typename ZipArrayType::PortalConstControl zipPortal =
+        zipArray.GetPortalConstControl();
+    typename FlatArrayType::PortalConstControl copiedPortal =
+        copiedArray.GetPortalConstControl();
+    for (dax::Id index = 0; index < ARRAY_SIZE; index++)
+      {
+      PairType expectedValue =
+          dax::make_Pair(SetZipFunctor::FirstValue(index),
+                         SetZipFunctor::SecondValue(index));
+      PairType zipValue = zipPortal.Get(index);
+      DAX_TEST_ASSERT(expectedValue == zipValue, "Zip values wrong.");
+      PairType copiedValue = copiedPortal.Get(index);
+      DAX_TEST_ASSERT(expectedValue == copiedValue, "Copied values wrong.");
       }
   }
 
