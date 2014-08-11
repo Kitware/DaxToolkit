@@ -16,6 +16,7 @@
 
 set(headers
   MarchingCubesTable.h
+  MarchingTetrahedraTable.h
   )
 
 dax_declare_headers(${headers})

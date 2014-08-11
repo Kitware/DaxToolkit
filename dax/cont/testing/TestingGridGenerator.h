@@ -226,7 +226,7 @@ private:
     }
 
   // ......................................................... MakeInfoTopology
-  void MakeInfoTopology(dax::cont::UniformGrid<DeviceAdapterTag> &uniform,
+  void MakeInfoTopology(const dax::cont::UniformGrid<DeviceAdapterTag> &uniform,
                         const dax::Id vertexIdList[],
                         dax::Id numPointsPerCell,
                         dax::Id totalCells)
@@ -312,11 +312,16 @@ private:
 
       dax::Id numPointsPerCell
           = dax::CellTraits<dax::CellTagTetrahedron>::NUM_VERTICES;
-      dax::Id totalCells = 2;
+      dax::Id totalCells = 6;
+      //Freudenthal Subdivision of hexahedra into 6 tetrahedra
       const dax::Id vertexIdList[] =
         {
-          0,1,4,3,                // Front-Low-Left
-          6,7,2,5                 // Back-Top-Right
+          0,2,3,6,
+          0,3,7,6,
+          0,7,4,6,
+          0,5,6,4,
+          1,5,6,0,
+          1,6,2,0
         };
 
       this->MakeInfoTopology(uniform,

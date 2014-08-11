@@ -319,6 +319,22 @@ public:
       function(t);
     }
   };
+  struct CellCheckTetrahedron {
+    template <class Tag, class Functor>
+    void operator()(Tag t, Functor function) const {
+      this->DoTetrahedron(
+            typename dax::CellTraits<Tag>::CanonicalCellTag(),
+            t,
+            function);
+    }
+  private:
+    template <class Tag, typename T, class Functor>
+    void DoTetrahedron(Tag, T, const Functor&) const {  }
+    template <class Tag, class Functor>
+    void DoTetrahedron(dax::CellTagTetrahedron, Tag t, Functor function) const {
+      function(t);
+    }
+  };
   template<int Dims>
   struct CellCheckTopologicalDimensions {
     template <class Tag, class Functor>
