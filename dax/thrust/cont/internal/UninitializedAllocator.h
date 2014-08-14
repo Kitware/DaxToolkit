@@ -16,6 +16,8 @@
 #ifndef __dax_thrust_cont_internal_UninitializedAllocator_h
 #define __dax_thrust_cont_internal_UninitializedAllocator_h
 
+#include <dax/thrust/cont/internal/CheckThrustBackend.h>
+
 // Disable GCC warnings we check Dax for but Thrust does not.
 #if defined(__GNUC__) && !defined(DAX_CUDA)
 #if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
