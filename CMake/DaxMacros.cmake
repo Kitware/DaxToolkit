@@ -59,10 +59,12 @@ function(dax_add_header_build_test name dir_prefix use_cuda)
     cuda_add_library(TestBuild_${name} ${cxxfiles} ${hfiles})
   elseif (${cxxfiles_len} GREATER 0)
     add_library(TestBuild_${name} ${cxxfiles} ${hfiles})
-    if(DAX_EXTRA_COMPILER_WARNINGS)
+    if(DAX_EXTRA_COMPILER_WARNINGS AND CMAKE_CXX_FLAGS_WARN_EXTRA)
+      #only set the property if the user enabled warnings, and we have
+      #a valid set of extra warnings to enable for the given compiler
       set_target_properties(TestBuild_${name}
         PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS_WARN_EXTRA})
-    endif(DAX_EXTRA_COMPILER_WARNINGS)
+    endif(DAX_EXTRA_COMPILER_WARNINGS AND CMAKE_CXX_FLAGS_WARN_EXTRA)
   endif ()
   set_source_files_properties(${hfiles}
     PROPERTIES HEADER_FILE_ONLY TRUE
@@ -167,10 +169,10 @@ function(dax_unit_tests)
       cuda_add_executable(${test_prog} ${TestSources})
     else (DAX_UT_CUDA)
       add_executable(${test_prog} ${TestSources})
-      if(DAX_EXTRA_COMPILER_WARNINGS)
+      if(DAX_EXTRA_COMPILER_WARNINGS AND CMAKE_CXX_FLAGS_WARN_EXTRA)
         set_target_properties(${test_prog}
           PROPERTIES COMPILE_FLAGS ${CMAKE_CXX_FLAGS_WARN_EXTRA})
-      endif(DAX_EXTRA_COMPILER_WARNINGS)
+      endif(DAX_EXTRA_COMPILER_WARNINGS AND CMAKE_CXX_FLAGS_WARN_EXTRA)
     endif (DAX_UT_CUDA)
 
     #do it as a property value so we don't pollute the include_directories
@@ -303,7 +305,7 @@ function(dax_worklet_unit_tests device_adapter)
     #increase warning level if needed, we are going to skip cuda here
     #to remove all the false positive unused function warnings that cuda
     #generates
-    if(DAX_EXTRA_COMPILER_WARNINGS)
+    if(DAX_EXTRA_COMPILER_WARNINGS AND CMAKE_CXX_FLAGS_WARN_EXTRA)
       set_property(TARGET ${test_prog}
             APPEND PROPERTY COMPILE_FLAGS ${CMAKE_CXX_FLAGS_WARN_EXTRA} )
     endif()
