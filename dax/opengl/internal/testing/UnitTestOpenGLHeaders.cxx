@@ -25,6 +25,7 @@ void TestOpenGLHeaders()
   GLenum e = GL_ELEMENT_ARRAY_BUFFER;
   GLuint u = 1;
   u = u * e;
+  (void) u;
 #else
   unable_to_find_required_gl_version();
 #endif

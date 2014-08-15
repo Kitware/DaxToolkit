@@ -59,7 +59,7 @@ void FieldConstant()
   //dax tuple
   dax::Tuple<dax::Scalar,6> tuple6;
   tuple6[0]=0.0f; tuple6[1]=0.5f; tuple6[2]=0.25f;
-  tuple6[0]=0.0f; tuple6[1]=-0.5f; tuple6[2]=-0.25f;
+  tuple6[3]=0.0f; tuple6[4]=-0.5f; tuple6[5]=-0.25f;
   verifyConstantExists<dax::Tuple<dax::Scalar,6> >(tuple6);
 
   //dax::vectors
