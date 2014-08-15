@@ -22,6 +22,7 @@
 
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/sig/Arg.h>
+#include <dax/cont/sig/Tag.h>
 #include <dax/cont/sig/VisitIndex.h>
 #include <dax/exec/internal/kernel/VisitIndexWorklets.h>
 #include <dax/internal/ParameterPack.h>
@@ -81,11 +82,12 @@ struct MakeVisitIndexControlType<false,Algorithm,HandleType>
 template<class WorkletType, class Algorithm, class IdArrayHandleType>
 class AddVisitIndexArg
 {
+  typedef dax::cont::arg::Field(*FieldInType)(sig::In);
   typedef dax::internal::ReplaceAndExtendSignatures<
               WorkletType,
               dax::cont::sig::VisitIndex,
               dax::cont::sig::internal::VisitIndexMetaFunc,
-              dax::cont::arg::Field>  ModifiedWorkletSignatures;
+              FieldInType>  ModifiedWorkletSignatures;
 
   typedef typename ModifiedWorkletSignatures::found VisitIndexFound;
 
