@@ -18,21 +18,30 @@
 
 #include <dax/Types.h>
 #include <dax/exec/WorkletMapField.h>
+#include <dax/internal/WorkletSignatureFunctions.h>
 
 namespace dax {
 namespace exec {
 namespace internal {
 namespace kernel {
 
-template<class Worklet, typename CSig, typename ESig>
+template<class Worklet, class ModifiedWorkletSignatures>
 class DerivedWorklet : public Worklet
 {
 public:
   DerivedWorklet(const Worklet& worklet):
     Worklet(worklet)
     {}
-  typedef CSig ControlSignature;
-  typedef ESig ExecutionSignature;
+
+  //we have to build the new worklet signatures, we explicitly pass in
+  //ModifiedWorkletSignatures instead of the expanded Control and Execution
+  //signatures to work around VisualStudio + NVCC pre-processor bugs. Basically
+  //nvcc creates a typedef with the following snippet <(void<(int)1>)>, which
+  //makes visual studio have a parse error
+  typedef typename dax::internal::BuildSignature<
+            typename ModifiedWorkletSignatures::ControlSignature>::type ControlSignature;
+   typedef typename dax::internal::BuildSignature<
+            typename ModifiedWorkletSignatures::ExecutionSignature>::type ExecutionSignature;
 };
 
 
