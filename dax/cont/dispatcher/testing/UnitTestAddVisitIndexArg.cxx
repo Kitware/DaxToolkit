@@ -109,7 +109,9 @@ void AddVisitIndex()
   //3 since we count return type as zero
   typedef boost::mpl::at_c<NewContSig,3>::type VisitContType;
   typedef boost::mpl::at_c<NewExecSig,3>::type VisitExecType;
-  BOOST_MPL_ASSERT(( boost::is_same<VisitContType, dax::cont::arg::Field > ));
+
+  typedef dax::cont::arg::Field(*FieldInType)(dax::cont::sig::In);
+  BOOST_MPL_ASSERT(( boost::is_same<VisitContType, FieldInType > ));
   //3 for assert as sig::Arg is 1 based
   BOOST_MPL_ASSERT(( boost::is_same<VisitExecType,
                      dax::cont::sig::VisitIndexArg<3> > ));

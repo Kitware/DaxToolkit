@@ -22,6 +22,7 @@
 
 #include <dax/cont/arg/Field.h>
 #include <dax/cont/sig/Arg.h>
+#include <dax/cont/sig/Tag.h>
 #include <dax/cont/sig/VisitIndex.h>
 #include <dax/exec/internal/kernel/VisitIndexWorklets.h>
 #include <dax/internal/ParameterPack.h>
@@ -81,32 +82,24 @@ struct MakeVisitIndexControlType<false,Algorithm,HandleType>
 template<class WorkletType, class Algorithm, class IdArrayHandleType>
 class AddVisitIndexArg
 {
+  typedef dax::cont::arg::Field(*FieldInType)(sig::In);
   typedef dax::internal::ReplaceAndExtendSignatures<
               WorkletType,
               dax::cont::sig::VisitIndex,
               dax::cont::sig::internal::VisitIndexMetaFunc,
-              dax::cont::arg::Field>  ModifiedWorkletSignatures;
+              FieldInType>  ModifiedWorkletSignatures;
 
   typedef typename ModifiedWorkletSignatures::found VisitIndexFound;
 
   typedef internal::MakeVisitIndexControlType<VisitIndexFound::value,
               Algorithm,
               IdArrayHandleType> VisitContFunction;
-
-
-  //now that we have index generated, we have to build the new worklet
-  //that has the updated signature
-  typedef typename dax::internal::BuildSignature<
-            typename ModifiedWorkletSignatures::ControlSignature>::type NewContSig;
-  typedef typename dax::internal::BuildSignature<
-            typename ModifiedWorkletSignatures::ExecutionSignature>::type NewExecSig;
-
 public:
 
   //make sure to pass the user worklet down to the new derived worklet, so
   //that we get any member variable values that they have set
   typedef dax::exec::internal::kernel::DerivedWorklet<WorkletType,
-            NewContSig,NewExecSig> DerivedWorkletType;
+            ModifiedWorkletSignatures> DerivedWorkletType;
 
   //generate the visitIndex, if we don't need it we will create a dummy
   //control side signature argument that is just a constant value dax::Id
