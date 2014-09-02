@@ -30,6 +30,7 @@ set(unit_tests
   UnitTestWorkletElevation.cxx
   UnitTestWorkletMagnitude.cxx
   UnitTestWorkletMarchingCubes.cxx
+  UnitTestWorkletMarchingTetrahedra.cxx
   UnitTestWorkletPointDataToCellData.cxx
   UnitTestWorkletSine.cxx
   UnitTestWorkletSlice.cxx

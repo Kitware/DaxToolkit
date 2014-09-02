@@ -201,7 +201,7 @@ void RunDAXPipeline(const dax::cont::UniformGrid<> &grid)
   if(time < 0) //rough dump to file, currently disabled
     {
     std::ofstream file;
-    file.open ("daxResult.vtk");
+    file.open ("ThresholdDaxResult.vtk");
     PrintContentsToStream(grid2,file);
     file.close();
     }
