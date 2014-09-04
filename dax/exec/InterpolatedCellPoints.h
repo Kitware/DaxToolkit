@@ -16,6 +16,7 @@
 #ifndef __dax_exec_InterpolatedCellPoints_h
 #define __dax_exec_InterpolatedCellPoints_h
 
+#include <dax/cont/internal/EdgeInterpolatedGrid.h>
 #include <dax/exec/CellField.h>
 
 namespace dax {
@@ -23,13 +24,13 @@ namespace exec {
 
 /// \brief Holds the point indices for a cell of a particular type.
 ///
-/// This class is really is a convienience wrapper around a dax::Tuple.
+/// This class is really is a convenience wrapper around a dax::Tuple.
 ///
 template<class CellTag>
-class InterpolatedCellPoints : public dax::exec::CellField<dax::Vector3, CellTag>
+class InterpolatedCellPoints : public dax::exec::CellField< dax::PointAsEdgeInterpolation, CellTag>
 {
 private:
-  typedef dax::exec::CellField<dax::Vector3, CellTag> Superclass;
+  typedef dax::exec::CellField< dax::PointAsEdgeInterpolation, CellTag > Superclass;
 public:
   const static int NUM_VERTICES = Superclass::NUM_VERTICES;
   typedef typename Superclass::TupleType TupleType;
@@ -41,7 +42,7 @@ public:
   InterpolatedCellPoints(const TupleType &pointIndices) : Superclass(pointIndices) {  }
 
   DAX_CONT_EXPORT
-  InterpolatedCellPoints(dax::Vector3 value) : Superclass(value) {  }
+  InterpolatedCellPoints(dax::PointAsEdgeInterpolation value) : Superclass(value) {  }
 
   // Although this copy constructor should be identical to the default copy
   // constructor, we have noticed that NVCC's default copy constructor can
@@ -54,7 +55,9 @@ public:
   void SetInterpolationPoint( dax::Id index, dax::Id pos1, dax::Id pos2,
                               dax::Scalar weight )
     {
-    (*this)[index]=dax::Vector3( pos1, pos2, weight);
+
+    dax::PointAsEdgeInterpolation interpolationInfo( pos1, pos2, weight);
+    (*this)[index]=interpolationInfo;
     }
 };
 

@@ -19,27 +19,17 @@
 #include <dax/Types.h>
 
 #include <dax/cont/dispatcher/DispatcherBase.h>
+
+#include <dax/cont/dispatcher/AddVisitIndexArg.h>
 #include <dax/cont/internal/DeviceAdapterTag.h>
+#include <dax/cont/internal/EdgeInterpolatedGrid.h>
+#include <dax/exec/internal/kernel/GenerateWorklets.h>
 #include <dax/exec/WorkletInterpolatedCell.h>
 #include <dax/internal/ParameterPack.h>
-
 #include <dax/math/Compare.h>
-#include <dax/cont/dispatcher/AddVisitIndexArg.h>
-#include <dax/exec/internal/kernel/GenerateWorklets.h>
-
 
 namespace dax { namespace cont {
 
-namespace detail
-{
-  struct sort_V3_less
-  {
-  DAX_EXEC_CONT_EXPORT bool operator()(const dax::Vector3& a,
-                                       const dax::Vector3& b) const
-    { return (a[0] < b[0]) || (a[0] == b[0] && a[1] < b[1]); }
-  };
-
-}
 
 template <
   class WorkletType_,
@@ -62,10 +52,9 @@ class DispatcherGenerateInterpolatedCells :
                                                  WorkletType_,
                                                  DeviceAdapterTag_>;
 
-  typedef dax::cont::ArrayHandle< dax::Vector3,
+  typedef dax::cont::ArrayHandle< dax::PointAsEdgeInterpolation,
                   dax::cont::ArrayContainerControlTagBasic,
                   DeviceAdapterTag_ >  InterpolationWeightsType;
-
 public:
   typedef WorkletType_ WorkletType;
   typedef CountHandleType_ CountHandleType;
@@ -115,25 +104,35 @@ public:
     { return RemoveDuplicatePoints; }
 
 
-  template<typename T, typename Container1,
-           typename Container2, typename DeviceAdapter>
+  template<typename T,
+           typename Container1, typename Container2, typename Container3,
+           typename DeviceAdapter>
   DAX_CONT_EXPORT
   bool CompactPointField(
-      const dax::cont::ArrayHandle<T,Container1,DeviceAdapter>& input,
-      dax::cont::ArrayHandle<T,Container2,DeviceAdapter>& output)
+      const dax::cont::ArrayHandle<dax::Vector3,Container1,DeviceAdapter>& input,
+      const dax::cont::ArrayHandle<T,Container2,DeviceAdapter>& interpolation,
+      dax::cont::ArrayHandle<dax::Vector3,Container3,DeviceAdapter>& output)
     {
 
     typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
                                         Algorithm;
-    typedef typename dax::cont::ArrayHandle<T,Container1,DeviceAdapter>::
-                                        PortalConstExecution InPortalType;
-    typedef typename dax::cont::ArrayHandle<T,Container2,DeviceAdapter>::
-                                        PortalExecution OutPortalType;
 
-    const dax::Id size = output.GetNumberOfValues();
+    typedef typename dax::cont::ArrayHandle<dax::Vector3,
+            Container1,DeviceAdapter>::PortalConstExecution InPortalType;
+
+    typedef typename dax::cont::ArrayHandle<T,Container2,
+            DeviceAdapter>::PortalConstExecution InterpolatedPortalType;
+
+    typedef typename dax::cont::ArrayHandle<dax::Vector3,
+            Container3,DeviceAdapter>::PortalExecution OutPortalType;
+
+    //interpolation holds the proper size
+    const dax::Id size = interpolation.GetNumberOfValues();
     dax::exec::internal::kernel::InterpolateFieldToField<InPortalType,
+                                                         InterpolatedPortalType,
                                                          OutPortalType>
         interpolate( input.PrepareForInput(),
+                     interpolation.PrepareForInput(),
                      output.PrepareForOutput(size));
 
     Algorithm::Schedule(interpolate, size);
@@ -169,6 +168,12 @@ private:
         Algorithm;
     typedef dax::cont::ArrayHandle<dax::Id, ArrayContainerControlTagBasic,
         DeviceAdapterTag> IdArrayHandleType;
+
+    dax::cont::internal::EdgeInterpolatedGrid<
+        typename OutputGrid::CellTag,
+        ArrayContainerControlTagBasic,
+        ArrayContainerControlTagBasic,
+        DeviceAdapterTag > edgeInterpolatedOutputGrid;
 
     //do an inclusive scan of the cell count / cell mask to get the number
     //of cells in the output
@@ -217,17 +222,17 @@ private:
     AddVisitIndexFunctor createVisitIndex;
     createVisitIndex(validCellRange,visitIndex);
 
-    //make fake indicies so that the worklet can write out the interpolated
-    //cell points information as geometry
-    outputGrid.GetCellConnections().PrepareForOutput(
+    //create a temporary edge interpolation unstructured grid, that has
+    //the cell indices faked so that the worklet can write out the interpolated
+    //cell points edge interpolation information
+    edgeInterpolatedOutputGrid.GetCellConnections().PrepareForOutput(
        numNewCells * dax::CellTraits<typename OutputGrid::CellTag>::NUM_VERTICES);
     dax::cont::DispatcherMapField< dax::exec::internal::kernel::Index >()
-                                      .Invoke(outputGrid.GetCellConnections());
+                                      .Invoke(edgeInterpolatedOutputGrid.GetCellConnections());
 
     //Next step is to set the dispatcher to fill the output geometry
-    //with the interpolated cell values. We use the outputGrid,
-    //since a vec3 is what the interpolated cell values and the outputGrids
-    //coordinate space are
+    //with the interpolated cell values. We use edgeInterpolatedOutputGrid,
+    //since it 'points' are really interpolation of  2 edges and the weight
 
     //we get our magic here. we need to wrap some parameters and pass
     //them to the real dispatcher
@@ -237,11 +242,14 @@ private:
           arguments.template Replace<1>(
             dax::cont::make_Permutation(validCellRange,inputGrid,
                                         inputGrid.GetNumberOfCells()))
+          .template Replace<2>( edgeInterpolatedOutputGrid )
           .Append(visitIndex));
 
     //now that the interpolated grid is filled we now have to properly
     //fixup the topology and coordinates
-    this->ResolveCoordinates(inputGrid,outputGrid,
+    this->ResolveCoordinates(inputGrid,
+                             edgeInterpolatedOutputGrid,
+                             outputGrid,
                              this->GetRemoveDuplicatePoints());
   }
 
@@ -250,8 +258,9 @@ private:
   //specify the coordinate array to interpolate on, instead of it being based
   //on the input grid. This would allow us to do some smarter contouring on
   //moving coordinate fields, where the count doesn't change
-  template <typename InputGrid, typename OutputGrid>
+  template <typename InputGrid, typename InterpolatedGrid, typename OutputGrid>
   DAX_CONT_EXPORT void ResolveCoordinates(const InputGrid& inputGrid,
+                                          const InterpolatedGrid& interpolatedGrid,
                                           OutputGrid& outputGrid,
                                           bool removeDuplicates )
   {
@@ -260,40 +269,43 @@ private:
 
     if(removeDuplicates)
       {
-      //we have stored the interpolation weights inside the output grid coordinates
-      //which in the future needs to be changed. So store a copy of them
-      //into our own array handle
-      Algorithm::Copy(outputGrid.GetPointCoordinates(),
-                    this->InterpolationWeights);
+      //we have stored the interpolation weights inside the
+      //InterpolatedGrid grid coordinates So to properly find the unique subset
+      //we need to find the unique subset, which we store in our member var
+      //InterpolationWeights
+      Algorithm::Copy(interpolatedGrid.GetInterpolatedPoints(),
+                      this->InterpolationWeights);
 
       // the sort and unique will get us the subset of new points
       // the lower bounds on the subset and the original coords, will produce
       // the resulting topology array
-
-      detail::sort_V3_less comparisonFunctor;
-
-      Algorithm::Sort(this->InterpolationWeights, comparisonFunctor );
+      Algorithm::Sort(this->InterpolationWeights);
       Algorithm::Unique(this->InterpolationWeights);
       Algorithm::LowerBounds(this->InterpolationWeights,
-                             outputGrid.GetPointCoordinates(),
-                             outputGrid.GetCellConnections(),
-                             comparisonFunctor );
+                             interpolatedGrid.GetInterpolatedPoints(),
+                             outputGrid.GetCellConnections()
+                             );
 
-      //reduce and resize outputGrid
-      Algorithm::Copy(this->InterpolationWeights,
-                      outputGrid.GetPointCoordinates());
-      }
 
-    this->CompactPointField(inputGrid.GetPointCoordinates(),
-                            outputGrid.GetPointCoordinates());
+      this->CompactPointField(inputGrid.GetPointCoordinates(),
+                              this->InterpolationWeights,
+                              outputGrid.GetPointCoordinates());
 
-    if(removeDuplicates)
-      {
       //after each time we interpolate we unload the interpolation weights
       //from the execution env so that we don't hold reserve exec memory
       //longer than needed
-      this->InterpolationWeights.GetPortalControl(); //copy to cont
-      // this->InterpolationWeights.ReleaseResourcesExecution();
+      this->InterpolationWeights.GetPortalControl();
+
+      }
+    else
+      {
+      this->CompactPointField(inputGrid.GetPointCoordinates(),
+                              interpolatedGrid.GetInterpolatedPoints(),
+                              outputGrid.GetPointCoordinates());
+      //we need to  copy the cells connections from the interpolatedGrid
+      //over to the output grid
+      Algorithm::Copy(interpolatedGrid.GetCellConnections(),
+                      outputGrid.GetCellConnections());
       }
   }
 
@@ -301,7 +313,6 @@ private:
   bool RemoveDuplicatePoints;
   bool ReleaseCount;
   CountHandleType Count;
-
   InterpolationWeightsType InterpolationWeights;
 
 };
