@@ -50,14 +50,14 @@ public:
                                const PortalType& p):
     Topo(t),
     Portal(p),
-    Cell(dax::make_Vector3(0.0f,0.0f,0.0f))
+    EdgeInterpolatedCell( dax::PointAsEdgeInterpolation(0.0f,0.0f,0) )
     {
     }
 
   template<typename IndexType>
   DAX_EXEC_EXPORT ReturnType GetValueForWriting(const IndexType&,
                             const dax::exec::internal::WorkletBase&)
-    { return this->Cell; }
+    { return this->EdgeInterpolatedCell; }
 
   template<typename IndexType>
   DAX_EXEC_EXPORT ReturnType GetValueForReading(
@@ -74,7 +74,7 @@ public:
   DAX_EXEC_EXPORT void SaveValue(dax::Id index,
                             const dax::exec::internal::WorkletBase& work) const
     {
-    this->SaveValue(index,this->Cell,work);
+    this->SaveValue(index,this->EdgeInterpolatedCell,work);
     }
 
   DAX_EXEC_EXPORT void SaveValue(dax::Id index,
@@ -92,7 +92,7 @@ public:
 private:
   TopologyType Topo;
   PortalType Portal;
-  ValueType Cell;
+  ValueType EdgeInterpolatedCell;
 };
 
 //the traits for GeometryCell

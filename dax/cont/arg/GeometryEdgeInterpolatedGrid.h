@@ -13,8 +13,8 @@
 //  the U.S. Government retains certain rights in this software.
 //
 //=============================================================================
-#ifndef __dax_cont_arg_GeometeryUnstructuredGrid_h
-#define __dax_cont_arg_GeometeryUnstructuredGrid_h
+#ifndef __dax_cont_arg_GeometeryEdgeInterpolatedGrid_h
+#define __dax_cont_arg_GeometeryEdgeInterpolatedGrid_h
 
 #include <dax/Types.h>
 #include <dax/CellTraits.h>
@@ -24,11 +24,11 @@
 #include <dax/cont/sig/Tag.h>
 
 #include <dax/exec/arg/GeometryCell.h>
-#include <dax/cont/UnstructuredGrid.h>
+#include <dax/cont/internal/EdgeInterpolatedGrid.h>
 
 namespace dax { namespace cont { namespace arg {
 
-/// \headerfile TopologyUnstructured.h dax/cont/arg/TopologyUnstructuredGrid.h
+/// \headerfile GeometryUnstructured.h dax/cont/arg/GeometryEdgeInterpolatedGrid.h
 /// \brief Map an unstructured grid to an execution side cell topology parameter
 template <typename Tags,
           typename Cell,
@@ -36,11 +36,11 @@ template <typename Tags,
           typename PointContainerTag,
           typename DeviceTag
           >
-class ConceptMap<Geometry(Tags), dax::cont::UnstructuredGrid< Cell,
+class ConceptMap<Geometry(Tags), dax::cont::internal::EdgeInterpolatedGrid< Cell,
                                  CellContainerTag,PointContainerTag,
                                  DeviceTag > >
 {
-  typedef dax::cont::UnstructuredGrid< Cell,
+  typedef dax::cont::internal::EdgeInterpolatedGrid< Cell,
           CellContainerTag, PointContainerTag, DeviceTag > GridType;
 
   //use mpl::if_ to determine the type for ExecArg
@@ -51,13 +51,14 @@ class ConceptMap<Geometry(Tags), dax::cont::UnstructuredGrid< Cell,
 
   typedef typename boost::mpl::if_<
     typename Tags::template Has<dax::cont::sig::Out>,
-    typename GridType::PointCoordinatesType::PortalExecution,
-    typename GridType::PointCoordinatesType::PortalConstExecution>::type PointsPortalType;
+    typename GridType::InterpolatedPointsType::PortalExecution,
+    typename GridType::InterpolatedPointsType::PortalConstExecution>::type EdgePortalType;
 
-  typedef dax::exec::arg::GeometryCell<Tags,TopologyType,PointsPortalType> ExecGridType;
+  typedef dax::exec::arg::GeometryCell<Tags,TopologyType,EdgePortalType> ExecGridType;
+
   GridType Grid;
   TopologyType Topology;
-  PointsPortalType Points;
+  EdgePortalType EdgeInterpolations;
 
 public:
   //All Topology binding classes must export the cell tag and grid tag
@@ -72,7 +73,7 @@ public:
   ConceptMap(GridType g): Grid(g) {}
 
   ExecArg GetExecArg() const {
-    return ExecGridType(this->Topology,this->Points);
+    return ExecGridType(this->Topology,this->EdgeInterpolations);
   }
 
   //All topology fields are required by dispatcher to expose the cont arg
@@ -82,16 +83,16 @@ public:
     { /* Output */
     this->Topology = this->Grid.PrepareForOutput(size);
 
-    //find out the number of points per cell and allocate
+    //find out the number of EdgeInterpolations per cell and allocate
     //to size * that.
-    this->Points = this->Grid.GetPointCoordinates().PrepareForOutput(
+    this->EdgeInterpolations = this->Grid.GetInterpolatedPoints().PrepareForOutput(
                      size *  dax::CellTraits<CellTypeTag>::NUM_VERTICES );
     }
 
   void ToExecution(dax::Id, boost::false_type)
     { /* Input  */
     this->Topology = this->Grid.PrepareForInput();
-    this->Points = this->Grid.GetPointCoordinates().PrepareForInput();
+    this->EdgeInterpolations = this->Grid.GetInterpolatedPoints().PrepareForInput();
     }
 
   //we need to pass the number of elements to allocate
@@ -102,7 +103,7 @@ public:
 
   dax::Id GetDomainLength(sig::Point) const
     {
-    return Grid.GetNumberOfPoints();
+    return Grid.GetNumberOfEdgeInterpolations();
     }
 
   dax::Id GetDomainLength(sig::Cell) const
@@ -111,7 +112,7 @@ public:
     }
 };
 
-/// \headerfile TopologyUnstructured.h dax/cont/arg/TopologyUnstructuredGrid.h
+/// \headerfile TopologyUnstructured.h dax/cont/arg/TopologyEdgeInterpolatedGrid.h
 /// \brief Map an unstructured grid to an execution side cell topology parameter
 template <typename Tags,
           typename Cell,
@@ -119,22 +120,22 @@ template <typename Tags,
           typename PointContainerTag,
           typename DeviceTag
           >
-class ConceptMap<Geometry(Tags), const dax::cont::UnstructuredGrid< Cell,
+class ConceptMap<Geometry(Tags), const dax::cont::internal::EdgeInterpolatedGrid< Cell,
                                  CellContainerTag,PointContainerTag,
                                  DeviceTag > >
 {
-  typedef dax::cont::UnstructuredGrid< Cell,
+  typedef dax::cont::internal::EdgeInterpolatedGrid< Cell,
           CellContainerTag, PointContainerTag, DeviceTag > GridType;
 
   //use mpl::if_ to determine the type for ExecArg
   typedef typename GridType::TopologyStructConstExecution TopologyType;
-  typedef typename GridType::PointCoordinatesType PointsType;
-  typedef typename GridType::PointCoordinatesType::PortalConstExecution PointsPortalType;
 
-  typedef dax::exec::arg::GeometryCell<Tags,TopologyType,PointsPortalType> ExecGridType;
+  typedef typename GridType::InterpolatedPointsType::PortalConstExecution EdgePortalType;
+
+  typedef dax::exec::arg::GeometryCell<Tags,TopologyType,EdgePortalType> ExecGridType;
   GridType Grid;
   TopologyType Topology;
-  PointsPortalType Points;
+  EdgePortalType EdgeInterpolations;
 
 public:
   //All Topology binding classes must export the cell tag and grid tag
@@ -149,7 +150,7 @@ public:
   ConceptMap(GridType g): Grid(g) {}
 
   ExecArg GetExecArg() const {
-    return ExecGridType(this->Topology,this->Points);
+    return ExecGridType(this->Topology,this->EdgeInterpolations);
   }
 
   //All topology fields are required by dispatcher to expose the cont arg
@@ -158,7 +159,7 @@ public:
   void ToExecution(dax::Id, boost::false_type)
     { /* Input  */
     this->Topology = this->Grid.PrepareForInput();
-    this->Points = this->Grid.GetPointCoordinates().PrepareForInput();
+    this->EdgeInterpolations = this->Grid.GetInterpolatedPoints().PrepareForInput();
     }
 
   //we need to pass the number of elements to allocate
@@ -169,7 +170,7 @@ public:
 
   dax::Id GetDomainLength(sig::Point) const
     {
-    return Grid.GetNumberOfPoints();
+    return Grid.GetNumberOfEdgeInterpolations();
     }
 
   dax::Id GetDomainLength(sig::Cell) const
@@ -181,4 +182,4 @@ public:
 
 }}} // namespace dax::cont::arg
 
-#endif //__dax_cont_arg_TopologyUnstructuredGrid_h
+#endif //__dax_cont_arg_TopologyEdgeInterpolatedGrid_h

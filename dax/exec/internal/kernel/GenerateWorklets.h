@@ -20,6 +20,8 @@
 #include <dax/exec/WorkletMapField.h>
 #include <dax/math/VectorAnalysis.h>
 
+#include <dax/cont/internal/EdgeInterpolatedGrid.h>
+
 namespace dax {
 namespace exec {
 namespace internal {
@@ -61,38 +63,39 @@ struct GetUsedPointsFunctor : public WorkletMapField
 };
 
 template<class InPortalType,
+         class InterpolationPortalType,
          class OutPortalType >
 struct InterpolateFieldToField
   {
     DAX_CONT_EXPORT InterpolateFieldToField(const InPortalType &inPortal,
-                                            const OutPortalType &outPortal) :
+                            const InterpolationPortalType & interpPortal,
+                                          const OutPortalType &outPortal) :
     Input(inPortal),
+    Interpolation(interpPortal),
     Output(outPortal)
     {  }
 
 
     DAX_EXEC_EXPORT void operator()(dax::Id index) const
     {
-      const dax::Vector3 interpolationInfo = this->Output.Get(index);
-      //a vector3 holding the following:
-      // 0 the first id to load from input
-      // 1 the second id to load from input
-      // 2 the weight/ratio to interpolate from the two ids
+      const dax::PointAsEdgeInterpolation interpolationInfo = this->Interpolation.Get(index);
+
 
       typedef typename InPortalType::ValueType InValueType;
       typedef typename OutPortalType::ValueType OutValueType;
 
-      const InValueType first = this->Input.Get(interpolationInfo[0]);
-      const InValueType second = this->Input.Get(interpolationInfo[1]);
+      const InValueType first = this->Input.Get(interpolationInfo.EdgeIdFirst);
+      const InValueType second = this->Input.Get(interpolationInfo.EdgeIdSecond);
 
       this->Output.Set(index,
-                       dax::math::Lerp(first,second,interpolationInfo[2]) );
+                       dax::math::Lerp(first,second,interpolationInfo.Weight) );
     }
 
     DAX_CONT_EXPORT void SetErrorMessageBuffer(
         const dax::exec::internal::ErrorMessageBuffer &) {  }
 
     InPortalType Input;
+    InterpolationPortalType Interpolation;
     OutPortalType Output;
   };
 

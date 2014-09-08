@@ -14,8 +14,7 @@
 //
 //=============================================================================
 
-#include <dax/cont/arg/GeometryUniformGrid.h>
-#include <dax/cont/arg/GeometryUnstructuredGrid.h>
+#include <dax/cont/arg/GeometryEdgeInterpolatedGrid.h>
 
 #include <dax/cont/testing/Testing.h>
 #include <dax/cont/testing/TestingGridGenerator.h>
@@ -63,9 +62,15 @@ struct BindTopoGrids
   template<typename GridType>
   void operator()(const GridType&) const
     {
-    dax::cont::testing::TestGrid<GridType> grid(4);
-    verifyBindingExists<GridType,GridType>( grid.GetRealGrid(), grid.GetRealGrid() );
-    verifyConstBindingExists<GridType,GridType>( grid.GetRealGrid(), grid.GetRealGrid() );
+    typedef typename GridType::CellTag CellTag;
+    //todo change this to only support grid out
+
+    typedef dax::cont::internal::EdgeInterpolatedGrid<CellTag> InterpGridType;
+    dax::cont::internal::EdgeInterpolatedGrid<CellTag> interpGrid;
+
+
+    verifyBindingExists<InterpGridType,InterpGridType>( interpGrid, interpGrid );
+    verifyConstBindingExists<InterpGridType,InterpGridType>( interpGrid, interpGrid );
     }
 };
 

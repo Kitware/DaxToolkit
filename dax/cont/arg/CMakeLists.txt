@@ -28,8 +28,7 @@ set(headers
   FieldConstant.h
   FieldMap.h
   Geometry.h
-  GeometryUniformGrid.h
-  GeometryUnstructuredGrid.h
+  GeometryEdgeInterpolatedGrid.h
   ImplementedConceptMaps.h
   Topology.h
   TopologyUniformGrid.h

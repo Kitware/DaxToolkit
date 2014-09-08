@@ -33,6 +33,7 @@ set(headers
   DeviceAdapterError.h
   DeviceAdapterTag.h
   DeviceAdapterTagSerial.h
+  EdgeInterpolatedGrid.h
   FindBinding.h
   GridTags.h
   IteratorFromArrayPortal.h
