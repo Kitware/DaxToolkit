@@ -104,26 +104,27 @@ public:
     { return RemoveDuplicatePoints; }
 
 
-  template<typename Container1,
+  template<typename T,
+           typename Container1,
            typename Container2,
            typename DeviceAdapter>
   DAX_CONT_EXPORT
   bool CompactPointField(
-      const dax::cont::ArrayHandle<dax::Vector3,Container1,DeviceAdapter>& input,
-      dax::cont::ArrayHandle<dax::Vector3,Container2,DeviceAdapter>& output)
+      const dax::cont::ArrayHandle<T,Container1,DeviceAdapter>& input,
+      dax::cont::ArrayHandle<T,Container2,DeviceAdapter>& output)
     {
 
     typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
                                         Algorithm;
 
-    typedef typename dax::cont::ArrayHandle<dax::Vector3,
-            Container1,DeviceAdapter>::PortalConstExecution InPortalType;
+    typedef typename dax::cont::ArrayHandle<
+            T,Container1,DeviceAdapter>::PortalConstExecution InPortalType;
 
     typedef typename InterpolationWeightsType::PortalConstExecution
         WeightsPortalType;
 
-    typedef typename dax::cont::ArrayHandle<dax::Vector3,
-            Container2,DeviceAdapter>::PortalExecution OutPortalType;
+    typedef typename dax::cont::ArrayHandle<
+            T,Container2,DeviceAdapter>::PortalExecution OutPortalType;
 
     //interpolation holds the proper size
     const dax::Id size = this->InterpolationWeights.GetNumberOfValues();

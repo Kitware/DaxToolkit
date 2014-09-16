@@ -39,6 +39,36 @@ namespace {
 const dax::Id DIM = 26;
 const dax::Id ISOVALUE = 70;
 
+template<typename PointCoordinatesArrayType,
+         typename FieldArrayType>
+DAX_CONT_EXPORT
+void CheckFieldInterpolation(PointCoordinatesArrayType pointCoordinatesArray,
+                             FieldArrayType fieldArray,
+                             dax::Vector3 gradient)
+{
+  typedef typename PointCoordinatesArrayType::PortalConstControl
+      PointCoordinatesPortalType;
+  typedef typename FieldArrayType::PortalConstControl FieldPortalType;
+
+  PointCoordinatesPortalType pointCoordinatesPortal =
+      pointCoordinatesArray.GetPortalConstControl();
+  FieldPortalType fieldPortal = fieldArray.GetPortalConstControl();
+
+  DAX_TEST_ASSERT(pointCoordinatesPortal.GetNumberOfValues() ==
+                  fieldPortal.GetNumberOfValues(),
+                  "Field has wrong number of values.");
+  dax::Id numPoints = pointCoordinatesPortal.GetNumberOfValues();
+
+  for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
+    {
+    dax::Vector3 coords = pointCoordinatesPortal.Get(pointIndex);
+    dax::Scalar expectedScalar = dax::dot(coords, gradient);
+    dax::Scalar actualScalar = fieldPortal.Get(pointIndex);
+    DAX_TEST_ASSERT(test_equal(expectedScalar, actualScalar),
+                    "Got bad scalar value.");
+    }
+}
+
 //-----------------------------------------------------------------------------
 struct TestMarchingCubesWorklet
 {
@@ -75,6 +105,23 @@ struct TestMarchingCubesWorklet
                                                   ArrayContainer(),
                                                   DeviceAdapter());
 
+    // Make a secondary field to make sure we can interpolate this field on
+    // the contour in addition to the point coordinates.
+    dax::Vector3 secondaryGradient = dax::make_Vector3(-0.5, 1.0, 2.0);
+    std::vector<dax::Scalar> secondaryField(numPoints);
+    for (dax::Id pointIndex = 0; pointIndex < numPoints; pointIndex++)
+      {
+      dax::Vector3 coordinates = inGrid.GetPointCoordinates(pointIndex);
+      secondaryField[pointIndex] = dax::dot(coordinates, secondaryGradient);
+      }
+
+    dax::cont::ArrayHandle<dax::Scalar,ArrayContainer,DeviceAdapter>
+        secondaryFieldHandle = dax::cont::make_ArrayHandle(secondaryField,
+                                                           ArrayContainer(),
+                                                           DeviceAdapter());
+    dax::cont::ArrayHandle<dax::Scalar,ArrayContainer,DeviceAdapter>
+        interpolatedSecondaryField;
+
     const dax::Scalar isoValue = ISOVALUE;
 
     try
@@ -89,12 +136,15 @@ struct TestMarchingCubesWorklet
                   dax::worklet::MarchingCubesGenerate > InterpolatedDispatcher;
 
       //run the first step
+      std::cout << "Count how many triangles are to be generated." << std::endl;
       CountHandleType count; //array handle for the first step count
       CellDispatcher cellDispatcher( (dax::worklet::MarchingCubesCount(isoValue)) );
       cellDispatcher.Invoke( inGrid.GetRealGrid(),
                              fieldHandle,
                              count);
 
+      std::cout << "Generate the contour triangles with duplicate points."
+                << std::endl;
       //construct the topology generation worklet
       InterpolatedDispatcher interpDispatcher( count,
                               dax::worklet::MarchingCubesGenerate(isoValue) );
@@ -113,6 +163,16 @@ struct TestMarchingCubesWorklet
       DAX_TEST_ASSERT(valid_num_points==outGrid.GetNumberOfPoints(),
                       "Incorrect number of points in the output grid when not merging");
 
+      std::cout << "Check interpolation of secondary field." << std::endl;
+      interpDispatcher.CompactPointField(secondaryFieldHandle,
+                                         interpolatedSecondaryField);
+      CheckFieldInterpolation(outGrid.GetPointCoordinates(),
+                              interpolatedSecondaryField,
+                              secondaryGradient);
+
+      std::cout
+          << "Generate the contour again, this time removing duplicate points."
+          << std::endl;
       interpDispatcher.SetRemoveDuplicatePoints(true);
       //run the second step again with point merging
 
@@ -121,7 +181,8 @@ struct TestMarchingCubesWorklet
                               secondOutGrid,
                               fieldHandle);
 
-      std::cout << "Number of ponits is " << secondOutGrid.GetNumberOfPoints() << std::endl;
+      std::cout << "Number of points is " << secondOutGrid.GetNumberOfPoints()
+                << std::endl;
       std::cout << "valid_num_points = " << valid_num_points << std::endl;
 
       //45 is the number I got from running the algorithm by hand and seeing
@@ -130,6 +191,13 @@ struct TestMarchingCubesWorklet
       DAX_TEST_ASSERT(NumberOfUniquePoints == secondOutGrid.GetNumberOfPoints() &&
                       NumberOfUniquePoints != valid_num_points,
           "We didn't merge to the correct number of points");
+
+      std::cout << "Check interpolation of secondary field." << std::endl;
+      interpDispatcher.CompactPointField(secondaryFieldHandle,
+                                         interpolatedSecondaryField);
+      CheckFieldInterpolation(secondOutGrid.GetPointCoordinates(),
+                              interpolatedSecondaryField,
+                              secondaryGradient);
       }
     catch (dax::cont::ErrorControl error)
       {
