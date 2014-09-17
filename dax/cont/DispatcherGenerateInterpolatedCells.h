@@ -105,34 +105,34 @@ public:
 
 
   template<typename T,
-           typename Container1, typename Container2, typename Container3,
+           typename Container1,
+           typename Container2,
            typename DeviceAdapter>
   DAX_CONT_EXPORT
   bool CompactPointField(
-      const dax::cont::ArrayHandle<dax::Vector3,Container1,DeviceAdapter>& input,
-      const dax::cont::ArrayHandle<T,Container2,DeviceAdapter>& interpolation,
-      dax::cont::ArrayHandle<dax::Vector3,Container3,DeviceAdapter>& output)
+      const dax::cont::ArrayHandle<T,Container1,DeviceAdapter>& input,
+      dax::cont::ArrayHandle<T,Container2,DeviceAdapter>& output)
     {
 
     typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
                                         Algorithm;
 
-    typedef typename dax::cont::ArrayHandle<dax::Vector3,
-            Container1,DeviceAdapter>::PortalConstExecution InPortalType;
+    typedef typename dax::cont::ArrayHandle<
+            T,Container1,DeviceAdapter>::PortalConstExecution InPortalType;
 
-    typedef typename dax::cont::ArrayHandle<T,Container2,
-            DeviceAdapter>::PortalConstExecution InterpolatedPortalType;
+    typedef typename InterpolationWeightsType::PortalConstExecution
+        WeightsPortalType;
 
-    typedef typename dax::cont::ArrayHandle<dax::Vector3,
-            Container3,DeviceAdapter>::PortalExecution OutPortalType;
+    typedef typename dax::cont::ArrayHandle<
+            T,Container2,DeviceAdapter>::PortalExecution OutPortalType;
 
     //interpolation holds the proper size
-    const dax::Id size = interpolation.GetNumberOfValues();
+    const dax::Id size = this->InterpolationWeights.GetNumberOfValues();
     dax::exec::internal::kernel::InterpolateFieldToField<InPortalType,
-                                                         InterpolatedPortalType,
+                                                         WeightsPortalType,
                                                          OutPortalType>
         interpolate( input.PrepareForInput(),
-                     interpolation.PrepareForInput(),
+                     this->InterpolationWeights.PrepareForInput(),
                      output.PrepareForOutput(size));
 
     Algorithm::Schedule(interpolate, size);
@@ -267,15 +267,14 @@ private:
     typedef dax::cont::DeviceAdapterAlgorithm<DeviceAdapterTag>
         Algorithm;
 
+    // We need to store the interpolation weights to be able to interpolate
+    // point scalar fields (including point coordinates). We also need to
+    // find duplicate interpolations if we want to remove duplicate points.
+    Algorithm::Copy(interpolatedGrid.GetInterpolatedPoints(),
+                    this->InterpolationWeights);
+
     if(removeDuplicates)
       {
-      //we have stored the interpolation weights inside the
-      //InterpolatedGrid grid coordinates So to properly find the unique subset
-      //we need to find the unique subset, which we store in our member var
-      //InterpolationWeights
-      Algorithm::Copy(interpolatedGrid.GetInterpolatedPoints(),
-                      this->InterpolationWeights);
-
       // the sort and unique will get us the subset of new points
       // the lower bounds on the subset and the original coords, will produce
       // the resulting topology array
@@ -288,19 +287,11 @@ private:
 
 
       this->CompactPointField(inputGrid.GetPointCoordinates(),
-                              this->InterpolationWeights,
                               outputGrid.GetPointCoordinates());
-
-      //after each time we interpolate we unload the interpolation weights
-      //from the execution env so that we don't hold reserve exec memory
-      //longer than needed
-      this->InterpolationWeights.GetPortalControl();
-
       }
     else
       {
       this->CompactPointField(inputGrid.GetPointCoordinates(),
-                              interpolatedGrid.GetInterpolatedPoints(),
                               outputGrid.GetPointCoordinates());
       //we need to  copy the cells connections from the interpolatedGrid
       //over to the output grid
