@@ -106,12 +106,11 @@
 //save out the thrust major and minor version so that we can detect
 //what backend syntax we need to use
 #ifdef DAX_ENABLE_THRUST
-# ifndef THRUST_MAJOR_VERSION
-#  define THRUST_MAJOR_VERSION @THRUST_MAJOR_VERSION@
+# ifndef DAX_THRUST_MAJOR_VERSION
+#   define DAX_THRUST_MAJOR_VERSION @THRUST_MAJOR_VERSION@
 # endif
-
-# ifndef THRUST_MINOR_VERSION
-#  define THRUST_MINOR_VERSION @THRUST_MINOR_VERSION@
+# ifndef DAX_THRUST_MINOR_VERSION
+#   define DAX_THRUST_MINOR_VERSION @THRUST_MINOR_VERSION@
 # endif
 #endif
 
