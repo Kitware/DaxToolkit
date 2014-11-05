@@ -26,7 +26,7 @@
 
 #ifdef DAX_ENABLE_THRUST
 
-#if THRUST_MAJOR_VERSION == 1 && THRUST_MINOR_VERSION >= 6
+#if DAX_THRUST_MAJOR_VERSION == 1 && DAX_THRUST_MINOR_VERSION >= 6
 
 // Set the backend to be serial so it will work everywhere,
 // this was only added in thrust 1.7 and later
@@ -38,7 +38,7 @@
 # endif // DAX_TEST_HEADER_BUILD
 #endif //THRUST_DEVICE_SYSTEM
 
-#elif THRUST_MAJOR_VERSION == 1 && THRUST_MINOR_VERSION <= 5
+#elif DAX_THRUST_MAJOR_VERSION == 1 && DAX_THRUST_MINOR_VERSION <= 5
 
 //we are going to try and pick open mp if it is enabled
 #ifndef THRUST_DEVICE_BACKEND
@@ -49,7 +49,7 @@
 # endif // DAX_TEST_HEADER_BUILD
 #endif //THRUST_DEVICE_BACKEND
 
-#endif //THRUST_MAJOR_VERSION == 1 && THRUST_MINOR_VERSION <= 5
+#endif //DAX_THRUST_MAJOR_VERSION == 1 && DAX_THRUST_MINOR_VERSION <= 5
 
 
 #endif //DAX_ENABLE_THRUST
