@@ -273,10 +273,12 @@ function(dax_worklet_unit_tests device_adapter)
     #the FindCUDA module and helper methods don't read target level
     #properties so we have to modify CUDA_NVCC_FLAGS  instead of using
     # target and source level COMPILE_FLAGS and COMPILE_DEFINITIONS
-    #
+    #4. Specify the exact dax device adapter,  see issue number 3 on why
+    #we can't use target properties
     get_property(unit_test_srcs GLOBAL PROPERTY dax_worklet_unit_tests_cu_sources )
     list(APPEND CUDA_NVCC_FLAGS -DBOOST_SP_DISABLE_THREADS)
     list(APPEND CUDA_NVCC_FLAGS "-w")
+    list(APPEND CUDA_NVCC_FLAGS "-DDAX_DEVICE_ADAPTER=${device_adapter}")
   endif()
 
   if(DAX_ENABLE_TESTING)
